@@ -1,0 +1,56 @@
+﻿@using System.Collections.Generic
+@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Http.Authentication
+@model KinaUna.IDP.Models.AccountViewModels.LoginViewModel
+@{
+    if (Model.ReturnUrl == "modal")
+    {
+        Layout = null;
+    }
+}
+@{
+    ViewData["Title"] = "Log in";
+}
+    <div class="row">
+        <div class="col-md-10">
+            <section>
+                <form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal" >
+                    <input type="hidden" asp-for="ReturnUrl" />
+                    <h4>Log in with a Kina Una account.</h4>
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="Email" class="control-label form-label"></label>
+                        <input asp-for="Email" class="form-control form-input form-input-center" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Password" class="control-label form-label"></label>
+                        <input asp-for="Password" class="form-control form-input form-input-center" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    @*<div class="form-group">
+                        <div class="checkbox">
+                            <label asp-for="RememberMe">
+                                <input asp-for="RememberMe" />
+                                @Html.DisplayNameFor(m => m.RememberMe)
+                            </label>
+                        </div>
+                    </div>*@
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success leavePage">&nbsp;LOG IN&nbsp;</button>
+                    </div>
+                    <br/><br/>
+                    <p>
+                        <a class="leavePage" asp-action="ForgotPassword">Forgot your password?</a>
+                    </p>
+                    <p>
+                        <a asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]" class="text leavePage">Register as a new user?</a>
+                    </p>
+                </form>
+            </section>
+        </div>
+    </div>
+
+@*@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}*@

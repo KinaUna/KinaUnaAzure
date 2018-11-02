@@ -1,0 +1,29 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
+@{
+    ViewData["Title"] = Model.Title + " - " + Model.Progeny.NickName + "'s Event";
+}
+<h3>@ViewData["Title"]</h3>
+<br />
+<div class="card" style="clear: both; margin-top: 25px; max-width: 710px;">
+    <div class="card-body">
+        <div class="card-title"><h5>@Model.Title</h5></div>
+        <div style="max-width: 705px;">
+            <div align="left" style="margin: 15px;"><strong>Start:</strong> @Model.StartTime.Value.ToString("dd-MMM-yyyy HH:mm")</div>
+            <div align="left" style="margin: 15px;"><strong>End:</strong> @Model.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")</div>
+            <div align="left" style="margin: 15px;"><strong>Location:</strong> @Model.Location</div>
+            <div align="left" style="margin: 15px;"><strong>Context:</strong> @Model.Context</div>
+            <div align="left" style="margin: 15px;"><strong>Notes:</strong> @Model.Notes</div>
+            @if (Model.IsAdmin)
+            {
+                <div style="margin: 15px;">
+                    <a asp-controller="AddItem" asp-action="EditEvent" asp-route-itemId="@Model.EventId" class="btn btn-info leavePage">
+                        <i class="fas fa-pencil-alt"></i> Edit
+                    </a>
+                    <a asp-controller="AddItem" asp-action="DeleteEvent" asp-route-itemId="@Model.EventId" class="btn btn-danger leavePage">
+                        <i class="fas fa-trash-alt"></i> Delete
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

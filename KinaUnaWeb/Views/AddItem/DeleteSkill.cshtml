@@ -1,0 +1,15 @@
+﻿@using KinaUnaWeb.Models
+@model KinaUnaWeb.Models.Skill
+<H4>Delete Skill: @Model.Name</H4>
+<form asp-action="DeleteSkill" role="form" method="post">
+    <div>
+        Are you sure you want to delete @Model.Name?
+    </div>
+    <br/>
+    <div>
+        Description: @Model.Description
+    </div>
+    <br />
+    <input asp-for="SkillId" class="form-control" value="@Model.SkillId" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="Skills" asp-action="Index">Cancel</a></div>
+</form>

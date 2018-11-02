@@ -1,0 +1,26 @@
+﻿@using KinaUnaWeb.Models
+@model KinaUnaWeb.Models.CalendarItem
+<H4>Delete Event @Model.Title</H4>
+<form asp-action="DeleteEvent" role="form" method="post">
+    <div>
+        Are you sure you want to delete @Model.Title ?
+    </div>
+    <br/>
+    @if(Model.StartTime != null)
+    {
+        <div>Start: @Model.StartTime.Value</div>
+    }
+    @if (Model.EndTime != null)
+    {
+        <div>End: @Model.EndTime.Value</div>
+    }
+    <br/>
+    <div>
+        Notes: @Model.Notes
+    </div>
+    <br/>
+    <div>Location: @Model.Location</div>
+    <br />
+    <input asp-for="EventId" class="form-control" value="@Model.EventId" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="Calendar" asp-action="Index">Cancel</a></div>
+</form>

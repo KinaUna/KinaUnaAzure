@@ -1,0 +1,131 @@
+﻿@using Microsoft.AspNetCore.Builder
+@using Microsoft.AspNetCore.Http.Extensions
+@using Microsoft.AspNetCore.Localization
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.Extensions.Options
+@inject IViewLocalizer Localizer
+@inject IOptions<RequestLocalizationOptions> LocOptions
+@{ var returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl(); }
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kina Una Authentication Server</title>
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <link rel="shortcut icon" type="image/x-icon" href="~/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+    <link href="~/lib/fa5_2_0/css/all.min.css" rel="stylesheet" />
+    <link href="~/css/waitMe.min.css" rel="stylesheet" />
+    <link href="~/css/material-kit.min.css?v=2.0.2" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css?v=1.14" />
+    <script src="~/lib/jquery-3.3.1.min.js"></script>
+    <script src="~/lib/popper.min.js"></script>
+    <script src="~/lib/material-kit/bootstrap-material-design.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+            integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+            crossorigin="anonymous"></script>
+    <script src="~/lib/material-kit/plugins/bootstrap-selectpicker.js"></script>
+    <script src="~/lib/material-kit/material-kit.min.js?v=2.0.2"></script>
+    <script src="~/js/waitMe.min.js"></script>
+    @RenderSection("Scripts", required: false)
+</head>
+<body>
+    <div class="container body-content">
+        <div class="main main-raised" style="margin-top: 1px; margin-left: 5px; margin-right: 5px; padding: 5px; padding-left: 10px; padding-top: 1px;">
+            @RenderBody()
+        </div>
+        <br />
+        @{
+            var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+            List<SelectListItem> cultureItems = new List<SelectListItem>();
+            SelectListItem selectEnglish = new SelectListItem();
+            selectEnglish.Text = "English";
+            selectEnglish.Value = "en-US";
+            SelectListItem selectDanish = new SelectListItem();
+            selectDanish.Text = "Dansk";
+            selectDanish.Value = "da-DK";
+            SelectListItem selectGerman = new SelectListItem();
+            selectGerman.Text = "Deutsch";
+            selectGerman.Value = "de-DE";
+            cultureItems.Add(selectEnglish);
+            cultureItems.Add(selectDanish);
+            cultureItems.Add(selectGerman);
+        }
+    </div>
+    <div class="container-fluid footer-brand" style="background: gainsboro;">
+        <div class="container">
+            <form id="selectLanguage" asp-controller="Home" asp-action="SetLanguage" asp-route-returnUrl="@returnUrl" method="post" class="form-horizontal" role="form">
+                <div class="form-row">
+                    <div>
+                        <div class="btn btn-link disabled" style="color: black; padding: 0; padding-top: 22px; margin: 0; margin-right: 8px;"> Language/Sprache/Sprog: </div>
+                    </div>
+                    <div class="col-5 col-md-3 col-lg-2">
+                        <select title="Language/Sprache/Sprog" class="selectpicker" data-style="select-with-transition" data-size="3" name="culture" onchange="this.form.submit();" asp-for="@requestCulture.RequestCulture.UICulture.Name" asp-items="cultureItems"></select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <footer>
+        <div class="container">
+            <br />
+            <br />
+            <ul>
+                <li> <a class="leavePage" asp-controller="Home" asp-action="Privacy">Cookies & Privacy Policy</a></li>
+                <li><a class="leavePage" asp-controller="Home" asp-action="Terms">Terms & Conditions</a></li>
+            </ul>
+        </div><br />
+    </footer><br />
+    <footer>
+        <div class="container" style="margin-bottom: 25px;">&copy; 2018 - KinaUna.com</div><br />
+    </footer>
+    <br /><br />
+<script>
+    window.addEventListener('message', function (event) {
+        if (~event.origin.indexOf('https://web.kinauna.com')) {
+            window.parent.postMessage("auth", '*');
+
+        }
+        if (~event.origin.indexOf('https://localhost:44324')) {
+            window.parent.postMessage("auth", '*');
+        }
+        else {
+            return;
+        }
+    });
+    $(document).ready(function () {
+        $(".leavePage").click(function () {
+            runWaitMeLeave();
+            function runWaitMeLeave() {
+                $('.body-content').waitMe({
+                    //none, rotateplane, stretch, orbit, roundBounce, win8,
+                    //win8_linear, ios, facebook, rotation, timer, pulse,
+                    //progressBar, bouncePulse or img
+                    effect: 'roundBounce',
+                    //place text under the effect (string).
+                    text: '',
+                    //background for container (string).
+                    bg: 'rgba(225,240,215,0.3)',
+                    //color for background animation and text (string).
+                    color: ['#6a5081', '#7a6095', '#8a70aa', '#9a80bb', '#aa90cc', '#bbaadd', '#ccbbee', '#ddccff', '#ccbbee', '#bbaadd', '#aa90cc', '#9a80bb', '#6a5081', '#7a6095', '#8a70aa', '#9a80bb', '#aa90cc', '#bbaadd', '#ccbbee', '#ddccff', '#ccbbee', '#bbaadd', '#aa90cc', '#9a80bb'],
+                    //max size
+                    maxSize: '',
+                    //wait time im ms to close
+                    waitTime: -1,
+                    //url to image
+                    source: '',
+                    //or 'horizontal'
+                    textPos: 'vertical',
+                    //font size
+                    fontSize: '',
+                    // callback
+                    onClose: function () { }
+                });
+            }
+        });
+    });
+</script>
+    <script src="~/js/gdpr.js"></script>
+</body>
+</html>

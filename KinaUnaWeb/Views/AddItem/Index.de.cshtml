@@ -1,0 +1,149 @@
+﻿@section Scripts{
+    
+}
+@{
+    ViewData["Title"] = "Hinzufügen";
+}
+<div style="float: none; clear: both">
+    <br />
+    <div style="float: left; margin-right: 25px;">
+        <div style="margin-top: 2px; margin-bottom: 3px;">
+            <div class="btn-group">
+                <a asp-controller="AddItem" asp-action="AddNote" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Notiz
+                </a>
+            </div>
+        </div>
+        <div style="margin-top: 2px; margin-bottom: 3px;">
+            <div class="btn-group">
+                <a asp-controller="AddItem" asp-action="AddEvent" class="btn btn-info">
+                    <i class="fas fa-plus"></i> Kalender
+                </a>
+            </div>
+        </div>
+        <div style="margin-top: 2px; margin-bottom: 3px">
+            <div class="btn-group">
+                <a asp-controller="AddItem" asp-action="AddPicture" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Foto
+                </a>
+            </div>
+        </div>
+        <div style="margin-top: 2px; margin-bottom: 3px">
+            <div class="btn-group">
+                <a asp-controller="AddItem" asp-action="AddVideo" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Video
+                </a>
+            </div>
+        </div>
+        <div style="margin-top: 2px; margin-bottom: 3px">
+            <div class="btn-group">
+                <a asp-controller="AddItem" asp-action="AddVocabulary" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Wort
+                </a>
+            </div>
+        </div>
+        <div style="margin-top: 2px; margin-bottom: 3px">
+            <div class="btn-group">
+                <a asp-controller="AddItem" asp-action="AddSkill" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Fähigkeit
+                </a>
+            </div>
+        </div>
+        <div style="margin-top: 2px; margin-bottom: 3px">
+            <div class="btn-group">
+                <a asp-controller="AddItem" asp-action="AddFriend" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Freund
+                </a>
+            </div>
+        </div>
+        <div style="margin-top: 2px; margin-bottom: 3px">
+            <div class="btn-group">
+                <a asp-controller="AddItem" asp-action="AddMeasurement" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Mässung
+                </a>
+            </div>
+        </div>
+        <div style="margin-top: 2px; margin-bottom: 3px">
+            <div class="btn-group">
+                <a asp-controller="AddItem" asp-action="AddContact" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Kontakte
+                </a>
+            </div>
+        </div>
+        <div style="margin-top: 2px; margin-bottom: 3px">
+            <div class="btn-group">
+                <a asp-controller="AddItem" asp-action="AddVaccination" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Impfung
+                </a>
+            </div>
+        </div>
+    </div>
+    <div style="float: left;">
+        <div style="margin-top: 2px; margin-bottom: 3px;">
+            <div class="btn-group">
+                <a asp-controller="AddItem" asp-action="AddSleep" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Schlaf
+                </a>
+            </div>
+        </div>
+        <div style="margin-top: 2px; margin-bottom: 3px;">
+            <div class="btn-group">
+                <a asp-controller="AddItem" asp-action="AddLocation" class="btn btn-default">
+                    <i class="fas fa-plus"></i> Ort
+                </a>
+            </div>
+        </div>
+        <div style="margin-top: 2px; margin-bottom: 3px;">
+            <div class="btn-group">
+                <a asp-controller="AccessManagement" asp-action="AddAccess" asp-route-progenyId="0" class="btn btn-warning">
+                    <i class="fas fa-plus"></i> Benutzer
+                </a>
+            </div>
+        </div>
+        @*<div style="margin-top: 2px; margin-bottom: 3px;">
+            <div class="btn-group">
+                <a asp-controller="AddItem" asp-action="Index" class="btn btn-success">
+                    <i class="glyphicon glyphicon-plus"></i> Add a Meal
+                </a>
+            </div>
+        </div>*@
+    </div>
+</div>
+<div style="float: none; clear: both">
+    <br />
+</div>
+<script>
+    $(document).ready(function () {
+        $("a.btn").click(function () {
+            var currentEffect = 'roundBounce';
+            runWaitMe(currentEffect);
+
+            function runWaitMe(effect) {
+                $('body').waitMe({
+                    //none, rotateplane, stretch, orbit, roundBounce, win8,
+                    //win8_linear, ios, facebook, rotation, timer, pulse,
+                    //progressBar, bouncePulse or img
+                    effect: 'roundBounce',
+                    //place text under the effect (string).
+                    text: '',
+                    //background for container (string).
+                    bg: 'rgba(255,255,255,0.4)',
+                    //color for background animation and text (string).
+                    color: '#3a2051',
+                    //max size
+                    maxSize: '',
+                    //wait time im ms to close
+                    waitTime: -1,
+                    //url to image
+                    source: '',
+                    //or 'horizontal'
+                    textPos: 'vertical',
+                    //font size
+                    fontSize: '',
+                    // callback
+                    onClose: function () { }
+                });
+            }
+        });
+    });
+</script>

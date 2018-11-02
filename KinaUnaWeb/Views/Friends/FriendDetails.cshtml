@@ -1,0 +1,72 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
+@{
+    ViewData["Title"] = Model.Name + " - " + Model.Progeny.NickName + "'s Friend";
+}
+@{
+    List<string> typeList = new List<string>();
+    typeList.Add("Personal Friend");
+    typeList.Add("Toy/Animal Friend");
+    typeList.Add("Parent");
+    typeList.Add("Family");
+    typeList.Add("Caretaker");
+}
+<h3 class="title">@ViewData["Title"]</h3>
+<div class="card" style="clear: both; margin-top: 25px; max-width: 610px;">
+
+    <div class="card-header card-header-rose text-white">
+        <h5 class="title">@Model.Name</h5>
+    </div>
+    <div class="card-body">
+        <img class="img-thumbnail mx-auto d-block" style="max-height: 600px; max-width: 600px; background: black;" src="@Model.PictureLink" />
+        <br />
+        <div align="left" style="margin: 15px;">
+            <strong>Description:</strong> @Model.Description
+        </div>
+        <div align="left" style="margin: 15px;">
+            <strong>Friends since: </strong>
+            <span align="left">
+                @if (Model.FriendSince != null)
+                {
+                    @Model.FriendSince.Value.ToString("dd-MMM-yyyy")
+                    ;
+                }
+                else
+                {
+                    <span>N/A</span>
+                }
+            </span>
+        </div>
+        <div align="left" style="margin: 15px;">
+            <strong>Type:</strong> @typeList[Model.Type]
+        </div>
+        <div align="left" style="margin: 15px;">
+            <strong>Context:</strong> @Model.Context
+        </div>
+        <div align="left" style="margin: 15px;">
+            <strong>Notes:</strong> @Model.Notes
+        </div>
+        <div>
+            @{
+                if (!string.IsNullOrEmpty(Model.Tags))
+                {
+                    List<string> tagsList = Model.Tags.Split(',').ToList();
+                    foreach (string tagString in tagsList)
+                    {
+                        <a asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                    }
+                }
+            }
+        </div>
+        @if (Model.IsAdmin)
+        {
+            <div style="margin: 15px;">
+                <a asp-controller="AddItem" asp-action="EditFriend" asp-route-itemId="@Model.FriendId" class="btn btn-info leavePage">
+                    <i class="fas fa-pencil-alt"></i> Edit
+                </a>
+                <a asp-controller="AddItem" asp-action="DeleteFriend" asp-route-itemId="@Model.FriendId" class="btn btn-danger leavePage">
+                    <i class="fas fa-trash-alt"></i> Delete
+                </a>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,72 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.UserInfoViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+<h4>@ViewData["Title"]</h4>
+<div class="row">
+    <div class="col-md-10">
+        <form method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="UserName">User Name</label>
+                <input asp-for="UserName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="FirstName">First Name</label>
+                <input asp-for="FirstName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="MiddleName">Middle Name</label>
+                <input asp-for="MiddleName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName">Last Name</label>
+                <input asp-for="LastName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Timezone" class="control-label">Time Zone</label>
+                <div>
+                    <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="8" asp-for="Timezone" asp-items="@Model.TimezoneList"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="UserEmail"></label>
+                @if (Model.IsEmailConfirmed)
+                {
+                    <div class="input-group">
+                        <input asp-for="UserEmail" class="form-control" />
+                        <div class="input-group-append" aria-hidden="true">
+                            <div class="input-group-text">
+                                <i class="fas fa-check text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <input asp-for="UserEmail" class="form-control" />
+                    <button asp-action="SendVerificationEmail" class="btn btn-link">Send verification email</button>
+                }
+                <span asp-validation-for="UserEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhoneNumber"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-success leavePage">Save</button>
+        </form>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-10">
+        <form id="loginForm" action="@Model.ChangeLink" method="get" target="loginFrame" style="float: right;">
+            <button id="changePasswordButton" type="submit" class="btn btn-info" data-toggle="modal" data-target="#loginModal" style="float: right;"><span class="fas fa-sign-in-alt"></span> Change Pasword</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
+<br />

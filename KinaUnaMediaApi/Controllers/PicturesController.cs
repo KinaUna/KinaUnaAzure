@@ -1,0 +1,746 @@
+﻿using ImageMagick;
+using KinaUnaMediaApi.Data;
+using KinaUnaMediaApi.Models;
+using KinaUnaMediaApi.Models.DTOs;
+using KinaUnaMediaApi.Models.ViewModels;
+using KinaUnaMediaApi.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+
+namespace KinaUnaMediaApi.Controllers
+{
+    [Authorize(AuthenticationSchemes = "Bearer")]
+    [Produces("application/json")]
+    [Route("api/[controller]")]
+    [ApiController]
+    public class PicturesController : ControllerBase
+    {
+        private readonly MediaDbContext _context;
+        private readonly ImageStore _imageStore;
+        private readonly IHostingEnvironment _env;
+        public PicturesController(MediaDbContext context, ImageStore imageStore, IHostingEnvironment env)
+        {
+            _context = context;
+            _imageStore = imageStore;
+            _env = env;
+        }
+        // GET api/pictures
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            List<Picture> resultList = await _context.PicturesDb.AsNoTracking().ToListAsync();
+            return Ok(resultList);
+        }
+
+        // GET api/pictures/page[?pageSize=3&pageIndex=10&progenyId=2&accessLevel=1&tagFilter=funny]
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<IActionResult> Page([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = 2, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
+
+        {
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<Picture> allItems = new List<Picture>(); 
+            if (tagFilter != "")
+            {
+                allItems = await _context.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToListAsync();
+            }
+            else
+            {
+                allItems = await _context.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToListAsync();
+            }
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int pictureCounter = 1;
+            int picCount = allItems.Count;
+            List<string> tagsList = new List<string>();
+            foreach (Picture pic in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    pic.PictureNumber = picCount - pictureCounter + 1;
+                }
+                else
+                {
+                    pic.PictureNumber = pictureCounter;
+                }
+                
+                pictureCounter++;
+                if (!String.IsNullOrEmpty(pic.Tags))
+                {
+                    List<string> pvmTags = pic.Tags.Split(',').ToList();
+                    foreach (string tagstring in pvmTags)
+                    {
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                        {
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                        }
+                    }
+                }
+            }
+            
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            foreach (Picture pic in itemsOnPage)
+            {
+                pic.Comments = await _context.CommentsDb.AsNoTracking().Where(c => c.CommentThreadNumber == pic.CommentThreadNumber).ToListAsync();
+            }
+            PicturePageViewModel model = new PicturePageViewModel();
+            model.PicturesList = itemsOnPage;
+            model.TotalPages = (int)Math.Ceiling((double)(allItems.Count / (double)pageSize));
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+            model.TagFilter = tagFilter;
+            string tList = "";
+            foreach (string tstr in tagsList)
+            {
+                tList = tList + tstr + ",";
+            }
+            model.TagsList = tList.TrimEnd(',');
+
+            return Ok(model);
+        }
+        [HttpGet]
+        [Route("[action]/{id}/{accessLevel}")]
+        public async Task<IActionResult> PictureViewModel(int id, int accessLevel, [FromQuery] int sortBy = 1)
+        {
+            Picture picture = await _context.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == id);
+            if (picture != null)
+            {
+                PictureViewModel model = new PictureViewModel();
+                model.PictureId = picture.PictureId;
+                model.PictureTime = picture.PictureTime;
+                model.ProgenyId = picture.ProgenyId;
+                model.Owners = picture.Owners;
+                model.PictureLink = picture.PictureLink1200;
+                model.AccessLevel = picture.AccessLevel;
+                model.Author = picture.Author;
+                model.AccessLevelListEn[picture.AccessLevel].Selected = true;
+                model.AccessLevelListDa[picture.AccessLevel].Selected = true;
+                model.AccessLevelListDe[picture.AccessLevel].Selected = true;
+                model.CommentThreadNumber = picture.CommentThreadNumber;
+                model.Tags = picture.Tags;
+                model.Location = picture.Location;
+                model.Latitude = picture.Latitude;
+                model.Longtitude = picture.Longtitude;
+                model.Altitude = picture.Altitude;
+                model.PictureNumber = 1;
+                model.PictureCount = 1;
+                model.CommentsList = await _context.CommentsDb.Where(c => c.CommentThreadNumber == picture.CommentThreadNumber).ToListAsync();
+                
+                List<Picture> pictureList = await _context.PicturesDb.AsNoTracking()
+                    .Where(p => p.ProgenyId == picture.ProgenyId && p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToListAsync();
+                if (pictureList.Any())
+                {
+                    int currentIndex = 0; //pictureList.IndexOf(picture);
+                    int indexer = 0;
+                    foreach (Picture pic in pictureList)
+                    {
+                        if (pic.PictureId == picture.PictureId)
+                        {
+                            currentIndex = indexer;
+                        }
+                        indexer++;
+                    }
+                    model.PictureNumber = currentIndex + 1;
+                    model.PictureCount = pictureList.Count;
+                    if(currentIndex > 0)
+                    {
+                        model.PrevPicture = pictureList[currentIndex - 1].PictureId;
+                    }
+                    else
+                    {
+                        model.PrevPicture = pictureList.Last().PictureId;
+                    }
+
+                    if (currentIndex + 1 < pictureList.Count)
+                    {
+                        model.NextPicture = pictureList[currentIndex + 1].PictureId;
+                    }
+                    else
+                    {
+                        model.NextPicture = pictureList.First().PictureId;
+                    }
+
+                    if (sortBy == 1)
+                    {
+                        int tempVal = model.NextPicture;
+                        model.NextPicture = model.PrevPicture;
+                        model.PrevPicture = tempVal;
+                    }
+                   
+                }
+
+                return Ok(model);
+            }
+
+            return NotFound();
+        }
+
+        // GET api/pictures/progeny/[id]/[accessLevel]
+        [HttpGet]
+        [Route("[action]/{id}/{accessLevel}")]
+        public async Task<IActionResult> Progeny(int id, int accessLevel)
+        {
+            List<Picture> picturesList = await _context.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == id && p.AccessLevel >= accessLevel).ToListAsync();
+            if (picturesList.Any())
+            {
+                
+                return Ok(picturesList);
+            }
+            Progeny progeny = new Progeny();
+            progeny.Name = "Kina Una";
+            progeny.Admins = "per.mogensen@live.com";
+            progeny.NickName = "Kina Una";
+            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+
+            progeny.Id = 0;
+            progeny.TimeZone = "Romance Standard Time";
+            Picture tempPicture = new Picture();
+            tempPicture.ProgenyId = 0;
+            tempPicture.Progeny = progeny;
+            tempPicture.AccessLevel = 5;
+            tempPicture.PictureLink600 = $"https://{this.Request.Host}{this.Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.ProgenyId = progeny.Id;
+            tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
+
+            picturesList.Add(tempPicture);
+            return Ok(picturesList);
+        }
+
+        // GET api/pictures/bylink/[id]
+        [HttpGet]
+        [Route("[action]/{id}")]
+        public async Task<IActionResult> ByLink(string id)
+        {
+            Picture picture = await _context.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureLink == id);
+            if (picture != null)
+            {
+                picture.Comments = await _context.CommentsDb.Where(c => c.CommentThreadNumber == picture.CommentThreadNumber).ToListAsync();
+                
+                return Ok(picture);
+            }
+
+            Progeny progeny = new Progeny();
+            progeny.Name = "Kina Una";
+            progeny.Admins = "per.mogensen@live.com";
+            progeny.NickName = "Kina Una";
+            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+
+            progeny.Id = 0;
+            progeny.TimeZone = "Romance Standard Time";
+            Picture tempPicture = new Picture();
+            tempPicture.ProgenyId = 0;
+            tempPicture.Progeny = progeny;
+            tempPicture.AccessLevel = 5;
+            tempPicture.PictureLink600 = $"https://{this.Request.Host}{this.Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.ProgenyId = progeny.Id;
+            tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
+
+            return Ok(tempPicture);
+        }
+
+        // GET api/pictures/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPicture(int id)
+        {
+            Picture result = await _context.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == id);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+
+            Progeny progeny = new Progeny();
+            progeny.Name = "Kina Una";
+            progeny.Admins = "per.mogensen@live.com";
+            progeny.NickName = "Kina Una";
+            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+
+            progeny.Id = 0;
+            progeny.TimeZone = "Romance Standard Time";
+            Picture tempPicture = new Picture();
+            tempPicture.ProgenyId = 0;
+            tempPicture.Progeny = progeny;
+            tempPicture.AccessLevel = 5;
+            tempPicture.PictureLink600 = $"https://{this.Request.Host}{this.Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.ProgenyId = progeny.Id;
+            tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
+
+            return Ok(tempPicture);
+        }
+
+        // POST api/pictures
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] Picture model)
+        {
+            var memoryStream = await _imageStore.GetStream(model.PictureLink);
+            memoryStream.Position = 0;
+            
+            using (MagickImage image = new MagickImage(memoryStream))
+            {
+                ExifProfile profile = image.GetExifProfile();
+                if (profile != null)
+                {
+                    int rotation = 0;
+                    try
+                    {
+
+                        ExifValue gpsLongtitude = profile.GetValue(ExifTag.GPSLongitude);
+                        ExifValue gpsLatitude = profile.GetValue(ExifTag.GPSLatitude);
+                        ExifValue gpsAltitude = profile.GetValue(ExifTag.GPSAltitude);
+
+                        if (gpsLongtitude != null && gpsLatitude != null)
+                        {
+                            Rational[] longValues = gpsLongtitude.Value as Rational[];
+                            Rational[] latValues = gpsLatitude.Value as Rational[];
+
+
+                            if (longValues[0].Denominator != 0 && longValues[1].Denominator != 0 &&
+                                longValues[2].Denominator != 0)
+                            {
+                                double long0 = longValues[0].Numerator / (double)longValues[0].Denominator;
+                                double long1 = longValues[1].Numerator / (double)longValues[1].Denominator;
+                                double long2 = longValues[2].Numerator / (double)longValues[2].Denominator;
+                                model.Longtitude = (long0 + long1 / 60.0 + long2 / 3600).ToString(CultureInfo.CurrentCulture);
+                            }
+                            else
+                            {
+                                model.Longtitude = "";
+                            }
+
+                            if (latValues[0].Denominator != 0 && latValues[1].Denominator != 0 &&
+                                latValues[2].Denominator != 0)
+                            {
+                                double lat0 = latValues[0].Numerator / (double)latValues[0].Denominator;
+                                double lat1 = latValues[1].Numerator / (double)latValues[1].Denominator;
+                                double lat2 = latValues[2].Numerator / (double)latValues[2].Denominator;
+                                model.Latitude = (lat0 + lat1 / 60.0 + lat2 / 3600).ToString(CultureInfo.CurrentCulture);
+                            }
+                            else
+                            {
+                                model.Latitude = "";
+                            }
+                        }
+                        else
+                        {
+                            model.Longtitude = "";
+                            model.Latitude = "";
+                        }
+
+                        if (gpsAltitude != null)
+                        {
+                            Rational altValues = (Rational)gpsAltitude.Value;
+                            if (altValues.Denominator != 0)
+                            {
+                                double alt0 = altValues.Numerator / (double)altValues.Denominator;
+                                model.Altitude = alt0.ToString();
+                            }
+                            else
+                            {
+                                model.Altitude = "";
+                            }
+                        }
+                        else
+                        {
+                            model.Altitude = "";
+                        }
+
+
+                    }
+                    catch (ArgumentNullException)
+                    {
+
+                    }
+                    catch (NullReferenceException)
+                    {
+
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+
+                    try
+                    {
+                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation).Value);
+                        switch ((int)rotation)
+                        {
+                            case 1:
+                                model.PictureRotation = 0;
+                                break;
+                            case 3:
+                                model.PictureRotation = 180;
+                                break;
+                            case 6:
+                                model.PictureRotation = 90;
+                                break;
+                            case 8:
+                                model.PictureRotation = 270;
+                                break;
+
+                        }
+                    }
+                    catch (ArgumentNullException)
+                    {
+
+                    }
+                    catch (NullReferenceException)
+                    {
+                        model.PictureRotation = 0;
+                    }
+
+
+                    try
+                    {
+                        var date = (string)profile.GetValue(ExifTag.DateTimeOriginal).Value;
+                        model.PictureTime = new DateTime(
+                            int.Parse(date.Substring(0, 4)), // year
+                            int.Parse(date.Substring(5, 2)), // month
+                            int.Parse(date.Substring(8, 2)), // day
+                            int.Parse(date.Substring(11, 2)), // hour
+                            int.Parse(date.Substring(14, 2)), // minute
+                            int.Parse(date.Substring(17, 2)) // second
+                        );
+                        // Todo: Check if timezone can be extracted and UTC time found?
+                    }
+                    catch (FormatException)
+                    {
+                        model.PictureTime = null;
+                    }
+                    catch (OverflowException)
+                    {
+                        model.PictureTime = null;
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        model.PictureTime = null;
+                    }
+                    catch (NullReferenceException)
+                    {
+                        model.PictureTime = null;
+                    }
+
+                    try
+                    {
+                        model.PictureWidth = Convert.ToInt32(profile.GetValue(ExifTag.PixelXDimension).Value);
+                        model.PictureHeight = Convert.ToInt32(profile.GetValue(ExifTag.PixelYDimension).Value);
+                    }
+                    catch (FormatException)
+                    {
+                        model.PictureWidth = image.Width;
+                        model.PictureHeight = image.Height;
+                    }
+                    catch (OverflowException)
+                    {
+                        model.PictureWidth = image.Width;
+                        model.PictureHeight = image.Height;
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        model.PictureWidth = image.Width;
+                        model.PictureHeight = image.Height;
+                    }
+                    catch (NullReferenceException)
+                    {
+                        model.PictureWidth = image.Width;
+                        model.PictureHeight = image.Height;
+                    }
+                }
+                else
+                {
+                    model.PictureWidth = image.Width;
+                    model.PictureHeight = image.Height;
+
+                }
+                if (model.PictureRotation != null)
+                {
+                    if (model.PictureRotation != 0)
+                    {
+                        image.Rotate((int)model.PictureRotation);
+                    }
+
+                }
+
+                if (model.PictureWidth > 600)
+                {
+                    int newWidth = 600;
+                    int newHeight = (int)((600 / model.PictureWidth) * model.PictureHeight);
+
+                    image.Resize(newWidth, newHeight);
+                }
+
+                image.Strip();
+
+                using (MemoryStream memStream = new MemoryStream())
+                {
+                    image.Write(memStream);
+                    memStream.Position = 0;
+                    model.PictureLink600 = await _imageStore.SaveImage(memStream);
+                }
+
+                // image.Write(_hostingEnv.WebRootPath + $@"\photodb\{model.ProgenyId}\600\" + fileName);
+
+            }
+
+            using (MagickImage image = new MagickImage(memoryStream))
+            {
+                if (model.PictureRotation != null)
+                {
+                    if (model.PictureRotation != 0)
+                    {
+                        image.Rotate((int)model.PictureRotation);
+                    }
+
+                }
+
+                if (model.PictureWidth > 1200)
+                {
+                    int newWidth = 1200;
+                    int newHeight = (int)((1200 / model.PictureWidth) * model.PictureHeight);
+
+                    image.Resize(newWidth, newHeight);
+                }
+
+                image.Strip();
+                // image.Write(_hostingEnv.WebRootPath + $@"\photodb\{model.ProgenyId}\1200\" + fileName);
+                using (MemoryStream memStream = new MemoryStream())
+                {
+                    image.Write(memStream);
+                    memStream.Position = 0;
+                    model.PictureLink1200 = await _imageStore.SaveImage(memStream);
+                }
+            }
+
+            if (model.PictureTime != null)
+            {
+                model.PictureTime = TimeZoneInfo.ConvertTimeToUtc(model.PictureTime.Value,
+                    TimeZoneInfo.FindSystemTimeZoneById(model.TimeZone));
+            }
+
+            if (model.Longtitude != "" && model.Latitude != "")
+            {
+                model.Location = model.Latitude + ", " + model.Longtitude;
+            }
+
+            CommentThread commentThread = new CommentThread();
+            await _context.CommentThreadsDb.AddAsync(commentThread);
+            await _context.SaveChangesAsync();
+            commentThread.CommentThreadId = commentThread.Id;
+            _context.CommentThreadsDb.Update(commentThread);
+            await _context.SaveChangesAsync();
+            model.CommentThreadNumber = commentThread.CommentThreadId;
+
+            await _context.PicturesDb.AddAsync(model);
+            await _context.SaveChangesAsync();
+            
+            return Ok(model);
+        }
+
+        // PUT api/pictures/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(int id, [FromBody] Picture value)
+        {
+            Picture picture = await _context.PicturesDb.SingleOrDefaultAsync(p => p.PictureId == id);
+
+            // Todo: more validation of the values
+            if (picture == null)
+            {
+                return NotFound();
+            }
+
+            picture.Location = value.Location;
+            picture.Tags = value.Tags;
+            picture.AccessLevel = value.AccessLevel;
+            picture.Altitude = value.Altitude;
+            picture.Author = value.Author;
+            picture.PictureTime = value.PictureTime;
+            picture.Latitude = value.Latitude;
+            picture.Longtitude = value.Longtitude;
+            picture.PictureLink600 = value.PictureLink600;
+            picture.PictureLink1200 = value.PictureLink1200;
+            picture.PictureLink = value.PictureLink;
+            
+            _context.PicturesDb.Update(picture);
+            await _context.SaveChangesAsync();
+
+            return Ok(picture);
+        }
+
+        // DELETE api/progeny/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            Picture picture = await _context.PicturesDb.SingleOrDefaultAsync(p => p.PictureId == id);
+            if (picture != null)
+            {
+                // Todo: Delete content associated with picture, i.e. comments.
+
+                if (!picture.PictureLink.ToLower().StartsWith("http"))
+                {
+                    await _imageStore.DeleteImage(picture.PictureLink);
+                    await _imageStore.DeleteImage(picture.PictureLink600);
+                    await _imageStore.DeleteImage(picture.PictureLink1200);
+                }
+                _context.PicturesDb.Remove(picture);
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            else
+            {
+                return NotFound();
+            }
+
+        }
+
+        // GET api/pictures/random/[Progeny id]?accessLevel=5
+        [HttpGet]
+        [Route("[action]/{progenyId}/{accessLevel}")]
+        public async Task<IActionResult> Random(int progenyId, int accessLevel)
+        {
+            List<Picture> picturesList = await _context.PicturesDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel).ToListAsync();
+            if (picturesList.Any())
+            {
+                int pictureNumber = 0;
+                Random r = new Random();
+                pictureNumber = r.Next(0, picturesList.Count);
+
+                Picture picture = picturesList[pictureNumber];
+
+                return Ok(picture);
+            }
+
+            Progeny progeny = new Progeny();
+            progeny.Name = "Kina Una";
+            progeny.Admins = "per.mogensen@live.com";
+            progeny.NickName = "Kina Una";
+            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+
+            progeny.Id = 0;
+            progeny.TimeZone = "Romance Standard Time";
+            Picture tempPicture = new Picture();
+            tempPicture.ProgenyId = 0;
+            tempPicture.Progeny = progeny ;
+            tempPicture.AccessLevel = 5;
+            tempPicture.PictureLink600 = $"https://{this.Request.Host}{this.Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.ProgenyId = progeny.Id;
+            tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
+            return Ok(tempPicture);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<IActionResult> SyncAll()
+        {
+
+            HttpClient picturesHttpClient = new HttpClient();
+
+            picturesHttpClient.BaseAddress = new Uri("https://kinauna.com");
+            picturesHttpClient.DefaultRequestHeaders.Accept.Clear();
+            picturesHttpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            // GET api/pictures/[id]
+            string picturesApiPath = "/api/azureexport/picturesexport";
+            var picturesUri = "https://kinauna.com" + picturesApiPath;
+
+            var picturesResponseString = await picturesHttpClient.GetStringAsync(picturesUri);
+
+            List<OldPictureDto> picturesList = JsonConvert.DeserializeObject<List<OldPictureDto>>(picturesResponseString);
+            List<Picture> addedPictures = new List<Picture>();
+            foreach (OldPictureDto pic in picturesList)
+            {
+                Picture tempPicture = await _context.PicturesDb.SingleOrDefaultAsync(l => l.PictureId == pic.PictureId);
+                if (tempPicture == null)
+                {
+                    Picture newPicture = new Picture();
+                    newPicture.AccessLevel = pic.AccessLevel;
+                    newPicture.Owners = pic.Owners;
+                    newPicture.PictureHeight = pic.PictureHeight;
+                    newPicture.PictureRotation = pic.PictureRotation;
+                    newPicture.PictureTime = pic.PictureTime;
+                    newPicture.PictureWidth = pic.PictureWidth;
+                    newPicture.ProgenyId = pic.ProgenyId;
+                    newPicture.CommentThreadNumber = pic.CommentThreadNumber;
+                    newPicture.Tags = pic.Tags;
+                    newPicture.Author = pic.Author;
+                    newPicture.Altitude = pic.Altitude;
+                    newPicture.Location = pic.Location;
+                    newPicture.Latitude = pic.Latitude;
+                    newPicture.Longtitude = pic.Longtitude;
+                    newPicture.PictureLink = "https://" + pic.PictureLink;
+                    newPicture.PictureLink600 = "https://" + pic.PictureLink.Insert(pic.PictureLink.LastIndexOf('/'), "/600"); ;
+                    newPicture.PictureLink1200 = "https://" + pic.PictureLink.Insert(pic.PictureLink.LastIndexOf('/'), "/1200"); ;
+                    await _context.PicturesDb.AddAsync(newPicture);
+                    addedPictures.Add(newPicture);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(addedPictures);
+        }
+
+        [HttpGet]
+        [Route("[action]/{pictureId}")]
+        public async Task<IActionResult> DownloadPicture(int pictureId)
+        {
+            Picture picture = await _context.PicturesDb.SingleOrDefaultAsync(p => p.PictureId == pictureId);
+            if (picture != null && picture.PictureLink.ToLower().StartsWith("http"))
+            {
+                using (Stream stream = GetStreamFromUrl(picture.PictureLink))
+                {
+                    picture.PictureLink = await _imageStore.SaveImage(stream);
+                }
+
+                using (Stream stream = GetStreamFromUrl(picture.PictureLink600))
+                {
+                    picture.PictureLink600 = await _imageStore.SaveImage(stream);
+                }
+
+                using (Stream stream = GetStreamFromUrl(picture.PictureLink1200))
+                {
+                    picture.PictureLink1200 = await _imageStore.SaveImage(stream);
+                }
+
+                _context.PicturesDb.Update(picture);
+                await _context.SaveChangesAsync();
+                return Ok(picture);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        private static Stream GetStreamFromUrl(string url)
+        {
+            byte[] imageData = null;
+
+            using (var wc = new System.Net.WebClient())
+                imageData = wc.DownloadData(url);
+
+            return new MemoryStream(imageData);
+        }
+    }
+}

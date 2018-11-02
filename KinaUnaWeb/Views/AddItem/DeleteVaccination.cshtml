@@ -1,0 +1,18 @@
+﻿@model KinaUnaWeb.Models.Vaccination
+<H4>Delete Vaccination @Model.VaccinationDate</H4>
+<form asp-action="DeleteVaccination" role="form" method="post">
+    <div>
+        Are you sure you want to delete @Model.VaccinationName ?
+    </div>
+    <br/>
+    <div>Description: @Model.VaccinationDescription</div>
+    <br/>
+    <div>
+        Notes: @Model.Notes
+    </div>
+    <br/>
+    <div>Date: @Model.VaccinationDate.ToString("dd-MMM-yyyy")</div>
+    <br />
+    <input asp-for="VaccinationId" class="form-control" value="@Model.VaccinationId" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="Vaccinations" asp-action="Index">Cancel</a></div>
+</form>

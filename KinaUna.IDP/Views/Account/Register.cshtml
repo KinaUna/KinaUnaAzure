@@ -1,0 +1,76 @@
+﻿@model KinaUna.IDP.Models.AccountViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+<br/>
+<div class="container">
+    <div class="row">
+        <div class="col-md-10">
+            <form asp-controller="Account" asp-action="Register" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                <h4>CREATE A NEW ACCOUNT</h4>
+                <div asp-validation-summary="All" class="text-danger"></div>
+                @*<div class="row">
+                    <div class="form-group col-sm-8">
+                        <label asp-for="User.UserName" class="control-label form-label">USER NAME</label>
+                        <input asp-for="User.UserName" class="form-control form-input" />
+                        <span asp-validation-for="User.UserName" class="text-danger" />
+                    </div>
+                    <div class="form-group col-sm-8">
+                        <label asp-for="User.FirstName" class="control-label form-label">FIRST NAME</label>
+                        <input asp-for="User.FirstName" class="form-control form-input" />
+                        <span asp-validation-for="User.FirstName" class="text-danger" />
+                    </div>
+                    <div class="form-group col-sm-8">
+                        <label asp-for="User.MiddleName" class="control-label form-label">MIDDLE NAME</label>
+                        <input asp-for="User.MiddleName" class="form-control form-input" />
+                        <span asp-validation-for="User.MiddleName" class="text-danger" />
+                    </div>
+                    <div class="form-group col-sm-8">
+                        <label asp-for="User.LastName" class="control-label form-label">LAST NAME</label>
+                        <input asp-for="User.LastName" class="form-control form-input" />
+                        <span asp-validation-for="User.LastName" class="text-danger" />
+                    </div>
+                    <div class="form-group col-sm-8">
+                        <label asp-for="User.PhoneNumber" class="control-label form-label">PHONE NUMBER</label>
+                        <input asp-for="User.PhoneNumber" class="form-control form-input" />
+                        <span asp-validation-for="User.PhoneNumber" class="text-danger" />
+                    </div>
+
+                </div>
+                <br /><br />*@
+                <div class="form-group">
+                        <label>Email</label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-sm-offset-6"></div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm pasword</label>
+                        <input asp-for="ConfirmPassword" class="form-control" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Time Zone</label>
+                        <div>
+                            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="8" asp-for="TimeZone" asp-items="@Model.TimezoneList"></select>
+                        </div>
+                    </div>
+                <br />
+                <div class="form-group">
+                    <a class="btn btn-info leavePage" style="float: right;" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]">&nbsp;Back to Login&nbsp;</a>
+                    <button type="submit" class="btn btn-success leavePage">&nbsp;Register&nbsp;</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
+

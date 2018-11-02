@@ -1,0 +1,21 @@
+﻿<div class="container">
+    <br />
+    <div class="row">
+        <br />
+        <div class="col-sm-10">
+            <br />
+            <h1>
+                <img class="icon" src="~/icon.jpg">
+                Welcome to KinaUna Identity Server
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div>@User.Identity.Name</div>
+                }
+                @*<small>(build {version})</small>*@
+            </h1>
+        </div>
+        <br />
+    </div>
+    <br />
+</div>
+<br />

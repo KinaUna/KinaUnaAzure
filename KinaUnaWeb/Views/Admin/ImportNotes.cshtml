@@ -1,0 +1,18 @@
+﻿@model List<Note>
+@{
+    ViewData["Title"] = "Import Notes Result";
+}
+
+<h2>Import Notes Result</h2>
+
+@if (Model.Any())
+{
+    foreach (Note nte in Model)
+    {
+        <div>Id: @nte.NoteId, ProgenyId: @nte.ProgenyId</div>
+    }
+}
+else
+{
+    <div>No locations updated</div>
+}

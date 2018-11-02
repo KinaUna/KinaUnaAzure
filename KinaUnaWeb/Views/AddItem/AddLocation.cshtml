@@ -1,0 +1,363 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
+@section Scripts{
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
+    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.common-nova.min.css" />
+    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.nova.min.css" />
+    <script src="/lib/moment.min.js"></script>
+    <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.all.min.js"></script>
+    <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.aspnetmvc.min.js"></script>
+    <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
+    <script src="https://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://js.api.here.com/v3/3.0/mapsjs-ui.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
+}
+<button onclick="geoFindMe()" class="btn btn-info" style="float: right;" id="getLocation">Copy my current location</button>
+<H4>Add Location</H4>
+<div id="out"></div>
+<form asp-action="AddLocation" role="form" method="post" enctype="multipart/form-data">
+
+    @if (Model.ProgenyList.Count > 1)
+    {
+        <div class="form-group">
+            <label class="control-label col-sm-3">Add Location for</label>
+            <div class="col-lg-9">
+                <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="form-group">
+            <label class="control-label col-sm-3">Add Location for</label>
+            <div class="col-lg-9">
+                <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+            </div>
+            <input asp-for="ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+        </div>
+    }
+    <div class="form-group">
+        <label asp-for="Name" class="col-lg-3 col-sm-3 control-label">Name or Label</label>
+        <div class="col-lg-9">
+            <input id="nameText" asp-for="Name" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="StreetName" class="col-lg-3 col-sm-3 control-label">Street</label>
+        <div class="col-lg-9">
+            <input id="streetText" asp-for="StreetName" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="HouseNumber" class="col-lg-3 col-sm-3 control-label">House Number</label>
+        <div class="col-lg-9">
+            <input id="houseNumberText" asp-for="HouseNumber" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="District" class="col-lg-3 col-sm-3 control-label">District</label>
+        <div class="col-lg-9">
+            <input id="disctrictText" asp-for="District" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="City" class="col-lg-3 col-sm-3 control-label">City</label>
+        <div class="col-lg-9">
+            <input id="cityText" asp-for="City" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="PostalCode" class="col-lg-3 col-sm-3 control-label">Postal Code</label>
+        <div class="col-lg-9">
+            <input id="postalCodeText" asp-for="PostalCode" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="County" class="col-lg-3 col-sm-3 control-label">County</label>
+        <div class="col-lg-9">
+            <input id="countyText" asp-for="County" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="State" class="col-lg-3 col-sm-3 control-label">State</label>
+        <div class="col-lg-9">
+            <input id="stateText" asp-for="State" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Country" class="col-lg-3 col-sm-3 control-label">Country</label>
+        <div class="col-lg-9">
+            <input id="countryText" asp-for="Country" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Latitude" class="col-lg-3 col-sm-3 control-label">Latitude</label>
+        <div class="col-lg-9">
+            <input id="latitudeText" asp-for="Latitude" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Longitude" class="col-lg-3 col-sm-3 control-label">Longitude</label>
+        <div class="col-lg-9">
+            <input id="longitudeText" asp-for="Longitude" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Date" class="col-lg-3 col-sm-3 control-label">Date</label>
+        <div class="col-8 col-xs-7 col-sm-6 col-md-4">
+            <div class="input-group date">
+                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text"
+                       class="form-control" data-zdp_readonly_element="false" asp-for="Date" value="@Model.Date.Value.ToString("dd-MMM-yyyy HH:mm")"/>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            $('#datetimepicker1').Zebra_DatePicker({
+                format: 'd-M-Y H:i',
+                open_icon_only: true
+            });
+        });
+    </script>
+    <div class="form-group">
+        <label asp-for="Notes" class="col-lg-3 col-sm-3 control-label"></label>
+        <div class="col-lg-9">
+            <input asp-for="Notes" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-lg-3 col-sm-2 control-label">Tags</label>
+        <div class="col-lg-10 col-md-10 col-sm-10">
+            <input id="tagList" type="text" asp-for="Tags" class="form-control" style="width: 100%; background: #e8fdd0" />
+        </div>
+        <script>
+            $(document).ready(function() {
+                var data = @Html.Raw(Model.TagsList);
+
+                $("#tagList").kendoAutoComplete({
+                    dataSource: data,
+                    filter: "contains",
+                    placeholder: "Add tag...",
+                    separator: ", "
+                });
+            });
+        </script>
+    </div>
+    <div class="form-group">
+        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Access Level</label>
+        <div class="col-lg-9">
+            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+        </div>
+    </div>
+    <div>
+        <div class="form-group">
+            <div class="col-lg-3 col-sm-3 control-label"></div>
+            <div class="col-lg-9">
+                <button class="btn btn-success" type="submit">Save</button>
+                <a class="btn btn-danger" asp-controller="Locations" asp-action="Index">Cancel</a>
+            </div>
+        </div>
+    </div>
+</form>
+<div>Click on the map below to get location information.</div>
+<div style="width: 100%; height: 480px" id="mapContainer"></div>
+<script>
+    function setUpClickListener(map) {
+        // Attach an event listener to map display
+        // obtain the coordinates and display in an alert box.
+        map.addEventListener('tap', function (evt) {
+            var zoomLevel = map.getZoom() + 1;
+            if (zoomLevel > 20) {
+                zoomLevel = 20;
+            }
+            map.setZoom(zoomLevel, true);
+            var coord = map.screenToGeo(evt.currentPointer.viewportX,
+                evt.currentPointer.viewportY);
+            map.setCenter(coord, true);
+            
+            var geocoder = platform.getGeocodingService();
+            var reverseGeocodingParameters = {
+                prox: coord.lat +', ' + coord.lng + ', 32',
+                mode: 'retrieveAddresses',
+                maxresults: 1
+            };
+            geocoder.reverseGeocode(
+                reverseGeocodingParameters,
+                onGeoSuccess,
+                function (e) { console.log('Error in Reverse Geocode: ' + e); }
+            );
+            $("#latitudeText").val(coord.lat);
+            $("#longitudeText").val(coord.lng);
+            //alert('Clicked at ' + Math.abs(coord.lat.toFixed(4)) +
+            //    ((coord.lat > 0) ? 'N' : 'S') +
+            //    ' ' + Math.abs(coord.lng.toFixed(4)) +
+            //    ((coord.lng > 0) ? 'E' : 'W'));
+        });
+    }
+
+    var platform = new H.service.Platform({
+        'app_id': 'bJjORf0UVOc5U4LjADgX',
+        'app_code': 'GNDm65qsmujcmIK9-2X_Uw',
+        'useHTTPS': true
+    });
+    var pixelRatio = window.devicePixelRatio || 1;
+    var maptypes = platform.createDefaultLayers({
+        tileSize: pixelRatio === 1 ? 256 : 512,
+        ppi: pixelRatio === 1 ? undefined : 320
+    });
+    
+    var map = new H.Map(document.getElementById('mapContainer'),
+        maptypes.normal.map,
+        {
+            zoom: 3,
+            center: { lng: @Model.Longitude, lat: @Model.Latitude },
+            pixelRatio: pixelRatio
+        });
+    @*map.addObject(new H.map.Marker({ lng: @Model.Longtitude, lat: @Model.Latitude}));*@
+    var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+
+    setUpClickListener(map);
+
+    var ui = H.ui.UI.createDefault(map, maptypes);
+    
+    function onGeoSuccess(result) {
+        var location = result.Response.View[0].Result[0];
+        var contextText = "";
+        var streetName = "";
+        var houseNumber = "";
+        var districtName = "";
+        var cityName = "";
+        var postalCode = "";
+        var countyName = "";
+        var stateName = "";
+        if (location.Location.Address.Street !== undefined) {
+            streetName = location.Location.Address.Street;
+            contextText = contextText + location.Location.Address.Street;
+            $("#streetText").val(streetName);
+        }
+        if (location.Location.Address.HouseNumber !== undefined) {
+            houseNumber = location.Location.Address.HouseNumber;
+            contextText = contextText + location.Location.Address.HouseNumber;
+            $("#houseNumberText").val(houseNumber);
+        }
+        if (location.Location.Address.District !== undefined) {
+            districtName = location.Location.Address.District;
+            if (districtName != streetName) {
+                contextText = contextText + " " + location.Location.Address.District;
+            }
+            $("#disctrictText").val(districtName);
+        }
+        if (location.Location.Address.City !== undefined) {
+            cityName = location.Location.Address.City;
+            if (cityName != districtName && districtName.indexOf(cityName) < 0) {
+                contextText = contextText + ", " + location.Location.Address.City;
+            }
+            $("#cityText").val(cityName);
+        }
+        if (location.Location.Address.PostalCode !== undefined) {
+            postalCode = location.Location.Address.PostalCode;
+            $("#postalCodeText").val(postalCode);
+        }
+        if (location.Location.Address.County !== undefined) {
+            countyName = location.Location.Address.County;
+            if (countyName != cityName && cityName.indexOf(countyName) < 0 && countyName.indexOf(cityName) < 0) {
+                contextText = contextText + ", " + location.Location.Address.County;
+            }
+            $("#countyText").val(countyName);
+        }
+        if (location.Location.Address.State !== undefined) {
+            stateName = location.Location.Address.State;
+            if (stateName != cityName && stateName != countyName) {
+                contextText = contextText + ", " + location.Location.Address.State;
+            }
+            $("#stateText").val(stateName);
+        }
+        if (location.Location.Address.AdditionalData[0].value !== undefined) {
+            contextText = contextText + ", " + location.Location.Address.AdditionalData[0].value;
+            $("#countryText").val(location.Location.Address.AdditionalData[0].value);
+        }
+        contextText = contextText.replace(/(^,)|(,$)/g, "").trim();
+        
+        ui.addBubble(new H.ui.InfoBubble({
+            lat: location.Location.DisplayPosition.Latitude,
+            lng: location.Location.DisplayPosition.Longitude
+        }, { content:  contextText }));
+    };
+
+    function geoFindMe() {
+        var output = document.getElementById("out");
+
+        if (!navigator.geolocation){
+            output.innerHTML = "<p>Geolocation is not supported by your browser</p>";
+            return;
+        }
+
+        function success(position) {
+            var latitude  = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            output.innerHTML = '<p>Latitude: ' + latitude + '°, Longitude: ' + longitude + '° copied to the form below.</p>';
+            var zoomLevel = 14;
+            map.setZoom(zoomLevel, true);
+            map.setCenter({lat: latitude, lng: longitude}, true);
+            var geocoder = platform.getGeocodingService();
+            var reverseGeocodingParameters = {
+                prox: latitude + ', ' + longitude + ', 32',
+                mode: 'retrieveAddresses',
+                maxresults: 1
+            };
+            geocoder.reverseGeocode(
+                reverseGeocodingParameters,
+                onGeoSuccess,
+                function (e) { console.log('Error in Reverse Geocode: ' + e); }
+            );
+            $("#latitudeText").val(latitude);
+            $("#longitudeText").val(longitude);
+            
+        }
+
+        function error() {
+            output.innerHTML = "Unable to retrieve your location";
+        }
+
+        output.innerHTML = "<p>Locating…</p>";
+
+        navigator.geolocation.getCurrentPosition(success, error);
+    }
+</script>
+<script>
+    $(document).ready(function () {
+        $("form").submit(function () {
+            var currentEffect = 'roundBounce';
+            runWaitMe(currentEffect);
+
+            function runWaitMe(effect) {
+                $('body').waitMe({
+                    //none, rotateplane, stretch, orbit, roundBounce, win8,
+                    //win8_linear, ios, facebook, rotation, timer, pulse,
+                    //progressBar, bouncePulse or img
+                    effect: 'roundBounce',
+                    //place text under the effect (string).
+                    text: '',
+                    //background for container (string).
+                    bg: 'rgba(255,255,255,0.7)',
+                    //color for background animation and text (string).
+                    color: '#3a2051',
+                    //max size
+                    maxSize: '',
+                    //wait time im ms to close
+                    waitTime: -1,
+                    //url to image
+                    source: '',
+                    //or 'horizontal'
+                    textPos: 'vertical',
+                    //font size
+                    fontSize: '',
+                    // callback
+                    onClose: function () { }
+                });
+            }
+        });
+    });
+</script>

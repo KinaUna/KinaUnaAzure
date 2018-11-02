@@ -1,0 +1,229 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.ContactViewModel
+@section Scripts{
+    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.common-nova.min.css" />
+    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.nova.min.css" />
+    <script src="/lib/moment.min.js"></script>
+    <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.all.min.js"></script>
+        <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.aspnetmvc.min.js"></script>
+    <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
+}
+<H4>Add Contact</H4>
+<form asp-action="AddContact" role="form" method="post" enctype="multipart/form-data">
+
+    @if (Model.ProgenyList.Count > 1)
+    {
+        <div class="form-group">
+            <label class="control-label col-sm-3">Add Contact for: </label>
+            <div class="col-lg-9">
+                <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="form-group">
+            <label class="control-label col-sm-3">Add contact for</label>
+            <div class="col-lg-9">
+                <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+            </div>
+            <input asp-for="ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+        </div>
+    }
+    <div class="form-group">
+        <label asp-for="FirstName" class="col-lg-3 col-sm-3 control-label">First Name</label>
+        <div class="col-lg-9">
+            <input asp-for="FirstName" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="MiddleName" class="col-lg-3 col-sm-3 control-label">Middle Name</label>
+        <div class="col-lg-9">
+            <input asp-for="MiddleName" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="LastName" class="col-lg-3 col-sm-3 control-label">Last Name</label>
+        <div class="col-lg-9">
+            <input asp-for="LastName" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="DisplayName" class="col-lg-3 col-sm-3 control-label">Display Name</label>
+        <div class="col-lg-9">
+            <input asp-for="DisplayName" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AddressLine1" class="col-lg-3 col-sm-3 control-label">Address Line 1</label>
+        <div class="col-lg-9">
+            <input asp-for="AddressLine1" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="AddressLine2" class="col-lg-3 col-sm-3 control-label">Address Line 2</label>
+        <div class="col-lg-9">
+            <input asp-for="AddressLine2" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="City" class="col-lg-3 col-sm-3 control-label">City</label>
+        <div class="col-lg-9">
+            <input asp-for="City" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="State" class="col-lg-3 col-sm-3 control-label">State/Region</label>
+        <div class="col-lg-9">
+            <input asp-for="State" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="PostalCode" class="col-lg-3 col-sm-3 control-label">Postal Code</label>
+        <div class="col-lg-9">
+            <input asp-for="PostalCode" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Country" class="col-lg-3 col-sm-3 control-label">Country</label>
+        <div class="col-lg-9">
+            <input asp-for="Country" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Email1" class="col-lg-3 col-sm-3 control-label">Email 1</label>
+        <div class="col-lg-9">
+            <input asp-for="Email1" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Email2" class="col-lg-3 col-sm-3 control-label">Email 2</label>
+        <div class="col-lg-9">
+            <input asp-for="Email2" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="PhoneNumber" class="col-lg-3 col-sm-3 control-label">Phone Number</label>
+        <div class="col-lg-9">
+            <input asp-for="PhoneNumber" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="MobileNumber" class="col-lg-3 col-sm-3 control-label">Mobile Number</label>
+        <div class="col-lg-9">
+            <input asp-for="MobileNumber" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-lg-3 col-sm3 control-label">Picture</label>
+        <div class="col-lg-9">
+            <div class="fileinput fileinput-new text-center" data-provides="fileinput">
+                <div class="fileinput-new thumbnail img-raised">
+                    <img src="~/images/images_placeholder.png" alt="...">
+                </div>
+                <div class="fileinput-preview fileinput-exists thumbnail img-raised"></div>
+                <div>
+                    <div class="btn btn-primary btn-round btn-file ">
+                        <span data-trigger="fileinput" class="fileinput-new">Select image</span>
+                        <span class="fileinput-exists">Change</span>
+                        <input type="file" name="File" accept="image/*" />
+                    </div>
+                    <br />
+                    <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
+                        <i class="fa fa-times"></i> Remove
+                    </a>
+                </div>
+                <div>
+                    <br />Note: Photos may appear rotated here. If it contains metadata about rotation, it will automatically be rotated after uploading it.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Website" class="col-lg-3 col-sm-3 control-label">Website</label>
+        <div class="col-lg-9">
+            <input asp-for="Website" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Context" class="col-lg-3 col-sm-3 control-label">Context</label>
+        <div class="col-lg-9">
+            <input asp-for="Context" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Notes" class="col-lg-3 col-sm-3 control-label">Notes</label>
+        <div class="col-lg-9">
+            <textarea rows="4" asp-for="Notes" class="form-control"></textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-lg-3 col-sm-2 control-label">Tags</label>
+        <div class="col-lg-10 col-md-10 col-sm-10">
+            <input id="tagList" type="text" asp-for="Tags" value="@Model.Tags" class="form-control" style="width: 100%; background: #e8fdd0" />
+        </div>
+        <script>
+            $(document).ready(function() {
+                var data = @Html.Raw(ViewBag.TagsList);
+
+                $("#tagList").kendoAutoComplete({
+                    dataSource: data,
+                    filter: "contains",
+                    placeholder: "Add tag...",
+                    separator: ", "
+                });
+            });
+        </script>
+    </div>
+    <div class="form-group">
+        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Access Level</label>
+        <div class="col-lg-9">
+            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+        </div>
+    </div>
+    <div>
+        <input asp-for="Active" value="true" hidden />
+        <div class="form-group">
+            <div class="col-lg-3 col-sm-3 control-label"></div>
+            <div class="col-lg-9">
+                <button class="btn btn-success" type="submit">Save</button>
+                <a class="btn btn-danger" asp-controller="Contacts" asp-action="Index">Cancel</a>
+            </div>
+
+        </div>
+    </div>
+</form>
+<script>
+    $(document).ready(function () {
+        $("form").submit(function () {
+            var currentEffect = 'roundBo unce';
+            runWaitMe(currentEffect);
+
+            function runWaitMe(effect) {
+                $('body').waitMe({
+                    //none, rotateplane, stretch, orbit, roundBounce, win8,
+                    //win8_linear, ios, facebook, rotation, timer, pulse,
+                    //progressBar, bouncePulse or img
+                    effect: 'roundBounce',
+                    //place text under the effect (string).
+                    text: '',
+                    //background for container (string).
+                    bg: 'rgba(255,255,255,0.7)',
+                    //color for background animation and text (string).
+                    color: '#3a2051',
+                    //max size
+                    maxSize: '',
+                    //wait time im ms to close
+                    waitTime: -1,
+                    //url to image
+                    source: '',
+                    //or 'horizontal'
+                    textPos: 'vertical',
+                    //font size
+                    fontSize: '',
+                    // callback
+                    onClose: function () { }
+                });
+            }
+        });
+    });
+</script>

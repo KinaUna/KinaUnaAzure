@@ -1,0 +1,12 @@
+﻿@using KinaUnaWeb.Models
+@model KinaUnaWeb.Models.FileItem
+<H4>Delete File?</H4>
+<form asp-action="DeleteFile" role="form" method="post">
+    <div>
+        Are you sure you want to delete the file: @Model.FileAddress ?
+    </div>
+    <br />
+    <input asp-for="UserId" class="form-control" value="@Model.UserId" type="hidden" />
+    <input asp-for="FileName" class="form-control" value="@Model.FileName" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="MyData" asp-action="Index">Cancel</a></div>
+</form>

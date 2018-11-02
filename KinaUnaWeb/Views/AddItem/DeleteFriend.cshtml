@@ -1,0 +1,19 @@
+﻿@using KinaUnaWeb.Models
+@model KinaUnaWeb.Models.Friend
+<H4>Delete Friend: @Model.Name</H4>
+<form asp-action="DeleteFriend" role="form" method="post">
+    <div >
+        Are you sure you want to delete @Model.Name?
+    </div>
+    <br/>
+    <div>
+        <img src="@Model.PictureLink"/>
+    </div>
+    <br/>
+    <div>
+        Description: @Model.Description
+    </div>
+    <br />
+    <input asp-for="FriendId" class="form-control" value="@Model.FriendId" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="Friends" asp-action="Index">Cancel</a></div>
+</form>

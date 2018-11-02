@@ -1,0 +1,103 @@
+﻿@model KinaUnaWeb.Models.HomeViewModels.HomeFeedViewModel
+@{
+    ViewData["Title"] = "Home";
+}
+<div class="container">
+    <div class="row">
+        <div class="col-10 col-md-8" style="margin-bottom: 10px; float: left; padding-left: 25px;">
+            <H4>
+                <img src="~/images/KinaUnaLogo_246x80.png" />
+            </H4>
+            <br />
+            <div class="row">
+                <div style="margin-left: 10px;">
+                    @if (User.Identity.IsAuthenticated && ViewBag.OriginalProgeny != null)
+                    {
+                        <div>You do not have access to @ViewBag.OriginalProgeny.NickName's information.<br />
+                            
+                            To request access click here:  <a asp-controller="Home" asp-action="RequestAccess" asp-route-childId="@ViewBag.OriginalProgeny.Id" class="btn btn-success btn-round leavePage">
+                                <i class="fas fa-plus"></i> Request Access
+                            </a><br />
+                            Displaying KinaUna.com's information instead.<br/>
+                        </div>
+                    }
+                    <div style="font-size: 16px;">
+                        <div>@Model.Progeny.NickName is now @Model.Years years old.</div>
+                        <div>@Model.Progeny.NickName is now @Model.Months months old.</div>
+                        <div>@Model.Progeny.NickName is now @Model.Weeks[0] weeks and @Model.Weeks[1] days old.</div>
+                        <div>@Model.Progeny.NickName is now @Model.Days days old.</div>
+                        <div>@Model.Progeny.NickName is now @Model.Hours hours old.</div>
+                        <div>@Model.Progeny.NickName is now @Model.Minutes minutes old.</div>
+                        <br/>
+                        <div>@Model.Progeny.NickName's next birthday is in @Model.NextBirthday days.</div>
+                    </div>
+                    <br/>
+                    <div style="font-size: 16px;">
+                        <div>@Model.Progeny.NickName will be @Model.WeeksMileStone[0] weeks: @Model.WeeksMileStone[1]</div>
+                        <div>@Model.Progeny.NickName will be @Model.DaysMileStone[0] days: @Model.DaysMileStone[1]</div>
+                        <div>@Model.Progeny.NickName will be @Model.HoursMileStone[0] hours: @Model.HoursMileStone[1]</div>
+                        <div>@Model.Progeny.NickName will be @Model.MinutesMileStone[0] minutes: @Model.MinutesMileStone[1]</div>
+                    </div>
+                    <br/><br/>
+                    <div>
+                        <a asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.ImageId" asp-route-childId="@Model.Progeny.Id" class="leavePage">
+                            <img src="@Model.ImageLink600" style="width: 100%; max-width: 100%"/>
+                        </a>
+
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Tags))
+                    {
+                        <div>
+                            @{
+                                List<string> tagsList = Model.Tags.Split(',').ToList();
+                                foreach (string tagString in tagsList)
+                                {
+                                    <a asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                                }
+                            }
+                        </div>
+
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Location))
+                    {
+                        <br/><div>Photo Location: @Model.Location</div><br/>
+                    }
+                    @if (Model.PicTimeValid)
+                    {
+                        <div style="font-size: 16px;">
+
+                            <div>Photo taken: @Model.PicTime</div>
+                            <div>@Model.Progeny.NickName was @Model.PicYears years old.</div>
+                            <div>@Model.Progeny.NickName was @Model.PicMonths months old.</div>
+                            <div>@Model.Progeny.NickName was @Model.PicWeeks[0] weeks and @Model.PicWeeks[1] days old.</div>
+                            <div>@Model.Progeny.NickName was @Model.PicDays days old.</div>
+                            <div>@Model.Progeny.NickName was @Model.PicHours hours old.</div>
+                            <div>@Model.Progeny.NickName was @Model.PicMinutes minutes old.</div>
+                        </div>
+
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-12 col-md-12 col-lg-4" style="float: right; margin-top: 10px; padding-left: 25px;">
+            @if (Model.EventsList.Any())
+            {
+                <div>
+                    Current and upcoming events:
+                </div>
+                await Html.RenderPartialAsync("EventsPartial", Model.EventsList);
+                <br />
+            }
+            @if (Model.LatestPosts.TimeLineItems.Any())
+            {
+                <div>
+                    Latest posts:
+                </div>
+                await Html.RenderPartialAsync("LatestPostsPartial", Model.LatestPosts);
+
+            }
+        </div>
+
+    </div>
+</div>
+<br />

@@ -1,0 +1,15 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.UploadPictureViewModel
+<br />
+@{ int fileCounter = 0;}
+@foreach (var file in Model.FileNames)
+{
+    <div style="margin: 20px;">
+        <H4>File @Model.FileNames[fileCounter] has been uploaded.</H4>
+        <div><img width="80%" src="@Model.FileLinks[fileCounter]" /></div>
+        @{ fileCounter++; }
+    </div>
+}
+<br />
+<div><a class="leavePage" asp-controller="AddItem" asp-action="AddPicture">Return to Picture Upload</a></div>
+<br />
+<div><a class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-childId="@Model.ProgenyId">Return to Photo Gallery</a></div>

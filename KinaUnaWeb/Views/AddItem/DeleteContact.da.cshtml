@@ -1,0 +1,12 @@
+﻿@model KinaUnaWeb.Models.Contact
+<H4>Slet kontakt: @Model.DisplayName</H4>
+<form asp-action="DeleteContact" role="form" method="post"> 
+    <div> Er du sikker på at du vil slette @Model.FirstName @Model.MiddleName @Model.LastName?</div>
+    <br/>
+    <div>
+        <img src="@Model.PictureLink" />
+    </div>
+    <br />
+    <input asp-for="ContactId" class="form-control" value="@Model.ContactId" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">Ja - slet</Button><a class="btn btn-danger leavePage" asp-controller="Contacts" asp-action="Index">Nej - fortryd</a></div>
+</form>

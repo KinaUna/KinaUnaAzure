@@ -1,0 +1,240 @@
+﻿using KinaUnaWeb.Data;
+using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.ItemViewModels;
+using KinaUnaWeb.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace KinaUnaWeb.Controllers
+{
+    public class LocationsController : Controller
+    {
+        private readonly WebDbContext _context;
+        private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IMediaHttpClient _mediaHttpClient;
+        private int _progId = 2;
+        private bool _userIsProgenyAdmin = false;
+        private readonly string _defaultUser = "testuser@niviaq.com";
+
+        public LocationsController(WebDbContext context, IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient)
+        {
+            _context = context;
+            _progenyHttpClient = progenyHttpClient;
+            _mediaHttpClient = mediaHttpClient;
+        }
+        [AllowAnonymous]
+        public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, string tagFilter = "")
+        {
+            _progId = childId;
+            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
+            if (string.IsNullOrEmpty(userTimeZone))
+            {
+                userTimeZone = "Romance Standard Time";
+            }
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (childId == 0 && userinfo.ViewChild > 0)
+            {
+                _progId = userinfo.ViewChild;
+            }
+
+            if (_progId == 0)
+            {
+                _progId = 2;
+            }
+
+            Progeny progeny = new Progeny();
+            progeny = await _progenyHttpClient.GetProgeny(_progId);
+            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+
+            int userAccessLevel = 5;
+
+            if (accessList.Count != 0)
+            {
+                UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId == userEmail);
+                if (userAccess != null)
+                {
+                    userAccessLevel = userAccess.AccessLevel;
+                }
+            }
+
+            if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
+            {
+                _userIsProgenyAdmin = true;
+                userAccessLevel = 0;
+            }
+
+            List<string> tagsList = new List<string>();
+
+            var locationsList = _context.LocationsDb.Where(l => l.ProgenyId == _progId).OrderBy(l => l.Date).ToList();
+            if (!string.IsNullOrEmpty(tagFilter))
+            {
+                locationsList = _context.LocationsDb.Where(l => l.ProgenyId == _progId && l.Tags.Contains(tagFilter)).OrderBy(l => l.Date).ToList();
+            }
+            locationsList = locationsList.OrderBy(l => l.Date).ToList();
+
+            LocationViewModel model = new LocationViewModel();
+
+            model.IsAdmin = _userIsProgenyAdmin;
+            model.Progeny = progeny;
+
+            if (locationsList.Any())
+            {
+                model.LocationsList = new List<Location>();
+                foreach (Location loc in locationsList)
+                {
+                    if (loc.AccessLevel == 5 || loc.AccessLevel >= userAccessLevel)
+                    {
+                        model.LocationsList.Add(loc);
+                        if (!String.IsNullOrEmpty(loc.Tags))
+                        {
+                            List<string> locTags = loc.Tags.Split(',').ToList();
+                            foreach (string tagstring in locTags)
+                            {
+                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                                {
+                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            string tList = "";
+            foreach (string tstr in tagsList)
+            {
+                tList = tList + tstr + ",";
+            }
+            model.Tags = tList.TrimEnd(',');
+            
+            if (sortBy == 1)
+            {
+                model.LocationsList.Reverse();
+            }
+
+            model.SortBy = sortBy;
+            model.TagFilter = tagFilter;
+            return View(model);
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> PhotoLocations(int childId = 0, string tagFilter = "")
+        {
+            _progId = childId;
+            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
+            if (string.IsNullOrEmpty(userTimeZone))
+            {
+                userTimeZone = "Romance Standard Time";
+            }
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (childId == 0 && userinfo.ViewChild > 0)
+            {
+                _progId = userinfo.ViewChild;
+            }
+
+            Progeny progeny = new Progeny();
+            progeny = await _progenyHttpClient.GetProgeny(_progId);
+            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+
+            int userAccessLevel = 5;
+
+            if (accessList.Count != 0)
+            {
+                UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId == userEmail);
+                if (userAccess != null)
+                {
+                    userAccessLevel = userAccess.AccessLevel;
+                }
+            }
+
+            if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
+            {
+                _userIsProgenyAdmin = true;
+                userAccessLevel = 0;
+            }
+            
+            LocationViewModel model = new LocationViewModel();
+            model.LocationsList = new List<Location>();
+            List<string> tagsList = new List<string>();
+            model.ProgenyId = _progId;
+            model.Progeny = progeny;
+            List<Picture> pictures = await _mediaHttpClient.GetPictureList(progeny.Id, userAccessLevel, userinfo.Timezone); ;
+            if (String.IsNullOrEmpty(tagFilter))
+            {
+                pictures = pictures.FindAll(p => !string.IsNullOrEmpty(p.Longtitude));
+            }
+            else
+            {
+                pictures = pictures.FindAll(p =>
+                    !string.IsNullOrEmpty(p.Longtitude) && p.Tags.ToUpper().Contains(tagFilter.ToUpper()));
+            }
+            pictures = pictures.OrderBy(p => p.PictureTime).ToList();
+            List<Picture> locPictures = new List<Picture>();
+            foreach (Picture pic in pictures)
+            {
+                Location picLoc = new Location();
+                bool validCoords = true;
+                double lat;
+                if (double.TryParse(pic.Latitude, NumberStyles.AllowDecimalPoint, new CultureInfo("en-US"), out lat))
+                {
+                    picLoc.Latitude = lat;
+                }
+                else
+                {
+                    validCoords = false;
+                }
+
+                double lon;
+                if (double.TryParse(pic.Longtitude, NumberStyles.AllowDecimalPoint, new CultureInfo("en-US"), out lon))
+                {
+                    picLoc.Longitude = lon;
+                }
+                else
+                {
+                    validCoords = false;
+                }
+
+                if (validCoords && (pic.AccessLevel == 5 || pic.AccessLevel >= userAccessLevel))
+                {
+                    picLoc.LocationId = pic.PictureId;
+                    model.LocationsList.Add(picLoc);
+                    locPictures.Add(pic);
+                }
+            }
+
+            if (model.LocationsList.Any())
+            {
+                foreach (Picture locPic in locPictures)
+                {
+                    if (!String.IsNullOrEmpty(locPic.Tags))
+                    {
+                        List<string> locTags = locPic.Tags.Split(',').ToList();
+                        foreach (string tagstring in locTags)
+                        {
+                            if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                            {
+                                tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                            }
+                        }
+                    }
+                }
+            }
+
+            string tList = "";
+            foreach (string tstr in tagsList)
+            {
+                tList = tList + tstr + ",";
+            }
+            model.Tags = tList.TrimEnd(',');
+            model.TagFilter = tagFilter;
+            return View(model);
+        }
+    }
+}

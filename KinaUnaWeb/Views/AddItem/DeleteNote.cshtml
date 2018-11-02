@@ -1,0 +1,15 @@
+﻿@using KinaUnaWeb.Models
+@model KinaUnaWeb.Models.Note
+<H4>Delete Note: @Model.Title</H4>
+<form asp-action="DeleteNote" role="form" method="post">
+    <div>
+        Are you sure you want to delete @Model.Title?
+    </div>
+    <br/>
+    <div>
+        Content: @Model.Content
+    </div>
+    <br />
+    <input asp-for="NoteId" class="form-control" value="@Model.NoteId" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="Notes" asp-action="Index">Cancel</a></div>
+</form>

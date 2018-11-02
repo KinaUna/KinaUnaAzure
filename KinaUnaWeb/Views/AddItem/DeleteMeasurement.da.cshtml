@@ -1,0 +1,23 @@
+﻿@using KinaUnaWeb.Models
+@model KinaUnaWeb.Models.Measurement
+<H4>Slet måling fra @Model.Date</H4>
+<form asp-action="DeleteMeasurement" role="form" method="post">
+    <div>
+        Er du sikker på at du vil slette målingen fra @Model.Date?
+    </div>
+    <br/>
+    <div>
+        Højde: @Model.Height
+    </div>
+    <br/>
+    <div>
+        Vægt: @Model.Weight
+    </div>
+    <br/>
+    <div>Hårfarve: @Model.HairColor</div>
+    <br/>
+    <div>Øjenfarve: @Model.EyeColor</div>
+<br />
+    <input asp-for="MeasurementId" class="form-control" value="@Model.MeasurementId" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">Ja - slet</Button><a class="btn btn-danger leavePage" asp-controller="Measurements" asp-action="Index">Nej - fortryd</a></div>
+</form>

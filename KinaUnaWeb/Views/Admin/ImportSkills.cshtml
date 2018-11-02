@@ -1,0 +1,18 @@
+﻿@model List<Skill>
+@{
+    ViewData["Title"] = "Import Skills Result";
+}
+
+<h2>Import Skills Result</h2>
+
+@if (Model.Any())
+{
+    foreach (Skill skl in Model)
+    {
+        <div>Id: @skl.SkillId, ProgenyId: @skl.ProgenyId</div>
+    }
+}
+else
+{
+    <div>No locations updated</div>
+}

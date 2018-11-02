@@ -1,0 +1,14 @@
+﻿@model KinaUnaWeb.Models.Sleep
+<H4>Delete sleep record from @Model.SleepStart to @Model.SleepEnd</H4>
+<form asp-action="DeleteSleep" role="form" method="post">
+    <div>
+        Are you sure you want to delete the sleep record from @Model.SleepStart to @Model.SleepEnd?
+    </div>
+    <br/>
+    <div>
+        Notes: @Model.SleepNotes
+    </div>
+    <br />
+    <input asp-for="SleepId" class="form-control" value="@Model.SleepId" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="Sleep" asp-action="Index">Cancel</a></div>
+</form>

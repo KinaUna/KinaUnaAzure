@@ -1,0 +1,39 @@
+﻿@using KinaUnaWeb.Models
+@model KinaUnaWeb.Models.Location
+<H4>Delete Event @Model.Name</H4>
+<form asp-action="DeleteLocation" role="form" method="post">
+    <div>
+        Are you sure you want to delete @Model.Name ?
+    </div>
+    <div>Latitude: @Model.Latitude, Longitude: @Model.Longitude</div>
+    <br />
+    <br />
+    @if(Model.Date != null)
+    {
+    <div>Date: @Model.Date.Value</div>
+    }
+    <br />
+    <div>Street Name: @Model.StreetName</div>
+    <br />
+    <div>House Number: @Model.HouseNumber</div>
+    <br />
+    <div>District: @Model.District</div>
+    <br />
+    <div>City: @Model.City</div>
+    <br />
+    <div>Postal Code: @Model.PostalCode</div>
+    <br />
+    <div>County: @Model.County</div>
+    <br />
+    <div>State: @Model.State</div>
+    <br />
+    <div>Country: @Model.Country</div>
+    <br />
+    <div>
+        Notes: @Model.Notes
+    </div>
+    <br />
+
+    <input asp-for="LocationId" class="form-control" value="@Model.LocationId" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="Locations" asp-action="Index">Cancel</a></div>
+</form>

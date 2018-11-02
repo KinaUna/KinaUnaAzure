@@ -1,0 +1,18 @@
+﻿@model List<Address>
+@{
+    ViewData["Title"] = "Import Adresses Result";
+}
+
+<h2>Import Addresses Result</h2>
+
+@if (Model.Any())
+{
+    foreach (Address adr in Model)
+    {
+        <div>Id: @adr.AddressId</div>
+    }
+}
+else
+{
+    <div>No locations updated</div>
+}

@@ -1,0 +1,14 @@
+﻿@model KinaUnaWeb.Models.Sleep
+<H4>Slet søvn fra @Model.SleepStart til @Model.SleepEnd</H4>
+<form asp-action="DeleteSleep" role="form" method="post">
+    <div>
+        Er du sikker på at du vil slette søvn fra @Model.SleepStart til @Model.SleepEnd
+    </div>
+    <br/>
+    <div>
+        Noter: @Model.SleepNotes
+    </div>
+    <br />
+    <input asp-for="SleepId" class="form-control" value="@Model.SleepId" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">Ja - slet</Button><a class="btn btn-danger leavePage" asp-controller="Sleep" asp-action="Index">Nej - fortryd</a></div>
+</form>

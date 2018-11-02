@@ -1,0 +1,18 @@
+﻿@model List<Vaccination>
+@{
+    ViewData["Title"] = "Import Vaccinations Result";
+}
+
+<h2>Import Vaccinations Result</h2>
+
+@if (Model.Any())
+{
+    foreach (Vaccination vac in Model)
+    {
+        <div>Id: @vac.VaccinationId, ProgenyId: @vac.ProgenyId</div>
+    }
+}
+else
+{
+    <div>No locations updated</div>
+}

@@ -1,0 +1,18 @@
+﻿@model List<TimeLineItem>
+@{
+    ViewData["Title"] = "Import TimeLine Result";
+}
+
+<h2>Import TimeLine Result</h2>
+
+@if (Model.Any())
+{
+    foreach (TimeLineItem tli in Model)
+    {
+        <div>Id: @tli.TimeLineId, ProgenyId: @tli.ProgenyId</div>
+    }
+}
+else
+{
+    <div>No locations updated</div>
+}

@@ -1,0 +1,13 @@
+﻿@model KinaUnaWeb.Models.Progeny
+<H3 class="title">Delete Profile for @Model.NickName</H3>
+<form asp-action="DeleteProgeny" role="form">
+    <div class="modal-body form-horizontal">
+        Are you sure you want to delete @Model.Name?
+    </div>
+    <div>
+        Birthday: @Model.BirthDay
+    </div>
+    <div>All data for this child will be deleted, including pictures, videos, calendar events, vocabulary, skills, friends, notes, measurements, sleep, notes, contacts, and vaccinations. </div>
+    <input asp-for="Id" class="form-control" value="@Model.Id" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">Cancel</a></div>
+</form>

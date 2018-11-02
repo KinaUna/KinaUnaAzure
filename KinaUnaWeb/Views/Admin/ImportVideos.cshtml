@@ -1,0 +1,18 @@
+﻿@model List<Video>
+@{
+    ViewData["Title"] = "Import Videos Result";
+}
+
+<h2>Import Videos Result</h2>
+
+@if (Model.Any())
+{
+    foreach (Video vid in Model)
+    {
+        <div>Id: @vid.VideoId, Link: @vid.VideoLink, ProgenyId: @vid.ProgenyId</div>
+    }
+}
+else
+{
+    <div>No videos updated</div>
+}

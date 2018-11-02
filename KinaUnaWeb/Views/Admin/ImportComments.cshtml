@@ -1,0 +1,18 @@
+﻿@model List<Comment>
+@{
+    ViewData["Title"] = "Import Comments Result";
+}
+
+<h2>Import Comments Result</h2>
+
+@if (Model.Any())
+{
+    foreach (Comment cmt in Model)
+    {
+        <div>Id: @cmt.CommentId, Text: @cmt.CommentText, Thread: @cmt.CommentThreadNumber</div>
+    }
+}
+else
+{
+    <div>No comments updated</div>
+}

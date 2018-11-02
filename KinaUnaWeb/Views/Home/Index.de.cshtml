@@ -1,0 +1,88 @@
+﻿@model KinaUnaWeb.Models.HomeViewModels.HomeFeedViewModel
+@{
+    ViewData["Title"] = "Home";
+}
+<div class="container">
+    <div class="row">
+        <div class="col-10 col-md-8" style="margin-bottom: 10px; float: left; padding-left: 25px;">
+            <H4>
+                <img src="~/images/KinaUnaLogo_246x80.png" />
+            </H4>
+            <br />
+            <div class="row">
+                <div style="margin-left: 10px;">
+                    <div style="font-size: 16px;">
+                        <div>@Model.Progeny.NickName ist jetzt @Model.Years Jahre alt.</div>
+                        <div>@Model.Progeny.NickName ist jetzt @Model.Months Monate alt.</div>
+                        <div>@Model.Progeny.NickName ist jetzt @Model.Weeks[0] Wochen und @Model.Weeks[1] Tage alt.</div>
+                        <div>@Model.Progeny.NickName ist jetzt @Model.Days Tage alt.</div>
+                        <div>@Model.Progeny.NickName ist jetzt @Model.Hours Stunden alt.</div>
+                        <div>@Model.Progeny.NickName ist jetzt @Model.Minutes Minuten alt.</div>
+                        <br />
+                        <div>@Model.Progeny.NickName hat in @Model.NextBirthday Tagen Geburtstag.</div>
+                    </div>
+                    <br />
+                    <div style="font-size: 16px;">
+                        <div>@Model.Progeny.NickName wird @Model.WeeksMileStone[0] Wochen alt: @Model.WeeksMileStone[1]</div>
+                        <div>@Model.Progeny.NickName wird @Model.DaysMileStone[0] Tage alt: @Model.DaysMileStone[1]</div>
+                        <div>@Model.Progeny.NickName wird @Model.HoursMileStone[0] Stunden alt: @Model.HoursMileStone[1]</div>
+                        <div>@Model.Progeny.NickName wird @Model.MinutesMileStone[0] Minuten alt: @Model.MinutesMileStone[1]</div>
+                    </div>
+                    <br /><br />
+                    <div>
+                        <a asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.ImageId" asp-route-childId="@Model.Progeny.Id" class="leavePage">
+                            <img src="@Model.ImageLink600" style="width: 100%; max-width: 100%" />
+                        </a>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Tags))
+                    {
+                        <div>
+                            @{
+                                List<string> tagsList = Model.Tags.Split(',').ToList();
+                                foreach (string tagString in tagsList)
+                                {
+                                    <a asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                                }
+                            }
+                        </div>
+
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Location))
+                    {
+                        <br /><div>Foto Ort: @Model.Location</div><br />
+                    }
+                    @if (Model.PicTimeValid)
+                    {
+                        <div style="font-size: 16px;">
+                            <div>Dieses Foto ist vom: @Model.PicTime</div>
+                            <div>@Model.Progeny.NickName war @Model.PicYears Jahre alt.</div>
+                            <div>@Model.Progeny.NickName war @Model.PicMonths Monate alt.</div>
+                            <div>@Model.Progeny.NickName war @Model.PicWeeks[0] Wochen und @Model.PicWeeks[1] Tage alt.</div>
+                            <div>@Model.Progeny.NickName war @Model.PicDays Tage alt.</div>
+                            <div>@Model.Progeny.NickName war @Model.PicHours Stunden alt.</div>
+                            <div>@Model.Progeny.NickName war @Model.PicMinutes Minuten alt.</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-12 col-md-12 col-lg-4" style="float: right; margin-top: 10px; padding-left: 25px;">
+            @if (Model.EventsList.Any())
+            {
+                <div>
+                    Kommende Events:
+                </div>
+                await Html.RenderPartialAsync("EventsPartial", Model.EventsList);
+                <br />
+            }
+            @if (Model.LatestPosts.TimeLineItems.Any())
+            {
+                <div>
+                    Neueste Beiträge:
+                </div>
+                await Html.RenderPartialAsync("LatestPostsPartial", Model.LatestPosts);
+
+            }
+        </div>
+    </div>
+</div>

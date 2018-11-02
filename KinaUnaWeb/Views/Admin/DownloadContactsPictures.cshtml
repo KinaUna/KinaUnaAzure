@@ -1,0 +1,24 @@
+﻿@using KinaUnaWeb.Controllers
+@model List<Contact>
+@{
+    ViewData["Title"] = "Download Contacts Pictures Result";
+}
+@{ int remaining = ViewBag.Remaining - Model.Count(); }
+<h2>Download Contacts Pictures Result</h2>
+<div>Contacts updated: @Model.Count</div>
+<div>Contacts remaining: @remaining</div><br/>
+@if (Model.Any())
+{
+
+    foreach (Contact cnt in Model)
+    {
+        <div>Id: @cnt.ContactId</div>
+        <div>Name: @cnt.DisplayName@*<img src="@cnt.PictureLink" />*@</div>
+        <br/>
+    }
+}
+else
+{
+    <div>No contacts updated</div>
+}
+<div><a asp-action="Index">Back to Admin</a></div>
