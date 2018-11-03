@@ -28,6 +28,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int VideoType { get; set; }
         public string Tags { get; set; }
         public string TagFilter { get; set; }
+        public string TagsList { get; set; }
         public string DurationHours { get; set; }
         public string DurationMinutes { get; set; }
         public string DurationSeconds { get; set; }

@@ -148,7 +148,8 @@ namespace KinaUnaMediaApi.Controllers
                 model.PictureNumber = 1;
                 model.PictureCount = 1;
                 model.CommentsList = await _context.CommentsDb.Where(c => c.CommentThreadNumber == picture.CommentThreadNumber).ToListAsync();
-                
+                model.TagsList = "";
+                List<string> tagsList = new List<string>();
                 List<Picture> pictureList = await _context.PicturesDb.AsNoTracking()
                     .Where(p => p.ProgenyId == picture.ProgenyId && p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToListAsync();
                 if (pictureList.Any())
@@ -162,6 +163,17 @@ namespace KinaUnaMediaApi.Controllers
                             currentIndex = indexer;
                         }
                         indexer++;
+                        if (!String.IsNullOrEmpty(pic.Tags))
+                        {
+                            List<string> pvmTags = pic.Tags.Split(',').ToList();
+                            foreach (string tagstring in pvmTags)
+                            {
+                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                                {
+                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                                }
+                            }
+                        }
                     }
                     model.PictureNumber = currentIndex + 1;
                     model.PictureCount = pictureList.Count;
@@ -191,7 +203,19 @@ namespace KinaUnaMediaApi.Controllers
                     }
                    
                 }
+                string tagItems = "[";
+                if (tagsList.Any())
+                {
+                    foreach (string tagstring in tagsList)
+                    {
+                        tagItems = tagItems + "'" + tagstring + "',";
+                    }
 
+                    tagItems = tagItems.Remove(tagItems.Length - 1);
+                    tagItems = tagItems + "]";
+                }
+
+                model.TagsList = tagItems;
                 return Ok(model);
             }
 

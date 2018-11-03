@@ -258,7 +258,7 @@
                 </div>
                 <script>
                     $(document).ready(function() {
-                        var data = @Html.Raw(ViewBag.TagsList);
+                        var data = @Html.Raw(Model.TagsList);
 
                         $("#tagList").kendoAutoComplete({
                             dataSource: data,
@@ -281,7 +281,7 @@
                     <div class="input-group date">
                         <input style="width: 300px;" id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm:ss" type="text"
                                class="form-control" data-zdp_readonly_element="false" asp-for="PictureTime"
-                               value="@Model.PictureTime.Value.ToString("dd-MMM-yyyy HH:mm:ss")" />
+                               value="@Model.PictureTime?.ToString("dd-MMM-yyyy HH:mm:ss")" />
                     </div>
                 </div>
             </div>

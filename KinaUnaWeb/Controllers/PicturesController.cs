@@ -154,6 +154,7 @@ namespace KinaUnaWeb.Controllers
             model.AccessLevelListDe[picture.AccessLevel].Selected = true;
             model.CommentThreadNumber = picture.CommentThreadNumber;
             model.Tags = picture.Tags;
+            model.TagsList = picture.TagsList;
             model.Location = picture.Location;
             model.Latitude = picture.Latitude;
             model.Longtitude = picture.Longtitude;

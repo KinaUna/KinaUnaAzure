@@ -31,6 +31,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int CommentsCount { get; set; }
         public string Tags { get; set; }
         public string TagFilter { get; set; }
+        public string TagsList { get; set; }
         public string Location { get; set; }
         public string Longtitude { get; set; }
         public string Latitude { get; set; }

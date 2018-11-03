@@ -144,6 +144,7 @@ namespace KinaUnaWeb.Controllers
             model.AccessLevelListDe[video.AccessLevel].Selected = true;
             model.CommentThreadNumber = video.CommentThreadNumber;
             model.Tags = video.Tags;
+            model.TagsList = video.TagsList;
             model.Location = video.Location;
             model.Latitude = video.Latitude;
             model.Longtitude = video.Longtitude;

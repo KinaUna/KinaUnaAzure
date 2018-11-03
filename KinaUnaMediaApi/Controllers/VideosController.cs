@@ -167,11 +167,26 @@ namespace KinaUnaMediaApi.Controllers
                 model.Longtitude = video.Longtitude;
                 model.Latitude = video.Latitude;
                 model.Altitude = video.Latitude;
-
+                model.TagsList = "";
+                List<string> tagsList = new List<string>();
                 List<Video> videosList = await _context.VideoDb
                     .Where(p => p.ProgenyId == video.ProgenyId && p.AccessLevel >= accessLevel).ToListAsync();
                 if (videosList.Any())
                 {
+                    foreach (Video vid in videosList)
+                    {
+                        if (!String.IsNullOrEmpty(vid.Tags))
+                        {
+                            List<string> pvmTags = vid.Tags.Split(',').ToList();
+                            foreach (string tagstring in pvmTags)
+                            {
+                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                                {
+                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                                }
+                            }
+                        }
+                    }
                     videosList = videosList.OrderBy(p => p.VideoTime).ToList();
                     int currentIndex = videosList.IndexOf(video);
                     model.VideoNumber = currentIndex + 1;
@@ -202,6 +217,19 @@ namespace KinaUnaMediaApi.Controllers
                     }
                    
                 }
+                string tagItems = "[";
+                if (tagsList.Any())
+                {
+                    foreach (string tagstring in tagsList)
+                    {
+                        tagItems = tagItems + "'" + tagstring + "',";
+                    }
+
+                    tagItems = tagItems.Remove(tagItems.Length - 1);
+                    tagItems = tagItems + "]";
+                }
+
+                model.TagsList = tagItems;
 
                 return Ok(model);
             }
