@@ -289,11 +289,12 @@ namespace KinaUnaMediaApi.Controllers
 
                 await _context.VideoDb.AddAsync(model);
                 await _context.SaveChangesAsync();
+
+                return Ok(model);
             }
 
             model = vid;
 
-            
             return Ok(model);
         }
 

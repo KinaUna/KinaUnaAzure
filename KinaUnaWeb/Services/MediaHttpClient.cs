@@ -729,9 +729,9 @@ namespace KinaUnaWeb.Services
             string newVideoApiPath = "/api/videos/";
             var newVideoUri = clientUri + newVideoApiPath;
 
-            await newVideoHttpClient.PostAsync(newVideoUri, new StringContent(JsonConvert.SerializeObject(video), System.Text.Encoding.UTF8, "application/json")).Result.Content.ReadAsStringAsync();
-            newVideoUri = clientUri + "/api/videos/bylink/" + video.VideoLink + "/" + video.ProgenyId;
-            var newVideoResponseString = await newVideoHttpClient.GetStringAsync(newVideoUri);
+            var newVideoResponse = await newVideoHttpClient.PostAsync(newVideoUri, new StringContent(JsonConvert.SerializeObject(video), System.Text.Encoding.UTF8, "application/json"));
+            
+            var newVideoResponseString = await newVideoResponse.Content.ReadAsStringAsync();
             Video newVideo = JsonConvert.DeserializeObject<Video>(newVideoResponseString);
 
             return newVideo;
