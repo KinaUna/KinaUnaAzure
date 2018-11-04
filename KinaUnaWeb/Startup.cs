@@ -54,10 +54,10 @@ namespace KinaUnaWeb
             });
 
             services.AddDbContext<WebDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(Configuration["WebDefaultConnection"]));
 
             services.AddDbContext<ApplicationDbContext>(
-                options => options.UseSqlServer(Configuration.GetConnectionString("DataProtectionConnection")));
+                options => options.UseSqlServer(Configuration["DataProtectionConnection"]));
 
             services.AddSingleton<IXmlRepository, DataProtectionKeyRepository>();
             var built = services.BuildServiceProvider();
