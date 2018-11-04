@@ -41,7 +41,7 @@ namespace KinaUna.IDP
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
             
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+                options.UseSqlServer(Configuration["AuthDefaultConnection"],
                     sqlServerOptionsAction: sqlOptions =>
                     {
                         sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
@@ -126,14 +126,14 @@ namespace KinaUna.IDP
                 .AddConfigurationStore(options =>
                 {
                     options.ConfigureDbContext = builder =>
-                        builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+                        builder.UseSqlServer(Configuration["AuthDefaultConnection"],
                             sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
                 // this adds the operational data from DB (codes, tokens, consents)
                 .AddOperationalStore(options =>
                 {
                     options.ConfigureDbContext = builder =>
-                        builder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+                        builder.UseSqlServer(Configuration["AuthDefaultConnection"],
                             sql => sql.MigrationsAssembly(migrationsAssembly));
 
                     // this enables automatic token cleanup. this is optional.
