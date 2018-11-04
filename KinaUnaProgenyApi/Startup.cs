@@ -25,12 +25,12 @@ namespace KinaUnaProgenyApi
         {
             var authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
             var authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
-            var authenticationServerClientSecret = Configuration.GetValue<string>("AuthenticationServerClientSecret");
+            var authenticationServerClientSecret = Configuration["AuthenticationServerClientSecret"];
 
             services.AddSingleton<ImageStore>();
 
             services.AddDbContext<ProgenyDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(Configuration["ProgenyDefaultConnection"]));
             
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
