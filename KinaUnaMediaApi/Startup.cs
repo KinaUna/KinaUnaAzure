@@ -27,10 +27,10 @@ namespace KinaUnaMediaApi
         {
             var authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
             var authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
-            var authenticationServerClientSecret = Configuration.GetValue<string>("AuthenticationServerClientSecret");
+            var authenticationServerClientSecret = Configuration["AuthenticationServerClientSecret"];
 
             services.AddDbContext<MediaDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(Configuration["MediaDefaultConnection"]));
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
