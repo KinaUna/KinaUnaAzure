@@ -1,5 +1,4 @@
-﻿
-using IdentityServer4.Services;
+﻿using IdentityServer4.Services;
 using KinaUna.IDP;
 using KinaUna.IDP.Models;
 using KinaUna.IDP.Services;
@@ -10,20 +9,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 
-namespace Microsoft.eShopOnContainers.Services.Identity.API.Controllers
+namespace KinaUna.IDP.Controllers
 {
     public class HomeController : Controller
     {
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IOptionsSnapshot<AppSettings> _settings;
         private readonly IRedirectService _redirectSvc;
+        private readonly IHostingEnvironment _env;
 
-        public HomeController(IIdentityServerInteractionService interaction, IOptionsSnapshot<AppSettings> settings,IRedirectService redirectSvc)
+        public HomeController(IIdentityServerInteractionService interaction, IOptionsSnapshot<AppSettings> settings,IRedirectService redirectSvc, IHostingEnvironment env)
         {
             _interaction = interaction;
             _settings = settings;
             _redirectSvc = redirectSvc;
+            _env = env;
         }
 
         public IActionResult Index(string returnUrl)
@@ -73,12 +75,22 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult SetLanguage(string culture, string returnUrl)
         {
-            Response.Cookies.Append(
-                "KinaUnaLanguage",
-                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
-                new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = ".kinauna.com" }
-            );
-
+            if (_env.IsDevelopment())
+            {
+                Response.Cookies.Append(
+                    "KinaUnaLanguage",
+                    CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+                );
+            }
+            else
+            {
+                Response.Cookies.Append(
+                    "KinaUnaLanguage",
+                    CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = ".kinauna.com" }
+                );
+            }
             return Redirect(returnUrl);
         }
     }

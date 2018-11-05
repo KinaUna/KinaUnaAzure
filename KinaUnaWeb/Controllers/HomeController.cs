@@ -19,6 +19,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -32,9 +33,10 @@ namespace KinaUnaWeb.Controllers
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ImageStore _imageStore;
+        private readonly IHostingEnvironment _env;
         private readonly string _defaultUser = "testuser@niviaq.com";
         
-        public HomeController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, WebDbContext context, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, ImageStore imageStore)
+        public HomeController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, WebDbContext context, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, ImageStore imageStore, IHostingEnvironment env)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
@@ -42,6 +44,7 @@ namespace KinaUnaWeb.Controllers
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _imageStore = imageStore;
+            _env = env;
         }
 
         [AllowAnonymous]
@@ -265,14 +268,10 @@ namespace KinaUnaWeb.Controllers
                 HttpClient httpClient = new HttpClient();
                 string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
                 string accessToken = string.Empty;
-                // get the current HttpContext to access the tokens
                 var currentContext = _httpContextAccessor.HttpContext;
-                // get access token
-                // accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
                 accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
                 if (!string.IsNullOrWhiteSpace(accessToken))
                 {
-                    // set as Bearer token
                     httpClient.SetBearerToken(accessToken);
                 }
                 httpClient.BaseAddress = new Uri(clientUri);
@@ -286,7 +285,6 @@ namespace KinaUnaWeb.Controllers
                 string setChildApiPath = "/api/userinfo/" + userId;
                 var setChildUri = clientUri + setChildApiPath;
                 var setChildResponseString = await httpClient.PutAsJsonAsync(setChildUri, userinfo);
-                // ApplicationUser viewer = JsonConvert.DeserializeObject<ApplicationUser>(setChildResponseString);
             }
 
             return Redirect(returnUrl);
@@ -297,12 +295,22 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult SetLanguage(string culture, string returnUrl)
         {
+            if (_env.IsDevelopment())
+            {
                 Response.Cookies.Append(
-                "KinaUnaLanguage",
-                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
-                new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = ".kinauna.com" }
-            );
-            
+                    "KinaUnaLanguage",
+                    CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+                );
+            }
+            else
+            {
+                Response.Cookies.Append(
+                    "KinaUnaLanguage",
+                    CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = ".kinauna.com" }
+                );
+            }
             return Redirect(returnUrl);
         }
         

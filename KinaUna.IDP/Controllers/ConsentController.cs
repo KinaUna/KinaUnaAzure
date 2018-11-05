@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Microsoft.eShopOnContainers.Services.Identity.API.Controllers
+namespace KinaUna.IDP.Controllers
 {
     /// <summary>
     /// This controller implements the consent logic

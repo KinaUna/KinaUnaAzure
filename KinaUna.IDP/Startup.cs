@@ -84,19 +84,11 @@ namespace KinaUna.IDP
             });
 
             
-            //var identityServerCors = new DefaultCorsPolicyService(_loggerFactory.CreateLogger<DefaultCorsPolicyService>())
-            //{
-            //    AllowAll = true
-            //};
-            //services.AddSingleton<ICorsPolicyService>(identityServerCors);
-
-            //services.AddCors(o => o.AddPolicy("KinaUnaCors", builder =>
-            //{
-            //    builder.AllowAnyOrigin()
-            //        .AllowAnyMethod()
-            //        .AllowAnyHeader()
-            //        .AllowCredentials();
-            //}));
+            var identityServerCors = new DefaultCorsPolicyService(_loggerFactory.CreateLogger<DefaultCorsPolicyService>())
+            {
+                AllowAll = true
+            };
+            services.AddSingleton<ICorsPolicyService>(identityServerCors);
 
             X509Certificate2 cert = null;
             using (X509Store certStore = new X509Store(StoreName.My, StoreLocation.CurrentUser))
@@ -122,21 +114,21 @@ namespace KinaUna.IDP
                 })
                 .AddSigningCredential(cert)
                 .AddAspNetIdentity<ApplicationUser>()
-                // this adds the config data from DB (clients, resources)
+                // This adds the config data from DB (clients, resources)
                 .AddConfigurationStore(options =>
                 {
                     options.ConfigureDbContext = builder =>
                         builder.UseSqlServer(Configuration["AuthDefaultConnection"],
                             sql => sql.MigrationsAssembly(migrationsAssembly));
                 })
-                // this adds the operational data from DB (codes, tokens, consents)
+                // This adds the operational data from DB (codes, tokens, consents)
                 .AddOperationalStore(options =>
                 {
                     options.ConfigureDbContext = builder =>
                         builder.UseSqlServer(Configuration["AuthDefaultConnection"],
                             sql => sql.MigrationsAssembly(migrationsAssembly));
 
-                    // this enables automatic token cleanup. this is optional.
+                    // This enables automatic token cleanup. this is optional.
                     options.EnableTokenCleanup = true;
                     options.TokenCleanupInterval = 3600;
                 }).Services.AddTransient<IProfileService, ProfileService>();
@@ -145,7 +137,7 @@ namespace KinaUna.IDP
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            // this will do the initial DB population
+            // This will do the initial DB population
             bool resetDb = false;
             InitializeDatabase(app, resetDb);
 
@@ -154,7 +146,7 @@ namespace KinaUna.IDP
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseCors("KinaUnaCors");
+            app.UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 
             var supportedCultures = new[]
             {
