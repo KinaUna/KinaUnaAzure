@@ -75,13 +75,11 @@
 <script>
     document.domain = document.domain;
     var framed = window.frames.length + ':' + parent.frames.length;
-    console.log("Framed: " + framed);
     if (framed === '0:1') {
-        console.log("Window is not top windows Sending message to close frame to parent.");
         window.parent.postMessage("closeKinaUnaFrame", '*');
     }
 </script>
-<nav class="navbar navbar-expand-lg bg-primary fixed-top">
+<nav class="navbar navbar-expand-lg bg-primary fixed-top" id="navMain">
     <div class="container">
         @if (User.Identity.IsAuthenticated)
         {
@@ -302,7 +300,6 @@
     var checkFrameCount = 0;
     window.addEventListener('message',
         function (event) {
-            console.log("Received message: " + event.data + " From: " + event.origin);
             isAuthPage = false;
             if (~event.origin.indexOf('https://web.kinauna.com')) {
                 isAuthPage = true;
@@ -320,7 +317,6 @@
                     }
                 }
             }
-
             if (~event.origin.indexOf('https://auth.kinauna.com')) {
                 isAuthPage = true;
             } else if (~event.origin.indexOf('https://localhost:44397')) {
@@ -337,7 +333,6 @@
                         var iframe = document.getElementById('loginFrame');
                         iframe.contentWindow.postMessage('web', '*');
                         checkFrameCount++;
-                        console.log("checkFrameCount: " + checkFrameCount);
                         if (!isAuthPage && checkFrameCount > 2) {
                             console.log("Submitting LoginForm from checkFrame.");
                             document.getElementById('loginForm').submit();
@@ -398,11 +393,10 @@
 </footer>
 <br/><br/>
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         $(".leavePage").click(function() {
             $(this).closest(".dropdown-menu").prev().dropdown("toggle");
             runWaitMeLeave();
-
             function runWaitMeLeave() {
                 $('.body-content').waitMe({
                     effect: 'roundBounce',

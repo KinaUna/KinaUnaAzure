@@ -31,9 +31,11 @@
     @RenderSection("Scripts", required: false)
 </head>
 <body>
-    <div class="container body-content">
-        <div class="main main-raised" style="margin-top: 1px; margin-left: 5px; margin-right: 5px; padding: 5px; padding-left: 10px; padding-top: 1px;">
-            @RenderBody()
+    <div class="container">
+        <div class="main">
+            <div style="padding: 15px; background: white;">
+                @RenderBody()
+            </div>
         </div>
         <br />
         @{
