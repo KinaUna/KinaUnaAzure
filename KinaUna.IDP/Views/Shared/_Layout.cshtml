@@ -82,6 +82,7 @@
     </footer>
     <br /><br />
 <script>
+    document.domain = document.domain;
     window.addEventListener('message', function (event) {
         if (~event.origin.indexOf('https://web.kinauna.com')) {
             window.parent.postMessage("auth", '*');

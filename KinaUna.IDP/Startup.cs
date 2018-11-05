@@ -84,19 +84,19 @@ namespace KinaUna.IDP
             });
 
             
-            var identityServerCors = new DefaultCorsPolicyService(_loggerFactory.CreateLogger<DefaultCorsPolicyService>())
-            {
-                AllowAll = true
-            };
-            services.AddSingleton<ICorsPolicyService>(identityServerCors);
+            //var identityServerCors = new DefaultCorsPolicyService(_loggerFactory.CreateLogger<DefaultCorsPolicyService>())
+            //{
+            //    AllowAll = true
+            //};
+            //services.AddSingleton<ICorsPolicyService>(identityServerCors);
 
-            services.AddCors(o => o.AddPolicy("KinaUnaCors", builder =>
-            {
-                builder.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials();
-            }));
+            //services.AddCors(o => o.AddPolicy("KinaUnaCors", builder =>
+            //{
+            //    builder.AllowAnyOrigin()
+            //        .AllowAnyMethod()
+            //        .AllowAnyHeader()
+            //        .AllowCredentials();
+            //}));
 
             X509Certificate2 cert = null;
             using (X509Store certStore = new X509Store(StoreName.My, StoreLocation.CurrentUser))
@@ -154,7 +154,7 @@ namespace KinaUna.IDP
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCors("KinaUnaCors");
+            //app.UseCors("KinaUnaCors");
 
             var supportedCultures = new[]
             {
