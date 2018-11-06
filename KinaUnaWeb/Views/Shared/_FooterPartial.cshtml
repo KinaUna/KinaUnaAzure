@@ -1,0 +1,48 @@
+﻿@using Microsoft.AspNetCore.Http.Extensions
+@using Microsoft.AspNetCore.Localization
+@{ var returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl(); }
+@{
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    List<SelectListItem> cultureItems = new List<SelectListItem>();
+    SelectListItem selectEnglish = new SelectListItem();
+    selectEnglish.Text = "English";
+    selectEnglish.Value = "en-US";
+    SelectListItem selectDanish = new SelectListItem();
+    selectDanish.Text = "Dansk";
+    selectDanish.Value = "da-DK";
+    SelectListItem selectGerman = new SelectListItem();
+    selectGerman.Text = "Deutsch";
+    selectGerman.Value = "de-DE";
+    cultureItems.Add(selectEnglish);
+    cultureItems.Add(selectDanish);
+    cultureItems.Add(selectGerman);
+}
+<div class="container-fluid footer-brand" style="background: gainsboro;">
+    <div class="container">
+        <form id="selectLanguage" asp-controller="Home" asp-action="SetLanguage" asp-route-returnUrl="@returnUrl" method="post" class="form-horizontal" role="form">
+            <div class="form-row">
+                <div>
+                    <div class="btn btn-link disabled" style="color: black; padding: 0; padding-top: 22px; margin: 0; margin-right: 8px;"> Language/Sprache/Sprog: </div>
+                </div>
+                <div class="col-5 col-md-3 col-lg-2">
+                    <select title="Language/Sprache/Sprog" class="selectpicker" data-style="select-with-transition" data-size="3" name="culture" onchange="this.form.submit();" asp-for="@requestCulture.RequestCulture.UICulture.Name" asp-items="cultureItems"></select>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<footer>
+    <div class="container">
+        <br />
+        <br />
+        <ul>
+            <li> <a class="leavePage" asp-controller="Home" asp-action="Privacy">Cookies & Privacy Policy</a></li>
+            <li><a class="leavePage" asp-controller="Home" asp-action="Terms">Terms & Conditions</a></li>
+        </ul>
+    </div><br />
+</footer><br />
+<footer>
+    <div class="container" style="margin-bottom: 25px;">&copy; 2018 - KinaUna.com</div><br />
+</footer>
+<br /><br />
+<script src="~/js/gdpr.js"></script>

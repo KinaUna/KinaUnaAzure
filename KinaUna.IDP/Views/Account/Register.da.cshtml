@@ -1,6 +1,6 @@
 ﻿@model KinaUna.IDP.Models.AccountViewModels.RegisterViewModel
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Opret ny bruger";
 }
 <br/>
 <div class="container">
@@ -21,20 +21,20 @@
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
                     <div class="form-group">
-                        <label>Confirm pasword</label>
+                        <label>Gentag pasword</label>
                         <input asp-for="ConfirmPassword" class="form-control" />
                         <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                     </div>
                     <div class="form-group">
-                        <label>Time Zone</label>
+                        <label>Tidszone</label>
                         <div>
                             <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="8" asp-for="TimeZone" asp-items="@Model.TimezoneList"></select>
                         </div>
                     </div>
                 <br />
                 <div class="form-group">
-                    <a class="btn btn-info leavePage" style="float: right;" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]">&nbsp;Back to Login&nbsp;</a>
-                    <button type="submit" class="btn btn-success leavePage">&nbsp;Register&nbsp;</button>
+                    <a class="btn btn-info leavePage" style="float: right;" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]">&nbsp;Tilbage til Login&nbsp;</a>
+                    <button type="submit" class="btn btn-success leavePage">&nbsp;Opret&nbsp;</button>
                 </div>
 
             </form>
