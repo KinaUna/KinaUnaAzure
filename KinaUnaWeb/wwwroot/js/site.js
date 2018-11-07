@@ -47,6 +47,9 @@ window.addEventListener('message',
                 $(document.body).removeClass('modal-open');
                 $('.modal-backdrop').remove();
             }
+            if (event.data === "openModal") {
+                $('#loginModal').modal('show');
+            }
         } else if (~event.origin.indexOf('https://localhost:44397')) {
             isAuthPage = true;
             if (event.data === "closeModal") {
@@ -55,6 +58,9 @@ window.addEventListener('message',
                 $('#loginModal').modal('hide');
                 $(document.body).removeClass('modal-open');
                 $('.modal-backdrop').remove();
+            }
+            if (event.data === "openModal") {
+                $('#loginModal').modal('show');
             }
         } else {
             return;
