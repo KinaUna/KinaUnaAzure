@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using KinaUnaWeb.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -17,10 +19,12 @@ namespace KinaUnaWeb.Controllers
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IHostingEnvironment _env;
-        public AccountController(IProgenyHttpClient progenyHttpClient, IHostingEnvironment env)
+        private readonly ApplicationDbContext _appDbContext;
+        public AccountController(IProgenyHttpClient progenyHttpClient, IHostingEnvironment env, ApplicationDbContext appDbContext)
         {
             _progenyHttpClient = progenyHttpClient;
             _env = env;
+            _appDbContext = appDbContext;
         }
 
         [Authorize]
@@ -168,7 +172,20 @@ namespace KinaUnaWeb.Controllers
             }
 
             await _progenyHttpClient.UpdateUserInfo(userinfo);
-            
+
+            // Todo: This should be done via api instead of direct database access.
+            ApplicationUser user = await _appDbContext.Users.SingleOrDefaultAsync(u => u.Id == userinfo.UserId);
+            user.FirstName = userinfo.FirstName;
+            user.MiddleName = userinfo.MiddleName;
+            user.LastName = userinfo.LastName;
+            user.Email = userinfo.UserEmail;
+            user.EmailConfirmed = model.IsEmailConfirmed;
+            user.UserName = userinfo.UserName;
+            user.TimeZone = userinfo.Timezone;
+            _appDbContext.Users.Update(user);
+
+            await _appDbContext.SaveChangesAsync();
+            // Todo: If email changed, verify new email and update all references in access Lists.
             return View(model);
         }
     }

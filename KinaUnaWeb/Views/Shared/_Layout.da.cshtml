@@ -10,7 +10,7 @@
     <link href="~/lib/fa5_2_0/css/all.min.css" rel="stylesheet"/>
     <link href="~/css/waitMe.min.css" rel="stylesheet"/>
     <link href="~/css/material-kit.min.css?v=2.0.2" rel="stylesheet"/>
-    <link rel="stylesheet" href="~/css/site.css?v=1.13"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
     <script src="~/lib/jquery-3.3.1.min.js"></script>
     <script src="~/lib/popper.min.js"></script>
     <script src="~/lib/material-kit/bootstrap-material-design.min.js"></script>
@@ -66,215 +66,229 @@
     }
 }
 <body>
-<script>
-    
-    document.domain = document.domain;
-    var framed = window.frames.length + ':' + parent.frames.length;
-    if (framed === '0:1') {
-        window.parent.postMessage("closeKinaUnaFrame", '*');
-    }
-</script>
-<nav class="navbar navbar-expand-lg bg-primary fixed-top" id="navMain">
-    <div class="container">
-        @if (User.Identity.IsAuthenticated)
-        {
-            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage"><span style="color: #deb9ff">K</span><span style="color: gold;">ina Una</span><span class="fa fa-home" style="margin-left: 5px; color: gold;"></span></a>
+    <script>
+
+        document.domain = document.domain;
+        var framed = window.frames.length + ':' + parent.frames.length;
+        if (framed === '0:1') {
+            window.parent.postMessage("closeKinaUnaFrame", '*');
         }
-        else
-        {
-            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage">Kina Una <span class="fa fa-home" style="color: gold;"></span></a>
-        }
-        <div class="navbar-nav nav-item">
-            <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" href="https://@Context.Request.Host@Context.Request.GetEncodedPathAndQuery()">
-                <i class="fas fa-sync-alt" aria-hidden="true"></i>
-            </a>
-        </div>
-        @if (canUserAddItems)
-        {
-            <div class="navbar-nav nav-item">
-                <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" asp-area="" asp-controller="AddItem" asp-action="Index">
-                    <i class="fas fa-plus" aria-hidden="true"></i>
-                </a>
-            </div>
-        }
-        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarNavSegments" aria-controls="navbarNavSegments" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-            <span class="navbar-toggler-icon"></span>
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavSegments">
-            <div class="navbar-nav mr-auto mt-2 mt-lg-0">
-                @if (childList.Count > 1)
-                {
-                    <div class="navbar-nav nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="color: #8bda8b;">
-                            <span class="fa fa-child" style="color: #8bda8b;"></span> @child.NickName <span class="caret"></span>
-                        </a>
-                        <div class="dropdown-menu">
-                            @foreach (Progeny prog in childList)
-                            {
-                                if (prog.Id != child.Id)
-                                {
-                                    <div class="dropdown-item">
-                                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-userId="@userinfo.UserId" asp-route-userEmail="@userinfo.UserEmail" asp-route-returnUrl="@returnUrl" method="post">
-                                            <button type="submit" class="btn btn-link text-white text-left btn-block leavePage">
-                                                <span class="fa fa-child"></span> @prog.NickName
-                                            </button>
-                                        </form>
-                                    </div>
-                                }
-                            }
-                        </div>
-                    </div>
-                }
-                <div class="navbar-nav nav-item dropdown">
-                    <a class="dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                        <span class="fa fa-star"></span><span class="d-sm-inline d-md-inline d-lg-inline"> Vitae </span>
-                    </a>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Pictures" asp-action="Index" method="get">
-                                <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
-                                    <span class="far fa-images"></span><span> Foto</span>
-                                </button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Videos" asp-action="Index" asp-route-id="1" method="get">
-                                <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
-                                    <span class="fas fa-video"></span><span> Video</span>
-                                </button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Calendar" asp-action="Index" method="get">
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-calendar"></span> Kalender</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Locations" asp-action="Index" method="get">
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fas fa-map-marker-alt"></span> Steder</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Vocabulary" asp-action="Index" method="get">
-                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><span class="far fa-comment-alt"></span> Ord</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Skills" asp-action="Index" method="get">
-                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><span class="fa fa-graduation-cap"></span> Færdigheder</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Friends" asp-action="Index" method="get">
-                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><span class="fas fa-users"></span> Venner</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="nav-item dropdown">
-                    <a class="dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                        <span class="fa fa-list-alt"></span><span class="d-sm-inline d-md-inline d-lg-inline"> Notae </span>
-                    </a>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="TimeLine" asp-action="Index" method="get">
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fas fa-history"></span> Tidslinje</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Measurements" asp-action="Index" method="get">
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-weight"></span> Målinger</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Sleep" asp-action="Index" method="get">
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-bed"></span> Søvn</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Notes" asp-action="Index" method="get">
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-sticky-note"></span> Noter</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Contacts" asp-action="Index" method="get">
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-address-book"></span> Kontakter</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Vaccinations" asp-action="Index" method="get">
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-medkit"></span> Vaccinationer</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="nav-item">
-                    <a class="nav-link leavePage" asp-area="" asp-controller="Home" asp-action="About">
-                        <span class="fa fa-info-circle"></span><span class="d-sm-inline d-md-inline d-lg-inline"> Info</span>
-                    </a>
-                </div>
-            </div>
+    </script>
+    <nav class="navbar navbar-expand-lg bg-primary fixed-top" id="navMain">
+        <div class="container">
             @if (User.Identity.IsAuthenticated)
             {
-                <div class="navbar-nav">
-                    <div class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                            <span class="fas fa-user"></span> @usrName
-                        </a>
-                        <div class="dropdown-menu">
-                            @if (User.Identity.IsAuthenticated)
-                            {
-                                <div class="dropdown-item">
-                                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Family" asp-action="Index" method="get">
-                                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-child"></span> Min Familie</button>
-                                    </form>
-                                </div>
-                            }
-                            @if (User.IsInRole("SiteAdmin") || userinfo.UserEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
-                            {
-                                <div class="dropdown-item">
-                                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Admin" asp-action="Index" method="get">
-                                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-universal-access"></span> Admin</button>
-                                    </form>
-                                </div>
-                            }
-                            <div class="dropdown-item">
-                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="MyAccount" method="get">
-                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-cog"></span> Min Konto</button>
-                                </form>
-                            </div>
-                            <div class="dropdown-item">
-                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Logout" method="post" target="loginFrame">
-                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-power-off"></span> Log af</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage"><span style="color: #deb9ff">K</span><span style="color: gold;">ina Una</span><span class="fa fa-home" style="margin-left: 5px; color: gold;"></span></a>
             }
             else
             {
-                <div class="navbar-nav">
-                    <div class="nav-item">
-                        <form id="loginForm" class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Login" method="post" target="loginFrame">
-                            <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" data-toggle="modal" data-target="#loginModal"><span class="fas fa-sign-in-alt"></span> Login eller Opret bruger</button>
-                        </form>
-                    </div>
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage">Kina Una <span class="fa fa-home" style="color: gold;"></span></a>
+            }
+            <div class="navbar-nav nav-item">
+                <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" href="https://@Context.Request.Host@Context.Request.GetEncodedPathAndQuery()">
+                    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                </a>
+            </div>
+            @if (canUserAddItems)
+            {
+                <div class="navbar-nav nav-item">
+                    <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" asp-area="" asp-controller="AddItem" asp-action="Index">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                    </a>
                 </div>
             }
+            <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarNavSegments" aria-controls="navbarNavSegments" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+                <span class="navbar-toggler-icon"></span>
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavSegments">
+                <div class="navbar-nav mr-auto mt-2 mt-lg-0">
+                    @if (childList.Count > 1)
+                    {
+                        <div class="navbar-nav nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="color: #8bda8b;">
+                                <span class="fa fa-child" style="color: #8bda8b;"></span> @child.NickName <span class="caret"></span>
+                            </a>
+                            <div class="dropdown-menu">
+                                @foreach (Progeny prog in childList)
+                                {
+                                    if (prog.Id != child.Id)
+                                    {
+                                        <div class="dropdown-item">
+                                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-userId="@userinfo.UserId" asp-route-userEmail="@userinfo.UserEmail" asp-route-returnUrl="@returnUrl" method="post">
+                                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage">
+                                                    <span class="fa fa-child"></span> @prog.NickName
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                    <div class="navbar-nav nav-item dropdown">
+                        <a class="dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                            <span class="fa fa-star"></span><span class="d-sm-inline d-md-inline d-lg-inline"> Vitae </span>
+                        </a>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Pictures" asp-action="Index" method="get">
+                                    <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
+                                        <span class="far fa-images"></span><span> Foto</span>
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Videos" asp-action="Index" asp-route-id="1" method="get">
+                                    <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
+                                        <span class="fas fa-video"></span><span> Video</span>
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Calendar" asp-action="Index" method="get">
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-calendar"></span> Kalender</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Locations" asp-action="Index" method="get">
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fas fa-map-marker-alt"></span> Steder</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Vocabulary" asp-action="Index" method="get">
+                                    <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><span class="far fa-comment-alt"></span> Ord</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Skills" asp-action="Index" method="get">
+                                    <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><span class="fa fa-graduation-cap"></span> Færdigheder</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Friends" asp-action="Index" method="get">
+                                    <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><span class="fas fa-users"></span> Venner</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav-item dropdown">
+                        <a class="dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                            <span class="fa fa-list-alt"></span><span class="d-sm-inline d-md-inline d-lg-inline"> Notae </span>
+                        </a>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="TimeLine" asp-action="Index" method="get">
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fas fa-history"></span> Tidslinje</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Measurements" asp-action="Index" method="get">
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-weight"></span> Målinger</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Sleep" asp-action="Index" method="get">
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-bed"></span> Søvn</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Notes" asp-action="Index" method="get">
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-sticky-note"></span> Noter</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Contacts" asp-action="Index" method="get">
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-address-book"></span> Kontakter</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Vaccinations" asp-action="Index" method="get">
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-medkit"></span> Vaccinationer</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav-item">
+                        <a class="nav-link leavePage" asp-area="" asp-controller="Home" asp-action="About">
+                            <span class="fa fa-info-circle"></span><span class="d-sm-inline d-md-inline d-lg-inline"> Info</span>
+                        </a>
+                    </div>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div id="notificationsIcon" class="nav-item dropdown">
+                            <a id="notificationsButton" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                <span id="notificationBellIcon" class="fas fa-bell"></span> Meddelelser <span class="caret"></span>
+                            </a>
+                            <div id="notificationsMenu" class="dropdown-menu">
+                            </div>
+                        </div>
+                    }
+                </div>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div class="navbar-nav">
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                <span class="fas fa-user"></span> @usrName
+                            </a>
+                            <div class="dropdown-menu">
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    <div class="dropdown-item">
+                                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Family" asp-action="Index" method="get">
+                                            <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-child"></span> Min Familie</button>
+                                        </form>
+                                    </div>
+                                }
+                                @if (User.IsInRole("SiteAdmin") || userinfo.UserEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
+                                {
+                                    <div class="dropdown-item">
+                                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Admin" asp-action="Index" method="get">
+                                            <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-universal-access"></span> Admin</button>
+                                        </form>
+                                    </div>
+                                }
+                                <div class="dropdown-item">
+                                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="MyAccount" method="get">
+                                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-cog"></span> Min Konto</button>
+                                    </form>
+                                </div>
+                                <div class="dropdown-item">
+                                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Logout" method="post" target="loginFrame">
+                                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><span class="fa fa-power-off"></span> Log af</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="navbar-nav">
+                        <div class="nav-item">
+                            <form id="loginForm" class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Login" method="post" target="loginFrame">
+                                <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" data-toggle="modal" data-target="#loginModal"><span class="fas fa-sign-in-alt"></span> Login eller Opret bruger</button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
+    </nav>
+    <div class="container body-content">
+        <div class="main main-raised" style="margin-top: 10px; margin-left: 5px; margin-right: 5px; padding: 5px; padding-left: 10px; padding-top: 10px;">
+            @RenderBody()
+        </div>
+        <br />
     </div>
-</nav>
-<div class="container body-content">
-    <div class="main main-raised" style="margin-top: 10px; margin-left: 5px; margin-right: 5px; padding: 5px; padding-left: 10px; padding-top: 10px;">
-        @RenderBody()
-    </div>
-    <br/>
-</div>
+<script src="~/signalr/signalr.min.js"></script>
+<script src="~/signalr/msgpack5.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
-<partial name="_LoginModalPartial" />
-<partial name="_FooterPartial" />
+<script src="~/signalr/signalr-protocol-msgpack.min.js"></script>
+<script src="~/signalr/KinaUnaWebNotifications.js" asp-append-version="true"></script>
+    <partial name="_LoginModalPartial" />
+    <partial name="_FooterPartial" />
 </body>
 </html>

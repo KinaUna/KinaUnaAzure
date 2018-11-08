@@ -24,6 +24,7 @@ using Microsoft.Net.Http.Headers;
 using System;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
+using KinaUnaWeb.Hubs;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace KinaUnaWeb
@@ -159,6 +160,7 @@ namespace KinaUnaWeb
                 });
             services.AddAuthorization();
             services.AddKendo();
+            services.AddSignalR().AddMessagePackProtocol();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -201,21 +203,23 @@ namespace KinaUnaWeb
             localizationOptions.RequestCultureProviders.Insert(0, provider);
             
             app.UseRequestLocalization(localizationOptions);
-            
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                OnPrepareResponse = ctx =>
-                {
-                    const int durationInSeconds = 60 * 60 * 24 * 30;
-                    ctx.Context.Response.Headers[HeaderNames.CacheControl] =
-                        "public,max-age=" + durationInSeconds;
-                }
-            });
+
+            app.UseFileServer();
+            //app.UseStaticFiles(new StaticFileOptions
+            //{
+            //    OnPrepareResponse = ctx =>
+            //    {
+            //        const int durationInSeconds = 60 * 60 * 24 * 30;
+            //        ctx.Context.Response.Headers[HeaderNames.CacheControl] =
+            //            "public,max-age=" + durationInSeconds;
+            //    }
+            //});
 
             app.UseAuthentication();
 
             var log = loggerFactory.CreateLogger("identity");
 
+            app.UseSignalR(routes => routes.MapHub<WebNotificationHub>("/webnotificationhub"));
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

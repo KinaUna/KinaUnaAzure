@@ -441,3 +441,92 @@ button.Zebra_DatePicker_Icon {
     text-indent: -9000px;
     width: 48px;
 }
+
+.notificationIconAnimation {
+    -webkit-animation: notificationIconAnimation 2s 10 ease-in-out alternate-reverse;
+    -moz-animation: notificationIconAnimation 2s 10 ease-in-out alternate-reverse;
+    -o-animation: notificationIconAnimation 2s 10 ease-in-out alternate-reverse;
+    animation: notificationIconAnimation 2s 10 ease-in-out alternate-reverse;
+    -webkit-transform-origin: 50% 50%;
+    transform-origin: 50% 50%;
+    -ms-transform-origin: 50% 50%; /* IE 9 */
+    color: greenyellow;
+}
+
+@-moz-keyframes notificationIconAnimation {
+    from {
+        -moz-transform: rotate(0deg);
+    }
+
+    to {
+        -moz-transform: rotate(360deg);
+    }
+
+    0% {
+        color: white;
+    }
+
+    25% {
+        color: greenyellow;
+    }
+
+    50% {
+        color: orange;
+    }
+
+    100% {
+        color: white;
+    }
+}
+
+@-webkit-keyframes notificationIconAnimation {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+
+    to {
+        -webkit-transform: rotate(360deg);
+    }
+
+    0% {
+        color: white;
+    }
+
+    25% {
+        color: greenyellow;
+    }
+
+    50% {
+        color: orange;
+    }
+
+    100% {
+        color: white;
+    }
+}
+
+@keyframes notificationIconAnimation {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+
+    0% {
+        color: white;
+    }
+
+    25% {
+        color: greenyellow;
+    }
+
+    50% {
+        color: orange;
+    }
+
+    100% {
+        color: white;
+    }
+}

@@ -22,5 +22,6 @@ namespace KinaUnaWeb.Data
         public DbSet<Contact> ContactsDb { get; set; }
         public DbSet<Address> AddressDb { get; set; }
         public DbSet<Vaccination> VaccinationsDb { get; set; }
+        public DbSet<WebNotification> WebNotificationsDb { get; set; }
     }
 }

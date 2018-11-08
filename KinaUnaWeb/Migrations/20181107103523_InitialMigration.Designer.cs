@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KinaUnaWeb.Migrations
 {
     [DbContext(typeof(WebDbContext))]
-    [Migration("20181020095609_InitialIdentityMigration")]
-    partial class InitialIdentityMigration
+    [Migration("20181107103523_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -398,6 +398,7 @@ namespace KinaUnaWeb.Migrations
 
                     b.ToTable("VocabularyDb");
                 });
+            
 #pragma warning restore 612, 618
         }
     }
