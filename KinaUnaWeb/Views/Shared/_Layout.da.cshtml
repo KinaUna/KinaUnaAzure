@@ -98,9 +98,12 @@
                 </div>
             }
             <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarNavSegments" aria-controls="navbarNavSegments" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-                <span class="navbar-toggler-icon"></span>
-                <span class="navbar-toggler-icon"></span>
+                <div id="navbarTogglerButton">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="navbar-toggler-icon"></span>
+                    <span id="togglerNotificationsCounter" class="badge badge-danger" style="position: absolute; display: none; font-size: 9px; right: 22px; top: 10px;">0</span>
+                </div>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavSegments">
                 <div class="navbar-nav mr-auto mt-2 mt-lg-0">
@@ -219,7 +222,7 @@
                     {
                         <div id="notificationsIcon" class="nav-item dropdown">
                             <a id="notificationsButton" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                                <span id="notificationBellIcon" class="fas fa-bell"></span> Meddelelser <span class="caret"></span>
+                                <span id="notificationBellIcon" class="fas fa-bell"></span> Meddelelser <span id="notificationsCounter" class="badge badge-pill badge-secondary"></span> <span class="caret"></span>
                             </a>
                             <div id="notificationsMenu" class="dropdown-menu">
                             </div>

@@ -1,0 +1,38 @@
+﻿@model WebNotification
+@{
+    string isReadClass = "notificationUnread";
+    string markAsRead = "Mark as read";
+    string readId = "notificationReadId" + Model.Id;
+    string deleteId = "notificationDeleteId" + Model.Id;
+    string topBtnClass = "dropdown-item btn btn-link notification-item";
+    if (Model.IsRead)
+    {
+        isReadClass = "notificationRead";
+        markAsRead = "Mark as unread";
+        topBtnClass = topBtnClass + " bg-dark";
+    }
+}
+<button type="button" class="@topBtnClass @isReadClass text-left" style="width: 95%; min-width: 280px; text-transform: none;">
+    <div class="media-area" style="width: 100%; margin: 0; padding-bottom: 4px; min-width: 300px;">
+        <div class="media text-left">
+            <div class="float-left">
+                <div class="img-circle" style="height: 46px; width: 46px;">
+                    <img height="40" width="40" class="media-object rounded img-fluid" src="@Model.Icon"/>
+                </div>
+            </div>
+            <div class="media-body">
+                <h6 class="text-warning">
+                    @Model.From <small class="text-warning"> · @Model.DateTimeString</small>
+                </h6>
+                <h5 class="media-heading text-success">@Model.Title</h5>
+                <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@Model.Message</p>
+                <div class="media-footer">
+                    <a href="#" id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(event, this)">
+                        <i class="material-icons">clear</i> Remove</a>
+                    <a href="#" id="@readId" class="btn btn-info btn-link btn-sm float-right @isReadClass" onClick="markRead(event, this)" data-userid="@Model.To" data-notificationid="@Model.Id">
+                        <i class="material-icons">drafts</i> @markAsRead</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</button>

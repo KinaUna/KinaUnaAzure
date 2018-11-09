@@ -1,4 +1,68 @@
 ﻿let connection = null;
+let notificationsCount = 0;
+let notifationsCounter = document.getElementById("notificationsCounter");
+let notificationsIcon = document.getElementById("notificationBellIcon");
+let menuToggler = document.getElementById('navbarTogglerButton');
+let togglerCounter = document.getElementById('togglerNotificationsCounter');
+
+function notificationItemClick(event, btn) {
+    event.preventDefault();
+    let isNotificationRead = btn.getAttribute('data-isread');
+    if (isNotificationRead === 'false') {
+        notificationsCount--;
+        if (notificationsCount < 0) {
+            notificationsCount = 0;
+        }
+    }
+    notifationsCounter.innerHTML = notificationsCount;
+}
+
+function markRead(event, btn) {
+    event.preventDefault();
+    var parentBtn = btn.closest('button');
+    var notifId = btn.getAttribute('data-notificationid');
+    if (btn.classList.contains('notificationUnread')) {
+        notificationsCount--;
+        if (notificationsCount < 0) {
+            notificationsCount = 0;
+        }
+        btn.classList.remove('notificationUnread');
+        btn.classList.add('notificationRead');
+        btn.innerHTML = '<i class="material-icons">drafts</i> Mark as unread</a>';
+        parentBtn.classList.remove('notificationUnread');
+        parentBtn.classList.add('notificationRead');
+        parentBtn.classList.add('bg-dark');
+        connection.invoke("SetRead", notifId).catch(err => console.error(err.toString()));
+    } else {
+        notificationsCount++;
+        if (notificationsCount < 0) {
+            notificationsCount = 0;
+        }
+        btn.classList.remove('notificationRead');
+        btn.classList.add('notificationUnread');
+        btn.innerHTML = '<i class="material-icons">markunread</i> Mark as read</a>';
+        parentBtn.classList.remove('notificationRead');
+        parentBtn.classList.remove('bg-dark');
+        parentBtn.classList.add('notificationUnread');
+        connection.invoke("SetUnread", notifId).catch(err => console.error(err.toString()));
+    }
+    notifationsCounter.innerHTML = notificationsCount;
+    
+}
+
+function removeNotification(event, btn) {
+    event.preventDefault();
+    var parentBtn = btn.closest('button');
+    if (parentBtn.classList.contains('notificationUnread')) {
+        notificationsCount--;
+        if (notificationsCount < 0) {
+            notificationsCount = 0;
+        }
+    }
+    parentBtn.parentNode.removeChild(parentBtn);
+    notifationsCounter.innerHTML = notificationsCount;
+
+}
 
 connection = new signalR.HubConnectionBuilder()
     .withUrl("/webnotificationhub")
@@ -11,11 +75,28 @@ connection.on("ReceiveMessage",
         console.log("Notification: " + message);
         let parsedMessage = JSON.parse(message);
         let notificationsMenuDiv = document.getElementById("notificationsMenu");
-        notificationsMenuDiv.innerHTML += '<a href="#" class="dropdown-item"><div class="card" style="margin: 0; min-width: 100px; padding-bottom: 4px; background: rgba(38, 3, 51, 0.3);"><h6 class="card-header" style="color: #f7d082; background: #1a1031; margin: 0px; padding: 8px;">' + parsedMessage.Title + '</h5>' +
-            '<div class="card-body" style="margin: 0px; padding: 4px;">' +
-            '<div class="card-text text-white" style="margin: 4px; padding: 0px; word-wrap: break-word;">' + parsedMessage.Message + '</div></div><div class="card-footer text-right ml-auto" style="margin: 0; margin-top: 8px; padding: 2px;"><p class="text-success"><small>From: </small>' + parsedMessage.From + '<br/><small class="text-info">' + parsedMessage.DateTimeString + '</small></p></div></div></a>';
-        let notificationsIcon = document.getElementById("notificationBellIcon");
-        notificationsIcon.classList.add("notificationIconAnimation");
+        
+        $.ajax({
+            type: "GET",
+            url: "/Notifications/ShowNotification",
+            data: parsedMessage,
+            datatype: "html",
+            async: true,
+            success: function (data) {
+                notificationsMenuDiv.innerHTML += data;
+            },
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log(textStatus, errorThrown);
+            }
+        });
+
+        notificationsIcon.classList.add('notificationIconAnimation');
+        if (!parsedMessage.IsRead) {
+            notificationsCount++;
+        }
+        notifationsCounter.innerHTML = notificationsCount;
+        togglerCounter.innerHTML = notificationsCount;
+        togglerCounter.style.display = "block";
     }
 );
 let getNotifications = function () {
@@ -24,3 +105,11 @@ let getNotifications = function () {
 
 connection.start().catch(err => console.error(err.toString()));
 
+$(document).ready(function () {
+    $("#notificationsButton").click(function () {
+        let notificationsIcon = document.getElementById("notificationBellIcon");
+        notificationsIcon.classList.remove("notificationIconAnimation");
+        menuToggler.classList.remove("notificationIconAnimation");
+        togglerCounter.style.display = "none";
+    });
+});

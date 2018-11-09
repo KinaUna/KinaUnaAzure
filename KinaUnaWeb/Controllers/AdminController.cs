@@ -16,6 +16,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using KinaUnaWeb.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using Measurement = KinaUnaWeb.Models.Measurement;
 
 namespace KinaUnaWeb.Controllers
@@ -30,10 +32,11 @@ namespace KinaUnaWeb.Controllers
         private readonly WebDbContext _context;
         private readonly IApplicationLifetime _appLifetime;
         private readonly ILogger _logger;
-        
+        private readonly IHubContext<WebNotificationHub> _hubContext;
+
         public AdminController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore,
             IConfiguration configuration, IHttpContextAccessor httpContextAccessor, WebDbContext context,
-            IBackgroundTaskQueue queue, IApplicationLifetime appLifetime, ILoggerFactory loggerFactory)
+            IBackgroundTaskQueue queue, IApplicationLifetime appLifetime, ILoggerFactory loggerFactory, IHubContext<WebNotificationHub> hubContext)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
@@ -44,6 +47,7 @@ namespace KinaUnaWeb.Controllers
             Queue = queue;
             _appLifetime = appLifetime;
             _logger = loggerFactory.CreateLogger<AdminController>();
+            _hubContext = hubContext;
         }
         public IBackgroundTaskQueue Queue { get; }
 
@@ -1064,8 +1068,41 @@ namespace KinaUnaWeb.Controllers
             await httpClient.GetAsync(contactsApiPath).ConfigureAwait(false);
             
         }
-        
-    }
 
-    
+        public IActionResult SendAdminMessage()
+        {
+            WebNotification model = new WebNotification();
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendAdminMessage(WebNotification notification)
+        {
+            string userId = User.FindFirst("sub")?.Value ?? "NoUser";
+            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
+            if (userEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
+            {
+                if (notification.To == "OnlineUsers")
+                {
+                    notification.DateTime = DateTime.UtcNow;
+                    await _hubContext.Clients.All.SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
+                }
+                else
+                {
+                    notification.DateTime = DateTime.UtcNow;
+                    await _context.WebNotificationsDb.AddAsync(notification);
+                    await _context.SaveChangesAsync();
+
+                    WebNotification webNotification = new WebNotification();
+                    webNotification.Title = "Notification Sent to " + notification.To;
+                    webNotification.Message = "";
+                    webNotification.From = "KinaUna.com";
+                    webNotification.Type = "Notification";
+                    webNotification.DateTime = DateTime.UtcNow;
+                    await _hubContext.Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
+                }
+            }
+            return View(notification);
+        }
+    }
 }

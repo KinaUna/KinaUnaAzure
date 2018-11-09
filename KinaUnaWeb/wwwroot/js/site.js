@@ -98,8 +98,4 @@ $(document).ready(function () {
         }
         runWaitMeLeave();
     });
-    $("#notificationsButton").click(function() {
-        let notificationsIcon = document.getElementById("notificationBellIcon");
-        notificationsIcon.classList.remove("notificationIconAnimation");
-    });
 });

@@ -253,6 +253,12 @@ namespace KinaUnaWeb.Controllers
         }
 
         [AllowAnonymous]
+        public IActionResult Test()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
