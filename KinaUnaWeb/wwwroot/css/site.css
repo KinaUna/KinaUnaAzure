@@ -442,6 +442,13 @@ button.Zebra_DatePicker_Icon {
     width: 48px;
 }
 
+.notificationRead {
+    opacity: 0.80;
+}
+
+.notificationUnread {
+    
+}
 .notificationIconAnimation {
     -webkit-animation: notificationIconAnimation 2s 10 ease-in-out alternate-reverse;
     -moz-animation: notificationIconAnimation 2s 10 ease-in-out alternate-reverse;

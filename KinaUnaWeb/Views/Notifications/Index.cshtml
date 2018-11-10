@@ -1,0 +1,107 @@
+﻿@using Kendo.Mvc.TagHelpers
+@model List<WebNotification>
+@{
+    ViewData["Title"] = "Index";
+}
+<h2>Notifications</h2>
+
+<div class="card" style="background: #3a2051">
+    @if (ViewBag.SelectedNotification != null)
+    {
+        string idClass = "notifId" + ViewBag.SelectedNotification.Id;
+        string isReadClass = "notificationUnread";
+        string markAsRead = "Mark as read";
+        string readId = "notificationReadId" + ViewBag.SelectedNotification.Id;
+        string deleteId = "notificationDeleteId" + ViewBag.SelectedNotification.Id;
+        string topBtnClass = "dropdown-item btn btn-link notification-item";
+        string markAsReadIcon = "drafts";
+        if (ViewBag.SelectedNotification.IsRead)
+        {
+            isReadClass = "notificationRead";
+            markAsRead = "Mark as unread";
+            topBtnClass = topBtnClass + " bg-dark";
+            markAsReadIcon = "markunread";
+        }
+        <button type="button" onClick="notificationItemClick(event, this)" class="@topBtnClass @isReadClass ml-auto mr-auto" style="width: 95%; min-width: 280px; text-transform: none; margin-top: 20px;" data-notificationid="@ViewBag.SelectedNotification.Id">
+            <div class="media-area" style="width: 100%; margin: 0; padding-bottom: 4px; min-width: 300px;">
+                <div class="media text-left">
+                    <div class="float-left">
+                        <div class="img-circle" style="height: 46px; width: 46px;">
+                            <img height="40" width="40" class="media-object rounded img-fluid" src="@ViewBag.SelectedNotification.Icon" />
+                        </div>
+                    </div>
+                    <div class="media-body">
+                        <h6 class="text-warning">
+                            @ViewBag.SelectedNotification.From <small class="text-warning"> · @ViewBag.SelectedNotification.DateTimeString</small>
+                        </h6>
+                        <h5 class="media-heading text-white">@ViewBag.SelectedNotification.Title</h5>
+                        <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@ViewBag.SelectedNotification.Message</p>
+                        <div class="media-footer">
+                            <a href="#" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(event, this)" data-notificationid="@ViewBag.SelectedNotification.Id">
+                                <i class="material-icons">delete_forever</i> Delete
+                            </a>
+                            <a href="#" class="btn btn-info btn-link btn-sm float-right @isReadClass @idClass" onClick="markRead(event, this)" data-notificationid="@ViewBag.SelectedNotification.Id">
+                                <i class="material-icons">@markAsReadIcon</i> @markAsRead
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </button>
+        <br />
+        <hr />
+
+    }
+</div>
+<br />
+Most recent notifications:
+<div class="card" style="background: #3a2051">
+
+    @if (Model.Any())
+    {
+        foreach (WebNotification notif in Model)
+        {
+            string idClass = "notifId" + notif.Id;
+            string isReadClass = "notificationUnread";
+            string markAsRead = "Mark as read";
+            string readId = "notificationReadId" + notif.Id;
+            string deleteId = "notificationDeleteId" + notif.Id;
+            string topBtnClass = "dropdown-item btn btn-link notification-item";
+            string markAsReadIcon = "drafts";
+            if (notif.IsRead)
+            {
+                isReadClass = "notificationRead";
+                markAsRead = "Mark as unread";
+                topBtnClass = topBtnClass + " bg-dark";
+                markAsReadIcon = "markunread";
+            }
+            <button type="button" onClick="notificationItemClick(event, this)" class="@topBtnClass @isReadClass ml-auto mr-auto" style="width: 95%; min-width: 280px; text-transform: none; margin-top: 20px;" data-notificationid="@notif.Id">
+                <div class="media-area" style="width: 100%; margin: 0; padding-bottom: 4px; min-width: 300px;">
+                    <div class="media text-left">
+                        <div class="float-left">
+                            <div class="img-circle" style="height: 46px; width: 46px;">
+                                <img height="40" width="40" class="media-object rounded img-fluid" src="@notif.Icon" />
+                            </div>
+                        </div>
+                        <div class="media-body">
+                            <h6 class="text-warning">
+                                @notif.From <small class="text-warning"> · @notif.DateTimeString</small>
+                            </h6>
+                            <h5 class="media-heading text-white">@notif.Title</h5>
+                            <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@notif.Message</p>
+                            <div class="media-footer">
+                                <a href="#" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(event, this)" data-notificationid="@notif.Id">
+                                    <i class="material-icons">delete_forever</i> Delete
+                                </a>
+                                <a href="#" class="btn btn-info btn-link btn-sm float-right @isReadClass @idClass" onClick="markRead(event, this)" data-notificationid="@notif.Id">
+                                    <i class="material-icons">@markAsReadIcon</i> @markAsRead
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </button>
+            <hr />
+        }
+    }
+</div>
