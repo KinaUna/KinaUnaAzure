@@ -1119,7 +1119,8 @@ namespace KinaUnaWeb.Controllers
                     webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
                         TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
                     webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                    await _hubContext.Clients.Group(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
+                    List<string> groups = new List<string>() { userId };
+                    await _hubContext.Clients.Groups(groups).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
                 }
             }
             return View(notification);

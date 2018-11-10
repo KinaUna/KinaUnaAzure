@@ -94,6 +94,11 @@ connection = new signalR.HubConnectionBuilder()
     .configureLogging(signalR.LogLevel.Information)
     .build();
 
+connection.on('UserInfo',
+    function(info) {
+        console.log(info);
+    });
+
 connection.on('ReceiveMessage',
     function(message) {
         console.log('Notification: ' + message);

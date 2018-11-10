@@ -34,7 +34,7 @@ namespace KinaUnaWeb.Hubs
             await Groups.AddToGroupAsync(connectionId, "Online");
             await Groups.AddToGroupAsync(connectionId, userId);
             await base.OnConnectedAsync();
-
+            await Clients.Caller.SendAsync("UserInfo", Context.UserIdentifier);
             await GetUpdateForUser();
         }
 
