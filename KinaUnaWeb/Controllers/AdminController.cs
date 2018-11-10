@@ -1080,18 +1080,35 @@ namespace KinaUnaWeb.Controllers
         {
             string userId = User.FindFirst("sub")?.Value ?? "NoUser";
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
+            string userTimeZone = User.FindFirst("timezone")?.Value ?? "NoUser";
+
             if (userEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
             {
                 if (notification.To == "OnlineUsers")
                 {
                     notification.DateTime = DateTime.UtcNow;
+                    notification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
+                    notification.DateTimeString = notification.DateTime.ToString("dd-MMM-yyyy HH:mm");
                     await _hubContext.Clients.All.SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
                 }
                 else
                 {
+                    UserInfo userinfo = new UserInfo();
+                    if (notification.To.Contains('@'))
+                    {
+                        userinfo = await _progenyHttpClient.GetUserInfo(notification.To);
+                        notification.To = userinfo.UserId;
+                    }
+                    else
+                    {
+                        userinfo = await _progenyHttpClient.GetUserInfoByUserId(notification.To);
+                    }
+
                     notification.DateTime = DateTime.UtcNow;
                     await _context.WebNotificationsDb.AddAsync(notification);
                     await _context.SaveChangesAsync();
+                    // await _hubContext.Clients.Group(userinfo.UserId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
 
                     WebNotification webNotification = new WebNotification();
                     webNotification.Title = "Notification Sent to " + notification.To;
@@ -1099,7 +1116,10 @@ namespace KinaUnaWeb.Controllers
                     webNotification.From = "KinaUna.com";
                     webNotification.Type = "Notification";
                     webNotification.DateTime = DateTime.UtcNow;
-                    await _hubContext.Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
+                    webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+                        TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                    webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
+                    await _hubContext.Clients.Group(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
                 }
             }
             return View(notification);

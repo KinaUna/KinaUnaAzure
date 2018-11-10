@@ -27,9 +27,9 @@
                 <h5 class="media-heading text-success">@Model.Title</h5>
                 <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@Model.Message</p>
                 <div class="media-footer">
-                    <a href="#" id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(event, this)">
+                    <a href="#" id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(event, this)" data-notificationid="@Model.Id">
                         <i class="material-icons">clear</i> Remove</a>
-                    <a href="#" id="@readId" class="btn btn-info btn-link btn-sm float-right @isReadClass" onClick="markRead(event, this)" data-userid="@Model.To" data-notificationid="@Model.Id">
+                    <a href="#" id="@readId" class="btn btn-info btn-link btn-sm float-right @isReadClass" onClick="markRead(event, this)" data-notificationid="@Model.Id">
                         <i class="material-icons">drafts</i> @markAsRead</a>
                 </div>
             </div>

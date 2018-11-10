@@ -47,17 +47,24 @@ function markRead(event, btn) {
         connection.invoke("SetUnread", notifId).catch(err => console.error(err.toString()));
     }
     notifationsCounter.innerHTML = notificationsCount;
-    
+    if (notificationsCount === 0) {
+        togglerCounter.style.display = "none";
+    }
 }
 
 function removeNotification(event, btn) {
     event.preventDefault();
+    var notifId = btn.getAttribute('data-notificationid');
     var parentBtn = btn.closest('button');
+    connection.invoke("DeleteNotification", notifId).catch(err => console.error(err.toString()));
     if (parentBtn.classList.contains('notificationUnread')) {
         notificationsCount--;
         if (notificationsCount < 0) {
             notificationsCount = 0;
         }
+    }
+    if (notificationsCount === 0) {
+        togglerCounter.style.display = "none";
     }
     parentBtn.parentNode.removeChild(parentBtn);
     notifationsCounter.innerHTML = notificationsCount;
@@ -97,11 +104,16 @@ connection.on("ReceiveMessage",
         notifationsCounter.innerHTML = notificationsCount;
         togglerCounter.innerHTML = notificationsCount;
         togglerCounter.style.display = "block";
+        if (notificationsCount === 0) {
+            togglerCounter.style.display = "none";
+        }
     }
 );
 let getNotifications = function () {
+    notificationsCount = 0;
+    notificationsMenuDiv.innerHTML = '';
     connection.invoke("GetUpdateForUser").catch(err => console.error(err.toString()));
-}
+};
 
 connection.start().catch(err => console.error(err.toString()));
 
@@ -112,4 +124,6 @@ $(document).ready(function () {
         menuToggler.classList.remove("notificationIconAnimation");
         togglerCounter.style.display = "none";
     });
+
+    var checkNotifications = setInterval(getNotifications(), 30000);
 });

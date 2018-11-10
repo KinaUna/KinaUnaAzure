@@ -32,7 +32,7 @@ namespace KinaUnaWeb.Hubs
 
             var connectionId = Context.ConnectionId;
             await Groups.AddToGroupAsync(connectionId, "Online");
-            
+            await Groups.AddToGroupAsync(connectionId, userId);
             await base.OnConnectedAsync();
 
             await GetUpdateForUser();
@@ -40,11 +40,14 @@ namespace KinaUnaWeb.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
+            string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
             var connectionId = Context.ConnectionId;
             await Groups.RemoveFromGroupAsync(connectionId, "Online");
+            await Groups.RemoveFromGroupAsync(connectionId, userId);
             await base.OnDisconnectedAsync(exception);
         }
-        public async Task GetUpdateForUser(int count = 5, int start = 1)
+
+        public async Task GetUpdateForUser(int count = 10, int start = 1)
         {
             string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
             string userTimeZone = Context.GetHttpContext().User.FindFirst("timezone").Value;
@@ -73,8 +76,6 @@ namespace KinaUnaWeb.Hubs
                         {
                             count--;
                         }
-                        
-
                     }
                 }
             }
@@ -147,7 +148,6 @@ namespace KinaUnaWeb.Hubs
                         updateNotification.IsRead = true;
                         _context.WebNotificationsDb.Update(updateNotification);
                         await _context.SaveChangesAsync();
-
                     }
                 }
             }
@@ -170,7 +170,27 @@ namespace KinaUnaWeb.Hubs
                         updateNotification.IsRead = false;
                         _context.WebNotificationsDb.Update(updateNotification);
                         await _context.SaveChangesAsync();
+                    }
+                }
+            }
+        }
 
+        public async Task DeleteNotification(string notification)
+        {
+            string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
+            int id = 0;
+            bool idParsed = Int32.TryParse(notification, out id);
+            if (idParsed)
+            {
+                WebNotification deleteNotification =
+                    await _context.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == id);
+
+                if (deleteNotification != null)
+                {
+                    if (userId == deleteNotification.To)
+                    {
+                        _context.WebNotificationsDb.Remove(deleteNotification);
+                        await _context.SaveChangesAsync();
                     }
                 }
             }
