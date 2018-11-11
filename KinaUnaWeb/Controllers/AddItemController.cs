@@ -2837,6 +2837,17 @@ namespace KinaUnaWeb.Controllers
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
 
+            WebNotification notification = new WebNotification();
+            notification.To = userinfo.UserId;
+            notification.From = "KinaUna.com";
+            notification.Message = "Start: " + sleepItem.SleepStart.ToString("dd-MMM-yyyy HH:mm") + "<br/>End: " + sleepItem.SleepEnd.ToString("dd-MMM-yyyy HH:mm");
+            notification.DateTime = DateTime.UtcNow;
+            notification.Icon = "/images/kinaunalogo48x48.png";
+            notification.Title = "Sleep Added";
+
+            await _context.WebNotificationsDb.AddAsync(notification);
+            await _context.SaveChangesAsync();
+            // Todo: send notification.
             return RedirectToAction("Index", "Sleep");
         }
 
