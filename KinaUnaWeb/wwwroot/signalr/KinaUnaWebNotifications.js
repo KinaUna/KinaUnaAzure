@@ -51,10 +51,12 @@ function markRead(event, btn) {
         togglerCounter.style.display = "none";
         notifationsCounter.classList.remove('badge-danger');
         notifationsCounter.classList.add('badge-secondary');
+        togglerCounter.style.display = 'none';
     } else {
         notificationsIcon.classList.add('notificationIconAnimation');
         notifationsCounter.classList.remove('badge-secondary');
         notifationsCounter.classList.add('badge-danger');
+        togglerCounter.style.display = 'block';
     }
     event.stopImmediatePropagation();
 }
@@ -73,15 +75,18 @@ function removeNotification(event, btn) {
         togglerCounter.style.display = "none";
         notifationsCounter.classList.remove('badge-danger');
         notifationsCounter.classList.add('badge-secondary');
+        togglerCounter.style.display = 'none';
     } else {
         notificationsIcon.classList.add('notificationIconAnimation');
         notifationsCounter.classList.remove('badge-secondary');
         notifationsCounter.classList.add('badge-danger');
+        togglerCounter.style.display = 'block';
     }
 
     let itemsToRemove = document.getElementsByClassName('notifId' + notifId);
     for (var i = itemsToRemove.length - 1; i >= 0; --i) {
-        itemsToRemove[i].parentNode.removeChild(itemsToRemove[i]);
+        let parentBtn = itemsToRemove[i].closest('button');
+        parentBtn.parentNode.removeChild(parentBtn);
     }
     notifationsCounter.innerHTML = notificationsCount;
     event.stopPropagation();
@@ -94,6 +99,11 @@ connection = new signalR.HubConnectionBuilder()
     .configureLogging(signalR.LogLevel.Information)
     .build();
 
+
+connection.onclose(function () {
+    console.log('SignalR closed, reconnecting.')
+    connection.start().catch(err => console.error(err.toString()));
+});
 connection.on('UserInfo',
     function(info) {
         console.log(info);
@@ -104,7 +114,19 @@ connection.on('ReceiveMessage',
         console.log('Notification: ' + message);
         let parsedMessage = JSON.parse(message);
         let notificationsMenuDiv = document.getElementById('notificationsMenu');
-        
+        let itemsToRemove = document.getElementsByClassName('notifId' + parsedMessage.Id);
+        if (itemsToRemove.length > 0) {
+            for (var i = itemsToRemove.length - 1; i >= 0; --i) {
+                let parentBtn = itemsToRemove[i].closest('button');
+                parentBtn.parentNode.removeChild(parentBtn);
+            }
+            if (itemsToRemove[0].classList.contains('notificationUnread')) {
+                notificationsCount--;
+                if (notificationsCount < 0) {
+                    notificationsCount = 0;
+                }
+            }
+        }
         $.ajax({
             type: 'GET',
             url: '/Notifications/ShowNotification',
@@ -128,17 +150,25 @@ connection.on('ReceiveMessage',
             togglerCounter.style.display = 'none';
             notifationsCounter.classList.remove('badge-danger');
             notifationsCounter.classList.add('badge-secondary');
+            togglerCounter.style.display = 'none';
         } else {
             notificationsIcon.classList.add('notificationIconAnimation');
             notifationsCounter.classList.remove('badge-secondary');
             notifationsCounter.classList.add('badge-danger');
+            togglerCounter.style.display = 'block';
         }
     }
 );
 let getNotifications = function () {
-    notificationsCount = 0;
-    notificationsMenuDiv.innerHTML = '';
-    connection.invoke('GetUpdateForUser').catch(err => console.error(err.toString()));
+    if (connection.connection.connectionState === 1) {
+        notificationsCount = 0;
+        notificationsMenuDiv.innerHTML = '';
+        connection.invoke('GetUpdateForUser').catch(err => console.error(err.toString()));
+    }
+    if (connection.connection.connectionState === 2) {
+        console.log('From getNotifications: SignalR closed, reconnecting.')
+        connection.start().catch(err => console.error(err.toString()));
+    }
 };
 
 connection.start().catch(err => console.error(err.toString()));
@@ -148,8 +178,9 @@ $(document).ready(function () {
         let notificationsIcon = document.getElementById('notificationBellIcon');
         notificationsIcon.classList.remove('notificationIconAnimation');
         menuToggler.classList.remove('notificationIconAnimation');
-        togglerCounter.style.display = 'none';
+        if (notificationsCount === 0) {
+            togglerCounter.style.display = 'none';
+        }
     });
-
     let checkNotifications = setInterval(getNotifications(), 300000);
 });

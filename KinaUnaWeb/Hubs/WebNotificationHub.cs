@@ -148,6 +148,7 @@ namespace KinaUnaWeb.Hubs
                         updateNotification.IsRead = true;
                         _context.WebNotificationsDb.Update(updateNotification);
                         await _context.SaveChangesAsync();
+                        await Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(updateNotification));
                     }
                 }
             }
@@ -170,6 +171,7 @@ namespace KinaUnaWeb.Hubs
                         updateNotification.IsRead = false;
                         _context.WebNotificationsDb.Update(updateNotification);
                         await _context.SaveChangesAsync();
+                        await Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(updateNotification));
                     }
                 }
             }
@@ -191,6 +193,7 @@ namespace KinaUnaWeb.Hubs
                     {
                         _context.WebNotificationsDb.Remove(deleteNotification);
                         await _context.SaveChangesAsync();
+                        await Clients.User(userId).SendAsync("DeleteMessage", JsonConvert.SerializeObject(deleteNotification));
                     }
                 }
             }

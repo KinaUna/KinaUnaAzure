@@ -25,6 +25,7 @@ using System;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using KinaUnaWeb.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace KinaUnaWeb
@@ -161,6 +162,7 @@ namespace KinaUnaWeb
             services.AddAuthorization();
             services.AddKendo();
             services.AddSignalR().AddMessagePackProtocol();
+            services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
