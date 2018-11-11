@@ -14,63 +14,71 @@ function notificationItemClick(event, btn) {
 
 function markRead(event, btn) {
     let notifId = btn.getAttribute('data-notificationid');
-    let itemsToUpdate = document.getElementsByClassName('notifId' + notifId);
     if (btn.classList.contains('notificationUnread')) {
-        notificationsCount--;
-        if (notificationsCount < 0) {
-            notificationsCount = 0;
-        }
-        for (let i = itemsToUpdate.length - 1; i >= 0; --i) {
-            itemsToUpdate[i].classList.remove('notificationUnread');
-            itemsToUpdate[i].classList.add('notificationRead');
-            itemsToUpdate[i].innerHTML = '<i class="material-icons">markunread</i> Mark as unread</a>';
-            let parentBtn = itemsToUpdate[i].closest('button');
-            parentBtn.classList.remove('notificationUnread');
-            parentBtn.classList.add('notificationRead');
-            parentBtn.classList.add('bg-dark');
-        }
-        connection.invoke('SetRead', notifId).catch(err => console.error(err.toString()));
+        $.ajax({
+            type: 'GET',
+            url: '/Notifications/SetRead?Id=' + notifId,
+            async: true,
+            success: function () {
+                console.log("SetRead: Done.");
+            },
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log(textStatus, errorThrown);
+            }
+        });
     } else {
-        notificationsCount++;
-        if (notificationsCount < 0) {
-            notificationsCount = 0;
-        }
-        for (let j = itemsToUpdate.length - 1; j >= 0; --j) {
-            itemsToUpdate[j].classList.remove('notificationRead');
-            itemsToUpdate[j].classList.add('notificationUnread');
-            itemsToUpdate[j].innerHTML = '<i class="material-icons">drafts</i> Mark as read</a>';
-            let parentBtn2 = itemsToUpdate[j].closest('button');
-            parentBtn2.classList.remove('notificationRead');
-            parentBtn2.classList.remove('bg-dark');
-            parentBtn2.classList.add('notificationUnread');
-        }
-        connection.invoke('SetUnread', notifId).catch(err => console.error(err.toString()));
-    }
-    notifationsCounter.innerHTML = notificationsCount;
-    if (notificationsCount === 0) {
-        togglerCounter.style.display = "none";
-        notifationsCounter.classList.remove('badge-danger');
-        notifationsCounter.classList.add('badge-secondary');
-        togglerCounter.style.display = 'none';
-    } else {
-        notificationsIcon.classList.add('notificationIconAnimation');
-        notifationsCounter.classList.remove('badge-secondary');
-        notifationsCounter.classList.add('badge-danger');
-        togglerCounter.style.display = 'block';
+        $.ajax({
+            type: 'GET',
+            url: '/Notifications/SetUnread?Id=' + notifId,
+            async: true,
+            success: function () {
+                console.log("SetUnread: Done.");
+            },
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log(textStatus, errorThrown);
+            }
+        });
     }
     event.stopImmediatePropagation();
 }
 
 function removeNotification(event, btn) {
     let notifId = btn.getAttribute('data-notificationid');
-    let parentBtn = btn.closest('button');
-    connection.invoke("DeleteNotification", notifId).catch(err => console.error(err.toString()));
-    if (parentBtn.classList.contains('notificationUnread')) {
-        notificationsCount--;
-        if (notificationsCount < 0) {
-            notificationsCount = 0;
+    $.ajax({
+        type: 'GET',
+        url: '/Notifications/Remove?Id=' + notifId,
+        async: true,
+        success: function () {
+            console.log("Remove: Done.");
+        },
+        error: function (jqXhr, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+        }
+    });
+    
+    event.stopPropagation();
+}
+
+function updateNotification(parsedMessage, newData) {
+    let itemsToRemove = document.getElementsByClassName('notifId' + parsedMessage.Id);
+    var countChange = false;
+    if (itemsToRemove.length > 0) {
+        for (var i = itemsToRemove.length - 1; i >= 0; --i) {
+            let parentBtn = itemsToRemove[i].closest('button');
+            if (parentBtn.classList.contains('notificationUnread')) {
+                countChange = true;
+            }
+            parentBtn.outerHTML = newData;
         }
     }
+    if (countChange) {
+        notificationsCount--;
+    } else {
+        notificationsCount++;
+    }
+
+    notifationsCounter.innerHTML = notificationsCount;
+    togglerCounter.innerHTML = notificationsCount;
     if (notificationsCount === 0) {
         togglerCounter.style.display = "none";
         notifationsCounter.classList.remove('badge-danger');
@@ -82,15 +90,6 @@ function removeNotification(event, btn) {
         notifationsCounter.classList.add('badge-danger');
         togglerCounter.style.display = 'block';
     }
-
-    let itemsToRemove = document.getElementsByClassName('notifId' + notifId);
-    for (var i = itemsToRemove.length - 1; i >= 0; --i) {
-        let parentBtn = itemsToRemove[i].closest('button');
-        parentBtn.parentNode.removeChild(parentBtn);
-    }
-    notifationsCounter.innerHTML = notificationsCount;
-    event.stopPropagation();
-    return false;
 }
 
 connection = new signalR.HubConnectionBuilder()
@@ -111,43 +110,88 @@ connection.on('UserInfo',
 
 connection.on('ReceiveMessage',
     function(message) {
-        console.log('Notification: ' + message);
+        console.log('ReceiveNotification: ' + message);
         let parsedMessage = JSON.parse(message);
         let notificationsMenuDiv = document.getElementById('notificationsMenu');
-        let itemsToRemove = document.getElementsByClassName('notifId' + parsedMessage.Id);
-        if (itemsToRemove.length > 0) {
-            for (var i = itemsToRemove.length - 1; i >= 0; --i) {
-                let parentBtn = itemsToRemove[i].closest('button');
-                parentBtn.parentNode.removeChild(parentBtn);
-            }
-            if (itemsToRemove[0].classList.contains('notificationUnread')) {
-                notificationsCount--;
-                if (notificationsCount < 0) {
-                    notificationsCount = 0;
-                }
-            }
-        }
         $.ajax({
-            type: 'GET',
-            url: '/Notifications/ShowNotification',
-            data: parsedMessage,
-            datatype: 'html',
-            async: true,
+                type: 'GET',
+                url: '/Notifications/ShowNotification',
+                data: parsedMessage,
+                datatype: 'html',
+                async: true,
             success: function (data) {
-                notificationsMenuDiv.innerHTML += data;
-            },
-            error: function (jqXhr, textStatus, errorThrown) {
-                console.log(textStatus, errorThrown);
-            }
-        });
+                let tempData = notificationsMenuDiv.innerHTML;
+                    notificationsMenuDiv.innerHTML = data + tempData;
+                },
+                error: function (jqXhr, textStatus, errorThrown) {
+                    console.log(textStatus, errorThrown);
+                }
+            });
+        
         if (!parsedMessage.IsRead) {
             notificationsCount++;
         }
         notifationsCounter.innerHTML = notificationsCount;
         togglerCounter.innerHTML = notificationsCount;
-        togglerCounter.style.display = 'block';
         if (notificationsCount === 0) {
             togglerCounter.style.display = 'none';
+            notifationsCounter.classList.remove('badge-danger');
+            notifationsCounter.classList.add('badge-secondary');
+            togglerCounter.style.display = 'none';
+        } else {
+            notificationsIcon.classList.add('notificationIconAnimation');
+            notifationsCounter.classList.remove('badge-secondary');
+            notifationsCounter.classList.add('badge-danger');
+            togglerCounter.style.display = 'block';
+        }
+    }
+);
+
+connection.on('UpdateMessage',
+    function(message) {
+        console.log('UpdateNotification: ' + message);
+        let parsedMessage = JSON.parse(message);
+        $.ajax({
+            type: 'GET',
+            url: '/Notifications/ShowUpdatedNotification',
+            data: parsedMessage,
+            datatype: 'html',
+            async: true,
+            success: function (data) {
+                // console.log('UpdateData: ' + data);
+                updateNotification(parsedMessage, data);
+            },
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log(textStatus, errorThrown);
+            }
+        });
+    }
+);
+
+connection.on('DeleteMessage',
+    function (message) {
+        console.log('DeleteNotification: ' + message);
+        let parsedMessage = JSON.parse(message);
+        let itemsToRemove = document.getElementsByClassName('notifId' + parsedMessage.Id);
+        var countChange = false;
+        if (itemsToRemove.length > 0) {
+            for (var i = itemsToRemove.length - 1; i >= 0; --i) {
+                let parentBtn = itemsToRemove[i].closest('button');
+                if (parentBtn.classList.contains('notificationUnread')) {
+                    countChange = true;
+                }
+                parentBtn.parentNode.outerHTML = "";
+            }
+        }
+        if (countChange) {
+            notificationsCount--;
+        } else {
+            notificationsCount++;
+        }
+        notifationsCounter.innerHTML = notificationsCount;
+        togglerCounter.innerHTML = notificationsCount;
+        if (notificationsCount === 0) {
+            togglerCounter.style.display = "none";
             notifationsCounter.classList.remove('badge-danger');
             notifationsCounter.classList.add('badge-secondary');
             togglerCounter.style.display = 'none';

@@ -11,12 +11,10 @@
     {
         isReadClass = "notificationRead";
         markAsRead = "Mark as unread";
-        topBtnClass = "dropdown-item btn btn-link notification-item bg-dark";
+        topBtnClass = topBtnClass + " bg-dark";
         markAsReadIcon = "markunread";
     }
 }
-<div style="background: #3a2051">
-    <hr />
     <button type="button" onClick="notificationItemClick(event, this)" class="@topBtnClass @isReadClass text-left" style="width: 95%; min-width: 280px; text-transform: none;" data-notificationid="@Model.Id">
         <div class="media-area" style="width: 100%; margin: 0; padding-bottom: 4px; min-width: 300px;">
             <div class="media text-left">
@@ -32,7 +30,7 @@
                     <h5 class="media-heading text-white">@Model.Title</h5>
                     <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@Model.Message</p>
                     <div class="media-footer">
-                        <span  id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(event, this)" data-notificationid="@Model.Id">
+                        <span id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(event, this)" data-notificationid="@Model.Id">
                             <i class="material-icons">delete_forever</i> Delete
                         </span>
                         <span id="@readId" class="btn btn-info btn-link btn-sm float-right @isReadClass @idClass" onClick="markRead(event, this)" data-notificationid="@Model.Id">
@@ -43,5 +41,3 @@
             </div>
         </div>
     </button>
-</div>
-

@@ -28,22 +28,16 @@ namespace KinaUnaWeb.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
-
             var connectionId = Context.ConnectionId;
             await Groups.AddToGroupAsync(connectionId, "Online");
-            await Groups.AddToGroupAsync(connectionId, userId);
             await base.OnConnectedAsync();
-            await Clients.Caller.SendAsync("UserInfo", Context.UserIdentifier);
             await GetUpdateForUser();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
             var connectionId = Context.ConnectionId;
             await Groups.RemoveFromGroupAsync(connectionId, "Online");
-            await Groups.RemoveFromGroupAsync(connectionId, userId);
             await base.OnDisconnectedAsync(exception);
         }
 
@@ -148,7 +142,7 @@ namespace KinaUnaWeb.Hubs
                         updateNotification.IsRead = true;
                         _context.WebNotificationsDb.Update(updateNotification);
                         await _context.SaveChangesAsync();
-                        await Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(updateNotification));
+                        await Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
                     }
                 }
             }
@@ -171,7 +165,7 @@ namespace KinaUnaWeb.Hubs
                         updateNotification.IsRead = false;
                         _context.WebNotificationsDb.Update(updateNotification);
                         await _context.SaveChangesAsync();
-                        await Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(updateNotification));
+                        await Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
                     }
                 }
             }
@@ -226,24 +220,6 @@ namespace KinaUnaWeb.Hubs
                     webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
                     await Clients.Caller.SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
                 }
-            }
-        }
-        
-        public async Task TestHello()
-        {
-            string userEmail = Context.GetHttpContext().User.FindFirst("email").Value;
-            string userTimeZone = Context.GetHttpContext().User.FindFirst("timezone").Value;
-            if (userEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
-            {
-                WebNotification webNotification = new WebNotification();
-                webNotification.Title = "Greeting";
-                webNotification.Message = "Hello!";
-                webNotification.From = "KinaUna.com";
-                webNotification.Type = "Notification";
-                webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
-                    TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-                webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                await Clients.Caller.SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
             }
         }
     }
