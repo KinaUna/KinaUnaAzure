@@ -91,11 +91,12 @@ function loginModalClosed() {
     clearInterval(checkFrame);
 }
 $(document).ready(function () {
-    $(".leavePage").click(function () {
-        $(this).closest(".dropdown-menu").prev().dropdown("toggle");
-        if ($('.navbar-toggler').css('display') !== 'none' && document.getElementById("bodyClick")) {
-            $('.navbar-toggler').trigger("click");
+    $('.leavePage').click(function () {
+        $(this).closest('.dropdown-menu').prev().dropdown('toggle');
+        if ($('.navbar-toggler').css('display') !== 'none' && document.getElementById('bodyClick')) {
+            $('.navbar-toggler').trigger('click');
         }
+        document.getElementById('navMain').style.opacity = 0.8;
         runWaitMeLeave();
     });
 });

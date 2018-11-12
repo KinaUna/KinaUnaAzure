@@ -58,6 +58,10 @@ namespace KinaUnaWeb.Hubs
 
                         if (count == 0 || (indexer >= start -1 && indexer < count + start -1) )
                         {
+                            if (String.IsNullOrEmpty(webn.Link))
+                            {
+                                webn.Link = "/Notifications?Id=" + webn.Id;
+                            }
                             webn.DateTime = TimeZoneInfo.ConvertTimeFromUtc(webn.DateTime,
                                 TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                             webn.DateTimeString = webn.DateTime.ToString("dd-MMM-yyyy HH:mm");
@@ -119,7 +123,10 @@ namespace KinaUnaWeb.Hubs
                 webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(webNotification.DateTime,
                     TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                 webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                
+                if (String.IsNullOrEmpty(webNotification.Link))
+                {
+                    webNotification.Link = "/Notifications?Id=" + webNotification.Id;
+                }
                 await Clients.Caller.SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
             }
 
@@ -139,6 +146,10 @@ namespace KinaUnaWeb.Hubs
                 {
                     if (userId == updateNotification.To)
                     {
+                        if (String.IsNullOrEmpty(updateNotification.Link))
+                        {
+                            updateNotification.Link = "/Notifications?Id=" + updateNotification.Id;
+                        }
                         updateNotification.IsRead = true;
                         _context.WebNotificationsDb.Update(updateNotification);
                         await _context.SaveChangesAsync();
@@ -162,6 +173,10 @@ namespace KinaUnaWeb.Hubs
                 {
                     if (userId == updateNotification.To)
                     {
+                        if (String.IsNullOrEmpty(updateNotification.Link))
+                        {
+                            updateNotification.Link = "/Notifications?Id=" + updateNotification.Id;
+                        }
                         updateNotification.IsRead = false;
                         _context.WebNotificationsDb.Update(updateNotification);
                         await _context.SaveChangesAsync();
@@ -218,6 +233,10 @@ namespace KinaUnaWeb.Hubs
                     webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(webNotification.DateTime,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                     webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
+                    if (String.IsNullOrEmpty(webNotification.Link))
+                    {
+                        webNotification.Link = "/Notifications?Id=" + webNotification.Id;
+                    }
                     await Clients.Caller.SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
                 }
             }

@@ -442,6 +442,28 @@ button.Zebra_DatePicker_Icon {
     width: 48px;
 }
 
+.notifications-List {
+    overflow-y: auto;
+    max-height: 85vh;
+}
+.notification-item {
+    background: #3a2051;
+    border-top: solid #6828a9 2px;
+    padding-left: 4px;
+}
+    .notification-item:hover {
+        background: #6828a9;
+        border-top: solid #8848c9 2px;
+    }
+
+.notification-button {
+    margin: 0;
+    padding: 0;
+    width: 95%;
+    min-width: 380px;
+    text-transform: none;
+    
+}
 .notificationRead {
     opacity: 0.80;
 }

@@ -8,24 +8,26 @@
 <div class="card" style="background: #3a2051">
     @if (ViewBag.SelectedNotification != null)
     {
+        string topDivClass = "notification-item";
         string idClass = "notifId" + ViewBag.SelectedNotification.Id;
         string isReadClass = "notificationUnread";
         string markAsRead = "Mark as read";
         string readId = "notificationReadId" + ViewBag.SelectedNotification.Id;
         string deleteId = "notificationDeleteId" + ViewBag.SelectedNotification.Id;
-        string topBtnClass = "dropdown-item btn btn-link notification-item";
+        string topBtnClass = "btn btn-link notification-button leavePage";
         string markAsReadIcon = "drafts";
         if (ViewBag.SelectedNotification.IsRead)
         {
+            topDivClass = topDivClass + " bg-dark";
             isReadClass = "notificationRead";
             markAsRead = "Mark as unread";
-            topBtnClass = "dropdown-item btn btn-link notification-item bg-dark";
+            topBtnClass = "btn btn-link bg-dark notification-button leavePage";
             markAsReadIcon = "markunread";
         }
 
-        <div style="background: #3a2051">
+        <div class="@topDivClass">
             <hr />
-            <button type="button" onClick="notificationItemClick(event, this)" class="@topBtnClass @isReadClass text-left" style="width: 95%; min-width: 280px; text-transform: none;" data-notificationid="@ViewBag.SelectedNotification.Id">
+            <button type="button" onClick="notificationItemClick(event, this)" class="@topBtnClass @isReadClass text-left" data-notificationid="@ViewBag.SelectedNotification.Id" data-notificationLink="@ViewBag.SelectedNotification.Link">
                 <div class="media-area" style="width: 100%; margin: 0; padding-bottom: 4px; min-width: 300px;">
                     <div class="media text-left">
                         <div class="float-left">
@@ -56,30 +58,32 @@
 </div>
 <br />
 Most recent notifications:
-<div class="card" style="background: #3a2051">
+<div id="recentNotifications" class="card" style="background: #3a2051; margin-top: 5px;">
 
     @if (Model.Any())
     {
         foreach (WebNotification notif in Model)
         {
-                string idClass = "notifId" + notif.Id;
-                string isReadClass = "notificationUnread";
-                string markAsRead = "Mark as read";
-                string readId = "notificationReadId" + notif.Id;
-                string deleteId = "notificationDeleteId" + notif.Id;
-                string topBtnClass = "dropdown-item btn btn-link notification-item";
-                string markAsReadIcon = "drafts";
-                if (notif.IsRead)
-                {
-                    isReadClass = "notificationRead";
-                    markAsRead = "Mark as unread";
-                    topBtnClass = "dropdown-item btn btn-link notification-item bg-dark";
-                    markAsReadIcon = "markunread";
-                }
-            
-            <div style="background: #3a2051">
-                <hr />
-                <button type="button" onClick="notificationItemClick(event, this)" class="@topBtnClass @isReadClass text-left" style="width: 95%; min-width: 280px; text-transform: none;" data-notificationid="@notif.Id">
+            string topDivClass = "notification-item";
+            string idClass = "notifId" + notif.Id;
+            string isReadClass = "notificationUnread";
+            string markAsRead = "Mark as read";
+            string readId = "notificationReadId" + notif.Id;
+            string deleteId = "notificationDeleteId" + notif.Id;
+            string topBtnClass = "btn btn-link notification-button leavePage";
+            string markAsReadIcon = "drafts";
+            string timeStamp = notif.DateTime.Ticks.ToString();
+            if (notif.IsRead)
+            {
+                topDivClass = topDivClass + " bg-dark";
+                isReadClass = "notificationRead";
+                markAsRead = "Mark as unread";
+                topBtnClass = "btn btn-link bg-dark notification-button leavePage";
+                markAsReadIcon = "markunread";
+            }
+
+            <div class="@topDivClass" data-notificationTime="@timeStamp">
+                <button type="button" onClick="notificationItemClick(event, this)" class="@topBtnClass @isReadClass text-left" data-notificationid="@notif.Id" data-notificationLink="@notif.Link">
                     <div class="media-area" style="width: 100%; margin: 0; padding-bottom: 4px; min-width: 300px;">
                         <div class="media text-left">
                             <div class="float-left">

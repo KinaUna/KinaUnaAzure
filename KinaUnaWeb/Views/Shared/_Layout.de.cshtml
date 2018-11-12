@@ -223,7 +223,9 @@
                             <a id="notificationsButton" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                                 <span id="notificationBellIcon" class="fas fa-bell"></span> Meldungen <span id="notificationsCounter" class="badge badge-pill badge-secondary"></span> <span class="caret"></span>
                             </a>
-                            <div id="notificationsMenu" class="dropdown-menu">
+                            <<div id="notificationsMenu" class="dropdown-menu">
+                                <div id="notificationsList" class="notifications-List"></div>
+                                <a class="btn btn-link text-white leavePage" asp-controller="Notifications" asp-action="Index"><i class="material-icons">view_agenda</i> Alle Meldungen anzeigen</a>
                             </div>
                         </div>
                     }
