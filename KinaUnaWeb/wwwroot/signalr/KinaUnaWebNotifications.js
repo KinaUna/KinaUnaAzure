@@ -18,7 +18,6 @@ function notificationItemClick(event, btn) {
             success: function() {
                 if ($('.navbar-toggler').css('display') !== 'none' && document.getElementById('bodyClick')) {
                     $('.navbar-toggler').trigger("click");
-                    
                 }
                 navMain.style.opacity = 0.8;
                 runWaitMeLeave();
@@ -30,7 +29,6 @@ function notificationItemClick(event, btn) {
     } else {
         if ($('.navbar-toggler').css('display') !== 'none' && document.getElementById('bodyClick')) {
             $('.navbar-toggler').trigger("click");
-            
         }
         navMain.style.opacity = 0.8;
         runWaitMeLeave();
@@ -139,6 +137,9 @@ function clearNotifications() {
             parentDiv.parentNode.removeChild(parentDiv);
         }
     }
+    notificationsCount = 0;
+    notifationsCounter.innerHTML = notificationsCount;
+    togglerCounter.innerHTML = notificationsCount;
     togglerCounter.style.display = "none";
     notifationsCounter.classList.remove('badge-danger');
     notifationsCounter.classList.add('badge-secondary');
@@ -153,6 +154,11 @@ function sortNotifications() {
         .forEach(function (x) { s.appendChild(x); });
 }
 
+let checkConnectionInterval;
+let checkNotifications;
+let signalRdisconnected = false;
+let checkNotificationsCount = 0;
+
 connection = new signalR.HubConnectionBuilder()
     .withUrl('/webnotificationhub')
     .withHubProtocol(new signalR.protocols.msgpack.MessagePackHubProtocol())
@@ -161,18 +167,32 @@ connection = new signalR.HubConnectionBuilder()
 
 
 connection.onclose(function () {
-    console.log('SignalR closed, reconnecting.');
+    signalRdisconnected = true;
+    console.log('SignalR connection closed, reconnecting.');
+    checkNotificationsCount = 0;
+    clearInterval(checkNotifications);
     clearNotifications();
-    connection.start().catch(err => console.error(err.toString()));
+    checkConnectionInterval = setInterval(function() {
+        connection.start().catch(err => console.error(err.toString()));
+    }, 30000);
+    
 });
+
 connection.on('UserInfo',
-    function(info) {
+    function (info) {
+        checkNotificationsCount = 0;
         console.log(info);
     });
 
 connection.on('ReceiveMessage',
     function(message) {
-        console.log('ReceiveNotification: ' + message);
+        // console.log('ReceiveNotification: ' + message);
+        checkNotificationsCount = 0;
+        if (signalRdisconnected) {
+            clearInterval(checkConnectionInterval);
+            checkNotifications = setInterval(getNotifications(), 300000);
+            signalRdisconnected = false;
+        }
         let parsedMessage = JSON.parse(message);
         $.ajax({
             type: 'GET',
@@ -197,7 +217,8 @@ connection.on('ReceiveMessage',
 
 connection.on('UpdateMessage',
     function(message) {
-        console.log('UpdateNotification: ' + message);
+        // console.log('UpdateNotification: ' + message);
+        checkNotificationsCount = 0;
         let parsedMessage = JSON.parse(message);
         $.ajax({
             type: 'GET',
@@ -206,6 +227,7 @@ connection.on('UpdateMessage',
             datatype: 'html',
             async: true,
             success: function (data) {
+                signalRdisconnected = false;
                 updateNotification(parsedMessage, data);
             },
             error: function (jqXhr, textStatus, errorThrown) {
@@ -217,7 +239,8 @@ connection.on('UpdateMessage',
 
 connection.on('DeleteMessage',
     function (message) {
-        console.log('DeleteNotification: ' + message);
+        // console.log('DeleteNotification: ' + message);
+        checkNotificationsCount = 0;
         let parsedMessage = JSON.parse(message);
         let itemsToRemove = document.getElementsByClassName('notifId' + parsedMessage.Id);
         if (itemsToRemove.length > 0) {
@@ -230,14 +253,15 @@ connection.on('DeleteMessage',
     }
 );
 let getNotifications = function () {
-    if (connection.connection.connectionState === 1) {
-        clearNotifications();
-        connection.invoke('GetUpdateForUser', 10, 1).catch(err => console.error(err.toString()));
-    }
-    if (connection.connection.connectionState === 2) {
-        console.log('From getNotifications: SignalR closed, reconnecting.');
-        clearNotifications();
-        connection.start().catch(err => console.error(err.toString()));
+    if (checkNotificationsCount > 1) {
+        if (connection.connection.connectionState === 1) {
+            signalRdisconnected = false;
+            clearNotifications();
+            connection.invoke('GetUpdateForUser', 10, 1).catch(err => console.error(err.toString()));
+        } else {
+            signalRdisconnected = true;
+
+        }
     }
 };
 
@@ -249,5 +273,5 @@ $(document).ready(function () {
         notificationsIcon.classList.remove('notificationIconAnimation');
         menuToggler.classList.remove('notificationIconAnimation');
     });
-    let checkNotifications = setInterval(getNotifications(), 300000);
+    checkNotifications = setInterval(getNotifications(), 300000);
 });

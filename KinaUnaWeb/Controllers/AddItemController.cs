@@ -436,7 +436,7 @@ namespace KinaUnaWeb.Controllers
                                 notification.Message = cmnt.DisplayName + "added a comment:\r\n" + cmnt.CommentText.Substring(0, 28);
                                 notification.DateTime = DateTime.UtcNow;
                                 notification.Icon = "/images/kinaunalogo48x48.png";
-                                notification.Title = "New comment on " + progeny.NickName + "\'s photo";
+                                notification.Title = "New comment on " + progeny.NickName + "'s photo";
                                 notification.Link = "/Pictures/Picture/" + model.ItemId + "?childId=" + model.ProgenyId;
                                 notification.Type = "Notification";
                                 await _context.WebNotificationsDb.AddAsync(notification);
@@ -594,6 +594,40 @@ namespace KinaUnaWeb.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+
+            List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
+            foreach (UserAccess ua in usersToNotif)
+            {
+                if (ua.AccessLevel <= newVideo.AccessLevel)
+                {
+                    string vidTimeString = "";
+                    UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        if (newVideo.VideoTime.HasValue)
+                        {
+                            var vidTime = TimeZoneInfo.ConvertTimeFromUtc(newVideo.VideoTime.Value,
+                                TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                            vidTimeString = "Video recorded: " + vidTime.ToString("dd-MMM-yyyy HH:mm");
+                        }
+                        else
+                        {
+                            vidTimeString = "Video recorded: Unknown";
+                        }
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = "KinaUna";
+                        notification.Message = "Video ID: " + newVideo.VideoId + "\r\n" + vidTimeString + "\r\n";
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Title = "Video added for " + progeny.NickName;
+                        notification.Link = "/Videos/Video/" + newVideo.VideoId + "?childId=" + model.ProgenyId;
+                        notification.Type = "Notification";
+                        await _context.WebNotificationsDb.AddAsync(notification);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
 
             return View(newVideo);
         }
@@ -799,6 +833,30 @@ namespace KinaUnaWeb.Controllers
                          await _emailSender.SendEmailAsync(toMail, "New Comment on " + progeny.NickName + "'s Picture",
                             "A comment was added to " + progeny.NickName + "'s picture by " + cmnt.DisplayName + ":<br/><br/>" + cmnt.CommentText + "<br/><br/>Picture Link: <a href=\"" + imgLink + "\">" + imgLink + "</a>");
                     }
+                    List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
+                    Video vid = await _mediaHttpClient.GetVideo(model.ItemId, userinfo.Timezone);
+                    foreach (UserAccess ua in usersToNotif)
+                    {
+                        if (ua.AccessLevel <= vid.AccessLevel)
+                        {
+                            string vidTimeString = "";
+                            UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
+                            if (uaUserInfo.UserId != "Unknown")
+                            {
+                                WebNotification notification = new WebNotification();
+                                notification.To = uaUserInfo.UserId;
+                                notification.From = "KinaUna";
+                                notification.Message = cmnt.DisplayName + "added a comment:\r\n" + cmnt.CommentText.Substring(0, 28);
+                                notification.DateTime = DateTime.UtcNow;
+                                notification.Icon = "/images/kinaunalogo48x48.png";
+                                notification.Title = "New comment on " + progeny.NickName + "'s video";
+                                notification.Link = "/Videos/Video/" + vid.VideoId + "?childId=" + model.ProgenyId;
+                                notification.Type = "Notification";
+                                await _context.WebNotificationsDb.AddAsync(notification);
+                                await _context.SaveChangesAsync();
+                            }
+                        }
+                    }
                 }
             }
 
@@ -891,6 +949,30 @@ namespace KinaUnaWeb.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+
+            List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            foreach (UserAccess ua in usersToNotif)
+            {
+                if (ua.AccessLevel <= noteItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = "KinaUna";
+                        notification.Message = "Title: " + noteItem.Title + "\r\nCategory: " + noteItem.Category;
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Title = "A new note was added for " + progeny.NickName;
+                        notification.Link = "/Notes?childId=" + model.ProgenyId;
+                        notification.Type = "Notification";
+                        await _context.WebNotificationsDb.AddAsync(notification);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
 
             return RedirectToAction("Index", "Notes");
         }
@@ -1115,6 +1197,43 @@ namespace KinaUnaWeb.Controllers
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
 
+            List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            foreach (UserAccess ua in usersToNotif)
+            {
+                if (ua.AccessLevel <= eventItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        string eventTimeString = "";
+                        if (eventItem.StartTime.HasValue)
+                        {
+                            var startTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value,
+                                TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                            eventTimeString = "\r\nStart: " + startTime.ToString("dd-MMM-yyyy HH:mm");
+                        }
+                        if (eventItem.EndTime.HasValue)
+                        {
+                            var endTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value,
+                                TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                            eventTimeString = eventTimeString + "\r\nEnd: " + endTime.ToString("dd-MMM-yyyy HH:mm");
+                        }
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = "KinaUna";
+                        notification.Message = eventItem.Title + eventTimeString;
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Title = "A new calendar event was added for " + progeny.NickName;
+                        notification.Link = "/Calendar/ViewEvent?eventId=" + eventItem.EventId + "&childId=" + progeny.Id;
+                        notification.Type = "Notification";
+                        await _context.WebNotificationsDb.AddAsync(notification);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+
             return RedirectToAction("Index", "Calendar");
         }
 
@@ -1336,6 +1455,37 @@ namespace KinaUnaWeb.Controllers
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
 
+            List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            foreach (UserAccess ua in usersToNotif)
+            {
+                if (ua.AccessLevel <= vocabItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        string vocabTimeString = "";
+                        if (vocabItem.Date.HasValue)
+                        {
+                            var startTime = TimeZoneInfo.ConvertTimeFromUtc(vocabItem.Date.Value,
+                                TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                            vocabTimeString = "\r\nDate: " + startTime.ToString("dd-MMM-yyyy");
+                        }
+                        
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = "KinaUna";
+                        notification.Message = "Word: " + vocabItem.Word + "\r\nLanguage: " + vocabItem.Language + vocabTimeString;
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Title = "A new word was added for " + progeny.NickName;
+                        notification.Link = "/Vocabulary?childId=" + progeny.Id;
+                        notification.Type = "Notification";
+                        await _context.WebNotificationsDb.AddAsync(notification);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
             return RedirectToAction("Index", "Vocabulary");
         }
 
@@ -1556,6 +1706,31 @@ namespace KinaUnaWeb.Controllers
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
 
+            List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            foreach (UserAccess ua in usersToNotif)
+            {
+                if (ua.AccessLevel <= skillItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        string skillTimeString = "\r\nDate: " + skillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy"); ;
+                        
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = "KinaUna";
+                        notification.Message = "Skill: " + skillItem.Name + "\r\nCategory: " + skillItem.Category + skillTimeString;
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Title = "A new skill was added for " + progeny.NickName;
+                        notification.Link = "/Skills?childId=" + progeny.Id;
+                        notification.Type = "Notification";
+                        await _context.WebNotificationsDb.AddAsync(notification);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
             return RedirectToAction("Index", "Skills");
         }
 
@@ -1828,6 +2003,29 @@ namespace KinaUnaWeb.Controllers
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
 
+            List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            foreach (UserAccess ua in usersToNotif)
+            {
+                if (ua.AccessLevel <= friendItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = "KinaUna";
+                        notification.Message = "Friend: " + friendItem.Name + "\r\nContext: " + friendItem.Context;
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Title = "A new friend was added for " + progeny.NickName;
+                        notification.Link = "/Friends?childId=" + progeny.Id;
+                        notification.Type = "Notification";
+                        await _context.WebNotificationsDb.AddAsync(notification);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
             return RedirectToAction("Index", "Friends");
         }
 
@@ -2108,6 +2306,29 @@ namespace KinaUnaWeb.Controllers
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
 
+            List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            foreach (UserAccess ua in usersToNotif)
+            {
+                if (ua.AccessLevel <= measurementItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = "KinaUna";
+                        notification.Message = "Height: " + measurementItem.Height + "\r\nWeight: " + measurementItem.Weight;
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Title = "A new measurement was added for " + progeny.NickName;
+                        notification.Link = "/Measurements?childId=" + progeny.Id;
+                        notification.Type = "Notification";
+                        await _context.WebNotificationsDb.AddAsync(notification);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
             return RedirectToAction("Index", "Measurements");
         }
 
@@ -2387,6 +2608,29 @@ namespace KinaUnaWeb.Controllers
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
 
+            List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            foreach (UserAccess ua in usersToNotif)
+            {
+                if (ua.AccessLevel <= contactItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = "KinaUna";
+                        notification.Message = "Name: " + contactItem.DisplayName + "\r\nContext: " + contactItem.Context;
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Title = "A new contact was added for " + progeny.NickName;
+                        notification.Link = "/Contacts/ContactDetails?contactId=" + contactItem.ContactId + "&childId=" + progeny.Id;
+                        notification.Type = "Notification";
+                        await _context.WebNotificationsDb.AddAsync(notification);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
             return RedirectToAction("Index", "Contacts");
         }
 
@@ -2719,6 +2963,29 @@ namespace KinaUnaWeb.Controllers
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
 
+            List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            foreach (UserAccess ua in usersToNotif)
+            {
+                if (ua.AccessLevel <= vacItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = "KinaUna";
+                        notification.Message = "Name: " + vacItem.VaccinationName + "\r\nContext: " + vacItem.VaccinationDate.ToString("dd-MMM-yyyy");
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Title = "A new vaccination was added for " + progeny.NickName;
+                        notification.Link = "/Vaccinations?childId=" + progeny.Id;
+                        notification.Type = "Notification";
+                        await _context.WebNotificationsDb.AddAsync(notification);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
             return RedirectToAction("Index", "Vaccinations");
         }
 
@@ -2936,10 +3203,15 @@ namespace KinaUnaWeb.Controllers
                     UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
                     if (uaUserInfo.UserId != "Unknown")
                     {
+                        var sleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleepItem.SleepStart,
+                            TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                        var sleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleepItem.SleepEnd,
+                            TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
                         notification.From = "KinaUna";
-                        notification.Message = "Start: " + sleepItem.SleepStart.ToString("dd-MMM-yyyy HH:mm") + "\r\nEnd: " + sleepItem.SleepEnd.ToString("dd-MMM-yyyy HH:mm");
+                        notification.Message = "Start: " + sleepStart.ToString("dd-MMM-yyyy HH:mm") + "\r\nEnd: " +sleepEnd.ToString("dd-MMM-yyyy HH:mm");
                         notification.DateTime = DateTime.UtcNow;
                         notification.Icon = "/images/kinaunalogo48x48.png";
                         notification.Title = "Sleep Added for " + prog.NickName;
@@ -3244,7 +3516,36 @@ namespace KinaUnaWeb.Controllers
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
 
+            List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            foreach (UserAccess ua in usersToNotif)
+            {
+                if (ua.AccessLevel <= locItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        DateTime tempDate = DateTime.UtcNow;
+                        if (locItem.Date.HasValue)
+                        {
+                            tempDate = TimeZoneInfo.ConvertTimeFromUtc(locItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.Progeny.TimeZone));
+                        }
 
+                        string dateString = tempDate.ToString("dd-MMM-yyyy");
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = "KinaUna";
+                        notification.Message = "Name: " + locItem.Name + "\r\nDate: " + dateString;
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Title = "A new location was added for " + progeny.NickName;
+                        notification.Link = "/Locations?childId=" + progeny.Id;
+                        notification.Type = "Notification";
+                        await _context.WebNotificationsDb.AddAsync(notification);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
             return RedirectToAction("Index", "Locations");
         }
 

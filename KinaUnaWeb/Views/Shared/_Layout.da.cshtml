@@ -288,11 +288,14 @@
         </div>
         <br />
     </div>
-<script src="~/signalr/signalr.min.js"></script>
-<script src="~/signalr/msgpack5.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
-<script src="~/signalr/signalr-protocol-msgpack.min.js"></script>
-<script src="~/signalr/KinaUnaWebNotifications.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <script src="~/signalr/signalr.min.js"></script>
+        <script src="~/signalr/msgpack5.min.js"></script>
+        <script src="~/signalr/signalr-protocol-msgpack.min.js"></script>
+        <script src="~/signalr/KinaUnaWebNotifications.js" asp-append-version="true"></script>
+    }
     <partial name="_LoginModalPartial" />
     <partial name="_FooterPartial" />
 </body>
