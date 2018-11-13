@@ -31,7 +31,7 @@ namespace KinaUnaWeb.Hubs
             var connectionId = Context.ConnectionId;
             await Groups.AddToGroupAsync(connectionId, "Online");
             await base.OnConnectedAsync();
-            await GetUpdateForUser();
+            await GetUpdateForUser(10, 1);
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
@@ -48,32 +48,20 @@ namespace KinaUnaWeb.Hubs
             if (userId != "NoUser")
             {
                 List<WebNotification> notifications = await
-                    _context.WebNotificationsDb.Where(w => w.To == userId).ToListAsync();
+                    _context.WebNotificationsDb.Where(w => w.To == userId).OrderByDescending(n => n.DateTime).Skip(start -1).Take(count).ToListAsync();
                 if (notifications.Any())
                 {
-                    int indexer = 0;
-                    notifications = notifications.OrderBy(n => n.DateTime).Reverse().ToList();
                     foreach (WebNotification webn in notifications)
                     {
-
-                        if (count == 0 || (indexer >= start -1 && indexer < count + start -1) )
+                        if (String.IsNullOrEmpty(webn.Link))
                         {
-                            if (String.IsNullOrEmpty(webn.Link))
-                            {
-                                webn.Link = "/Notifications?Id=" + webn.Id;
-                            }
-                            webn.DateTime = TimeZoneInfo.ConvertTimeFromUtc(webn.DateTime,
-                                TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-                            webn.DateTimeString = webn.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                            string sendResult = JsonConvert.SerializeObject(webn);
-                            await Clients.Caller.SendAsync("ReceiveMessage", sendResult);
+                            webn.Link = "/Notifications?Id=" + webn.Id;
                         }
-
-                        indexer++;
-                        if (count != 0)
-                        {
-                            count--;
-                        }
+                        webn.DateTime = TimeZoneInfo.ConvertTimeFromUtc(webn.DateTime,
+                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
+                        webn.DateTimeString = webn.DateTime.ToString("dd-MMM-yyyy HH:mm");
+                        string sendResult = JsonConvert.SerializeObject(webn);
+                        await Clients.Caller.SendAsync("ReceiveMessage", sendResult);
                     }
                 }
             }
