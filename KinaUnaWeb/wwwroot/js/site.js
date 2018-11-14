@@ -19,6 +19,22 @@ function runWaitMeLeave() {
         onClose: function () { }
     });
 }
+
+function runWaitMeLeave2() {
+    $('body-content').waitMe({
+        effect: 'roundBounce',
+        text: '',
+        bg: 'rgba(40,20,60,0.25)',
+        color: ['#6a5081', '#7a6095', '#8a70aa', '#9a80bb', '#aa90cc', '#bbaadd', '#ccbbee', '#ddccff', '#ccbbee', '#bbaadd', '#aa90cc', '#9a80bb', '#6a5081', '#7a6095', '#8a70aa', '#9a80bb', '#aa90cc', '#bbaadd', '#ccbbee', '#ddccff', '#ccbbee', '#bbaadd', '#aa90cc', '#9a80bb'],
+        maxSize: '',
+        waitTime: -1,
+        source: '',
+        textPos: 'vertical',
+        fontSize: '',
+        onClose: function () { }
+    });
+}
+
 window.addEventListener('message',
     function (event) {
         isAuthPage = false;
@@ -98,5 +114,9 @@ $(document).ready(function () {
         }
         document.getElementById('navMain').style.opacity = 0.8;
         runWaitMeLeave();
+    });
+
+    $(".leavePage2").click(function() {
+        runWaitMeLeave2();
     });
 });

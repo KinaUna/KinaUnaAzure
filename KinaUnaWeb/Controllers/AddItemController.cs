@@ -427,13 +427,18 @@ namespace KinaUnaWeb.Controllers
                         if (ua.AccessLevel <= pic.AccessLevel)
                         {
                             string picTimeString = "";
+                            string commentTxtStr = cmnt.CommentText;
+                            if (cmnt.CommentText.Length > 99)
+                            {
+                                commentTxtStr = cmnt.CommentText.Substring(0, 100) + "...";
+                            }
                             UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
                             if (uaUserInfo.UserId != "Unknown")
                             {
                                 WebNotification notification = new WebNotification();
                                 notification.To = uaUserInfo.UserId;
                                 notification.From = "KinaUna";
-                                notification.Message = cmnt.DisplayName + "added a comment:\r\n" + cmnt.CommentText.Substring(0, 28);
+                                notification.Message = cmnt.DisplayName + "added a comment:\r\n" + commentTxtStr;
                                 notification.DateTime = DateTime.UtcNow;
                                 notification.Icon = "/images/kinaunalogo48x48.png";
                                 notification.Title = "New comment on " + progeny.NickName + "'s photo";
@@ -531,7 +536,7 @@ namespace KinaUnaWeb.Controllers
             video.AccessLevel = model.AccessLevel;
             video.Author = userinfo.UserId;
             video.Owners = model.Owners;
-            video.ThumbLink = "https://kinauna.com/videodb/" + "moviethumb.png";
+            video.ThumbLink = "https://web.kinauna.com/videodb/" + "moviethumb.png";
             video.VideoTime = DateTime.UtcNow;
             if (model.VideoTime != null)
             {
@@ -826,7 +831,7 @@ namespace KinaUnaWeb.Controllers
                 progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
                 if (progeny != null)
                 {
-                    string imgLink = "https://kinauna.com/Videos/Video/" + model.ItemId + "?childId=" + model.ProgenyId;
+                    string imgLink = "https://web.kinauna.com/Videos/Video/" + model.ItemId + "?childId=" + model.ProgenyId;
                     List<string> emails = progeny.Admins.Split(",").ToList();
                     foreach (string toMail in emails)
                     {
@@ -843,10 +848,15 @@ namespace KinaUnaWeb.Controllers
                             UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
                             if (uaUserInfo.UserId != "Unknown")
                             {
+                                string commentTxtStr = cmnt.CommentText;
+                                if (cmnt.CommentText.Length > 99)
+                                {
+                                    commentTxtStr = cmnt.CommentText.Substring(0, 100) + "...";
+                                }
                                 WebNotification notification = new WebNotification();
                                 notification.To = uaUserInfo.UserId;
                                 notification.From = "KinaUna";
-                                notification.Message = cmnt.DisplayName + "added a comment:\r\n" + cmnt.CommentText.Substring(0, 28);
+                                notification.Message = cmnt.DisplayName + "added a comment:\r\n" + commentTxtStr;
                                 notification.DateTime = DateTime.UtcNow;
                                 notification.Icon = "/images/kinaunalogo48x48.png";
                                 notification.Title = "New comment on " + progeny.NickName + "'s video";
@@ -908,6 +918,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
+            model.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
             model.PathName = userinfo.UserId;
             return View(model);
         }
@@ -930,7 +941,7 @@ namespace KinaUnaWeb.Controllers
             Note noteItem = new Note();
             noteItem.Title = model.Title;
             noteItem.ProgenyId = model.ProgenyId;
-            noteItem.CreatedDate = DateTime.UtcNow;
+            noteItem.CreatedDate = TimeZoneInfo.ConvertTimeToUtc(model.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
             noteItem.Content = model.Content;
             noteItem.Category = model.Category;
             noteItem.AccessLevel = model.AccessLevel;
@@ -944,8 +955,8 @@ namespace KinaUnaWeb.Controllers
             tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Note;
             tItem.ItemId = noteItem.NoteId.ToString();
             tItem.CreatedBy = userinfo.UserId;
-            tItem.CreatedTime = DateTime.UtcNow;
-            tItem.ProgenyTime = DateTime.UtcNow;
+            tItem.CreatedTime = noteItem.CreatedDate;
+            tItem.ProgenyTime = noteItem.CreatedDate;
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
@@ -1743,7 +1754,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = new UserInfo();
             userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            Progeny prog = await _progenyHttpClient.GetProgeny(skill.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
             {
                 // Todo: Show no access info.
@@ -1973,8 +1984,6 @@ namespace KinaUnaWeb.Controllers
                     friendItem.PictureLink = await _imageStore.SaveImage(stream, "friends");
 
                 }
-
-                model.FileName = model.File.FileName;
             }
             else
             {
@@ -2038,7 +2047,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = new UserInfo();
             userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            Progeny prog = await _progenyHttpClient.GetProgeny(friend.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
             {
                 // Todo: Show no access info.
@@ -2057,6 +2066,10 @@ namespace KinaUnaWeb.Controllers
             model.FriendId = friend.FriendId;
             model.FriendSince = friend.FriendSince;
             model.PictureLink = friend.PictureLink;
+            if (!friend.PictureLink.ToLower().StartsWith("http"))
+            {
+                model.PictureLink = _imageStore.UriFor(friend.PictureLink, "friends");
+            }
             model.AccessLevelListEn[model.AccessLevel].Selected = true;
             model.AccessLevelListDa[model.AccessLevel].Selected = true;
             model.AccessLevelListDe[model.AccessLevel].Selected = true;
@@ -2148,7 +2161,7 @@ namespace KinaUnaWeb.Controllers
                         friend.PictureLink = await _imageStore.SaveImage(stream, "friends");
                     }
 
-                    if (!oldPictureLink.StartsWith("http"))
+                    if (!oldPictureLink.ToLower().StartsWith("http"))
                     {
                         await _imageStore.DeleteImage(oldPictureLink, "friends");
                     }
@@ -2342,7 +2355,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = new UserInfo();
             userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            Progeny prog = await _progenyHttpClient.GetProgeny(measurement.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
             {
                 // Todo: Show no access info.
@@ -2643,7 +2656,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = new UserInfo();
             userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            Progeny prog = await _progenyHttpClient.GetProgeny(contact.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
             {
                 // Todo: Show no access info.
@@ -2681,7 +2694,12 @@ namespace KinaUnaWeb.Controllers
             model.Context = contact.Context;
             model.Notes = contact.Notes;
             model.PictureLink = contact.PictureLink;
-
+            if (!contact.PictureLink.ToLower().StartsWith("http"))
+            {
+                model.PictureLink = _imageStore.UriFor(contact.PictureLink, "contacts");
+            }
+            DateTime tempTime = contact?.DateAdded ?? DateTime.UtcNow;
+            model.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(tempTime, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
             model.Tags = contact.Tags;
 
             List<string> tagsList = new List<string>();
@@ -2744,6 +2762,7 @@ namespace KinaUnaWeb.Controllers
                 model.MiddleName = contact.MiddleName;
                 model.LastName = contact.LastName;
                 model.DisplayName = contact.DisplayName;
+                model.DateAdded = contact.DateAdded;
                 Address addressOld = new Address();
                 if (contact.AddressIdNumber != null)
                 {
@@ -2793,7 +2812,7 @@ namespace KinaUnaWeb.Controllers
                         model.PictureLink = await _imageStore.SaveImage(stream, "contacts");
                     }
 
-                    if (!oldPictureLink.StartsWith("http"))
+                    if (!oldPictureLink.ToLower().StartsWith("http"))
                     {
                         await _imageStore.DeleteImage(oldPictureLink, "contacts");
                     }
@@ -2998,7 +3017,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = new UserInfo();
             userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            Progeny prog = await _progenyHttpClient.GetProgeny(vaccination.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
             {
                 // Todo: Show no access info.
@@ -3236,7 +3255,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = new UserInfo();
             userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            Progeny prog = await _progenyHttpClient.GetProgeny(sleep.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
             {
                 // Todo: Show no access info.
@@ -3563,7 +3582,6 @@ namespace KinaUnaWeb.Controllers
             List<Progeny> accessList = new List<Progeny>();
             if (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null)
             {
-
                 accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
                 if (accessList.Any())
                 {

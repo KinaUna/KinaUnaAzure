@@ -39,12 +39,13 @@ namespace KinaUnaWeb.Controllers
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             UserInfo currentUser = await _progenyHttpClient.GetUserInfo(userEmail);
             model.Admins = currentUser.UserEmail.ToUpper();
-
+            
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> AddProgeny(ProgenyViewModel model)
         {
             Progeny prog = new Progeny();
@@ -55,6 +56,20 @@ namespace KinaUnaWeb.Controllers
             prog.PictureLink = model.PictureLink;
             prog.TimeZone = model.TimeZone;
             // Todo: Check if the progeny exists.
+
+            if (model.File != null)
+            {
+                using (var stream = model.File.OpenReadStream())
+                {
+                    prog.PictureLink = await _imageStore.SaveImage(stream, "progeny");
+
+                }
+            }
+            else
+            {
+                prog.PictureLink = "https://web.kinauna.com/photodb/childcareicon.jpg";
+            }
+
             await _progenyHttpClient.AddProgeny(prog);
             
             return RedirectToAction("Index");
@@ -74,11 +89,17 @@ namespace KinaUnaWeb.Controllers
             model.TimeZone = prog.TimeZone;
             model.Admins = prog.Admins.ToUpper();
             model.PictureLink = prog.PictureLink;
+            if (!prog.PictureLink.ToLower().StartsWith("http"))
+            {
+                model.PictureLink = _imageStore.UriFor(prog.PictureLink, "progeny");
+            }
+            model.PictureLink = prog.PictureLink;
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> EditProgeny(ProgenyViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
@@ -101,7 +122,20 @@ namespace KinaUnaWeb.Controllers
             newProgeny.TimeZone = model.TimeZone;
             // Todo: check if fields are valid.
 
-            await _progenyHttpClient.AddProgeny(newProgeny);
+            if (model.File != null && model.File.Name != String.Empty)
+            {
+                string oldPictureLink = prog.PictureLink;
+                using (var stream = model.File.OpenReadStream())
+                {
+                    newProgeny.PictureLink = await _imageStore.SaveImage(stream, "progeny");
+                }
+
+                if (!oldPictureLink.ToLower().StartsWith("http") && !String.IsNullOrEmpty(oldPictureLink))
+                {
+                    await _imageStore.DeleteImage(oldPictureLink, "progeny");
+                }
+            }
+            await _progenyHttpClient.UpdateProgeny(newProgeny);
             return RedirectToAction("Index");
         }
 

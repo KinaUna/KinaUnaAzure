@@ -9,5 +9,6 @@ namespace KinaUnaWeb.Services
     public interface IProgenyManager
     {
         Task<UserInfo> GetInfo(string userEmail);
+        Task<string> GetImageUrl(string pictureLink, string pictureContainer);
     }
 }

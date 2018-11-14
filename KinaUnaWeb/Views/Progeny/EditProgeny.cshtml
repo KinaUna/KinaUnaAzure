@@ -2,10 +2,11 @@
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
+    <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
 }
 <H3 class="title">Edit Profile for @Model.Name</H3>
 <br />
-<form asp-action="EditProgeny" role="form">
+<form asp-action="EditProgeny" role="form" method="post" enctype="multipart/form-data">
     <div class="form-group">
         <label asp-for="Name" class="col-3"></label>
         <div class="col-9">
@@ -46,7 +47,28 @@
             <input asp-for="Admins" class="form-control" value="@Model.Admins" />
         </div>
     </div>
-
+    <div class="form-group">
+        <label class="col-lg-3 col-sm3 control-label">Profile Picture</label>
+        <div class="col-lg-9">
+            <div class="fileinput fileinput-new text-center" data-provides="fileinput">
+                <div class="fileinput-new thumbnail img-raised">
+                    <img src="@Model.PictureLink" alt="...">
+                </div>
+                <div class="fileinput-preview fileinput-exists thumbnail img-raised"></div>
+                <div>
+                    <div class="btn btn-primary btn-round btn-file ">
+                        <span data-trigger="fileinput" class="fileinput-new">New picture</span>
+                        <span class="fileinput-exists">Change</span>
+                        <input type="file" asp-for="File" accept="image/*" />
+                    </div>
+                    <br />
+                    <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
+                        <i class="fa fa-times"></i> Remove
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
     <input asp-for="ProgenyId" class="form-control" value="@Model.ProgenyId" type="hidden" />
     <div>
         <div class="form-group">

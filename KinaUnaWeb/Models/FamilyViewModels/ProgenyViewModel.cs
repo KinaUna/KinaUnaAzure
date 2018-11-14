@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.FamilyViewModels
@@ -20,6 +21,7 @@ namespace KinaUnaWeb.Models.FamilyViewModels
         public string PictureLink { get; set; }
         [Display(Name = "Administrators")]
         public string Admins { get; set; } // Comma separated list of emails.
+        public IFormFile File { get; set; }
         public SelectListItem[] TimezoneList { get; set; }
 
         public ProgenyViewModel()

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUnaProgenyApi.Data;
 using KinaUnaProgenyApi.Models;
+using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,10 +18,12 @@ namespace KinaUnaProgenyApi.Controllers
     public class ProgenyController : ControllerBase
     {
         private readonly ProgenyDbContext _context;
+        private readonly ImageStore _imageStore;
 
-        public ProgenyController(ProgenyDbContext context)
+        public ProgenyController(ProgenyDbContext context, ImageStore imageStore)
         {
             _context = context;
+            _imageStore = imageStore;
 
         }
         // GET api/progeny
@@ -85,7 +88,14 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            _context.ProgenyDb.Update(value);
+            progeny.Admins = value.Admins;
+            progeny.BirthDay = value.BirthDay;
+            progeny.Name = value.Name;
+            progeny.NickName = value.NickName;
+            progeny.PictureLink = value.PictureLink;
+            progeny.TimeZone = value.TimeZone;
+            
+            _context.ProgenyDb.Update(progeny);
             await _context.SaveChangesAsync();
 
             return Ok(progeny);
@@ -99,7 +109,10 @@ namespace KinaUnaProgenyApi.Controllers
             if (progeny != null)
             {
                 // Todo: Delete content associated with progeny.
-
+                if (!progeny.PictureLink.ToLower().StartsWith("http") && !String.IsNullOrEmpty(progeny.PictureLink))
+                {
+                    await _imageStore.DeleteImage(progeny.PictureLink, "progeny");
+                }
                 _context.ProgenyDb.Remove(progeny);
                 await _context.SaveChangesAsync();
                 return NoContent();

@@ -19,11 +19,13 @@ namespace KinaUnaWeb.Services
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IIdentityParser<ApplicationUser> _userManager;
-        public ProgenyManager(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IIdentityParser<ApplicationUser> userManager)
+        private readonly ImageStore _imageStore;
+        public ProgenyManager(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IIdentityParser<ApplicationUser> userManager, ImageStore imageStore)
         {
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _userManager = userManager;
+            _imageStore = imageStore;
         }
 
         public async Task<string> GetNewToken()
@@ -128,6 +130,16 @@ namespace KinaUnaWeb.Services
             }
             return userinfo;
 
+        }
+
+        public async Task<string> GetImageUrl(string pictureLink, string pictureContainer)
+        {
+            string returnString = pictureLink;
+            if (!pictureLink.ToLower().StartsWith("http"))
+            {
+                returnString = _imageStore.UriFor(pictureLink, pictureContainer);
+            }
+            return returnString;
         }
 
         public async Task<UserInfo> UpdateUserInfo(UserInfo userinfo)

@@ -45,45 +45,45 @@
             @removeTagHelper "*, Microsoft.AspNetCore.Mvc.Razor"
             @{ string filePath = "~/userfiles/" + Model.PathName + "/images/{0}"; }
             @(Html.Kendo().Editor()
-                                  .Name("Content").Encoded(false)
-                                  .HtmlAttributes(new { style = "height:330px", aria_label = "editor" })
-                                  .Resizable(resizable => resizable.Content(true).Toolbar(true))
-                                  .ImageBrowser(imageBrowser => imageBrowser
-                                      .Image(filePath)
-                                      .Read("Read", "ImageBrowser")
-                                      .Create("Create", "ImageBrowser")
-                                      .Destroy("Destroy", "ImageBrowser")
-                                      .Upload("Upload", "ImageBrowser")
-                                  )
-                                  .FileBrowser(fileBrowser => fileBrowser
-                                      .File(filePath)
-                                      .Read("Read", "FileBrowser")
-                                      .Create("Create", "FileBrowser")
-                                      .Destroy("Destroy", "FileBrowser")
-                                      .Upload("Upload", "FileBrowser")
-                                  )
-                                  .Tools(tools => tools
-                                      .Clear()
-                                      .Formatting()
-                                      .CleanFormatting()
-                                      .FontName()
-                                      .FontSize().ForeColor()
-                                      .BackColor()
-                                      .Bold().Italic().Underline().Strikethrough()
-                                      .JustifyLeft().JustifyCenter().JustifyRight().JustifyFull()
-                                      .InsertUnorderedList().InsertOrderedList()
-                                      .Outdent().Indent()
-                                      .CreateLink().Unlink()
-                                      .InsertImage()
-                                      .InsertFile()
-                                      .SubScript()
-                                      .SuperScript()
-                                      .TableEditing()
-                                      .ViewHtml()
-                                  )
-                                  .Value(@<text>
+                                          .Name("Content").Encoded(false)
+                                          .HtmlAttributes(new { style = "height:330px", aria_label = "editor" })
+                                          .Resizable(resizable => resizable.Content(true).Toolbar(true))
+                                          .ImageBrowser(imageBrowser => imageBrowser
+                                              .Image(filePath)
+                                              .Read("Read", "ImageBrowser")
+                                              .Create("Create", "ImageBrowser")
+                                              .Destroy("Destroy", "ImageBrowser")
+                                              .Upload("Upload", "ImageBrowser")
+                                          )
+                                          .FileBrowser(fileBrowser => fileBrowser
+                                              .File(filePath)
+                                              .Read("Read", "FileBrowser")
+                                              .Create("Create", "FileBrowser")
+                                              .Destroy("Destroy", "FileBrowser")
+                                              .Upload("Upload", "FileBrowser")
+                                          )
+                                          .Tools(tools => tools
+                                              .Clear()
+                                              .Formatting()
+                                              .CleanFormatting()
+                                              .FontName()
+                                              .FontSize().ForeColor()
+                                              .BackColor()
+                                              .Bold().Italic().Underline().Strikethrough()
+                                              .JustifyLeft().JustifyCenter().JustifyRight().JustifyFull()
+                                              .InsertUnorderedList().InsertOrderedList()
+                                              .Outdent().Indent()
+                                              .CreateLink().Unlink()
+                                              .InsertImage()
+                                              .InsertFile()
+                                              .SubScript()
+                                              .SuperScript()
+                                              .TableEditing()
+                                              .ViewHtml()
+                                          )
+                                          .Value(@<text>
 
-                                </text>)
+                                        </text>)
             )
         </div>
     </div>
@@ -93,6 +93,22 @@
             <input asp-for="Category" class="form-control" />
         </div>
     </div>
+    <div class="form-group">
+        <label asp-for="CreatedDate" class="col-lg-3 col-sm-3 control-label">Date and Time</label>
+        <div class="col-8 col-xs-7 col-sm-6 col-md-4">
+            <div class="input-group date">
+                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CreatedDate" value="@Model.CreatedDate.ToString("dd-MMM-yyyy HH:mm")" />
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            $('#datetimepicker1').Zebra_DatePicker({
+                format: 'd-M-Y H:i',
+                open_icon_only: true
+            });
+        });
+    </script>
     <div class="form-group">
         <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Access Level</label>
         <div class="col-lg-9">

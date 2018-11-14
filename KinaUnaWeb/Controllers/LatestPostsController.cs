@@ -163,6 +163,7 @@ namespace KinaUnaWeb.Controllers
                         {
                             picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
                         }
+                        picture.CommentsCount = picture?.CommentsList.Count ?? 0;
                         return PartialView("TimeLinePhotoPartial", picture);
                     }
                 }
@@ -175,6 +176,7 @@ namespace KinaUnaWeb.Controllers
                     VideoViewModel video = await _mediaHttpClient.GetVideoViewModel(itemId, 0, 1, userinfo.Timezone);
                     if (video != null)
                     {
+                        video.CommentsCount = video?.CommentsList.Count ?? 0;
                         return PartialView("TimeLineVideoPartial", video);
                     }
                 }

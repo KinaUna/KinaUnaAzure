@@ -34,7 +34,6 @@
                     }
                     durTime = durTime + durationMinutes + ":" + durationSeconds;
                 }
-
             }
             <div style="margin-left: 2px;">Duration: @durTime</div>
             <div style="margin-left: 2px;">
@@ -44,7 +43,7 @@
                         List<string> tagsList = Model.Tags.Split(',').ToList();
                         foreach (string tagString in tagsList)
                         {
-                            <a asp-controller="Videos" asp-action="Index" asp-route-id="1" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage2">@tagString</a>
+                            <span asp-controller="Videos" asp-action="Index" asp-route-id="1" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage2">@tagString</span>
                         }
                     }
                 }
@@ -52,37 +51,3 @@
         </div>
     </div>
 </a>
-<script>
-    $(document).ready(function () {
-        $(".leavePage2").click(function () {
-            run_waitMeLeave2();
-
-            function run_waitMeLeave2() {
-                $('body').waitMe({
-                    //none, rotateplane, stretch, orbit, roundBounce, win8,
-                    //win8_linear, ios, facebook, rotation, timer, pulse,
-                    //progressBar, bouncePulse or img
-                    effect: 'roundBounce',
-                    //place text under the effect (string).
-                    text: '',
-                    //background for container (string).
-                    bg: 'rgba(40,20,60,0.25)',
-                    //color for background animation and text (string).
-                    color: ['#6a5081', '#7a6095', '#8a70aa', '#9a80bb', '#aa90cc', '#bbaadd', '#ccbbee', '#ddccff', '#ccbbee', '#bbaadd', '#aa90cc', '#9a80bb', '#6a5081', '#7a6095', '#8a70aa', '#9a80bb', '#aa90cc', '#bbaadd', '#ccbbee', '#ddccff', '#ccbbee', '#bbaadd', '#aa90cc', '#9a80bb'],
-                    //max size
-                    maxSize: '',
-                    //wait time im ms to close
-                    waitTime: -1,
-                    //url to image
-                    source: '',
-                    //or 'horizontal'
-                    textPos: 'vertical',
-                    //font size
-                    fontSize: '',
-                    // callback
-                    onClose: function () { }
-                });
-            }
-        });
-    });
-</script>

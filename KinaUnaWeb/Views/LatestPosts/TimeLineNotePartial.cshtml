@@ -1,5 +1,4 @@
 ﻿@model Note
-
 <a class="leavePage2" asp-controller="Notes" asp-action="Index">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
 
@@ -11,38 +10,3 @@
         </div>
     </div>
 </a>
-
-<script>
-    $(document).ready(function () {
-        $(".leavePage2").click(function () {
-            runWaitMeLeave2();
-
-            function runWaitMeLeave2() {
-                $('body').waitMe({
-                    //none, rotateplane, stretch, orbit, roundBounce, win8,
-                    //win8_linear, ios, facebook, rotation, timer, pulse,
-                    //progressBar, bouncePulse or img
-                    effect: 'roundBounce',
-                    //place text under the effect (string).
-                    text: '',
-                    //background for container (string).
-                    bg: 'rgba(40,20,60,0.25)',
-                    //color for background animation and text (string).
-                    color: ['#6a5081', '#7a6095', '#8a70aa', '#9a80bb', '#aa90cc', '#bbaadd', '#ccbbee', '#ddccff', '#ccbbee', '#bbaadd', '#aa90cc', '#9a80bb', '#6a5081', '#7a6095', '#8a70aa', '#9a80bb', '#aa90cc', '#bbaadd', '#ccbbee', '#ddccff', '#ccbbee', '#bbaadd', '#aa90cc', '#9a80bb'],
-                    //max size
-                    maxSize: '',
-                    //wait time im ms to close
-                    waitTime: -1,
-                    //url to image
-                    source: '',
-                    //or 'horizontal'
-                    textPos: 'vertical',
-                    //font size
-                    fontSize: '',
-                    // callback
-                    onClose: function () { }
-                });
-            }
-        });
-    });
-</script>

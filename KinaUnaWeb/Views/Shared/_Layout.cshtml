@@ -111,7 +111,15 @@ else
         {
             <div class="navbar-nav nav-item dropdown">
                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="color: #8bda8b;">
-                    <i class="material-icons" style="color: #8bda8b;">child_care</i> @child.NickName <span class="caret"></span>
+                    @{
+                        string profilePic = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
+                        if (!String.IsNullOrWhiteSpace(child.PictureLink))
+                        {
+                            string picLink = await ChildManager.GetImageUrl(child.PictureLink, "progeny");
+                            profilePic = "<img src=\"" + picLink  + "\" style=\"max-height: 40px; margin-top: -4px; margin-right: 4px; background: #8bda8b; border-radius: 17px; padding: 2px;\" /img> ";
+                        }
+                    }
+                     @Html.Raw(profilePic) @child.NickName <span class="caret"></span>
                 </a>
                 <div class="dropdown-menu">
                     @foreach (Progeny prog in childList)
@@ -121,7 +129,15 @@ else
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-userId="@userinfo.UserId" asp-route-userEmail="@userinfo.UserEmail" asp-route-returnUrl="@returnUrl" method="post">
                                     <button type="submit" class="btn btn-link text-white text-left btn-block leavePage">
-                                        <i class="material-icons">child_care</i> @prog.NickName
+                                        @{
+                                            string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
+                                            if (!String.IsNullOrWhiteSpace(prog.PictureLink))
+                                            {
+                                                string picLink2 = await ChildManager.GetImageUrl(prog.PictureLink, "progeny");
+                                                profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 18px; padding: 2px;\" /img> ";
+                                            }
+                                        }
+                                        @Html.Raw(profilePic2) @prog.NickName
                                     </button>
                                 </form>
                             </div>

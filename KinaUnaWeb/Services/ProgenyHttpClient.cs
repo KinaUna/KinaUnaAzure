@@ -266,9 +266,9 @@ namespace KinaUnaWeb.Services
 
             string updateProgenyApiPath = "/api/progeny/" + progeny.Id;
             var updateProgenyUri = clientUri + updateProgenyApiPath;
-            var updateProgenyResponseString = await updateProgenyHttpClient.PutAsync<Progeny>(updateProgenyUri, progeny, new JsonMediaTypeFormatter());
-            string returnString = await updateProgenyResponseString.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<Progeny>(returnString);
+            
+            var updateProgenyResponseString = await updateProgenyHttpClient.PutAsync(updateProgenyUri, new StringContent(JsonConvert.SerializeObject(progeny), System.Text.Encoding.UTF8, "application/json")).Result.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<Progeny>(updateProgenyResponseString);
         }
 
         public async Task<bool> DeleteProgeny(int progenyId)

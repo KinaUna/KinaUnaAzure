@@ -24,10 +24,8 @@
                     </div>
                 </div>
                 <div class="media-body">
-                    <h6 class="text-warning">
-                        @Model.From <small class="text-warning"> · @Model.DateTimeString</small>
-                    </h6>
-                    <h5 class="media-heading text-white">@Model.Title</h5>
+                    <span class="text-warning"><span class="info-title text-warning">@Model.From</span> <span class="text-warning"> · @Model.DateTimeString</span></span>
+                    <h6 class="media-heading text-white">@Model.Title</h6>
                     <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@Model.Message</p>
                     <div class="media-footer">
                         <span id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(event, this)" data-notificationid="@Model.Id">

@@ -462,7 +462,7 @@ button.Zebra_DatePicker_Icon {
 
 .notifications-List {
     overflow-y: auto;
-    max-height: 85vh;
+    max-height: 80vh;
 }
 .notification-item {
     background: #3a2051;
