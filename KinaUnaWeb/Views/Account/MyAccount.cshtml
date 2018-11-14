@@ -1,11 +1,14 @@
 ﻿@model KinaUnaWeb.Models.ItemViewModels.UserInfoViewModel
+@section Scripts{
+    <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
+}
 @{
     ViewData["Title"] = "My Profile";
 }
 <h4>@ViewData["Title"]</h4>
 <div class="row">
     <div class="col-md-10">
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             <div asp-validation-summary="All" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="UserName">User Name</label>
@@ -50,6 +53,28 @@
                 <span asp-validation-for="UserEmail" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label class="col-lg-3 col-sm3 control-label">Profile Picture</label>
+                <div class="col-lg-9">
+                    <div class="fileinput fileinput-new text-center" data-provides="fileinput">
+                        <div class="fileinput-new thumbnail img-raised">
+                            <img src="@Model.ProfilePicture" alt="...">
+                        </div>
+                        <div class="fileinput-preview fileinput-exists thumbnail img-raised"></div>
+                        <div>
+                            <div class="btn btn-primary btn-round btn-file ">
+                                <span data-trigger="fileinput" class="fileinput-new">New picture</span>
+                                <span class="fileinput-exists">Change</span>
+                                <input type="file" asp-for="File" accept="image/*" />
+                            </div>
+                            <br />
+                            <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
+                                <i class="fa fa-times"></i> Remove
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
                 <label asp-for="PhoneNumber"></label>
                 <input asp-for="PhoneNumber" class="form-control" />
                 <span asp-validation-for="PhoneNumber" class="text-danger"></span>
@@ -65,8 +90,4 @@
         </form>
     </div>
 </div>
-
-@section Scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
-}
 <br />

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -18,6 +19,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int ViewChild { get; set; }
         public string Timezone { get; set; }
         public string ProfilePicture { get; set; }
+        public IFormFile File { get; set; }
         [NotMapped]
         public string PhoneNumber { get; set; }
         [NotMapped]

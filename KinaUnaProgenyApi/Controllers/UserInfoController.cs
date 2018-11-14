@@ -202,6 +202,7 @@ namespace KinaUnaProgenyApi.Controllers
             userinfo.UserId = value.UserId;
             userinfo.ViewChild = value.ViewChild;
             userinfo.Timezone = value.Timezone;
+            userinfo.ProfilePicture = value.ProfilePicture;
             _context.UserInfoDb.Update(userinfo);
             await _context.SaveChangesAsync();
 

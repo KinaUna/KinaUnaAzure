@@ -20,11 +20,13 @@ namespace KinaUnaWeb.Controllers
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IHostingEnvironment _env;
         private readonly ApplicationDbContext _appDbContext;
-        public AccountController(IProgenyHttpClient progenyHttpClient, IHostingEnvironment env, ApplicationDbContext appDbContext)
+        private readonly ImageStore _imageStore;
+        public AccountController(IProgenyHttpClient progenyHttpClient, IHostingEnvironment env, ApplicationDbContext appDbContext, ImageStore imageStore)
         {
             _progenyHttpClient = progenyHttpClient;
             _env = env;
             _appDbContext = appDbContext;
+            _imageStore = imageStore;
         }
 
         [Authorize]
@@ -120,6 +122,15 @@ namespace KinaUnaWeb.Controllers
                 throw new ApplicationException($"Unable to load user with email '{userEmail}'.");
             }
 
+            if (String.IsNullOrEmpty(userinfo.ProfilePicture))
+            {
+                userinfo.ProfilePicture = "https://web.kinauna.com/photodb/profile.jpg";
+            }
+
+            if (!userinfo.ProfilePicture.ToLower().StartsWith("http"))
+            {
+                userinfo.ProfilePicture = _imageStore.UriFor(userinfo.ProfilePicture, "profiles");
+            }
             var model = new UserInfoViewModel
             {
                 Id = userinfo.Id,
@@ -132,8 +143,8 @@ namespace KinaUnaWeb.Controllers
                 Timezone = userinfo.Timezone,
                 JoinDate = joinDate.ToString(),
                 IsEmailConfirmed = mailConfirmed,
-                PhoneNumber = HttpContext.User.FindFirst("phone_number")?.Value ?? ""
-
+                PhoneNumber = HttpContext.User.FindFirst("phone_number")?.Value ?? "",
+                ProfilePicture = userinfo.ProfilePicture
             };
 
             if (_env.IsDevelopment())
@@ -162,6 +173,11 @@ namespace KinaUnaWeb.Controllers
             userinfo.UserName = model.UserName;
             userinfo.Timezone = model.Timezone;
 
+            if (String.IsNullOrEmpty(userinfo.ProfilePicture))
+            {
+                userinfo.ProfilePicture = "https://web.kinauna.com/photodb/profile.jpg";
+            }
+
             if (userinfo.UserEmail.ToUpper() != model.UserEmail.ToUpper())
             {
                 model.IsEmailConfirmed = false;
@@ -169,6 +185,20 @@ namespace KinaUnaWeb.Controllers
             else
             {
                 model.IsEmailConfirmed = mailConfirmed;
+            }
+
+            if (model.File != null && model.File.Name != String.Empty)
+            {
+                string oldPictureLink = userinfo.ProfilePicture;
+                using (var stream = model.File.OpenReadStream())
+                {
+                    userinfo.ProfilePicture = await _imageStore.SaveImage(stream, "profiles");
+                }
+
+                if (!oldPictureLink.ToLower().StartsWith("http") && !String.IsNullOrEmpty(oldPictureLink))
+                {
+                    await _imageStore.DeleteImage(oldPictureLink, "profiles");
+                }
             }
 
             await _progenyHttpClient.UpdateUserInfo(userinfo);
@@ -182,10 +212,16 @@ namespace KinaUnaWeb.Controllers
             user.EmailConfirmed = model.IsEmailConfirmed;
             user.UserName = userinfo.UserName;
             user.TimeZone = userinfo.Timezone;
+            
             _appDbContext.Users.Update(user);
 
             await _appDbContext.SaveChangesAsync();
             // Todo: If email changed, verify new email and update all references in access Lists.
+            model.ProfilePicture = userinfo.ProfilePicture;
+            if (!userinfo.ProfilePicture.ToLower().StartsWith("http"))
+            {
+                model.ProfilePicture = _imageStore.UriFor(userinfo.ProfilePicture, "profiles");
+            }
             return View(model);
         }
     }

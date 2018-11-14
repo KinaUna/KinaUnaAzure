@@ -73,234 +73,238 @@
     }
 </script>
 <nav class="navbar navbar-expand-lg bg-primary fixed-top" id="navMain">
-<div class="container">
-@if (User.Identity.IsAuthenticated)
-{
-    <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage">
-        <img src="/images/Square44x44Logo.scale-100.png" style="max-height: 44px; margin-top: -6px; background: white; border-radius: 20px; padding: 3px;"/>
-    </a>
-}
-else
-{
-    <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage">Kina Una <span class="fa fa-home" style="color: gold;"></span></a>
-}
-<div class="navbar-nav nav-item">
-    <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" href="https://@Context.Request.Host@Context.Request.GetEncodedPathAndQuery()">
-        <i class="material-icons" aria-hidden="true">refresh</i>
-    </a>
-</div>
-@if (canUserAddItems)
-{
-    <div class="navbar-nav nav-item">
-        <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" asp-area="" asp-controller="AddItem" asp-action="Index">
-            <i class="material-icons" aria-hidden="true">add</i>
-        </a>
-    </div>
-}
-    <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarNavSegments" aria-controls="navbarNavSegments" aria-expanded="false" aria-label="Toggle navigation">
-        <div id="navbarTogglerButton">
-            <span class="navbar-toggler-icon"></span>
-            <span class="navbar-toggler-icon"></span>
-            <span class="navbar-toggler-icon"></span>
-            <span id="togglerNotificationsCounter" class="badge badge-danger" style="position: absolute; display: none; font-size: 9px; right: 22px; top: 10px;">0</span>
-        </div>
-    </button>
-<div class="collapse navbar-collapse" id="navbarNavSegments">
-    <div class="navbar-nav mr-auto mt-2 mt-lg-0">
-        @if (childList.Count > 1)
-        {
-            <div class="navbar-nav nav-item dropdown">
-                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="color: #8bda8b;">
-                    @{
-                        string profilePic = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
-                        if (!String.IsNullOrWhiteSpace(child.PictureLink))
-                        {
-                            string picLink = await ChildManager.GetImageUrl(child.PictureLink, "progeny");
-                            profilePic = "<img src=\"" + picLink  + "\" style=\"max-height: 40px; margin-top: -4px; margin-right: 4px; background: #8bda8b; border-radius: 17px; padding: 2px;\" /img> ";
-                        }
-                    }
-                     @Html.Raw(profilePic) @child.NickName <span class="caret"></span>
-                </a>
-                <div class="dropdown-menu">
-                    @foreach (Progeny prog in childList)
-                    {
-                        if (prog.Id != child.Id)
-                        {
-                            <div class="dropdown-item">
-                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-userId="@userinfo.UserId" asp-route-userEmail="@userinfo.UserEmail" asp-route-returnUrl="@returnUrl" method="post">
-                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage">
-                                        @{
-                                            string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
-                                            if (!String.IsNullOrWhiteSpace(prog.PictureLink))
-                                            {
-                                                string picLink2 = await ChildManager.GetImageUrl(prog.PictureLink, "progeny");
-                                                profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 18px; padding: 2px;\" /img> ";
-                                            }
-                                        }
-                                        @Html.Raw(profilePic2) @prog.NickName
-                                    </button>
-                                </form>
-                            </div>
-                        }
-                    }
-                </div>
-            </div>
-        }
-        <div class="navbar-nav nav-item dropdown">
-            <a class="dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                <i class="material-icons">favorite</i><span class="d-sm-inline d-md-inline d-lg-inline"> Vitae </span>
-            </a>
-            <div class="dropdown-menu">
-                <div class="dropdown-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Pictures" asp-action="Index" method="get">
-                        <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
-                            <i class="material-icons">photo_library</i><span> Photos</span>
-                        </button>
-                    </form>
-                </div>
-                <div class="dropdown-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Videos" asp-action="Index" asp-route-id="1" method="get">
-                        <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
-                            <i class="material-icons">videocam</i><span> Videos</span>
-                        </button>
-                    </form>
-                </div>
-                <div class="dropdown-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Calendar" asp-action="Index" method="get">
-                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">event_note</i> Calendar</button>
-                    </form>
-                </div>
-                <div class="dropdown-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Locations" asp-action="Index" method="get">
-                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">person_pin</i> Locations</button>
-                    </form>
-                </div>
-                <div class="dropdown-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Vocabulary" asp-action="Index" method="get">
-                        <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">forum</i> Vocabulary</button>
-                    </form>
-                </div>
-                <div class="dropdown-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Skills" asp-action="Index" method="get">
-                        <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">school</i> Skillz</button>
-                    </form>
-                </div>
-                <div class="dropdown-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Friends" asp-action="Index" method="get">
-                        <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">face</i> Friends</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <div class="nav-item dropdown">
-            <a class="dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                <i class="material-icons">grade</i><span class="d-sm-inline d-md-inline d-lg-inline"> Notae </span>
-            </a>
-            <div class="dropdown-menu">
-                <div class="dropdown-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="TimeLine" asp-action="Index" method="get">
-                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">update</i> Timeline</button>
-                    </form>
-                </div>
-                <div class="dropdown-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Measurements" asp-action="Index" method="get">
-                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">straighten</i> Measurements</button>
-                    </form>
-                </div>
-                <div class="dropdown-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Sleep" asp-action="Index" method="get">
-                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">hotel</i> Sleep</button>
-                    </form>
-                </div>
-                <div class="dropdown-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Notes" asp-action="Index" method="get">
-                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">note</i> Notes</button>
-                    </form>
-                </div>
-                <div class="dropdown-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Contacts" asp-action="Index" method="get">
-                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">contact_phone</i> Contacts</button>
-                    </form>
-                </div>
-                <div class="dropdown-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Vaccinations" asp-action="Index" method="get">
-                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">local_pharmacy</i> Vaccinations</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <div class="nav-item">
-            <a class="nav-link leavePage" asp-area="" asp-controller="Home" asp-action="About">
-                <i class="material-icons">info</i><span class="d-sm-inline d-md-inline d-lg-inline"> About</span>
-            </a>
-        </div>
+    <div class="container">
         @if (User.Identity.IsAuthenticated)
         {
-            <div id="notificationsIcon" class="nav-item dropdown">
-                <a id="notificationsButton" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                    <i id="notificationBellIcon" class="material-icons">notifications</i> Notifications <span id="notificationsCounter" class="badge badge-pill badge-secondary"></span> <span class="caret"></span>
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage">
+                <img src="/images/Square44x44Logo.scale-100.png" style="max-height: 44px; margin-top: -6px; background: white; border-radius: 20px; padding: 3px;" />
+            </a>
+        }
+        else
+        {
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage">Kina Una <span class="fa fa-home" style="color: gold;"></span></a>
+        }
+        <div class="navbar-nav nav-item">
+            <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" href="https://@Context.Request.Host@Context.Request.GetEncodedPathAndQuery()">
+                <i class="material-icons" aria-hidden="true">refresh</i>
+            </a>
+        </div>
+        @if (canUserAddItems)
+        {
+            <div class="navbar-nav nav-item">
+                <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" asp-area="" asp-controller="AddItem" asp-action="Index">
+                    <i class="material-icons" aria-hidden="true">add</i>
                 </a>
-                <div id="notificationsMenu" class="dropdown-menu">
-                    <div id="notificationsList" class="notifications-List"></div>
-                    <div class="dropdown-item w-100">
-                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Notifications" asp-action="Index" method="get">
-                            <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">assignment</i> See All Notifications</button>
-                        </form>
-                    </div>
-                </div>
             </div>
         }
-    </div>
-    @if (User.Identity.IsAuthenticated)
-    {
-        <div class="navbar-nav">
-            <div class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                    <i class="material-icons">person</i> @usrName
-                </a>
-                <div class="dropdown-menu">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Family" asp-action="Index" method="get">
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">people</i> My Family</button>
-                            </form>
+    @{
+        string childprofilePic = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
+        if (!String.IsNullOrWhiteSpace(child.PictureLink))
+        {
+            string picLink = await ChildManager.GetImageUrl(child.PictureLink, "progeny");
+            childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 40px; margin-top: -3px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px;\" /img> ";
+        }
+    }
+    @Html.Raw(childprofilePic)
+        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarNavSegments" aria-controls="navbarNavSegments" aria-expanded="false" aria-label="Toggle navigation">
+            <div id="navbarTogglerButton">
+                <span class="navbar-toggler-icon"></span>
+                <span class="navbar-toggler-icon"></span>
+                <span class="navbar-toggler-icon"></span>
+                <span id="togglerNotificationsCounter" class="badge badge-danger" style="position: absolute; display: none; font-size: 9px; right: 22px; top: 10px;">0</span>
+            </div>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavSegments">
+            <div class="navbar-nav mr-auto mt-2 mt-lg-0">
+                @if (childList.Count > 1)
+                {
+                    <div class="navbar-nav nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="color: #8bda8b;">
+                            @child.NickName <span class="caret"></span>
+                        </a>
+                        <div class="dropdown-menu">
+                            @foreach (Progeny prog in childList)
+                            {
+                                if (prog.Id != child.Id)
+                                {
+                                    <div class="dropdown-item">
+                                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-userId="@userinfo.UserId" asp-route-userEmail="@userinfo.UserEmail" asp-route-returnUrl="@returnUrl" method="post">
+                                            <button type="submit" class="btn btn-link text-white text-left btn-block leavePage">
+                                                @{
+                                                    string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
+                                                    if (!String.IsNullOrWhiteSpace(prog.PictureLink))
+                                                    {
+                                                        string picLink2 = await ChildManager.GetImageUrl(prog.PictureLink, "progeny");
+                                                        profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px;\" /img> ";
+                                                    }
+                                                }
+                                                @Html.Raw(profilePic2) @prog.NickName
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                            }
                         </div>
-                    }
-                    @if (User.IsInRole("SiteAdmin") || userinfo.UserEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
-                    {
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Admin" asp-action="Index" method="get">
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">security</i> Admin</button>
-                            </form>
-                        </div>
-                    }
-                    <div class="dropdown-item">
-                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="MyAccount" method="get">
-                            <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">tune</i> My Account</button>
-                        </form>
                     </div>
-                    <div class="dropdown-item">
-                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Logout" method="post" target="loginFrame">
-                            <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">power_settings_new</i> Log Out</button>
+                }
+                <div class="navbar-nav nav-item dropdown">
+                    <a class="dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                        <i class="material-icons">favorite</i><span class="d-sm-inline d-md-inline d-lg-inline"> Vitae </span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item">
+                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Pictures" asp-action="Index" method="get">
+                                <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
+                                    <i class="material-icons">photo_library</i><span> Photos</span>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="dropdown-item">
+                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Videos" asp-action="Index" asp-route-id="1" method="get">
+                                <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
+                                    <i class="material-icons">videocam</i><span> Videos</span>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="dropdown-item">
+                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Calendar" asp-action="Index" method="get">
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">event_note</i> Calendar</button>
+                            </form>
+                        </div>
+                        <div class="dropdown-item">
+                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Locations" asp-action="Index" method="get">
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">person_pin</i> Locations</button>
+                            </form>
+                        </div>
+                        <div class="dropdown-item">
+                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Vocabulary" asp-action="Index" method="get">
+                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">forum</i> Vocabulary</button>
+                            </form>
+                        </div>
+                        <div class="dropdown-item">
+                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Skills" asp-action="Index" method="get">
+                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">school</i> Skillz</button>
+                            </form>
+                        </div>
+                        <div class="dropdown-item">
+                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Friends" asp-action="Index" method="get">
+                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">face</i> Friends</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <a class="dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                        <i class="material-icons">grade</i><span class="d-sm-inline d-md-inline d-lg-inline"> Notae </span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item">
+                            <form class="form-inline-fullwidth" asp-area="" asp-controller="TimeLine" asp-action="Index" method="get">
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">update</i> Timeline</button>
+                            </form>
+                        </div>
+                        <div class="dropdown-item">
+                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Measurements" asp-action="Index" method="get">
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">straighten</i> Measurements</button>
+                            </form>
+                        </div>
+                        <div class="dropdown-item">
+                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Sleep" asp-action="Index" method="get">
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">hotel</i> Sleep</button>
+                            </form>
+                        </div>
+                        <div class="dropdown-item">
+                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Notes" asp-action="Index" method="get">
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">note</i> Notes</button>
+                            </form>
+                        </div>
+                        <div class="dropdown-item">
+                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Contacts" asp-action="Index" method="get">
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">contact_phone</i> Contacts</button>
+                            </form>
+                        </div>
+                        <div class="dropdown-item">
+                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Vaccinations" asp-action="Index" method="get">
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">local_pharmacy</i> Vaccinations</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div id="notificationsIcon" class="nav-item dropdown">
+                        <a id="notificationsButton" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                            <i id="notificationBellIcon" class="material-icons">notifications</i> Notifications <span id="notificationsCounter" class="badge badge-pill badge-secondary"></span> <span class="caret"></span>
+                        </a>
+                        <div id="notificationsMenu" class="dropdown-menu">
+                            <div id="notificationsList" class="notifications-List"></div>
+                            <div class="dropdown-item w-100">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Notifications" asp-action="Index" method="get">
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">assignment</i> See All Notifications</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="navbar-nav">
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                            @{
+                                string userprofilePic = "<i class=\"material-icons\" >person</i>";
+                                if (!String.IsNullOrWhiteSpace(userinfo.ProfilePicture))
+                                {
+                                    string picLink = await ChildManager.GetImageUrl(userinfo.ProfilePicture, "profiles");
+                                    userprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 40px; margin-top: -1px; margin-right: 4px; border-radius: 12px;\" /img> ";
+                                }
+                            }
+                            @Html.Raw(userprofilePic) @usrName
+                        </a>
+                        <div class="dropdown-menu">
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                <div class="dropdown-item">
+                                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Family" asp-action="Index" method="get">
+                                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">people</i> My Family</button>
+                                    </form>
+                                </div>
+                            }
+                            @if (User.IsInRole("SiteAdmin") || userinfo.UserEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
+                            {
+                                <div class="dropdown-item">
+                                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Admin" asp-action="Index" method="get">
+                                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">security</i> Admin</button>
+                                    </form>
+                                </div>
+                            }
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="MyAccount" method="get">
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">tune</i> My Account</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Logout" method="post" target="loginFrame">
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">power_settings_new</i> Log Out</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="navbar-nav">
+                    <div class="nav-item">
+                        <form id="loginForm" class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Login" method="post" target="loginFrame">
+                            <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" data-toggle="modal" data-target="#loginModal"><i class="material-icons">exit_to_app</i> Login or Register</button>
                         </form>
                     </div>
                 </div>
-            </div>
+            }
         </div>
-    }
-    else
-    {
-        <div class="navbar-nav">
-            <div class="nav-item">
-                <form id="loginForm" class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Login" method="post" target="loginFrame">
-                    <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" data-toggle="modal" data-target="#loginModal"><i class="material-icons">exit_to_app</i> Login or Register</button>
-                </form>
-            </div>
-        </div>
-    }
-</div>
-</div>
+    </div>
 </nav>
 <div class="container body-content">
     <div class="main main-raised" style="margin-top: 10px; margin-left: 5px; margin-right: 5px; padding: 5px; padding-left: 10px; padding-top: 10px;">
