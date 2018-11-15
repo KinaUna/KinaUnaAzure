@@ -66,6 +66,11 @@ window.addEventListener('message',
             if (event.data === "openModal") {
                 $('#loginModal').modal('show');
             }
+            if (event.data === "logOutKinaUna") {
+                if (window === window.top) {
+                    document.getElementById('logOutForm').submit();
+                }
+            }
         } else if (~event.origin.indexOf('https://localhost:44397')) {
             isAuthPage = true;
             if (event.data === "closeModal") {
@@ -77,6 +82,11 @@ window.addEventListener('message',
             }
             if (event.data === "openModal") {
                 $('#loginModal').modal('show');
+            }
+            if (event.data === "logOutKinaUna") {
+                if (window === window.top) {
+                    document.getElementById('logOutForm').submit();
+                }
             }
         } else {
             return;

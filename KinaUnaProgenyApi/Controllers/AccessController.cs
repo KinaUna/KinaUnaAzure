@@ -208,6 +208,27 @@ namespace KinaUnaProgenyApi.Controllers
             }
         }
 
+        [HttpGet("[action]/{oldEmail}/{newEmail}")]
+        public async Task<IActionResult> UpdateAccessListEmailChange(string oldEmail, string newEmail)
+        {
+            List<UserAccess> userAccessList = await _context.UserAccessDb.Where(u => u.UserId.ToUpper() == oldEmail.ToUpper()).ToListAsync();
+            if (userAccessList.Any())
+            {
+                foreach (UserAccess ua in userAccessList)
+                {
+                    ua.UserId = newEmail;
+                }
+
+                _context.UserAccessDb.UpdateRange(userAccessList);
+                await _context.SaveChangesAsync();
+                return Ok(userAccessList);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()

@@ -1,0 +1,18 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.UserInfoViewModel
+@{
+    ViewData["Title"] = "Change Email";
+}
+
+<h2>SendVerificationEmail</h2>
+
+<div class="row">
+    <div class="col-md-10">
+        In order to change your email address we need to confirm that you are the owner.<br/>
+        Until this confirmed you will not have access to all content.<br />
+        Once the email address is confirmed, the access lists will be updated and you can access the same content as before.<br/>
+        Click the button below to proceed.<br/>
+        <form id="loginForm" action="@Model.ChangeLink" method="post" target="loginFrame" style="float: right;">
+            <button id="verifyEmailButton" type="submit" class="btn btn-success" data-toggle="modal" data-target="#loginModal"><span class="fas fa-sign-in-alt"></span> Change Email</button>
+        </form>
+    </div>
+</div>

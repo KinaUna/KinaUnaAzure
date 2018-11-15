@@ -4,7 +4,7 @@
 
 <header>
     <h3 class="title text-danger">@ViewData["Title"]</h3>
-    <p class="text-danger">Error: Your email address has not been confirmed yet.</p>
+    <p class="text-danger">Your email address has not been confirmed yet.</p>
 </header>
 <div>
 
@@ -15,3 +15,6 @@
 <div>
     Click the link in the email and try to log in again.
 </div>
+<script>
+    window.parent.postMessage("logOutKinaUna", '*');
+</script>

@@ -48,6 +48,8 @@ namespace KinaUna.IDP
                         //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
+            services.AddDbContext<ProgenyDbContext>(options =>
+                options.UseSqlServer(Configuration["ProgenyDefaultConnection"]));
 
             services.AddSingleton<IXmlRepository, DataProtectionKeyRepository>();
 

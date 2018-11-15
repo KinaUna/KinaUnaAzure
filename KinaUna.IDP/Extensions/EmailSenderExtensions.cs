@@ -15,6 +15,12 @@ namespace KinaUna.IDP.Extensions
                 $"Please confirm your account by clicking this link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>");
         }
 
+        public static Task SendEmailUpdateConfirmationAsync(this IEmailSender emailSender, string email, string link)
+        {
+            return emailSender.SendEmailAsync(email, "Confirm your email",
+                $"Please confirm your account by clicking this link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>");
+        }
+
         public static Task SendEmailInviteAsync(this IEmailSender emailSender, string email, string link, string inviter, string password)
         {
             return emailSender.SendEmailAsync(email, "Invitation to Join KinaUna.com",

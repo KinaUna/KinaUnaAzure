@@ -501,13 +501,13 @@ button.Zebra_DatePicker_Icon {
 }
 
 @-moz-keyframes notificationIconAnimation {
-    from {
+    /*from {
         -moz-transform: rotate(0deg);
     }
 
     to {
         -moz-transform: rotate(360deg);
-    }
+    }*/
 
     0% {
         color: white;
@@ -527,13 +527,13 @@ button.Zebra_DatePicker_Icon {
 }
 
 @-webkit-keyframes notificationIconAnimation {
-    from {
+    /*from {
         -webkit-transform: rotate(0deg);
     }
 
     to {
         -webkit-transform: rotate(360deg);
-    }
+    }*/
 
     0% {
         color: white;
@@ -553,13 +553,13 @@ button.Zebra_DatePicker_Icon {
 }
 
 @keyframes notificationIconAnimation {
-    from {
+    /*from {
         transform: rotate(0deg);
     }
 
     to {
         transform: rotate(360deg);
-    }
+    }*/
 
     0% {
         color: white;

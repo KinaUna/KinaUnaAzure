@@ -33,7 +33,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label asp-for="UserEmail"></label>
+                <label asp-for="UserEmail">Email</label>
                 @if (Model.IsEmailConfirmed)
                 {
                     <div class="input-group">
@@ -48,9 +48,14 @@
                 else
                 {
                     <input asp-for="UserEmail" class="form-control" />
-                    <button asp-action="SendVerificationEmail" class="btn btn-link">Send verification email</button>
+                    <button id="sendVerificationEmail" asp-action="ChangeEmail" asp-route-OldEmail="@Model.UserEmail" asp-route-NewEmail="" class="btn btn-link">Send verification email</button>
                 }
                 <span asp-validation-for="UserEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhoneNumber"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 col-sm3 control-label">Profile Picture</label>
@@ -73,11 +78,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label asp-for="PhoneNumber"></label>
-                <input asp-for="PhoneNumber" class="form-control" />
-                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
             </div>
             <button type="submit" class="btn btn-success leavePage">Save</button>
         </form>

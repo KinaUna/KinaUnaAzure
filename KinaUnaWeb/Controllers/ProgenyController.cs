@@ -93,7 +93,7 @@ namespace KinaUnaWeb.Controllers
             {
                 model.PictureLink = _imageStore.UriFor(prog.PictureLink, "progeny");
             }
-            model.PictureLink = prog.PictureLink;
+            
             return View(model);
         }
 

@@ -166,7 +166,7 @@ namespace KinaUnaWeb.Controllers
             Boolean.TryParse(HttpContext.User.FindFirst("email_verified").Value, out mailConfirmed);
             UserInfo userinfo = new UserInfo();
             userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            userinfo.UserEmail = model.UserEmail;
+            // userinfo.UserEmail = model.UserEmail;
             userinfo.FirstName = model.FirstName;
             userinfo.MiddleName = model.MiddleName;
             userinfo.LastName = model.LastName;
@@ -178,9 +178,11 @@ namespace KinaUnaWeb.Controllers
                 userinfo.ProfilePicture = "https://web.kinauna.com/photodb/profile.jpg";
             }
 
+            bool emailChanged = false;
             if (userinfo.UserEmail.ToUpper() != model.UserEmail.ToUpper())
             {
                 model.IsEmailConfirmed = false;
+                emailChanged = true;
             }
             else
             {
@@ -208,7 +210,7 @@ namespace KinaUnaWeb.Controllers
             user.FirstName = userinfo.FirstName;
             user.MiddleName = userinfo.MiddleName;
             user.LastName = userinfo.LastName;
-            user.Email = userinfo.UserEmail;
+            // user.Email = userinfo.UserEmail;
             user.EmailConfirmed = model.IsEmailConfirmed;
             user.UserName = userinfo.UserName;
             user.TimeZone = userinfo.Timezone;
@@ -216,11 +218,56 @@ namespace KinaUnaWeb.Controllers
             _appDbContext.Users.Update(user);
 
             await _appDbContext.SaveChangesAsync();
-            // Todo: If email changed, verify new email and update all references in access Lists.
+            
             model.ProfilePicture = userinfo.ProfilePicture;
             if (!userinfo.ProfilePicture.ToLower().StartsWith("http"))
             {
                 model.ProfilePicture = _imageStore.UriFor(userinfo.ProfilePicture, "profiles");
+            }
+
+            if (emailChanged)
+            {
+                return RedirectToAction("ChangeEmail", new {oldEmail = userEmail, newEmail = model.UserEmail});
+            }
+            return View(model);
+        }
+
+        public async Task<IActionResult> ChangeEmail(string oldEmail, string newEmail = "")
+        {
+            string userEmail = HttpContext.User.FindFirst("email").Value;
+            if (String.IsNullOrEmpty(newEmail))
+            {
+                newEmail = userEmail;
+            }
+
+            bool mailConfirmed = false;
+            Boolean.TryParse(HttpContext.User.FindFirst("email_verified").Value, out mailConfirmed);
+            UserInfo userinfo = new UserInfo();
+            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            DateTime joinDate = DateTime.UtcNow;
+            DateTime.TryParse(HttpContext.User.FindFirst("joindate").Value, out joinDate);
+            var model = new UserInfoViewModel
+            {
+                Id = userinfo.Id,
+                UserId = userinfo.UserId,
+                UserName = userinfo.UserName,
+                FirstName = userinfo.FirstName,
+                MiddleName = userinfo.MiddleName,
+                LastName = userinfo.LastName,
+                UserEmail = userinfo.UserEmail,
+                Timezone = userinfo.Timezone,
+                JoinDate = joinDate.ToString(),
+                IsEmailConfirmed = mailConfirmed,
+                PhoneNumber = HttpContext.User.FindFirst("phone_number")?.Value ?? "",
+                ProfilePicture = userinfo.ProfilePicture
+            };
+            if (_env.IsDevelopment())
+            {
+                model.ChangeLink = "https://localhost:44397/Account/ChangeEmail?NewEmail=" + newEmail + "&OldEmail=" + oldEmail;
+            }
+            else
+            {
+                model.ChangeLink = "https://auth.kinauna.com/Account/ChangeEmail?NewEmail=" + newEmail + "&OldEmail=" + oldEmail;
             }
             return View(model);
         }

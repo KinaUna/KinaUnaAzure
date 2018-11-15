@@ -40,6 +40,7 @@ namespace KinaUna.IDP.Controllers
         private readonly IEmailSender _emailSender;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext _context;
+        private readonly ProgenyDbContext _progContext;
 
         public AccountController(
 
@@ -51,7 +52,8 @@ namespace KinaUna.IDP.Controllers
             IEmailSender emailSender,
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            ProgenyDbContext progContext)
         {
             _loginService = loginService;
             _interaction = interaction;
@@ -61,6 +63,7 @@ namespace KinaUna.IDP.Controllers
             _emailSender = emailSender;
             _signInManager = signInManager;
             _context = context;
+            _progContext = progContext;
         }
 
         [TempData]
@@ -351,9 +354,83 @@ namespace KinaUna.IDP.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ChangeEmail(string NewEmail, string OldEmail)
+        {
+            
+            if (User.Identity.IsAuthenticated)
+            {
+                ApplicationUser user = await _context.Users.SingleOrDefaultAsync(u => u.Email.ToUpper() == OldEmail.ToUpper());
+                ApplicationUser test =
+                    await _context.Users.SingleOrDefaultAsync(u => u.Email.ToUpper() == NewEmail.ToUpper());
+                if (user != null)
+                {
+                    ChangeEmailViewModel model = new ChangeEmailViewModel();
+                    model.OldEmail = OldEmail;
+                    model.NewEmail = NewEmail;
+                    model.ErrorMessage = "";
+                    if (test != null)
+                    {
+                        model.ErrorMessage =
+                            "Error: This email is already in use by another account. Please delete the account with this email address before assigning this email address to your account.";
+                    }
+                    model.UserId = user.Id;
+                    return View(model);
+                }
+            }
+
+            return RedirectToAction("Register");
+            
+
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendConfirmationMail(string UserId, string NewEmail, string OldEmail)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                ApplicationUser user = await _context.Users.SingleOrDefaultAsync(u => u.Id == UserId);
+                ApplicationUser test =
+                    await _context.Users.SingleOrDefaultAsync(u => u.Email.ToUpper() == NewEmail.ToUpper());
+                
+                if (user.Id == UserId)
+                {
+                    if (test != null)
+                    {
+                        ChangeEmailViewModel model = new ChangeEmailViewModel();
+                        model.OldEmail = OldEmail;
+                        model.NewEmail = NewEmail;
+                        model.ErrorMessage =
+                            "Error: This email is already in use by another account. Please delete the account with this email address before assigning this email address to your account.";
+                        model.UserId = user.Id;
+                        return View("ChangeEmail", model);
+                    }
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
+                    await _emailSender.SendEmailUpdateConfirmationAsync(NewEmail, callbackUrl + "&newEmail=" + NewEmail + "&oldEmail=" + OldEmail);
+
+                    UserInfo userinfo = await _progContext.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == user.Id);
+                    if (userinfo != null)
+                    {
+                        userinfo.UserEmail = NewEmail;
+                        _progContext.UserInfoDb.Update(userinfo);
+                        await _progContext.SaveChangesAsync();
+                    }
+                    user.Email = NewEmail;
+                    _context.Users.Update(user);
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToAction("VerificationMailSent");
+                }
+            }
+
+            return RedirectToAction("Register");
+        }
+
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        public async Task<IActionResult> ConfirmEmail(string userId, string code, string newEmail = "", string oldEmail = "")
         {
             if (userId == null || code == null)
             {
@@ -373,11 +450,47 @@ namespace KinaUna.IDP.Controllers
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
             {
-                user.JoinDate = DateTime.UtcNow;
+                if (user.JoinDate.AddDays(7) > DateTime.UtcNow)
+                {
+                    user.JoinDate = DateTime.UtcNow;
+                }
                 await _userManager.UpdateAsync(user);
+
+                if (!String.IsNullOrEmpty(oldEmail))
+                {
+                    
+                    // Todo: use api to update access lists instead.
+                    List<UserAccess> userAccessList = await _progContext.UserAccessDb.Where(u => u.UserId.ToUpper() == oldEmail.ToUpper()).ToListAsync();
+                    if (userAccessList.Any())
+                    {
+                        foreach (UserAccess ua in userAccessList)
+                        {
+                            ua.UserId = user.Email;
+                        }
+
+                        _progContext.UserAccessDb.UpdateRange(userAccessList);
+                        await _progContext.SaveChangesAsync();
+                    }
+
+                    List<Progeny> progenyList = await _progContext.ProgenyDb
+                        .Where(p => p.Admins.ToUpper().Contains(oldEmail.ToUpper())).ToListAsync();
+                    if (progenyList.Any())
+                    {
+                        foreach (Progeny prog in progenyList)
+                        {
+                            string adminList = prog.Admins.ToUpper();
+                            prog.Admins = adminList.Replace(oldEmail.ToUpper(), user.Email.ToUpper());
+                        }
+                        _progContext.ProgenyDb.UpdateRange(progenyList);
+                        await _progContext.SaveChangesAsync();
+                    }
+                }
+                else
+                {
+                    await _emailSender.SendEmailAsync("per.mogensen@kinauna.com", "New User Confirmed Email",
+                        "A user confirmed the email with this email address: " + user.Email);
+                }
                 
-                await _emailSender.SendEmailAsync("per.mogensen@kinauna.com", "New User Confirmed Email",
-                    "A user confirmed the email with this email address: " + user.Email);
                 return View();
             }
 
