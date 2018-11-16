@@ -188,7 +188,28 @@ namespace KinaUnaWeb.Controllers
                 model.PicTimeValid = false;
                 model.PicTime = "";
             }
-            
+
+            if (model.CommentsCount > 0)
+            {
+                foreach(Comment cmnt in model.CommentsList)
+                {
+                    UserInfo cmntAuthor = await _progenyHttpClient.GetUserInfoByUserId(cmnt.Author);
+                    string authorImg = cmntAuthor?.ProfilePicture ?? "";
+                    if (!String.IsNullOrEmpty(authorImg))
+                    {
+                        if (!authorImg.ToLower().StartsWith("http"))
+                        {
+                            authorImg = _imageStore.UriFor(authorImg, "profiles");
+                        }
+                    }
+                    else
+                    {
+                        authorImg = "/photodb/profile.jpg";
+                    }
+
+                    cmnt.AuthorImage = authorImg;
+                }
+            }
             if (model.IsAdmin)
             {
                 model.ProgenyLocations = new List<Location>();

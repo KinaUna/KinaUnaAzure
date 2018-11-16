@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Models
 {
@@ -13,5 +15,9 @@ namespace KinaUnaWeb.Models
         public string Author { get; set; }
         public string DisplayName { get; set; }
         public DateTime Created { get; set; }
+
+        [NotMapped]
+        [JsonIgnore]
+        public string AuthorImage { get; set; }
     }
 }
