@@ -3377,7 +3377,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = new UserInfo();
             userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            Progeny prog = await _progenyHttpClient.GetProgeny(sleep.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
             {
                 // Todo: Show no access info.
@@ -3750,7 +3750,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = new UserInfo();
             userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            Progeny prog = await _progenyHttpClient.GetProgeny(locItem.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
             {
                 // Todo: Show no access info.
