@@ -195,6 +195,7 @@ namespace KinaUnaWeb.Controllers
                 {
                     UserInfo cmntAuthor = await _progenyHttpClient.GetUserInfoByUserId(cmnt.Author);
                     string authorImg = cmntAuthor?.ProfilePicture ?? "";
+                    string authorName = "";
                     if (!String.IsNullOrEmpty(authorImg))
                     {
                         if (!authorImg.ToLower().StartsWith("http"))
@@ -207,6 +208,31 @@ namespace KinaUnaWeb.Controllers
                         authorImg = "/photodb/profile.jpg";
                     }
                     cmnt.AuthorImage = authorImg;
+
+                    if (!String.IsNullOrEmpty(cmntAuthor.FirstName))
+                    {
+                        authorName = cmntAuthor.FirstName;
+                    }
+                    if (!String.IsNullOrEmpty(cmntAuthor.MiddleName))
+                    {
+                        authorName = authorName + " " + cmntAuthor.MiddleName;
+                    }
+                    if (!String.IsNullOrEmpty(cmntAuthor.LastName))
+                    {
+                        authorName = authorName + " " + cmntAuthor.LastName;
+                    }
+
+                    authorName = authorName.Trim();
+                    if (String.IsNullOrEmpty(authorName))
+                    {
+                        authorName = cmntAuthor.UserName;
+                        if (String.IsNullOrEmpty(authorName))
+                        {
+                            authorName = cmnt.DisplayName;
+                        }
+                    }
+
+                    cmnt.DisplayName = authorName;
                 }
             }
             if (model.IsAdmin)
