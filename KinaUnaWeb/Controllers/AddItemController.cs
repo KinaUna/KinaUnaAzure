@@ -146,7 +146,26 @@ namespace KinaUnaWeb.Controllers
                     await _context.TimeLineDb.AddAsync(tItem);
                     await _context.SaveChangesAsync();
 
-                    
+                    string authorName = "";
+                    if (!String.IsNullOrEmpty(userinfo.FirstName))
+                    {
+                        authorName = userinfo.FirstName;
+                    }
+                    if (!String.IsNullOrEmpty(userinfo.MiddleName))
+                    {
+                        authorName = authorName + " " + userinfo.MiddleName;
+                    }
+                    if (!String.IsNullOrEmpty(userinfo.LastName))
+                    {
+                        authorName = authorName + " " + userinfo.LastName;
+                    }
+
+                    authorName = authorName.Trim();
+                    if (String.IsNullOrEmpty(authorName))
+                    {
+                        authorName = userinfo.UserName;
+                    }
+
                     foreach (UserAccess ua in usersToNotif)
                     {
                         if (ua.AccessLevel <= newPicture.AccessLevel)
@@ -167,11 +186,11 @@ namespace KinaUnaWeb.Controllers
                                 }
                                 WebNotification notification = new WebNotification();
                                 notification.To = uaUserInfo.UserId;
-                                notification.From = "KinaUna";
+                                notification.From = authorName;
                                 notification.Message = picTimeString + "\r\n";
                                 notification.DateTime = DateTime.UtcNow;
-                                notification.Icon = "/images/kinaunalogo48x48.png";
-                                notification.Title = "Photo Added for " + progeny.NickName;
+                                notification.Icon = userinfo.ProfilePicture;
+                                notification.Title = "A photo was added for " + progeny.NickName;
                                 notification.Link = "/Pictures/Picture/" + newPicture.PictureId + "?childId=" + progeny.Id;
                                 notification.Type = "Notification";
                                 await _context.WebNotificationsDb.AddAsync(notification);
@@ -345,6 +364,26 @@ namespace KinaUnaWeb.Controllers
                     _context.TimeLineDb.Remove(tItem);
                     await _context.SaveChangesAsync();
                 }
+
+                string authorName = "";
+                if (!String.IsNullOrEmpty(userinfo.FirstName))
+                {
+                    authorName = userinfo.FirstName;
+                }
+                if (!String.IsNullOrEmpty(userinfo.MiddleName))
+                {
+                    authorName = authorName + " " + userinfo.MiddleName;
+                }
+                if (!String.IsNullOrEmpty(userinfo.LastName))
+                {
+                    authorName = authorName + " " + userinfo.LastName;
+                }
+
+                authorName = authorName.Trim();
+                if (String.IsNullOrEmpty(authorName))
+                {
+                    authorName = userinfo.UserName;
+                }
                 List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
                 foreach (UserAccess ua in usersToNotif)
                 {
@@ -367,7 +406,7 @@ namespace KinaUnaWeb.Controllers
                             WebNotification notification = new WebNotification();
                             notification.To = uaUserInfo.UserId;
                             notification.From = "KinaUna";
-                            notification.Message = "Photo ID: " + model.PictureId + "\r\n" + picTimeString + "\r\n";
+                            notification.Message = "Photo deleted by " + authorName + "\r\nPhoto ID: " + model.PictureId + "\r\n" + picTimeString + "\r\n";
                             notification.DateTime = DateTime.UtcNow;
                             notification.Icon = "/images/kinaunalogo48x48.png";
                             notification.Title = "Photo deleted for " + progeny.NickName;
@@ -420,7 +459,29 @@ namespace KinaUnaWeb.Controllers
                          await _emailSender.SendEmailAsync(toMail, "New Comment on " + progeny.NickName + "'s Picture",
                             "A comment was added to " + progeny.NickName + "'s picture by " + cmnt.DisplayName + ":<br/><br/>" + cmnt.CommentText + "<br/><br/>Picture Link: <a href=\"" + imgLink + "\">" + imgLink + "</a>");
                     }
+                    string authorName = "";
+                    if (!String.IsNullOrEmpty(userinfo.FirstName))
+                    {
+                        authorName = userinfo.FirstName;
+                    }
+                    if (!String.IsNullOrEmpty(userinfo.MiddleName))
+                    {
+                        authorName = authorName + " " + userinfo.MiddleName;
+                    }
+                    if (!String.IsNullOrEmpty(userinfo.LastName))
+                    {
+                        authorName = authorName + " " + userinfo.LastName;
+                    }
 
+                    authorName = authorName.Trim();
+                    if (String.IsNullOrEmpty(authorName))
+                    {
+                        authorName = userinfo.UserName;
+                        if (String.IsNullOrEmpty(authorName))
+                        {
+                            authorName = cmnt.DisplayName;
+                        }
+                    }
                     List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
                     foreach (UserAccess ua in usersToNotif)
                     {
@@ -437,10 +498,10 @@ namespace KinaUnaWeb.Controllers
                             {
                                 WebNotification notification = new WebNotification();
                                 notification.To = uaUserInfo.UserId;
-                                notification.From = "KinaUna";
-                                notification.Message = cmnt.DisplayName + "added a comment:\r\n" + commentTxtStr;
+                                notification.From = authorName;
+                                notification.Message = commentTxtStr;
                                 notification.DateTime = DateTime.UtcNow;
-                                notification.Icon = "/images/kinaunalogo48x48.png";
+                                notification.Icon = userinfo.ProfilePicture;
                                 notification.Title = "New comment on " + progeny.NickName + "'s photo";
                                 notification.Link = "/Pictures/Picture/" + model.ItemId + "?childId=" + model.ProgenyId;
                                 notification.Type = "Notification";
@@ -599,7 +660,25 @@ namespace KinaUnaWeb.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+            string authorName = "";
+            if (!String.IsNullOrEmpty(userinfo.FirstName))
+            {
+                authorName = userinfo.FirstName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.MiddleName))
+            {
+                authorName = authorName + " " + userinfo.MiddleName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.LastName))
+            {
+                authorName = authorName + " " + userinfo.LastName;
+            }
 
+            authorName = authorName.Trim();
+            if (String.IsNullOrEmpty(authorName))
+            {
+                authorName = userinfo.UserName;
+            }
             List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
             {
@@ -621,11 +700,11 @@ namespace KinaUnaWeb.Controllers
                         }
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = "KinaUna";
+                        notification.From = authorName;
                         notification.Message = "Video ID: " + newVideo.VideoId + "\r\n" + vidTimeString + "\r\n";
                         notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = "/images/kinaunalogo48x48.png";
-                        notification.Title = "Video added for " + progeny.NickName;
+                        notification.Icon = userinfo.ProfilePicture;
+                        notification.Title = "A video was added for " + progeny.NickName;
                         notification.Link = "/Videos/Video/" + newVideo.VideoId + "?childId=" + model.ProgenyId;
                         notification.Type = "Notification";
                         await _context.WebNotificationsDb.AddAsync(notification);
@@ -840,6 +919,29 @@ namespace KinaUnaWeb.Controllers
                     }
                     List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
                     Video vid = await _mediaHttpClient.GetVideo(model.ItemId, userinfo.Timezone);
+                    string authorName = "";
+                    if (!String.IsNullOrEmpty(userinfo.FirstName))
+                    {
+                        authorName = userinfo.FirstName;
+                    }
+                    if (!String.IsNullOrEmpty(userinfo.MiddleName))
+                    {
+                        authorName = authorName + " " + userinfo.MiddleName;
+                    }
+                    if (!String.IsNullOrEmpty(userinfo.LastName))
+                    {
+                        authorName = authorName + " " + userinfo.LastName;
+                    }
+
+                    authorName = authorName.Trim();
+                    if (String.IsNullOrEmpty(authorName))
+                    {
+                        authorName = userinfo.UserName;
+                        if (String.IsNullOrEmpty(authorName))
+                        {
+                            authorName = cmnt.DisplayName;
+                        }
+                    }
                     foreach (UserAccess ua in usersToNotif)
                     {
                         if (ua.AccessLevel <= vid.AccessLevel)
@@ -855,10 +957,10 @@ namespace KinaUnaWeb.Controllers
                                 }
                                 WebNotification notification = new WebNotification();
                                 notification.To = uaUserInfo.UserId;
-                                notification.From = "KinaUna";
-                                notification.Message = cmnt.DisplayName + "added a comment:\r\n" + commentTxtStr;
+                                notification.From = authorName;
+                                notification.Message = commentTxtStr;
                                 notification.DateTime = DateTime.UtcNow;
-                                notification.Icon = "/images/kinaunalogo48x48.png";
+                                notification.Icon = userinfo.ProfilePicture;
                                 notification.Title = "New comment on " + progeny.NickName + "'s video";
                                 notification.Link = "/Videos/Video/" + vid.VideoId + "?childId=" + model.ProgenyId;
                                 notification.Type = "Notification";
@@ -961,6 +1063,25 @@ namespace KinaUnaWeb.Controllers
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
 
+            string authorName = "";
+            if (!String.IsNullOrEmpty(userinfo.FirstName))
+            {
+                authorName = userinfo.FirstName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.MiddleName))
+            {
+                authorName = authorName + " " + userinfo.MiddleName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.LastName))
+            {
+                authorName = authorName + " " + userinfo.LastName;
+            }
+
+            authorName = authorName.Trim();
+            if (String.IsNullOrEmpty(authorName))
+            {
+                authorName = userinfo.UserName;
+            }
             List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
@@ -972,10 +1093,10 @@ namespace KinaUnaWeb.Controllers
                     {
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = "KinaUna";
+                        notification.From = authorName;
                         notification.Message = "Title: " + noteItem.Title + "\r\nCategory: " + noteItem.Category;
                         notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Icon = userinfo.ProfilePicture;
                         notification.Title = "A new note was added for " + progeny.NickName;
                         notification.Link = "/Notes?childId=" + model.ProgenyId;
                         notification.Type = "Notification";
@@ -1207,7 +1328,25 @@ namespace KinaUnaWeb.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+            string authorName = "";
+            if (!String.IsNullOrEmpty(userinfo.FirstName))
+            {
+                authorName = userinfo.FirstName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.MiddleName))
+            {
+                authorName = authorName + " " + userinfo.MiddleName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.LastName))
+            {
+                authorName = authorName + " " + userinfo.LastName;
+            }
 
+            authorName = authorName.Trim();
+            if (String.IsNullOrEmpty(authorName))
+            {
+                authorName = userinfo.UserName;
+            }
             List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
@@ -1232,10 +1371,10 @@ namespace KinaUnaWeb.Controllers
                         }
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = "KinaUna";
+                        notification.From = authorName;
                         notification.Message = eventItem.Title + eventTimeString;
                         notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Icon = userinfo.ProfilePicture;
                         notification.Title = "A new calendar event was added for " + progeny.NickName;
                         notification.Link = "/Calendar/ViewEvent?eventId=" + eventItem.EventId + "&childId=" + progeny.Id;
                         notification.Type = "Notification";
@@ -1465,7 +1604,25 @@ namespace KinaUnaWeb.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+            string authorName = "";
+            if (!String.IsNullOrEmpty(userinfo.FirstName))
+            {
+                authorName = userinfo.FirstName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.MiddleName))
+            {
+                authorName = authorName + " " + userinfo.MiddleName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.LastName))
+            {
+                authorName = authorName + " " + userinfo.LastName;
+            }
 
+            authorName = authorName.Trim();
+            if (String.IsNullOrEmpty(authorName))
+            {
+                authorName = userinfo.UserName;
+            }
             List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
@@ -1485,10 +1642,10 @@ namespace KinaUnaWeb.Controllers
                         
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = "KinaUna";
+                        notification.From = authorName;
                         notification.Message = "Word: " + vocabItem.Word + "\r\nLanguage: " + vocabItem.Language + vocabTimeString;
                         notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Icon = userinfo.ProfilePicture;
                         notification.Title = "A new word was added for " + progeny.NickName;
                         notification.Link = "/Vocabulary?childId=" + progeny.Id;
                         notification.Type = "Notification";
@@ -1716,7 +1873,25 @@ namespace KinaUnaWeb.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+            string authorName = "";
+            if (!String.IsNullOrEmpty(userinfo.FirstName))
+            {
+                authorName = userinfo.FirstName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.MiddleName))
+            {
+                authorName = authorName + " " + userinfo.MiddleName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.LastName))
+            {
+                authorName = authorName + " " + userinfo.LastName;
+            }
 
+            authorName = authorName.Trim();
+            if (String.IsNullOrEmpty(authorName))
+            {
+                authorName = userinfo.UserName;
+            }
             List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
@@ -1730,10 +1905,10 @@ namespace KinaUnaWeb.Controllers
                         
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = "KinaUna";
+                        notification.From = authorName;
                         notification.Message = "Skill: " + skillItem.Name + "\r\nCategory: " + skillItem.Category + skillTimeString;
                         notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Icon = userinfo.ProfilePicture;
                         notification.Title = "A new skill was added for " + progeny.NickName;
                         notification.Link = "/Skills?childId=" + progeny.Id;
                         notification.Type = "Notification";
@@ -2011,7 +2186,25 @@ namespace KinaUnaWeb.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+            string authorName = "";
+            if (!String.IsNullOrEmpty(userinfo.FirstName))
+            {
+                authorName = userinfo.FirstName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.MiddleName))
+            {
+                authorName = authorName + " " + userinfo.MiddleName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.LastName))
+            {
+                authorName = authorName + " " + userinfo.LastName;
+            }
 
+            authorName = authorName.Trim();
+            if (String.IsNullOrEmpty(authorName))
+            {
+                authorName = userinfo.UserName;
+            }
             List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
@@ -2023,10 +2216,10 @@ namespace KinaUnaWeb.Controllers
                     {
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = "KinaUna";
+                        notification.From = authorName;
                         notification.Message = "Friend: " + friendItem.Name + "\r\nContext: " + friendItem.Context;
                         notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Icon = userinfo.ProfilePicture;
                         notification.Title = "A new friend was added for " + progeny.NickName;
                         notification.Link = "/Friends?childId=" + progeny.Id;
                         notification.Type = "Notification";
@@ -2318,7 +2511,25 @@ namespace KinaUnaWeb.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+            string authorName = "";
+            if (!String.IsNullOrEmpty(userinfo.FirstName))
+            {
+                authorName = userinfo.FirstName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.MiddleName))
+            {
+                authorName = authorName + " " + userinfo.MiddleName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.LastName))
+            {
+                authorName = authorName + " " + userinfo.LastName;
+            }
 
+            authorName = authorName.Trim();
+            if (String.IsNullOrEmpty(authorName))
+            {
+                authorName = userinfo.UserName;
+            }
             List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
@@ -2330,10 +2541,10 @@ namespace KinaUnaWeb.Controllers
                     {
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = "KinaUna";
+                        notification.From = authorName;
                         notification.Message = "Height: " + measurementItem.Height + "\r\nWeight: " + measurementItem.Weight;
                         notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Icon = userinfo.ProfilePicture;
                         notification.Title = "A new measurement was added for " + progeny.NickName;
                         notification.Link = "/Measurements?childId=" + progeny.Id;
                         notification.Type = "Notification";
@@ -2620,7 +2831,25 @@ namespace KinaUnaWeb.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+            string authorName = "";
+            if (!String.IsNullOrEmpty(userinfo.FirstName))
+            {
+                authorName = userinfo.FirstName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.MiddleName))
+            {
+                authorName = authorName + " " + userinfo.MiddleName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.LastName))
+            {
+                authorName = authorName + " " + userinfo.LastName;
+            }
 
+            authorName = authorName.Trim();
+            if (String.IsNullOrEmpty(authorName))
+            {
+                authorName = userinfo.UserName;
+            }
             List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
@@ -2632,10 +2861,10 @@ namespace KinaUnaWeb.Controllers
                     {
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = "KinaUna";
+                        notification.From = authorName;
                         notification.Message = "Name: " + contactItem.DisplayName + "\r\nContext: " + contactItem.Context;
                         notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Icon = userinfo.ProfilePicture;
                         notification.Title = "A new contact was added for " + progeny.NickName;
                         notification.Link = "/Contacts/ContactDetails?contactId=" + contactItem.ContactId + "&childId=" + progeny.Id;
                         notification.Type = "Notification";
@@ -2981,7 +3210,25 @@ namespace KinaUnaWeb.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+            string authorName = "";
+            if (!String.IsNullOrEmpty(userinfo.FirstName))
+            {
+                authorName = userinfo.FirstName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.MiddleName))
+            {
+                authorName = authorName + " " + userinfo.MiddleName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.LastName))
+            {
+                authorName = authorName + " " + userinfo.LastName;
+            }
 
+            authorName = authorName.Trim();
+            if (String.IsNullOrEmpty(authorName))
+            {
+                authorName = userinfo.UserName;
+            }
             List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
@@ -2993,10 +3240,10 @@ namespace KinaUnaWeb.Controllers
                     {
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = "KinaUna";
+                        notification.From = authorName;
                         notification.Message = "Name: " + vacItem.VaccinationName + "\r\nContext: " + vacItem.VaccinationDate.ToString("dd-MMM-yyyy");
                         notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Icon = userinfo.ProfilePicture;
                         notification.Title = "A new vaccination was added for " + progeny.NickName;
                         notification.Link = "/Vaccinations?childId=" + progeny.Id;
                         notification.Type = "Notification";
@@ -3213,7 +3460,25 @@ namespace KinaUnaWeb.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+            string authorName = "";
+            if (!String.IsNullOrEmpty(userinfo.FirstName))
+            {
+                authorName = userinfo.FirstName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.MiddleName))
+            {
+                authorName = authorName + " " + userinfo.MiddleName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.LastName))
+            {
+                authorName = authorName + " " + userinfo.LastName;
+            }
 
+            authorName = authorName.Trim();
+            if (String.IsNullOrEmpty(authorName))
+            {
+                authorName = userinfo.UserName;
+            }
             List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(sleepItem.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
             {
@@ -3229,10 +3494,10 @@ namespace KinaUnaWeb.Controllers
 
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = "KinaUna";
+                        notification.From = authorName;
                         notification.Message = "Start: " + sleepStart.ToString("dd-MMM-yyyy HH:mm") + "\r\nEnd: " +sleepEnd.ToString("dd-MMM-yyyy HH:mm");
                         notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Icon = userinfo.ProfilePicture;
                         notification.Title = "Sleep Added for " + prog.NickName;
                         notification.Link = "/Sleep?childId=" + prog.Id;
                         notification.Type = "Notification";
@@ -3534,7 +3799,25 @@ namespace KinaUnaWeb.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+            string authorName = "";
+            if (!String.IsNullOrEmpty(userinfo.FirstName))
+            {
+                authorName = userinfo.FirstName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.MiddleName))
+            {
+                authorName = authorName + " " + userinfo.MiddleName;
+            }
+            if (!String.IsNullOrEmpty(userinfo.LastName))
+            {
+                authorName = authorName + " " + userinfo.LastName;
+            }
 
+            authorName = authorName.Trim();
+            if (String.IsNullOrEmpty(authorName))
+            {
+                authorName = userinfo.UserName;
+            }
             List<UserAccess> usersToNotif = await _progenyHttpClient.GetProgenyAccessList(model.ProgenyId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
@@ -3553,10 +3836,10 @@ namespace KinaUnaWeb.Controllers
                         string dateString = tempDate.ToString("dd-MMM-yyyy");
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = "KinaUna";
+                        notification.From = authorName;
                         notification.Message = "Name: " + locItem.Name + "\r\nDate: " + dateString;
                         notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = "/images/kinaunalogo48x48.png";
+                        notification.Icon = userinfo.ProfilePicture;
                         notification.Title = "A new location was added for " + progeny.NickName;
                         notification.Link = "/Locations?childId=" + progeny.Id;
                         notification.Type = "Notification";

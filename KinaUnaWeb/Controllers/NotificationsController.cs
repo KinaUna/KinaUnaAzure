@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using KinaUnaWeb.Data;
 using KinaUnaWeb.Hubs;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -16,11 +17,13 @@ namespace KinaUnaWeb.Controllers
     {
         private readonly WebDbContext _context;
         private readonly IHubContext<WebNotificationHub> _hubContext;
+        private readonly ImageStore _imageStore;
 
-        public NotificationsController(WebDbContext context, IHubContext<WebNotificationHub> hubContext)
+        public NotificationsController(WebDbContext context, IHubContext<WebNotificationHub> hubContext, ImageStore imageStore)
         {
             _context = context;
             _hubContext = hubContext;
+            _imageStore = imageStore;
         }
 
         public async Task<IActionResult> Index(int Id = 0)
@@ -39,6 +42,10 @@ namespace KinaUnaWeb.Controllers
                     notif.DateTime = TimeZoneInfo.ConvertTimeFromUtc(notif.DateTime,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                     notif.DateTimeString = notif.DateTime.ToString("dd-MMM-yyyy HH:mm");
+                    if (!notif.Icon.StartsWith("/") && !notif.Icon.StartsWith("http"))
+                    {
+                        notif.Icon = _imageStore.UriFor(notif.Icon, "profiles");
+                    }
                 }
             }
             if (Id != 0)
@@ -50,6 +57,10 @@ namespace KinaUnaWeb.Controllers
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                     notification.DateTimeString = notification.DateTime.ToString("dd-MMM-yyyy HH:mm");
                     ViewBag.SelectedNotification = notification;
+                    if (!notification.Icon.StartsWith("/") && !notification.Icon.StartsWith("http"))
+                    {
+                        notification.Icon = _imageStore.UriFor(notification.Icon, "profiles");
+                    }
                 }
             }
             
@@ -58,11 +69,19 @@ namespace KinaUnaWeb.Controllers
 
         public IActionResult ShowNotification(WebNotification notification)
         {
+            if (!notification.Icon.StartsWith("/") && !notification.Icon.StartsWith("http"))
+            {
+                notification.Icon = _imageStore.UriFor(notification.Icon, "profiles");
+            }
             return PartialView(notification);
         }
 
         public IActionResult ShowUpdatedNotification(WebNotification notification)
         {
+            if (!notification.Icon.StartsWith("/") && !notification.Icon.StartsWith("http"))
+            {
+                notification.Icon = _imageStore.UriFor(notification.Icon, "profiles");
+            }
             return PartialView(notification);
         }
 
