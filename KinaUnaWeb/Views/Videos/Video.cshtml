@@ -197,7 +197,12 @@
                 {
                     <div class="card bg-light text-dark">
                         <div class="card-body">
-                            <h6 class="text-muted">
+                            <div class="float-left" style="margin-left: -15px; margin-right: 5px;">
+                                <div class="img-circle" style="height: 46px; width: 46px;">
+                                    <img height="40" width="40" class="media-object rounded img-fluid" src="@cmnt.AuthorImage" />
+                                </div>
+                            </div>
+                            <h6 class="text-muted" style="margin-top: 0; padding-top: 0;">
                                 @cmnt.DisplayName <small> · @cmnt.Created.ToString("dd-MMM-yyyy HH:mm")</small>
                             </h6>
                             <p>

@@ -206,7 +206,6 @@ namespace KinaUnaWeb.Controllers
                     {
                         authorImg = "/photodb/profile.jpg";
                     }
-
                     cmnt.AuthorImage = authorImg;
                 }
             }
