@@ -11,6 +11,7 @@ using System;
 using System.Threading.Tasks;
 using KinaUnaWeb.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -21,12 +22,14 @@ namespace KinaUnaWeb.Controllers
         private readonly IHostingEnvironment _env;
         private readonly ApplicationDbContext _appDbContext;
         private readonly ImageStore _imageStore;
-        public AccountController(IProgenyHttpClient progenyHttpClient, IHostingEnvironment env, ApplicationDbContext appDbContext, ImageStore imageStore)
+        private readonly IConfiguration _configuration;
+        public AccountController(IProgenyHttpClient progenyHttpClient, IHostingEnvironment env, ApplicationDbContext appDbContext, ImageStore imageStore, IConfiguration configuration)
         {
             _progenyHttpClient = progenyHttpClient;
             _env = env;
             _appDbContext = appDbContext;
             _imageStore = imageStore;
+            _configuration = configuration;
         }
 
         [Authorize]
@@ -271,5 +274,22 @@ namespace KinaUnaWeb.Controllers
             }
             return View(model);
         }
+
+        public IActionResult EnablePush()
+        {
+            string userId = HttpContext.User.FindFirst("sub").Value;
+            ViewBag.UserId = userId;
+            ViewBag.PublicKey = _configuration["VapidPublicKey"];
+            return View();
+        }
+
+        public IActionResult DisablePush()
+        {
+            string userId = HttpContext.User.FindFirst("sub").Value;
+            ViewBag.UserId = userId;
+            ViewBag.PublicKey = _configuration["VapidPublicKey"];
+            return View();
+        }
+        
     }
 }

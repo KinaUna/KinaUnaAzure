@@ -1,5 +1,6 @@
 ﻿using KinaUnaWeb.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace KinaUnaWeb.Data
 {
@@ -23,5 +24,6 @@ namespace KinaUnaWeb.Data
         public DbSet<Address> AddressDb { get; set; }
         public DbSet<Vaccination> VaccinationsDb { get; set; }
         public DbSet<WebNotification> WebNotificationsDb { get; set; }
+        public DbSet<PushDevices> PushDevices { get; set; }
     }
 }

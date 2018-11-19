@@ -100,7 +100,7 @@ function frameLoaded() {
                 var iframe = document.getElementById('loginFrame');
                 iframe.contentWindow.postMessage('web', '*');
                 checkFrameCount++;
-                if (!isAuthPage && checkFrameCount > 2) {
+                if (!isAuthPage && checkFrameCount > 1) {
                     console.log("Submitting LoginForm from checkFrame.");
                     document.getElementById('loginForm').submit();
                 } else {
@@ -110,12 +110,22 @@ function frameLoaded() {
                 loginModalClosed();
             }
         },
-            3000);
+            5000);
     }
 }
 function loginModalClosed() {
     clearInterval(checkFrame);
 }
+
+function removeServiceWorkers() {
+    navigator.serviceWorker.getRegistrations().then(
+        function (registrations) {
+            for (let registration of registrations) {
+                registration.unregister();
+            }
+        });
+}
+
 $(document).ready(function () {
     $('.leavePage').click(function () {
         $(this).closest('.dropdown-menu').prev().dropdown('toggle');

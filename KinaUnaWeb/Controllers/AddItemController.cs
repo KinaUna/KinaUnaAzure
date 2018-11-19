@@ -24,14 +24,16 @@ namespace KinaUnaWeb.Controllers
         private readonly WebDbContext _context;
         private readonly string _defaultUser = "testuser@niviaq.com";
         private readonly IEmailSender _emailSender;
+        private readonly IPushMessageSender _pushMessageSender;
 
-        public AddItemController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, WebDbContext context, IEmailSender emailSender)
+        public AddItemController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, WebDbContext context, IEmailSender emailSender, IPushMessageSender pushMessageSender)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
             _imageStore = imageStore;
             _context = context;
             _emailSender = emailSender;
+            _pushMessageSender = pushMessageSender;
         }
         public IActionResult Index()
         {
@@ -195,6 +197,9 @@ namespace KinaUnaWeb.Controllers
                                 notification.Type = "Notification";
                                 await _context.WebNotificationsDb.AddAsync(notification);
                                 await _context.SaveChangesAsync();
+
+                                await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                                    notification.Message, "https://web.kinauna.com" + notification.Link);
                             }
                         }
                     }
@@ -507,6 +512,9 @@ namespace KinaUnaWeb.Controllers
                                 notification.Type = "Notification";
                                 await _context.WebNotificationsDb.AddAsync(notification);
                                 await _context.SaveChangesAsync();
+
+                                await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                                    notification.Message, "https://web.kinauna.com" + notification.Link);
                             }
                         }
                     }
@@ -709,6 +717,9 @@ namespace KinaUnaWeb.Controllers
                         notification.Type = "Notification";
                         await _context.WebNotificationsDb.AddAsync(notification);
                         await _context.SaveChangesAsync();
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, "https://web.kinauna.com" + notification.Link);
                     }
                 }
             }
@@ -966,6 +977,9 @@ namespace KinaUnaWeb.Controllers
                                 notification.Type = "Notification";
                                 await _context.WebNotificationsDb.AddAsync(notification);
                                 await _context.SaveChangesAsync();
+
+                                await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                                    notification.Message, "https://web.kinauna.com" + notification.Link);
                             }
                         }
                     }
@@ -1102,6 +1116,9 @@ namespace KinaUnaWeb.Controllers
                         notification.Type = "Notification";
                         await _context.WebNotificationsDb.AddAsync(notification);
                         await _context.SaveChangesAsync();
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, "https://web.kinauna.com" + notification.Link);
                     }
                 }
             }
@@ -1380,6 +1397,9 @@ namespace KinaUnaWeb.Controllers
                         notification.Type = "Notification";
                         await _context.WebNotificationsDb.AddAsync(notification);
                         await _context.SaveChangesAsync();
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, "https://web.kinauna.com" + notification.Link);
                     }
                 }
             }
@@ -1651,6 +1671,9 @@ namespace KinaUnaWeb.Controllers
                         notification.Type = "Notification";
                         await _context.WebNotificationsDb.AddAsync(notification);
                         await _context.SaveChangesAsync();
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, "https://web.kinauna.com" + notification.Link);
                     }
                 }
             }
@@ -1914,6 +1937,9 @@ namespace KinaUnaWeb.Controllers
                         notification.Type = "Notification";
                         await _context.WebNotificationsDb.AddAsync(notification);
                         await _context.SaveChangesAsync();
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, "https://web.kinauna.com" + notification.Link);
                     }
                 }
             }
@@ -2225,6 +2251,9 @@ namespace KinaUnaWeb.Controllers
                         notification.Type = "Notification";
                         await _context.WebNotificationsDb.AddAsync(notification);
                         await _context.SaveChangesAsync();
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, "https://web.kinauna.com" + notification.Link);
                     }
                 }
             }
@@ -2550,6 +2579,9 @@ namespace KinaUnaWeb.Controllers
                         notification.Type = "Notification";
                         await _context.WebNotificationsDb.AddAsync(notification);
                         await _context.SaveChangesAsync();
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, "https://web.kinauna.com" + notification.Link);
                     }
                 }
             }
@@ -2660,7 +2692,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = new UserInfo();
             userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            Progeny prog = await _progenyHttpClient.GetProgeny(measurement.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
             {
                 // Todo: Show no access info.
@@ -2870,6 +2902,9 @@ namespace KinaUnaWeb.Controllers
                         notification.Type = "Notification";
                         await _context.WebNotificationsDb.AddAsync(notification);
                         await _context.SaveChangesAsync();
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, "https://web.kinauna.com" + notification.Link);
                     }
                 }
             }
@@ -3249,6 +3284,9 @@ namespace KinaUnaWeb.Controllers
                         notification.Type = "Notification";
                         await _context.WebNotificationsDb.AddAsync(notification);
                         await _context.SaveChangesAsync();
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, "https://web.kinauna.com" + notification.Link);
                     }
                 }
             }
@@ -3503,6 +3541,8 @@ namespace KinaUnaWeb.Controllers
                         notification.Type = "Notification";
                         await _context.WebNotificationsDb.AddAsync(notification);
                         await _context.SaveChangesAsync();
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title, notification.Message, "https://web.kinauna.com" + notification.Link);
                     }
                 }
             }
@@ -3845,6 +3885,9 @@ namespace KinaUnaWeb.Controllers
                         notification.Type = "Notification";
                         await _context.WebNotificationsDb.AddAsync(notification);
                         await _context.SaveChangesAsync();
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, "https://web.kinauna.com" + notification.Link);
                     }
                 }
             }

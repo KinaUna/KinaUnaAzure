@@ -319,6 +319,12 @@ namespace KinaUnaWeb.Controllers
             }
             return Redirect(returnUrl);
         }
+
+        [AllowAnonymous]
+        public IActionResult Start()
+        {
+            return Redirect("https://web.kinauna.com/");
+        }
         
     }
 }

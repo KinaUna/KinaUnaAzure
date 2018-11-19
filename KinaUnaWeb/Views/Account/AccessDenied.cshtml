@@ -4,5 +4,15 @@
 }
 
 <h2>Access Denied</h2>
-You are not authorized to view this content.
+
+@{
+    if (User.Identity.IsAuthenticated)
+    {
+        <div> You are not authorized to view this content.</div>
+    }
+    else{
+        <div>Log in to get access to more content.</div>
+    }
+}
+
 

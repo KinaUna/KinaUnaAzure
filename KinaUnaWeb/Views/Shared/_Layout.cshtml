@@ -282,6 +282,14 @@
                             @if (User.IsInRole("SiteAdmin") || userinfo.UserEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
                             {
                                 <div class="dropdown-item">
+                                    <form class="form-inline-fullwidth" asp-area="" asp-controller="PushDevices" asp-action="Index" method="get">
+                                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">notification_important</i> Push Notifications</button>
+                                    </form>
+                                </div>
+                            }
+                            @if (User.IsInRole("SiteAdmin") || userinfo.UserEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
+                            {
+                                <div class="dropdown-item">
                                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Admin" asp-action="Index" method="get">
                                         <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">security</i> Admin</button>
                                     </form>

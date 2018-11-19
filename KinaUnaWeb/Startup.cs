@@ -75,9 +75,18 @@ namespace KinaUnaWeb
             services.AddHostedService<QueuedHostedService>();
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
             services.AddTransient<IEmailSender, EmailSender>();
+            services.AddTransient<IPushMessageSender, PushMessageSender>();
+
+            services.AddCors(o => o.AddPolicy("localCors", builder =>
+            {
+                builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            }));
 
             services.AddCors(o => o.AddPolicy("KinaUnaCors", builder =>
-            {
+            { // Todo: Update cors policy
                 builder.AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowAnyHeader()
@@ -173,14 +182,14 @@ namespace KinaUnaWeb
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseCors("localCors");
             }
             else
             {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
+                app.UseCors("KinaUnaCors");
             }
-
-            app.UseCors("KinaUnaCors");
 
             app.UseHttpsRedirection();
             app.UseCookiePolicy();

@@ -8,7 +8,10 @@ let menuToggler = document.getElementById('navbarTogglerButton');
 let togglerCounter = document.getElementById('togglerNotificationsCounter');
 let navMain = document.getElementById('navMain');
 
-function notificationItemClick(event, btn) {
+function notificationItemClick(btn, event) {
+    console.log("NotificationItemClick.Event.Target: " + event.target);
+    console.log("NotificationItemClick.Event.Type: " + event.type);
+    console.log("NotificationItemClick.Event.CurrentTarget: " + event.currentTarget);
     let notifId = btn.getAttribute('data-notificationid');
     if (btn.classList.contains('notificationUnread')) {
         $.ajax({
@@ -37,7 +40,11 @@ function notificationItemClick(event, btn) {
     window.location.href = notificationLink;
 }
 
-function markRead(event, btn) {
+function markRead(btn, event) {
+    event.stopImmediatePropagation();
+    console.log("markRead.Event.Target: " + event.target);
+    console.log("markRead.Event.Type: " + event.type);
+    console.log("markRead.Event.CurrentTarget: " + event.currentTarget);
     let notifId = btn.getAttribute('data-notificationid');
     if (btn.classList.contains('notificationUnread')) {
         $.ajax({
@@ -64,10 +71,11 @@ function markRead(event, btn) {
             }
         });
     }
-    event.stopImmediatePropagation();
+    // event.stopImmediatePropagation();
 }
 
-function removeNotification(event, btn) {
+function removeNotification(btn, event) {
+    event.stopPropagation();
     let notifId = btn.getAttribute('data-notificationid');
     $.ajax({
         type: 'GET',
@@ -81,7 +89,7 @@ function removeNotification(event, btn) {
         }
     });
     
-    event.stopPropagation();
+    // event.stopPropagation();
 }
 
 function countNotifications() {
@@ -112,7 +120,7 @@ function updateNotification(parsedMessage, newData) {
     let itemsToRemove = document.getElementsByClassName('notifId' + parsedMessage.Id);
     if (itemsToRemove.length > 0) {
         for (var i = itemsToRemove.length - 1; i >= 0; --i) {
-            let parentBtn = itemsToRemove[i].closest('button');
+            let parentBtn = itemsToRemove[i].closest('.notification-button'); // closest('button');
             let parentDiv = parentBtn.parentNode;
             parentBtn.outerHTML = newData;
             if (parsedMessage.IsRead) {
@@ -245,7 +253,7 @@ connection.on('DeleteMessage',
         let itemsToRemove = document.getElementsByClassName('notifId' + parsedMessage.Id);
         if (itemsToRemove.length > 0) {
             for (var i = itemsToRemove.length - 1; i >= 0; --i) {
-                let parentBtn = itemsToRemove[i].closest('button');
+                let parentBtn = itemsToRemove[i].closest('.notification-button');
                 parentBtn.parentNode.outerHTML = "";
             }
         }
