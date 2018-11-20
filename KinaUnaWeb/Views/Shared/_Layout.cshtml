@@ -86,7 +86,9 @@
         }
         else
         {
-            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage">Kina Una <span class="fa fa-home" style="color: gold;"></span></a>
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage">
+                <img src="/images/Square44x44Logo.scale-100_bw.png" style="max-height: 44px; margin-top: -6px; background: white; border-radius: 20px; padding: 3px;" />
+            </a>
         }
         <div class="navbar-nav nav-item">
             <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" href="https://@Context.Request.Host@Context.Request.GetEncodedPathAndQuery()">
