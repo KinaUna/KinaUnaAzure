@@ -33,10 +33,12 @@ namespace KinaUnaWeb.Controllers
         private readonly IApplicationLifetime _appLifetime;
         private readonly ILogger _logger;
         private readonly IHubContext<WebNotificationHub> _hubContext;
+        private readonly IPushMessageSender _pushMessageSender;
 
         public AdminController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore,
             IConfiguration configuration, IHttpContextAccessor httpContextAccessor, WebDbContext context,
-            IBackgroundTaskQueue queue, IApplicationLifetime appLifetime, ILoggerFactory loggerFactory, IHubContext<WebNotificationHub> hubContext)
+            IBackgroundTaskQueue queue, IApplicationLifetime appLifetime, ILoggerFactory loggerFactory,
+            IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
@@ -48,6 +50,7 @@ namespace KinaUnaWeb.Controllers
             _appLifetime = appLifetime;
             _logger = loggerFactory.CreateLogger<AdminController>();
             _hubContext = hubContext;
+            _pushMessageSender = pushMessageSender;
         }
         public IBackgroundTaskQueue Queue { get; }
 
@@ -888,6 +891,12 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> ShowPicturesNotDownloaded()
         {
+            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
+            if (userEmail.ToUpper() != "PER.MOGENSEN@GMAIL.COM")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             List<Picture> pictures = await _mediaHttpClient.GetAllPictures();
             int model = pictures.Where(p => p.PictureLink.ToLower().StartsWith("http")).ToList().Count;
             return View(model);
@@ -895,6 +904,12 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> DownloadPictures()
         {
+            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
+            if (userEmail.ToUpper() != "PER.MOGENSEN@GMAIL.COM")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             List<Picture> allPictures = await _mediaHttpClient.GetAllPictures();
             List<Picture> notDownloaded = allPictures.Where(p => p.PictureLink.ToLower().StartsWith("http")).ToList();
             ViewBag.Remaining = notDownloaded.Count -500;
@@ -956,6 +971,12 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> DownloadFriendsPictures()
         {
+            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
+            if (userEmail.ToUpper() != "PER.MOGENSEN@GMAIL.COM")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             List<Friend> notDownloaded = await _context.FriendsDb.Where(f => f.PictureLink.ToLower().StartsWith("http")).ToListAsync();
             ViewBag.Remaining = notDownloaded.Count;
             var currentContext = _httpContextAccessor.HttpContext;
@@ -1014,6 +1035,12 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> DownloadContactsPictures()
         {
+            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
+            if (userEmail.ToUpper() != "PER.MOGENSEN@GMAIL.COM")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             List<Contact> notDownloaded = await _context.ContactsDb.Where(c => c.PictureLink.ToLower().StartsWith("http")).ToListAsync();
             ViewBag.Remaining = notDownloaded.Count;
             var currentContext = _httpContextAccessor.HttpContext;
@@ -1045,7 +1072,6 @@ namespace KinaUnaWeb.Controllers
 
         public async Task UpdateContact(Contact contact, string accessToken, string clientUri)
         {
-            
             HttpClient httpClient = new HttpClient();
             
             
@@ -1081,6 +1107,10 @@ namespace KinaUnaWeb.Controllers
             string userId = User.FindFirst("sub")?.Value ?? "NoUser";
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
             string userTimeZone = User.FindFirst("timezone")?.Value ?? "NoUser";
+            if (userEmail.ToUpper() != "PER.MOGENSEN@GMAIL.COM")
+            {
+                return RedirectToAction("Index", "Home");
+            }
 
             if (userEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
             {
@@ -1122,6 +1152,44 @@ namespace KinaUnaWeb.Controllers
                     await _hubContext.Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
                 }
             }
+
+            notification.Title = "Notification Added";
+            return View(notification);
+        }
+
+        public IActionResult SendPush()
+        {
+            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
+            string userId = User.FindFirst("sub")?.Value ?? "NoUser";
+            if (userEmail.ToUpper() != "PER.MOGENSEN@GMAIL.COM")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            PushNotification notification = new PushNotification();
+            notification.UserId = userId;
+            return View(notification);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendPush(PushNotification notification)
+        {
+            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
+            if (userEmail.ToUpper() != "PER.MOGENSEN@GMAIL.COM")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            UserInfo userinfo = new UserInfo();
+            if (notification.UserId.Contains('@'))
+            {
+                userinfo = await _progenyHttpClient.GetUserInfo(notification.UserId);
+                notification.UserId = userinfo.UserId;
+            }
+
+            await _pushMessageSender.SendMessage(notification.UserId, notification.Title, notification.Message,
+                notification.Link);
+            notification.Title = "Message Sent";
             return View(notification);
         }
     }

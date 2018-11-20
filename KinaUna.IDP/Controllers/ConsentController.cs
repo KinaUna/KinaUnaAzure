@@ -6,12 +6,14 @@ using KinaUna.IDP.Models.AccountViewModels;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 
 namespace KinaUna.IDP.Controllers
 {
     /// <summary>
     /// This controller implements the consent logic
     /// </summary>
+    [EnableCors("KinaUnaCors")]
     public class ConsentController : Controller
     {
         private readonly ILogger<ConsentController> _logger;

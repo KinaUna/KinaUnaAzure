@@ -101,16 +101,22 @@ function frameLoaded() {
                 iframe.contentWindow.postMessage('web', '*');
                 checkFrameCount++;
                 if (!isAuthPage && checkFrameCount > 1) {
+                    if (checkFrameCount > 5) {
+                        window.location.href = "https://web.kinauna.com/account/noframelogin";
+                        return false;
+                    }
                     console.log("Submitting LoginForm from checkFrame.");
                     document.getElementById('loginForm').submit();
+                    return false;
                 } else {
                     return false;
                 }
             } else {
                 loginModalClosed();
+                return true;
             }
         },
-            5000);
+            3000);
     }
 }
 function loginModalClosed() {

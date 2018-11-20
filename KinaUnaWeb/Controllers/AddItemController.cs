@@ -492,7 +492,6 @@ namespace KinaUnaWeb.Controllers
                     {
                         if (ua.AccessLevel <= pic.AccessLevel)
                         {
-                            string picTimeString = "";
                             string commentTxtStr = cmnt.CommentText;
                             if (cmnt.CommentText.Length > 99)
                             {
@@ -957,7 +956,6 @@ namespace KinaUnaWeb.Controllers
                     {
                         if (ua.AccessLevel <= vid.AccessLevel)
                         {
-                            string vidTimeString = "";
                             UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
                             if (uaUserInfo.UserId != "Unknown")
                             {

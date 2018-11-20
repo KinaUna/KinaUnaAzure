@@ -132,7 +132,7 @@ namespace KinaUnaWeb.Services
 
         }
 
-        public async Task<string> GetImageUrl(string pictureLink, string pictureContainer)
+        public string GetImageUrl(string pictureLink, string pictureContainer)
         {
             string returnString = pictureLink;
             if (!pictureLink.ToLower().StartsWith("http"))

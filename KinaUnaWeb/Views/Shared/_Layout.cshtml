@@ -107,7 +107,7 @@
                 string childprofilePic = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
                 if (!String.IsNullOrWhiteSpace(child.PictureLink))
                 {
-                    string picLink = await ChildManager.GetImageUrl(child.PictureLink, "progeny");
+                    string picLink = ChildManager.GetImageUrl(child.PictureLink, "progeny");
                     childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 40px; margin-top: -3px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px;\" /img> ";
                 }
                 @Html.Raw(childprofilePic)
@@ -142,7 +142,7 @@
                                                     string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
                                                     if (!String.IsNullOrWhiteSpace(prog.PictureLink))
                                                     {
-                                                        string picLink2 = await ChildManager.GetImageUrl(prog.PictureLink, "progeny");
+                                                        string picLink2 = ChildManager.GetImageUrl(prog.PictureLink, "progeny");
                                                         profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px;\" /img> ";
                                                     }
                                                 }
@@ -264,7 +264,7 @@
                                 string userprofilePic = "<i class=\"material-icons\" >person</i>";
                                 if (!String.IsNullOrWhiteSpace(userinfo.ProfilePicture))
                                 {
-                                    string picLink = await ChildManager.GetImageUrl(userinfo.ProfilePicture, "profiles");
+                                    string picLink = ChildManager.GetImageUrl(userinfo.ProfilePicture, "profiles");
                                     userprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 28px; margin-top: -2px; margin-right: 4px; border-radius: 10px;\" /img> ";
                                 }
                             }
@@ -313,9 +313,16 @@
             {
                 <div class="navbar-nav">
                     <div class="nav-item">
-                        <form id="loginForm" class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Login" method="post" target="loginFrame">
-                            <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" data-toggle="modal" data-target="#loginModal"><i class="material-icons">exit_to_app</i> Login or Register</button>
-                        </form>
+                        <environment include="Development">
+                            <form id="loginForm" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post" target="loginFrame">
+                                <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" data-toggle="modal" data-target="#loginModal"><i class="material-icons">exit_to_app</i> Login or Register</button>
+                            </form>
+                        </environment>
+                        <environment exclude="Development">
+                            <form id="loginForm" class="form-inline-fullwidth" action="https://web.kinauna.com/account/login" method="post" target="loginFrame">
+                                <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" data-toggle="modal" data-target="#loginModal"><i class="material-icons">exit_to_app</i> Login or Register</button>
+                            </form>
+                        </environment>
                     </div>
                 </div>
             }

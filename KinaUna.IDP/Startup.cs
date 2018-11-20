@@ -86,11 +86,11 @@ namespace KinaUna.IDP
             });
 
             
-            var identityServerCors = new DefaultCorsPolicyService(_loggerFactory.CreateLogger<DefaultCorsPolicyService>())
-            {
-                AllowAll = true
-            };
-            services.AddSingleton<ICorsPolicyService>(identityServerCors);
+            //var identityServerCors = new DefaultCorsPolicyService(_loggerFactory.CreateLogger<DefaultCorsPolicyService>())
+            //{
+            //    AllowAll = true
+            //};
+            //services.AddSingleton<ICorsPolicyService>(identityServerCors);
 
             X509Certificate2 cert = null;
             using (X509Store certStore = new X509Store(StoreName.My, StoreLocation.CurrentUser))
@@ -106,6 +106,35 @@ namespace KinaUna.IDP
                     cert = certCollection[0];
                 }
             }
+
+            if (env.IsDevelopment())
+            {
+                services.AddCors(options =>
+                {
+                    options.AddPolicy("KinaUnaCors",
+                        builder =>
+                        {
+                            builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                        });
+                });
+            }
+            else
+            {
+                services.AddCors(options =>
+                {
+                    options.AddPolicy("KinaUnaCors",
+                        builder =>
+                        {
+                            builder.WithOrigins("https://*.kinauna.com").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                        });
+                });
+                var cors = new DefaultCorsPolicyService(_loggerFactory.CreateLogger<DefaultCorsPolicyService>())
+                {
+                    AllowedOrigins = { "https://web.kinauna.com", "https://kinauna.com" }
+                };
+                services.AddSingleton<ICorsPolicyService>(cors);
+            }
+            
 
             services.AddMvc().AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
             
@@ -147,8 +176,7 @@ namespace KinaUna.IDP
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+            app.UseCors("KinaUnaCors");
 
             var supportedCultures = new[]
             {

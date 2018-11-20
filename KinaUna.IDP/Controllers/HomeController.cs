@@ -9,10 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
 
 namespace KinaUna.IDP.Controllers
 {
+    [EnableCors("KinaUnaCors")]
     public class HomeController : Controller
     {
         private readonly IIdentityServerInteractionService _interaction;

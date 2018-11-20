@@ -54,7 +54,6 @@ namespace KinaUnaWeb.Controllers
         }
         
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task Login()
         {
             // clear any existing external cookie to ensure a clean login process
@@ -69,7 +68,20 @@ namespace KinaUnaWeb.Controllers
                 });
         }
 
-        
+        public async Task NoFrameLogin()
+        {
+            // clear any existing external cookie to ensure a clean login process
+            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // see IdentityServer4 QuickStartUI AccountController ExternalLogin
+            await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme,
+                new AuthenticationProperties()
+                {
+                    RedirectUri = Url.Action("LoginCallback"),
+                });
+        }
+
         [HttpGet]
         public IActionResult LoginCallback()
         {
@@ -111,6 +123,7 @@ namespace KinaUnaWeb.Controllers
             return View();
         }
 
+        [Authorize]
         public async Task<IActionResult> MyAccount()
         {
             string userEmail = HttpContext.User.FindFirst("email").Value;
@@ -162,6 +175,8 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> MyAccount(UserInfoViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email").Value;
@@ -275,6 +290,7 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        [Authorize]
         public IActionResult EnablePush()
         {
             string userId = HttpContext.User.FindFirst("sub").Value;
@@ -283,6 +299,7 @@ namespace KinaUnaWeb.Controllers
             return View();
         }
 
+        [Authorize]
         public IActionResult DisablePush()
         {
             string userId = HttpContext.User.FindFirst("sub").Value;

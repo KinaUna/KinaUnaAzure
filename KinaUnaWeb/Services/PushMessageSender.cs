@@ -6,6 +6,7 @@ using KinaUnaWeb.Data;
 using KinaUnaWeb.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using WebPush;
 
 namespace KinaUnaWeb.Services
@@ -24,12 +25,16 @@ namespace KinaUnaWeb.Services
 
         public async Task SendMessage(string user, string title, string message, string link)
         {
-            var payload = "{{\"title\":\"" + title + "\", \"message\":\"" + message + "\"}}";
-            var deviceList = await _context.PushDevices.Where(m => m.Name == user).ToListAsync();
+            PushNotification notification = new PushNotification();
+            notification.Title = title;
+            notification.Message = message;
+            notification.Link = link;
 
+            var payload = JsonConvert.SerializeObject(notification);
             string vapidPublicKey = _configuration["VapidPublicKey"];
             string vapidPrivateKey = _configuration["VapidPrivateKey"];
 
+            var deviceList = await _context.PushDevices.Where(m => m.Name == user).ToListAsync();
             if (deviceList.Any())
             {
                 foreach (PushDevices dev in deviceList)
@@ -40,7 +45,7 @@ namespace KinaUnaWeb.Services
                     var webPushClient = new WebPushClient();
                     try
                     {
-                        webPushClient.SendNotification(pushSubscription, title, vapidDetails);
+                        webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
                     }
                     catch (WebPushException ex)
                     {

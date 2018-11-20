@@ -27,6 +27,12 @@ namespace KinaUnaWeb.Controllers
 
         public IActionResult Send(int? id)
         {
+            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
+            if (userEmail.ToUpper() != "PER.MOGENSEN@GMAIL.COM")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             return View();
         }
 
@@ -34,6 +40,12 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Send(int id)
         {
+            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
+            if (userEmail.ToUpper() != "PER.MOGENSEN@GMAIL.COM")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             var payload = Request.Form["payload"];
             var device = await _context.PushDevices.SingleOrDefaultAsync(m => m.Id == id);
 
@@ -51,6 +63,11 @@ namespace KinaUnaWeb.Controllers
 
         public IActionResult GenerateKeys()
         {
+            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
+            if (userEmail.ToUpper() != "PER.MOGENSEN@GMAIL.COM")
+            {
+                return RedirectToAction("Index", "Home");
+            }
             var keys = VapidHelper.GenerateVapidKeys();
             ViewBag.PublicKey = keys.PublicKey;
             ViewBag.PrivateKey = keys.PrivateKey;

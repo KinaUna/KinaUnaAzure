@@ -25,10 +25,12 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 
 namespace KinaUna.IDP.Controllers
 {
     [AllowAnonymous]
+    [EnableCors("KinaUnaCors")]
     public class AccountController : Controller
     {
         //private readonly InMemoryUserLoginService _loginService;

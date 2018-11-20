@@ -6,7 +6,7 @@ self.addEventListener('install', function (event) {
     event.waitUntil(
         fetch(offlinePage).then(function (response) {
             return caches.open('pwabuilder-offline').then(function (cache) {
-                console.log('[PWA Builder] Cached offline page during Install' + response.url);
+                console.log('[PWA Builder] Cached offline page during Install: ' + response.url);
                 return cache.put(offlinePage, response);
             });
         }));
@@ -17,7 +17,7 @@ self.addEventListener('install', function (event) {
 self.addEventListener('fetch', function (event) {
     event.respondWith(
         fetch(event.request).catch(function (error) {
-                console.error('[PWA Builder] Network request Failed. Serving offline page ' + error);
+                console.error('[PWA Builder] Network request Failed. Serving offline page. ' + error);
                 return caches.open('pwabuilder-offline').then(function (cache) {
                     return cache.match('offline.html');
                 });
@@ -48,16 +48,18 @@ self.addEventListener('push', function (event) {
     //console.log('Data.title: ' + data.title);
     //console.log('Data.message: ' + data.message);
     //console.log('Data.link: ' + data.link);
-
-    var title = data; // data.title
-    // var message = data.message;
-    var link = data.link;
-    var icon = "https://web.kinauna.com/images/kinaunalogo192x192.png";
+    var notification = {};
+    notification = JSON.parse(data);
+    var title = notification.Title; // data.title
+    var message = notification.Message;
+    var link = notification.Link;
+    var icon = "https://web.kinauna.com/images/kinaunalogo192x192_rounded.png";
     var badge = "https://web.kinauna.com/images/kinaunalogo_badge3.png";
     event.waitUntil(self.registration.showNotification(title, {
-        body: data, // message,
+        body: message,
         icon: icon,
-        badge: badge
+        badge: badge,
+        data: link
     }));
 });
 
@@ -66,16 +68,16 @@ self.addEventListener('notificationclick',
     function (event) {
         var notification = event.notification;
         var action = event.action;
-        var link = '/notifications';
+        var link = notification.data; // '/notifications';
         // var notificationId = notification.data.notificationId;
         if (action === 'close') {
             notification.close();
         } else {
             if (action === 'open') {
-                clients.openWindow('/notifications'); // /notifications/push/' + notificationId);
+                self.clients.openWindow('/notifications'); // /notifications/push/' + notificationId);
                 notification.close();
             } else {
-                clients.openWindow(link);
+                self.clients.openWindow(link);
                 notification.close();
             }
         }
