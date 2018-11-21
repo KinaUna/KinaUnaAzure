@@ -1,0 +1,210 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.TimeLineViewModel
+
+@section Scripts{
+
+}
+
+@{
+    ViewData["Title"] = ViewBag.ProgenyName + "'s Chronik";
+}
+<h3 class="title">@ViewData["Title"]</h3>
+<br style="clear: both;" />
+@{
+    string sortOldest = "btn btn-primary btn-sm";
+    string sortNewest = "btn btn-info btn-sm";
+}
+@if (ViewBag.SortBy == 1)
+{
+    sortOldest = "btn btn-info btn-sm";
+    sortNewest = "btn btn-primary btn-sm";
+    <div>
+        Sort: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Neueste zuerst</span>
+        <a class="@sortOldest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="0">Älteste zuerst</a>
+    </div>
+}
+else
+{
+    <div>
+        Sort: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Älteste zuerst</span>
+        <a class="@sortNewest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="1">Neueste zuerst</a>
+    </div>
+}
+<br />
+<div id="tlineItems">
+
+</div>
+<div id="moreButtonDiv" style="clear: both;">
+    <button class="btn btn-success" id="moreTimeLineItems" style="float: left; margin-top: 20px;">Weitere Artikel anzeigen</button>
+    <br />
+    <div class="col-md-3 col-lg-2" style="float: right; font-size: small;">
+        Anzahl der Artikel:
+        <select id="nextItemsCount" class="selectpicker form-control-noline" data-style="select-with-transition">
+            <option value="5">5</option>
+            <option value="10" selected="selected">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+    </div>
+    <br style="clear: both;" />
+</div>
+<script type="text/javascript">
+    var current_effect = 'roundBounce';
+
+    function run_waitMe() {
+        $('#moreButtonDiv').waitMe({
+            effect: 'bounce',
+            text: '',
+            bg: 'rgba(255,255,255,0.7)',
+            color: '#3a2051',
+            maxSize: '',
+            waitTime: -1,
+            source: '',
+            textPos: 'vertical',
+            fontSize: '',
+            onClose: function() {}
+        });
+    }
+
+    function run_waitMeLoad() {
+        $('body').waitMe({
+            effect: 'roundBounce',
+            text: '',
+            bg: 'rgba(255,255,255,0.5)',
+            color: '#3a2051',
+            maxSize: '',
+            waitTime: -1,
+            source: '',
+            textPos: 'vertical',
+            fontSize: '',
+            onClose: function () { }
+        });
+    }
+    var currentItemNumber = 0;
+    var maxNumber = @Model.TimeLineItems.Count;
+    var sortBy = @ViewBag.SortBy;
+    @{
+        string[] idNumbers = new String[Model.TimeLineItems.Count];
+        int[] itmType = new int[Model.TimeLineItems.Count];
+        int tiCount = 0;
+        foreach (TimeLineItem tItm in Model.TimeLineItems)
+        {
+            idNumbers[tiCount] = tItm.ItemId;
+            itmType[tiCount] = tItm.ItemType;
+            tiCount++;
+        }
+    }
+    var itemId = [@string.Join(",", idNumbers)];
+    var itemType = [@string.Join(",", itmType)];
+    var numItems = 10;
+    var scrollTo = '#';
+    $(document).ready(function() {
+        async function getItemsHist() {
+            run_waitMeLoad();
+            let g;
+            for (g = 0; g < @ViewBag.Items; g++) {
+                await getHistItem();
+                $("#moreButtonDiv").waitMe("hide");
+
+            };
+            $('body').waitMe("hide");
+            $('html, body').animate({
+                'scrollTop': $(scrollTo).offset().top
+            }, 2000);
+        };
+
+        async function getHistItem() {
+            var timelineItemData = { typeId: itemType[currentItemNumber], itemId: itemId[currentItemNumber] };
+            currentItemNumber++;
+            await getTimeLineItemLoad(timelineItemData);
+        };
+
+        async function getNextItem() {
+            var timelineItemData = { typeId: itemType[currentItemNumber], itemId: itemId[currentItemNumber] };
+            currentItemNumber++;
+            await getTimeLineItem(timelineItemData);
+        };
+
+        if (currentItemNumber < @ViewBag.Items) {
+            getItemsHist();
+
+
+        } else {
+            getNextSeriesItems();
+        }
+
+        $("#moreTimeLineItems").click(getNextSeriesItems);
+
+
+        async function getNextSeriesItems() {
+            let h;
+            numItems = $("#nextItemsCount").val();
+            for (h = 0; h < numItems; h++) {
+                await getNextItem();
+                $("#moreButtonDiv").waitMe("hide");
+                if (currentItemNumber === maxNumber) {
+                    $("#moreTimeLineItems").attr("disabled", "disabled");
+                    $('#tlineItems').append("<div>Keine weitere Artikel.<br/></div>");
+                    return;
+
+                }
+            };
+        }
+
+        function getTimeLineItem(tData) {
+            run_waitMe();
+            return $.ajax({
+                type: "GET",
+                url: "/TimeLine/GetTimeLineItem",
+                data: tData,
+                datatype: "html",
+                async: true,
+                success: function(data) {
+                    $('#tlineItems').append('<div class="addedDiv" style="display:none;"><span id="' +
+                        tData.typeId +
+                        tData.itemId +
+                        '"></span>' +
+                        data +
+                        '</div>');
+                    $('div.addedDiv').slideDown("slow");
+                    window.history.replaceState("state",
+                        "title",
+                        "TimeLine?sortBy=" + sortBy + "&items=" + currentItemNumber);
+                },
+                error: function(jqXhr, textStatus, errorThrown) {
+                    console.log(textStatus, errorThrown);
+                }
+            });
+        }
+
+        function getTimeLineItemLoad(tData) {
+            run_waitMe();
+            return $.ajax({
+                type: "GET",
+                url: "/TimeLine/GetTimeLineItem",
+                data: tData,
+                datatype: "html",
+                async: true,
+                success: function(data) {
+                    $('#tlineItems').append('<div class="addedDiv" style="display:none;"><span id="' +
+                        tData.typeId +
+                        tData.itemId +
+                        '"></span>' +
+                        data +
+                        '</div>');
+                    $('div.addedDiv').slideDown("slow");
+                    window.history.replaceState("state",
+                        "title",
+                        "TimeLine?sortBy=" + sortBy + "&items=" + currentItemNumber);
+                    //$('html, body').animate({ scrollTop: $(document).height() }, 'slow');
+                    scrollTo = '#' + tData.typeId + tData.itemId;
+                },
+                error: function (jqXhr, textStatus, errorThrown) {
+                    console.log(textStatus, errorThrown);
+                }
+            });
+        }
+    });
+</script>

@@ -1,0 +1,126 @@
+﻿@model Family
+@{
+    ViewData["Title"] = "Meine Familie";
+}
+
+<h3>@ViewData["Title"]</h3>
+<br />
+<div class="card card-blog card-plain">
+    <div class="card-header card-header-warning title">Meine Kinder</div>
+    <div class="card-text">
+        <div class="btn-group">
+            <a asp-controller="Progeny" asp-action="AddProgeny" class="btn btn-success btn-rounded leavePage">
+                <i class="fas fa-plus"></i> Kind hinzufügen
+            </a>
+        </div>
+    </div>
+</div>
+@if (Model.Children != null && Model.Children.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th><strong>Anzeigename</strong></th>
+                <th><strong>Name</strong></th>
+                <th><strong>Geburtstag</strong></th>
+                <th><strong>Administratoren</strong></th>
+                <th><strong>Daten</strong></th>
+                <th><strong>Handlung</strong></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            @{ List<string> progIds1 = new List<string>(); }
+            @foreach (var accMvm in Model.Children)
+            {
+                if (!progIds1.Contains(accMvm.Id.ToString()))
+                {
+                    <tr>
+                        <td>@accMvm.NickName</td>
+                        <td>@accMvm.Name</td>
+                        <td>@accMvm.BirthDay.Value.ToString("dd-MMM-yyyy HH:mm")</td>
+                        <td>@accMvm.Admins</td>
+                        <td style="min-width: 100px;">
+                            <a asp-controller="MyData" asp-action="ChildSpreadSheet" asp-route-progenyId="@accMvm.Id" class="btn btn-primary btn-sm leavePage">
+                                Tabelle
+                                <i class="fas fa-archive"></i>
+                            </a>
+                        </td>
+                        <td>
+                            <a asp-controller="Progeny" asp-action="EditProgeny" asp-route-progenyId="@accMvm.Id.ToString()" class="btn btn-info leavePage">
+                                <i class="fas fa-pencil-alt"></i> Bearbeiten
+                            </a>
+                            <a asp-controller="Progeny" asp-action="DeleteProgeny" asp-route-progenyId="@accMvm.Id.ToString()" class="btn btn-danger leavePage">
+                                <i class="fas fa-trash-alt"></i> Löschen
+                            </a>
+
+                        </td>
+                    </tr>
+
+                    progIds1.Add(accMvm.Id.ToString());
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+    
+    <br />
+    <div class="card card-blog card-plain">
+        <div class="card-header card-header-warning title">Benutzer</div>
+        <div class="card-text">
+            @{ List<string> progIds = new List<string>(); }
+            @foreach (var accMvm in Model.Children)
+            {
+                if (!progIds.Contains(accMvm.Id.ToString()))
+                {
+                    <div class="btn-group">
+                        <a asp-controller="AccessManagement" asp-action="AddAccess" asp-route-progenyId="@accMvm.Id.ToString()" class="btn btn-success btn-rounded leavePage">
+                            <i class="fas fa-plus"></i> Benutzer für @accMvm.Name hinzufügen
+                        </a>
+                    </div>
+                    progIds.Add(accMvm.Id.ToString());
+                }
+            }
+        </div>
+    </div>
+}
+@if (Model.AccessList.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th><strong>Kind</strong></th>
+                <th><strong>Benutzername</strong></th>
+                <th><strong>Name</strong></th>
+                <th><strong>Email</strong></th>
+                <th><strong>Zugriffsniveau</strong></th>
+                <th><strong>Handlung</strong></th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.AccessList)
+            {
+                <tr>
+                    <td>@item.Progeny.NickName</td>
+                    <td>@item.User.UserName</td>
+                    <td>@item.User.FirstName @item.User.MiddleName @item.User.LastName</td>
+                    <td>@item.UserId</td>
+                    <td>@Model.AccessLevelList.AccessLevelListDe[item.AccessLevel].Text</td>
+                    <td>
+                        <a asp-controller="AccessManagement" asp-action="EditAccess" asp-route-accessId="@item.AccessId" class="btn btn-info leavePage">
+                            <i class="fas fa-pencil-alt"></i> Bearbeiten
+                        </a>
+                        <a asp-controller="AccessManagement" asp-action="DeleteAccess" asp-route-accessId="@item.AccessId" class="btn btn-danger leavePage">
+                            <i class="fas fa-trash-alt"></i> Löschen
+                        </a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+

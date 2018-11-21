@@ -1,11 +1,11 @@
 ﻿@model Friend
 @{
     List<string> typeList = new List<string>();
-    typeList.Add("Personal Friend");
-    typeList.Add("Toy/Animal Friend");
-    typeList.Add("Parent");
-    typeList.Add("Family");
-    typeList.Add("Caretaker");
+    typeList.Add("Personlig ven");
+    typeList.Add("Legetøj/Dyr");
+    typeList.Add("Forælder");
+    typeList.Add("Familie");
+    typeList.Add("Omsorgsperson");
 }
 <a class="leavePage2" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@Model.FriendId">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
@@ -18,8 +18,8 @@
                 <img class="img-thumbnail" style="max-height: 240px; max-width: 224px; background: black; margin-bottom: 8px;" src="@Model.PictureLink"/>
                 <br/>
                 Type: @typeList[Model.Type]<br/>
-                Context: @Model.Context<br/>
-                Notes: @Model.Notes
+                Sammenhæng: @Model.Context<br/>
+                Noter @Model.Notes
             </div>
             <div style="margin-left: 2px;">
                 @{
