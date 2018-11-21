@@ -67,8 +67,8 @@
                         <div class="fileinput-preview fileinput-exists thumbnail img-raised"></div>
                         <div>
                             <div class="btn btn-primary btn-round btn-file ">
-                                <span data-trigger="fileinput" class="fileinput-new">New picture</span>
-                                <span class="fileinput-exists">Vælg nyt billede</span>
+                                <span data-trigger="fileinput" class="fileinput-new">Nyt billede</span>
+                                <span class="fileinput-exists">Vælg et andet billede</span>
                                 <input type="file" asp-for="File" accept="image/*" />
                             </div>
                             <br />
@@ -99,15 +99,15 @@
         reg.pushManager.getSubscription()
             .then(function (subscription) {
                 isSubscribed = subscription;
+                let enableBtn = document.getElementById('enablePushButton');
+                let disableBtn = document.getElementById('disablePushButton');
                 if (isSubscribed) {
                     console.log('User is already subscribed to push notifications');
-                    let enableBtn = document.getElementById('enablePushButton');
                     enableBtn.style.display = 'none';
                     disableBtn.style.display = 'block';
 
                 } else {
                     console.log('User is not yet subscribed to push notifications');
-                    let disableBtn = document.getElementById('disablePushButton');
                     disableBtn.style.display = 'none';
                     enableBtn.style.display = 'block';
                 }
