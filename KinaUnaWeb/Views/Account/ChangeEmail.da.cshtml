@@ -1,0 +1,18 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.UserInfoViewModel
+@{
+    ViewData["Title"] = "Skift emailadresse";
+}
+
+<h2>Skift emailadresse</h2>
+
+<div class="row">
+    <div class="col-md-10">
+        For at ændre din emailadresse skal vi befræfte at du ejer den adresse.<br/>
+        Indtil den nye emailadresse er bekræftet vil du have begrænset adgang til indholdet på Kina Una.<br />
+        Når emailadressen er bekræftet vil adgangslisterne blive opdateret og du vil igen kunne se det samme indhold som tidligere.<br/>
+        Klik på knappen nedenfor for at fortsætte.<br/>
+        <form id="loginForm" action="@Model.ChangeLink" method="post" target="loginFrame" style="float: right;">
+            <button id="verifyEmailButton" type="submit" class="btn btn-success" data-toggle="modal" data-target="#loginModal"><span class="fas fa-sign-in-alt"></span> Skift Email</button>
+        </form>
+    </div>
+</div>

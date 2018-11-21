@@ -1,0 +1,42 @@
+﻿@model KinaUnaWeb.Models.FamilyViewModels.UserAccessViewModel
+@section Scripts{
+
+}
+<H3 class="title">Benutzerzugang für @Model.ProgenyName redigieren</H3>
+<form asp-action="EditAccess" role="form">
+    <div class="modal-body form-horizontal">
+        <div class="row">
+            <div class="col-9">
+                <div class="form-group">
+                    <label asp-for="Email" class="col-3 control-label"></label>
+                    <div class="col-9">
+                        <input asp-for="Email" class="form-control" readonly="readonly" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="UserName" class="col-3 control-label">Benutzername</label>
+                    <div class="col-9">
+                        <input asp-for="UserName" class="form-control" readonly="readonly" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="AccessLevel" class="col-3 control-label">Zugriffsniveau</label>
+                    <div class="col-9">
+                        <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListDe.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDe"></select>
+                    </div>
+                </div>
+                <input asp-for="ProgenyId" class="form-control" value="@Model.ProgenyId" type="hidden" />
+                <input asp-for="AccessId" class="form-control" value="@Model.AccessId" type="hidden" />
+                <div>
+                    <div class="form-group">
+                        <div class="col-3 control-label"></div>
+                        <div class="col-9">
+                            <button class="btn btn-success leavePage" type="submit">Speichern</button>
+                            <a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">Abbrechen</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

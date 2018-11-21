@@ -1,10 +1,10 @@
 ﻿@model KinaUnaWeb.Models.FamilyViewModels.UserAccessViewModel
-<H3 class="title">Add user</H3>
+<H3 class="title">Benutzer hinzufügen</H3>
 <form asp-action="AddAccess" role="form">
     @if (Model.ProgenyList.Count > 1)
     {
         <div class="form-group">
-            <label class="control-label col-sm-3">Add User for </label>
+            <label class="control-label col-sm-3">Benutzer hinzufügen für </label>
             <div class="col-lg-9">
                 <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
             </div>
@@ -13,7 +13,7 @@
     else
     {
         <div class="form-group">
-            <label class="control-label col-sm-3">Add User for</label>
+            <label class="control-label col-sm-3">Benutzer hinzufügen für </label>
             <div class="col-lg-9">
                 <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
             </div>
@@ -27,17 +27,17 @@
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="AccessLevel" class="col-3 control-label">Access Level</label>
+        <label asp-for="AccessLevel" class="col-3 control-label">Zugriffsnivaul</label>
         <div class="col-9">
-            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListDe.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDe"></select>
         </div>
     </div>
     <div>
         <div class="form-group">
             <div class="col-3 control-label"></div>
             <div class="col-9">
-                <button class="btn btn-success leavePage" type="submit">Save</button>
-                <a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">Cancel</a>
+                <button class="btn btn-success leavePage" type="submit">Hinzufügen</button>
+                <a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">Abbrechen</a>
             </div>
         </div>
     </div>

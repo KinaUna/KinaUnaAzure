@@ -1,32 +1,32 @@
 ﻿@model PushDevices
 @section Scripts
     {
-    <script src="@Url.Content("~/js/CreateDevice.js")"></script>
+    <script src="@Url.Content("~/js/RemoveDevice.js")"></script>
 }
 
 @{
-    ViewData["Title"] = "Enable Push Notifications";
+    ViewData["Title"] = "Slå push-meddelelser fra";
 }
 
 <h2>@ViewData["Title"]</h2>
 <hr />
 <div class="row">
     <div class="alert alert-danger" style="display: none;">
-        <strong>Error:</strong>
+        <strong>Fejl:</strong>
         <ul id="errorMessage"></ul>
     </div>
 
     <div class="col-md-4">
-        <form asp-controller="PushDevices" asp-action="CreateUser">
+        <form asp-controller="PushDevices" asp-action="RemovePushDevice" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group" style="width: 500px;">
-                <label asp-for="Name" class="control-label">User ID</label>
-                <input asp-for="Name" class="form-control" value="user" readonly="readonly" />
+                <label asp-for="Name" class="control-label">Bruger ID</label>
+                <input asp-for="Name" class="form-control" value="user" readonly="readonly"/>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="well" style="width: 500px;">
-                <h4>Web Push Details</h4>
-                <span style="font-size: 12px;">These values will automatically become populated once correct permissions are given by the browser.</span>
+                <h4>Web Push info</h4>
+                <span style="font-size: 12px;"></span>
                 <hr />
                 <div class="form-group">
                     <label asp-for="PushEndpoint" class="control-label"></label>
@@ -45,14 +45,14 @@
                 </div>
             </div>
             <div class="form-group">
-                <input type="submit" value="Enable Push Notifications" class="btn btn-success" />
+                <input type="submit" value="Slå meddelelser fra" class="btn btn-warning" onclick="unsubscribe()" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="MyAccount">Back to My Account</a>
+    <a asp-action="MyAccount">Tilbage til Min Konto</a>
 </div>
 
 <script>

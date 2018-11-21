@@ -1,0 +1,18 @@
+﻿
+@{
+    ViewData["Title"] = "Adgang nægtet";
+}
+
+<h2>Adgang nægtet</h2>
+
+@{
+    if (User.Identity.IsAuthenticated)
+    {
+        <div> Du har ikke rettigheder til denne ressource.</div>
+    }
+    else{
+        <div>Log ind for at se mere indhold.</div>
+    }
+}
+
+

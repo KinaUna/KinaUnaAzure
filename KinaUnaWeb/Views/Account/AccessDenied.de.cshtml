@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "Zugriff verweigert";
+}
+<h2>Zugriff verweigert</h2>
+@{
+    if (User.Identity.IsAuthenticated)
+    {
+<div> Sie sind nicht berechtigt, auf diese Inhalte zuzugreifen.</div>
+    }
+    else{
+    <div>Bitte melden Sie sich an, um mehr Inhalte zu sehen.</div>
+    }
+}
+
+

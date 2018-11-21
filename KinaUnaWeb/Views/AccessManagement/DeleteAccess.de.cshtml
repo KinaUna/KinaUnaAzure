@@ -1,0 +1,22 @@
+﻿@model KinaUnaWeb.Models.FamilyViewModels.UserAccessViewModel
+<H3 class="title">Zugang entfernen für @Model.ProgenyName</H3>
+<form asp-action="DeleteAccess" role="form">
+    <div class="modal-body form-horizontal">
+        Sind Sie sicher, dass Sie @Model.UserName entfernen möchten?
+    </div>
+    <div>
+        Vorname: @Model.FirstName
+    </div>
+    <div>
+        Mittlename: @Model.MiddleName
+    </div>
+    <div>
+        Nachname: @Model.LastName
+    </div>
+    <div>
+        Email: @Model.Email
+    </div>
+
+    <input asp-for="AccessId" class="form-control" value="@Model.AccessId" type="hidden" />
+    <div><Button class="btn btn-success leavePage">Ja</Button><a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">Nein - Abbrechen</a></div>
+</form>
