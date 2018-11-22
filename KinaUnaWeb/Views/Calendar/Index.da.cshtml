@@ -1,0 +1,142 @@
+﻿@using System.Text.Encodings.Web
+@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
+@section Scripts{
+    <link href="/lib/fullcalendar/fullcalendar.min.css" rel="stylesheet" />
+    <script src="/lib/moment.min.js"></script>
+    <script src="/lib/momentLocale/da.js"></script>
+    <script src="/lib/fullcalendar/fullcalendar.min.js"></script>
+    <script src="/lib/fullcalendar/locale/da.js"></script>
+}
+@{
+    ViewData["Title"] = Model.Progeny.NickName + "'s kalender";
+}
+<script>
+    $(document).ready(function() {
+
+        $('#calendar').fullCalendar({
+            locale: 'da',
+            height: 'parent',
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,agendaWeek,agendaDay,listQuarter'
+            },
+            views: {
+                month: {
+                    titleFormat: 'MMMM YYYY'
+                    // other view-specific options here
+                },
+                agendaWeek: {
+                    columnFormat: 'ddd D MMM'
+                },
+                agendaDay: {
+                    titleFormat: 'D MMM YYYY'
+                    // other view-specific options here
+                },
+                listQuarter: {
+                    type: 'list', duration: {months: 6}, buttonText: 'liste', titleFormat: 'MMMM YYYY', listDayFormat: 'ddd DD MMMM, YYYY', listDayAltFormat: false
+                    // other view-specific options here
+                }
+            },
+            allDayDefault: false,
+            titleFormat: 'D MMM YYYY',
+            defaultView: 'agendaWeek',
+            defaultDate: '@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(Model.UserData.TimeZone)).Date.ToString("yyyy-MM-dd")',
+            navLinks: true, // can click day/week names to navigate views
+            allDaySlot: true,
+            slotLabelFormat: 'HH(:mm)',
+            scrollTime: '06:00:00',
+            weekNumbers: true,
+            weekNumbersWithinDays: true,
+            weekNumberCalculation: 'ISO',
+            timeFormat: 'HH:mm',
+            editable: true,
+            eventLimit: true, // allow "more" link when too many events
+            events: [
+                @foreach (CalendarItem ev in Model.EventsList)
+                {
+                    if (ev.AllDay)
+                    {
+                        ev.StartString = ev.StartString.Substring(0, 10);
+                        ev.EndString = ev.EndString.Substring(0, 10);
+                    }
+                    @Html.Raw("{id: '" + ev.EventId + "', title: '" + ev.Title + "', allDay: " + ev.AllDay.ToString().ToLower() +  ", start: '" + ev.StartString + "', end: '" + ev.EndString + "', url: 'Calendar/ViewEvent?eventId=" + ev.EventId + "', editable: false},")
+                }
+            ],
+            themeSystem: 'bootstrap4'
+        });
+
+        var myElement = document.querySelector('#calendar');
+        myElement.addEventListener("touchstart", startTouch, false);
+        myElement.addEventListener("touchmove", moveTouch, false);
+
+// Swipe Up / Down / Left / Right
+        var initialX = null;
+        var initialY = null;
+
+        function startTouch(e) {
+            initialX = e.touches[0].clientX;
+            initialY = e.touches[0].clientY;
+        };
+
+        function moveTouch(e) {
+            if (initialX === null) {
+                return;
+            }
+
+            if (initialY === null) {
+                return;
+            }
+
+            var currentX = e.touches[0].clientX;
+            var currentY = e.touches[0].clientY;
+
+            var diffX = initialX - currentX;
+            var diffY = initialY - currentY;
+
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                // sliding horizontally
+                if (diffX > 0) {
+                    // swiped left
+                    console.log("swiped left");
+                    $('#calendar').fullCalendar('next');
+                } else {
+                    // swiped right
+                    console.log("swiped right");
+                    $('#calendar').fullCalendar('prev');
+                }
+            } else {
+                // sliding vertically
+                if (diffY > 0) {
+                    // swiped up
+                    console.log("swiped up");
+                } else {
+                    // swiped down
+                    console.log("swiped down");
+                }
+            }
+
+            initialX = null;
+            initialY = null;
+
+            e.preventDefault();
+        };
+    });
+
+</script>
+@if (Model.IsAdmin)
+{
+    <div class="btn-group" style="float: right;">
+        <a asp-controller="AddItem" asp-action="AddEvent" class="btn btn-success btn-round">
+            <i class="fas fa-plus"></i> Tilføj begivenhed
+        </a>
+    </div>
+}
+<h3 class="title">@ViewData["Title"]</h3>
+<br />
+<br />
+<div style="clear: both; height: 90vh; min-height: 600px; max-height: 1180px;">
+    <div class="fc fc-unthemed fc-ltr" id="calendar">
+
+    </div>
+</div>
