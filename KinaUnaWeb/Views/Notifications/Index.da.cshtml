@@ -1,9 +1,9 @@
 ﻿@using Kendo.Mvc.TagHelpers
 @model List<WebNotification>
 @{
-    ViewData["Title"] = "Notifications";
+    ViewData["Title"] = "Meddelelser";
 }
-<h2>Notifications</h2>
+<h2>Meddelelser</h2>
 
 <div class="card" style="background: #3a2051">
     @if (ViewBag.SelectedNotification != null)
@@ -11,7 +11,7 @@
         string topDivClass = "notification-item";
         string idClass = "notifId" + ViewBag.SelectedNotification.Id;
         string isReadClass = "notificationUnread";
-        string markAsRead = "Mark as read";
+        string markAsRead = "Marker som læst";
         string readId = "notificationReadId" + ViewBag.SelectedNotification.Id;
         string deleteId = "notificationDeleteId" + ViewBag.SelectedNotification.Id;
         string topBtnClass = "btn btn-link notification-button leavePage";
@@ -20,7 +20,7 @@
         {
             topDivClass = topDivClass + " bg-dark";
             isReadClass = "notificationRead";
-            markAsRead = "Mark as unread";
+            markAsRead = "Marker som ulæst";
             topBtnClass = "btn btn-link bg-dark notification-button leavePage";
             markAsReadIcon = "markunread";
         }
@@ -41,7 +41,7 @@
                             <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@ViewBag.SelectedNotification.Message</p>
                             <div class="media-footer">
                                 <span id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(event, this)" data-notificationid="@ViewBag.SelectedNotification.Id">
-                                    <i class="material-icons">delete_forever</i> Delete
+                                    <i class="material-icons">delete_forever</i> Slet
                                 </span>
                                 <span class="btn btn-info btn-link btn-sm float-right @isReadClass @idClass" onClick="markRead(event, this)" data-notificationid="@ViewBag.SelectedNotification.Id">
                                     <i class="material-icons">@markAsReadIcon</i> @markAsRead
@@ -55,7 +55,7 @@
     }
 </div>
 <br />
-Most recent notifications:
+Seneste meddelelser:
 <div id="recentNotifications" class="card" style="background: #3a2051; margin-top: 5px;">
 
     @if (Model.Any())
@@ -65,7 +65,7 @@ Most recent notifications:
             string topDivClass = "notification-item";
             string idClass = "notifId" + notif.Id;
             string isReadClass = "notificationUnread";
-            string markAsRead = "Mark as read";
+            string markAsRead = "Marker som læst";
             string readId = "notificationReadId" + notif.Id;
             string deleteId = "notificationDeleteId" + notif.Id;
             string topBtnClass = "btn btn-link notification-button leavePage";
@@ -75,7 +75,7 @@ Most recent notifications:
             {
                 topDivClass = topDivClass + " bg-dark";
                 isReadClass = "notificationRead";
-                markAsRead = "Mark as unread";
+                markAsRead = "Marker som ulæst";
                 topBtnClass = "btn btn-link bg-dark notification-button leavePage";
                 markAsReadIcon = "markunread";
             }
@@ -95,7 +95,7 @@ Most recent notifications:
                                 <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@notif.Message</p>
                                 <div class="media-footer">
                                     <span id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(this, event)" data-notificationid="@notif.Id">
-                                        <i class="material-icons">delete_forever</i> Delete
+                                        <i class="material-icons">delete_forever</i> Slet
                                     </span>
                                     <span class="btn btn-info btn-link btn-sm float-right @isReadClass @idClass" onClick="markRead(this, event)" data-notificationid="@notif.Id">
                                         <i class="material-icons">@markAsReadIcon</i> @markAsRead

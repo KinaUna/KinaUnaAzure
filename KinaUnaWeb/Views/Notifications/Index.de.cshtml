@@ -1,0 +1,111 @@
+﻿@using Kendo.Mvc.TagHelpers
+@model List<WebNotification>
+@{
+    ViewData["Title"] = "Meldungen";
+}
+<h2>Meldungen</h2>
+
+<div class="card" style="background: #3a2051">
+    @if (ViewBag.SelectedNotification != null)
+    {
+        string topDivClass = "notification-item";
+        string idClass = "notifId" + ViewBag.SelectedNotification.Id;
+        string isReadClass = "notificationUnread";
+        string markAsRead = "Als gelesen markieren";
+        string readId = "notificationReadId" + ViewBag.SelectedNotification.Id;
+        string deleteId = "notificationDeleteId" + ViewBag.SelectedNotification.Id;
+        string topBtnClass = "btn btn-link notification-button leavePage";
+        string markAsReadIcon = "drafts";
+        if (ViewBag.SelectedNotification.IsRead)
+        {
+            topDivClass = topDivClass + " bg-dark";
+            isReadClass = "notificationRead";
+            markAsRead = "Als ungelesen markieren";
+            topBtnClass = "btn btn-link bg-dark notification-button leavePage";
+            markAsReadIcon = "markunread";
+        }
+
+    <div class="@topDivClass">
+        <hr />
+        <div class="@topBtnClass @isReadClass text-left" data-notificationid="@ViewBag.SelectedNotification.Id" data-notificationLink="@ViewBag.SelectedNotification.Link">
+            <div class="media-area" style="width: 100%; margin: 0; padding-bottom: 4px; min-width: 300px;">
+                <div class="media text-left">
+                    <div class="float-left">
+                        <div class="img-circle" style="height: 46px; width: 46px;">
+                            <img height="40" width="40" class="media-object rounded img-fluid" src="@ViewBag.SelectedNotification.Icon" />
+                        </div>
+                    </div>
+                    <div class="media-body">
+                        <span class="text-warning"><span class="info-title text-warning">@ViewBag.SelectedNotification.From</span> <span class="text-warning"> · @ViewBag.SelectedNotification.DateTimeString</span></span>
+                        <h6 class="media-heading text-white">@ViewBag.SelectedNotification.Title</h6>
+                        <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@ViewBag.SelectedNotification.Message</p>
+                        <div class="media-footer">
+                            <span id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(event, this)" data-notificationid="@ViewBag.SelectedNotification.Id">
+                                <i class="material-icons">delete_forever</i> Löschen
+                            </span>
+                            <span class="btn btn-info btn-link btn-sm float-right @isReadClass @idClass" onClick="markRead(event, this)" data-notificationid="@ViewBag.SelectedNotification.Id">
+                                <i class="material-icons">@markAsReadIcon</i> @markAsRead
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+</div>
+<br />
+Most recent notifications:
+<div id="recentNotifications" class="card" style="background: #3a2051; margin-top: 5px;">
+
+    @if (Model.Any())
+    {
+        foreach (WebNotification notif in Model)
+        {
+            string topDivClass = "notification-item";
+            string idClass = "notifId" + notif.Id;
+            string isReadClass = "notificationUnread";
+            string markAsRead = "Als gelesen markieren";
+            string readId = "notificationReadId" + notif.Id;
+            string deleteId = "notificationDeleteId" + notif.Id;
+            string topBtnClass = "btn btn-link notification-button leavePage";
+            string markAsReadIcon = "drafts";
+            string timeStamp = notif.DateTime.Ticks.ToString();
+            if (notif.IsRead)
+            {
+                topDivClass = topDivClass + " bg-dark";
+                isReadClass = "notificationRead";
+                markAsRead = "Als ungelesen markieren";
+                topBtnClass = "btn btn-link bg-dark notification-button leavePage";
+                markAsReadIcon = "markunread";
+            }
+
+    <div class="@topDivClass" data-notificationTime="@timeStamp">
+        <div onClick="notificationItemClick(this, event)" class="@topBtnClass @isReadClass text-left" data-notificationid="@notif.Id" data-notificationLink="@notif.Link">
+            <div class="media-area" style="width: 100%; margin: 0; padding-bottom: 4px; min-width: 300px;">
+                <div class="media text-left">
+                    <div class="float-left">
+                        <div class="img-circle" style="height: 46px; width: 46px;">
+                            <img height="40" width="40" class="media-object rounded img-fluid" src="@notif.Icon" />
+                        </div>
+                    </div>
+                    <div class="media-body">
+                        <span class="text-warning"><span class="info-title text-warning">@notif.From</span> <span class="text-warning"> · @notif.DateTimeString</span></span>
+                        <h6 class="media-heading text-white">@notif.Title</h6>
+                        <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@notif.Message</p>
+                        <div class="media-footer">
+                            <span id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(this, event)" data-notificationid="@notif.Id">
+                                <i class="material-icons">delete_forever</i> Löschen
+                            </span>
+                            <span class="btn btn-info btn-link btn-sm float-right @isReadClass @idClass" onClick="markRead(this, event)" data-notificationid="@notif.Id">
+                                <i class="material-icons">@markAsReadIcon</i> @markAsRead
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        }
+    }
+</div>
