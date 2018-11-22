@@ -251,6 +251,18 @@
     <Content Update="Views\LatestPosts\TimeLineVocabularyPartial.de.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Locations\Index.de.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Locations\Index.da.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Locations\PhotoLocations.de.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Locations\PhotoLocations.da.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Notifications\Index.de.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

@@ -8,32 +8,32 @@
     <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
 }
 @{
-    ViewData["Title"] = Model.Progeny.NickName + "'s Photo Locations";
+    ViewData["Title"] = Model.Progeny.NickName + "'s Foto Orte";
 }
 
 @if (!String.IsNullOrEmpty(Model.TagFilter))
 {
     <br />
-    <div style="float: right;">Tag filter: <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Reset Filter</a></div>
+    <div style="float: right;">Tag filter: <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Filter entfernen</a></div>
 }
 @if (Model.IsAdmin)
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="AddItem" asp-action="AddLocation" class="btn btn-success btn-round leavePage">
-            <i class="fas fa-plus"></i> Add Location
+            <i class="fas fa-plus"></i> Ort hinzufügen
         </a>
     </div>
 }
 @if (Model.LocationsList == null)
 {
     <h3 class="title">@ViewData["Title"]</h3>
-    <div>Nothing to see here yet.</div>
+    <div>Keine daten.</div>
 }
 else
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="Locations" asp-action="Index" class="btn btn-info leavePage">
-            <i class="fas fa-map-marked-alt"></i> Back to Locations
+            <i class="fas fa-map-marked-alt"></i> Gehe zu Orte
         </a>
     </div>
     <h3 class="title">@ViewData["Title"]</h3>
@@ -47,7 +47,6 @@ else
             let prevSelectedMarker;
             let nearbyList = [];
             let lastNearby = 0;
-
             function getNearbyPicture(marker) {
                 nearbyList.push(marker);
                 if (lastNearby < 5) {

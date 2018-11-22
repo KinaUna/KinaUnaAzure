@@ -8,32 +8,32 @@
     <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
 }
 @{
-    ViewData["Title"] = Model.Progeny.NickName + "'s Photo Locations";
+    ViewData["Title"] = Model.Progeny.NickName + "'s Foto steder";
 }
 
 @if (!String.IsNullOrEmpty(Model.TagFilter))
 {
     <br />
-    <div style="float: right;">Tag filter: <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Reset Filter</a></div>
+    <div style="float: right;">Tag filter: <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Nulstil filter</a></div>
 }
 @if (Model.IsAdmin)
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="AddItem" asp-action="AddLocation" class="btn btn-success btn-round leavePage">
-            <i class="fas fa-plus"></i> Add Location
+            <i class="fas fa-plus"></i> Tilføj sted
         </a>
     </div>
 }
 @if (Model.LocationsList == null)
 {
     <h3 class="title">@ViewData["Title"]</h3>
-    <div>Nothing to see here yet.</div>
+    <div>Ingen data.</div>
 }
 else
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="Locations" asp-action="Index" class="btn btn-info leavePage">
-            <i class="fas fa-map-marked-alt"></i> Back to Locations
+            <i class="fas fa-map-marked-alt"></i> Gå til steder
         </a>
     </div>
     <h3 class="title">@ViewData["Title"]</h3>
@@ -47,7 +47,6 @@ else
             let prevSelectedMarker;
             let nearbyList = [];
             let lastNearby = 0;
-
             function getNearbyPicture(marker) {
                 nearbyList.push(marker);
                 if (lastNearby < 5) {
@@ -81,7 +80,6 @@ else
                     $('#morePicturesButton').hide();
                 }
             }
-
             function getMoreNearbyPictures() {
                 for (let i = 0; i < 5; i++) {
                     lastNearby++;
@@ -126,7 +124,7 @@ else
                                     if (prevSelectedMarker instanceof mapsjs.map.Marker) {
                                         prevSelectedMarker.setIcon(defaultIcon);
                                     }
-                                    let selectedIcon = new H.map.Icon("https://web.kinauna.com/images/redmarker.svg", { size: { w: iconWidth, h: iconHeight } });
+                                    let selectedIcon = new H.map.Icon("https://kinauna.com/images/redmarker.svg", { size: { w: iconWidth, h: iconHeight } });
                                     target.setIcon(selectedIcon);
                                     prevSelectedMarker = target;
                                     markerPos = target.getPosition();
@@ -159,23 +157,9 @@ else
                                     console.log(textStatus, errorThrown);
                                 }
                             });
-
-
                         }
-
-                        //  else {
-                        //    var zoomLevel = map.getZoom() + 1;
-                        //    if (zoomLevel > 20) {
-                        //        zoomLevel = 20;
-                        //    }
-                        //    map.setZoom(zoomLevel, true);
-                        //    var coord = map.screenToGeo(evt.currentPointer.viewportX,
-                        //        evt.currentPointer.viewportY);
-                        //    map.setCenter(coord, true);
-                        //}
                     });
             }
-
             let platform = new H.service.Platform({
                 'app_id': 'bJjORf0UVOc5U4LjADgX',
                 'app_code': 'GNDm65qsmujcmIK9-2X_Uw',
@@ -192,14 +176,9 @@ else
                     center: { lng: @Model.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.'), lat: @Model.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')},
                     pixelRatio: pixelRatio
                 });
-            @*map.addObject(new H.map.Marker({ lng: @Model.Longtitude, lat: @Model.Latitude}));*@
             let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-
             setUpClickListener(map);
-
             let ui = H.ui.UI.createDefault(map, maptypes);
-
-
             let group = new H.map.Group();
             @{
                 string locGroup = "[";
@@ -237,10 +216,9 @@ else
         <div id="pictureDiv" style="width:100%; min-height: 375px; margin-left: 20px; margin-right: 20px;">
             <div class="card bg-primary" style="margin-top: 0; margin-bottom: 10px;">
                 <div class="card-body" style="background: rgba(50, 110, 190, 0.8)">
-                    <div class="info-title"><span style="font-size: 24px; color: white; margin-right: 15px;" class="far fa-images"></span><strong class="text-warning"> Click a Marker on the Map</strong></div>
+                    <div class="info-title"><span style="font-size: 24px; color: white; margin-right: 15px;" class="far fa-images"></span><strong class="text-warning"> Klik en markør på kortet</strong></div>
                     <div align="center" class="img-rounded" style="overflow: hidden; max-width: 60vw; margin: 2px; margin-left: 46px; padding: 1px; width: 270px; height: 270px; background-color: #000000; text-align: center; line-height: 271px; display: inline-block; position: relative;">
-                        <img src="https://web.kinauna.com/images/kinaunalogo192x192.png" style="max-height: 260px; max-width: 260px;">
-
+                        <img src="https://kinauna.com/images/kinaunalogo192x192.png" style="max-height: 260px; max-width: 260px;">
                     </div>
                 </div>
             </div>
@@ -248,7 +226,7 @@ else
         <div id="nearbyDiv" style="width:100%; margin-left: 20px; margin-right: 20px;">
             <div id="innerNearbyDiv"></div>
         </div>
-        <div id="morePicturesButton" style="display: none; width:100%; margin-left: 20px; margin-right: 20px;"><button id="moreButton" type="button" class="btn btn-default" onclick="getMoreNearbyPictures()">Show next 5 nearby pictures</button></div>
+        <div id="morePicturesButton" style="display: none; width:100%; margin-left: 20px; margin-right: 20px;"><button id="moreButton" type="button" class="btn btn-default" onclick="getMoreNearbyPictures()">Vis de 5 næste billeder i nærheden</button></div>
         <div style="margin-left: 20px; margin-right: 20px;">
             @{
                 if (!string.IsNullOrEmpty(Model.Tags))

@@ -8,7 +8,7 @@
     <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
 }
 @{
-    ViewData["Title"] = Model.Progeny.NickName + "'s Locations";
+    ViewData["Title"] = Model.Progeny.NickName + "'s steder";
 }
 @{
     string sortOldest = "btn btn-primary btn-sm";
@@ -20,40 +20,40 @@
     sortOldest = "btn btn-info btn-sm leavePage";
     sortNewest = "btn btn-primary btn-sm";
     <div>
-        Sort: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Newest first</span>
-        <a class="@sortOldest" asp-controller="Locations" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">Oldest first</a>
+        Sorter: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Nyeste først</span>
+        <a class="@sortOldest" asp-controller="Locations" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">Ældste først</a>
     </div>
 }
 else
 {
     <div>
-        Sort: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Oldest first</span>
-        <a class="@sortNewest" asp-controller="Locations" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@ViewBag.TagFilter">Newest first</a>
+        Sorter: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Ældste først</span>
+        <a class="@sortNewest" asp-controller="Locations" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@ViewBag.TagFilter">Nyeste først</a>
     </div>
 }
 @if (!String.IsNullOrEmpty(Model.TagFilter))
 {
     <br />
-    <div style="float: right;">Tag filter: <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Reset Filter</a></div>
+    <div style="float: right;">Tag filter: <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Nulstil filter</a></div>
 }
 @if (Model.IsAdmin)
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="AddItem" asp-action="AddLocation" class="btn btn-success btn-round leavePage">
-            <i class="fas fa-plus"></i> Add Location
+            <i class="fas fa-plus"></i> Tilføj sted
         </a>
     </div>
 }
 @if (Model.LocationsList == null)
 {
     <h3 class="title">@ViewData["Title"]</h3>
-    <div>Nothing to see here yet.</div>
+    <div>Ingen data.</div>
 }
 else
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="Locations" asp-action="PhotoLocations" class="btn btn-info leavePage">
-            <i class="fas fa-map-marked-alt"></i> Photo Locations
+            <i class="fas fa-map-marked-alt"></i> Foto steder
         </a>
     </div>
     <h3 class="title">@ViewData["Title"]</h3>
@@ -62,9 +62,6 @@ else
         <script>
             var lastSelected;
             function setUpClickListener(map) {
-                // Attach an event listener to map display
-                // obtain the coordinates and display in an alert box.
-
                 map.addEventListener('tap',
                     function (evt) {
                         var target = evt.target;
@@ -77,18 +74,11 @@ else
                             $(locDiv).removeClass('bg-light').addClass('bg-info');
                             lastSelected = locDiv;
                         }
-                        //var zoomLevel = map.getZoom() + 1;
-                        //if (zoomLevel > 20) {
-                        //    zoomLevel = 20;
-                        //}
-                        //map.setZoom(zoomLevel, true);
                         var coord = map.screenToGeo(evt.currentPointer.viewportX,
                             evt.currentPointer.viewportY);
                         map.setCenter(coord, true);
-
                     });
             }
-
             var platform = new H.service.Platform({
                 'app_id': 'bJjORf0UVOc5U4LjADgX',
                 'app_code': 'GNDm65qsmujcmIK9-2X_Uw',
@@ -99,7 +89,6 @@ else
                 tileSize: pixelRatio === 1 ? 256 : 512,
                 ppi: pixelRatio === 1 ? undefined : 320
             });
-
             var map = new H.Map(document.getElementById('mapContainer'),
                 maptypes.normal.map,
                 {
@@ -107,15 +96,11 @@ else
                     center: { lng: @Model.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.'), lat: @Model.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') },
                     pixelRatio: pixelRatio
                 });
-            @*map.addObject(new H.map.Marker({ lng: @Model.Longtitude, lat: @Model.Latitude}));*@
             var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-
             setUpClickListener(map);
-
             var ui = H.ui.UI.createDefault(map, maptypes);
             var iconWidth = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
             var iconHeight = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
-
             var defaultIcon = new H.map.Icon("https://web.kinauna.com/images/purplemarker.svg", { size: { w: iconWidth, h: iconHeight } });
             var group = new H.map.Group();
             @{
@@ -174,36 +159,36 @@ else
                     <div class="card-text">
                         <div class="rounded text-dark card-body bg-white" align="left">
                             <div>
-                                Street: @locationModel.StreetName
+                                Vej: @locationModel.StreetName
                             </div>
                             <div>
-                                Number: @locationModel.HouseNumber
+                                Nummer: @locationModel.HouseNumber
                             </div>
                             <div>
-                                District: @locationModel.District
+                                Distrikt: @locationModel.District
                             </div>
                             <div>
-                                Postal Code: @locationModel.PostalCode
+                                Postnummer: @locationModel.PostalCode
                             </div>
                             <div>
-                                City: @locationModel.City
+                                By: @locationModel.City
                             </div>
                             <div>
-                                County: @locationModel.County
+                                Amt: @locationModel.County
                             </div>
                             <div>
-                                State: @locationModel.State
+                                Stat: @locationModel.State
                             </div>
                             <div>
-                                Country: @locationModel.Country
+                                Land: @locationModel.Country
                             </div>
                             <div>
-                                Notes: @locationModel.Notes
+                                Noter: @locationModel.Notes
                             </div>
                             <div>
-                                Latitude: @locationModel.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')
+                                Breddegrad: @locationModel.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')
                                 <br />
-                                Longitude: @locationModel.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.')
+                                Længdegrad: @locationModel.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.')
                             </div>
                         </div>
                     </div>
@@ -221,9 +206,7 @@ else
                             }
                         }
                     </div>
-                    @*<div class="container card-category text-right text-primary" style="margin-top: 0;">@noteViewModel.CreatedDate.ToString("dd-MMM-yyyy HH:mm")</div>*@
                 </div>
-
             </div>
         }
         <div>
