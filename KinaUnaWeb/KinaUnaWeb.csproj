@@ -149,6 +149,18 @@
     <Content Update="Views\Calendar\ViewEvent.da.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Contacts\ContactDetails.de.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Contacts\ContactDetails.da.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Contacts\Index.de.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Contacts\Index.da.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Family\Index.de.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

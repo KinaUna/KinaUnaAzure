@@ -1,0 +1,54 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.ContactViewModel
+@{
+    ViewData["Title"] = Model.DisplayName + " - " + Model.Progeny.NickName + "'s kontakt";
+}
+<h3>@ViewData["Title"]</h3>
+<div class="card bg-light" style="clear: both; margin-top: 25px; max-width: 710px;">
+    <div class="card-header card-header-warning"><h5>@Model.DisplayName</h5></div>
+    <div class="card-body text-dark">
+        <div class="card-text" style="max-width: 705px;">
+            <img class="img-thumbnail mx-auto d-block" style="max-height: 600px; max-width: 100%; background: black;" src="@Model.PictureLink" />
+            <div align="left" style="margin: 15px;"><strong>Fornavn:</strong> @Model.FirstName</div>
+            <div align="left" style="margin: 15px;"><strong>Mellemnavn:</strong> @Model.MiddleName</div>
+            <div align="left" style="margin: 15px;"><strong>Efternavn:</strong> @Model.LastName</div>
+            <div align="left" style="margin: 15px;">
+                <strong>Adresse:</strong><br />
+                @Model.AddressLine1<br />
+                @Model.AddressLine2<br />
+                @Model.City<br />
+                @Model.State<br />
+                @Model.PostalCode<br />
+                @Model.Country<br />
+            </div>
+            <div align="left" style="margin: 15px;"><strong>Telefon:</strong> @Model.PhoneNumber</div>
+            <div align="left" style="margin: 15px;"><strong>Mobil:</strong> @Model.MobileNumber</div>
+            <div align="left" style="margin: 15px;"><strong>Email:</strong> @Model.Email1 @Model.Email2</div>
+            <div align="left" style="margin: 15px;"><strong>Website:</strong> <a href="@Model.Website">@Model.Website</a></div>
+            <div align="left" style="margin: 15px;"><strong>Sammenhæng:</strong> @Model.Context</div>
+            <div align="left" style="margin: 15px;"><strong>Noter:</strong> @Model.Notes</div>
+            <div>
+                @{
+                    if (!string.IsNullOrEmpty(Model.Tags))
+                    {
+                        List<string> tagsList = Model.Tags.Split(',').ToList();
+                        foreach (string tagString in tagsList)
+                        {
+                            <a asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                        }
+                    }
+                }
+            </div>
+            @if (Model.IsAdmin)
+            {
+                <div style="margin: 15px;">
+                    <a asp-controller="AddItem" asp-action="EditContact" asp-route-itemId="@Model.ContactId" class="btn btn-info leavePage">
+                        <i class="fas fa-pencil-alt"></i> Rediger
+                    </a>
+                    <a asp-controller="AddItem" asp-action="DeleteContact" asp-route-itemId="@Model.ContactId" class="btn btn-danger leavePage">
+                        <i class="fas fa-trash-alt"></i> Slet
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
