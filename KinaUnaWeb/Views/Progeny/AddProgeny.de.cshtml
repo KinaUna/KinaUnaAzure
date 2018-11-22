@@ -4,10 +4,10 @@
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
     <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
 }
-@{
-    ViewData["Title"] = "Add child";
+{
+ViewData["Title"] = "Kind hinzufügen";
 }
-<H3 class="title">Add Child</H3>
+<H3 class="title">Kind hinzufügen</H3>
 <form asp-action="AddProgeny" role="form" method="post" enctype="multipart/form-data">
     <div class="form-group">
         <label asp-for="Name" class="col-3 control-label">Name</label>
@@ -16,13 +16,13 @@
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="NickName" class="col-3 control-label">Display Name</label>
+        <label asp-for="NickName" class="col-3 control-label">Anzeigename</label>
         <div class="col-lg-9">
             <input asp-for="NickName" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="BirthDay" class="col-3 control-label">Birthday</label>
+        <label asp-for="BirthDay" class="col-3 control-label">Geburtstag</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="BirthDay" value="" />
@@ -33,12 +33,16 @@
         $(function () {
             $('#datetimepicker1').Zebra_DatePicker({
                 format: 'd-M-Y H:i',
-                open_icon_only: true
+                open_icon_only: true,
+                days: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+                months: ['Januar', 'Februar', 'Marz', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+                show_select_today: "Heute",
+                lang_clear_date: 'Datum leeren'
             });
         });
     </script>
     <div class="form-group">
-        <label asp-for="TimeZone" class="col-lg-3 col-sm-3 control-label">Time Zone</label>
+        <label asp-for="TimeZone" class="col-lg-3 col-sm-3 control-label">Zeitzone</label>
         <div class="col-9">
             <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="8" asp-for="TimeZone" asp-items="@Model.TimezoneList"></select>
         </div>
@@ -54,13 +58,13 @@
                 <div class="fileinput-preview fileinput-exists thumbnail img-raised"></div>
                 <div>
                     <div class="btn btn-primary btn-round btn-file ">
-                        <span data-trigger="fileinput" class="fileinput-new">New picture</span>
-                        <span class="fileinput-exists">Change</span>
+                        <span data-trigger="fileinput" class="fileinput-new">Neues Bild</span>
+                        <span class="fileinput-exists">Ändern</span>
                         <input type="file" asp-for="File" accept="image/*" />
                     </div>
                     <br />
                     <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
-                        <i class="fa fa-times"></i> Remove
+                        <i class="fa fa-times"></i> Entfernen
                     </a>
                 </div>
             </div>
@@ -70,8 +74,8 @@
         <div class="form-group">
             <div class="col-3 control-label"></div>
             <div class="col-9">
-                <button class="btn btn-success leavePage" type="submit">Save</button>
-                <a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">Cancel</a>
+                <button class="btn btn-success leavePage" type="submit">Speichern</button>
+                <a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">Abbrechen</a>
             </div>
         </div>
     </div>
@@ -80,14 +84,14 @@
 <br />
 <div>
     <div>
-        <strong>Name:</strong> The full name of the child.
+        <strong>Name:</strong>
         <br />
-        <strong>Display Name:</strong> The name that will appear on lists, pages, etc.
+        <strong>Anzeigename:</strong>
         <br />
-        <strong>Birthday:</strong> The date and time of birth in the format day-month-year Hours(24h): Minutes.
+        <strong>Geburtstag:</strong> Datum und Uhrzeit.
         <br />
-        <strong>Time Zone:</strong> The timezone for the birthday entered above.
+        <strong>Zeitzone:</strong> Zeitzone für Geburtsort.
         <br />
-        <strong>Administrators:</strong> A comma separated list of email addresses.
+        <strong>Administratoren:</strong> Email-adressen, mit Komma getrennt.
     </div>
 </div>

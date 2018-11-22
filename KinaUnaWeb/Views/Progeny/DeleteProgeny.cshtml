@@ -1,4 +1,7 @@
 ﻿@model KinaUnaWeb.Models.Progeny
+@{
+    ViewData["Title"] = "Delete child: " + Model.Name;
+}
 <H3 class="title">Delete Profile for @Model.NickName</H3>
 <form asp-action="DeleteProgeny" role="form">
     <div class="modal-body form-horizontal">

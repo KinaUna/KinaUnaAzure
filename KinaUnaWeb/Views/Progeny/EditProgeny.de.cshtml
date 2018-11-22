@@ -1,0 +1,101 @@
+﻿@model KinaUnaWeb.Models.FamilyViewModels.ProgenyViewModel
+@section Scripts{
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
+    <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
+}
+    <H3 class="title">Profil für @Model.Name bearbeiten</H3>
+<br />
+<form asp-action="EditProgeny" role="form" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label asp-for="Name" class="col-3">Name</label>
+        <div class="col-9">
+            <input asp-for="Name" class="form-control" value="@Model.Name" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="NickName" class="col-3">Anzeigename</label>
+        <div class="col-9">
+            <input asp-for="NickName" class="form-control" value="@Model.NickName" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="BirthDay" class="col-3 control-label">Geburtstag</label>
+        <div class="col-8 col-xs-7 col-sm-6 col-md-4">
+            <div class="input-group date">
+                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="BirthDay" value="@Model.BirthDay.Value.ToString("dd-MMM-yyyy HH:mm")" />
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            $('#datetimepicker1').Zebra_DatePicker({
+                format: 'd-M-Y H:i',
+                open_icon_only: true,
+                days: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+                months: ['Januar', 'Februar', 'Marz', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+                show_select_today: "Heute",
+                lang_clear_date: 'Datum leeren'
+            });
+        });
+    </script>
+    <div class="form-group">
+        <label asp-for="TimeZone" class="col-lg-3 col-sm-3 control-label">Zeitzone</label>
+        <div class="col-9">
+            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="8" asp-for="TimeZone" asp-items="@Model.TimezoneList"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="Admins" class="col-3">Administratoren</label>
+        <div class="col-9">
+            <input asp-for="Admins" class="form-control" value="@Model.Admins" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-lg-3 col-sm3 control-label">Profil billede</label>
+        <div class="col-lg-9">
+            <div class="fileinput fileinput-new text-center" data-provides="fileinput">
+                <div class="fileinput-new thumbnail img-raised">
+                    <img src="@Model.PictureLink" alt="...">
+                </div>
+                <div class="fileinput-preview fileinput-exists thumbnail img-raised"></div>
+                <div>
+                    <div class="btn btn-primary btn-round btn-file ">
+                        <span data-trigger="fileinput" class="fileinput-new">Neues Bild</span>
+                        <span class="fileinput-exists">Anderes Bild wählen</span>
+                        <input type="file" asp-for="File" accept="image/*" />
+                    </div>
+                    <br />
+                    <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
+                        <i class="fa fa-times"></i> Entfernen
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input asp-for="ProgenyId" class="form-control" value="@Model.ProgenyId" type="hidden" />
+    <div>
+        <div class="form-group">
+            <div class="col-3"></div>
+            <div class="col-9">
+                <button class="btn btn-success leavePage" type="submit">Speichern</button>
+                <a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">Abbrechen</a>
+            </div>
+        </div>
+    </div>
+</form>
+<br />
+<br />
+<div>
+    <div>
+        <strong>Name:</strong>
+        <br />
+        <strong>Anzeigename:</strong>
+        <br />
+        <strong>Geburtstag:</strong> Datum und Uhrzeit.
+        <br />
+        <strong>Zeitzone:</strong> Zeitzone für Geburtsort.
+        <br />
+        <strong>Administratoren:</strong> Email-adressen, mit Komma getrennt.
+    </div>
+</div>
