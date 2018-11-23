@@ -2351,12 +2351,9 @@ namespace KinaUnaWeb.Controllers
             }
             if (ModelState.IsValid)
             {
-                Friend model = new Friend();
-
-                model.ProgenyId = friend.ProgenyId;
+                Friend model = await _context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == friend.FriendId);
                 model.AccessLevel = friend.AccessLevel;
                 model.Author = friend.Author;
-                model.FriendAddedDate = friend.FriendAddedDate;
                 model.Description = friend.Description;
                 model.Name = friend.Name;
                 model.FriendId = friend.FriendId;
@@ -2386,11 +2383,7 @@ namespace KinaUnaWeb.Controllers
                         await _imageStore.DeleteImage(oldPictureLink, "friends");
                     }
                 }
-                else
-                {
-                    model.PictureLink = friend.PictureLink;
-                }
-                model.PictureLink = friend.PictureLink;
+                
                 _context.FriendsDb.Update(model);
                 await _context.SaveChangesAsync();
 
@@ -3014,7 +3007,7 @@ namespace KinaUnaWeb.Controllers
             }
             if (ModelState.IsValid)
             {
-                Contact model = new Contact();
+                Contact model = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contact.ContactId);
                 model.ContactId = contact.ContactId;
                 model.ProgenyId = contact.ProgenyId;
                 model.Active = contact.Active;
@@ -3064,7 +3057,6 @@ namespace KinaUnaWeb.Controllers
                 model.Notes = contact.Notes;
                 model.Context = contact.Context;
                 model.Website = contact.Website;
-                model.PictureLink = contact.PictureLink;
                 if (contact.File != null && contact.File.Name != String.Empty)
                 {
                     string oldPictureLink = contact.PictureLink;
@@ -3079,11 +3071,7 @@ namespace KinaUnaWeb.Controllers
                         await _imageStore.DeleteImage(oldPictureLink, "contacts");
                     }
                 }
-                else
-                {
-                    model.PictureLink = contact.PictureLink;
-                }
-                model.PictureLink = contact.PictureLink;
+                
                 if (model.DateAdded == null)
                 {
                     model.DateAdded = DateTime.UtcNow;
