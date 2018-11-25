@@ -1,6 +1,6 @@
 ﻿@model KinaUnaWeb.Models.ViewModels.VideoPageViewModel
 @{
-    ViewData["Title"] = "Video Gallery";
+    ViewData["Title"] = "Video album";
 
 }
 @if (Model.IsAdmin)
@@ -8,36 +8,36 @@
     <div style="float: right;">
         <div class="btn-group">
             <a asp-controller="AddItem" asp-action="AddVideo" class="btn btn-success btn-round leavePage">
-                <i class="fas fa-plus"></i> Add Video
+                <i class="fas fa-plus"></i> Tilføj Video
             </a>
         </div>
     </div>
 }
-<h3 class="title">@Model.Progeny.NickName's Video Gallery - Page @Model.PageNumber of @Model.TotalPages</h3>
+<h3 class="title">@Model.Progeny.NickName's video album - side @Model.PageNumber af @Model.TotalPages</h3>
 <br style="clear: both;" />
 <div id="photoListDiv">
     @{
-        string viewPrevText = "Older";
-        string viewNextText = "Newer";
+        string viewPrevText = "Ældre";
+        string viewNextText = "Nyere";
         if (Model.PageNumber == 1)
         {
-            viewPrevText = "Newest";
+            viewPrevText = "Nyeste";
         }
         if (Model.PageNumber == Model.TotalPages)
         {
-            viewNextText = "First";
+            viewNextText = "Første";
         }
         if (Model.SortBy == 1)
         {
-            viewPrevText = "Newer";
-            viewNextText = "Older";
+            viewPrevText = "Nyere";
+            viewNextText = "Ældre";
             if (Model.PageNumber == 1)
             {
-                viewPrevText = "First";
+                viewPrevText = "Første";
             }
             if (Model.PageNumber == Model.TotalPages)
             {
-                viewNextText = "Newest";
+                viewNextText = "Nyeste";
             }
         }
         string sortOldest = "btn btn-primary btn-sm";
@@ -77,39 +77,39 @@
         sortOldest = "btn btn-info btn-sm leavePage";
         sortNewest = "btn btn-primary btn-sm";
         <div>
-            Sort: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Newest first</span>
-            <a class="@sortOldest" asp-controller="Videos" asp-action="Index" asp-route-id="@newPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">Oldest first</a>
+            Sorter: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Nyeste først</span>
+            <a class="@sortOldest" asp-controller="Videos" asp-action="Index" asp-route-id="@newPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">Ældste først</a>
         </div>
     }
     else
     {
         <div>
-            Sort: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Oldest first</span>
-            <a class="@sortNewest" asp-controller="Videos" asp-action="Index" asp-route-id="@newPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@Model.TagFilter">Newest first</a>
+            Sort: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Ældste først</span>
+            <a class="@sortNewest" asp-controller="Videos" asp-action="Index" asp-route-id="@newPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@Model.TagFilter">Nyeste først</a>
         </div>
     }
     @if (!String.IsNullOrEmpty(Model.TagFilter))
     {
         <br />
-        <div style="float: right;">Tag filter: <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-id="1" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Reset Filter</a></div>
+        <div style="float: right;">Tag filter: <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-id="1" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Nulstil Filter</a></div>
     }
     <br />
     @if (Model.TotalPages > 1)
     {
         <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
             <div style="float:left">
-                <a id="previousPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@prevPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText Videos</a>
+                <a id="previousPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@prevPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText videoer</a>
                 @if (Model.TotalPages > 5)
                 {
-                    <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@prev5page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> Go 5 pages back</a>
+                    <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@prev5page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> Gå 5 sider tilbage</a>
                 }
             </div>
             <div style="float: right">
                 @if (Model.TotalPages > 5)
                 {
-                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@next5page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">Go 5 pages forward <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@next5page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">Gå 5 sider frem <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
                 }
-                <a id="nextPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@nextPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText Videos <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                <a id="nextPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@nextPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText videoer <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
             </div>
         </div>
     }
@@ -174,18 +174,18 @@
     {
         <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
             <div style="float:left">
-                <a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@prevPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText Videos</a>
+                <a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@prevPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText videoer</a>
                 @if (Model.TotalPages > 5)
                 {
-                    <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@prev5page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> Go 5 pages back</a>
+                    <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@prev5page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> Gå 5 sider tilbage</a>
                 }
             </div>
             <div style="float: right">
                 @if (Model.TotalPages > 5)
                 {
-                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@next5page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">Go 5 pages forward <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@next5page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">Gå 5 sider frem <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
                 }
-                <a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@nextPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText Videos <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                <a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@nextPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText videoer <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
             </div>
         </div>
     }
@@ -207,33 +207,33 @@
 @if (Model.IsAdmin)
 {
     <br /><br />
-    <div>
-        Video access levels are displayed as the video number background color.
-        <br /><br />
-        <div class="nav-pills" style="height: 20px; width: 30px; font-size: 5px; background-color: #870000; display: inline-block;">
-            <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">1</p>
-        </div>
-        Admins Only
-        <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #247f00; display: inline-block; margin-left: 20px;">
-            <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">2</p>
-        </div>
-        Family
-        <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #72007f; display: inline-block; margin-left: 20px;">
-            <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">3</p>
-        </div>
-        Caretakers/Special
-        <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #007987; display: inline-block; margin-left: 20px;">
-            <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">4</p>
-        </div>
-        Friends
-        <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #181274; display: inline-block; margin-left: 20px;">
-            <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">5</p>
-        </div>
-        Registered Users or Public
-        <br /><br />
-        Only administrators see this, others just see a dark blue color for all videos.
-        <br />
-    </div>
+          <div>
+              Video adgangsniveau vises som forskellige farver i videonummerets baggrund.
+              <br /><br />
+              <div class="nav-pills" style="height: 20px; width: 30px; font-size: 5px; background-color: #870000; display: inline-block;">
+                  <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">1</p>
+              </div>
+              Kun administratorer
+              <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #247f00; display: inline-block; margin-left: 20px;">
+                  <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">2</p>
+              </div>
+              Familie
+              <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #72007f; display: inline-block; margin-left: 20px;">
+                  <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">3</p>
+              </div>
+              Omsorgspersoner
+              <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #007987; display: inline-block; margin-left: 20px;">
+                  <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">4</p>
+              </div>
+              Venner
+              <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #181274; display: inline-block; margin-left: 20px;">
+                  <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">5</p>
+              </div>
+              Offentlig tilgængelig
+              <br /><br />
+              Kun administratorer kan se dette, andre kan ikke se hvad adgangsniveauet er for en video.
+              <br />
+          </div>
 }
 <div style="clear: left; max-width: 100%; padding-top: 10px; padding-bottom: 20px;"></div>
 <br />

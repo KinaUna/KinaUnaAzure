@@ -1,0 +1,152 @@
+﻿@using System.Text.Encodings.Web
+@model KinaUnaWeb.Models.ItemViewModels.SleepViewModel
+@section Scripts{
+    <link href="/lib/fullcalendar/fullcalendar.min.css" rel="stylesheet" />
+    <script src="/lib/moment.min.js"></script>
+    <script src="/lib/momentLocale/da.js"></script>
+    <script src="/lib/fullcalendar/fullcalendar.min.js"></script>
+    <script src="/lib/fullcalendar/locale/da.js"></script>
+}
+@{
+    ViewData["Title"] = Model.Progeny.NickName + "'s søvnkalender";
+}
+<script>
+
+    $(document).ready(function() {
+
+        $('#calendar').fullCalendar({
+            locale: 'da',
+            height: 'auto',
+            header: {
+                left: 'prev, next today',
+                center: 'title',
+                right: 'agendaTenWeeks,agendaFourWeeks,agendaWeek,agendaDay'
+            },
+            views: {
+                month: {
+                    titleFormat: 'MMMM YYYY'
+                    // other view-specific options here
+                },
+                agendaWeek: {
+                    columnFormat: 'ddd D MMM'
+                },
+                agendaDay: {
+                    titleFormat: 'D MMM YYYY'
+                    // other view-specific options here
+                },
+                agendaFourWeeks: {
+                    type: 'agenda',
+                    duration: { months: 1 },
+                    buttonText: '1 Måned'
+                },
+                agendaTenWeeks: {
+                    type: 'agenda',
+                    duration: { months: 3 },
+                    buttonText: '3 Måneder'
+                }
+            },
+            allDayDefault: false,
+            titleFormat: 'D MMM YYYY',
+            defaultView: 'agendaWeek',
+            defaultDate: '@DateTime.Now.Date.ToString("yyyy-MM-dd")',
+            navLinks: true, // can click day/week names to navigate views
+            allDaySlot: false,
+            slotDuration: '01:00:00',
+            slotLabelFormat: 'HH(:mm)',
+            scrollTime: '06:00:00',
+            weekNumbers: true,
+            weekNumbersWithinDays: true,
+            weekNumberCalculation: 'ISO',
+            timeFormat: 'HH:mm',
+            editable: true,
+            eventLimit: true, // allow "more" link when too many events
+            events: [
+                @foreach (Sleep ev in Model.SleepList)
+                {
+
+                    @Html.Raw("{id: '" + ev.SleepId + "', title: '" + ev.SleepRating + "', allDay: false, start: '" + ev.StartString + "', end: '" + ev.EndString + "', editable: false},")
+                }
+            ],
+            themeSystem: 'bootstrap4'
+        });
+
+        var myElement = document.querySelector('#calendar');
+        myElement.addEventListener("touchstart", startTouch, false);
+        myElement.addEventListener("touchmove", moveTouch, false);
+
+        // Swipe Up / Down / Left / Right
+        var initialX = null;
+        var initialY = null;
+
+        function startTouch(e) {
+            initialX = e.touches[0].clientX;
+            initialY = e.touches[0].clientY;
+        };
+
+        function moveTouch(e) {
+            if (initialX === null) {
+                return;
+            }
+
+            if (initialY === null) {
+                return;
+            }
+
+            var currentX = e.touches[0].clientX;
+            var currentY = e.touches[0].clientY;
+
+            var diffX = initialX - currentX;
+            var diffY = initialY - currentY;
+
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                // sliding horizontally
+                if (diffX > 0) {
+                    // swiped left
+                    console.log("swiped left");
+                    $('#calendar').fullCalendar('next');
+                } else {
+                    // swiped right
+                    console.log("swiped right");
+                    $('#calendar').fullCalendar('prev');
+                }
+            } else {
+                // sliding vertically
+                if (diffY > 0) {
+                    // swiped up
+                    console.log("swiped up");
+                } else {
+                    // swiped down
+                    console.log("swiped down");
+                }
+            }
+
+            initialX = null;
+            initialY = null;
+
+            e.preventDefault();
+        };
+    });
+
+</script>
+<div class="btn-group" style="float: right;">
+    <a asp-controller="Sleep" asp-action="Index" asp-route-childId="@Model.ProgenyId" class="btn btn-primary leavePage">
+        <i class="fas fa-list"></i> Se søvnliste
+    </a>
+</div>
+@if (Model.IsAdmin)
+{
+<div class="btn-group" style="float: right;">
+    <a asp-controller="AddItem" asp-action="AddSleep" class="btn btn-success btn-round leavePage">
+        <i class="fas fa-plus"></i> Tilføj søvn
+    </a>
+</div>
+}
+<h3 class="title">@ViewData["Title"]</h3>
+<br />
+
+<div style="clear: both;">
+    <div class="fc fc-unthemed fc-ltr" id="calendar">
+
+
+    </div>
+</div>

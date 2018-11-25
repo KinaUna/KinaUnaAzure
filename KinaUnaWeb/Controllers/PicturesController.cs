@@ -66,7 +66,7 @@ namespace KinaUnaWeb.Controllers
 
             if (accessList.Count != 0)
             {
-                UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId == userEmail);
+                UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
                 if (userAccess != null)
                 {
                     userAccessLevel = userAccess.AccessLevel;
@@ -121,7 +121,7 @@ namespace KinaUnaWeb.Controllers
 
             if (accessList.Count != 0)
             {
-                UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId == userEmail);
+                UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
                 if (userAccess != null)
                 {
                     userAccessLevel = userAccess.AccessLevel;

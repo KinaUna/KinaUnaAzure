@@ -1,0 +1,90 @@
+﻿@model List<KinaUnaWeb.Models.ItemViewModels.SkillViewModel>
+@section Scripts{
+    <link href="/lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <script src="/lib/moment.min.js"></script>
+    <script src="/lib/momentLocale/da.js"></script>
+    <script src="/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
+    <script src="/lib/datatables/sorting/datetime-moment.js"></script>
+}
+@{
+    ViewData["Title"] = Model[0].Progeny.NickName + "'s færdigheder";
+}
+@if (Model == null)
+{
+<h3>@ViewData["Title"]</h3>
+<div>Ingen data.</div>
+}
+else
+{
+<div class="container">
+    @if (Model[0].IsAdmin)
+        {
+    <div class="btn-group" style="float: right;">
+        <a asp-controller="AddItem" asp-action="AddSkill" class="btn btn-success btn-round leavePage">
+            <i class="fas fa-plus"></i> Tilføj færdighed
+        </a>
+    </div>
+        }
+    <h3 class="title">@ViewData["Title"]</h3>
+</div>
+<div class="table-responsive">
+    <table id="skillzList" class="table table-bordered table-striped" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th style="font-weight: bold">Navn</th>
+                <th style="font-weight: bold">Beskrivelse</th>
+                <th style="font-weight: bold">Kategori</th>
+                <th style="font-weight: bold">Første observation</th>
+                @if (Model[0].IsAdmin)
+                {
+                    <th style="font-weight: bold">Handling</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var skillViewModel in Model)
+                {
+            <tr>
+                <td style="min-width: 100px;">@skillViewModel.Name</td>
+                <td style="min-width: 100px;">@skillViewModel.Description</td>
+                <td style="min-width: 100px;">@skillViewModel.Category</td>
+                @if (skillViewModel.SkillFirstObservation != null)
+                        {
+                <td style="min-width: 100px;">@skillViewModel.SkillFirstObservation.Value.ToString("dd-MMM-yyyy")</td>
+                        }
+                        else
+                        {
+                <td>N/A</td>
+                        }
+                @if (Model[0].IsAdmin)
+                        {
+                <td style="min-width: 135px;">
+                    <div>
+                        <a asp-controller="AddItem" asp-action="EditSkill" asp-route-itemId="@skillViewModel.SkillId" class="btn btn-info btn-round btn-sm leavePage">
+                            <i class="fas fa-pencil-alt"></i>
+                        </a>
+                        <a asp-controller="AddItem" asp-action="DeleteSkill" asp-route-itemId="@skillViewModel.SkillId" class="btn btn-danger btn-round btn-sm leavePage">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </div>
+                </td>
+                        }
+            </tr>
+                }
+        </tbody>
+    </table>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $.fn.dataTable.moment('DD-MMM-YYYY', 'da');
+        $("#skillzList").DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/1.10.16/i18n/Danish.json"
+            },
+            "scrollX": false,
+            "order": [[3, "desc"]]
+        });
+    })
+</script>
+}

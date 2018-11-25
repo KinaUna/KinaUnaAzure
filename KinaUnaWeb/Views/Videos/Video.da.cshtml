@@ -2,16 +2,16 @@
 @model KinaUnaWeb.Models.ItemViewModels.VideoViewModel
 
 @{
-    ViewData["Title"] = Model.Progeny.NickName + "'s Video";
-    string viewPrevText = "Older";
-    string viewNextText = "Newer";
+    ViewData["Title"] = Model.Progeny.NickName + "'s video";
+    string viewPrevText = "Ældre";
+    string viewNextText = "Nyere";
     if (Model.SortBy == 1)
     {
-        viewPrevText = "Newer";
-        viewNextText = "Older";
+        viewPrevText = "Nyere";
+        viewNextText = "Ældre";
     }
 }
-<h3 class="title">@ViewData["Title"] - @Model.VideoNumber of @Model.VideoCount</h3>
+<h3 class="title">@ViewData["Title"] - @Model.VideoNumber af @Model.VideoCount</h3>
 <div id="photoDiv">
     @if (!String.IsNullOrEmpty(Model.TagFilter))
     {
@@ -19,11 +19,11 @@
     }
     <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px;">
         <div style="float: left">
-            <a id="previousPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.PrevVideo" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText Video</a>
+            <a id="previousPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.PrevVideo" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText video</a>
         </div>
 
         <div style="float: right">
-            <a id="nextPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.NextVideo" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText Video <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+            <a id="nextPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.NextVideo" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText video <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
         </div>
     </div>
     <br />
@@ -70,13 +70,13 @@
     @if (Model.VidTimeValid)
     {
         <div style="font-size: 16px; line-height: 90%;">
-            <p>Photo taken: @Model.VidTime</p>
-            <p>@Model.Progeny.NickName was @Model.VidYears years old.</p>
-            <p>@Model.Progeny.NickName was @Model.VidMonths months old.</p>
-            <p>@Model.Progeny.NickName was @Model.VidWeeks[0] weeks and @Model.VidWeeks[1] days old.</p>
-            <p>@Model.Progeny.NickName was @Model.VidDays days old.</p>
-            <p>@Model.Progeny.NickName was @Model.VidHours hours old.</p>
-            <p>@Model.Progeny.NickName was @Model.VidMinutes minutes old.</p>
+            <p>Video optaget: @Model.VidTime</p>
+            <p>@Model.Progeny.NickName var @Model.VidYears år gammel.</p>
+            <p>@Model.Progeny.NickName var @Model.VidMonths måneder gammel.</p>
+            <p>@Model.Progeny.NickName var @Model.VidWeeks[0] uger og @Model.VidWeeks[1] dage gammel.</p>
+            <p>@Model.Progeny.NickName var @Model.VidDays dage gammel.</p>
+            <p>@Model.Progeny.NickName var @Model.VidHours timer gammel.</p>
+            <p>@Model.Progeny.NickName var @Model.VidMinutes minutter gammel.</p>
         </div>
         <br />
 
@@ -86,11 +86,11 @@
 @if (User.Identity.IsAuthenticated && !String.IsNullOrEmpty(Model.Longtitude))
 {
     <div style="font-size: 16px; line-height: 90%;">
-        <p>Location: @Model.Location</p>
+        <p>Sted: @Model.Location</p>
 
         @if (!String.IsNullOrEmpty(Model.Latitude))
         {
-            <p>Latitude: @Model.Latitude Longitude: @Model.Longtitude Altitude: @Model.Altitude</p>
+            <p>Breddegrad: @Model.Latitude Længdegrad: @Model.Longtitude Højde: @Model.Altitude</p>
             <div style="width: 100%; height: 300px" id="mapContainer"></div>
             <script>
                 let pixelRatio = window.devicePixelRatio || 1;
@@ -189,7 +189,7 @@
 {
     <div>
         <div>
-            <h5>Comments (@Model.CommentsCount):</h5>
+            <h5>Kommentarer (@Model.CommentsCount):</h5>
         </div>
         <div class="col-md-10">
             <div class="media-area">
@@ -216,7 +216,7 @@
 
                                         <div class="form-group">
                                             <div>
-                                                <button class="btn btn-danger btn-sm leavePage" type="submit">Delete Comment</button>
+                                                <button class="btn btn-danger btn-sm leavePage" type="submit">Slet kommentar</button>
                                             </div>
                                         </div>
                                         <input Name="CommentThreadNumber" class="form-control" value="@Model.CommentThreadNumber" type="hidden" />
@@ -237,12 +237,12 @@
 {
     <form asp-controller="AddItem" asp-action="AddVideoComment" role="form" method="post">
         <div class="form-group">
-            <label Name="CommentText" class="col-lg-3 col-sm-3 control-label">New Comment:</label>
+            <label Name="CommentText" class="col-lg-3 col-sm-3 control-label">Ny kommentar:</label>
             <div class="col-md-10">
                 <textarea Name="CommentText" class="form-control" rows="4"></textarea>
             </div>
             <div class="col-md-10">
-                <button class="btn btn-success float-right leavePage" style="margin-right: 15px;" type="submit">Add Comment</button>
+                <button class="btn btn-success float-right leavePage" style="margin-right: 15px;" type="submit">Tilføj kommentar</button>
             </div>
         </div>
         <input asp-for="CommentThreadNumber" class="form-control" value="@Model.CommentThreadNumber" type="hidden" />
@@ -253,7 +253,6 @@
     </form>
 }
 <br />
-
 @if (Model.IsAdmin)
 {
     @section Scripts{
@@ -272,10 +271,10 @@
 
     <div class="col-sm-3" style="margin-top: 35px;"></div>
     <div class="col-md-8">
-        <button id="toggleEditBtn" class="btn btn-info">Edit Video</button>
+        <button id="toggleEditBtn" class="btn btn-info">Rediger video</button>
     </div>
     <div id="editSection" style="display: none; padding: 15px;">
-        <div>Edit user access, location, or date and time for this video</div><br />
+        <div>Rediger adgangsniveau, sted, dato og tid for denne video</div><br />
         <form asp-controller="AddItem" asp-action="EditVideo" role="form">
             <div class="form-group">
                 <label class="col-lg-3 col-sm-2 control-label">Tags</label>
@@ -289,14 +288,14 @@
                         $("#tagList").kendoAutoComplete({
                             dataSource: data,
                             filter: "contains",
-                            placeholder: "Add tag...",
+                            placeholder: "Tilføj tag...",
                             separator: ", "
                         });
                     });
                 </script>
             </div>
             <div class="form-group">
-                <label class="col-lg-3 col-sm-2 control-label">Duration</label>
+                <label class="col-lg-3 col-sm-2 control-label">Varighed</label>
                 <div class="col-md-10">
                     @{
                         int hours = 0;
@@ -315,13 +314,13 @@
                 </div>
             </div>
             <div class="form-group">
-                <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Access Level</label>
+                <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Adgangsniveau</label>
                 <div class="col-lg-4">
-                    <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                    <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListDa.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDa"></select>
                 </div>
             </div>
             <div class="form-group">
-                <label asp-for="VideoTime" class="col-lg-3 col-sm-3 control-label">Video Date and Time</label>
+                <label asp-for="VideoTime" class="col-lg-3 col-sm-3 control-label">Video dato og tid</label>
                 <div class="col-lg-4">
                     <div class="input-group date">
                         <input style="width: 300px;" id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm:ss" type="text"
@@ -333,50 +332,54 @@
             <script type="text/javascript">
                 $(function () {
                     $('#datetimepicker1').Zebra_DatePicker({
-                        format: 'd-M-Y H:i:s',
-                        open_icon_only: true
+                        format: 'd-M-Y H:i',
+                        open_icon_only: true,
+                        days: ['søndag', 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag'],
+                        months: ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'],
+                        show_select_today: "Idag",
+                        lang_clear_date: 'Ryd dato'
                     });
                 });
             </script>
             <div class="form-group">
-                <label class="col-lg-3 col-sm-2 control-label">Location</label>
+                <label class="col-lg-3 col-sm-2 control-label">Sted</label>
                 <div class="col-lg-10 col-md-10 col-sm-10">
                     <input id="location" type="text" asp-for="Location" value="@Model.Location" class="form-control" style="width: 100%; background: #e8fdd0" />
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-lg-3 col-sm-2 control-label">Latitude</label>
+                <label class="col-lg-3 col-sm-2 control-label">Breddegrad</label>
                 <div class="col-lg-10 col-md-10 col-sm-10">
                     <input id="latitude" type="text" asp-for="Latitude" value="@Model.Latitude" class="form-control" style="width: 100%; background: #e8fdd0" />
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-lg-3 col-sm-2 control-label">Longitude</label>
+                <label class="col-lg-3 col-sm-2 control-label">Længdegrad</label>
                 <div class="col-lg-10 col-md-10 col-sm-10">
                     <input id="longitude" type="text" asp-for="Longtitude" value="@Model.Longtitude" class="form-control" style="width: 100%; background: #e8fdd0" />
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-lg-3 col-sm-2 control-label">Altitude</label>
+                <label class="col-lg-3 col-sm-2 control-label">Højde</label>
                 <div class="col-lg-10 col-md-10 col-sm-10">
                     <input id="altitude" type="text" asp-for="Altitude" value="@Model.Altitude" class="form-control" style="width: 100%; background: #e8fdd0" />
                 </div>
             </div>
             @if (Model.LocationsList.Any())
             {
-                <div class="form-group">
-                    <label class="col-lg-3 col-sm-2 control-label">Copy Location Name, Latitude and Longitude from Existing Location</label>
-                    <div class="col-lg-12 col-md-12 col-sm-12">
-                        <div class="row">
-                            <div class="col-lg-6 col-md-9 col-sm-8">
-                                <select id="copyLocation" class="selectpicker form-control-noline" data-style="select-with-transition" asp-items="@Model.LocationsList"></select>
-                            </div>
-                            <div class="col-lg-4 col-md-3 col-sm-3">
-                                <button id="copyLocationButton" type="button" class="btn btn-primary">Copy</button>
-                            </div>
+            <div class="form-group">
+                <label class="col-lg-3 col-sm-2 control-label">Kopier steds navn, breddegrad, og længdegrad fra et tidliger sted</label>
+                <div class="col-lg-12 col-md-12 col-sm-12">
+                    <div class="row">
+                        <div class="col-lg-6 col-md-9 col-sm-8">
+                            <select id="copyLocation" class="selectpicker form-control-noline" data-style="select-with-transition" asp-items="@Model.LocationsList"></select>
+                        </div>
+                        <div class="col-lg-4 col-md-3 col-sm-3">
+                            <button id="copyLocationButton" type="button" class="btn btn-primary">Kopier</button>
                         </div>
                     </div>
                 </div>
+            </div>
             }
             <br />
             <input asp-for="VideoId" class="form-control" value="@Model.VideoId" type="hidden" />
@@ -387,17 +390,17 @@
                 <div class="form-group">
                     <div class="col-lg-3 col-sm-3 control-label"></div>
                     <div class="col-lg-9">
-                        <button class="btn btn-success leavePage" type="submit">Save</button>
-                        <a class="btn btn-danger leavePage" asp-controller="@ViewContext.RouteData.Values["controller"]" asp-action="@ViewContext.RouteData.Values["action"]" asp-route-id="@ViewContext.RouteData.Values["id"]" asp-route-childId="@Model.ProgenyId">Cancel</a>
+                        <button class="btn btn-success leavePage" type="submit">Gem</button>
+                        <a class="btn btn-danger leavePage" asp-controller="@ViewContext.RouteData.Values["controller"]" asp-action="@ViewContext.RouteData.Values["action"]" asp-route-id="@ViewContext.RouteData.Values["id"]" asp-route-childId="@Model.ProgenyId">Fortryd</a>
                     </div>
                 </div>
             </div>
         </form>
         <form asp-controller="AddItem" asp-action="DeleteVideo" role="form" method="get">
             <div class="form-group">
-                <label class="col-lg-3 col-sm-3 control-label">Remove this video:</label>
+                <label class="col-lg-3 col-sm-3 control-label">Fjern denne video:</label>
                 <div class="col-lg-9">
-                    <button class="btn btn-danger leavePage" type="submit">Delete Video</button>
+                    <button class="btn btn-danger leavePage" type="submit">Slet video</button>
                 </div>
             </div>
             <input asp-for="VideoId" class="form-control" value="@Model.VideoId" type="hidden" />
@@ -438,10 +441,10 @@ else
 <br />
 <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px;">
     <div style="float: left">
-        <a class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.PrevVideo" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText Video</a>
+        <a class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.PrevVideo" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText video</a>
     </div>
     <div style="float: right">
-        <a class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.NextVideo" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText Video <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+        <a class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.NextVideo" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText video <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
     </div>
 </div>
 @*<script>

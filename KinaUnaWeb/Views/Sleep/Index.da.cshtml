@@ -1,0 +1,277 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.SleepViewModel
+@section Scripts
+{
+    <link href="/lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <script src="/lib/moment.min.js"></script>
+    <script src="/lib/momentLocale/da.js"></script>
+    <script src="~/lib/material-kit/plugins/nouislider.min.js"></script>
+    <script src="/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
+    <script src="/lib/datatables/sorting/datetime-moment.js"></script>
+}
+@{
+    ViewData["Title"] = Model.Progeny.NickName + "'s søvn";
+}
+@if (Model == null)
+{
+    <h3>@ViewData["Title"]</h3>
+    <div>
+        Ingen data.
+    </div>
+}
+else
+{
+    <div class="container">
+        @if (Model.IsAdmin)
+        {
+            <div class="btn-group" style="float: right;">
+                <a asp-controller="AddItem" asp-action="AddSleep" class="btn btn-success btn-round leavePage">
+                    <i class="fas fa-plus"></i> Tilføj søvn
+                </a>
+            </div>
+        }
+        <div class="btn-group" style="float: right; clear: right">
+            <a asp-controller="Sleep" asp-action="SleepCalendar" asp-route-childId="@Model.ProgenyId" class="btn btn-primary leavePage">
+                <i class="far fa-calendar-alt"></i> Vis søvn kalender
+            </a>
+        </div>
+        <h3 class="title">@ViewData["Title"]</h3>
+    </div>
+    <div class="table-responsive">
+        <table id="sleepList" class="table table-striped table-bordered" cellspacing="0" width="100%">
+            <thead>
+            <tr>
+                <th style="font-weight: bold">Start</th>
+                <th style="font-weight: bold">Slut</th>
+                <th style="font-weight: bold">Varighed</th>
+                <th style="font-weight: bold">Bedømmelse</th>
+                <th style="font-weight: bold">Noter</th>
+                @if (Model.IsAdmin)
+                {
+                    <th style="font-weight: bold">Handling</th>
+                }
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var sleepItem in Model.SleepList)
+            {
+                <tr>
+                    <td style="min-width: 100px;">
+                        @sleepItem.SleepStart.ToString("dd-MMM-yyyy")<br /> <strong>@sleepItem.SleepStart.ToString("HH:mm")</strong>
+                    </td>
+                    <td style="min-width: 100px;">
+                        @sleepItem.SleepEnd.ToString("dd-MMM-yyyy")<br /> <strong>@sleepItem.SleepEnd.ToString("HH:mm")</strong>
+                    </td>
+                    <td>@sleepItem.SleepDuration</td>
+                    <td>@sleepItem.SleepRating</td>
+                    <td>@sleepItem.SleepNotes</td>
+                    @if (Model.IsAdmin)
+                    {
+                        <td style="min-width: 120px;">
+                            <div>
+                                <a asp-controller="AddItem" asp-action="EditSleep" asp-route-itemId="@sleepItem.SleepId" class="btn btn-info btn-round btn-sm leavePage leavePage">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </a>
+                                <a asp-controller="AddItem" asp-action="DeleteSleep" asp-route-itemId="@sleepItem.SleepId" class="btn btn-danger btn-round btn-sm leavePage">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </div>
+                        </td>
+                    }
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <br/>
+    <div class="container">
+        Samlet søvn noteret: @Model.SleepTotal = @Model.SleepTotal.TotalHours timer<br />
+        Gennemsnitlig søvn per dag: @Model.TotalAverage<br/><br/>
+        Søvn noteret i det seneste år: @Model.SleepLastYear = @Model.SleepLastYear.TotalHours timer<br />
+        Gennemsnitlig søvn per dag i det seneste år: @Model.LastYearAverage<br/><br />
+        Søvn noteret i de seneste 30 dage: @Model.SleepLastMonth = @Model.SleepLastMonth.TotalHours timer<br/>
+        Gennemsnitlig søvn per dag de seneste 30 dage: @Model.LastMonthAverage<br/><br />
+    </div>
+    <br />
+    <div id="chartDiv">
+        <canvas id="chartContainer" style="clear: both; height: 380px;"></canvas>
+    </div>
+    <br />
+    <div class="col-12">
+        <div class="row">
+            <div class="col-6">
+                <div id="sliderStartVal" class="float-right" style="margin-right: 25px;"></div>
+            </div>
+            <div class="col-6">
+                <div id="sliderEndVal" class="float-left" style="margin-left: 25px;"></div>
+            </div>
+        </div>
+    </div>
+    <div style="margin-left: 25px; margin-right: 25px;">
+        <div id="sliderSleep" class="slider slider-info" style="width: 90%; margin-left: auto; margin-right: auto;"></div>
+    </div>
+    <br />
+    <div class="row">
+        <br />
+        <div class="container">
+            <div class="col-6" style="margin-right: auto; margin-left: auto; margin-top: 30px;">Træk cirklerne oven over for at ændre start og slut datoerne for grafen.</div>
+        </div>
+    </div>
+    <br />
+    <script src="~/lib/chart.js/dist/Chart.js"></script>
+    <script src="~/lib/chart.js/dist/Chart.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $.fn.dataTable.moment('DD-MMM-YYYY HH:mm', 'da');
+            $("#sleepList").DataTable({
+                "language": { "url": "https://cdn.datatables.net/plug-ins/1.10.16/i18n/Danish.json" },
+                "scrollX": false,
+                "order": [[0, "desc"]]
+            });
+        })
+    </script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+                var ctx = document.getElementById("chartContainer");
+                var myChart = new Chart(ctx,
+                    {
+                        type: 'bar',
+                        data: {
+                            datasets: [
+                                {
+                                    label: 'Søvn',
+                                    data: [@foreach (var sleepItem in Model.ChartList)
+                                       {
+                                           if (sleepItem.SleepDuration.TotalMinutes > 0.0)
+                                           {
+                                               string chartYear = sleepItem.SleepStart.Year.ToString();
+                                               string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
+                                               string chartDay = sleepItem.SleepStart.Day.ToString();
+                                               @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + (sleepItem.SleepDuration.TotalMinutes / 60.0).ToString().Replace(',', '.') + "},")
+                                           }
+                                       }],
+                                    borderColor: 'rgb(75, 192, 192)',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            scales: {
+                                xAxes: [
+                                    {
+                                        type: 'time',
+                                        time: {
+                                            tooltipFormat: 'dd DD MMM YYYY',
+                                            displayFormats: {
+                                                quarter: 'MMM YYYY'
+                                            }
+                                        }
+                                    }
+                                ],
+                                yAxes: [
+                                    {
+                                        scaleLabel: {
+                                            display: true,
+                                            labelString: 'Varighed i timer'
+                                        },
+                                        ticks: {
+                                            beginAtZero: true
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    });
+
+                var slpSlider = document.getElementById('sliderSleep');
+                slpSlider.noUiSlider.on('update',
+                    function() {
+                        var pos = $(document).scrollTop();
+                        $('#sliderStartVal')
+                            .text("Start: " + moment(slider.noUiSlider.get()[0], "x").format("dddd, DD-MMM-YYYY"));
+                        $('#sliderEndVal')
+                            .text("Slut: " + moment(slider.noUiSlider.get()[1], "x").format("dddd, DD-MMM-YYYY"));
+                        document.getElementById("chartDiv").innerHTML = '&nbsp;';
+                        document.getElementById("chartDiv").innerHTML = '<canvas id="chartContainer"></canvas>';
+                        var slpChart = document.getElementById("chartContainer").getContext("2d");
+                        var cfg = {
+                            type: 'bar',
+                            data: {
+                                datasets: [
+                                    {
+                                        label: 'Søvn',
+                                        data: [@foreach (var sleepItem in Model.ChartList)
+                                           {
+                                               if (sleepItem.SleepDuration.TotalMinutes > 0.0)
+                                               {
+                                                   string chartYear = sleepItem.SleepStart.Year.ToString();
+                                                   string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
+                                                   string chartDay = sleepItem.SleepStart.Day.ToString();
+                                                   @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + (sleepItem.SleepDuration.TotalMinutes / 60.0).ToString().Replace(',', '.') + "},")
+                                               }
+                                           }],
+                                        borderColor: 'rgb(75, 192, 192)',
+                                        borderWidth: 1
+                                    }
+                                ]
+                            },
+                            options: {
+                                scales: {
+                                    xAxes: [
+                                        {
+                                            type: 'time',
+                                            time: {
+                                                @{
+                                                var timeRange = @Model.ChartList.Last().SleepStart - @Model.ChartList.First().SleepStart;
+                                                double daysCount = timeRange.TotalDays;
+                                            }
+                                                min: moment(slider.noUiSlider.get()[0], "x").toString(),
+                                                max: moment(slider.noUiSlider.get()[1], "x").toString(),
+                                                tooltipFormat: 'dd DD MMM YYYY',
+                                                displayFormats: {
+                                                    quarter: 'MMM YYYY'
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    yAxes: [
+                                        {
+                                            scaleLabel: {
+                                                display: true,
+                                                labelString: 'Varighed i timer'
+                                            },
+                                            ticks: {
+                                                beginAtZero: true
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        };
+                        var newChart = new Chart(slpChart, cfg);
+                        newChart.update();
+                        $(document).scrollTop(pos);
+                    });
+            }
+        );
+        function timestamp(str) {
+            return new Date(str).getTime();
+        }
+
+        var slider = document.getElementById('sliderSleep');
+
+        noUiSlider.create(slider,
+            {
+                connect: true,
+                range: {
+                    min: timestamp('@Model.ChartList.First().SleepStart.ToString("yyyy-MM-dd")'),
+                    max: timestamp('@Model.ChartList.Last().SleepStart.ToString("yyyy-MM-dd")')
+                },
+                step: 1000 * 60 * 60 * 24,
+                start: [
+                    timestamp('@Model.ChartList.First().SleepStart.ToString("yyyy-MM-dd")'),
+                    timestamp('@Model.ChartList.Last().SleepStart.ToString("yyyy-MM-dd")')
+                ]
+            });
+    </script>
+}

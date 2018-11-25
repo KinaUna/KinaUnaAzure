@@ -404,7 +404,7 @@ else
         <a class="leavePage" asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.NextPicture" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText Photo <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
     </div>
 </div>
-<script>
+@*<script>
     var myElement = document.querySelector('#photoDiv');
     myElement.addEventListener("touchstart", startTouch, false);
     myElement.addEventListener("touchmove", moveTouch, false);
@@ -460,4 +460,4 @@ else
 
         e.preventDefault();
     };
-</script>
+</script>*@
