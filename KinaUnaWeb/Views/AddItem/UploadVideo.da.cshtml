@@ -1,0 +1,11 @@
+﻿@model KinaUnaWeb.Models.Video
+<br />
+<div style="margin: 20px;">
+    <H4>Video tilføjet.</H4>
+    <div><img width="100%" src="@Model.ThumbLink"/></div>
+</div>
+
+<br />
+<div><a class="leavePage" asp-controller="AddItem" asp-action="AddVideo">Tilbage til tilføj video</a></div>
+<br />
+<div><a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-childId="@Model.ProgenyId">Gå til video album</a></div>

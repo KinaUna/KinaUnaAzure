@@ -107,8 +107,8 @@
         <div class="form-group">
             <div class="col-lg-3 col-sm-3 control-label"></div>
             <div class="col-lg-9">
-                <button id="submitBtn" class="btn btn-success" type="submit">Gem</button>
-                <a class="btn btn-danger" asp-controller="Calendar" asp-action="Index">Afbryd</a>
+                <button id="submitBtn" class="btn btn-success leavePage" type="submit">Gem</button>
+                <a class="btn btn-danger leavePage" asp-controller="Calendar" asp-action="Index">Afbryd</a>
             </div>
         </div>
     </div>
@@ -119,15 +119,12 @@
         </div>
     </div>
 </form>
-
 <script type="text/javascript">
     $(document).ready(function () {
         checkTimes();
         $('#datetimepicker1').change(checkTimes);
         $('#datetimepicker2').change(checkTimes);
-
     });
-
     function checkTimes() {
         var sTime = moment($('#datetimepicker1').val(), 'DD-MMM-YYYY HH:mm');
         var eTime = moment($('#datetimepicker2').val(), 'DD-MMM-YYYY HH:mm');

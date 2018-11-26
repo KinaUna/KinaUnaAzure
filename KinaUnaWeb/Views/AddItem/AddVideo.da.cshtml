@@ -7,10 +7,9 @@
     <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.all.min.js"></script>
     <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.aspnetmvc.min.js"></script>
     <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
-<H3 class="title">Add Youtube Video</H3>
+<H3 class="title">Tilføj Youtube video</H3>
 <div class="modal-body form-horizontal">
     <div class="row">
         <div class="col-lg-10">
@@ -18,7 +17,7 @@
                 @if (Model.ProgenyList.Count > 1)
                 {
                     <div class="form-group">
-                        <label class="control-label col">Add Video for: </label>
+                        <label class="control-label col">Tilføj video for: </label>
                         <div class="col-lg-9">
                             <select class="selectpicker" data-style="select-with-transition" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
                         </div>
@@ -27,17 +26,15 @@
                 else
                 {
                     <div class="form-group">
-                        <label class="control-label col-sm-3">Upload Video for: </label>
+                        <label class="control-label col-sm-3">Tilføj video for: </label>
                         <div class="col-lg-9">
                             <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
                         </div>
                         <input asp-for="ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
                     </div>
-
                 }
-
                 <div class="form-group">
-                    <label class="col-lg-3 col-sm3 control-label">Paste the link or embed code here:</label>
+                    <label class="col-lg-3 col-sm3 control-label">Indsæt Youtube link eller kode her:</label>
                     <div class="col-lg-9">
                         <textarea class="form-control" asp-for="FileLink" rows="5" cols="40"></textarea>
                     </div>
@@ -62,7 +59,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label asp-for="VideoTime" class="col-lg-3 col-sm-3 control-label">Video Date and Time</label>
+                    <label asp-for="VideoTime" class="col-lg-3 col-sm-3 control-label">Video dato og tid</label>
                     <div class="col-lg-3">
                         <div class="input-group date">
                             <input style="width: 300px;" id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text"
@@ -75,22 +72,26 @@
                     $(function () {
                         $('#datetimepicker1').Zebra_DatePicker({
                             format: 'd-M-Y H:i',
-                            open_icon_only: true
+                            open_icon_only: true,
+                            days: ['søndag', 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag'],
+                            months: ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'],
+                            show_select_today: "Idag",
+                            lang_clear_date: 'Ryd dato'
                         });
                     });
                 </script>
                 <div class="form-group">
-                    <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Access Level</label>
+                    <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Adgangsniveau</label>
                     <div class="col-lg-9">
-                        <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                        <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListDa.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDa"></select>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-lg-3 col-sm-3"></div>
                     <input asp-for="Owners" class="form-control" value="@Model.Owners" type="hidden" />
                     <div class="col-lg-9">
-                        <button class="btn btn-success leavePage" type="submit">Upload</button>
-                        <a class="btn btn-danger leavePage" asp-controller="Videos" asp-action="Index">Cancel</a>
+                        <button class="btn btn-success leavePage" type="submit">Gem</button>
+                        <a class="btn btn-danger leavePage" asp-controller="Videos" asp-action="Index">Fortryd</a>
                     </div>
                 </div>
             </form>

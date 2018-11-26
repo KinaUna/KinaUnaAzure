@@ -3,7 +3,7 @@
 @section Scripts{
     <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
 }
-<H3 class="title">Add Photo</H3>
+<H3 class="title">Tilføj foto</H3>
 <div class="modal-body form-horizontal">
     <div class="row">
         <div class="col-lg-9">
@@ -11,7 +11,7 @@
                 @if (Model.ProgenyList.Count > 1)
                 {
                     <div class="form-group">
-                        <label class="control-label col">Upload picture for: </label>
+                        <label class="control-label col">Tilføj foto for: </label>
                         <div class="col-lg-9">
                             <select class="selectpicker" data-style="select-with-transition" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
                         </div>
@@ -20,7 +20,7 @@
                 else
                 {
                     <div class="form-group">
-                        <label class="control-label col-sm-3">Upload Photo for: </label>
+                        <label class="control-label col-sm-3">Tilføj foto for: </label>
                         <div class="col-lg-9">
                             <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
                         </div>
@@ -37,34 +37,34 @@
                             <div class="fileinput-preview fileinput-exists thumbnail img-raised"></div>
                             <div>
                                 <div class="btn btn-primary btn-round btn-file ">
-                                    <span data-trigger="fileinput" class="fileinput-new">Select image(s)</span>
-                                    <span class="fileinput-exists">Change</span>
+                                    <span data-trigger="fileinput" class="fileinput-new">Vælg billede(r)</span>
+                                    <span class="fileinput-exists">Skift</span>
                                     <input type="file" name="Files" accept="image/*" multiple />
                                 </div>
                                 <br />
                                 <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
-                                    <i class="fa fa-times"></i> Reset
+                                    <i class="fa fa-times"></i> Nulstil
                                 </a>
                             </div>
                             <div>
-                                <br />Note: Photos may appear rotated here. If it contains metadata about rotation, it will automatically be rotated after uploading it.<br />
-                                If more than one photo is selected only one is previewed above.
+                                <br />Bemærk: Foto kan være roteret her. Hvis billedet indeholder data om rotation, vil det automatisk blive roteret efter det er gemt her.<br />
+                                Hvis mere end et billede er valgt vises kun et af dem.
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Access Level</label>
+                    <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Adgangsniveau</label>
                     <div class="col-lg-9">
-                        <select class="selectpicker" data-style="select-with-transition" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                        <select class="selectpicker" data-style="select-with-transition" data-size="@Model.AccessLevelListDa.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDa"></select>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-lg-3 col-sm-3"></div>
                     <input asp-for="Owners" class="form-control" value="@Model.Owners" type="hidden" />
                     <div class="col-lg-9">
-                        <button class="btn btn-success leavePage" type="submit">Upload</button>
-                        <a class="btn btn-danger leavePage" asp-controller="Pictures" asp-action="Index">Cancel</a>
+                        <button class="btn btn-success leavePage" type="submit">Gem</button>
+                        <a class="btn btn-danger leavePage" asp-controller="Pictures" asp-action="Index">Fortryd</a>
                     </div>
                 </div>
             </form>

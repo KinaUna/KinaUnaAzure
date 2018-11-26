@@ -14,15 +14,13 @@
     <script type="text/javascript" src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
     <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
 }
-<button onclick="geoFindMe()" class="btn btn-info" style="float: right;" id="getLocation">Copy my current location</button>
-<H4>Add Location</H4>
-<div id="out"></div>
-<form asp-action="AddLocation" role="form" method="post" enctype="multipart/form-data">
+<H4>Rediger sted</H4>
+<form asp-action="EditLocation" role="form" method="post" enctype="multipart/form-data">
 
     @if (Model.ProgenyList.Count > 1)
     {
         <div class="form-group">
-            <label class="control-label col-sm-3">Add Location for</label>
+            <label class="control-label col-sm-3">Sted for</label>
             <div class="col-lg-9">
                 <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
             </div>
@@ -31,7 +29,7 @@
     else
     {
         <div class="form-group">
-            <label class="control-label col-sm-3">Add Location for</label>
+            <label class="control-label col-sm-3">Sted for</label>
             <div class="col-lg-9">
                 <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
             </div>
@@ -39,77 +37,77 @@
         </div>
     }
     <div class="form-group">
-        <label asp-for="Name" class="col-lg-3 col-sm-3 control-label">Name or Label</label>
+        <label asp-for="Name" class="col-lg-3 col-sm-3 control-label">Navn</label>
         <div class="col-lg-9">
-            <input id="nameText" asp-for="Name" class="form-control" />
+            <input id="nameText" asp-for="Name" value="@Model.Name" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="StreetName" class="col-lg-3 col-sm-3 control-label">Street</label>
+        <label asp-for="StreetName" class="col-lg-3 col-sm-3 control-label">Gade/vej</label>
         <div class="col-lg-9">
-            <input id="streetText" asp-for="StreetName" class="form-control" />
+            <input id="streetText" asp-for="StreetName" value="@Model.StreetName" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="HouseNumber" class="col-lg-3 col-sm-3 control-label">House Number</label>
+        <label asp-for="HouseNumber" class="col-lg-3 col-sm-3 control-label">Nummer</label>
         <div class="col-lg-9">
-            <input id="houseNumberText" asp-for="HouseNumber" class="form-control" />
+            <input id="houseNumberText" asp-for="HouseNumber" value="@Model.HouseNumber" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="District" class="col-lg-3 col-sm-3 control-label">District</label>
+        <label asp-for="District" class="col-lg-3 col-sm-3 control-label">Distrikt</label>
         <div class="col-lg-9">
-            <input id="disctrictText" asp-for="District" class="form-control" />
+            <input id="disctrictText" asp-for="District" value="@Model.District" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="City" class="col-lg-3 col-sm-3 control-label">City</label>
+        <label asp-for="City" class="col-lg-3 col-sm-3 control-label">By</label>
         <div class="col-lg-9">
-            <input id="cityText" asp-for="City" class="form-control" />
+            <input id="cityText" asp-for="City" value="@Model.City" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="PostalCode" class="col-lg-3 col-sm-3 control-label">Postal Code</label>
+        <label asp-for="PostalCode" class="col-lg-3 col-sm-3 control-label">Postnummer</label>
         <div class="col-lg-9">
-            <input id="postalCodeText" asp-for="PostalCode" class="form-control" />
+            <input id="postalCodeText" asp-for="PostalCode" value="@Model.PostalCode" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="County" class="col-lg-3 col-sm-3 control-label">County</label>
+        <label asp-for="County" class="col-lg-3 col-sm-3 control-label">Amt</label>
         <div class="col-lg-9">
-            <input id="countyText" asp-for="County" class="form-control" />
+            <input id="countyText" asp-for="County" value="@Model.County" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="State" class="col-lg-3 col-sm-3 control-label">State</label>
+        <label asp-for="State" class="col-lg-3 col-sm-3 control-label">Stat/region</label>
         <div class="col-lg-9">
-            <input id="stateText" asp-for="State" class="form-control" />
+            <input id="stateText" asp-for="State" value="@Model.State" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Country" class="col-lg-3 col-sm-3 control-label">Country</label>
+        <label asp-for="Country" class="col-lg-3 col-sm-3 control-label">Land</label>
         <div class="col-lg-9">
-            <input id="countryText" asp-for="Country" class="form-control" />
+            <input id="countryText" asp-for="Country" value="@Model.Country" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Latitude" class="col-lg-3 col-sm-3 control-label">Latitude</label>
+        <label asp-for="Latitude" class="col-lg-3 col-sm-3 control-label">Breddegrad</label>
         <div class="col-lg-9">
-            <input id="latitudeText" asp-for="Latitude" class="form-control" />
+            <input id="latitudeText" asp-for="Latitude" value="@Model.Latitude" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Longitude" class="col-lg-3 col-sm-3 control-label">Longitude</label>
+        <label asp-for="Longitude" class="col-lg-3 col-sm-3 control-label">Længdegrad</label>
         <div class="col-lg-9">
-            <input id="longitudeText" asp-for="Longitude" class="form-control" />
+            <input id="longitudeText" asp-for="Longitude" value="@Model.Longitude" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Date" class="col-lg-3 col-sm-3 control-label">Date</label>
+        <label asp-for="Date" class="col-lg-3 col-sm-3 control-label">Dato</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text"
-                       class="form-control" data-zdp_readonly_element="false" asp-for="Date" value="@Model.Date.Value.ToString("dd-MMM-yyyy HH:mm")"/>
+                       class="form-control" data-zdp_readonly_element="false" asp-for="Date" value="@Model.Date.Value.ToString("dd-MMM-yyyy HH:mm")" />
             </div>
         </div>
     </div>
@@ -117,20 +115,24 @@
         $(function () {
             $('#datetimepicker1').Zebra_DatePicker({
                 format: 'd-M-Y H:i',
-                open_icon_only: true
+                open_icon_only: true,
+                days: ['søndag', 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag'],
+                months: ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'],
+                show_select_today: "Idag",
+                lang_clear_date: 'Ryd dato'
             });
         });
     </script>
     <div class="form-group">
-        <label asp-for="Notes" class="col-lg-3 col-sm-3 control-label"></label>
+        <label asp-for="Notes" class="col-lg-3 col-sm-3 control-label">Noter</label>
         <div class="col-lg-9">
-            <input asp-for="Notes" class="form-control" />
+            <input asp-for="Notes" value="@Model.Notes" class="form-control" />
         </div>
     </div>
     <div class="form-group">
         <label class="col-lg-3 col-sm-2 control-label">Tags</label>
         <div class="col-lg-10 col-md-10 col-sm-10">
-            <input id="tagList" type="text" asp-for="Tags" class="form-control" style="width: 100%; background: #e8fdd0" />
+            <input id="tagList" type="text" asp-for="Tags" value="@Model.Tags" class="form-control" style="width: 100%; background: #e8fdd0" />
         </div>
         <script>
             $(document).ready(function() {
@@ -139,29 +141,30 @@
                 $("#tagList").kendoAutoComplete({
                     dataSource: data,
                     filter: "contains",
-                    placeholder: "Add tag...",
+                    placeholder: "Tilføj tag...",
                     separator: ", "
                 });
             });
         </script>
     </div>
     <div class="form-group">
-        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Access Level</label>
+        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Adgangsniveau</label>
         <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListDa.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDa"></select>
         </div>
     </div>
     <div>
         <div class="form-group">
+            <input asp-for="LocationId" type="text" value="@Model.LocationId" hidden="hidden"/>
             <div class="col-lg-3 col-sm-3 control-label"></div>
             <div class="col-lg-9">
-                <button class="btn btn-success leavePage" type="submit">Save</button>
-                <a class="btn btn-danger leavePage" asp-controller="Locations" asp-action="Index">Cancel</a>
+                <button class="btn btn-success leavePage" type="submit">Gem</button>
+                <a class="btn btn-danger leavePage" asp-controller="Locations" asp-action="Index">Fortryd</a>
             </div>
         </div>
     </div>
 </form>
-<div>Click on the map below to get location information.</div>
+<div>Klick på kortet herunder for at få et steds informationer.</div>
 <div style="width: 100%; height: 480px" id="mapContainer"></div>
 <script>
     function setUpClickListener(map) {
@@ -176,7 +179,7 @@
             var coord = map.screenToGeo(evt.currentPointer.viewportX,
                 evt.currentPointer.viewportY);
             map.setCenter(coord, true);
-            
+
             var geocoder = platform.getGeocodingService();
             var reverseGeocodingParameters = {
                 prox: coord.lat +', ' + coord.lng + ', 32',
@@ -207,7 +210,7 @@
         tileSize: pixelRatio === 1 ? 256 : 512,
         ppi: pixelRatio === 1 ? undefined : 320
     });
-    
+
     var map = new H.Map(document.getElementById('mapContainer'),
         maptypes.normal.map,
         {
@@ -221,7 +224,7 @@
     setUpClickListener(map);
 
     var ui = H.ui.UI.createDefault(map, maptypes);
-    
+
     function onGeoSuccess(result) {
         var location = result.Response.View[0].Result[0];
         var contextText = "";
@@ -279,50 +282,10 @@
             $("#countryText").val(location.Location.Address.AdditionalData[0].value);
         }
         contextText = contextText.replace(/(^,)|(,$)/g, "").trim();
-        
+
         ui.addBubble(new H.ui.InfoBubble({
             lat: location.Location.DisplayPosition.Latitude,
             lng: location.Location.DisplayPosition.Longitude
         }, { content:  contextText }));
     };
-
-    function geoFindMe() {
-        var output = document.getElementById("out");
-
-        if (!navigator.geolocation){
-            output.innerHTML = "<p>Geolocation is not supported by your browser</p>";
-            return;
-        }
-
-        function success(position) {
-            var latitude  = position.coords.latitude;
-            var longitude = position.coords.longitude;
-            output.innerHTML = '<p>Latitude: ' + latitude + '°, Longitude: ' + longitude + '° copied to the form below.</p>';
-            var zoomLevel = 14;
-            map.setZoom(zoomLevel, true);
-            map.setCenter({lat: latitude, lng: longitude}, true);
-            var geocoder = platform.getGeocodingService();
-            var reverseGeocodingParameters = {
-                prox: latitude + ', ' + longitude + ', 32',
-                mode: 'retrieveAddresses',
-                maxresults: 1
-            };
-            geocoder.reverseGeocode(
-                reverseGeocodingParameters,
-                onGeoSuccess,
-                function (e) { console.log('Error in Reverse Geocode: ' + e); }
-            );
-            $("#latitudeText").val(latitude);
-            $("#longitudeText").val(longitude);
-            
-        }
-
-        function error() {
-            output.innerHTML = "Unable to retrieve your location";
-        }
-
-        output.innerHTML = "<p>Locating…</p>";
-
-        navigator.geolocation.getCurrentPosition(success, error);
-    }
 </script>

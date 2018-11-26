@@ -1,0 +1,18 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.PictureViewModel
+<H4>Slet foto</H4>
+<form asp-action="DeletePicture" role="form" method="post">
+    <div>
+        Er du sikker på at du vil slette dette foto?
+    </div>
+    <div>
+        <img src="@Model.PictureLink" class="img-responsive" style="max-width: 600px;" />
+        @if (Model.PictureTime.HasValue)
+        {
+            <div>Dato og tid: @Model.PictureTime.Value.ToString("dd-MMM-yyyy HH:mm")"</div>
+        }
+    </div>
+
+    <input asp-for="PictureId" class="form-control" value="@Model.PictureId" type="hidden" />
+    <input asp-for="ProgenyId" class="form-control" value="@Model.ProgenyId" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">Ja - slet</Button><a class="btn btn-danger leavePage" asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.PictureId" asp-route-childId="@Model.ProgenyId">Nej - fortryd</a></div>
+</form>
