@@ -119,7 +119,10 @@ namespace KinaUnaWeb
             }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
                 {
                     options.ExpireTimeSpan = TimeSpan.FromDays(180);
-                    
+                    if (!Env.IsDevelopment())
+                    {
+                        options.Cookie.Domain = ".kinauna.com";
+                    }
                 })
                 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
                 {

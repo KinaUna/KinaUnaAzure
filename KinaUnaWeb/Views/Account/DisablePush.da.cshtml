@@ -45,14 +45,14 @@
                 </div>
             </div>
             <div class="form-group">
-                <input type="submit" value="Slå meddelelser fra" class="btn btn-warning" onclick="unsubscribe()" />
+                <input type="submit" value="Slå meddelelser fra" class="btn btn-warning leavePage" onclick="unsubscribe()" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="MyAccount">Tilbage til Min Konto</a>
+    <a class="leavePage" asp-action="MyAccount">Tilbage til Min Konto</a>
 </div>
 
 <script>

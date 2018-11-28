@@ -199,7 +199,7 @@ namespace KinaUnaWeb.Controllers
                                 await _context.SaveChangesAsync();
 
                                 await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                                    notification.Message, "https://web.kinauna.com" + notification.Link);
+                                    notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunaphoto" + progeny.Id);
                             }
                         }
                     }
@@ -321,9 +321,9 @@ namespace KinaUnaWeb.Controllers
                     model.IsAdmin = true;
                 }
             }
-            if (!picture.PictureLink.ToLower().StartsWith("http"))
+            if (!picture.PictureLink600.ToLower().StartsWith("http"))
             {
-                picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
+                picture.PictureLink600 = _imageStore.UriFor(picture.PictureLink600);
             }
 
             ViewBag.NotAuthorized = "You do not have sufficient access rights to modify this picture.";
@@ -513,7 +513,7 @@ namespace KinaUnaWeb.Controllers
                                 await _context.SaveChangesAsync();
 
                                 await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                                    notification.Message, "https://web.kinauna.com" + notification.Link);
+                                    notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunacomment" + model.ItemId);
                             }
                         }
                     }
@@ -708,7 +708,7 @@ namespace KinaUnaWeb.Controllers
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
                         notification.From = authorName;
-                        notification.Message = "Video ID: " + newVideo.VideoId + "\r\n" + vidTimeString + "\r\n";
+                        notification.Message = vidTimeString + "\r\n";
                         notification.DateTime = DateTime.UtcNow;
                         notification.Icon = userinfo.ProfilePicture;
                         notification.Title = "A video was added for " + progeny.NickName;
@@ -718,7 +718,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link);
+                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunavideo" + progeny.Id);
                     }
                 }
             }
@@ -977,7 +977,7 @@ namespace KinaUnaWeb.Controllers
                                 await _context.SaveChangesAsync();
 
                                 await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                                    notification.Message, "https://web.kinauna.com" + notification.Link);
+                                    notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunacomment" + vid.VideoId);
                             }
                         }
                     }
@@ -1116,7 +1116,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link);
+                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunanote" + progeny.Id);
                     }
                 }
             }
@@ -1397,7 +1397,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link);
+                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunacalendar" + progeny.Id);
                     }
                 }
             }
@@ -1671,7 +1671,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link);
+                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunavocabulary" + progeny.Id);
                     }
                 }
             }
@@ -1937,7 +1937,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link);
+                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunaskill" + progeny.Id);
                     }
                 }
             }
@@ -2251,7 +2251,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link);
+                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunafriend" + progeny.Id);
                     }
                 }
             }
@@ -2572,7 +2572,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link);
+                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunameasurement" + progeny.Id);
                     }
                 }
             }
@@ -2895,7 +2895,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link);
+                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunacontact" + progeny.Id);
                     }
                 }
             }
@@ -3272,7 +3272,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link);
+                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunavaccination" + progeny.Id);
                     }
                 }
             }
@@ -3528,7 +3528,8 @@ namespace KinaUnaWeb.Controllers
                         await _context.WebNotificationsDb.AddAsync(notification);
                         await _context.SaveChangesAsync();
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title, notification.Message, "https://web.kinauna.com" + notification.Link);
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title, notification.Message,
+                            "https://web.kinauna.com" + notification.Link, "kinaunasleep" + prog.Id);
                     }
                 }
             }
@@ -3873,7 +3874,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link);
+                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunalocation" + progeny.Id);
                     }
                 }
             }

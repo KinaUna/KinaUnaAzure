@@ -19,5 +19,6 @@ namespace KinaUna.IDP.Models.AccountViewModels
         public string ConfirmPassword { get; set; }
 
         public string Code { get; set; }
+        public string Language { get; set; }
     }
 }

@@ -89,6 +89,12 @@ namespace KinaUna.IDP
             var webServerAzureUrl = configuration.GetValue<string>("WebServerAzure");
             var webServerLocal = configuration.GetValue<string>("WebServerLocal");
             var secretString = configuration.GetValue<string>("SecretString");
+            List<string> corsList = new List<string>();
+            corsList.Add("https://web.kinauna.com");
+            corsList.Add("https://auth.kinauna.com");
+            corsList.Add("https://progenyapi.kinauna.com");
+            corsList.Add("https://mediaapi.kinauna.com");
+            corsList.Add("https://kinauna.com");
             return new List<Client>()
             {
                 new Client
@@ -99,13 +105,15 @@ namespace KinaUna.IDP
                     RequireConsent = false,
                     AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
                     AccessTokenType = AccessTokenType.Reference,
-                    //IdentityTokenLifetime = ...
-                    //AuthorizationCodeLifetime = ...
+                    IdentityTokenLifetime = 2592000,
+                    AuthorizationCodeLifetime = 2592000,
                     AccessTokenLifetime = 2592000,
                     AllowOfflineAccess = true,
                     AlwaysIncludeUserClaimsInIdToken = false,
+                    RefreshTokenExpiration = TokenExpiration.Sliding,
                     //AbsoluteRefreshTokenLifetime = ...
                     UpdateAccessTokenClaimsOnRefresh = true,
+                    AllowedCorsOrigins = corsList,
                     RedirectUris = new List<string>()
                     {
                         webServerUrl + "/signin-oidc"
@@ -193,13 +201,15 @@ namespace KinaUna.IDP
                     RequireConsent = false,
                     AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
                     AccessTokenType = AccessTokenType.Reference,
-                    //IdentityTokenLifetime = ...
-                    //AuthorizationCodeLifetime = ...
+                    IdentityTokenLifetime = 2592000,
+                    AuthorizationCodeLifetime = 2592000,
                     AccessTokenLifetime = 2592000,
                     AllowOfflineAccess = true,
                     AlwaysIncludeUserClaimsInIdToken = false,
+                    RefreshTokenExpiration = TokenExpiration.Sliding,
                     //AbsoluteRefreshTokenLifetime = ...
                     UpdateAccessTokenClaimsOnRefresh = true,
+                    AllowedCorsOrigins = corsList,
                     RedirectUris = new List<string>()
                     {
                         webServerUrl + "/signin-oidc"

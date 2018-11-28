@@ -55,11 +55,13 @@ self.addEventListener('push', function (event) {
     var link = notification.Link;
     var icon = "https://web.kinauna.com/images/kinaunalogo192x192_rounded.png";
     var badge = "https://web.kinauna.com/images/kinaunalogo_badge3.png";
+    var tag = notification.Tag;
     event.waitUntil(self.registration.showNotification(title, {
         body: message,
         icon: icon,
         badge: badge,
-        data: link
+        data: link,
+        tag: tag
     }));
 });
 

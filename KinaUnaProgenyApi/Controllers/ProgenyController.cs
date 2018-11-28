@@ -73,6 +73,30 @@ namespace KinaUnaProgenyApi.Controllers
 
             _context.ProgenyDb.Add(progeny);
             await _context.SaveChangesAsync();
+            if (progeny.Admins.Contains(','))
+            {
+                List<string> adminList = progeny.Admins.Split(',').ToList();
+                foreach (string adminEmail in adminList)
+                {
+                    UserAccess ua = new UserAccess();
+                    ua.AccessLevel = 0;
+                    ua.ProgenyId = progeny.Id;
+                    ua.UserId = adminEmail.Trim();
+
+                    _context.UserAccessDb.Add(ua);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            else
+            {
+                UserAccess ua = new UserAccess();
+                ua.AccessLevel = 0;
+                ua.ProgenyId = progeny.Id;
+                ua.UserId = progeny.Admins.Trim();
+
+                _context.UserAccessDb.Add(ua);
+                await _context.SaveChangesAsync();
+            }
 
             return Ok(progeny);
         }

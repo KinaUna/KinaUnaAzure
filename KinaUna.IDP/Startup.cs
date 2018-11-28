@@ -141,7 +141,8 @@ namespace KinaUna.IDP
 
             services.AddIdentityServer(x =>
                 {
-                    x.Authentication.CookieLifetime = TimeSpan.FromMinutes(10);
+                    x.Authentication.CookieLifetime = TimeSpan.FromDays(90);
+                    x.Authentication.CookieSlidingExpiration = true;
                 })
                 .AddSigningCredential(cert)
                 .AddAspNetIdentity<ApplicationUser>()

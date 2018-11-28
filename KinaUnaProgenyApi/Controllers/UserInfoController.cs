@@ -1,4 +1,5 @@
-﻿using KinaUnaProgenyApi.Data;
+﻿using System;
+using KinaUnaProgenyApi.Data;
 using KinaUnaProgenyApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -194,15 +195,38 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            userinfo.FirstName = value.FirstName;
-            userinfo.MiddleName = value.MiddleName;
-            userinfo.LastName = value.LastName;
-            userinfo.UserName = value.UserName;
-            userinfo.UserEmail = value.UserEmail;
+            if (!String.IsNullOrEmpty(value.FirstName))
+            {
+                userinfo.FirstName = value.FirstName;
+            }
+            if (!String.IsNullOrEmpty(value.MiddleName))
+            {
+                userinfo.MiddleName = value.MiddleName;
+            }
+            if (!String.IsNullOrEmpty(value.LastName))
+            {
+                userinfo.LastName = value.LastName;
+            }
+            if (!String.IsNullOrEmpty(value.UserName))
+            {
+                userinfo.UserName = value.UserName;
+            }
+            if (!String.IsNullOrEmpty(value.UserEmail))
+            {
+                userinfo.UserEmail = value.UserEmail;
+            }
+            if (!String.IsNullOrEmpty(value.Timezone))
+            {
+                userinfo.Timezone = value.Timezone;
+            }
+            if (!String.IsNullOrEmpty(value.ProfilePicture))
+            {
+                userinfo.ProfilePicture = value.ProfilePicture;
+            }
+
             userinfo.UserId = value.UserId;
             userinfo.ViewChild = value.ViewChild;
-            userinfo.Timezone = value.Timezone;
-            userinfo.ProfilePicture = value.ProfilePicture;
+            
             _context.UserInfoDb.Update(userinfo);
             await _context.SaveChangesAsync();
 

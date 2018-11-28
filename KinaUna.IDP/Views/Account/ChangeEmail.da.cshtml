@@ -1,13 +1,13 @@
 ﻿@model KinaUna.IDP.Models.ChangeEmailViewModel
 @{
-    ViewData["Title"] = "Change Email";
+    ViewData["Title"] = "Skift Emailadresse";
 }
 <h2>Change Email</h2>
 <div class="row">
     <div class="col-md-10">
         <form asp-action="SendConfirmationMail" method="post">
             <div class="form-group">
-                <label asp-for="OldEmail">Old Email</label>
+                <label asp-for="OldEmail">Tidligere Email</label>
                 <div class="input-group">
                     <input asp-for="OldEmail" class="form-control" value="@Model.OldEmail" readonly="readonly" />
                 </div>
@@ -17,14 +17,14 @@
                 }
             </div>
             <div class="form-group">
-                <label asp-for="NewEmail">New Email</label>
+                <label asp-for="NewEmail">Ny Email</label>
                 <div class="input-group">
                     <input asp-for="NewEmail" class="form-control" value="@Model.NewEmail" />
                 </div>
             </div>
-            <input asp-for="Language" value="en" hidden="hidden"/>
+            <input asp-for="Language" value="da" hidden="hidden"/>
             <input asp-for="UserId" value="@Model.UserId" hidden="hidden" />
-            <button type="submit" class="btn btn-success leavePage">Send verification email</button>
+            <button type="submit" class="btn btn-success leavePage">Send bekræftigelses email</button>
         </form>
     </div>
 </div>

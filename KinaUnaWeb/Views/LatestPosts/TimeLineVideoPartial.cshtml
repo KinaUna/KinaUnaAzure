@@ -1,6 +1,6 @@
 ﻿@model KinaUnaWeb.Models.ItemViewModels.VideoViewModel
 @{ string durTime = ""; }
-<a class="leavePage2" asp-controller="Videos" asp-action="Video" asp-route-Id="@Model.VideoId">
+<a class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-Id="@Model.VideoId">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
         <div class="card-body" style="background: rgba(152, 49, 81, 0.8)">
             <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 12px;" class="fas fa-video"></span><strong class="text-warning">@Model.VideoTime?.ToString("dd-MMM-yyyy HH:mm")</strong></div>

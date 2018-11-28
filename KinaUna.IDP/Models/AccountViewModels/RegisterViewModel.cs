@@ -25,6 +25,7 @@ namespace KinaUna.IDP.Models.AccountViewModels
         public string TimeZone { get; set; }
         public SelectListItem[] TimezoneList { get; set; }
         public ApplicationUser User { get; set; }
+        public string Language { get; set; }
 
         public RegisterViewModel()
         {

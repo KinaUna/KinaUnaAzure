@@ -1188,7 +1188,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             await _pushMessageSender.SendMessage(notification.UserId, notification.Title, notification.Message,
-                notification.Link);
+                notification.Link, "kinaunapush");
             notification.Title = "Message Sent";
             return View(notification);
         }

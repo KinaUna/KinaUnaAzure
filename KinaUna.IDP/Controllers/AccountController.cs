@@ -322,7 +322,7 @@ namespace KinaUna.IDP.Controllers
 
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-                await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
+                await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl, model.Language);
                 await _emailSender.SendEmailAsync("per.mogensen@kinauna.com", "New User Registered",
                     "A user registered with this email address: " + model.Email);
                 
@@ -357,7 +357,7 @@ namespace KinaUna.IDP.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ChangeEmail(string NewEmail, string OldEmail)
+        public async Task<IActionResult> ChangeEmail(string NewEmail, string OldEmail, string Language = "en")
         {
             
             if (User.Identity.IsAuthenticated)
@@ -373,8 +373,19 @@ namespace KinaUna.IDP.Controllers
                     model.ErrorMessage = "";
                     if (test != null)
                     {
-                        model.ErrorMessage =
+                        string errorMsg =
                             "Error: This email is already in use by another account. Please delete the account with this email address before assigning this email address to your account.";
+                        if (Language == "da")
+                        {
+                            errorMsg =
+                                "Fejl: Denne emailadresse er allerede i brug for en anden konto. Slet venligst den anden konto før du opdaterer denne konto med emailaddressen.";
+                        }
+                        if (Language == "de")
+                        {
+                            errorMsg =
+                                "Fehler: E-Mail wird von einem anderen Konto verwendet.";
+                        }
+                        model.ErrorMessage = errorMsg;
                     }
                     model.UserId = user.Id;
                     return View(model);
@@ -388,7 +399,7 @@ namespace KinaUna.IDP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SendConfirmationMail(string UserId, string NewEmail, string OldEmail)
+        public async Task<IActionResult> SendConfirmationMail(string UserId, string NewEmail, string OldEmail, string Language)
         {
             if (User.Identity.IsAuthenticated)
             {
@@ -403,14 +414,25 @@ namespace KinaUna.IDP.Controllers
                         ChangeEmailViewModel model = new ChangeEmailViewModel();
                         model.OldEmail = OldEmail;
                         model.NewEmail = NewEmail;
-                        model.ErrorMessage =
+                        string errorMsg =
                             "Error: This email is already in use by another account. Please delete the account with this email address before assigning this email address to your account.";
+                        if (Language == "da")
+                        {
+                            errorMsg =
+                                "Fejl: Denne emailadresse er allerede i brug for en anden konto. Slet venligst den anden konto før du opdaterer denne konto med emailaddressen.";
+                        }
+                        if (Language == "de")
+                        {
+                            errorMsg =
+                                "Fehler: E-Mail wird von einem anderen Konto verwendet.";
+                        }
+                        model.ErrorMessage = errorMsg;
                         model.UserId = user.Id;
                         return View("ChangeEmail", model);
                     }
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-                    await _emailSender.SendEmailUpdateConfirmationAsync(NewEmail, callbackUrl + "&newEmail=" + NewEmail + "&oldEmail=" + OldEmail);
+                    await _emailSender.SendEmailUpdateConfirmationAsync(NewEmail, callbackUrl + "&newEmail=" + NewEmail + "&oldEmail=" + OldEmail, Language);
 
                     UserInfo userinfo = await _progContext.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == user.Id);
                     if (userinfo != null)
@@ -533,8 +555,22 @@ namespace KinaUna.IDP.Controllers
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
                 var code = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
-                await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-                    $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+                string emailTitle = "Reset Kina Una Password";
+                string emailText = $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>";
+
+                if (model.Language == "da")
+                {
+                    emailTitle = "Nulstil Kina Una password";
+                    emailText = $"Nulstil dit Kina Una password ved at klikke på dette link: <a href='{callbackUrl}'>link</a>";
+                }
+                if (model.Language == "de")
+                {
+                    emailTitle = "Kina Una passwort rücksetzen";
+                    emailText = $"Setzen Sie Ihr Passwort zurück, indem Sie auf diesen Link klicken: <a href='{callbackUrl}'>link</a>";
+                }
+
+                await _emailSender.SendEmailAsync(model.Email, emailTitle,
+                    emailText);
                 return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
 
@@ -634,7 +670,16 @@ namespace KinaUna.IDP.Controllers
 
             await _signInManager.SignInAsync(user, isPersistent: false);
             _logger.LogInformation("User changed their password successfully.");
-            StatusMessage = "Your password has been changed.";
+            string statusMsg = "Your password has been changed.";
+            if (model.Language == "da")
+            {
+                statusMsg = "Dit password er opdateret.";
+            }
+            if (model.Language == "de")
+            {
+                statusMsg = "Ihr Passwort wurde geändert.";
+            }
+            StatusMessage = statusMsg;
 
             return RedirectToAction(nameof(ChangePassword));
         }

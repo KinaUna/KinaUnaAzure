@@ -163,6 +163,11 @@ namespace KinaUnaWeb.Controllers
                 ProfilePicture = userinfo.ProfilePicture
             };
 
+            if (String.IsNullOrEmpty(model.UserName))
+            {
+                model.UserName = model.UserEmail;
+            }
+
             if (_env.IsDevelopment())
             {
                 model.ChangeLink = "https://localhost:44397/Account/ChangePassword";
@@ -188,7 +193,13 @@ namespace KinaUnaWeb.Controllers
             userinfo.FirstName = model.FirstName;
             userinfo.MiddleName = model.MiddleName;
             userinfo.LastName = model.LastName;
+
             userinfo.UserName = model.UserName;
+            if (String.IsNullOrEmpty(userinfo.UserName))
+            {
+                userinfo.UserName = userinfo.UserEmail;
+            }
+
             userinfo.Timezone = model.Timezone;
 
             if (String.IsNullOrEmpty(userinfo.ProfilePicture))

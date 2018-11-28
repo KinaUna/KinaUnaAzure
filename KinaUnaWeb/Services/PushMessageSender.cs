@@ -23,13 +23,13 @@ namespace KinaUnaWeb.Services
             _configuration = configuration;
         }
 
-        public async Task SendMessage(string user, string title, string message, string link)
+        public async Task SendMessage(string user, string title, string message, string link, string tag)
         {
             PushNotification notification = new PushNotification();
             notification.Title = title;
             notification.Message = message;
             notification.Link = link;
-
+            notification.Tag = tag;
             var payload = JsonConvert.SerializeObject(notification);
             string vapidPublicKey = _configuration["VapidPublicKey"];
             string vapidPrivateKey = _configuration["VapidPrivateKey"];

@@ -103,12 +103,18 @@ namespace KinaUnaWeb.Services
                 newUserinfo.ViewChild = 0;
                 newUserinfo.UserId = userId.Id;
                 
-                newUserinfo.FirstName = userId.FirstName;
-                newUserinfo.MiddleName = userId.MiddleName;
-                newUserinfo.LastName = userId.LastName;
+                newUserinfo.FirstName = userId?.FirstName ?? "";
+                newUserinfo.MiddleName = userId?.MiddleName ?? "";
+                newUserinfo.LastName = userId?.LastName ?? "";
                 // Todo: ProfilePicture
                 newUserinfo.Timezone = userId.TimeZone;
                 newUserinfo.UserName = userId.UserName;
+
+                if (String.IsNullOrEmpty(newUserinfo.UserName))
+                {
+                    newUserinfo.UserName = newUserinfo.UserEmail;
+                }
+
                 string newUserinfoApiPath = "/api/userinfo/";
                 var newUserinfoUri = clientUri + newUserinfoApiPath;
 

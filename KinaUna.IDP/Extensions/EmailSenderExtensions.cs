@@ -9,16 +9,44 @@ namespace KinaUna.IDP.Extensions
 {
     public static class EmailSenderExtensions
     {
-        public static Task SendEmailConfirmationAsync(this IEmailSender emailSender, string email, string link)
+        public static Task SendEmailConfirmationAsync(this IEmailSender emailSender, string email, string link, string language = "en")
         {
-            return emailSender.SendEmailAsync(email, "Confirm your email",
-                $"Please confirm your account by clicking this link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>");
+            string mailTitle = "Confirm your email";
+            string mailText = $"Please confirm your Kina Una account's email address by clicking this link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>";
+
+            if (language == "da")
+            {
+                mailTitle = "Bekræft email";
+                mailText = $"Bekræft venligst din email for din Kina Una konto ved at klikke på dette link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>";
+            }
+
+            if (language == "de")
+            {
+                mailTitle = "Bestätigen Sie Ihre E-Mail-Adresse";
+                mailText = $"Bestätigen Sie Ihre E-Mail-Adresse für Kina Una durch Klicken auf den Link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>";
+            }
+
+            return emailSender.SendEmailAsync(email, mailTitle, mailText);
         }
 
-        public static Task SendEmailUpdateConfirmationAsync(this IEmailSender emailSender, string email, string link)
+        public static Task SendEmailUpdateConfirmationAsync(this IEmailSender emailSender, string email, string link, string language = "en")
         {
-            return emailSender.SendEmailAsync(email, "Confirm your email",
-                $"Please confirm your account by clicking this link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>");
+            string mailTitle = "Confirm your email";
+            string mailText = $"Please confirm your Kina Una account's email address by clicking this link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>";
+
+            if (language == "da")
+            {
+                mailTitle = "Bekræft email";
+                mailText = $"Bekræft venligst din email for din Kina Una konto ved at klikke på dette link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>";
+            }
+
+            if (language == "de")
+            {
+                mailTitle = "Bestätigen Sie Ihre E-Mail-Adresse";
+                mailText = $"Bestätigen Sie Ihre E-Mail-Adresse für Kina Una durch Klicken auf den Link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>";
+            }
+
+            return emailSender.SendEmailAsync(email, mailTitle, mailText);
         }
 
         public static Task SendEmailInviteAsync(this IEmailSender emailSender, string email, string link, string inviter, string password)
