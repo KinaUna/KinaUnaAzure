@@ -20,7 +20,7 @@
     sortOldest = "btn btn-info btn-sm leavePage";
     sortNewest = "btn btn-primary btn-sm";
     <div>
-        Sort: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Neueste zuerst</span>
+        Sortieren: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Neueste zuerst</span>
               <a class="@sortOldest" asp-controller="Locations" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">Älteste zuerst</a>
     </div>
 }

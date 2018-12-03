@@ -67,13 +67,13 @@ else
                     });
                     lastNearby++;
                 }
-                $('#nearbyDiv').html('<div id="innerNearbyDiv" class><br/>' + nearbyList.length + ' other pictures within 50 meter:<br/></div>');
+                $('#nearbyDiv').html('<div id="innerNearbyDiv" class><br/>' + nearbyList.length + ' andere Bilder innerhalb von 50 Metern:<br/></div>');
                 if (lastNearby < nearbyList.length) {
                     $('#morePicturesButton').show();
 
                     if (lastNearby < nearbyList.length - 5) {
                         let numItems = nearbyList.length - lastNearby;
-                        $('#moreButton').prop('value', 'Show next ' + numItems + ' nearby pictures');
+                        $('#moreButton').prop('value', 'Nächste ' + numItems + ' Fotos in der Nähe anzeigen');
                     }
                 }
                 else {
@@ -236,7 +236,7 @@ else
         <div id="pictureDiv" style="width:100%; min-height: 375px; margin-left: 20px; margin-right: 20px;">
             <div class="card bg-primary" style="margin-top: 0; margin-bottom: 10px;">
                 <div class="card-body" style="background: rgba(50, 110, 190, 0.8)">
-                    <div class="info-title"><span style="font-size: 24px; color: white; margin-right: 15px;" class="far fa-images"></span><strong class="text-warning"> Click a Marker on the Map</strong></div>
+                    <div class="info-title"><span style="font-size: 24px; color: white; margin-right: 15px;" class="far fa-images"></span><strong class="text-warning"> Klicken Sie auf eine Markierung auf der Karte</strong></div>
                     <div align="center" class="img-rounded" style="overflow: hidden; max-width: 60vw; margin: 2px; margin-left: 46px; padding: 1px; width: 270px; height: 270px; background-color: #000000; text-align: center; line-height: 271px; display: inline-block; position: relative;">
                         <img src="https://web.kinauna.com/images/kinaunalogo192x192.png" style="max-height: 260px; max-width: 260px;">
 
@@ -247,7 +247,7 @@ else
         <div id="nearbyDiv" style="width:100%; margin-left: 20px; margin-right: 20px;">
             <div id="innerNearbyDiv"></div>
         </div>
-        <div id="morePicturesButton" style="display: none; width:100%; margin-left: 20px; margin-right: 20px;"><button id="moreButton" type="button" class="btn btn-default" onclick="getMoreNearbyPictures()">Show next 5 nearby pictures</button></div>
+        <div id="morePicturesButton" style="display: none; width:100%; margin-left: 20px; margin-right: 20px;"><button id="moreButton" type="button" class="btn btn-default" onclick="getMoreNearbyPictures()">Nächste 5 bilder in der Nähe anzeigen</button></div>
         <div style="margin-left: 20px; margin-right: 20px;">
             @{
                 if (!string.IsNullOrEmpty(Model.Tags))

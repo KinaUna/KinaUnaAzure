@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Register";
 }
-<br/>
+<br />
 <div class="container">
     <div class="row">
         <div class="col-md-10">
@@ -10,39 +10,83 @@
                 <h4>CREATE A NEW ACCOUNT</h4>
                 <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="form-group">
-                        <label>Email</label>
-                        <input asp-for="Email" class="form-control" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-sm-offset-6"></div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input asp-for="Password" class="form-control" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label>Confirm pasword</label>
-                        <input asp-for="ConfirmPassword" class="form-control" />
-                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label>Time Zone</label>
-                        <div>
-                            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="8" asp-for="TimeZone" asp-items="@Model.TimezoneList"></select>
-                        </div>
-                    </div>
-                <br />
+                    <label>Email</label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="form-group col-sm-offset-6"></div>
                 <div class="form-group">
-                    <input asp-for="Language" value="en" hidden="hidden" />
+                    <label>Password</label>
+                    <input asp-for="Password" class="form-control" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Confirm pasword</label>
+                    <input asp-for="ConfirmPassword" class="form-control" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Time Zone</label>
+                    <div>
+                        <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="8" asp-for="TimeZone" asp-items="@Model.TimezoneList"></select>
+                    </div>
+                </div>
+                <br />
+                <div class="form-check">
+                    <label class="form-check-label">
+                        <input id="agreeCheck" name="agreeCheck" class="form-check-input form-control" type="checkbox" value="">
+                        I agree to the terms listed below.
+                        <span class="form-check-sign">
+                            <span class="check"></span>
+                        </span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <input asp-for="Language" value="en" hidden="hidden" class="form-control"/>
                     <a class="btn btn-info leavePage" style="float: right;" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]">&nbsp;Back to Login&nbsp;</a>
-                    <button type="submit" class="btn btn-success leavePage">&nbsp;Register&nbsp;</button>
+                    <button id="registerBtn" type="submit" class="btn btn-success leavePage" disabled="disabled">&nbsp;Register&nbsp;</button>
                 </div>
 
             </form>
         </div>
     </div>
 </div>
+Learn how we collect, process, and use data and cookies in our <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a>.
+<div class="card">
+    <div class="card-body" style="background: lightyellow;">
+        <div class="card-title">Terms</div>
+        <div class="card-text">
+            <strong>Accounts</strong><br /><br />
+            When you create an account with KinaUna.com, you represent and warrant that you are above the age of 13, and that the information you provide us is accurate, complete, and current at all times.<br />
+            Inaccurate, incomplete, or obsolete information may result in the immediate termination of your account.<br />
+            You are responsible for maintaining the confidentiality of your account user name and password (collectively, “User Credentials”), including but not limited to the restriction of access to your computer and/or your account information.<br />
+            You agree to accept responsibility for any and all activities or actions that occur in connection with your User Credentials.<br />
+            You must notify us immediately upon becoming aware of any breach of the security or unauthorized use of your account or your User Credentials.<br />
+            <br /><br />
+            <strong>Content</strong><br /><br />
+            You are responsible for any and all user content that you post on KinaUna.com, including its legality, reliability, accuracy, and appropriateness.<br />
+            By posting content on or through KinaUna, you represent and warrant that:<br />
+            (1) you own such user content and/or that you have the right to use it, and<br />
+            (2) the posting of such user content on KinaUna.com does not violate any intellectual property or proprietary rights of any person or entity, including any privacy rights, publicity rights, copyrights, or any other contract rights.<br />
+            We reserve the right to terminate the account of anyone found to be infringing a third party’s intellectual property or other proprietary right.<br />
+            You retain any and all rights to any User Content you submit/post on KinaUna.com.<br />
+            We take no responsibility and assume no liability for user content you or any third party posts on KinaUna.com, or that is posted publicly as a result of your use of KinaUna.com.<br />
+            The extent to which your user content is available publicly is determined by the settings you choose as part of the submission of data. You are responsible for the ways in which your user content is published via KinaUna.com.<br />
+            KinaUna.com assumes no responsibility for how user content is shared by anyone not employed by KinaUna.com.
+            KinaUna.com has the right but not the obligation to monitor and edit all user content provided by you and any other user of KinaUna.com.<br />
+        </div>
+    </div>
+</div>
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }
+<script>
+    $("#agreeCheck").on('change', function () {
+        if (this.checked) {
+            $('#registerBtn').attr('disabled', false);
 
+        } else {
+            $("#registerBtn").attr('disabled', true);
+        }
+    });
+</script>
