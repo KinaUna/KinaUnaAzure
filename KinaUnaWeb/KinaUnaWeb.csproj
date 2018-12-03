@@ -527,6 +527,9 @@
     <Content Update="Views\Videos\Video.da.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Vocabulary\Index.de.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Vocabulary\Index.da.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
