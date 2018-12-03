@@ -110,16 +110,12 @@ namespace KinaUnaWeb.Controllers
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
-
-
-            Progeny newProgeny = new Progeny();
-            newProgeny.BirthDay = model.BirthDay;
-            newProgeny.Admins = model.Admins.ToUpper();
-            newProgeny.Name = model.Name;
-            newProgeny.NickName = model.NickName;
-            newProgeny.PictureLink = model.PictureLink;
-            newProgeny.Id = model.ProgenyId;
-            newProgeny.TimeZone = model.TimeZone;
+            
+            prog.BirthDay = model.BirthDay;
+            prog.Admins = model.Admins.ToUpper();
+            prog.Name = model.Name;
+            prog.NickName = model.NickName;
+            prog.TimeZone = model.TimeZone;
             // Todo: check if fields are valid.
 
             if (model.File != null && model.File.Name != String.Empty)
@@ -127,7 +123,7 @@ namespace KinaUnaWeb.Controllers
                 string oldPictureLink = prog.PictureLink;
                 using (var stream = model.File.OpenReadStream())
                 {
-                    newProgeny.PictureLink = await _imageStore.SaveImage(stream, "progeny");
+                    prog.PictureLink = await _imageStore.SaveImage(stream, "progeny");
                 }
 
                 if (!oldPictureLink.ToLower().StartsWith("http") && !String.IsNullOrEmpty(oldPictureLink))
@@ -135,7 +131,7 @@ namespace KinaUnaWeb.Controllers
                     await _imageStore.DeleteImage(oldPictureLink, "progeny");
                 }
             }
-            await _progenyHttpClient.UpdateProgeny(newProgeny);
+            await _progenyHttpClient.UpdateProgeny(prog);
             return RedirectToAction("Index");
         }
 
