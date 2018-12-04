@@ -70,13 +70,13 @@
     @if (Model.VidTimeValid)
     {
     <div style="font-size: 16px; line-height: 90%;">
-        <p>Dieses Video ist vom: @ViewBag.PicTime</p>
-        <p>@Model.Progeny.NickName war @ViewBag.PicYears Jahre alt.</p>
-        <p>@Model.Progeny.NickName war @ViewBag.PicMonths Monate alt.</p>
-        <p>@Model.Progeny.NickName war @ViewBag.PicWeeks[0] Wochen und @ViewBag.PicWeeks[1] Tage alt.</p>
-        <p>@Model.Progeny.NickName war @ViewBag.PicDays Tage alt.</p>
-        <p>@Model.Progeny.NickName war @ViewBag.PicHours Stunden alt.</p>
-        <p>@Model.Progeny.NickName war @ViewBag.PicMinutes Minuten alt.</p>
+        <p>Dieses Video ist vom: @Model.VidTime</p>
+        <p>@Model.Progeny.NickName war @Model.VidYears Jahre alt.</p>
+        <p>@Model.Progeny.NickName war @Model.VidMonths Monate alt.</p>
+        <p>@Model.Progeny.NickName war @Model.VidWeeks[0] Wochen und @Model.VidWeeks[1] Tage alt.</p>
+        <p>@Model.Progeny.NickName war @Model.VidDays Tage alt.</p>
+        <p>@Model.Progeny.NickName war @Model.VidHours Stunden alt.</p>
+        <p>@Model.Progeny.NickName war @Model.VidMinutes Minuten alt.</p>
     </div>
         <br />
     }
