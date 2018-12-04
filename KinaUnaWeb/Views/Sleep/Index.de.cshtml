@@ -114,7 +114,7 @@ else
     <div class="row">
         <br />
         <div class="container">
-            <div class="col-6" style="margin-right: auto; margin-left: auto; margin-top: 30px;">Ziehen Sie die Kreise oben, um das Start- und Enddatum des Diagramms zu ändern.</div>
+            <div class="col-6" style="margin-right: auto; margin-left: auto; margin-top: 30px;">Ziehen Sie die Kreise oben, um das Anfang- und Enddatum des Diagramms zu ändern.</div>
         </div>
     </div>
     <br />
@@ -217,9 +217,9 @@ else
                     function() {
                         var pos = $(document).scrollTop();
                         $('#sliderStartVal')
-                            .text("Start: " + moment(slider.noUiSlider.get()[0], "x").format("dddd, DD-MMM-YYYY"));
+                            .text("Anfang: " + moment(slider.noUiSlider.get()[0], "x").format("dddd, DD-MMM-YYYY"));
                         $('#sliderEndVal')
-                            .text("Slut: " + moment(slider.noUiSlider.get()[1], "x").format("dddd, DD-MMM-YYYY"));
+                            .text("Ende: " + moment(slider.noUiSlider.get()[1], "x").format("dddd, DD-MMM-YYYY"));
                         document.getElementById("chartDiv").innerHTML = '&nbsp;';
                         document.getElementById("chartDiv").innerHTML = '<canvas id="chartContainer"></canvas>';
                         var slpChart = document.getElementById("chartContainer").getContext("2d");

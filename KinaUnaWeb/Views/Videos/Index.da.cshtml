@@ -84,7 +84,7 @@
     else
     {
         <div>
-            Sort: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Ældste først</span>
+            Sorter: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Ældste først</span>
             <a class="@sortNewest" asp-controller="Videos" asp-action="Index" asp-route-id="@newPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@Model.TagFilter">Nyeste først</a>
         </div>
     }

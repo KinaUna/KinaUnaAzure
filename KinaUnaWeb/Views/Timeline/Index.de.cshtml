@@ -18,14 +18,14 @@
     sortOldest = "btn btn-info btn-sm";
     sortNewest = "btn btn-primary btn-sm";
     <div>
-        Sort: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Neueste zuerst</span>
+        Sortieren: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Neueste zuerst</span>
         <a class="@sortOldest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="0">Älteste zuerst</a>
     </div>
 }
 else
 {
     <div>
-        Sort: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Älteste zuerst</span>
+        Sortieren: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Älteste zuerst</span>
         <a class="@sortNewest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="1">Neueste zuerst</a>
     </div>
 }

@@ -13,7 +13,7 @@
         </div>
     </div>
 }
-<h3 class="title">@Model.Progeny.NickName's video album - side @Model.PageNumber af @Model.TotalPages</h3>
+<h3 class="title">@Model.Progeny.NickName's Video Gallerie - Seite @Model.PageNumber von @Model.TotalPages</h3>
 <br style="clear: both;" />
 <div id="photoListDiv">
     @{
@@ -30,7 +30,7 @@
         if (Model.SortBy == 1)
         {
             viewPrevText = "Neuer";
-            viewNextText = "Ældre";
+            viewNextText = "Älter";
             if (Model.PageNumber == 1)
             {
                 viewPrevText = "Erste";
@@ -77,14 +77,14 @@
         sortOldest = "btn btn-info btn-sm leavePage";
         sortNewest = "btn btn-primary btn-sm";
         <div>
-            Sorter: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Neueste zuerst</span>
+            Sortieren: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Neueste zuerst</span>
             <a class="@sortOldest" asp-controller="Videos" asp-action="Index" asp-route-id="@newPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">Älteste zuerst</a>
         </div>
     }
     else
     {
         <div>
-            Sort: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Älteste zuerst</span>
+            Sortieren: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Älteste zuerst</span>
             <a class="@sortNewest" asp-controller="Videos" asp-action="Index" asp-route-id="@newPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@Model.TagFilter">Neueste zuerst</a>
         </div>
     }
