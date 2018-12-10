@@ -89,6 +89,7 @@ namespace KinaUna.IDP
             var webServerAzureUrl = configuration.GetValue<string>("WebServerAzure");
             var webServerLocal = configuration.GetValue<string>("WebServerLocal");
             var secretString = configuration.GetValue<string>("SecretString");
+            var xamarinString = "https://auth.kinauna.com";
             List<string> corsList = new List<string>();
             corsList.Add("https://web.kinauna.com");
             corsList.Add("https://auth.kinauna.com");
@@ -241,6 +242,41 @@ namespace KinaUna.IDP
                     {
                         new Secret(secretString.Sha256())
                     }
+                },
+                new Client
+                {
+                    ClientName = "KinaUnaXamarin",
+                    ClientId = "kinaunaxamarin",
+                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
+                    RedirectUris = {"kinaunaxamarinclients://callback"},
+                    PostLogoutRedirectUris = {"kinaunaxamarinclients://callback"},
+                    RequireClientSecret = false,
+                    RequireConsent = false,
+                    RequirePkce = true,
+                    AllowedScopes = {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.OfflineAccess,
+                        IdentityServerConstants.StandardScopes.Address,
+                        IdentityServerConstants.StandardScopes.Email,
+                        IdentityServerConstants.StandardScopes.Phone,
+                        "firstname",
+                        "middlename",
+                        "lastname",
+                        "roles",
+                        "timezone",
+                        "viewchild",
+                        "joindate",
+                        "kinaunaprogenyapi",
+                        "kinaunamediaapi"
+                    },
+                    AccessTokenLifetime = 2592000,
+                    AllowOfflineAccess = true,
+                    AlwaysIncludeUserClaimsInIdToken = false,
+                    RefreshTokenExpiration = TokenExpiration.Sliding,
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    RefreshTokenUsage = TokenUsage.ReUse
+                    
                 }
             };
 
