@@ -32,7 +32,6 @@ namespace KinaUnaWeb.Services
         {
             var client = new DiscoveryClient(_configuration.GetValue<string>("AuthenticationServer"));
             var doc = await client.GetAsync();
-            var result = doc.TokenEndpoint;
             var tokenClient = new TokenClient(doc.TokenEndpoint,
                 _configuration.GetValue<string>("AuthenticationServerClientId"),
                 _configuration.GetValue<string>("AuthenticationServerClientSecret"));

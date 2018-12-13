@@ -673,6 +673,46 @@ namespace KinaUnaMediaApi.Controllers
         }
 
         [HttpGet]
+        [Route("[action]/{progenyId}/{accessLevel}")]
+        public async Task<IActionResult> RandomMobile(int progenyId, int accessLevel)
+        {
+            List<Picture> picturesList = await _context.PicturesDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel).ToListAsync();
+            if (picturesList.Any())
+            {
+                int pictureNumber = 0;
+                Random r = new Random();
+                pictureNumber = r.Next(0, picturesList.Count);
+
+                Picture picture = picturesList[pictureNumber];
+                if (!picture.PictureLink.ToLower().StartsWith("http"))
+                {
+                    picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
+                    picture.PictureLink1200 = _imageStore.UriFor(picture.PictureLink1200);
+                    picture.PictureLink600 = _imageStore.UriFor(picture.PictureLink600);
+                }
+                
+                return Ok(picture);
+            }
+
+            Progeny progeny = new Progeny();
+            progeny.Name = "Kina Una";
+            progeny.Admins = "per.mogensen@live.com";
+            progeny.NickName = "Kina Una";
+            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+
+            progeny.Id = 0;
+            progeny.TimeZone = "Romance Standard Time";
+            Picture tempPicture = new Picture();
+            tempPicture.ProgenyId = 0;
+            tempPicture.Progeny = progeny;
+            tempPicture.AccessLevel = 5;
+            tempPicture.PictureLink600 = "https://web.kinauna.com" + "/photodb/0/default_temp.jpg";
+            tempPicture.ProgenyId = progeny.Id;
+            tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
+            return Ok(tempPicture);
+        }
+
+        [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()
         {

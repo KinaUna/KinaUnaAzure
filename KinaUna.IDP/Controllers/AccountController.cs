@@ -237,7 +237,10 @@ namespace KinaUna.IDP.Controllers
 
             // get context information (client name, post logout redirect URI and iframe for federated signout)
             var logout = await _interaction.GetLogoutContextAsync(model.LogoutId);
-
+            if (logout.PostLogoutRedirectUri == null)
+            {
+                logout.PostLogoutRedirectUri = "https://web.kinauna.com";
+            }
             return Redirect(logout?.PostLogoutRedirectUri);
         }
 
