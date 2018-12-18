@@ -134,6 +134,17 @@ namespace KinaUnaProgenyApi.Controllers
             }
         }
 
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetFriendMobile(int id)
+        {
+            Friend result = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
+            if (!result.PictureLink.ToLower().StartsWith("http"))
+            {
+                result.PictureLink = _imageStore.UriFor(result.PictureLink, "friends");
+            }
+            return Ok(result);
+        }
+
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()

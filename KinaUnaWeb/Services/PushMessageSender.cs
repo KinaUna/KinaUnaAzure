@@ -41,20 +41,28 @@ namespace KinaUnaWeb.Services
                 {
                     var pushSubscription = new PushSubscription(dev.PushEndpoint, dev.PushP256DH, dev.PushAuth);
                     var vapidDetails = new VapidDetails("mailto:support@kinauna.com", vapidPublicKey, vapidPrivateKey);
-
-                    var webPushClient = new WebPushClient();
-                    try
+                    if (String.IsNullOrEmpty(dev.PushAuth) || String.IsNullOrEmpty(dev.PushEndpoint))
                     {
-                        webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
+                        _context.PushDevices.Remove(dev);
+                        await _context.SaveChangesAsync();
                     }
-                    catch (WebPushException ex)
+                    else
                     {
-                        if (ex.Message == "Subscription no longer valid")
+                        var webPushClient = new WebPushClient();
+                        try
                         {
-                            _context.PushDevices.Remove(dev);
-                            await _context.SaveChangesAsync();
+                            webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
+                        }
+                        catch (WebPushException ex)
+                        {
+                            if (ex.Message == "Subscription no longer valid")
+                            {
+                                _context.PushDevices.Remove(dev);
+                                await _context.SaveChangesAsync();
+                            }
                         }
                     }
+                    
                 }
             }
             

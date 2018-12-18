@@ -712,6 +712,40 @@ namespace KinaUnaMediaApi.Controllers
             return Ok(tempPicture);
         }
 
+        // GET api/pictures/5
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetPictureMobile(int id)
+        {
+            Picture result = await _context.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == id);
+            if (result != null)
+            {
+                if (!result.PictureLink.ToLower().StartsWith("http"))
+                {
+                    result.PictureLink = _imageStore.UriFor(result.PictureLink);
+                    result.PictureLink1200 = _imageStore.UriFor(result.PictureLink1200);
+                    result.PictureLink600 = _imageStore.UriFor(result.PictureLink600);
+                }
+                return Ok(result);
+            }
+
+            Progeny progeny = new Progeny();
+            progeny.Name = "Kina Una";
+            progeny.Admins = "per.mogensen@live.com";
+            progeny.NickName = "Kina Una";
+            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+
+            progeny.Id = 0;
+            progeny.TimeZone = "Romance Standard Time";
+            Picture tempPicture = new Picture();
+            tempPicture.ProgenyId = 0;
+            tempPicture.Progeny = progeny;
+            tempPicture.AccessLevel = 5;
+            tempPicture.PictureLink600 = $"https://{this.Request.Host}{this.Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.ProgenyId = progeny.Id;
+            tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
+
+            return Ok(tempPicture);
+        }
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()

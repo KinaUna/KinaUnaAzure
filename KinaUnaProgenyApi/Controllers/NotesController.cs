@@ -121,6 +121,13 @@ namespace KinaUnaProgenyApi.Controllers
             }
         }
 
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetNoteMobile(int id)
+        {
+            Note result = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
+
+            return Ok(result);
+        }
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()

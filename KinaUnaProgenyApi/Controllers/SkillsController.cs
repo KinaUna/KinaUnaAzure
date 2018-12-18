@@ -123,6 +123,14 @@ namespace KinaUnaProgenyApi.Controllers
             }
         }
 
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetSkillMobile(int id)
+        {
+            Skill result = await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == id);
+
+            return Ok(result);
+        }
+
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()

@@ -81,13 +81,9 @@ function initialiseState(reg) {
 
 function unsubscribe() {
     navigator.serviceWorker.ready.then(function (reg) {
-        var subscribeParams = { userVisibleOnly: true };
-
-        //Setting the public key of our VAPID key pair.
-        var applicationServerKey = urlB64ToUint8Array(applicationServerPublicKey);
-        subscribeParams.applicationServerKey = applicationServerKey;
-
-        reg.pushManager.unsubscribe();
+        reg.pushManager.getSubscription().then(function(subscription) {
+            subscription.unsubscribe();
+        });
         return true;
     });
 }

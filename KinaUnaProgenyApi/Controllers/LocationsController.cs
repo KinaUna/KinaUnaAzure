@@ -143,6 +143,15 @@ namespace KinaUnaProgenyApi.Controllers
             }
         }
 
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetLocationMobile(int id)
+        {
+            Location result = await _context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == id);
+
+            return Ok(result);
+        }
+
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()

@@ -125,6 +125,14 @@ namespace KinaUnaProgenyApi.Controllers
             }
         }
 
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetItemMobile(int id)
+        {
+            VocabularyItem result = await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == id);
+
+            return Ok(result);
+        }
+
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()

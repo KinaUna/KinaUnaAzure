@@ -59,6 +59,17 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> Mobile(int id)
+        {
+            Progeny result = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
+            if (!result.PictureLink.ToLower().StartsWith("http"))
+            {
+                result.PictureLink = _imageStore.UriFor(result.PictureLink, "progeny");
+            }
+            return Ok(result);
+        }
+
         // POST api/progeny
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Progeny value)

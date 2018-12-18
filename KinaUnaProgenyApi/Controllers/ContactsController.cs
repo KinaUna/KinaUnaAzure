@@ -151,6 +151,17 @@ namespace KinaUnaProgenyApi.Controllers
             }
         }
 
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetContactMobile(int id)
+        {
+            Contact result = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
+            if (!result.PictureLink.ToLower().StartsWith("http"))
+            {
+                result.PictureLink = _imageStore.UriFor(result.PictureLink, "contacts");
+            }
+            return Ok(result);
+        }
+
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()

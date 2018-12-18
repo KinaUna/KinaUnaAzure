@@ -140,6 +140,14 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetItemMobile(int id)
+        {
+            CalendarItem result = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == id);
+
+            return Ok(result);
+        }
+
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()

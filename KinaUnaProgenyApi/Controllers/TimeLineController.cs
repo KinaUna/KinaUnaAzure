@@ -48,7 +48,25 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                return NotFound();
+                return Ok(new List<TimeLineItem>());
+            }
+
+        }
+
+        [HttpGet]
+        [Route("[action]/{id}/{accessLevel}/{count}/{start}")]
+        public async Task<IActionResult> ProgenyLatest(int id, int accessLevel = 5, int count = 5, int start =0)
+        {
+            List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == id && t.AccessLevel >= accessLevel && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime).ToListAsync();
+            if (timeLineList.Any())
+            {
+                timeLineList.Reverse();
+
+                return Ok(timeLineList.Skip(start).Take(count));
+            }
+            else
+            {
+                return Ok(new List<TimeLineItem>());
             }
 
         }

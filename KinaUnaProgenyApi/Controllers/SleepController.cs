@@ -123,6 +123,14 @@ namespace KinaUnaProgenyApi.Controllers
             }
         }
 
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetSleepMobile(int id)
+        {
+            Sleep result = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == id);
+
+            return Ok(result);
+        }
+
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()

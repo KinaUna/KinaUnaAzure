@@ -108,8 +108,11 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var devices = await _context.PushDevices.SingleOrDefaultAsync(m => m.Id == id);
-            _context.PushDevices.Remove(devices);
-            await _context.SaveChangesAsync();
+            if (devices != null)
+            {
+                _context.PushDevices.Remove(devices);
+                await _context.SaveChangesAsync();
+            }
             return RedirectToAction(nameof(Index));
         }
 
@@ -118,8 +121,12 @@ namespace KinaUnaWeb.Controllers
         {
             string userId = HttpContext.User.FindFirst("sub").Value;
             PushDevices deleteDevice = await _context.PushDevices.SingleOrDefaultAsync(p => p.Name == device.Name && p.PushP256DH == device.PushP256DH);
-            _context.PushDevices.Remove(deleteDevice);
-            await _context.SaveChangesAsync();
+            if (deleteDevice != null)
+            {
+                _context.PushDevices.Remove(deleteDevice);
+                await _context.SaveChangesAsync();
+            }
+           
             return RedirectToAction("MyAccount", "Account");
         }
     }

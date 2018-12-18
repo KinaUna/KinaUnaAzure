@@ -345,7 +345,14 @@ namespace KinaUnaMediaApi.Controllers
 
         }
 
-        
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetVideoMobile(int id)
+        {
+            Video result = await _context.VideoDb.SingleOrDefaultAsync(v => v.VideoId == id);
+
+            return Ok(result);
+        }
+
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()
