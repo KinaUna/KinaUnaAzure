@@ -88,7 +88,7 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
-        public async Task<IActionResult> LogOut()
+        public async Task LogOut()
         {
             // Clears the local cookie.
             // await HttpContext.SignOutAsync("Cookie");
@@ -97,13 +97,13 @@ namespace KinaUnaWeb.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
 
-
-            var homeUrl = Url.Action(nameof(HomeController.Index), "Home");
-            return new SignOutResult(OpenIdConnectDefaults.AuthenticationScheme,
-                new Microsoft.AspNetCore.Authentication.AuthenticationProperties { RedirectUri = homeUrl });
+            
+            //var homeUrl = Url.Action(nameof(HomeController.Index), "Home");
+            //return new SignOutResult(OpenIdConnectDefaults.AuthenticationScheme,
+            //    new Microsoft.AspNetCore.Authentication.AuthenticationProperties { RedirectUri = homeUrl });
         }
 
-        public async Task<IActionResult> CheckOut(string returnUrl = null)
+        public async Task CheckOut(string returnUrl = null)
         {
             // Clears the local cookie.
             // await HttpContext.SignOutAsync("Cookie");
@@ -113,9 +113,9 @@ namespace KinaUnaWeb.Controllers
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
 
 
-            var homeUrl = Url.Action(nameof(HomeController.Index), "Home");
-            return new SignOutResult(OpenIdConnectDefaults.AuthenticationScheme,
-                new Microsoft.AspNetCore.Authentication.AuthenticationProperties { RedirectUri = returnUrl });
+            //var homeUrl = Url.Action(nameof(HomeController.Index), "Home");
+            //return new SignOutResult(OpenIdConnectDefaults.AuthenticationScheme,
+            //    new Microsoft.AspNetCore.Authentication.AuthenticationProperties { RedirectUri = returnUrl });
         }
 
         public IActionResult AccessDenied()

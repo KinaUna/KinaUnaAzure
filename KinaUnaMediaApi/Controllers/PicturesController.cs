@@ -121,6 +121,7 @@ namespace KinaUnaMediaApi.Controllers
 
             return Ok(model);
         }
+
         [HttpGet]
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> PictureViewModel(int id, int accessLevel, [FromQuery] int sortBy = 1)
@@ -746,6 +747,97 @@ namespace KinaUnaMediaApi.Controllers
 
             return Ok(tempPicture);
         }
+
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<IActionResult> PageMobile([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = 2, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
+
+        {
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<Picture> allItems = new List<Picture>();
+            if (tagFilter != "")
+            {
+                allItems = await _context.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToListAsync();
+            }
+            else
+            {
+                allItems = await _context.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToListAsync();
+            }
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int pictureCounter = 1;
+            int picCount = allItems.Count;
+            List<string> tagsList = new List<string>();
+            foreach (Picture pic in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    pic.PictureNumber = picCount - pictureCounter + 1;
+                }
+                else
+                {
+                    pic.PictureNumber = pictureCounter;
+                }
+
+                pictureCounter++;
+                if (!String.IsNullOrEmpty(pic.Tags))
+                {
+                    List<string> pvmTags = pic.Tags.Split(',').ToList();
+                    foreach (string tagstring in pvmTags)
+                    {
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                        {
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                        }
+                    }
+                }
+            }
+
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            foreach (Picture pic in itemsOnPage)
+            {
+                pic.Comments = await _context.CommentsDb.AsNoTracking().Where(c => c.CommentThreadNumber == pic.CommentThreadNumber).ToListAsync();
+                if (!pic.PictureLink.ToLower().StartsWith("http"))
+                {
+                    pic.PictureLink = _imageStore.UriFor(pic.PictureLink);
+                }
+                if (!pic.PictureLink1200.ToLower().StartsWith("http"))
+                {
+                    pic.PictureLink1200 = _imageStore.UriFor(pic.PictureLink1200);
+                }
+                if (!pic.PictureLink600.ToLower().StartsWith("http"))
+                {
+                    pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
+                }
+            }
+            PicturePageViewModel model = new PicturePageViewModel();
+            model.PicturesList = itemsOnPage;
+            model.TotalPages = (int)Math.Ceiling((double)(allItems.Count / (double)pageSize));
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+            model.TagFilter = tagFilter;
+            string tList = "";
+            foreach (string tstr in tagsList)
+            {
+                tList = tList + tstr + ",";
+            }
+            model.TagsList = tList.TrimEnd(',');
+
+            return Ok(model);
+        }
+
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()

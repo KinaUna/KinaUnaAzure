@@ -239,9 +239,10 @@ namespace KinaUna.IDP.Controllers
             var logout = await _interaction.GetLogoutContextAsync(model.LogoutId);
             if (logout.PostLogoutRedirectUri == null)
             {
-                logout.PostLogoutRedirectUri = "https://web.kinauna.com";
+                logout.PostLogoutRedirectUri = "/";
             }
             return Redirect(logout?.PostLogoutRedirectUri);
+            
         }
 
         public async Task<IActionResult> DeviceLogOut(string redirectUrl)

@@ -355,6 +355,103 @@ namespace KinaUnaMediaApi.Controllers
 
         [HttpGet]
         [Route("[action]")]
+        public async Task<IActionResult> PageMobile([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = 2, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
+
+        {
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<Video> allItems = new List<Video>();
+            if (tagFilter != "")
+            {
+                allItems = await _context.VideoDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToListAsync();
+            }
+            else
+            {
+                allItems = await _context.VideoDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToListAsync();
+            }
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int videoCounter = 1;
+            int vidCount = allItems.Count;
+            List<string> tagsList = new List<string>();
+            foreach (Video vid in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    vid.VideoNumber = vidCount - videoCounter + 1;
+                }
+                else
+                {
+                    vid.VideoNumber = videoCounter;
+                }
+
+                videoCounter++;
+                if (!String.IsNullOrEmpty(vid.Tags))
+                {
+                    List<string> pvmTags = vid.Tags.Split(',').ToList();
+                    foreach (string tagstring in pvmTags)
+                    {
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                        {
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                        }
+                    }
+                }
+
+                if (vid.Duration != null)
+                {
+                    vid.DurationHours = vid.Duration.Value.Hours.ToString();
+                    vid.DurationMinutes = vid.Duration.Value.Minutes.ToString();
+                    vid.DurationSeconds = vid.Duration.Value.Seconds.ToString();
+                    if (vid.DurationSeconds.Length == 1)
+                    {
+                        vid.DurationSeconds = "0" + vid.DurationSeconds;
+                    }
+                    if (vid.Duration.Value.Hours != 0)
+                    {
+                        if (vid.DurationMinutes.Length == 1)
+                        {
+                            vid.DurationMinutes = "0" + vid.DurationMinutes;
+                        }
+
+                    }
+                }
+            }
+
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            foreach (Video vid in itemsOnPage)
+            {
+                vid.Comments = await _context.CommentsDb.Where(c => c.CommentThreadNumber == vid.CommentThreadNumber).ToListAsync();
+            }
+            VideoPageViewModel model = new VideoPageViewModel();
+            model.VideosList = itemsOnPage;
+            model.TotalPages = (int)Math.Ceiling((double)(allItems.Count / (double)pageSize));
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+            model.TagFilter = tagFilter;
+            string tList = "";
+            foreach (string tstr in tagsList)
+            {
+                tList = tList + tstr + ",";
+            }
+            model.TagsList = tList.TrimEnd(',');
+
+            return Ok(model);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
         public async Task<IActionResult> SyncAll()
         {
 

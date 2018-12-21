@@ -163,6 +163,29 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
+        [Route("[action]/{id}/{accessLevel}")]
+        public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
+        {
+            List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == id && c.AccessLevel >= accessLevel).ToListAsync();
+            if (contactsList.Any())
+            {
+                foreach (Contact cont in contactsList)
+                {
+                    if (!cont.PictureLink.ToLower().StartsWith("http"))
+                    {
+                        cont.PictureLink = _imageStore.UriFor(cont.PictureLink, "contacts");
+                    }
+                }
+                return Ok(contactsList);
+            }
+            else
+            {
+                return Ok(new List<Contact>());
+            }
+
+        }
+
+        [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()
         {

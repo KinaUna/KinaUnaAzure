@@ -155,7 +155,7 @@ namespace KinaUnaWeb.Controllers
                 ContactViewModel c = new ContactViewModel();
                 c.ProgenyId = _progId;
                 c.DisplayName = "No friends found.";
-                c.PictureLink = "http://kinauna.com/photodb/profile.jpg";
+                c.PictureLink = "https://web.kinauna.com/photodb/profile.jpg";
                 c.IsAdmin = _userIsProgenyAdmin;
                 model.Add(c);
             }

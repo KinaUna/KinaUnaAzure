@@ -1,0 +1,277 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using KinaUnaProgenyApi.Data;
+using KinaUnaProgenyApi.Models;
+using KinaUnaProgenyApi.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace KinaUnaProgenyApi.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    [AllowAnonymous]
+    public class PublicAccessController : ControllerBase
+    {
+        private readonly ProgenyDbContext _context;
+        private readonly ImageStore _imageStore;
+
+        public PublicAccessController(ProgenyDbContext context, ImageStore imageStore)
+        {
+            _context = context;
+            _imageStore = imageStore;
+
+        }
+        // GET api/publicaccess
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            List<Progeny> resultList = await _context.ProgenyDb.AsNoTracking().Where(p => p.Id == 2).ToListAsync();
+            return Ok(resultList);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProgeny(int id)
+        {
+            Progeny result = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == 2);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("[action]/{id}")]
+        public async Task<IActionResult> Access(int id)
+        {
+            List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == 2).ToListAsync();
+            if (accessList.Any())
+            {
+                foreach (UserAccess ua in accessList)
+                {
+                    ua.Progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == ua.ProgenyId);
+                    ua.User = new ApplicationUser();
+                    UserInfo userinfo =
+                        await _context.UserInfoDb.SingleOrDefaultAsync(
+                            u => u.UserEmail.ToUpper() == ua.UserId.ToUpper());
+                    if (userinfo != null)
+                    {
+                        ua.User.FirstName = userinfo.FirstName;
+                        ua.User.MiddleName = userinfo.MiddleName;
+                        ua.User.LastName = userinfo.LastName;
+                        ua.User.UserName = userinfo.UserName;
+                    }
+
+                    ua.User.Email = ua.UserId;
+
+                }
+                return Ok(accessList);
+            }
+            else
+            {
+                return NotFound();
+            }
+
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> ProgenyListByUser(string id)
+        {
+            List<Progeny> result = new List<Progeny>();
+            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == 2);
+            result.Add(prog);
+            return Ok(result);
+            
+        }
+
+        [HttpGet]
+        [Route("[action]/{progenyId}/{accessLevel}")]
+        public async Task<IActionResult> EventList(int progenyId, int accessLevel)
+        {
+            List<CalendarItem> model = new List<CalendarItem>();
+            model = await _context.CalendarDb
+                .Where(e => e.ProgenyId == 2 && e.EndTime > DateTime.UtcNow && e.AccessLevel >= 5).ToListAsync();
+            model = model.OrderBy(e => e.StartTime).ToList();
+            model = model.Take(5).ToList();
+
+            return Ok(model);
+        }
+
+        [HttpGet]
+        [Route("[action]/{id}/{accessLevel}/{count}/{start}")]
+        public async Task<IActionResult> ProgenyLatest(int id, int accessLevel = 5, int count = 5, int start = 0)
+        {
+            List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == 2 && t.AccessLevel >= 5 && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime).ToListAsync();
+            if (timeLineList.Any())
+            {
+                timeLineList.Reverse();
+
+                return Ok(timeLineList.Skip(start).Take(count));
+            }
+            else
+            {
+                return Ok(new List<TimeLineItem>());
+            }
+
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetCalendarItemMobile(int id)
+        {
+            CalendarItem result = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == id);
+            if (result.ProgenyId == 2)
+            {
+                return Ok(result);
+            }
+            result = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == 50);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("[action]/{id}/{accessLevel}")]
+        public async Task<IActionResult> ProgenyCalendarMobile(int id, int accessLevel = 5)
+        {
+            List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == 2 && c.AccessLevel >= 5).ToListAsync();
+            if (calendarList.Any())
+            {
+                return Ok(calendarList);
+            }
+            else
+            {
+                return NotFound();
+            }
+
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetContactMobile(int id)
+        {
+            Contact result = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
+            if (result.ProgenyId != 2)
+            {
+                result = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == 9);
+            }
+            if (!result.PictureLink.ToLower().StartsWith("http"))
+            {
+                result.PictureLink = _imageStore.UriFor(result.PictureLink, "contacts");
+            }
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("[action]/{id}/{accessLevel}")]
+        public async Task<IActionResult> ProgenyContactsMobile(int id, int accessLevel = 5)
+        {
+            List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == 2 && c.AccessLevel >= 5).ToListAsync();
+            if (contactsList.Any())
+            {
+                foreach (Contact cont in contactsList)
+                {
+                    if (!cont.PictureLink.ToLower().StartsWith("http"))
+                    {
+                        cont.PictureLink = _imageStore.UriFor(cont.PictureLink, "contacts");
+                    }
+                }
+                return Ok(contactsList);
+            }
+            else
+            {
+                return Ok(new List<Contact>());
+            }
+
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetLocationMobile(int id)
+        {
+            Location result = await _context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == id);
+            if (result.ProgenyId != 2)
+            {
+                result = await _context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == 12);
+            }
+            return Ok(result);
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetVocabularyItemMobile(int id)
+        {
+            VocabularyItem result = await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == id);
+            if (result.ProgenyId != 2)
+            {
+                result = await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == 45);
+            }
+            return Ok(result);
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetSkillMobile(int id)
+        {
+            Skill result = await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == id);
+            if (result.ProgenyId != 2)
+            {
+                result = await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == 18);
+            }
+            return Ok(result);
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetFriendMobile(int id)
+        {
+            Friend result = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
+            if (result.ProgenyId != 2)
+            {
+                result = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == 25);
+            }
+            if (!result.PictureLink.ToLower().StartsWith("http"))
+            {
+                result.PictureLink = _imageStore.UriFor(result.PictureLink, "friends");
+            }
+            return Ok(result);
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetMeasurementMobile(int id)
+        {
+            Measurement result = await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
+            if (result.ProgenyId != 2)
+            {
+                result = await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == 10);
+            }
+            return Ok(result);
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetSleepMobile(int id)
+        {
+            Sleep result = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == id);
+            if (result.ProgenyId != 2)
+            {
+                result = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == 591);
+            }
+            return Ok(result);
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetNoteMobile(int id)
+        {
+            Note result = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
+            if (result.ProgenyId != 2)
+            {
+                result = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == 50);
+            }
+            return Ok(result);
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetVaccinationMobile(int id)
+        {
+            Vaccination result = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
+            if (result.ProgenyId != 2)
+            {
+                result = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == 8);
+            }
+            return Ok(result);
+        }
+    }
+}

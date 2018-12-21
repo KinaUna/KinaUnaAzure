@@ -149,6 +149,22 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
+        [Route("[action]/{id}/{accessLevel}")]
+        public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
+        {
+            List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == id && c.AccessLevel >= accessLevel).ToListAsync();
+            if (calendarList.Any())
+            {
+                return Ok(calendarList);
+            }
+            else
+            {
+                return NotFound();
+            }
+
+        }
+
+        [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()
         {
