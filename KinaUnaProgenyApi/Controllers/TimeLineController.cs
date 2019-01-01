@@ -141,6 +141,34 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
+        [Route("[action]/{id}/{accessLevel}/{count}/{start}/{year}/{month}/{day}")]
+        public async Task<IActionResult> ProgenyLatestMobile(int id, int accessLevel = 5, int count = 5, int start = 0, int year = 0, int month = 0, int day = 0)
+        {
+            DateTime startDate;
+            if (year != 0 && month != 0 && day != 0)
+            {
+                startDate = new DateTime(year, month, day, 23, 59, 59, DateTimeKind.Utc);
+               
+            }
+            else
+            {
+                startDate = DateTime.UtcNow;
+            }
+            List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == id && t.AccessLevel >= accessLevel && t.ProgenyTime < startDate).OrderBy(t => t.ProgenyTime).ToListAsync();
+            if (timeLineList.Any())
+            {
+                timeLineList.Reverse();
+
+                return Ok(timeLineList.Skip(start).Take(count));
+            }
+            else
+            {
+                return Ok(new List<TimeLineItem>());
+            }
+
+        }
+
+        [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> SyncAll()
         {

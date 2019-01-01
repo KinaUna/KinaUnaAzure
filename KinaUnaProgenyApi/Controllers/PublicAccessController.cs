@@ -38,6 +38,10 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetProgeny(int id)
         {
             Progeny result = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == 2);
+            if (!result.PictureLink.ToLower().StartsWith("http"))
+            {
+                result.PictureLink = _imageStore.UriFor(result.PictureLink, "progeny");
+            }
             return Ok(result);
         }
 
@@ -250,6 +254,159 @@ namespace KinaUnaProgenyApi.Controllers
                 result = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == 591);
             }
             return Ok(result);
+        }
+
+        [HttpGet]
+        [Route("[action]/{progenyId}/{accessLevel}/{start}")]
+        public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
+        {
+            List<Sleep> model = new List<Sleep>();
+            model = await _context.SleepDb
+                .Where(s => s.ProgenyId == 2 && s.AccessLevel >= 5).ToListAsync();
+
+            model = model.OrderByDescending(s => s.SleepStart).ToList();
+            model = model.Skip(start).Take(25).ToList();
+            return Ok(model);
+        }
+
+        [HttpGet("[action]/{progenyId}/{accessLevel}")]
+        public async Task<IActionResult> GetSleepStatsMobile(int progenyId, int accessLevel)
+        {
+            string userTimeZone = "Romance Standard Time";
+            SleepStatsModel model = new SleepStatsModel();
+            model.SleepTotal = TimeSpan.Zero;
+            model.SleepLastYear = TimeSpan.Zero;
+            model.SleepLastMonth = TimeSpan.Zero;
+            List<Sleep> sList = _context.SleepDb.Where(s => s.ProgenyId == 2).ToList();
+            List<Sleep> sleepList = new List<Sleep>();
+            DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
+            DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
+            if (sList.Count != 0)
+            {
+                foreach (Sleep s in sList)
+                {
+
+                    bool isLessThanYear = s.SleepEnd > yearAgo;
+                    bool isLessThanMonth = s.SleepEnd > monthAgo;
+                    s.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(s.SleepStart,
+                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
+                    s.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(s.SleepEnd,
+                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
+                    DateTimeOffset sOffset = new DateTimeOffset(s.SleepStart,
+                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
+                    DateTimeOffset eOffset = new DateTimeOffset(s.SleepEnd,
+                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
+                    s.SleepDuration = eOffset - sOffset;
+
+                    model.SleepTotal = model.SleepTotal + s.SleepDuration;
+                    if (isLessThanYear)
+                    {
+                        model.SleepLastYear = model.SleepLastYear + s.SleepDuration;
+                    }
+
+                    if (isLessThanMonth)
+                    {
+                        model.SleepLastMonth = model.SleepLastMonth + s.SleepDuration;
+                    }
+
+                    if (s.AccessLevel >= accessLevel)
+                    {
+                        sleepList.Add(s);
+                    }
+                }
+                sleepList = sleepList.OrderBy(s => s.SleepStart).ToList();
+
+                model.TotalAverage = model.SleepTotal / (DateTime.UtcNow - sleepList.First().SleepStart).TotalDays;
+                model.LastYearAverage = model.SleepLastYear / (DateTime.UtcNow - yearAgo).TotalDays;
+                model.LastMonthAverage = model.SleepLastMonth / 30;
+
+            }
+            else
+            {
+                model.TotalAverage = TimeSpan.Zero;
+                model.LastYearAverage = TimeSpan.Zero;
+                model.LastMonthAverage = TimeSpan.Zero;
+            }
+
+            return Ok(model);
+        }
+
+        [HttpGet("[action]/{progenyId}/{accessLevel}")]
+        public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
+        {
+            string userTimeZone = "Romance Standard Time";
+            List<Sleep> sList = _context.SleepDb.Where(s => s.ProgenyId == 2).ToList();
+            List<Sleep> chartList = new List<Sleep>();
+            foreach (Sleep chartItem in sList)
+            {
+                double durationStartDate = 0.0;
+                double durationEndDate = 0.0;
+                if (chartItem.SleepStart.Date == chartItem.SleepEnd.Date)
+                {
+                    durationStartDate = durationStartDate + chartItem.SleepDuration.TotalMinutes;
+                    if (chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date) !=
+                        null)
+                    {
+                        chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date)
+                            .SleepDuration += TimeSpan.FromMinutes(durationStartDate);
+                    }
+                    else
+                    {
+
+                        Sleep newSleep = new Sleep();
+                        newSleep.SleepStart = chartItem.SleepStart;
+                        newSleep.SleepDuration = TimeSpan.FromMinutes(durationStartDate);
+                        chartList.Add(newSleep);
+                    }
+                }
+                else
+                {
+                    DateTimeOffset sOffset = new DateTimeOffset(chartItem.SleepStart,
+                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(chartItem.SleepStart));
+                    DateTimeOffset s2Offset = new DateTimeOffset(chartItem.SleepStart.Date + TimeSpan.FromDays(1),
+                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone)
+                            .GetUtcOffset(chartItem.SleepStart.Date + TimeSpan.FromDays(1)));
+                    DateTimeOffset eOffset = new DateTimeOffset(chartItem.SleepEnd,
+                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(chartItem.SleepEnd));
+                    DateTimeOffset e2Offset = new DateTimeOffset(chartItem.SleepEnd.Date,
+                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone)
+                            .GetUtcOffset(chartItem.SleepEnd.Date));
+                    TimeSpan sDateDuration = s2Offset - sOffset;
+                    TimeSpan eDateDuration = eOffset - e2Offset;
+                    durationStartDate = chartItem.SleepDuration.TotalMinutes - (eDateDuration.TotalMinutes);
+                    durationEndDate = chartItem.SleepDuration.TotalMinutes - sDateDuration.TotalMinutes;
+                    if (chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date) !=
+                        null)
+                    {
+                        chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date)
+                            .SleepDuration += TimeSpan.FromMinutes(durationStartDate);
+                    }
+                    else
+                    {
+                        Sleep newSleep = new Sleep();
+                        newSleep.SleepStart = chartItem.SleepStart;
+                        newSleep.SleepDuration = TimeSpan.FromMinutes(durationStartDate);
+                        chartList.Add(newSleep);
+                    }
+                    if (chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepEnd.Date) !=
+                        null)
+                    {
+                        chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepEnd.Date)
+                            .SleepDuration += TimeSpan.FromMinutes(durationEndDate);
+                    }
+                    else
+                    {
+                        Sleep newSleep = new Sleep();
+                        newSleep.SleepStart = chartItem.SleepEnd;
+                        newSleep.SleepDuration = TimeSpan.FromMinutes(durationEndDate);
+                        chartList.Add(newSleep);
+                    }
+                }
+            }
+
+            List<Sleep> model = chartList.OrderBy(s => s.SleepStart).ToList();
+
+            return Ok(model);
         }
 
         [HttpGet("[action]/{id}")]

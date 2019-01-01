@@ -20,5 +20,8 @@ namespace KinaUnaProgenyApi.Models
         public string SleepNotes { get; set; }
         public int AccessLevel { get; set; }
         public string Author { get; set; }
+
+        [NotMapped]
+        public TimeSpan SleepDuration { get; set; }
     }
 }
