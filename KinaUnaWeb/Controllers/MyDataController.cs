@@ -13,5 +13,11 @@ namespace KinaUnaWeb.Controllers
         {
             return View();
         }
+
+        public IActionResult ChildSpreadSheet()
+        {
+            // Todo: Implement spreadsheet functions.
+            throw new NotImplementedException();
+        }
     }
 }

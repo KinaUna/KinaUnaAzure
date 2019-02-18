@@ -4074,5 +4074,13 @@ namespace KinaUnaWeb.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("Index", "Locations");
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteFile(FileItem model)
+        {
+            
+            throw new NotImplementedException();
+        }
     }
 }

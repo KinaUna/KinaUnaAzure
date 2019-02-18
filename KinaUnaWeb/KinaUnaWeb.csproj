@@ -35,7 +35,6 @@
     <Folder Include="Controllers\Api\" />
     <Folder Include="Formatters\" />
     <Folder Include="Models\PushMessageViewModels\" />
-    <Folder Include="Views\MyData\" />
   </ItemGroup>
 
   <ItemGroup>
