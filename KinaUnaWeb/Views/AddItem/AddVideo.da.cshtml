@@ -2,10 +2,8 @@
 @model KinaUnaWeb.Models.ItemViewModels.UploadVideoViewModel
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
-    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.common-nova.min.css" />
-    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.nova.min.css" />
-    <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.all.min.js"></script>
-    <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.aspnetmvc.min.js"></script>
+    <link href="/css/amsify.suggestags.css" rel="stylesheet" />
+    <script src="/lib/jquery.amsify.suggestags.js"></script>
     <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
@@ -40,7 +38,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="col-lg-3 col-sm-2 control-label">Duration</label>
+                    <label class="col-lg-3 col-sm-2 control-label">Varighed</label>
                     <div class="col-md-10">
                         @{
                             int hours = 0;
@@ -53,9 +51,20 @@
                                 Int32.TryParse(Model.DurationSeconds, out seconds);
                             }
                         }
-                        @(Html.Kendo().NumericTextBox<int>().Name("DurationHours").Format("0").Min(0).Max(100).Step(1).Value(hours).HtmlAttributes(new { style = "background: rgba(169, 247, 83, 0.27)" }))H:
-                        @(Html.Kendo().NumericTextBox<int>().Name("DurationMinutes").Format("0").Min(0).Max(59).Step(1).Value(minutes).HtmlAttributes(new { style = "background: rgba(169, 247, 83, 0.27)" }))m:
-                        @(Html.Kendo().NumericTextBox<int>().Name("DurationSeconds").Format("0").Min(0).Max(59).Step(1).Value(seconds).HtmlAttributes(new { style = "background: rgba(169, 247, 83, 0.27)" }))s
+                        <div class="form-row">
+                            <div class="col">
+                                <label class="col-lg-3 col-sm-2 control-label">H:</label>
+                                <input type="number" id="DurationHours" asp-for="DurationHours" min="0" max="100" value="@hours" class="form-control" />
+                            </div>
+                            <div class="col">
+                                <label class="col-lg-3 col-sm-2 control-label">m:</label>
+                                <input type="number" id="DurationMinutes" asp-for="DurationMinutes" min="0" max="59" value="@minutes" class="form-control" />
+                            </div>
+                            <div class="col">
+                                <label class="col-lg-3 col-sm-2 control-label">s:</label>
+                                <input type="number" id="DurationSeconds" asp-for="DurationSeconds" min="0" max="59" value="@seconds" class="form-control" />
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">

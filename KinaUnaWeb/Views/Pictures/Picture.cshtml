@@ -178,7 +178,7 @@
                         <div class="card-body">
                             <div class="float-left" style="margin-left: -15px; margin-right: 5px;">
                                 <div class="img-circle" style="height: 46px; width: 46px;">
-                                    <img height="40" width="40" class="media-object rounded img-fluid" src="@cmnt.AuthorImage"/>
+                                    <img height="40" width="40" class="media-object rounded img-fluid" src="@cmnt.AuthorImage" />
                                 </div>
                             </div>
                             <h6 class="text-muted" style="margin-top: 0; padding-top: 0;">
@@ -187,7 +187,7 @@
                             <p>
                                 @cmnt.CommentText
                             </p>
-                            <br/>
+                            <br />
                             @if (cmnt.Author == Model.UserId)
                             {
                                 <div class="media-footer">
@@ -198,10 +198,10 @@
                                                 <button class="btn btn-danger btn-sm leavePage" type="submit">Delete Comment</button>
                                             </div>
                                         </div>
-                                        <input Name="CommentThreadNumber" class="form-control" value="@Model.CommentThreadNumber" type="hidden"/>
-                                        <input Name="CommentId" class="form-control" value="@cmnt.CommentId" type="hidden"/>
-                                        <input Name="PictureId" class="form-control" value="@Model.PictureId" type="hidden"/>
-                                        <input Name="ProgenyId" class="form-control" value="@Model.ProgenyId" type="hidden"/>
+                                        <input Name="CommentThreadNumber" class="form-control" value="@Model.CommentThreadNumber" type="hidden" />
+                                        <input Name="CommentId" class="form-control" value="@cmnt.CommentId" type="hidden" />
+                                        <input Name="PictureId" class="form-control" value="@Model.PictureId" type="hidden" />
+                                        <input Name="ProgenyId" class="form-control" value="@Model.ProgenyId" type="hidden" />
                                     </form>
                                 </div>
                             }
@@ -237,10 +237,8 @@
 {
     @section Scripts{
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
-        <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.common-nova.min.css" />
-        <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.nova.min.css" />
-        <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.all.min.js"></script>
-        <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.aspnetmvc.min.js"></script>
+        <link href="/css/amsify.suggestags.css" rel="stylesheet" />
+        <script src="/lib/jquery.amsify.suggestags.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
         <script src="https://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
         <script src="https://js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
@@ -259,18 +257,11 @@
             <div class="form-group">
                 <label class="col-lg-3 col-sm-2 control-label">Tags</label>
                 <div class="col-lg-10 col-md-10 col-sm-10">
-                    <input id="tagList" type="text" asp-for="Tags" value="@Model.Tags" class="form-control" style="width: 100%; background: #e8fdd0" />
+                    <input id="tagList" type="text" asp-for="Tags" value="@Model.Tags" placeholder="Add tag..." class="form-control" />
                 </div>
                 <script>
-                    $(document).ready(function() {
-                        var data = @Html.Raw(Model.TagsList);
-
-                        $("#tagList").kendoAutoComplete({
-                            dataSource: data,
-                            filter: "contains",
-                            placeholder: "Add tag...",
-                            separator: ", "
-                        });
+                    $('input[name="Tags"').amsifySuggestags({
+                        suggestions: @Html.Raw(Model.TagsList)
                     });
                 </script>
             </div>
@@ -405,59 +396,59 @@ else
     </div>
 </div>
 @*<script>
-    var myElement = document.querySelector('#photoDiv');
-    myElement.addEventListener("touchstart", startTouch, false);
-    myElement.addEventListener("touchmove", moveTouch, false);
+        var myElement = document.querySelector('#photoDiv');
+        myElement.addEventListener("touchstart", startTouch, false);
+        myElement.addEventListener("touchmove", moveTouch, false);
 
-    // Swipe Up / Down / Left / Right
-    var initialX = null;
-    var initialY = null;
+        // Swipe Up / Down / Left / Right
+        var initialX = null;
+        var initialY = null;
 
-    function startTouch(e) {
-        initialX = e.touches[0].clientX;
-        initialY = e.touches[0].clientY;
-    };
+        function startTouch(e) {
+            initialX = e.touches[0].clientX;
+            initialY = e.touches[0].clientY;
+        };
 
-    function moveTouch(e) {
-        if (initialX === null) {
-            return;
-        }
-
-        if (initialY === null) {
-            return;
-        }
-
-        var currentX = e.touches[0].clientX;
-        var currentY = e.touches[0].clientY;
-
-        var diffX = initialX - currentX;
-        var diffY = initialY - currentY;
-
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-            // sliding horizontally
-            if (diffX > 0) {
-                // swiped left
-                console.log("swiped left");
-                document.getElementById('nextPhotoLink').click();
-            } else {
-                // swiped right
-                console.log("swiped right");
-                document.getElementById('previousPhotoLink').click();
+        function moveTouch(e) {
+            if (initialX === null) {
+                return;
             }
-        } else {
-            // sliding vertically
-            if (diffY > 0) {
-                // swiped up
-                console.log("swiped up");
-            } else {
-                // swiped down
-                console.log("swiped down");
+
+            if (initialY === null) {
+                return;
             }
-        }
 
-        initialX = null;
-        initialY = null;
+            var currentX = e.touches[0].clientX;
+            var currentY = e.touches[0].clientY;
 
-        e.preventDefault();
-    };
-</script>*@
+            var diffX = initialX - currentX;
+            var diffY = initialY - currentY;
+
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                // sliding horizontally
+                if (diffX > 0) {
+                    // swiped left
+                    console.log("swiped left");
+                    document.getElementById('nextPhotoLink').click();
+                } else {
+                    // swiped right
+                    console.log("swiped right");
+                    document.getElementById('previousPhotoLink').click();
+                }
+            } else {
+                // sliding vertically
+                if (diffY > 0) {
+                    // swiped up
+                    console.log("swiped up");
+                } else {
+                    // swiped down
+                    console.log("swiped down");
+                }
+            }
+
+            initialX = null;
+            initialY = null;
+
+            e.preventDefault();
+        };
+    </script>*@

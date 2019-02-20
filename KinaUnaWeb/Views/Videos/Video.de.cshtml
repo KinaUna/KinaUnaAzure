@@ -28,22 +28,22 @@
     </div>
     <br />
     <div align="center" style="max-width: 100%">
-        @if (Model.VideoType == 0)
-        {
-            Html.Kendo().MediaPlayer()
-                .Name("mediaplayer")
-                .AutoPlay(true)
-                .HtmlAttributes(new { style = "width: 90%;" })
-                .Media(m => m
-                    .Title(Model.Progeny.NickName + "'s Video").Source(new[]
-                    {
-                        new {quality = "240p", url = Model.VideoLink.Replace("kinauna/video/upload", "kinauna/video/upload/c_scale,h_240")},
-                        new {quality = "540p", url = Model.VideoLink.Replace("kinauna/video/upload", "kinauna/video/upload/c_scale,h_540")},
-                        new {quality = "720p", url = Model.VideoLink.Replace("kinauna/video/upload", "kinauna/video/upload/c_scale,h_720")},
-                        new {quality = "1080p", url = Model.VideoLink.Replace("kinauna/video/upload", "kinauna/video/upload/c_scale,h_1080")}
-                    })
-                );
-        }
+        @*@if (Model.VideoType == 0)
+            {
+                Html.Kendo().MediaPlayer()
+                    .Name("mediaplayer")
+                    .AutoPlay(true)
+                    .HtmlAttributes(new { style = "width: 90%;" })
+                    .Media(m => m
+                        .Title(Model.Progeny.NickName + "'s Video").Source(new[]
+                        {
+                            new {quality = "240p", url = Model.VideoLink.Replace("kinauna/video/upload", "kinauna/video/upload/c_scale,h_240")},
+                            new {quality = "540p", url = Model.VideoLink.Replace("kinauna/video/upload", "kinauna/video/upload/c_scale,h_540")},
+                            new {quality = "720p", url = Model.VideoLink.Replace("kinauna/video/upload", "kinauna/video/upload/c_scale,h_720")},
+                            new {quality = "1080p", url = Model.VideoLink.Replace("kinauna/video/upload", "kinauna/video/upload/c_scale,h_1080")}
+                        })
+                    );
+            }*@
         @if (Model.VideoType == 1)
         {
             <iframe src="@Model.VideoLink" style="width: 90%; height: 80vh;" frameborder="0" scrolling="no" allowfullscreen></iframe>
@@ -69,15 +69,15 @@
     <br />
     @if (Model.VidTimeValid)
     {
-    <div style="font-size: 16px; line-height: 90%;">
-        <p>Dieses Video ist vom: @Model.VidTime</p>
-        <p>@Model.Progeny.NickName war @Model.VidYears Jahre alt.</p>
-        <p>@Model.Progeny.NickName war @Model.VidMonths Monate alt.</p>
-        <p>@Model.Progeny.NickName war @Model.VidWeeks[0] Wochen und @Model.VidWeeks[1] Tage alt.</p>
-        <p>@Model.Progeny.NickName war @Model.VidDays Tage alt.</p>
-        <p>@Model.Progeny.NickName war @Model.VidHours Stunden alt.</p>
-        <p>@Model.Progeny.NickName war @Model.VidMinutes Minuten alt.</p>
-    </div>
+        <div style="font-size: 16px; line-height: 90%;">
+            <p>Dieses Video ist vom: @Model.VidTime</p>
+            <p>@Model.Progeny.NickName war @Model.VidYears Jahre alt.</p>
+            <p>@Model.Progeny.NickName war @Model.VidMonths Monate alt.</p>
+            <p>@Model.Progeny.NickName war @Model.VidWeeks[0] Wochen und @Model.VidWeeks[1] Tage alt.</p>
+            <p>@Model.Progeny.NickName war @Model.VidDays Tage alt.</p>
+            <p>@Model.Progeny.NickName war @Model.VidHours Stunden alt.</p>
+            <p>@Model.Progeny.NickName war @Model.VidMinutes Minuten alt.</p>
+        </div>
         <br />
     }
 </div>
@@ -256,12 +256,8 @@
 {
     @section Scripts{
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
-        <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.common-nova.min.css" />
-        <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.nova.min.css" />
-        <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.all.min.js"></script>
-        <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.aspnetmvc.min.js"></script>
-        <script src="/lib/kendo-ui/js/cultures/kendo.culture.de-DE.js"></script>
-        <script src="/lib/kendo-ui/js/messages/kendo.messages.de-DE.js"></script>
+        <link href="/css/amsify.suggestags.css" rel="stylesheet" />
+        <script src="/lib/jquery.amsify.suggestags.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
         <script src="https://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
         <script src="https://js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
@@ -280,18 +276,11 @@
             <div class="form-group">
                 <label class="col-lg-3 col-sm-2 control-label">Tags</label>
                 <div class="col-lg-10 col-md-10 col-sm-10">
-                    <input id="tagList" type="text" asp-for="Tags" value="@Model.Tags" class="form-control" style="width: 100%; background: #e8fdd0" />
+                    <input id="tagList" type="text" asp-for="Tags" value="@Model.Tags" placeholder="Add tag..." class="form-control" />
                 </div>
                 <script>
-                    $(document).ready(function() {
-                        var data = @Html.Raw(Model.TagsList);
-
-                        $("#tagList").kendoAutoComplete({
-                            dataSource: data,
-                            filter: "contains",
-                            placeholder: "Tag hinzufügen ...",
-                            separator: ", "
-                        });
+                    $('input[name="Tags"').amsifySuggestags({
+                        suggestions: @Html.Raw(Model.TagsList)
                     });
                 </script>
             </div>
@@ -309,9 +298,20 @@
                             Int32.TryParse(Model.DurationSeconds, out seconds);
                         }
                     }
-                    @(Html.Kendo().NumericTextBox<int>().Name("DurationHours").Format("0").Min(0).Max(100).Step(1).Value(hours).HtmlAttributes(new { style = "background: rgba(169, 247, 83, 0.27)", @class = "form-control" }))H:
-                    @(Html.Kendo().NumericTextBox<int>().Name("DurationMinutes").Format("0").Min(0).Max(59).Step(1).Value(minutes).HtmlAttributes(new { style = "background: rgba(169, 247, 83, 0.27)", @class = "form-control" }))m:
-                    @(Html.Kendo().NumericTextBox<int>().Name("DurationSeconds").Format("0").Min(0).Max(59).Step(1).Value(seconds).HtmlAttributes(new { style = "background: rgba(169, 247, 83, 0.27)", @class = "form-control" }))s
+                    <div class="form-row">
+                        <div class="col">
+                            <label class="col-lg-3 col-sm-2 control-label">H:</label>
+                            <input type="number" id="DurationHours" asp-for="DurationHours" min="0" max="100" value="@hours" class="form-control" />
+                        </div>
+                        <div class="col">
+                            <label class="col-lg-3 col-sm-2 control-label">m:</label>
+                            <input type="number" id="DurationMinutes" asp-for="DurationMinutes" min="0" max="59" value="@minutes" class="form-control" />
+                        </div>
+                        <div class="col">
+                            <label class="col-lg-3 col-sm-2 control-label">s:</label>
+                            <input type="number" id="DurationSeconds" asp-for="DurationSeconds" min="0" max="59" value="@seconds" class="form-control" />
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="form-group">
@@ -371,19 +371,19 @@
             </div>
             @if (Model.LocationsList.Any())
             {
-            <div class="form-group">
-                <label class="col-lg-3 col-sm-2 control-label">Lage, Breite, und Längengrad kopieren</label>
-                <div class="col-lg-12 col-md-12 col-sm-12">
-                    <div class="row">
-                        <div class="col-lg-6 col-md-9 col-sm-8">
-                            <select id="copyLocation" class="selectpicker form-control-noline" data-style="select-with-transition" asp-items="@Model.LocationsList"></select>
-                        </div>
-                        <div class="col-lg-4 col-md-3 col-sm-3">
-                            <button id="copyLocationButton" type="button" class="btn btn-primary">Kopiere</button>
+                <div class="form-group">
+                    <label class="col-lg-3 col-sm-2 control-label">Lage, Breite, und Längengrad kopieren</label>
+                    <div class="col-lg-12 col-md-12 col-sm-12">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-9 col-sm-8">
+                                <select id="copyLocation" class="selectpicker form-control-noline" data-style="select-with-transition" asp-items="@Model.LocationsList"></select>
+                            </div>
+                            <div class="col-lg-4 col-md-3 col-sm-3">
+                                <button id="copyLocationButton" type="button" class="btn btn-primary">Kopiere</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
             }
             <br />
             <input asp-for="VideoId" class="form-control" value="@Model.VideoId" type="hidden" />
@@ -452,59 +452,59 @@ else
     </div>
 </div>
 @*<script>
-    var myElement = document.querySelector('#photoDiv');
-    myElement.addEventListener("touchstart", startTouch, false);
-    myElement.addEventListener("touchmove", moveTouch, false);
+        var myElement = document.querySelector('#photoDiv');
+        myElement.addEventListener("touchstart", startTouch, false);
+        myElement.addEventListener("touchmove", moveTouch, false);
 
-    // Swipe Up / Down / Left / Right
-    var initialX = null;
-    var initialY = null;
+        // Swipe Up / Down / Left / Right
+        var initialX = null;
+        var initialY = null;
 
-    function startTouch(e) {
-        initialX = e.touches[0].clientX;
-        initialY = e.touches[0].clientY;
-    };
+        function startTouch(e) {
+            initialX = e.touches[0].clientX;
+            initialY = e.touches[0].clientY;
+        };
 
-    function moveTouch(e) {
-        if (initialX === null) {
-            return;
-        }
-
-        if (initialY === null) {
-            return;
-        }
-
-        var currentX = e.touches[0].clientX;
-        var currentY = e.touches[0].clientY;
-
-        var diffX = initialX - currentX;
-        var diffY = initialY - currentY;
-
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-            // sliding horizontally
-            if (diffX > 0) {
-                // swiped left
-                console.log("swiped left");
-                document.getElementById('nextPhotoLink').click();
-            } else {
-                // swiped right
-                console.log("swiped right");
-                document.getElementById('previousPhotoLink').click();
+        function moveTouch(e) {
+            if (initialX === null) {
+                return;
             }
-        } else {
-            // sliding vertically
-            if (diffY > 0) {
-                // swiped up
-                console.log("swiped up");
-            } else {
-                // swiped down
-                console.log("swiped down");
+
+            if (initialY === null) {
+                return;
             }
-        }
 
-        initialX = null;
-        initialY = null;
+            var currentX = e.touches[0].clientX;
+            var currentY = e.touches[0].clientY;
 
-        e.preventDefault();
-    };
-</script>*@
+            var diffX = initialX - currentX;
+            var diffY = initialY - currentY;
+
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                // sliding horizontally
+                if (diffX > 0) {
+                    // swiped left
+                    console.log("swiped left");
+                    document.getElementById('nextPhotoLink').click();
+                } else {
+                    // swiped right
+                    console.log("swiped right");
+                    document.getElementById('previousPhotoLink').click();
+                }
+            } else {
+                // sliding vertically
+                if (diffY > 0) {
+                    // swiped up
+                    console.log("swiped up");
+                } else {
+                    // swiped down
+                    console.log("swiped down");
+                }
+            }
+
+            initialX = null;
+            initialY = null;
+
+            e.preventDefault();
+        };
+    </script>*@

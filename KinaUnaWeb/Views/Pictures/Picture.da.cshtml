@@ -237,12 +237,8 @@
 {
     @section Scripts{
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
-        <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.common-nova.min.css" />
-        <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.nova.min.css" />
-        <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.all.min.js"></script>
-        <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.aspnetmvc.min.js"></script>
-        <script src="/lib/kendo-ui/js/cultures/kendo.culture.da-DK.js"></script>
-        <script src="/lib/kendo-ui/js/messages/kendo.messages.da-DK.js"></script>
+        <link href="/css/amsify.suggestags.css" rel="stylesheet" />
+        <script src="/lib/jquery.amsify.suggestags.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
         <script src="https://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
         <script src="https://js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
@@ -261,18 +257,11 @@
             <div class="form-group">
                 <label class="col-lg-3 col-sm-2 control-label">Tags</label>
                 <div class="col-lg-10 col-md-10 col-sm-10">
-                    <input id="tagList" type="text" asp-for="Tags" value="@Model.Tags" class="form-control" style="width: 100%; background: #e8fdd0" />
+                    <input id="tagList" type="text" asp-for="Tags" value="@Model.Tags" placeholder="Add tag..." class="form-control" />
                 </div>
                 <script>
-                    $(document).ready(function() {
-                        var data = @Html.Raw(Model.TagsList);
-
-                        $("#tagList").kendoAutoComplete({
-                            dataSource: data,
-                            filter: "contains",
-                            placeholder: "Tilføj tag...",
-                            separator: ", "
-                        });
+                    $('input[name="Tags"').amsifySuggestags({
+                        suggestions: @Html.Raw(Model.TagsList)
                     });
                 </script>
             </div>

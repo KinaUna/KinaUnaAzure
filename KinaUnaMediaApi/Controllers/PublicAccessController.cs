@@ -302,5 +302,51 @@ namespace KinaUnaMediaApi.Controllers
 
             return Ok(model);
         }
+
+        [HttpGet]
+        [Route("[action]/{id}")]
+        public async Task<IActionResult> PictureTagsList(int id)
+        {
+            string TagsList = "";
+            List<string> tagsList = new List<string>();
+            List<Picture> pictureList = await _context.PicturesDb.AsNoTracking()
+                .Where(p => p.ProgenyId == id).ToListAsync();
+            if (pictureList.Any())
+            {
+                foreach (Picture pic in pictureList)
+                {
+                    if (!String.IsNullOrEmpty(pic.Tags))
+                    {
+                        List<string> pvmTags = pic.Tags.Split(',').ToList();
+                        foreach (string tagstring in pvmTags)
+                        {
+                            if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                            {
+                                tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                return Ok(TagsList);
+            }
+
+            string tagItems = "[";
+            if (tagsList.Any())
+            {
+                foreach (string tagstring in tagsList)
+                {
+                    tagItems = tagItems + "'" + tagstring + "',";
+                }
+
+                tagItems = tagItems.Remove(tagItems.Length - 1);
+                tagItems = tagItems + "]";
+            }
+
+            TagsList = tagItems;
+            return Ok(TagsList);
+        }
     }
 }
