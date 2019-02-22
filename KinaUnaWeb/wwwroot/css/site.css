@@ -359,8 +359,8 @@
     border: 1px solid rgba(20, 100, 20, 0.6);
     height: 42px;
     transition: background 0s ease-out;
-    padding-left: 14px;
-    padding-right: 14px;
+    /*padding-left: 14px;
+    padding-right: 14px;*/
     border-radius: 4px;
     font-size: 14px;
 }
@@ -652,4 +652,37 @@ button.Zebra_DatePicker_Icon {
 
 .gist {
     font-size: 14px;
+}
+
+.btn-kinaunaselect {
+    background: no-repeat bottom,50% calc(100% - 1px);
+    transition: background 0s ease-out !important;
+    background-size: 0 100%,100% 100%;
+    background-color: transparent !important;
+    color: inherit !important;
+    box-shadow: none !important;
+    margin: 0;
+}
+
+.fileinput {
+    display: inline-block;
+    margin-bottom: 9px;
+}
+
+.fileinput .thumbnail {
+    display: inline-block;
+    margin-bottom: 10px;
+    overflow: hidden;
+    text-align: center;
+    vertical-align: middle;
+    max-width: 360px;
+}
+
+.fileinput .thumbnail > img {
+    max-height: 100%;
+    width: 100%;
+}
+
+.fileinput-exists .fileinput-new, .fileinput-new .fileinput-exists {
+    display: none;
 }

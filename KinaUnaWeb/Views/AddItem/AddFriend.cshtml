@@ -15,7 +15,7 @@
         <div class="form-group">
             <label class="control-label col-sm-3">Add Friend for: </label>
             <div class="col-lg-9">
-                <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
+                <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
             </div>
         </div>
     }
@@ -86,7 +86,7 @@
     <div class="form-group">
         <label asp-for="Type" class="col-lg-3 col-sm-3 control-label">Type of Friend</label>
         <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.FriendTypeListEn.Count" asp-for="Type" asp-items="@Model.FriendTypeListEn"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FriendTypeListEn.Count" asp-for="Type" asp-items="@Model.FriendTypeListEn"></select>
         </div>
     </div>
     <div class="form-group">
@@ -115,7 +115,7 @@
     <div class="form-group">
         <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Access Level</label>
         <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
         </div>
     </div>
     <div>

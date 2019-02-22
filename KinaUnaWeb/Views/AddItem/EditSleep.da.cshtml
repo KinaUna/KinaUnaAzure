@@ -54,7 +54,7 @@
     <div class="form-group">
         <label class="col-3 control-label" asp-for="SleepRating">Bedømmelse</label>
         <div class="col-6 col-xs-5 col-sm-4 col-md-3">
-            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@ViewBag.RatingList.Count" asp-for="SleepRating" asp-items="@ViewBag.RatingList"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@ViewBag.RatingList.Count" asp-for="SleepRating" asp-items="@ViewBag.RatingList"></select>
         </div>
     </div>
     <div class="form-group">
@@ -66,7 +66,7 @@
     <div class="form-group">
         <label asp-for="AccessLevel" class="col-3 control-label">Adgangsniveau</label>
         <div class="col-9">
-            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListDa.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDa"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListDa.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDa"></select>
         </div>
     </div>
     <input asp-for="ProgenyId" value="@Model.ProgenyId" type="hidden" />

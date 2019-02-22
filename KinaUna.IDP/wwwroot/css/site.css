@@ -577,3 +577,36 @@ button.Zebra_DatePicker_Icon {
         color: white;
     }
 }
+
+.btn-kinaunaselect {
+    background: no-repeat bottom,50% calc(100% - 1px);
+    transition: background 0s ease-out !important;
+    background-size: 0 100%,100% 100%;
+    background-color: transparent !important;
+    color: inherit !important;
+    box-shadow: none !important;
+    margin: 0;
+}
+
+.fileinput {
+    display: inline-block;
+    margin-bottom: 9px;
+}
+
+    .fileinput .thumbnail {
+        display: inline-block;
+        margin-bottom: 10px;
+        overflow: hidden;
+        text-align: center;
+        vertical-align: middle;
+        max-width: 360px;
+    }
+
+        .fileinput .thumbnail > img {
+            max-height: 100%;
+            width: 100%;
+        }
+
+.fileinput-exists .fileinput-new, .fileinput-new .fileinput-exists {
+    display: none;
+}

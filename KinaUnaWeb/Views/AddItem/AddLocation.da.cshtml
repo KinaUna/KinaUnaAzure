@@ -22,7 +22,7 @@
         <div class="form-group">
             <label class="control-label col-sm-3">Tilføj sted for</label>
             <div class="col-lg-9">
-                <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
+                <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
             </div>
         </div>
     }
@@ -143,7 +143,7 @@
     <div class="form-group">
         <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Adgangsniveau</label>
         <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListDa.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDa"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListDa.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDa"></select>
         </div>
     </div>
     <div>

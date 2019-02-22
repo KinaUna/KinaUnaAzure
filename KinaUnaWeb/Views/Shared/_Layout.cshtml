@@ -3,23 +3,24 @@
 @using Microsoft.AspNetCore.Http.Extensions
 @using KinaUnaWeb.Services
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] : Kina Una Web</title>
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons"/>
-    <link href="~/lib/fa5_2_0/css/all.min.css" rel="stylesheet"/>
-    <link href="~/css/waitMe.min.css" rel="stylesheet"/>
-    <link href="~/css/material-kit.min.css?v=2.0.2" rel="stylesheet"/>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+    <link href="~/lib/fa5_2_0/css/all.min.css" rel="stylesheet" />
+    <link href="~/css/waitMe.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/css/bootstrap-select.min.css">
+    <link href="~/lib/material-kit-205/css/material-kit.min.css?v=2.0.5" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <script src="~/lib/jquery-3.3.1.min.js"></script>
     <script src="~/lib/popper.min.js"></script>
-    <script src="~/lib/material-kit/bootstrap-material-design.min.js"></script>
+    <script src="~/lib/material-kit-205/js/core/bootstrap-material-design.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
-    <script src="~/lib/material-kit/plugins/bootstrap-selectpicker.js"></script>
-    <script src="~/lib/material-kit/material-kit.min.js?v=2.0.2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/js/bootstrap-select.min.js"></script>
+    <script src="~/lib/material-kit-205/js/material-kit.min.js"></script>
     <script src="~/js/waitMe.min.js"></script>
     @RenderSection("Scripts", required: false)
-    <meta name="theme-color" content="#3a2051"/>
+    <meta name="theme-color" content="#3a2051" />
     <link rel="manifest" href="~/manifest.json">
     <script>
         if (navigator.serviceWorker.controller) {
@@ -28,9 +29,9 @@
             navigator.serviceWorker.register('/pwabuilder-sw.js',
                 {
                     scope: '/'
-                }).then(function(reg) {
-                console.log('Service worker has been registered for scope:' + reg.scope);
-            });
+                }).then(function (reg) {
+                    console.log('Service worker has been registered for scope:' + reg.scope);
+                });
         }
     </script>
 </head>

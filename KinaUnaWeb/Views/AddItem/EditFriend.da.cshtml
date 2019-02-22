@@ -74,7 +74,7 @@
     <div class="form-group">
         <label asp-for="Type" class="col-lg-3 col-sm-3 control-label">Vennetype</label>
         <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.FriendTypeListDa.Count" asp-for="Type" asp-items="@Model.FriendTypeListDa"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FriendTypeListDa.Count" asp-for="Type" asp-items="@Model.FriendTypeListDa"></select>
         </div>
     </div>
     <div class="form-group">
@@ -103,7 +103,7 @@
     <div class="form-group">
         <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Adgangsniveau</label>
         <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListDa.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDa"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListDa.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDa"></select>
         </div>
     </div>
     <input asp-for="ProgenyId" value="@Model.ProgenyId" type="hidden" />

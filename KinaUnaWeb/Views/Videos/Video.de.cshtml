@@ -317,7 +317,7 @@
             <div class="form-group">
                 <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Zugriffsniveau</label>
                 <div class="col-lg-4">
-                    <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListDe.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDe"></select>
+                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListDe.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListDe"></select>
                 </div>
             </div>
             <div class="form-group">
@@ -376,7 +376,7 @@
                     <div class="col-lg-12 col-md-12 col-sm-12">
                         <div class="row">
                             <div class="col-lg-6 col-md-9 col-sm-8">
-                                <select id="copyLocation" class="selectpicker form-control-noline" data-style="select-with-transition" asp-items="@Model.LocationsList"></select>
+                                <select id="copyLocation" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" asp-items="@Model.LocationsList"></select>
                             </div>
                             <div class="col-lg-4 col-md-3 col-sm-3">
                                 <button id="copyLocationButton" type="button" class="btn btn-primary">Kopiere</button>

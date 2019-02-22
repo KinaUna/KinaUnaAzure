@@ -22,7 +22,7 @@
                 <div class="form-group">
                     <label asp-for="AccessLevel" class="col-3 control-label">Access Level</label>
                     <div class="col-9">
-                        <select class="selectpicker form-control-noline" data-style="select-with-transition" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
                     </div>
                 </div>
                 <input asp-for="ProgenyId" class="form-control" value="@Model.ProgenyId" type="hidden" />
