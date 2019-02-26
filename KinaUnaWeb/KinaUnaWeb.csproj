@@ -25,7 +25,6 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="2.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.2" PrivateAssets="All" />
-    <PackageReference Include="Telerik.UI.for.AspNet.Core" Version="2018.3.911" />
     <PackageReference Include="WebPush" Version="1.0.11" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
     <PackageReference Include="Microsoft.AspNetCore.All" />
@@ -49,6 +48,21 @@
     <None Include="wwwroot\lib\material-kit-205\js\plugins\jquery.sharrre.js" />
     <None Include="wwwroot\lib\material-kit-205\js\plugins\moment.min.js" />
     <None Include="wwwroot\lib\material-kit-205\js\plugins\nouislider.min.js" />
+    <None Include="wwwroot\lib\quilljs\.editorconfig" />
+    <None Include="wwwroot\lib\quilljs\.eslintrc" />
+    <None Include="wwwroot\lib\quilljs\.gitignore" />
+    <None Include="wwwroot\lib\quilljs\CHANGELOG.md" />
+    <None Include="wwwroot\lib\quilljs\demo\script.js" />
+    <None Include="wwwroot\lib\quilljs\image-resize.min.js" />
+    <None Include="wwwroot\lib\quilljs\LICENSE" />
+    <None Include="wwwroot\lib\quilljs\README.md" />
+    <None Include="wwwroot\lib\quilljs\src\DefaultOptions.js" />
+    <None Include="wwwroot\lib\quilljs\src\ImageResize.js" />
+    <None Include="wwwroot\lib\quilljs\src\modules\BaseModule.js" />
+    <None Include="wwwroot\lib\quilljs\src\modules\DisplaySize.js" />
+    <None Include="wwwroot\lib\quilljs\src\modules\Resize.js" />
+    <None Include="wwwroot\lib\quilljs\src\modules\Toolbar.js" />
+    <None Include="wwwroot\lib\quilljs\webpack.config.js" />
   </ItemGroup>
 
   <ItemGroup>

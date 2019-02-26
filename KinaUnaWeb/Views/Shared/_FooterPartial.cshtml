@@ -17,12 +17,12 @@
     cultureItems.Add(selectDanish);
     cultureItems.Add(selectGerman);
 }
-<div class="container-fluid footer-brand" style="background: gainsboro;">
+<div class="container footer-brand" style="background: gainsboro;">
     <div class="container">
         <form id="selectLanguage" asp-controller="Home" asp-action="SetLanguage" asp-route-returnUrl="@returnUrl" method="post" class="form-horizontal" role="form">
             <div class="form-row">
                 <div>
-                    <div class="btn btn-link disabled" style="color: black; padding: 0; padding-top: 11px; margin: 0; margin-right: 8px;"> Language/Sprache/Sprog: </div>
+                    <div class="btn btn-link disabled" style="color: black; padding-top: 11px; margin: 0; margin-right: 8px;"> Language/Sprache/Sprog: </div>
                 </div>
                 <div class="col-5 col-md-3 col-lg-2">
                     <select title="Language/Sprache/Sprog" class="selectpicker" data-style="btn-kinaunaselect" data-size="3" name="culture" onchange="this.form.submit();" asp-for="@requestCulture.RequestCulture.UICulture.Name" asp-items="cultureItems"></select>

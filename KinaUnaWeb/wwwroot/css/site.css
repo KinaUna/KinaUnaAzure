@@ -8,10 +8,14 @@
 /* Set some basic padding to keep content from hitting the edges */
 
 .body-content {
-    padding-left: 1px;
-    padding-right: 1px;
+    /*padding-left: 1px;
+    padding-right: 1px;*/
 }
 
+.container {
+    padding-right: 8px;
+    padding-left: 8px;
+}
 /* Carousel */
 
 .carousel-caption p {
@@ -279,7 +283,7 @@
 }
 
 .navbar-toggler {
-    padding: 0.25rem 0.2rem;
+    padding: 1.0rem 1.0rem;
     font-size: 1.25rem;
     line-height: 1;
     background-color: transparent;

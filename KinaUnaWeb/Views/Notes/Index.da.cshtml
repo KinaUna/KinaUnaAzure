@@ -39,7 +39,7 @@
                     </div>
                     <div class="card-body">
                         <div class="card-text">
-                            <div class="rounded text-dark card-body bg-white" align="left">@Html.Raw(System.Web.HttpUtility.HtmlDecode(noteViewModel.Content))</div>
+                            <div class="rounded text-dark card-body bg-white" style="overflow-x: hidden;" align="left">@Html.Raw(System.Web.HttpUtility.HtmlDecode(noteViewModel.Content))</div>
                             @if (!String.IsNullOrEmpty(noteViewModel.Category))
                             {
                                 <div class="container card-subtitle card-category" style="margin: 0; padding: 0;">

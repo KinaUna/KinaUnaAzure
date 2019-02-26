@@ -7,7 +7,7 @@
     </div>
     <br/>
     <div>
-        Indhold: @Model.Content
+        Indhold: @Html.Raw(Model.Content)
     </div>
     <br />
     <input asp-for="NoteId" class="form-control" value="@Model.NoteId" type="hidden" />

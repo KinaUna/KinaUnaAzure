@@ -8,8 +8,12 @@
 /* Set some basic padding to keep content from hitting the edges */
 
 .body-content {
-    padding-left: 1px;
-    padding-right: 1px;
+    
+}
+
+.container {
+    padding-right: 8px;
+    padding-left: 8px;
 }
 
 /* Carousel */
@@ -359,8 +363,8 @@
     border: 1px solid rgba(20, 100, 20, 0.6);
     height: 42px;
     transition: background 0s ease-out;
-    padding-left: 14px;
-    padding-right: 14px;
+    /*padding-left: 14px;
+    padding-right: 14px;*/
     border-radius: 4px;
     font-size: 14px;
 }

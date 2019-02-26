@@ -2,16 +2,14 @@
 @section Scripts
     {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
-    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.common-nova.min.css" />
-    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2017.2.621/styles/kendo.nova.min.css" />
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="/lib/moment.min.js"></script>
-    <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.all.min.js"></script>
-    <script src="https://kendo.cdn.telerik.com/2017.2.621/js/kendo.aspnetmvc.min.js"></script>
-
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
+    <script src="/lib/quilljs/image-resize.min.js"></script>
 }
 <H4>Add Note</H4>
-<form asp-action="AddNote" role="form" method="post">
+<form asp-action="AddNote" role="form" method="post" onsubmit="return copyContent();">
     @if (Model.ProgenyList.Count > 1)
     {
         <div class="form-group">
@@ -40,52 +38,33 @@
     <div class="form-group">
         <label asp-for="Content" class="col-lg-3 col-sm-3 control-label"></label>
         <div class="col-lg-9">
-            @* Make sure tag helpers are not available for the Editor content *@
-            @removeTagHelper "*, Microsoft.AspNet.Mvc.Razor"
-            @removeTagHelper "*, Microsoft.AspNetCore.Mvc.Razor"
-            @{ string filePath = "~/userfiles/" + Model.PathName + "/images/{0}"; }
-            @(Html.Kendo().Editor()
-                                          .Name("Content").Encoded(false)
-                                          .HtmlAttributes(new { style = "height:330px", aria_label = "editor" })
-                                          .Resizable(resizable => resizable.Content(true).Toolbar(true))
-                                          .ImageBrowser(imageBrowser => imageBrowser
-                                              .Image(filePath)
-                                              .Read("Read", "ImageBrowser")
-                                              .Create("Create", "ImageBrowser")
-                                              .Destroy("Destroy", "ImageBrowser")
-                                              .Upload("Upload", "ImageBrowser")
-                                          )
-                                          .FileBrowser(fileBrowser => fileBrowser
-                                              .File(filePath)
-                                              .Read("Read", "FileBrowser")
-                                              .Create("Create", "FileBrowser")
-                                              .Destroy("Destroy", "FileBrowser")
-                                              .Upload("Upload", "FileBrowser")
-                                          )
-                                          .Tools(tools => tools
-                                              .Clear()
-                                              .Formatting()
-                                              .CleanFormatting()
-                                              .FontName()
-                                              .FontSize().ForeColor()
-                                              .BackColor()
-                                              .Bold().Italic().Underline().Strikethrough()
-                                              .JustifyLeft().JustifyCenter().JustifyRight().JustifyFull()
-                                              .InsertUnorderedList().InsertOrderedList()
-                                              .Outdent().Indent()
-                                              .CreateLink().Unlink()
-                                              .InsertImage()
-                                              .InsertFile()
-                                              .SubScript()
-                                              .SuperScript()
-                                              .TableEditing()
-                                              .ViewHtml()
-                                          )
-                                          .Value(@<text>
+            <input asp-for="Content" type="hidden">
+            <div id="editor">
 
-                                        </text>)
-            )
+            </div>
         </div>
+        <script>
+            var quill = new Quill('#editor', {
+                modules: {
+                    imageResize: {},
+                    toolbar: [
+                        [{ header: [1, 2, false] }],
+                        ['bold', 'italic', 'underline'],
+                        ['image', 'code-block']
+                    ]
+                },
+                theme: 'snow'
+            });
+
+            function copyContent() {
+                // Populate hidden form on submit
+                var myEditor = document.querySelector('#editor');
+                var html = myEditor.children[0].innerHTML;
+                var notecontent = document.querySelector('input[name=Content]');
+                notecontent.value = html; // JSON.stringify(quill.getContents());
+                return true;
+            }
+        </script>
     </div>
     <div class="form-group">
         <label asp-for="Category" class="col-lg-3 col-sm-3 control-label"></label>
