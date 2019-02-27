@@ -7,11 +7,6 @@ namespace KinaUnaMediaApi.Authorization
     public class MustBeAdminHandler : AuthorizationHandler<MustBeAdminRequirement>
     {
         
-        public MustBeAdminHandler() //IGalleryRepository galleryRepository
-        {
-            //_galleryRepository = galleryRepository;
-        }
-
         protected override Task HandleRequirementAsync(
             AuthorizationHandlerContext context, MustBeAdminRequirement requirement)
         {

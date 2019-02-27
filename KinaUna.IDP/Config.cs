@@ -89,7 +89,7 @@ namespace KinaUna.IDP
             var webServerAzureUrl = configuration.GetValue<string>("WebServerAzure");
             var webServerLocal = configuration.GetValue<string>("WebServerLocal");
             var secretString = configuration.GetValue<string>("SecretString");
-            var xamarinString = "https://auth.kinauna.com";
+            // var xamarinString = "https://auth.kinauna.com";
             List<string> corsList = new List<string>();
             corsList.Add("https://web.kinauna.com");
             corsList.Add("https://auth.kinauna.com");

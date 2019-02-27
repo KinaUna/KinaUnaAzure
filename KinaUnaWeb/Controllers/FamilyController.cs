@@ -1,5 +1,4 @@
-﻿using KinaUnaWeb.Data;
-using KinaUnaWeb.Models;
+﻿using KinaUnaWeb.Models;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -10,18 +9,13 @@ namespace KinaUnaWeb.Controllers
 {
     public class FamilyController : Controller
     {
-        private WebDbContext _context;
+        
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly IMediaHttpClient _mediaHttpClient;
-        private readonly ImageStore _imageStore;
         private readonly string _defaultUser = "testuser@niviaq.com";
 
-        public FamilyController(WebDbContext context, IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore)
+        public FamilyController(IProgenyHttpClient progenyHttpClient)
         {
-            _context = context;
             _progenyHttpClient = progenyHttpClient;
-            _mediaHttpClient = mediaHttpClient;
-            _imageStore = imageStore;
         }
 
         public async Task<IActionResult> Index()

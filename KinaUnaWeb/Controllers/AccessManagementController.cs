@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUnaWeb.Data;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.FamilyViewModels;
 using KinaUnaWeb.Services;
@@ -30,9 +29,12 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddAccess(string progenyId)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (userinfo != null && userinfo.ViewChild > 0)
+            var userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
@@ -48,11 +50,9 @@ namespace KinaUnaWeb.Controllers
             model.AccessLevel = 4;
             model.UserId = "";
             model.ProgenyList = new List<SelectListItem>();
-            List<Progeny> accessList = new List<Progeny>();
             if (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null)
             {
-
-                accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                var accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
                 if (accessList.Any())
                 {
                     foreach (Progeny prog in accessList)
@@ -79,8 +79,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddAccess(UserAccessViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            var userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
             if (userinfo != null && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
@@ -199,8 +198,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAccess(UserAccessViewModel model)
         {
-            UserAccess uaModel = new UserAccess();
-            uaModel = await _progenyHttpClient.GetUserAccess(model.AccessId);
+            await _progenyHttpClient.GetUserAccess(model.AccessId);
             await _progenyHttpClient.DeleteUserAccess(model.AccessId);
 
             if (model.AccessLevel == 0)

@@ -31,4 +31,8 @@
     <WCFMetadata Include="Connected Services" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\pictures\" />
+  </ItemGroup>
+
 </Project>

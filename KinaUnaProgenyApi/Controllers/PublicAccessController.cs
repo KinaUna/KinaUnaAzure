@@ -6,7 +6,6 @@ using KinaUnaProgenyApi.Data;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -93,8 +92,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{progenyId}/{accessLevel}")]
         public async Task<IActionResult> EventList(int progenyId, int accessLevel)
         {
-            List<CalendarItem> model = new List<CalendarItem>();
-            model = await _context.CalendarDb
+            var model = await _context.CalendarDb
                 .Where(e => e.ProgenyId == 2 && e.EndTime > DateTime.UtcNow && e.AccessLevel >= 5).ToListAsync();
             model = model.OrderBy(e => e.StartTime).ToList();
             model = model.Take(5).ToList();
@@ -260,8 +258,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{progenyId}/{accessLevel}/{start}")]
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
-            List<Sleep> model = new List<Sleep>();
-            model = await _context.SleepDb
+            var model = await _context.SleepDb
                 .Where(s => s.ProgenyId == 2 && s.AccessLevel >= 5).ToListAsync();
 
             model = model.OrderByDescending(s => s.SleepStart).ToList();
@@ -277,7 +274,7 @@ namespace KinaUnaProgenyApi.Controllers
             model.SleepTotal = TimeSpan.Zero;
             model.SleepLastYear = TimeSpan.Zero;
             model.SleepLastMonth = TimeSpan.Zero;
-            List<Sleep> sList = _context.SleepDb.Where(s => s.ProgenyId == 2).ToList();
+            List<Sleep> sList = await _context.SleepDb.Where(s => s.ProgenyId == 2).ToListAsync();
             List<Sleep> sleepList = new List<Sleep>();
             DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
@@ -335,20 +332,18 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
         {
             string userTimeZone = "Romance Standard Time";
-            List<Sleep> sList = _context.SleepDb.Where(s => s.ProgenyId == 2).ToList();
+            List<Sleep> sList = await _context.SleepDb.Where(s => s.ProgenyId == 2).ToListAsync();
             List<Sleep> chartList = new List<Sleep>();
             foreach (Sleep chartItem in sList)
             {
                 double durationStartDate = 0.0;
-                double durationEndDate = 0.0;
                 if (chartItem.SleepStart.Date == chartItem.SleepEnd.Date)
                 {
                     durationStartDate = durationStartDate + chartItem.SleepDuration.TotalMinutes;
-                    if (chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date) !=
-                        null)
+                    Sleep slpItem = chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date);
+                    if ( slpItem != null)
                     {
-                        chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date)
-                            .SleepDuration += TimeSpan.FromMinutes(durationStartDate);
+                        slpItem.SleepDuration += TimeSpan.FromMinutes(durationStartDate);
                     }
                     else
                     {
@@ -374,12 +369,11 @@ namespace KinaUnaProgenyApi.Controllers
                     TimeSpan sDateDuration = s2Offset - sOffset;
                     TimeSpan eDateDuration = eOffset - e2Offset;
                     durationStartDate = chartItem.SleepDuration.TotalMinutes - (eDateDuration.TotalMinutes);
-                    durationEndDate = chartItem.SleepDuration.TotalMinutes - sDateDuration.TotalMinutes;
-                    if (chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date) !=
-                        null)
+                    var durationEndDate = chartItem.SleepDuration.TotalMinutes - sDateDuration.TotalMinutes;
+                    Sleep slpItem = chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date);
+                    if ( slpItem != null)
                     {
-                        chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date)
-                            .SleepDuration += TimeSpan.FromMinutes(durationStartDate);
+                        slpItem.SleepDuration += TimeSpan.FromMinutes(durationStartDate);
                     }
                     else
                     {
@@ -388,11 +382,11 @@ namespace KinaUnaProgenyApi.Controllers
                         newSleep.SleepDuration = TimeSpan.FromMinutes(durationStartDate);
                         chartList.Add(newSleep);
                     }
-                    if (chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepEnd.Date) !=
-                        null)
+
+                    Sleep slpItem2 = chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepEnd.Date);
+                    if (slpItem2 != null)
                     {
-                        chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepEnd.Date)
-                            .SleepDuration += TimeSpan.FromMinutes(durationEndDate);
+                        slpItem2.SleepDuration += TimeSpan.FromMinutes(durationEndDate);
                     }
                     else
                     {

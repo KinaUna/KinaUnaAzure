@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace KinaUnaWeb.Models
+﻿namespace KinaUnaWeb.Models
 {
     // Source: https://github.com/coryjthompson/WebPushDemo/tree/master/WebPushDemo
     public class PushDevices

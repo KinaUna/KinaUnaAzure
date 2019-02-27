@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 
 namespace KinaUna.IDP.Services
 {
@@ -10,15 +6,14 @@ namespace KinaUna.IDP.Services
     {
         public string ExtractRedirectUriFromReturnUrl(string url)
         {
-            var result = "";
             var decodedUrl = System.Net.WebUtility.HtmlDecode(url);
             var results = Regex.Split(decodedUrl, "redirect_uri=");
             if (results.Length < 2)
                 return "";
 
-            result = results[1];
+            var result = results[1];
 
-            var splitKey = "";
+            string splitKey;
             if (result.Contains("signin-oidc"))
                 splitKey = "signin-oidc";
             else

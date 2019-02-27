@@ -16,7 +16,7 @@ namespace KinaUnaWeb.Controllers
         private WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private int _progId = 2;
-        private bool _userIsProgenyAdmin = false;
+        private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = "testuser@niviaq.com";
 
         public SkillsController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
@@ -30,11 +30,7 @@ namespace KinaUnaWeb.Controllers
         {
             _progId = childId;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
-            if (string.IsNullOrEmpty(userTimeZone))
-            {
-                userTimeZone = "Romance Standard Time";
-            }
+            
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
@@ -44,8 +40,8 @@ namespace KinaUnaWeb.Controllers
             {
                 _progId = 2;
             }
-            Progeny progeny = new Progeny();
-            progeny = await _progenyHttpClient.GetProgeny(_progId);
+
+            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = 5;

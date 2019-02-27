@@ -24,44 +24,52 @@ namespace KinaUna.IDP.Services
         public async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
             var subject = context.Subject ?? throw new ArgumentNullException(nameof(context.Subject));
+            var subjectIdClaim = subject?.Claims.FirstOrDefault(x => x.Type == "sub");
+            if (subjectIdClaim != null)
+            {
+                var subjectId = subjectIdClaim.Value;
+                var user = await _userManager.FindByIdAsync(subjectId);
+                if (user == null)
+                    throw new ArgumentException("Invalid subject identifier");
 
-            var subjectId = subject.Claims.Where(x => x.Type == "sub").FirstOrDefault().Value;
+                var claims = GetClaimsFromUser(user);
+                context.IssuedClaims = claims.ToList();
+            }
 
-            var user = await _userManager.FindByIdAsync(subjectId);
-            if (user == null)
-                throw new ArgumentException("Invalid subject identifier");
-
-            var claims = GetClaimsFromUser(user);
-            context.IssuedClaims = claims.ToList();
         }
 
         public async Task IsActiveAsync(IsActiveContext context)
         {
             var subject = context.Subject ?? throw new ArgumentNullException(nameof(context.Subject));
 
-            var subjectId = subject.Claims.Where(x => x.Type == "sub").FirstOrDefault().Value;
-            var user = await _userManager.FindByIdAsync(subjectId);
-
-            context.IsActive = false;
-
-            if (user != null)
+            var subjectIdClaim = subject?.Claims.FirstOrDefault(x => x.Type == "sub");
+            if (subjectIdClaim != null)
             {
-                if (_userManager.SupportsUserSecurityStamp)
-                {
-                    var security_stamp = subject.Claims.Where(c => c.Type == "security_stamp").Select(c => c.Value).SingleOrDefault();
-                    if (security_stamp != null)
-                    {
-                        var db_security_stamp = await _userManager.GetSecurityStampAsync(user);
-                        if (db_security_stamp != security_stamp)
-                            return;
-                    }
-                }
+                var subjectId = subjectIdClaim.Value;
+                var user = await _userManager.FindByIdAsync(subjectId);
 
-                context.IsActive =
-                    !user.LockoutEnabled ||
-                    !user.LockoutEnd.HasValue ||
-                    user.LockoutEnd <= DateTime.Now;
+                context.IsActive = false;
+
+                if (user != null)
+                {
+                    if (_userManager.SupportsUserSecurityStamp)
+                    {
+                        var securityStamp = subject.Claims.Where(c => c.Type == "security_stamp").Select(c => c.Value).SingleOrDefault();
+                        if (securityStamp != null)
+                        {
+                            var dbSecurityStamp = await _userManager.GetSecurityStampAsync(user);
+                            if (dbSecurityStamp != securityStamp)
+                                return;
+                        }
+                    }
+
+                    context.IsActive =
+                        !user.LockoutEnabled ||
+                        !user.LockoutEnd.HasValue ||
+                        user.LockoutEnd <= DateTime.Now;
+                }
             }
+
         }
 
         private IEnumerable<Claim> GetClaimsFromUser(ApplicationUser user)
@@ -93,12 +101,9 @@ namespace KinaUna.IDP.Services
             {
                 claims.Add(new Claim("timezone", "Central European Standard Time"));
             }
-                
 
-            if (user.JoinDate != null)
-            {
-                claims.Add(new Claim("joindate", user.JoinDate.ToString("G")));
-            }
+
+            claims.Add(new Claim("joindate", user.JoinDate.ToString("G")));
             if (!string.IsNullOrWhiteSpace(user.Role))
             {
                 claims.Add(new Claim("role", user.Role));

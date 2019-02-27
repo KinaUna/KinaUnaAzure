@@ -2,7 +2,6 @@
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
@@ -15,7 +14,7 @@ namespace KinaUnaWeb.Controllers
     public class PicturesController : Controller
     {
         private int _progId = 2;
-        private bool _userIsProgenyAdmin = false;
+        private bool _userIsProgenyAdmin;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
@@ -58,8 +57,7 @@ namespace KinaUnaWeb.Controllers
             }
 
 
-            Progeny progeny = new Progeny();
-            progeny = await _progenyHttpClient.GetProgeny(_progId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = 5;
@@ -78,10 +76,9 @@ namespace KinaUnaWeb.Controllers
                 _userIsProgenyAdmin = true;
                 userAccessLevel = 0;
             }
-            
-            
-            PicturePageViewModel model = new PicturePageViewModel();
-            model = await _mediaHttpClient.GetPicturePage(pageSize, id, progeny.Id, userAccessLevel, sortBy, tagFilter, userTimeZone);
+
+
+            PicturePageViewModel model = await _mediaHttpClient.GetPicturePage(pageSize, id, progeny.Id, userAccessLevel, sortBy, tagFilter, userTimeZone);
             model.Progeny = progeny;
             model.IsAdmin = _userIsProgenyAdmin;
             model.SortBy = sortBy;
@@ -113,8 +110,7 @@ namespace KinaUnaWeb.Controllers
                 _progId = userinfo.ViewChild;
             }
 
-            Progeny progeny = new Progeny();
-            progeny = await _progenyHttpClient.GetProgeny(_progId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = 5;
@@ -163,15 +159,15 @@ namespace KinaUnaWeb.Controllers
             model.PictureCount = picture.PictureCount;
             model.PrevPicture = picture.PrevPicture;
             model.NextPicture = picture.NextPicture;
-            model.CommentsList = picture?.CommentsList ?? new List<Comment>();
-            model.CommentsCount = picture?.CommentsList.Count ?? 0;
+            model.CommentsList = picture.CommentsList ?? new List<Comment>();
+            model.CommentsCount = picture.CommentsList?.Count ?? 0;
             model.TagFilter = tagFilter;
             model.SortBy = sortBy;
             model.UserId = HttpContext.User.FindFirst("sub")?.Value ?? _defaultUser;
             model.IsAdmin = _userIsProgenyAdmin;
-            if (model.PictureTime != null)
+            if (model.PictureTime != null && progeny.BirthDay.HasValue)
             {
-                PictureTime picTime = new PictureTime(progeny.NickName, (DateTime)progeny.BirthDay.Value,
+                PictureTime picTime = new PictureTime(progeny.BirthDay.Value,
                     TimeZoneInfo.ConvertTimeToUtc(model.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone)),
                     TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
                 model.PicTimeValid = true;

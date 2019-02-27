@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace KinaUnaWeb.Models.ViewModels
+namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class VideoPageViewModel
     {

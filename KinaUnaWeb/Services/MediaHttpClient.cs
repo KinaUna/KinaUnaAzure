@@ -1,7 +1,6 @@
 ﻿using IdentityModel.Client;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
-using KinaUnaWeb.Models.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -34,7 +33,6 @@ namespace KinaUnaWeb.Services
         {
             var client = new DiscoveryClient(_configuration.GetValue<string>("AuthenticationServer"));
             var doc = await client.GetAsync();
-            var result = doc.TokenEndpoint;
             var tokenClient = new TokenClient(doc.TokenEndpoint,
                 _configuration.GetValue<string>("AuthenticationServerClientId"),
                 _configuration.GetValue<string>("AuthenticationServerClientSecret"));
@@ -46,14 +44,13 @@ namespace KinaUnaWeb.Services
         public async Task<HttpClient> GetClient()
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             // get the current HttpContext to access the tokens
             var currentContext = _httpContextAccessor.HttpContext;
 
             // get access token
             //accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false); ;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
@@ -77,10 +74,9 @@ namespace KinaUnaWeb.Services
         public async Task<Picture> GetPicture(int pictureId, string timeZone)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             HttpClient pictureHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -114,10 +110,9 @@ namespace KinaUnaWeb.Services
         public async Task<Picture> GetRandomPicture(int progenyId, int accessLevel, string timeZone)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             HttpClient pictureHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -136,9 +131,8 @@ namespace KinaUnaWeb.Services
 
             string pictureApiPath = "/api/pictures/random/" + progenyId + "/" + accessLevel;
             var pictureUri = clientUri + pictureApiPath;
-            string pictureResponseString = "";
             var resp = await pictureHttpClient.GetAsync(pictureUri);
-                pictureResponseString = await resp.Content.ReadAsStringAsync();
+            string pictureResponseString = await resp.Content.ReadAsStringAsync();
             
             Picture resultPicture = JsonConvert.DeserializeObject<Picture>(pictureResponseString);
             if (timeZone != "")
@@ -156,10 +150,9 @@ namespace KinaUnaWeb.Services
         public async Task<List<Picture>> GetPictureList(int progenyId, int accessLevel, string timeZone)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             HttpClient pictureHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -178,9 +171,8 @@ namespace KinaUnaWeb.Services
 
             string pictureApiPath = "/api/pictures/progeny/" + progenyId + "/" + accessLevel;
             var pictureUri = clientUri + pictureApiPath;
-            string pictureResponseString = "";
             var resp = await pictureHttpClient.GetAsync(pictureUri);
-            pictureResponseString = await resp.Content.ReadAsStringAsync();
+            string pictureResponseString = await resp.Content.ReadAsStringAsync();
 
             List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(pictureResponseString);
             if (timeZone != "")
@@ -200,10 +192,9 @@ namespace KinaUnaWeb.Services
         public async Task<List<Picture>> GetAllPictures()
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             HttpClient pictureHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -222,9 +213,8 @@ namespace KinaUnaWeb.Services
 
             string pictureApiPath = "/api/pictures";
             var pictureUri = clientUri + pictureApiPath;
-            string pictureResponseString = "";
             var resp = await pictureHttpClient.GetAsync(pictureUri);
-            pictureResponseString = await resp.Content.ReadAsStringAsync();
+            string pictureResponseString = await resp.Content.ReadAsStringAsync();
 
             List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(pictureResponseString);
             
@@ -234,10 +224,9 @@ namespace KinaUnaWeb.Services
         public async Task<Picture> AddPicture(Picture picture)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             HttpClient newPictureHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
@@ -268,10 +257,9 @@ namespace KinaUnaWeb.Services
         public async Task<Picture> UpdatePicture(Picture picture)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             
             HttpClient updatePictureHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -290,7 +278,7 @@ namespace KinaUnaWeb.Services
 
             string updatePictureApiPath = "/api/pictures/" + picture.PictureId;
             var updatePictureUri = clientUri + updatePictureApiPath;
-            var updatePictureResponseString = await updatePictureHttpClient.PutAsync<Picture>(updatePictureUri, picture, new JsonMediaTypeFormatter());
+            var updatePictureResponseString = await updatePictureHttpClient.PutAsync(updatePictureUri, picture, new JsonMediaTypeFormatter());
             string returnString = await updatePictureResponseString.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<Picture>(returnString);
         }
@@ -298,10 +286,9 @@ namespace KinaUnaWeb.Services
         public async Task<bool> DeletePicture(int pictureId)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             HttpClient deletePictureHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
@@ -333,10 +320,9 @@ namespace KinaUnaWeb.Services
         public async Task<bool> AddPictureComment(Comment comment)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             HttpClient newCommentHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
@@ -368,10 +354,9 @@ namespace KinaUnaWeb.Services
         public async Task<bool> DeletePictureComment(int commentId)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             HttpClient deleteCommentHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
@@ -404,10 +389,9 @@ namespace KinaUnaWeb.Services
         {
 
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             HttpClient pageHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
@@ -432,8 +416,7 @@ namespace KinaUnaWeb.Services
             var pageUri = clientUri + pageApiPath;
 
             var pageResponseString = await pageHttpClient.GetStringAsync(pageUri);
-            PicturePageViewModel model = new PicturePageViewModel();
-            model = JsonConvert.DeserializeObject<PicturePageViewModel>(pageResponseString);
+            PicturePageViewModel model = JsonConvert.DeserializeObject<PicturePageViewModel>(pageResponseString);
             if (timeZone != "")
             {
                 foreach (Picture pic in model.PicturesList)
@@ -455,10 +438,9 @@ namespace KinaUnaWeb.Services
         public async Task<PictureViewModel> GetPictureViewModel(int id, int userAccessLevel, int sortBy, string timeZone)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             HttpClient pictureHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -496,10 +478,9 @@ namespace KinaUnaWeb.Services
         {
 
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             HttpClient pageHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
@@ -526,8 +507,7 @@ namespace KinaUnaWeb.Services
             var pageUri = clientUri + pageApiPath;
 
             var pageResponseString = await pageHttpClient.GetStringAsync(pageUri);
-            VideoPageViewModel model = new VideoPageViewModel();
-            model = JsonConvert.DeserializeObject<VideoPageViewModel>(pageResponseString);
+            VideoPageViewModel model = JsonConvert.DeserializeObject<VideoPageViewModel>(pageResponseString);
 
             if (timeZone != "")
             {
@@ -547,10 +527,9 @@ namespace KinaUnaWeb.Services
         public async Task<VideoViewModel> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             HttpClient videoHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -588,10 +567,9 @@ namespace KinaUnaWeb.Services
         public async Task<Video> GetVideo(int videoId, string timeZone)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             HttpClient videoHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -628,10 +606,9 @@ namespace KinaUnaWeb.Services
         public async Task<List<Video>> GetVideoList(int progenyId, int accessLevel, string timeZone)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             HttpClient videoHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -650,9 +627,8 @@ namespace KinaUnaWeb.Services
 
             string videoApiPath = "/api/videos/progeny/" + progenyId + "/" + accessLevel;
             var videoUri = clientUri + videoApiPath;
-            string videoResponseString = "";
             var resp = await videoHttpClient.GetAsync(videoUri);
-            videoResponseString = await resp.Content.ReadAsStringAsync();
+            string videoResponseString = await resp.Content.ReadAsStringAsync();
 
             List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoResponseString);
             if (timeZone != "")
@@ -672,10 +648,9 @@ namespace KinaUnaWeb.Services
         public async Task<List<Video>> GetAllVideos()
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             HttpClient videoHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -694,9 +669,8 @@ namespace KinaUnaWeb.Services
 
             string videoApiPath = "/api/videos";
             var videoUri = clientUri + videoApiPath;
-            string videoResponseString = "";
             var resp = await videoHttpClient.GetAsync(videoUri);
-            videoResponseString = await resp.Content.ReadAsStringAsync();
+            string videoResponseString = await resp.Content.ReadAsStringAsync();
 
             List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoResponseString);
 
@@ -705,11 +679,10 @@ namespace KinaUnaWeb.Services
         public async Task<Video> AddVideo(Video video)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             // get the current HttpContext to access the tokens
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             HttpClient newVideoHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
@@ -740,10 +713,9 @@ namespace KinaUnaWeb.Services
         public async Task<Video> UpdateVideo(Video video)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             HttpClient updateVideoHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -762,7 +734,7 @@ namespace KinaUnaWeb.Services
 
             string updateVideoApiPath = "/api/videos/" + video.VideoId;
             var updateVideoUri = clientUri + updateVideoApiPath;
-            var updateVideoResponseString = await updateVideoHttpClient.PutAsync<Video>(updateVideoUri, video, new JsonMediaTypeFormatter());
+            var updateVideoResponseString = await updateVideoHttpClient.PutAsync(updateVideoUri, video, new JsonMediaTypeFormatter());
             string returnString = await updateVideoResponseString.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<Video>(returnString);
         }
@@ -770,10 +742,9 @@ namespace KinaUnaWeb.Services
         public async Task<bool> DeleteVideo(int videoId)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             HttpClient deleteVideoHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
@@ -805,10 +776,9 @@ namespace KinaUnaWeb.Services
         public async Task<bool> AddVideoComment(Comment comment)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             HttpClient newCommentHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
@@ -840,10 +810,9 @@ namespace KinaUnaWeb.Services
         public async Task<bool> DeleteVideoComment(int commentId)
         {
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             var currentContext = _httpContextAccessor.HttpContext;
-            accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             HttpClient deleteCommentHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {

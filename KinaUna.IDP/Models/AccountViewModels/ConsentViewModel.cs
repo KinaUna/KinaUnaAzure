@@ -6,7 +6,8 @@ namespace KinaUna.IDP.Models.AccountViewModels
 {
     public class ConsentViewModel : ConsentInputModel
     {
-        public ConsentViewModel(ConsentInputModel model, string returnUrl, AuthorizationRequest request, Client client, Resources resources)
+        public ConsentViewModel(ConsentInputModel model, string returnUrl, 
+            AuthorizationRequest request, Client client, Resources resources)
         {
             RememberConsent = model?.RememberConsent ?? true;
             ScopesConsented = model?.ScopesConsented ?? Enumerable.Empty<string>();

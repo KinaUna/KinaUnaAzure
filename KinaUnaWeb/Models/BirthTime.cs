@@ -1,22 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Globalization;
 
 namespace KinaUnaWeb.Models
 {
     public class BirthTime
     {
-        private string _name;
         private DateTime _birthDay;
         private readonly TimeZoneInfo _birthTimeZone;
         private readonly DateTime _currentDateTime;
 
         public string CurrentTime => TimeZoneInfo.ConvertTimeFromUtc(_currentDateTime, _birthTimeZone).ToString("dd MMMM yyyy HH:mm:ss");
 
-        public BirthTime(string nme, DateTime bday, TimeZoneInfo bdayTz)
+        public BirthTime( DateTime bday, TimeZoneInfo bdayTz)
         {
-            _name = nme;
             _birthTimeZone = bdayTz;
             _birthDay = TimeZoneInfo.ConvertTimeToUtc(bday, bdayTz);
 
@@ -28,7 +24,7 @@ namespace KinaUnaWeb.Models
         {
 
             TimeSpan age = _currentDateTime - _birthDay;
-            double ageYears = (double)age.TotalSeconds / (365.0 * 24.0 * 60.0 * 60.0);
+            double ageYears = age.TotalSeconds / (365.0 * 24.0 * 60.0 * 60.0);
 
             return ageYears.ToString("F6");
         }
@@ -70,7 +66,7 @@ namespace KinaUnaWeb.Models
 
         public string CalcNextBirthday()
         {
-            int nextBday = 0;
+            int nextBday;
 
             if (DateTime.Today.ToUniversalTime() < new DateTime(_currentDateTime.Year, _birthDay.Month, _birthDay.Day))
             {
@@ -92,7 +88,7 @@ namespace KinaUnaWeb.Models
             double milestone = Math.Pow(10, Math.Ceiling(Math.Log10(ageWeeks)));
             DateTime milestoneDate = _birthDay + TimeSpan.FromDays(milestone * 7);
             string[] cmsw = new string[2];
-            cmsw[0] = milestone.ToString();
+            cmsw[0] = milestone.ToString(CultureInfo.InvariantCulture);
             cmsw[1] = milestoneDate.ToString("dddd, dd MMMM yyyy");
             return cmsw;
         }
@@ -103,7 +99,7 @@ namespace KinaUnaWeb.Models
             double milestone = Math.Pow(10, Math.Ceiling(Math.Log10(ageDays)));
             DateTime milestoneDate = _birthDay + TimeSpan.FromDays(milestone);
             string[] cmsw = new string[2];
-            cmsw[0] = milestone.ToString();
+            cmsw[0] = milestone.ToString(CultureInfo.InvariantCulture);
             cmsw[1] = milestoneDate.ToString("dddd, dd MMMM yyyy");
             return cmsw;
         }
@@ -114,7 +110,7 @@ namespace KinaUnaWeb.Models
             double milestone = Math.Pow(10, Math.Ceiling(Math.Log10(ageHours)));
             DateTime milestoneDate = _birthDay + TimeSpan.FromHours(milestone);
             string[] cmsw = new string[2];
-            cmsw[0] = milestone.ToString();
+            cmsw[0] = milestone.ToString(CultureInfo.InvariantCulture);
             cmsw[1] = milestoneDate.ToString("dddd, dd MMMM yyyy HH:mm");
             return cmsw;
 
@@ -126,7 +122,7 @@ namespace KinaUnaWeb.Models
             double milestone = Math.Pow(10, Math.Ceiling(Math.Log10(ageMinutes)));
             DateTime milestoneDate = _birthDay + TimeSpan.FromMinutes(milestone);
             string[] cmsw = new string[2];
-            cmsw[0] = milestone.ToString();
+            cmsw[0] = milestone.ToString(CultureInfo.InvariantCulture);
             cmsw[1] = milestoneDate.ToString("dddd, dd MMMM yyyy HH:mm");
             return cmsw;
 

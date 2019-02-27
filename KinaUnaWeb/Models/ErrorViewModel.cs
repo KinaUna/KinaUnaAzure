@@ -1,5 +1,3 @@
-using System;
-
 namespace KinaUnaWeb.Models
 {
     public class ErrorViewModel

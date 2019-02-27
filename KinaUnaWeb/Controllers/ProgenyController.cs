@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUnaWeb.Data;
@@ -79,8 +78,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditProgeny(int progenyId)
         {
             ProgenyViewModel model = new ProgenyViewModel();
-            Progeny prog = new Progeny();
-            prog = await _progenyHttpClient.GetProgeny(progenyId);
+            Progeny prog = await _progenyHttpClient.GetProgeny(progenyId);
 
             model.ProgenyId = prog.Id;
             model.Name = prog.Name;

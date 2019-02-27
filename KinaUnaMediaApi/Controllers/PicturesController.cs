@@ -5,7 +5,6 @@ using KinaUnaMediaApi.Models.DTOs;
 using KinaUnaMediaApi.Models.ViewModels;
 using KinaUnaMediaApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -28,12 +27,11 @@ namespace KinaUnaMediaApi.Controllers
     {
         private readonly MediaDbContext _context;
         private readonly ImageStore _imageStore;
-        private readonly IHostingEnvironment _env;
-        public PicturesController(MediaDbContext context, ImageStore imageStore, IHostingEnvironment env)
+
+        public PicturesController(MediaDbContext context, ImageStore imageStore)
         {
             _context = context;
             _imageStore = imageStore;
-            _env = env;
         }
         // GET api/pictures
         [HttpGet]
@@ -54,7 +52,7 @@ namespace KinaUnaMediaApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Picture> allItems = new List<Picture>(); 
+            List<Picture> allItems; 
             if (tagFilter != "")
             {
                 allItems = await _context.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToListAsync();
@@ -108,7 +106,7 @@ namespace KinaUnaMediaApi.Controllers
             }
             PicturePageViewModel model = new PicturePageViewModel();
             model.PicturesList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling((double)(allItems.Count / (double)pageSize));
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
             model.PageNumber = pageIndex;
             model.SortBy = sortBy;
             model.TagFilter = tagFilter;
@@ -246,7 +244,7 @@ namespace KinaUnaMediaApi.Controllers
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = $"https://{this.Request.Host}{this.Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
@@ -279,7 +277,7 @@ namespace KinaUnaMediaApi.Controllers
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = $"https://{this.Request.Host}{this.Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
@@ -308,7 +306,7 @@ namespace KinaUnaMediaApi.Controllers
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = $"https://{this.Request.Host}{this.Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
@@ -327,7 +325,7 @@ namespace KinaUnaMediaApi.Controllers
                 ExifProfile profile = image.GetExifProfile();
                 if (profile != null)
                 {
-                    int rotation = 0;
+                    int rotation;
                     try
                     {
 
@@ -341,8 +339,8 @@ namespace KinaUnaMediaApi.Controllers
                             Rational[] latValues = gpsLatitude.Value as Rational[];
 
 
-                            if (longValues[0].Denominator != 0 && longValues[1].Denominator != 0 &&
-                                longValues[2].Denominator != 0)
+                            if (longValues != null && (longValues[0].Denominator != 0 && longValues[1].Denominator != 0 &&
+                                                       longValues[2].Denominator != 0))
                             {
                                 double long0 = longValues[0].Numerator / (double)longValues[0].Denominator;
                                 double long1 = longValues[1].Numerator / (double)longValues[1].Denominator;
@@ -354,8 +352,8 @@ namespace KinaUnaMediaApi.Controllers
                                 model.Longtitude = "";
                             }
 
-                            if (latValues[0].Denominator != 0 && latValues[1].Denominator != 0 &&
-                                latValues[2].Denominator != 0)
+                            if (latValues != null && (latValues[0].Denominator != 0 && latValues[1].Denominator != 0 &&
+                                                      latValues[2].Denominator != 0))
                             {
                                 double lat0 = latValues[0].Numerator / (double)latValues[0].Denominator;
                                 double lat1 = latValues[1].Numerator / (double)latValues[1].Denominator;
@@ -379,7 +377,7 @@ namespace KinaUnaMediaApi.Controllers
                             if (altValues.Denominator != 0)
                             {
                                 double alt0 = altValues.Numerator / (double)altValues.Denominator;
-                                model.Altitude = alt0.ToString();
+                                model.Altitude = alt0.ToString(CultureInfo.InvariantCulture);
                             }
                             else
                             {
@@ -395,21 +393,27 @@ namespace KinaUnaMediaApi.Controllers
                     }
                     catch (ArgumentNullException)
                     {
-
+                        model.Longtitude = "";
+                        model.Latitude = "";
+                        model.Altitude = "";
                     }
                     catch (NullReferenceException)
                     {
-
+                        model.Longtitude = "";
+                        model.Latitude = "";
+                        model.Altitude = "";
                     }
                     catch (Exception)
                     {
-
+                        model.Longtitude = "";
+                        model.Latitude = "";
+                        model.Altitude = "";
                     }
 
                     try
                     {
                         rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation).Value);
-                        switch ((int)rotation)
+                        switch (rotation)
                         {
                             case 1:
                                 model.PictureRotation = 0;
@@ -428,7 +432,7 @@ namespace KinaUnaMediaApi.Controllers
                     }
                     catch (ArgumentNullException)
                     {
-
+                        model.PictureRotation = 0;
                     }
                     catch (NullReferenceException)
                     {
@@ -510,7 +514,7 @@ namespace KinaUnaMediaApi.Controllers
                 if (model.PictureWidth > 600)
                 {
                     int newWidth = 600;
-                    int newHeight = (int)((600 / model.PictureWidth) * model.PictureHeight);
+                    int newHeight = (600 / model.PictureWidth) * model.PictureHeight;
 
                     image.Resize(newWidth, newHeight);
                 }
@@ -542,7 +546,7 @@ namespace KinaUnaMediaApi.Controllers
                 if (model.PictureWidth > 1200)
                 {
                     int newWidth = 1200;
-                    int newHeight = (int)((1200 / model.PictureWidth) * model.PictureHeight);
+                    int newHeight = (1200 / model.PictureWidth) * model.PictureHeight;
 
                     image.Resize(newWidth, newHeight);
                 }
@@ -646,9 +650,8 @@ namespace KinaUnaMediaApi.Controllers
             List<Picture> picturesList = await _context.PicturesDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel).ToListAsync();
             if (picturesList.Any())
             {
-                int pictureNumber = 0;
                 Random r = new Random();
-                pictureNumber = r.Next(0, picturesList.Count);
+                var pictureNumber = r.Next(0, picturesList.Count);
 
                 Picture picture = picturesList[pictureNumber];
 
@@ -667,7 +670,7 @@ namespace KinaUnaMediaApi.Controllers
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny ;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = $"https://{this.Request.Host}{this.Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
             return Ok(tempPicture);
@@ -680,9 +683,8 @@ namespace KinaUnaMediaApi.Controllers
             List<Picture> picturesList = await _context.PicturesDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel).ToListAsync();
             if (picturesList.Any())
             {
-                int pictureNumber = 0;
                 Random r = new Random();
-                pictureNumber = r.Next(0, picturesList.Count);
+                var pictureNumber = r.Next(0, picturesList.Count);
 
                 Picture picture = picturesList[pictureNumber];
                 if (!picture.PictureLink.ToLower().StartsWith("http"))
@@ -741,7 +743,7 @@ namespace KinaUnaMediaApi.Controllers
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = $"https://{this.Request.Host}{this.Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
@@ -758,7 +760,7 @@ namespace KinaUnaMediaApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Picture> allItems = new List<Picture>();
+            List<Picture> allItems;
             if (tagFilter != "")
             {
                 allItems = await _context.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToListAsync();
@@ -824,7 +826,7 @@ namespace KinaUnaMediaApi.Controllers
             }
             PicturePageViewModel model = new PicturePageViewModel();
             model.PicturesList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling((double)(allItems.Count / (double)pageSize));
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
             model.PageNumber = pageIndex;
             model.SortBy = sortBy;
             model.TagFilter = tagFilter;
@@ -879,8 +881,8 @@ namespace KinaUnaMediaApi.Controllers
                     newPicture.Latitude = pic.Latitude;
                     newPicture.Longtitude = pic.Longtitude;
                     newPicture.PictureLink = "https://" + pic.PictureLink;
-                    newPicture.PictureLink600 = "https://" + pic.PictureLink.Insert(pic.PictureLink.LastIndexOf('/'), "/600"); ;
-                    newPicture.PictureLink1200 = "https://" + pic.PictureLink.Insert(pic.PictureLink.LastIndexOf('/'), "/1200"); ;
+                    newPicture.PictureLink600 = "https://" + pic.PictureLink.Insert(pic.PictureLink.LastIndexOf('/'), "/600");
+                    newPicture.PictureLink1200 = "https://" + pic.PictureLink.Insert(pic.PictureLink.LastIndexOf('/'), "/1200");
                     await _context.PicturesDb.AddAsync(newPicture);
                     addedPictures.Add(newPicture);
                 }
@@ -925,7 +927,7 @@ namespace KinaUnaMediaApi.Controllers
 
         private static Stream GetStreamFromUrl(string url)
         {
-            byte[] imageData = null;
+            byte[] imageData;
 
             using (var wc = new System.Net.WebClient())
                 imageData = wc.DownloadData(url);

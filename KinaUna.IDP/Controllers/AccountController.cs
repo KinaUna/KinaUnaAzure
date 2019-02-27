@@ -2,7 +2,6 @@
 using IdentityServer4;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
-using IdentityServer4.Stores;
 using KinaUna.IDP.Data;
 using KinaUna.IDP.Extensions;
 using KinaUna.IDP.Models;
@@ -36,7 +35,7 @@ namespace KinaUna.IDP.Controllers
         //private readonly InMemoryUserLoginService _loginService;
         private readonly ILoginService<ApplicationUser> _loginService;
         private readonly IIdentityServerInteractionService _interaction;
-        private readonly IClientStore _clientStore;
+        // private readonly IClientStore _clientStore;
         private readonly ILogger<AccountController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailSender _emailSender;
@@ -49,7 +48,7 @@ namespace KinaUna.IDP.Controllers
             //InMemoryUserLoginService loginService,
             ILoginService<ApplicationUser> loginService,
             IIdentityServerInteractionService interaction,
-            IClientStore clientStore,
+            // IClientStore clientStore,
             ILogger<AccountController> logger,
             IEmailSender emailSender,
             UserManager<ApplicationUser> userManager,
@@ -59,7 +58,7 @@ namespace KinaUna.IDP.Controllers
         {
             _loginService = loginService;
             _interaction = interaction;
-            _clientStore = clientStore;
+            //_clientStore = clientStore;
             _logger = logger;
             _userManager = userManager;
             _emailSender = emailSender;
@@ -104,15 +103,15 @@ namespace KinaUna.IDP.Controllers
                 var user = await _loginService.FindByUsername(model.Email);
                 if (await _loginService.ValidateCredentials(user, model.Password))
                 {
-                    AuthenticationProperties props = null;
-                    if (model.RememberMe)
-                    {
-                        props = new AuthenticationProperties
-                        {
-                            IsPersistent = true,
-                            ExpiresUtc = DateTimeOffset.UtcNow.AddDays(180)
-                        };
-                    };
+                    //AuthenticationProperties props = null;
+                    //if (model.RememberMe)
+                    //{
+                    //    props = new AuthenticationProperties
+                    //    {
+                    //        IsPersistent = true,
+                    //        ExpiresUtc = DateTimeOffset.UtcNow.AddDays(180)
+                    //    };
+                    //};
 
                     await _loginService.SignIn(user);
                    
@@ -138,15 +137,15 @@ namespace KinaUna.IDP.Controllers
 
         async Task<LoginViewModel> BuildLoginViewModelAsync(string returnUrl, AuthorizationRequest context)
         {
-            var allowLocal = true;
-            if (context?.ClientId != null)
-            {
-                var client = await _clientStore.FindEnabledClientByIdAsync(context.ClientId);
-                if (client != null)
-                {
-                    allowLocal = client.EnableLocalLogin;
-                }
-            }
+            //var allowLocal = true;
+            //if (context?.ClientId != null)
+            //{
+            //    var client = await _clientStore.FindEnabledClientByIdAsync(context.ClientId);
+            //    if (client != null)
+            //    {
+            //        allowLocal = client.EnableLocalLogin;
+            //    }
+            //}
 
             return new LoginViewModel
             {
@@ -237,10 +236,10 @@ namespace KinaUna.IDP.Controllers
 
             // get context information (client name, post logout redirect URI and iframe for federated signout)
             var logout = await _interaction.GetLogoutContextAsync(model.LogoutId);
-            if (logout.PostLogoutRedirectUri == null)
-            {
-                logout.PostLogoutRedirectUri = "/";
-            }
+            //if (logout.PostLogoutRedirectUri == null)
+            //{
+            //    logout.PostLogoutRedirectUri = "/";
+            //}
             return Redirect(logout?.PostLogoutRedirectUri);
             
         }
@@ -338,7 +337,7 @@ namespace KinaUna.IDP.Controllers
                     return Redirect(returnUrl);
                 else
                     if (ModelState.IsValid)
-                    return RedirectToAction("Login", "Account", new { returnUrl = returnUrl });
+                    return RedirectToAction("Login", "Account", new { returnUrl });
                 else
                     return View(model);
             }
@@ -640,7 +639,7 @@ namespace KinaUna.IDP.Controllers
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-            var hasPassword = await _userManager.HasPasswordAsync(user);
+            //var hasPassword = await _userManager.HasPasswordAsync(user);
             //if (!hasPassword)
             //{
             //    return RedirectToAction(nameof(SetPassword));

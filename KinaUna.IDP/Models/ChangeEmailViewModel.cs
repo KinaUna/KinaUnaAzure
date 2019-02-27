@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace KinaUna.IDP.Models
+﻿namespace KinaUna.IDP.Models
 {
     public class ChangeEmailViewModel
     {

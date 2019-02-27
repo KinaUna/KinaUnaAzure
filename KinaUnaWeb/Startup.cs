@@ -20,7 +20,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Net.Http.Headers;
 using System;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
@@ -63,7 +62,7 @@ namespace KinaUnaWeb
 
             services.AddSingleton<IXmlRepository, DataProtectionKeyRepository>();
             var built = services.BuildServiceProvider();
-            services.AddDataProtection().AddKeyManagementOptions(options => options.XmlRepository = built.GetService<IXmlRepository>()).SetApplicationName("KinaUnaWebApp"); ;
+            services.AddDataProtection().AddKeyManagementOptions(options => options.XmlRepository = built.GetService<IXmlRepository>()).SetApplicationName("KinaUnaWebApp");
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddHttpClient();
@@ -172,7 +171,6 @@ namespace KinaUnaWeb
                     
                 });
             services.AddAuthorization();
-            services.AddKendo();
             services.AddSignalR().AddMessagePackProtocol();
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
         }
@@ -231,7 +229,7 @@ namespace KinaUnaWeb
 
             app.UseAuthentication();
 
-            var log = loggerFactory.CreateLogger("identity");
+            loggerFactory.CreateLogger("identity");
 
             app.UseSignalR(routes => routes.MapHub<WebNotificationHub>("/webnotificationhub"));
             app.UseMvc(routes =>

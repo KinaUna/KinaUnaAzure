@@ -43,11 +43,13 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddPicture()
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
-            if (userinfo != null && userinfo.ViewChild > 0)
+            var userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
@@ -56,8 +58,7 @@ namespace KinaUnaWeb.Controllers
             model.Userinfo = userinfo;
             if (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null)
             {
-                List<Progeny> accessList = new List<Progeny>();
-                accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                var accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
                 if (accessList.Any())
                 {
                     foreach (Progeny prog in accessList)
@@ -86,11 +87,9 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> UploadPictures(UploadPictureViewModel model)
         {
             bool isAdmin = false;
-            UserInfo userinfo = new UserInfo();
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            Progeny progeny = new Progeny();
-            progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            var userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (progeny != null)
             {
                 if (progeny.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -172,10 +171,10 @@ namespace KinaUnaWeb.Controllers
                     {
                         if (ua.AccessLevel <= newPicture.AccessLevel)
                         {
-                            string picTimeString = "";
                             UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
                             if (uaUserInfo.UserId != "Unknown")
                             {
+                                string picTimeString;
                                 if (newPicture.PictureTime.HasValue)
                                 {
                                     var picTime = TimeZoneInfo.ConvertTimeFromUtc(newPicture.PictureTime.Value,
@@ -229,8 +228,7 @@ namespace KinaUnaWeb.Controllers
             {
                 string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
                 userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-                Progeny progeny = new Progeny();
-                progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+                Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
                 if (progeny != null)
                 {
                     if (progeny.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -248,8 +246,7 @@ namespace KinaUnaWeb.Controllers
                 });
             }
 
-            Picture newPicture = new Picture();
-            newPicture = await _mediaHttpClient.GetPicture(model.PictureId, userinfo.Timezone);
+            Picture newPicture = await _mediaHttpClient.GetPicture(model.PictureId, userinfo.Timezone);
 
             newPicture.AccessLevel = model.AccessLevel;
             newPicture.Author = model.Author;
@@ -308,8 +305,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeletePicture(int pictureId)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Picture picture = await _mediaHttpClient.GetPicture(pictureId, userinfo.Timezone);
             Progeny progeny = await _progenyHttpClient.GetProgeny(picture.ProgenyId);
@@ -344,8 +340,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeletePicture(PictureViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Picture picture = await _mediaHttpClient.GetPicture(model.PictureId, userinfo.Timezone);
             Progeny progeny = await _progenyHttpClient.GetProgeny(picture.ProgenyId);
@@ -394,10 +389,10 @@ namespace KinaUnaWeb.Controllers
                 {
                     if (ua.AccessLevel == 0)
                     {
-                        string picTimeString = "";
                         UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
                         if (uaUserInfo.UserId != "Unknown")
                         {
+                            string picTimeString;
                             if (picture.PictureTime.HasValue)
                             {
                                 var picTime = TimeZoneInfo.ConvertTimeFromUtc(picture.PictureTime.Value,
@@ -436,8 +431,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddPictureComment(CommentViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
             
             Comment cmnt = new Comment();
 
@@ -451,8 +445,7 @@ namespace KinaUnaWeb.Controllers
 
             if (commentAdded)
             {
-                Progeny progeny = new Progeny();
-                progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+                Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
                 Picture pic = await _mediaHttpClient.GetPicture(model.ItemId, userinfo.Timezone);
                 if (progeny != null)
                 {
@@ -539,10 +532,13 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
 
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
 
-            if (userinfo != null && userinfo.ViewChild > 0)
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
@@ -551,8 +547,7 @@ namespace KinaUnaWeb.Controllers
             model.Userinfo = userinfo;
             if (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null)
             {
-                List<Progeny> accessList = new List<Progeny>();
-                accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
                 if (accessList.Any())
                 {
                     foreach (Progeny prog in accessList)
@@ -578,11 +573,9 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> UploadVideo(UploadVideoViewModel model)
         {
             bool isAdmin = false;
-            UserInfo userinfo = new UserInfo();
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            Progeny progeny = new Progeny();
-            progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (progeny != null)
             {
                 if (progeny.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -611,12 +604,9 @@ namespace KinaUnaWeb.Controllers
                 video.VideoTime = TimeZoneInfo.ConvertTimeToUtc(model.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
             }
             video.VideoType = 2;
-            int durHours = 0;
-            int durMins = 0;
-            int durSecs = 0;
-            Int32.TryParse(model.DurationHours, out durHours);
-            Int32.TryParse(model.DurationMinutes, out durMins);
-            Int32.TryParse(model.DurationSeconds, out durSecs);
+            Int32.TryParse(model.DurationHours, out var durHours);
+            Int32.TryParse(model.DurationMinutes, out var durMins);
+            Int32.TryParse(model.DurationSeconds, out var durSecs);
             if (durHours + durMins + durSecs != 0)
             {
                 video.Duration = new TimeSpan(durHours, durMins, durSecs);
@@ -691,10 +681,10 @@ namespace KinaUnaWeb.Controllers
             {
                 if (ua.AccessLevel <= newVideo.AccessLevel)
                 {
-                    string vidTimeString = "";
                     UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
                     if (uaUserInfo.UserId != "Unknown")
                     {
+                        string vidTimeString;
                         if (newVideo.VideoTime.HasValue)
                         {
                             var vidTime = TimeZoneInfo.ConvertTimeFromUtc(newVideo.VideoTime.Value,
@@ -736,8 +726,7 @@ namespace KinaUnaWeb.Controllers
             {
                 string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
                 userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-                Progeny progeny = new Progeny();
-                progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+                Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
                 if (progeny != null)
                 {
                     if (progeny.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -759,8 +748,7 @@ namespace KinaUnaWeb.Controllers
                 });
             }
 
-            Video newVideo = new Video();
-            newVideo = await _mediaHttpClient.GetVideo(model.VideoId, userinfo.Timezone);
+            Video newVideo = await _mediaHttpClient.GetVideo(model.VideoId, userinfo.Timezone);
 
             newVideo.AccessLevel = model.AccessLevel;
             newVideo.Author = model.Author;
@@ -768,12 +756,10 @@ namespace KinaUnaWeb.Controllers
             {
                 newVideo.VideoTime = TimeZoneInfo.ConvertTimeToUtc(model.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
             }
-            int durHours = 0;
-            int durMins = 0;
-            int durSecs = 0;
-            Int32.TryParse(model.DurationHours, out durHours);
-            Int32.TryParse(model.DurationMinutes, out durMins);
-            Int32.TryParse(model.DurationSeconds, out durSecs);
+
+            Int32.TryParse(model.DurationHours, out var durHours);
+            Int32.TryParse(model.DurationMinutes, out var durMins);
+            Int32.TryParse(model.DurationSeconds, out var durSecs);
             if (durHours + durMins + durSecs != 0)
             {
                 newVideo.Duration = new TimeSpan(durHours, durMins, durSecs);
@@ -830,8 +816,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteVideo(int videoId)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Video video = await _mediaHttpClient.GetVideo(videoId, userinfo.Timezone);
             Progeny progeny = await _progenyHttpClient.GetProgeny(video.ProgenyId);
@@ -862,8 +847,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteVideo(VideoViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Video video = await _mediaHttpClient.GetVideo(model.VideoId, userinfo.Timezone);
             Progeny progeny = await _progenyHttpClient.GetProgeny(video.ProgenyId);
@@ -901,8 +885,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddVideoComment(CommentViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Comment cmnt = new Comment();
 
@@ -916,8 +899,7 @@ namespace KinaUnaWeb.Controllers
 
             if (commentAdded)
             {
-                Progeny progeny = new Progeny();
-                progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+                Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
                 if (progeny != null)
                 {
                     string imgLink = "https://web.kinauna.com/Videos/Video/" + model.ItemId + "?childId=" + model.ProgenyId;
@@ -1004,16 +986,18 @@ namespace KinaUnaWeb.Controllers
             NoteViewModel model = new NoteViewModel();
 
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (userinfo != null && userinfo.ViewChild > 0)
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
             if (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null)
             {
-                List<Progeny> accessList = new List<Progeny>();
-                accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
                 if (accessList.Any())
                 {
                     foreach (Progeny prog in accessList)
@@ -1042,8 +1026,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddNote(NoteViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             var progAdminList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
             if (!progAdminList.Any())
@@ -1130,8 +1113,7 @@ namespace KinaUnaWeb.Controllers
             NoteViewModel model = new NoteViewModel();
             Note note = await _context.NotesDb.SingleAsync(n => n.NoteId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(note.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1165,8 +1147,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditNote(NoteViewModel note)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(note.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1207,8 +1188,7 @@ namespace KinaUnaWeb.Controllers
         {
             Note model = await _context.NotesDb.SingleAsync(n => n.NoteId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1225,8 +1205,7 @@ namespace KinaUnaWeb.Controllers
         {
             Note note = await _context.NotesDb.SingleAsync(n => n.NoteId == model.NoteId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(note.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1254,9 +1233,12 @@ namespace KinaUnaWeb.Controllers
             CalendarItemViewModel model = new CalendarItemViewModel();
             model.AllDay = false;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (userinfo != null && userinfo.ViewChild > 0)
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
@@ -1292,8 +1274,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddEvent(CalendarItemViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1371,19 +1352,14 @@ namespace KinaUnaWeb.Controllers
                     UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
                     if (uaUserInfo.UserId != "Unknown")
                     {
-                        string eventTimeString = "";
-                        if (eventItem.StartTime.HasValue)
-                        {
-                            var startTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value,
+                        var startTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value,
                                 TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
-                            eventTimeString = "\r\nStart: " + startTime.ToString("dd-MMM-yyyy HH:mm");
-                        }
-                        if (eventItem.EndTime.HasValue)
-                        {
-                            var endTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value,
+                        string eventTimeString = "\r\nStart: " + startTime.ToString("dd-MMM-yyyy HH:mm");
+                        
+                        var endTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value,
                                 TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
-                            eventTimeString = eventTimeString + "\r\nEnd: " + endTime.ToString("dd-MMM-yyyy HH:mm");
-                        }
+                        eventTimeString = eventTimeString + "\r\nEnd: " + endTime.ToString("dd-MMM-yyyy HH:mm");
+                        
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
                         notification.From = authorName;
@@ -1412,8 +1388,7 @@ namespace KinaUnaWeb.Controllers
             CalendarItemViewModel model = new CalendarItemViewModel();
             CalendarItem eventItem = await _context.CalendarDb.SingleAsync(e => e.EventId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(eventItem.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1428,8 +1403,11 @@ namespace KinaUnaWeb.Controllers
             model.Author = eventItem.Author;
             model.Title = eventItem.Title;
             model.Notes = eventItem.Notes;
-            model.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-            model.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+            if (eventItem.StartTime.HasValue && eventItem.EndTime.HasValue)
+            {
+                model.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                model.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+            }
             model.Location = eventItem.Location;
             model.Context = eventItem.Context;
             model.AllDay = eventItem.AllDay;
@@ -1445,8 +1423,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditEvent(CalendarItemViewModel eventItem)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(eventItem.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1463,8 +1440,11 @@ namespace KinaUnaWeb.Controllers
                 model.Author = eventItem.Author;
                 model.Title = eventItem.Title;
                 model.Notes = eventItem.Notes;
-                model.StartTime = TimeZoneInfo.ConvertTimeToUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                model.EndTime = TimeZoneInfo.ConvertTimeToUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                if (eventItem.StartTime.HasValue && eventItem.EndTime.HasValue)
+                {
+                    model.StartTime = TimeZoneInfo.ConvertTimeToUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                    model.EndTime = TimeZoneInfo.ConvertTimeToUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                }
                 model.Location = eventItem.Location;
                 model.Context = eventItem.Context;
                 model.AllDay = eventItem.AllDay;
@@ -1473,7 +1453,7 @@ namespace KinaUnaWeb.Controllers
 
                 TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
                     t.ItemId == model.EventId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Calendar);
-                if (tItem != null)
+                if (tItem != null && model.StartTime.HasValue && model.EndTime.HasValue)
                 {
                     tItem.ProgenyTime = model.StartTime.Value;
                     tItem.AccessLevel = model.AccessLevel;
@@ -1490,8 +1470,7 @@ namespace KinaUnaWeb.Controllers
         {
             CalendarItem model = await _context.CalendarDb.SingleAsync(e => e.EventId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1508,8 +1487,7 @@ namespace KinaUnaWeb.Controllers
         {
             CalendarItem eventItem = await _context.CalendarDb.SingleAsync(e => e.EventId == model.EventId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(eventItem.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1537,9 +1515,12 @@ namespace KinaUnaWeb.Controllers
             VocabularyItemViewModel model = new VocabularyItemViewModel();
 
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (userinfo != null && userinfo.ViewChild > 0)
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
@@ -1576,8 +1557,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddVocabulary(VocabularyItemViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1685,8 +1665,7 @@ namespace KinaUnaWeb.Controllers
             VocabularyItemViewModel model = new VocabularyItemViewModel();
             VocabularyItem vocab = await _context.VocabularyDb.SingleAsync(v => v.WordId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(vocab.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1720,8 +1699,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditVocabulary(VocabularyItemViewModel vocab)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(vocab.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1769,8 +1747,7 @@ namespace KinaUnaWeb.Controllers
         {
             VocabularyItem model = await _context.VocabularyDb.SingleAsync(v => v.WordId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1788,8 +1765,7 @@ namespace KinaUnaWeb.Controllers
         {
             VocabularyItem vocab = await _context.VocabularyDb.SingleAsync(v => v.WordId == model.WordId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1819,17 +1795,19 @@ namespace KinaUnaWeb.Controllers
             SkillViewModel model = new SkillViewModel();
 
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (userinfo != null && userinfo.ViewChild > 0)
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
-            List<Progeny> accessList = new List<Progeny>();
+
             if (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null)
             {
-
-                accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
                 if (accessList.Any())
                 {
                     foreach (Progeny prog in accessList)
@@ -1857,8 +1835,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddSkill(SkillViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1922,7 +1899,7 @@ namespace KinaUnaWeb.Controllers
                     UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
                     if (uaUserInfo.UserId != "Unknown")
                     {
-                        string skillTimeString = "\r\nDate: " + skillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy"); ;
+                        string skillTimeString = "\r\nDate: " + skillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy");
                         
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
@@ -1950,8 +1927,7 @@ namespace KinaUnaWeb.Controllers
             SkillViewModel model = new SkillViewModel();
             Skill skill = await _context.SkillsDb.SingleAsync(s => s.SkillId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(skill.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -1984,8 +1960,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditSkill(SkillViewModel skill)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(skill.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2032,8 +2007,7 @@ namespace KinaUnaWeb.Controllers
         {
             Skill model = await _context.SkillsDb.SingleAsync(s => s.SkillId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2050,8 +2024,7 @@ namespace KinaUnaWeb.Controllers
         {
             Skill skill = await _context.SkillsDb.SingleAsync(s => s.SkillId == model.SkillId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2080,17 +2053,19 @@ namespace KinaUnaWeb.Controllers
             List<string> tagsList = new List<string>();
 
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (userinfo != null && userinfo.ViewChild > 0)
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
-            List<Progeny> accessList = new List<Progeny>();
+
             if (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null)
             {
-
-                accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
                 if (accessList.Any())
                 {
                     foreach (Progeny prog in accessList)
@@ -2147,8 +2122,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddFriend(FriendViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2264,8 +2238,7 @@ namespace KinaUnaWeb.Controllers
             FriendViewModel model = new FriendViewModel();
             Friend friend = await _context.FriendsDb.SingleAsync(f => f.FriendId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(friend.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2340,8 +2313,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditFriend(FriendViewModel friend)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(friend.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2406,8 +2378,7 @@ namespace KinaUnaWeb.Controllers
         {
             Friend model = await _context.FriendsDb.SingleAsync(f => f.FriendId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2424,8 +2395,7 @@ namespace KinaUnaWeb.Controllers
         {
             Friend friend = await _context.FriendsDb.SingleAsync(f => f.FriendId == model.FriendId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(friend.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2459,17 +2429,21 @@ namespace KinaUnaWeb.Controllers
             MeasurementViewModel model = new MeasurementViewModel();
 
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (userinfo != null && userinfo.ViewChild > 0)
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
-            List<Progeny> accessList = new List<Progeny>();
+
             if (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null)
             {
-
-                accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
                 if (accessList.Any())
                 {
                     foreach (Progeny prog in accessList)
@@ -2497,8 +2471,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddMeasurement(MeasurementViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2586,8 +2559,7 @@ namespace KinaUnaWeb.Controllers
             Measurement measurement = await _context.MeasurementsDb.SingleAsync(m => m.MeasurementId == itemId);
 
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(measurement.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2618,8 +2590,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditMeasurement(MeasurementViewModel measurement)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(measurement.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2662,8 +2633,7 @@ namespace KinaUnaWeb.Controllers
         {
             Measurement model = await _context.MeasurementsDb.SingleAsync(m => m.MeasurementId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2680,8 +2650,7 @@ namespace KinaUnaWeb.Controllers
         {
             Measurement measurement = await _context.MeasurementsDb.SingleAsync(m => m.MeasurementId == model.MeasurementId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(measurement.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2710,9 +2679,12 @@ namespace KinaUnaWeb.Controllers
             List<string> tagsList = new List<string>();
 
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (userinfo != null && userinfo.ViewChild > 0)
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
@@ -2781,8 +2753,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddContact(ContactViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2908,8 +2879,7 @@ namespace KinaUnaWeb.Controllers
             ContactViewModel model = new ContactViewModel();
             Contact contact = await _context.ContactsDb.SingleAsync(c => c.ContactId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(contact.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -2953,7 +2923,7 @@ namespace KinaUnaWeb.Controllers
             {
                 model.PictureLink = _imageStore.UriFor(contact.PictureLink, "contacts");
             }
-            DateTime tempTime = contact?.DateAdded ?? DateTime.UtcNow;
+            DateTime tempTime = contact.DateAdded ?? DateTime.UtcNow;
             model.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(tempTime, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
             model.Tags = contact.Tags;
 
@@ -2996,8 +2966,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditContact(ContactViewModel contact)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(contact.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3018,10 +2987,9 @@ namespace KinaUnaWeb.Controllers
                 model.LastName = contact.LastName;
                 model.DisplayName = contact.DisplayName;
                 model.DateAdded = contact.DateAdded;
-                Address addressOld = new Address();
                 if (contact.AddressIdNumber != null)
                 {
-                    addressOld = await _context.AddressDb.SingleAsync(c => c.AddressId == contact.AddressIdNumber);
+                    Address addressOld = await _context.AddressDb.SingleAsync(c => c.AddressId == contact.AddressIdNumber);
                     addressOld.AddressLine1 = contact.AddressLine1;
                     addressOld.AddressLine2 = contact.AddressLine2;
                     addressOld.City = contact.City;
@@ -3102,8 +3070,7 @@ namespace KinaUnaWeb.Controllers
         {
             Contact model = await _context.ContactsDb.SingleAsync(c => c.ContactId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3120,8 +3087,7 @@ namespace KinaUnaWeb.Controllers
         {
             Contact contact = await _context.ContactsDb.SingleAsync(c => c.ContactId == model.ContactId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(contact.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3160,9 +3126,12 @@ namespace KinaUnaWeb.Controllers
             VaccinationViewModel model = new VaccinationViewModel();
 
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (userinfo != null && userinfo.ViewChild > 0)
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
@@ -3198,8 +3167,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddVaccination(VaccinationViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3285,8 +3253,7 @@ namespace KinaUnaWeb.Controllers
             VaccinationViewModel model = new VaccinationViewModel();
             Vaccination vaccination = await _context.VaccinationsDb.SingleAsync(v => v.VaccinationId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(vaccination.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3313,8 +3280,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditVaccination(VaccinationViewModel vaccination)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(vaccination.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3354,8 +3320,7 @@ namespace KinaUnaWeb.Controllers
         {
             Vaccination model = await _context.VaccinationsDb.SingleAsync(v => v.VaccinationId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3372,8 +3337,7 @@ namespace KinaUnaWeb.Controllers
         {
             Vaccination vaccination = await _context.VaccinationsDb.SingleAsync(v => v.VaccinationId == model.VaccinationId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3401,9 +3365,12 @@ namespace KinaUnaWeb.Controllers
             SleepViewModel model = new SleepViewModel();
 
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (userinfo != null && userinfo.ViewChild > 0)
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
@@ -3439,8 +3406,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddSleep(SleepViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3452,8 +3418,11 @@ namespace KinaUnaWeb.Controllers
             sleepItem.ProgenyId = model.ProgenyId;
             sleepItem.Progeny = prog;
             sleepItem.CreatedDate = DateTime.UtcNow;
-            sleepItem.SleepStart = TimeZoneInfo.ConvertTimeToUtc(model.SleepStart.Value, TimeZoneInfo.FindSystemTimeZoneById(sleepItem.Progeny.TimeZone));
-            sleepItem.SleepEnd = TimeZoneInfo.ConvertTimeToUtc(model.SleepEnd.Value, TimeZoneInfo.FindSystemTimeZoneById(sleepItem.Progeny.TimeZone));
+            if (model.SleepStart.HasValue && model.SleepEnd.HasValue)
+            {
+                sleepItem.SleepStart = TimeZoneInfo.ConvertTimeToUtc(model.SleepStart.Value, TimeZoneInfo.FindSystemTimeZoneById(sleepItem.Progeny.TimeZone));
+                sleepItem.SleepEnd = TimeZoneInfo.ConvertTimeToUtc(model.SleepEnd.Value, TimeZoneInfo.FindSystemTimeZoneById(sleepItem.Progeny.TimeZone));
+            }
             sleepItem.SleepRating = model.SleepRating;
             if (sleepItem.SleepRating == 0)
             {
@@ -3544,8 +3513,7 @@ namespace KinaUnaWeb.Controllers
             SleepViewModel model = new SleepViewModel();
             Sleep sleep = await _context.SleepDb.SingleAsync(s => s.SleepId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(sleep.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3601,8 +3569,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditSleep(SleepViewModel sleep)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(sleep.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3619,8 +3586,11 @@ namespace KinaUnaWeb.Controllers
                 model.AccessLevel = sleep.AccessLevel;
                 model.Author = sleep.Author;
                 model.CreatedDate = sleep.CreatedDate;
-                model.SleepStart = TimeZoneInfo.ConvertTimeToUtc(sleep.SleepStart.Value, TimeZoneInfo.FindSystemTimeZoneById(model.Progeny.TimeZone));
-                model.SleepEnd = TimeZoneInfo.ConvertTimeToUtc(sleep.SleepEnd.Value, TimeZoneInfo.FindSystemTimeZoneById(model.Progeny.TimeZone));
+                if (sleep.SleepStart.HasValue && sleep.SleepEnd.HasValue)
+                {
+                    model.SleepStart = TimeZoneInfo.ConvertTimeToUtc(sleep.SleepStart.Value, TimeZoneInfo.FindSystemTimeZoneById(model.Progeny.TimeZone));
+                    model.SleepEnd = TimeZoneInfo.ConvertTimeToUtc(sleep.SleepEnd.Value, TimeZoneInfo.FindSystemTimeZoneById(model.Progeny.TimeZone));
+                }
                 model.SleepRating = sleep.SleepRating;
                 if (model.SleepRating == 0)
                 {
@@ -3648,8 +3618,7 @@ namespace KinaUnaWeb.Controllers
         {
             Sleep model = await _context.SleepDb.SingleAsync(s => s.SleepId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3666,8 +3635,7 @@ namespace KinaUnaWeb.Controllers
         {
             Sleep sleep = await _context.SleepDb.SingleAsync(s => s.SleepId == model.SleepId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(sleep.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3695,17 +3663,19 @@ namespace KinaUnaWeb.Controllers
 
             List<string> tagsList = new List<string>();
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (userinfo != null && userinfo.ViewChild > 0)
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
-            List<Progeny> accessList = new List<Progeny>();
+
             if (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null)
             {
-
-                accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
                 if (accessList.Any())
                 {
                     model.Progeny = accessList[0];
@@ -3768,8 +3738,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddLocation(LocationViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -3886,16 +3855,19 @@ namespace KinaUnaWeb.Controllers
             LocationViewModel model = new LocationViewModel();
             List<string> tagsList = new List<string>();
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (userinfo != null && userinfo.ViewChild > 0)
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            if (userinfo == null)
+            {
+                return RedirectToAction("Index");
+            }
+            if (userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
-            List<Progeny> accessList = new List<Progeny>();
+
             if (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null)
             {
-                accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
                 if (accessList.Any())
                 {
                     foreach (Progeny chld in accessList)
@@ -3982,8 +3954,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditLocation(LocationViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -4041,8 +4012,7 @@ namespace KinaUnaWeb.Controllers
 
             Location model = await _context.LocationsDb.SingleAsync(l => l.LocationId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
@@ -4060,8 +4030,7 @@ namespace KinaUnaWeb.Controllers
 
             Location locItem = await _context.LocationsDb.SingleAsync(l => l.LocationId == model.LocationId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(locItem.ProgenyId);
             if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))

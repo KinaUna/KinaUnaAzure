@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using IdentityModel.Client;
 using KinaUnaWeb.Data;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -31,7 +29,7 @@ namespace KinaUnaWeb.Hubs
             var connectionId = Context.ConnectionId;
             await Groups.AddToGroupAsync(connectionId, "Online");
             await base.OnConnectedAsync();
-            await GetUpdateForUser(10, 1);
+            await GetUpdateForUser();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
@@ -70,13 +68,12 @@ namespace KinaUnaWeb.Hubs
         public async Task SendUpdateToUser(WebNotification notification)
         {
             string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
-            string userEmail = Context.GetHttpContext().User.FindFirst("email")?.Value ?? "NoUser";
             string userTimeZone = Context.GetHttpContext().User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
             // Todo: Check if sender has access rights to send to receiver.
 
             if (userId != "NoUser")
             {
-                UserInfo userinfo = new UserInfo();
+                UserInfo userinfo;
                 if (notification.To.Contains('@'))
                 {
                     userinfo = await _progenyHttpClient.GetUserInfo(notification.To);
@@ -123,7 +120,7 @@ namespace KinaUnaWeb.Hubs
         public async Task SetRead(string notification)
         {
             string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
-            int id = 0;
+            int id;
             bool idParsed = Int32.TryParse(notification, out id);
             if (idParsed)
             {
@@ -150,7 +147,7 @@ namespace KinaUnaWeb.Hubs
         public async Task SetUnread(string notification)
         {
             string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
-            int id = 0;
+            int id;
             bool idParsed = Int32.TryParse(notification, out id);
             if (idParsed)
             {
@@ -177,7 +174,7 @@ namespace KinaUnaWeb.Hubs
         public async Task DeleteNotification(string notification)
         {
             string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
-            int id = 0;
+            int id;
             bool idParsed = Int32.TryParse(notification, out id);
             if (idParsed)
             {

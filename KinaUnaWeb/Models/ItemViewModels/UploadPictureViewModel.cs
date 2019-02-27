@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -34,7 +31,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string Location { get; set; }
         public UploadPictureViewModel()
         {
-            List<IFormFile> files = new List<IFormFile>();
+            // List<IFormFile> files = new List<IFormFile>();
 
             ProgenyList = new List<SelectListItem>();
 

@@ -1,37 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Models
 {
     public class PictureTime
     {
-        private string _name;
-        private DateTime _birthDay;
-        private TimeZoneInfo _birthTimeZone;
-        private DateTime _pictureDateTime;
         private readonly DateTime _pictureUtcTime;
         private readonly DateTime _birthDayUtc;
 
         public string PictureDateTime => _pictureUtcTime.ToString("dd MMMM yyyy HH:mm");
 
-        public PictureTime(string nme, DateTime bday, DateTime? pictureTaken, TimeZoneInfo bdayTz)
+        public PictureTime(DateTime bday, DateTime? pictureTaken, TimeZoneInfo bdayTz)
         {
-            _name = nme;
-            _birthDay = bday;
-            _birthTimeZone = bdayTz;
             _birthDayUtc = TimeZoneInfo.ConvertTimeToUtc(bday, bdayTz);
 
 
             if (pictureTaken != null)
             {
-                _pictureDateTime = (DateTime)pictureTaken;
                 _pictureUtcTime = pictureTaken.Value;  //TimeZoneInfo.ConvertTimeToUtc((DateTime)pictureTaken, bdayTz);
             }
             else
             {
-                _pictureDateTime = bday;
                 _pictureUtcTime = TimeZoneInfo.ConvertTimeToUtc(bday, bdayTz);
             }
         }
@@ -41,7 +29,7 @@ namespace KinaUnaWeb.Models
         {
 
             TimeSpan age = _pictureUtcTime - _birthDayUtc;
-            double ageYears = (double)age.TotalSeconds / (365.0 * 24.0 * 60.0 * 60.0);
+            double ageYears = age.TotalSeconds / (365.0 * 24.0 * 60.0 * 60.0);
 
             return ageYears.ToString("F6");
         }

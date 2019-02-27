@@ -2,7 +2,6 @@
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,28 +25,25 @@ namespace KinaUnaWeb.Controllers
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
-        private readonly ImageStore _imageStore;
+        
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly WebDbContext _context;
-        private readonly IApplicationLifetime _appLifetime;
         private readonly ILogger _logger;
         private readonly IHubContext<WebNotificationHub> _hubContext;
         private readonly IPushMessageSender _pushMessageSender;
 
-        public AdminController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore,
+        public AdminController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient,
             IConfiguration configuration, IHttpContextAccessor httpContextAccessor, WebDbContext context,
-            IBackgroundTaskQueue queue, IApplicationLifetime appLifetime, ILoggerFactory loggerFactory,
+            IBackgroundTaskQueue queue, ILoggerFactory loggerFactory,
             IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
-            _imageStore = imageStore;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _context = context;
             Queue = queue;
-            _appLifetime = appLifetime;
             _logger = loggerFactory.CreateLogger<AdminController>();
             _hubContext = hubContext;
             _pushMessageSender = pushMessageSender;
@@ -98,14 +94,12 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            List<Picture> allPictures = new List<Picture>();
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             // get the current HttpContext to access the tokens
             var currentContext = _httpContextAccessor.HttpContext;
             // get access token
-            accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             HttpClient pictureHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -123,8 +117,8 @@ namespace KinaUnaWeb.Controllers
             var pictureUri = clientUri + pictureApiPath;
 
             var pictureResponseString = await pictureHttpClient.GetStringAsync(pictureUri);
-            
-            allPictures = JsonConvert.DeserializeObject<List<Picture>>(pictureResponseString);
+
+            List<Picture> allPictures = JsonConvert.DeserializeObject<List<Picture>>(pictureResponseString);
             
             return View(allPictures);
         }
@@ -138,14 +132,12 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            List<Comment> allComments = new List<Comment>();
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             // get the current HttpContext to access the tokens
             var currentContext = _httpContextAccessor.HttpContext;
             // get access token
-            accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             HttpClient commentsHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -164,7 +156,7 @@ namespace KinaUnaWeb.Controllers
 
             var commentsResponseString = await commentsHttpClient.GetStringAsync(commentsUri);
 
-            allComments = JsonConvert.DeserializeObject<List<Comment>>(commentsResponseString);
+            List<Comment> allComments = JsonConvert.DeserializeObject<List<Comment>>(commentsResponseString);
 
             return View(allComments);
         }
@@ -178,14 +170,12 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            List<Video> allVideos = new List<Video>();
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
-            string accessToken = string.Empty;
 
             // get the current HttpContext to access the tokens
             var currentContext = _httpContextAccessor.HttpContext;
             // get access token
-            accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
             HttpClient pictureHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
@@ -204,7 +194,7 @@ namespace KinaUnaWeb.Controllers
 
             var videoResponseString = await pictureHttpClient.GetStringAsync(videoUri);
 
-            allVideos = JsonConvert.DeserializeObject<List<Video>>(videoResponseString);
+            List<Video> allVideos = JsonConvert.DeserializeObject<List<Video>>(videoResponseString);
 
             return View(allVideos);
         }
@@ -749,36 +739,35 @@ namespace KinaUnaWeb.Controllers
             List<Sleep> sleepList = _context.SleepDb.ToList();
             foreach (Sleep slp in sleepList)
             {
-                if (slp.SleepStart != null)
+                
+                TimeLineItem tItem = new TimeLineItem();
+                tItem.ProgenyId = slp.ProgenyId;
+                tItem.ProgenyTime = slp.SleepStart;
+                if (slp.ProgenyId == 1)
                 {
-                    TimeLineItem tItem = new TimeLineItem();
-                    tItem.ProgenyId = slp.ProgenyId;
-                    tItem.ProgenyTime = slp.SleepStart;
-                    if (slp.ProgenyId == 1)
+                    tItem.CreatedBy = userinfo.UserId;
+                }
+                else
+                {
+                    if (slp.ProgenyId == 2)
                     {
-                        tItem.CreatedBy = userinfo.UserId;
+                        UserInfo usr = await _progenyHttpClient.GetUserInfo("per.mogensen@live.com");
+                        tItem.CreatedBy = usr.UserId;
                     }
                     else
                     {
-                        if (slp.ProgenyId == 2)
-                        {
-                            UserInfo usr = await _progenyHttpClient.GetUserInfo("per.mogensen@live.com");
-                            tItem.CreatedBy = usr.UserId;
-                        }
-                        else
-                        {
-                            UserInfo usr = await _progenyHttpClient.GetUserInfo("tuelpi@hotmail.com");
-                            tItem.CreatedBy = usr.UserId;
-                        }
+                        UserInfo usr = await _progenyHttpClient.GetUserInfo("tuelpi@hotmail.com");
+                        tItem.CreatedBy = usr.UserId;
                     }
-                    tItem.AccessLevel = slp.AccessLevel;
-                    tItem.ItemId = slp.SleepId.ToString();
-                    tItem.CreatedTime = slp.CreatedDate;
-                    tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Sleep;
-                    await _context.TimeLineDb.AddAsync(tItem);
-                    await _context.SaveChangesAsync();
-                    itemsCount[0] = itemsCount[0] + 1;
                 }
+                tItem.AccessLevel = slp.AccessLevel;
+                tItem.ItemId = slp.SleepId.ToString();
+                tItem.CreatedTime = slp.CreatedDate;
+                tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Sleep;
+                await _context.TimeLineDb.AddAsync(tItem);
+                await _context.SaveChangesAsync();
+                itemsCount[0] = itemsCount[0] + 1;
+                
             }
 
             List<Note> notesList = _context.NotesDb.ToList();
@@ -1114,6 +1103,7 @@ namespace KinaUnaWeb.Controllers
 
             if (userEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
             {
+                UserInfo userinfo;
                 if (notification.To == "OnlineUsers")
                 {
                     notification.DateTime = DateTime.UtcNow;
@@ -1124,7 +1114,6 @@ namespace KinaUnaWeb.Controllers
                 }
                 else
                 {
-                    UserInfo userinfo = new UserInfo();
                     if (notification.To.Contains('@'))
                     {
                         userinfo = await _progenyHttpClient.GetUserInfo(notification.To);
@@ -1180,10 +1169,9 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            UserInfo userinfo = new UserInfo();
             if (notification.UserId.Contains('@'))
             {
-                userinfo = await _progenyHttpClient.GetUserInfo(notification.UserId);
+                UserInfo userinfo = await _progenyHttpClient.GetUserInfo(notification.UserId);
                 notification.UserId = userinfo.UserId;
             }
 

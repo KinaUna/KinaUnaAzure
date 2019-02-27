@@ -17,7 +17,7 @@ namespace KinaUnaWeb.Controllers
         private WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private int _progId = 2;
-        private bool _userIsProgenyAdmin = false;
+        private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = "testuser@niviaq.com";
 
         public CalendarController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
@@ -31,11 +31,7 @@ namespace KinaUnaWeb.Controllers
         {
             _progId = childId;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
-            if (string.IsNullOrEmpty(userTimeZone))
-            {
-                userTimeZone = "Romance Standard Time";
-            }
+            
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
@@ -47,8 +43,7 @@ namespace KinaUnaWeb.Controllers
                 _progId = 2;
             }
 
-            Progeny progeny = new Progeny();
-            progeny = await _progenyHttpClient.GetProgeny(_progId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = 5;
@@ -82,21 +77,24 @@ namespace KinaUnaWeb.Controllers
             {
                 if (ev.AccessLevel == 5 || ev.AccessLevel >= userAccessLevel)
                 {
-                    ev.StartTime = TimeZoneInfo.ConvertTimeFromUtc(ev.StartTime.Value,
-                        TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                    if (ev.AllDay)
+                    if (ev.StartTime.HasValue && ev.EndTime.HasValue)
                     {
-                        ev.EndTime = TimeZoneInfo.ConvertTimeFromUtc(ev.EndTime.Value + TimeSpan.FromDays(1),
+                        ev.StartTime = TimeZoneInfo.ConvertTimeFromUtc(ev.StartTime.Value,
                             TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                        if (ev.AllDay)
+                        {
+                            ev.EndTime = TimeZoneInfo.ConvertTimeFromUtc(ev.EndTime.Value + TimeSpan.FromDays(1),
+                                TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                        }
+                        else
+                        {
+                            ev.EndTime = TimeZoneInfo.ConvertTimeFromUtc(ev.EndTime.Value,
+                                TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                        }
+                        ev.StartString = ev.StartTime.Value.ToString("yyyy-MM-dd") + "T" + ev.StartTime.Value.ToString("HH:mm:ss");
+                        ev.EndString = ev.EndTime.Value.ToString("yyyy-MM-dd") + "T" + ev.EndTime.Value.ToString("HH:mm:ss");
+                        events.EventsList.Add(ev);
                     }
-                    else
-                    {
-                        ev.EndTime = TimeZoneInfo.ConvertTimeFromUtc(ev.EndTime.Value,
-                            TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                    }
-                    ev.StartString = ev.StartTime.Value.ToString("yyyy-MM-dd") + "T" + ev.StartTime.Value.ToString("HH:mm:ss");
-                    ev.EndString = ev.EndTime.Value.ToString("yyyy-MM-dd") + "T" + ev.EndTime.Value.ToString("HH:mm:ss");
-                    events.EventsList.Add(ev);
                 }
             }
 
@@ -112,15 +110,10 @@ namespace KinaUnaWeb.Controllers
             CalendarItemViewModel model = new CalendarItemViewModel();
 
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
-            if (string.IsNullOrEmpty(userTimeZone))
-            {
-                userTimeZone = "Romance Standard Time";
-            }
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
             
-            Progeny progeny = new Progeny();
-            progeny = await _progenyHttpClient.GetProgeny(eventItem.ProgenyId);
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+
+            Progeny progeny = await _progenyHttpClient.GetProgeny(eventItem.ProgenyId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(eventItem.ProgenyId);
 
             int userAccessLevel = 5;
@@ -153,8 +146,11 @@ namespace KinaUnaWeb.Controllers
             
             model.Title = eventItem.Title;
             model.AllDay = eventItem.AllDay;
-            model.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-            model.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+            if (eventItem.StartTime.HasValue && eventItem.EndTime.HasValue)
+            {
+                model.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                model.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+            }
             model.Notes = eventItem.Notes;
             model.Location = eventItem.Location;
             model.Context = eventItem.Context;

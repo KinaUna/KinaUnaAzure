@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using KinaUnaWeb.Data;
 using KinaUnaWeb.Models;
-using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,13 +15,11 @@ namespace KinaUnaWeb.Controllers
         private readonly WebDbContext _context;
 
         private readonly IConfiguration _configuration;
-        private readonly IProgenyHttpClient _progenyHttpClient;
-
-        public PushDevicesController(WebDbContext context, IConfiguration configuration, IProgenyHttpClient progenyHttpClient)
+        
+        public PushDevicesController(WebDbContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
-            _progenyHttpClient = progenyHttpClient;
         }
 
         // GET: Devices
@@ -119,7 +112,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> RemovePushDevice(PushDevices device)
         {
-            string userId = HttpContext.User.FindFirst("sub").Value;
+            // string userId = HttpContext.User.FindFirst("sub").Value;
             PushDevices deleteDevice = await _context.PushDevices.SingleOrDefaultAsync(p => p.Name == device.Name && p.PushP256DH == device.PushP256DH);
             if (deleteDevice != null)
             {

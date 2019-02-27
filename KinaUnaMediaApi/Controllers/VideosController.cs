@@ -2,9 +2,7 @@
 using KinaUnaMediaApi.Models;
 using KinaUnaMediaApi.Models.DTOs;
 using KinaUnaMediaApi.Models.ViewModels;
-using KinaUnaMediaApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -24,13 +22,9 @@ namespace KinaUnaMediaApi.Controllers
     public class VideosController : ControllerBase
     {
         private readonly MediaDbContext _context;
-        private readonly ImageStore _imageStore;
-        private readonly IHostingEnvironment _env;
-        public VideosController(MediaDbContext context, ImageStore imageStore, IHostingEnvironment env)
+        public VideosController(MediaDbContext context)
         {
             _context = context;
-            _imageStore = imageStore;
-            _env = env;
         }
         // GET api/videos
         [HttpGet]
@@ -51,7 +45,7 @@ namespace KinaUnaMediaApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Video> allItems = new List<Video>(); 
+            List<Video> allItems; 
             if (tagFilter != "")
             {
                 allItems = await _context.VideoDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToListAsync();
@@ -124,7 +118,7 @@ namespace KinaUnaMediaApi.Controllers
             }
             VideoPageViewModel model = new VideoPageViewModel();
             model.VideosList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling((double)(allItems.Count / (double)pageSize));
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
             model.PageNumber = pageIndex;
             model.SortBy = sortBy;
             model.TagFilter = tagFilter;
@@ -363,7 +357,7 @@ namespace KinaUnaMediaApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Video> allItems = new List<Video>();
+            List<Video> allItems;
             if (tagFilter != "")
             {
                 allItems = await _context.VideoDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToListAsync();
@@ -436,7 +430,7 @@ namespace KinaUnaMediaApi.Controllers
             }
             VideoPageViewModel model = new VideoPageViewModel();
             model.VideosList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling((double)(allItems.Count / (double)pageSize));
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
             model.PageNumber = pageIndex;
             model.SortBy = sortBy;
             model.TagFilter = tagFilter;

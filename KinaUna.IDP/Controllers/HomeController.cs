@@ -1,12 +1,10 @@
 ﻿using IdentityServer4.Services;
-using KinaUna.IDP;
 using KinaUna.IDP.Models;
 using KinaUna.IDP.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
@@ -18,14 +16,16 @@ namespace KinaUna.IDP.Controllers
     public class HomeController : Controller
     {
         private readonly IIdentityServerInteractionService _interaction;
-        private readonly IOptionsSnapshot<AppSettings> _settings;
+        // private readonly IOptionsSnapshot<AppSettings> _settings;
         private readonly IRedirectService _redirectSvc;
         private readonly IHostingEnvironment _env;
 
-        public HomeController(IIdentityServerInteractionService interaction, IOptionsSnapshot<AppSettings> settings,IRedirectService redirectSvc, IHostingEnvironment env)
+        public HomeController(IIdentityServerInteractionService interaction, 
+            // IOptionsSnapshot<AppSettings> settings,
+            IRedirectService redirectSvc, IHostingEnvironment env)
         {
             _interaction = interaction;
-            _settings = settings;
+            //_settings = settings;
             _redirectSvc = redirectSvc;
             _env = env;
         }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -42,10 +40,10 @@ namespace KinaUnaWeb.Infrastructure
 
         async Task<string> GetToken()
         {
-            const string ACCESS_TOKEN = "access_token";
+            const string accessToken = "access_token";
 
             return await _httpContextAccesor.HttpContext
-                .GetTokenAsync(ACCESS_TOKEN);
+                .GetTokenAsync(accessToken);
         }
     }
 }

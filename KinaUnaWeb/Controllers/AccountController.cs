@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using KinaUnaWeb.Data;
 using Microsoft.EntityFrameworkCore;
@@ -127,12 +128,9 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> MyAccount()
         {
             string userEmail = HttpContext.User.FindFirst("email").Value;
-            bool mailConfirmed = false;
-            Boolean.TryParse(HttpContext.User.FindFirst("email_verified").Value, out mailConfirmed);
-            DateTime joinDate = DateTime.UtcNow;
-            DateTime.TryParse(HttpContext.User.FindFirst("joindate").Value, out joinDate);
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            Boolean.TryParse(HttpContext.User.FindFirst("email_verified").Value, out var mailConfirmed);
+            DateTime.TryParse(HttpContext.User.FindFirst("joindate").Value, out var joinDate);
+            var userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
             if (userinfo == null)
             {
                 throw new ApplicationException($"Unable to load user with email '{userEmail}'.");
@@ -157,7 +155,7 @@ namespace KinaUnaWeb.Controllers
                 LastName = userinfo.LastName,
                 UserEmail = userinfo.UserEmail,
                 Timezone = userinfo.Timezone,
-                JoinDate = joinDate.ToString(),
+                JoinDate = joinDate.ToString(CultureInfo.InvariantCulture),
                 IsEmailConfirmed = mailConfirmed,
                 PhoneNumber = HttpContext.User.FindFirst("phone_number")?.Value ?? "",
                 ProfilePicture = userinfo.ProfilePicture
@@ -185,10 +183,8 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> MyAccount(UserInfoViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email").Value;
-            bool mailConfirmed = false;
-            Boolean.TryParse(HttpContext.User.FindFirst("email_verified").Value, out mailConfirmed);
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            Boolean.TryParse(HttpContext.User.FindFirst("email_verified").Value, out var mailConfirmed);
+            var userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
             // userinfo.UserEmail = model.UserEmail;
             userinfo.FirstName = model.FirstName;
             userinfo.MiddleName = model.MiddleName;
@@ -269,12 +265,9 @@ namespace KinaUnaWeb.Controllers
                 newEmail = userEmail;
             }
 
-            bool mailConfirmed = false;
-            Boolean.TryParse(HttpContext.User.FindFirst("email_verified").Value, out mailConfirmed);
-            UserInfo userinfo = new UserInfo();
-            userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            DateTime joinDate = DateTime.UtcNow;
-            DateTime.TryParse(HttpContext.User.FindFirst("joindate").Value, out joinDate);
+            Boolean.TryParse(HttpContext.User.FindFirst("email_verified").Value, out var mailConfirmed);
+            var userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            DateTime.TryParse(HttpContext.User.FindFirst("joindate").Value, out var joinDate);
             var model = new UserInfoViewModel
             {
                 Id = userinfo.Id,
@@ -285,7 +278,7 @@ namespace KinaUnaWeb.Controllers
                 LastName = userinfo.LastName,
                 UserEmail = userinfo.UserEmail,
                 Timezone = userinfo.Timezone,
-                JoinDate = joinDate.ToString(),
+                JoinDate = joinDate.ToString(CultureInfo.InvariantCulture),
                 IsEmailConfirmed = mailConfirmed,
                 PhoneNumber = HttpContext.User.FindFirst("phone_number")?.Value ?? "",
                 ProfilePicture = userinfo.ProfilePicture

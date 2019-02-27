@@ -212,7 +212,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         private static Stream GetStreamFromUrl(string url)
         {
-            byte[] imageData = null;
+            byte[] imageData;
 
             using (var wc = new System.Net.WebClient())
                 imageData = wc.DownloadData(url);

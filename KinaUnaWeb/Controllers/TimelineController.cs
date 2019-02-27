@@ -35,11 +35,7 @@ namespace KinaUnaWeb.Controllers
             _progId = childId;
             ViewBag.SortBy = sortBy;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
-            if (string.IsNullOrEmpty(userTimeZone))
-            {
-                userTimeZone = "Romance Standard Time";
-            }
+            
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
@@ -49,8 +45,8 @@ namespace KinaUnaWeb.Controllers
             {
                 _progId = 2;
             }
-            Progeny progeny = new Progeny();
-            progeny = await _progenyHttpClient.GetProgeny(_progId);
+
+            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = 5;
@@ -198,11 +194,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<ActionResult> GetTimeLineItem(TimeLineItemViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
-            if (string.IsNullOrEmpty(userTimeZone))
-            {
-                userTimeZone = "Romance Standard Time";
-            }
+            
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
             
             string id = model.ItemId.ToString();
@@ -220,7 +212,7 @@ namespace KinaUnaWeb.Controllers
                         {
                             picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
                         }
-                        picture.CommentsCount = picture?.CommentsList.Count ?? 0;
+                        picture.CommentsCount = picture.CommentsList.Count;
                         return PartialView("TimeLinePhotoPartial", picture);
                     }
                 }
@@ -233,7 +225,7 @@ namespace KinaUnaWeb.Controllers
                     VideoViewModel video = await _mediaHttpClient.GetVideoViewModel(itemId, 0, 1, userinfo.Timezone);
                     if (video != null)
                     {
-                        video.CommentsCount = video?.CommentsList.Count ?? 0;
+                        video.CommentsCount = video.CommentsList.Count;
                         return PartialView("TimeLineVideoPartial", video);
                     }
                 }
@@ -244,7 +236,7 @@ namespace KinaUnaWeb.Controllers
                 if (idParse)
                 {
                     CalendarItem evt = _context.CalendarDb.SingleOrDefault(e => e.EventId == itemId);
-                    if (evt != null)
+                    if (evt != null && evt.StartTime.HasValue && evt.EndTime.HasValue)
                     {
                         evt.StartTime = TimeZoneInfo.ConvertTimeFromUtc(evt.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
                         evt.EndTime = TimeZoneInfo.ConvertTimeFromUtc(evt.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));

@@ -1,20 +1,18 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-
-public static class SessionExtensions
+namespace KinaUnaWeb.Extensions
 {
-    public static void SetObject(this ISession session, string key, object value) =>
-        session.SetString(key, JsonConvert.SerializeObject(value));
-
-    public static T GetObject<T>(this ISession session, string key)
+    public static class SessionExtensions
     {
-        var value = session.GetString(key);
+        public static void SetObject(this ISession session, string key, object value) =>
+            session.SetString(key, JsonConvert.SerializeObject(value));
 
-        return value == null ? default(T) : JsonConvert.DeserializeObject<T>(value);
+        public static T GetObject<T>(this ISession session, string key)
+        {
+            var value = session.GetString(key);
+
+            return value == null ? default(T) : JsonConvert.DeserializeObject<T>(value);
+        }
     }
 }

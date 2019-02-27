@@ -29,7 +29,6 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int Id = 0)
         {
             string userId = User.FindFirst("sub")?.Value ?? "NoUser";
-            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
             string userTimeZone = User.FindFirst("timezone")?.Value ?? "NoUser";
             List<WebNotification> notificationsList = await _context.WebNotificationsDb.Where(n => n.To == userId).ToListAsync();
             

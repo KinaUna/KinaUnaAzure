@@ -131,7 +131,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{progenyId}/{accessLevel}")]
         public async Task<IActionResult> EventList(int progenyId, int accessLevel)
         {
-            List<CalendarItem> model = new List<CalendarItem>();
+            List<CalendarItem> model;
             model = await _context.CalendarDb
                 .Where(e => e.ProgenyId == progenyId && e.EndTime > DateTime.UtcNow && e.AccessLevel >= accessLevel).ToListAsync();
             model = model.OrderBy(e => e.StartTime).ToList();

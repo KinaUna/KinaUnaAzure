@@ -167,7 +167,8 @@ namespace KinaUna.IDP
 
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment hostingEnvironment
+            )
         {
             // This will do the initial DB population
             bool resetDb = false;

@@ -6,7 +6,6 @@ using KinaUnaMediaApi.Data;
 using KinaUnaMediaApi.Models;
 using KinaUnaMediaApi.Models.ViewModels;
 using KinaUnaMediaApi.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,9 +30,8 @@ namespace KinaUnaMediaApi.Controllers
             List<Picture> picturesList = await _context.PicturesDb.Where(p => p.ProgenyId == 2 && p.AccessLevel >= 5).ToListAsync();
             if (picturesList.Any())
             {
-                int pictureNumber = 0;
                 Random r = new Random();
-                pictureNumber = r.Next(0, picturesList.Count);
+                var pictureNumber = r.Next(0, picturesList.Count);
 
                 Picture picture = picturesList[pictureNumber];
                 if (!picture.PictureLink.ToLower().StartsWith("http"))
@@ -96,7 +94,7 @@ namespace KinaUnaMediaApi.Controllers
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = $"https://{this.Request.Host}{this.Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
@@ -113,7 +111,7 @@ namespace KinaUnaMediaApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Picture> allItems = new List<Picture>();
+            List<Picture> allItems;
             if (tagFilter != "")
             {
                 allItems = await _context.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == 2 && p.AccessLevel >= 5 && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToListAsync();
@@ -179,7 +177,7 @@ namespace KinaUnaMediaApi.Controllers
             }
             PicturePageViewModel model = new PicturePageViewModel();
             model.PicturesList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling((double)(allItems.Count / (double)pageSize));
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
             model.PageNumber = pageIndex;
             model.SortBy = sortBy;
             model.TagFilter = tagFilter;
@@ -216,7 +214,7 @@ namespace KinaUnaMediaApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Video> allItems = new List<Video>();
+            List<Video> allItems;
             if (tagFilter != "")
             {
                 allItems = await _context.VideoDb.Where(p => p.ProgenyId == 2 && p.AccessLevel >= 5 && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToListAsync();
@@ -289,7 +287,7 @@ namespace KinaUnaMediaApi.Controllers
             }
             VideoPageViewModel model = new VideoPageViewModel();
             model.VideosList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling((double)(allItems.Count / (double)pageSize));
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
             model.PageNumber = pageIndex;
             model.SortBy = sortBy;
             model.TagFilter = tagFilter;
@@ -307,7 +305,7 @@ namespace KinaUnaMediaApi.Controllers
         [Route("[action]/{id}")]
         public async Task<IActionResult> PictureTagsList(int id)
         {
-            string TagsList = "";
+            string tagListString = "";
             List<string> tagsList = new List<string>();
             List<Picture> pictureList = await _context.PicturesDb.AsNoTracking()
                 .Where(p => p.ProgenyId == id).ToListAsync();
@@ -330,7 +328,7 @@ namespace KinaUnaMediaApi.Controllers
             }
             else
             {
-                return Ok(TagsList);
+                return Ok(tagListString);
             }
 
             string tagItems = "[";
@@ -345,8 +343,8 @@ namespace KinaUnaMediaApi.Controllers
                 tagItems = tagItems + "]";
             }
 
-            TagsList = tagItems;
-            return Ok(TagsList);
+            tagListString = tagItems;
+            return Ok(tagListString);
         }
     }
 }

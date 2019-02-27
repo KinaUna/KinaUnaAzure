@@ -7,7 +7,7 @@ namespace KinaUna.IDP.Services
 {
     public class EmailSender : IEmailSender
     {
-        public IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
         public EmailSender(IConfiguration configuration)
         {
             _configuration = configuration;

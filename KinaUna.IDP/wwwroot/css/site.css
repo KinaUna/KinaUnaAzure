@@ -3,14 +3,6 @@
     padding-bottom: 20px;
 }
 
-/* Wrapping element */
-
-/* Set some basic padding to keep content from hitting the edges */
-
-.body-content {
-    
-}
-
 .container {
     padding-right: 8px;
     padding-left: 8px;
@@ -50,7 +42,7 @@
 
 .navbar {
     background-color: #3a2051;
-    padding: 0px;
+    padding: 0;
     padding-top: 2px;
     padding-bottom: 3px;
 }
@@ -245,11 +237,11 @@
 
 @media (max-width: 991px) {
     .nav-open .navbar-collapse {
-        -webkit-transform: translate3d(0px, 0, 0);
-        -moz-transform: translate3d(0px, 0, 0);
-        -o-transform: translate3d(0px, 0, 0);
-        -ms-transform: translate3d(0px, 0, 0);
-        transform: translate3d(0px, 0, 0);
+        -webkit-transform: translate3d(0, 0, 0);
+        -moz-transform: translate3d(0, 0, 0);
+        -o-transform: translate3d(0, 0, 0);
+        -ms-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
         overflow-y: auto;
     }
 }
@@ -278,7 +270,8 @@
 .navbar.bg-primary {
     color: #fff;
     background-color: #3a2051 !important;
-    box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 12px -5px rgba(156, 39, 176, 0.46);
+    box-shadow: 0 4px 20px 0 #000000, 0 7px 12px -5px #9c27b0;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 12px -5px rgba(156, 39, 176, 0.46);
     white-space: nowrap;
 }
 
@@ -329,6 +322,7 @@
         display: block;
         height: 1px;
         margin-left: 15px;
+        background-color: #cccccc;
         background-color: rgba(204, 204, 204, 0.15);
     }
 }
@@ -345,11 +339,13 @@
 }
 
 .form-control {
+    background: no-repeat center bottom, center calc(100% - 1px), #a9f753;
     background: no-repeat center bottom, center calc(100% - 1px), rgba(169, 247, 83, 0.27);
     background-size: 0 100%, 100% 100%;
+    border: 1px solid #146414;
     border: 1px solid rgba(20, 100, 20, 0.6);
     height: 36px;
-    transition: background 0s ease-out;
+    transition: background 0 ease-out;
     padding-left: 14px;
     padding-right: 14px;
     border-radius: 4px;
@@ -357,12 +353,14 @@
 }
 
 .form-control-noline {
+    background: no-repeat center bottom, center calc(100% - 1px), #a9f753;
     background: no-repeat center bottom, center calc(100% - 1px), rgba(169, 247, 83, 0.27);
     background-size: 0;
     width: 100%;
+    border: 1px solid #146414;
     border: 1px solid rgba(20, 100, 20, 0.6);
     height: 42px;
-    transition: background 0s ease-out;
+    transition: background 0 ease-out;
     /*padding-left: 14px;
     padding-right: 14px;*/
     border-radius: 4px;
@@ -426,6 +424,7 @@
     transition: all 0.2s ease-out;
     border: 1px solid;
     background: #fff;
+    box-shadow: 0 2px 2px 0 #000000, 0 3px 1px -2px #000000, 0 1px 5px 0 #000000;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
 }
 
@@ -491,16 +490,18 @@ button.Zebra_DatePicker_Icon {
 }
 
 .notificationUnread {
-    
+    opacity: 1.0;
 }
+
 .notificationIconAnimation {
     -webkit-animation: notificationIconAnimation 2s 10 ease-in-out alternate-reverse;
     -moz-animation: notificationIconAnimation 2s 10 ease-in-out alternate-reverse;
     -o-animation: notificationIconAnimation 2s 10 ease-in-out alternate-reverse;
     animation: notificationIconAnimation 2s 10 ease-in-out alternate-reverse;
     -webkit-transform-origin: 50% 50%;
+    -ms-transform-origin: 50% 50%;
     transform-origin: 50% 50%;
-    -ms-transform-origin: 50% 50%; /* IE 9 */
+    /* IE 9 */
     color: greenyellow;
 }
 
@@ -584,7 +585,7 @@ button.Zebra_DatePicker_Icon {
 
 .btn-kinaunaselect {
     background: no-repeat bottom,50% calc(100% - 1px);
-    transition: background 0s ease-out !important;
+    transition: background 0 ease-out !important;
     background-size: 0 100%,100% 100%;
     background-color: transparent !important;
     color: inherit !important;

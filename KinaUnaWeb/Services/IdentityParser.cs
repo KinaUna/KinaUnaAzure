@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
-using System.Threading.Tasks;
 using KinaUnaWeb.Models;
 
 namespace KinaUnaWeb.Services
@@ -16,10 +14,9 @@ namespace KinaUnaWeb.Services
             // assigns "claims" if "principal" is a "ClaimsPrincipal"
             if (principal is ClaimsPrincipal claims)
             {
-                var joinDateValue = new DateTime();
                 var joinDateParse =
                     DateTime.TryParse(claims.Claims.FirstOrDefault(x => x.Type == "joindate")?.Value ?? "",
-                        out joinDateValue);
+                        out var joinDateValue);
                 if (!joinDateParse)
                 {
                     joinDateValue = DateTime.Now;
