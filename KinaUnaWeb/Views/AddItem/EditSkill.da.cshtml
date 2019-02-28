@@ -31,7 +31,9 @@
             <div class="input-group date">
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy" type="text"
                        class="form-control" data-zdp_readonly_element="false" asp-for="SkillFirstObservation"
-                       value="@Model.SkillFirstObservation.Value.ToString("dd-MMM-yyyy")" />
+                       value="@{
+                                  System.Diagnostics.Debug.Assert(Model.SkillFirstObservation != null, "Model.SkillFirstObservation != null");
+                              }@Model.SkillFirstObservation.Value.ToString("dd-MMM-yyyy")" />
             </div>
         </div>
     </div>

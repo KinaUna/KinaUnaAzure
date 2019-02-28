@@ -8,8 +8,16 @@
     <div class="card-body">
         <div class="card-title"><h5>@Model.Title</h5></div>
         <div style="max-width: 705px;">
-            <div align="left" style="margin: 15px;"><strong>Anfang:</strong> @Model.StartTime.Value.ToString("dd-MMM-yyyy HH:mm")</div>
-            <div align="left" style="margin: 15px;"><strong>Ende:</strong> @Model.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")</div>
+            <div align="left" style="margin: 15px;"><strong>Anfang:</strong>
+                @{
+                    System.Diagnostics.Debug.Assert(Model.StartTime != null, "Model.StartTime != null");
+                }
+                @Model.StartTime.Value.ToString("dd-MMM-yyyy HH:mm")</div>
+            <div align="left" style="margin: 15px;"><strong>Ende:</strong>
+                @{
+                    System.Diagnostics.Debug.Assert(Model.EndTime != null, "Model.EndTime != null");
+                }
+                @Model.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")</div>
             <div align="left" style="margin: 15px;"><strong>Ort:</strong> @Model.Location</div>
             <div align="left" style="margin: 15px;"><strong>Zusammenhang:</strong> @Model.Context</div>
             <div align="left" style="margin: 15px;"><strong>Notizen:</strong> @Model.Notes</div>

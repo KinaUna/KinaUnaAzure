@@ -2,6 +2,7 @@
 
 namespace KinaUna.IDP.Migrations
 {
+    // ReSharper disable once InconsistentNaming
     public partial class AddedDataProtectionSQLStorage : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

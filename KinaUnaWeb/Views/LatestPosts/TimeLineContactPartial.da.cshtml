@@ -2,8 +2,12 @@
 <a class="leavePage" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@Model.ContactId">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
 
-        <div class="card-body" style="background: rgba(0, 0, 0, 0.5)">
-            <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 12px;" class="fa fa-address-book"></span><strong class="text-warning" style="font-size: 12px;">@Model.DateAdded.Value.ToString("dd-MMM-yyyy HH:mm") </strong></div>
+        <div class="card-body" style="background: #000000; background: rgba(0, 0, 0, 0.5)">
+            <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 12px;" class="fa fa-address-book"></span><strong class="text-warning" style="font-size: 12px;">
+                @{
+                    System.Diagnostics.Debug.Assert(Model.DateAdded != null, "Model.DateAdded != null");
+                }
+                @Model.DateAdded.Value.ToString("dd-MMM-yyyy HH:mm") </strong></div>
             <div style="margin-left: 2px; font-size: 12px;" class="text-white">@Model.DisplayName</div>
             <div style="margin-left: 2px; font-size: 12px;" class="text-white">@Model.FirstName @Model.MiddleName @Model.LastName</div>
             <div style="max-width: 60vw; overflow: hidden; margin-left: 2px;">

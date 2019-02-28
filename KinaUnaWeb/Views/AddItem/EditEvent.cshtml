@@ -18,7 +18,9 @@
             <div class="input-group date">
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control"
                        data-zdp_readonly_element="false" asp-for="StartTime"
-                       value="@Model.StartTime.Value.ToString("dd-MMM-yyyy HH:mm")" />
+                       value="@{
+                                  System.Diagnostics.Debug.Assert(Model.StartTime != null, "Model.StartTime != null");
+                              }@Model.StartTime.Value.ToString("dd-MMM-yyyy HH:mm")" />
             </div>
         </div>
     </div>
@@ -36,7 +38,9 @@
             <div class="input-group date">
                 <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control"
                        data-zdp_readonly_element="false" asp-for="EndTime"
-                       value="@Model.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")" />
+                       value="@{
+                                  System.Diagnostics.Debug.Assert(Model.EndTime != null, "Model.EndTime != null");
+                              }@Model.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")" />
             </div>
         </div>
     </div>

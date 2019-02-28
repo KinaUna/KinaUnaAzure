@@ -41,6 +41,7 @@ var PushNotifications = (function () {
                     } else {
                         console.log('PushNotifications: Failed to retrieve Public Key');
                     }
+                    return response.text();
                 }).then(function (applicationServerPublicKeyBase64) {
                     applicationServerPublicKey = urlB64ToUint8Array(applicationServerPublicKeyBase64);
                     console.log('PushNotifications: Successfully retrieved Public Key');
@@ -89,7 +90,7 @@ var PushNotifications = (function () {
                     pushSubscription.unsubscribe()
                         .then(function () {
                             fetch('api/pushnotifications/subscriptions?endpoint=' + encodeURIComponent(pushSubscription.endpoint), {
-                                method: 'DELETE',
+                                method: 'DELETE'
                             })
                                 .then(function (response) {
                                     if (response.ok) {

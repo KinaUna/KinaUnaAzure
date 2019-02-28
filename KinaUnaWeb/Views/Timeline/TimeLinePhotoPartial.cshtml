@@ -1,7 +1,7 @@
 ﻿@model KinaUnaWeb.Models.ItemViewModels.PictureViewModel
 <a class="leavePage2" asp-controller="Pictures" asp-action="Picture" asp-route-Id="@Model.PictureId">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
-        <div class="card-body" style="background: rgba(50, 110, 190, 0.8)">
+        <div class="card-body" style="background: #326ebe; background: rgba(50, 110, 190, 0.8)">
             <div class="info-title">
                 <span style="font-size: 18px; color: white; margin-right: 12px;" class="far fa-images"></span><strong class="text-warning" style="font-size: 12px;"> @Model.PictureTime?.ToString("dd-MMM-yyyy HH:mm")</strong>
                 @if (!string.IsNullOrEmpty(Model.Location))

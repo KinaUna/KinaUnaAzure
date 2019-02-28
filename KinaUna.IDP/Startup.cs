@@ -25,14 +25,14 @@ namespace KinaUna.IDP
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
-        public IHostingEnvironment env;
+        private IConfiguration Configuration { get; }
+        private readonly IHostingEnvironment _env;
         private readonly ILoggerFactory _loggerFactory;
 
         public Startup(IConfiguration configuration, IHostingEnvironment environment, ILoggerFactory loggerFactory)
         {
             Configuration = configuration;
-            env = environment;
+            _env = environment;
             _loggerFactory = loggerFactory;
         }
 
@@ -75,7 +75,7 @@ namespace KinaUna.IDP
                 options.TokenLifespan = TimeSpan.FromDays(90);
             });
 
-            services.AddTransient<ILoginService<ApplicationUser>, EFLoginService>();
+            services.AddTransient<ILoginService<ApplicationUser>, EfLoginService>();
             services.AddTransient<IRedirectService, RedirectService>();
             services.AddTransient<IEmailSender, EmailSender>();
 
@@ -107,7 +107,7 @@ namespace KinaUna.IDP
                 }
             }
 
-            if (env.IsDevelopment())
+            if (_env.IsDevelopment())
             {
                 services.AddCors(options =>
                 {
@@ -172,9 +172,10 @@ namespace KinaUna.IDP
         {
             // This will do the initial DB population
             bool resetDb = false;
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             InitializeDatabase(app, resetDb);
 
-            if (env.IsDevelopment())
+            if (_env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }

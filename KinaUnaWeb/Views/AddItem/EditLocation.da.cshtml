@@ -105,7 +105,9 @@
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text"
-                       class="form-control" data-zdp_readonly_element="false" asp-for="Date" value="@Model.Date.Value.ToString("dd-MMM-yyyy HH:mm")" />
+                       class="form-control" data-zdp_readonly_element="false" asp-for="Date" value="@{
+                                                                                                        System.Diagnostics.Debug.Assert(Model.Date != null, "Model.Date != null");
+                                                                                                    }@Model.Date.Value.ToString("dd-MMM-yyyy HH:mm")" />
             </div>
         </div>
     </div>
@@ -238,14 +240,14 @@
         }
         if (location.Location.Address.District !== undefined) {
             districtName = location.Location.Address.District;
-            if (districtName != streetName) {
+            if (districtName !== streetName) {
                 contextText = contextText + " " + location.Location.Address.District;
             }
             $("#disctrictText").val(districtName);
         }
         if (location.Location.Address.City !== undefined) {
             cityName = location.Location.Address.City;
-            if (cityName != districtName && districtName.indexOf(cityName) < 0) {
+            if (cityName !== districtName && districtName.indexOf(cityName) < 0) {
                 contextText = contextText + ", " + location.Location.Address.City;
             }
             $("#cityText").val(cityName);
@@ -256,14 +258,14 @@
         }
         if (location.Location.Address.County !== undefined) {
             countyName = location.Location.Address.County;
-            if (countyName != cityName && cityName.indexOf(countyName) < 0 && countyName.indexOf(cityName) < 0) {
+            if (countyName !== cityName && cityName.indexOf(countyName) < 0 && countyName.indexOf(cityName) < 0) {
                 contextText = contextText + ", " + location.Location.Address.County;
             }
             $("#countyText").val(countyName);
         }
         if (location.Location.Address.State !== undefined) {
             stateName = location.Location.Address.State;
-            if (stateName != cityName && stateName != countyName) {
+            if (stateName !== cityName && stateName !== countyName) {
                 contextText = contextText + ", " + location.Location.Address.State;
             }
             $("#stateText").val(stateName);

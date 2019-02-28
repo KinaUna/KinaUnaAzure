@@ -4,6 +4,7 @@ using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.AzureKeyVault;
+using Microsoft.Extensions.Logging;
 
 namespace KinaUnaMediaApi
 {
@@ -30,6 +31,14 @@ namespace KinaUnaMediaApi
 
                     }
                 })
-                .UseStartup<Startup>();
+                .UseStartup<Startup>()
+                .ConfigureLogging((hostingContext, builder) =>
+                {
+                    builder.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                    builder.AddConsole();
+                    builder.AddDebug();
+                    builder.AddAzureWebAppDiagnostics();
+                })
+                .UseApplicationInsights();
     }
 }

@@ -4,11 +4,11 @@ using KinaUnaMediaApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace KinaUnaMediaApi.Migrations
 {
     [DbContext(typeof(MediaDbContext))]
+    // ReSharper disable once PartialTypeWithSinglePart
     partial class MediaDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

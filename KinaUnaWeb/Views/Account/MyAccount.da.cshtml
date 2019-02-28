@@ -98,7 +98,7 @@
         // Do we already have a push message subscription?
         reg.pushManager.getSubscription()
             .then(function (subscription) {
-                isSubscribed = subscription;
+                let isSubscribed = subscription;
                 let enableBtn = document.getElementById('enablePushButton');
                 let disableBtn = document.getElementById('disablePushButton');
                 if (isSubscribed) {

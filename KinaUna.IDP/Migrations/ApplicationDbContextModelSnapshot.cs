@@ -4,11 +4,11 @@ using KinaUna.IDP.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace KinaUna.IDP.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
+    // ReSharper disable once PartialTypeWithSinglePart
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

@@ -46,11 +46,11 @@
             }*@
         @if (Model.VideoType == 1)
         {
-            <iframe src="@Model.VideoLink" style="width: 90%; height: 80vh;" frameborder="0" scrolling="no" allowfullscreen></iframe>
+            <iframe src="@Model.VideoLink" style="width: 90%; height: 80vh; border: none;" scrolling="no" allowfullscreen></iframe>
         }
         @if (Model.VideoType == 2)
         {
-            <iframe src="@Model.VideoLink" style="width: 90%; height: 80vh;" frameborder="0" allow="encrypted-media" allowfullscreen></iframe>
+            <iframe src="@Model.VideoLink" style="width: 90%; height: 80vh; border: none;" allow="encrypted-media" allowfullscreen></iframe>
         }
     </div>
 
@@ -142,25 +142,25 @@
                     }
                     if (location.Location.Address.District !== undefined) {
                         districtName = location.Location.Address.District;
-                        if (districtName != streetName) {
+                        if (districtName !== streetName) {
                             contextText = contextText + " " + location.Location.Address.District;
                         }
                     }
                     if (location.Location.Address.City !== undefined) {
                         cityName = location.Location.Address.City;
-                        if (cityName != districtName && districtName.indexOf(cityName) < 0) {
+                        if (cityName !== districtName && districtName.indexOf(cityName) < 0) {
                             contextText = contextText + ", " + location.Location.Address.City;
                         }
                     }
                     if (location.Location.Address.County !== undefined) {
                         countyName = location.Location.Address.County;
-                        if (countyName != cityName && cityName.indexOf(countyName) < 0 && countyName.indexOf(cityName) < 0) {
+                        if (countyName !== cityName && cityName.indexOf(countyName) < 0 && countyName.indexOf(cityName) < 0) {
                             contextText = contextText + ", " + location.Location.Address.County;
                         }
                     }
                     if (location.Location.Address.State !== undefined) {
                         stateName = location.Location.Address.State;
-                        if (stateName != cityName && stateName != countyName) {
+                        if (stateName !== cityName && stateName !== countyName) {
                             contextText = contextText + ", " + location.Location.Address.State;
                         }
                     }
@@ -423,7 +423,7 @@
                             }
             @Html.Raw(myLoc)
             @Html.Raw(addLoc)
-            let selectedLoc = locations.find(obj => { return obj.id == $('#copyLocation').val() });
+            let selectedLoc = locations.find(obj => { return obj.id === $('#copyLocation').val() });
             $('#latitude').val(selectedLoc.lat);
             $('#longitude').val(selectedLoc.lng);
             $('#location').val(selectedLoc.name);

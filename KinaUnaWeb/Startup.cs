@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Globalization;
@@ -33,12 +32,12 @@ namespace KinaUnaWeb
     {
         public IConfiguration Configuration { get; }
         public static string WebRootPath { get; private set; }
-        private IHostingEnvironment Env;
+        private readonly IHostingEnvironment _env;
 
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
-            Env = env;
+            _env = env;
             WebRootPath = env.WebRootPath;
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         }
@@ -118,7 +117,7 @@ namespace KinaUnaWeb
             }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
                 {
                     options.ExpireTimeSpan = TimeSpan.FromDays(180);
-                    if (!Env.IsDevelopment())
+                    if (!_env.IsDevelopment())
                     {
                         options.Cookie.Domain = ".kinauna.com";
                     }
@@ -175,12 +174,9 @@ namespace KinaUnaWeb
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app)
         {
-            loggerFactory.AddAzureWebAppDiagnostics();
-            loggerFactory.AddApplicationInsights(app.ApplicationServices, LogLevel.Trace);
-
-            if (env.IsDevelopment())
+            if (_env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseCors("localCors");
@@ -229,8 +225,7 @@ namespace KinaUnaWeb
 
             app.UseAuthentication();
 
-            loggerFactory.CreateLogger("identity");
-
+            
             app.UseSignalR(routes => routes.MapHub<WebNotificationHub>("/webnotificationhub"));
             app.UseMvc(routes =>
             {

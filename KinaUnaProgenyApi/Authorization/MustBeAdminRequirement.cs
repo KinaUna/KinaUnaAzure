@@ -4,8 +4,5 @@ namespace KinaUnaProgenyApi.Authorization
 {
     public class MustBeAdminRequirement : IAuthorizationRequirement
     {
-        public MustBeAdminRequirement()
-        {
-        }
     }
 }

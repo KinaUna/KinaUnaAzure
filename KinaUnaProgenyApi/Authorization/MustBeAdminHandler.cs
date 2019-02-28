@@ -19,6 +19,7 @@ namespace KinaUnaProgenyApi.Authorization
 
             var imageId = filterContext.RouteData.Values["id"].ToString();
 
+            // ReSharper disable once UnusedVariable
             if (!Guid.TryParse(imageId, out Guid imageIdAsGuid))
             {
                 context.Fail();

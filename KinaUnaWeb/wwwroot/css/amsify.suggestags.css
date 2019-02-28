@@ -21,7 +21,7 @@
 .amsify-suggestags-input-area
 .amsify-suggestags-input {
 	max-width: 200px;
-	padding: 0px 4px;
+	padding: 0 4px;
 	border: 0;
 }
 
@@ -32,17 +32,21 @@
 }
 
 .amsify-focus {
-	border-color: #66afe9;
+    border-color: #66afe9;
 	outline: 0;
-	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
-	box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+    -webkit-box-shadow: inset 0 1px 1px #000000, 0 0 8px #66afe9;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+    box-shadow: inset 0 1px 1px #000000, 0 0 8px #66afe9;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
 }
 
 .amsify-focus-light {
-	border-color: #cacaca;
+    border-color: #cacaca;
 	outline: 0;
-	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(189, 189, 189, 0.6);
-	box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(189, 189, 189, 0.6);
+    -webkit-box-shadow: inset 0 1px 1px #000000, 0 0 8px #bdbdbd;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(189, 189, 189, 0.6);
+    box-shadow: inset 0 1px 1px #000000, 0 0 8px #bdbdbd;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(189, 189, 189, 0.6);
 }
 
 .amsify-suggestags-area
@@ -68,7 +72,7 @@
 .amsify-suggestags-list
 ul.amsify-list {
 	list-style: none;
-	padding: 3px 0px;
+	padding: 3px 0;
 	max-height: 150px;
     overflow-y: auto;
 }
@@ -79,7 +83,7 @@ ul.amsify-list
 li.amsify-list-item {
 	text-align: left;
     cursor: pointer;
-    padding: 0px 10px;	
+    padding: 0 10px;	
 }
 
 .amsify-suggestags-area
@@ -98,7 +102,7 @@ li.amsify-list-item:active {
 ul.amsify-list
 li.amsify-list-group {
 	text-align: left;
-    padding: 0px 10px;
+    padding: 0 10px;
     font-weight: bold;
 }
 
@@ -142,7 +146,7 @@ li.amsify-item-pad.active {
 .amsify-suggestags-input-area
 .amsify-select-tag {
     padding: 2px 7px;
-    margin: 0px 4px 1px 0px;
+    margin: 0 4px 1px 0;
     -webkit-border-radius: 2px;
     -moz-border-radius: 2px;
     border-radius: 2px;

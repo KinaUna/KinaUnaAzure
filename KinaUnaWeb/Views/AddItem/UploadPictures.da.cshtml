@@ -3,11 +3,12 @@
 @{ int fileCounter = 0;}
 @foreach (var file in Model.FileNames)
 {
-    <div style="margin: 20px;">
-        <H4>Foto uploaded.</H4>
-        <div><img width="80%" src="@Model.FileLinks[fileCounter]" /></div>
-        @{ fileCounter++; }
-    </div>
+<div style="margin: 20px;">
+    <H4>Foto uploaded.</H4>
+    <div><img width="80%" src="@Model.FileLinks[fileCounter]" /></div>
+    <div style="opacity: 0.1; overflow: hidden;">ID: @file</div>
+    @{ fileCounter++; }
+</div>
 }
 <br />
 <div><a class="leavePage" asp-controller="AddItem" asp-action="AddPicture">Tilbage til tilføj foto</a></div>

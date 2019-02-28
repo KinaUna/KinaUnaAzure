@@ -4,11 +4,11 @@ using KinaUnaWeb.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace KinaUnaWeb.Migrations.ApplicationDb
 {
     [DbContext(typeof(ApplicationDbContext))]
+    // ReSharper disable once PartialTypeWithSinglePart
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

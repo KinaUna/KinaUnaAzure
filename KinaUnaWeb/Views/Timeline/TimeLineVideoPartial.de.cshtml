@@ -2,7 +2,7 @@
 @{ string durTime = ""; }
 <a class="leavePage2" asp-controller="Videos" asp-action="Video" asp-route-Id="@Model.VideoId">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
-        <div class="card-body" style="background: rgba(152, 49, 81, 0.8)">
+        <div class="card-body" style="background: #983151; background: rgba(152, 49, 81, 0.8)">
             <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 12px;" class="fas fa-video"></span><strong class="text-warning">@Model.VideoTime?.ToString("dd-MMM-yyyy HH:mm")</strong></div>
             <div align="center" class="img-rounded" style="overflow: hidden; max-width: 60vw; margin: 2px; margin-left: 2px; padding: 1px; width: 216px; height: 216px; background-color: #000000; text-align: center; line-height: 271px; display: inline-block; position: relative;">
                 <img src="@Model.ThumbLink" style="max-height: 208px; max-width: 208px;" />

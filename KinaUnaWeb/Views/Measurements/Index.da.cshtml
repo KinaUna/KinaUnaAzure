@@ -1,4 +1,5 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.MeasurementViewModel
+﻿@using System.Globalization
+@model KinaUnaWeb.Models.ItemViewModels.MeasurementViewModel
 @section Scripts{
     <script src="/lib/moment.min.js"></script>
     <script src="/lib/momentLocale/da.js"></script>
@@ -89,7 +90,7 @@ else
                                         string chartYear = heightItem.Date.Year.ToString();
                                         string chartMonth = (heightItem.Date.Month - 1).ToString();
                                         string chartDay = heightItem.Date.Day.ToString();
-                                        @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + heightItem.Height.ToString().Replace(',', '.') + "},")
+                                        @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + heightItem.Height.ToString(CultureInfo.InvariantCulture).Replace(',', '.') + "},")
                                     }
                                 }],
                     borderColor: [
@@ -136,7 +137,7 @@ else
                                         string chartYear = weightItem.Date.Year.ToString();
                                         string chartMonth = (weightItem.Date.Month - 1).ToString();
                                         string chartDay = weightItem.Date.Day.ToString();
-                                        @Html.Raw("{ x: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + weightItem.Weight.ToString().Replace(',', '.') + "},")
+                                        @Html.Raw("{ x: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + weightItem.Weight.ToString(CultureInfo.InvariantCulture).Replace(',', '.') + "},")
                                     }
                                 }],
                     borderColor: 'rgb(75, 192, 192)',

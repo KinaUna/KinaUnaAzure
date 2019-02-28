@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Identity;
 
 namespace KinaUna.IDP.Services
 {
-    public class EFLoginService : ILoginService<ApplicationUser>
+    public class EfLoginService : ILoginService<ApplicationUser>
     {
         UserManager<ApplicationUser> _userManager;
         SignInManager<ApplicationUser> _signInManager;
 
-        public EFLoginService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        public EfLoginService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;

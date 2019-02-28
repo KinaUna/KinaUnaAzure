@@ -23,7 +23,9 @@
         <label asp-for="BirthDay" class="col-3 control-label">Fødselsdag</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
-                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="BirthDay" value="@Model.BirthDay.Value.ToString("dd-MMM-yyyy HH:mm")" />
+                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="BirthDay" value="@{
+                                                                                                                                                                             System.Diagnostics.Debug.Assert(Model.BirthDay != null, "Model.BirthDay != null");
+                                                                                                                                                                         }@Model.BirthDay.Value.ToString("dd-MMM-yyyy HH:mm")" />
             </div>
         </div>
     </div>

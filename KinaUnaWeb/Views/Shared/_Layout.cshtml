@@ -24,7 +24,7 @@
     <link rel="manifest" href="~/manifest.json">
     <script>
         if (navigator.serviceWorker.controller) {
-            console.log('[PWA Builder] active service worker found, no need to register')
+            console.log('[PWA Builder] active service worker found, no need to register');
         } else {
             navigator.serviceWorker.register('/pwabuilder-sw.js',
                 {
@@ -127,7 +127,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavSegments">
             <div class="navbar-nav mr-auto mt-2 mt-lg-0">
-                @if (childList.Count > 1)
+                @if (childList.Count > 1 && child != null)
                 {
                     <div class="navbar-nav nav-item dropdown">
                         <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="color: #8bda8b;">

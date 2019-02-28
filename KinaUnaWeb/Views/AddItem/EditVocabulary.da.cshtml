@@ -37,7 +37,9 @@
             <div class="input-group date">
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy" type="text"
                        class="form-control" data-zdp_readonly_element="false" asp-for="Date"
-                       value="@Model.Date.Value.ToString("dd-MMM-yyyy")" />
+                       value="@{
+                                  System.Diagnostics.Debug.Assert(Model.Date != null, "Model.Date != null");
+                              }@Model.Date.Value.ToString("dd-MMM-yyyy")" />
             </div>
         </div>
     </div>

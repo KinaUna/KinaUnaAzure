@@ -57,15 +57,15 @@
         {
             nextPage = 1;
         }
-        int prev5page = Model.PageNumber - 5;
-        int next5page = Model.PageNumber + 5;
-        if (prev5page < 1)
+        int prev5Page = Model.PageNumber - 5;
+        int next5Page = Model.PageNumber + 5;
+        if (prev5Page < 1)
         {
-            prev5page = Model.TotalPages;
+            prev5Page = Model.TotalPages;
         }
-        if (next5page > Model.TotalPages)
+        if (next5Page > Model.TotalPages)
         {
-            next5page = 1;
+            next5Page = 1;
         }
         int newPage = Model.TotalPages - Model.PageNumber;
         if (newPage < 1)
@@ -136,13 +136,13 @@
                 <a id="previousPhotoLink" class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@prevPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText Photos</a>
                 @if (Model.TotalPages > 5)
                 {
-                    <a style="margin-left: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@prev5page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> Go 5 pages back</a>
+                    <a style="margin-left: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@prev5Page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> Go 5 pages back</a>
                 }
             </div>
             <div style="float: right">
                 @if (Model.TotalPages > 5)
                 {
-                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@next5page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">Go 5 pages forward <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@next5Page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">Go 5 pages forward <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
                 }
                 <a id="nextPhotoLink" class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@nextPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText Photos <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
             </div>
@@ -180,7 +180,7 @@
                     <img src="@item.PictureLink600" class="img-rounded" style="max-width: 97%; max-height: 97%; vertical-align: middle; display: inline-block; margin: auto; padding: auto;" />
 
                     <div class="nav-pills" style="position: absolute; height: 35px; width: 60px; top: 5px; left: 5px; font-size: 5px; background-color: @bgColor; display: inline-block;">
-                        <p style="width: 0px; height: 0px; font-size: 16px; position: absolute; color: #EEEEFF; text-align:center; transform: translate(0px, -118px);">@item.PictureNumber</p>
+                        <p style="width: 0; height: 0; font-size: 16px; position: absolute; color: #EEEEFF; text-align:center; transform: translate(0, -118px);">@item.PictureNumber</p>
                     </div>
                     <div class="nav-pills" style="position: absolute; height: 20px; width: 120px; bottom: 2px; left: 5px; font-size: 5px; background-color: dimgray; display: inline-block;">
                         <p style="width: 110px; height: 20px; font-size: 11px; position: absolute; color: #EEEEFF; text-align:center; transform: translate(-10px, -124px);">@pTime</p>
@@ -200,13 +200,13 @@
                 <a class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@prevPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText Photos</a>
                 @if (Model.TotalPages > 5)
                 {
-                    <a style="margin-left: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@prev5page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> Go 5 pages back</a>
+                    <a style="margin-left: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@prev5Page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> Go 5 pages back</a>
                 }
             </div>
             <div style="float: right">
                 @if (Model.TotalPages > 5)
                 {
-                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@next5page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">Go 5 pages forward <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@next5Page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">Go 5 pages forward <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
                 }
                 <a class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@nextPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText Photos <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
             </div>

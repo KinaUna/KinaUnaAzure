@@ -2,8 +2,12 @@
 <a class="leavePage" asp-controller="Skills" asp-action="Index">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
 
-        <div class="card-body" style="background: rgba(120, 120, 100, 0.8)">
-            <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 12px;" class="fa fa-graduation-cap"></span><strong style="font-size: 12px;" class="text-warning">@Model.SkillFirstObservation.Value.ToString("dd-MMM-yyyy HH:mm") </strong></div>
+        <div class="card-body" style="background: #787864; background: rgba(120, 120, 100, 0.8)">
+            <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 12px;" class="fa fa-graduation-cap"></span><strong style="font-size: 12px;" class="text-warning">
+                @{
+                    System.Diagnostics.Debug.Assert(Model.SkillFirstObservation != null, "Model.SkillFirstObservation != null");
+                }
+                @Model.SkillFirstObservation.Value.ToString("dd-MMM-yyyy HH:mm") </strong></div>
             <div style="margin-left: 2px; font-size: 12px;" class="text-white">@Model.Name</div>
         </div>
     </div>
