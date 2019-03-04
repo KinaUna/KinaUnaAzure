@@ -282,7 +282,7 @@
                                         </form>
                                     </div>
                                 }
-                                @if (User.IsInRole("SiteAdmin") || userinfo.UserEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
+                                @if (User.IsInRole("SiteAdmin") || userinfo.UserEmail.ToUpper() == Constants.AdminEmail.ToUpper())
                                 {
                                     <div class="dropdown-item">
                                         <form class="form-inline-fullwidth" asp-area="" asp-controller="PushDevices" asp-action="Index" method="get">
@@ -290,7 +290,7 @@
                                         </form>
                                     </div>
                                 }
-                                @if (User.IsInRole("SiteAdmin") || userinfo.UserEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
+                                @if (User.IsInRole("SiteAdmin") || userinfo.UserEmail.ToUpper() == Constants.AdminEmail.ToUpper())
                                 {
                                     <div class="dropdown-item">
                                         <form class="form-inline-fullwidth" asp-area="" asp-controller="Admin" asp-action="Index" method="get">
@@ -322,7 +322,7 @@
                                 </form>
                             </environment>
                             <environment exclude="Development">
-                                <form id="loginForm" class="form-inline-fullwidth" action="https://web.kinauna.com/account/login" method="post" target="loginFrame">
+                                <form id="loginForm" class="form-inline-fullwidth" action="@Constants.WebAppUrl/account/login" method="post" target="loginFrame">
                                     <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" data-toggle="modal" data-target="#loginModal"><i class="material-icons">exit_to_app</i> Einloggen oder anmelden</button>
                                 </form>
                             </environment>

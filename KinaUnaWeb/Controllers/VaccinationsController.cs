@@ -7,20 +7,21 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaWeb.Controllers
 {
     public class VaccinationsController : Controller
     {
-        private WebDbContext _context;
+        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private int _progId = 2;
+        private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
 
         public VaccinationsController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
         {
-            _context = context;
+            _context = context; // Todo: Replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
         }
 
@@ -37,13 +38,13 @@ namespace KinaUnaWeb.Controllers
             }
             if (_progId == 0)
             {
-                _progId = 2;
+                _progId = Constants.DefaultChildId;
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
-            int userAccessLevel = 5;
+            int userAccessLevel = (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
@@ -57,16 +58,16 @@ namespace KinaUnaWeb.Controllers
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
                 _userIsProgenyAdmin = true;
-                userAccessLevel = 0;
+                userAccessLevel = (int)AccessLevel.Private;
             }
 
             VaccinationViewModel model = new VaccinationViewModel();
             model.VaccinationList = new List<Vaccination>();
-            List<Vaccination> vList = _context.VaccinationsDb.Where(v => v.ProgenyId == _progId).ToList();
+            List<Vaccination> vaccinations = _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == _progId).ToList();
 
-            if (vList.Count != 0)
+            if (vaccinations.Count != 0)
             {
-                foreach (Vaccination v in vList)
+                foreach (Vaccination v in vaccinations)
                 {
                     if (v.AccessLevel >= userAccessLevel)
                     {
@@ -78,12 +79,12 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                Vaccination v = new Vaccination();
-                v.ProgenyId = _progId;
-                v.VaccinationName = "No vaccinations found.";
-                v.VaccinationDescription = "The vaccinations list is empty.";
+                Vaccination vaccination = new Vaccination();
+                vaccination.ProgenyId = _progId;
+                vaccination.VaccinationName = "No vaccinations found.";
+                vaccination.VaccinationDescription = "The vaccinations list is empty.";
 
-                model.VaccinationList.Add(v);
+                model.VaccinationList.Add(vaccination);
             }
             model.IsAdmin = _userIsProgenyAdmin;
             model.Progeny = progeny;

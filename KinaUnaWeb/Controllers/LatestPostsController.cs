@@ -7,20 +7,21 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaWeb.Controllers
 {
     public class LatestPostsController : Controller
     {
-        private WebDbContext _context;
+        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
         
         public LatestPostsController(WebDbContext context, IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore)
         {
-            _context = context;
+            _context = context;  // Todo: replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
             _imageStore = imageStore;
@@ -133,7 +134,7 @@ namespace KinaUnaWeb.Controllers
             int type = model.TypeId;
             int itemId;
             bool idParse = int.TryParse(id, out itemId);
-            if (type == 1)
+            if (type == (int)KinaUnaTypes.TimeLineType.Photo)
             {
                 if (idParse)
                 {
@@ -150,7 +151,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            if (type == 2)
+            if (type == (int)KinaUnaTypes.TimeLineType.Video)
             {
                 if (idParse)
                 {
@@ -163,11 +164,11 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            if (type == 3)
+            if (type == (int)KinaUnaTypes.TimeLineType.Calendar)
             {
                 if (idParse)
                 {
-                    CalendarItem evt = _context.CalendarDb.SingleOrDefault(e => e.EventId == itemId);
+                    CalendarItem evt = _context.CalendarDb.AsNoTracking().SingleOrDefault(e => e.EventId == itemId);
                     if (evt != null)
                     {
                         if (evt.StartTime.HasValue && evt.EndTime.HasValue)
@@ -180,11 +181,11 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            if (type == 4)
+            if (type == (int)KinaUnaTypes.TimeLineType.Vocabulary)
             {
                 if (idParse)
                 {
-                    VocabularyItem voc = _context.VocabularyDb.SingleOrDefault(v => v.WordId == itemId);
+                    VocabularyItem voc = _context.VocabularyDb.AsNoTracking().SingleOrDefault(v => v.WordId == itemId);
                     if (voc != null)
                     {
                         if (voc.Date != null)
@@ -197,11 +198,11 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            if (type == 5)
+            if (type == (int)KinaUnaTypes.TimeLineType.Skill)
             {
                 if (idParse)
                 {
-                    Skill skl = _context.SkillsDb.SingleOrDefault(s => s.SkillId == itemId);
+                    Skill skl = _context.SkillsDb.AsNoTracking().SingleOrDefault(s => s.SkillId == itemId);
                     if (skl != null)
                     {
                         return PartialView("TimeLineSkillPartial", skl);
@@ -209,11 +210,11 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            if (type == 6)
+            if (type == (int)KinaUnaTypes.TimeLineType.Friend)
             {
                 if (idParse)
                 {
-                    Friend frn = _context.FriendsDb.SingleOrDefault(f => f.FriendId == itemId);
+                    Friend frn = _context.FriendsDb.AsNoTracking().SingleOrDefault(f => f.FriendId == itemId);
                     if (frn != null)
                     {
                         if (!frn.PictureLink.StartsWith("https://"))
@@ -225,11 +226,11 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            if (type == 7)
+            if (type == (int)KinaUnaTypes.TimeLineType.Measurement)
             {
                 if (idParse)
                 {
-                    Measurement mes = _context.MeasurementsDb.SingleOrDefault(m => m.MeasurementId == itemId);
+                    Measurement mes = _context.MeasurementsDb.AsNoTracking().SingleOrDefault(m => m.MeasurementId == itemId);
                     if (mes != null)
                     {
                         return PartialView("TimeLineMeasurementPartial", mes);
@@ -237,11 +238,11 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            if (type == 8)
+            if (type == (int)KinaUnaTypes.TimeLineType.Sleep)
             {
                 if (idParse)
                 {
-                    Sleep slp = _context.SleepDb.SingleOrDefault(s => s.SleepId == itemId);
+                    Sleep slp = _context.SleepDb.AsNoTracking().SingleOrDefault(s => s.SleepId == itemId);
                     if (slp != null)
                     {
                         slp.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
@@ -257,11 +258,11 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            if (type == 9)
+            if (type == (int)KinaUnaTypes.TimeLineType.Note)
             {
                 if (idParse)
                 {
-                    Note nte = _context.NotesDb.SingleOrDefault(n => n.NoteId == itemId);
+                    Note nte = _context.NotesDb.AsNoTracking().SingleOrDefault(n => n.NoteId == itemId);
                     if (nte != null)
                     {
                         nte.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(nte.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
@@ -270,11 +271,11 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            if (type == 10)
+            if (type == (int)KinaUnaTypes.TimeLineType.Contact)
             {
                 if (idParse)
                 {
-                    Contact cnt = _context.ContactsDb.SingleOrDefault(c => c.ContactId == itemId);
+                    Contact cnt = _context.ContactsDb.AsNoTracking().SingleOrDefault(c => c.ContactId == itemId);
                     if (cnt != null)
                     {
                         if (cnt.DateAdded == null)
@@ -291,11 +292,11 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            if (type == 11)
+            if (type == (int)KinaUnaTypes.TimeLineType.Vaccination)
             {
                 if (idParse)
                 {
-                    Vaccination vac = _context.VaccinationsDb.SingleOrDefault(v => v.VaccinationId == itemId);
+                    Vaccination vac = _context.VaccinationsDb.AsNoTracking().SingleOrDefault(v => v.VaccinationId == itemId);
                     if (vac != null)
                     {
                         return PartialView("TimeLineVaccinationPartial", vac);
@@ -303,11 +304,11 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            if (type == 12)
+            if (type == (int)KinaUnaTypes.TimeLineType.Location)
             {
                 if (idParse)
                 {
-                    Location loc = _context.LocationsDb.SingleOrDefault(l => l.LocationId == itemId);
+                    Location loc = _context.LocationsDb.AsNoTracking().SingleOrDefault(l => l.LocationId == itemId);
                     if (loc != null)
                     {
                         return PartialView("TimeLineLocationPartial", loc);

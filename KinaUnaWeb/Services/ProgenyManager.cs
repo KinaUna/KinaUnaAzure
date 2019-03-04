@@ -28,14 +28,18 @@ namespace KinaUnaWeb.Services
             _imageStore = imageStore;
         }
 
-        public async Task<string> GetNewToken()
+        private async Task<string> GetNewToken()
         {
-            var client = new DiscoveryClient(_configuration.GetValue<string>("AuthenticationServer"));
-            var doc = await client.GetAsync();
-            var tokenClient = new TokenClient(doc.TokenEndpoint,
-                _configuration.GetValue<string>("AuthenticationServerClientId"),
-                _configuration.GetValue<string>("AuthenticationServerClientSecret"));
-            var tokenResponse = await tokenClient.RequestClientCredentialsAsync("kinaunaprogenyapi");
+            var discoveryClient = new HttpClient();
+
+            var tokenResponse = await discoveryClient.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+            {
+                Address = _configuration.GetValue<string>("AuthenticationServer"),
+
+                ClientId = _configuration.GetValue<string>("AuthenticationServerClientId"),
+                ClientSecret = _configuration.GetValue<string>("AuthenticationServerClientSecret"),
+                Scope = Constants.ProgenyApiName
+            });
 
             return tokenResponse.AccessToken;
         }
@@ -117,7 +121,6 @@ namespace KinaUnaWeb.Services
                 var newUserinfoUri = clientUri + newUserinfoApiPath;
 
                 var newUserResponseString = await newUserinfoHttpClient.PostAsync(newUserinfoUri, new StringContent(JsonConvert.SerializeObject(newUserinfo), System.Text.Encoding.UTF8, "application/json")).Result.Content.ReadAsStringAsync();
-                // var newUserResponseString = await newUserResponse.Content.ReadAsStringAsync();
                 userinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
             }
 
@@ -129,7 +132,7 @@ namespace KinaUnaWeb.Services
                 }
                 else
                 {
-                    userinfo.ViewChild = 2;
+                    userinfo.ViewChild = Constants.DefaultChildId;
                 }
             }
             return userinfo;
@@ -152,7 +155,6 @@ namespace KinaUnaWeb.Services
             var currentContext = _httpContextAccessor.HttpContext;
             string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
-            // ApplicationUser userId = _userManager.Parse(currentContext.User);
             HttpClient newUserinfoHttpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
@@ -173,7 +175,6 @@ namespace KinaUnaWeb.Services
             var newUserinfoUri = clientUri + newUserinfoApiPath;
 
             var newUserResponseString = await newUserinfoHttpClient.PutAsync(newUserinfoUri, new StringContent(JsonConvert.SerializeObject(userinfo), System.Text.Encoding.UTF8, "application/json")).Result.Content.ReadAsStringAsync();
-            // var newUserResponseString = await newUserResponse.Content.ReadAsStringAsync();
             var updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
             return updatedUserinfo;
         }
@@ -184,7 +185,6 @@ namespace KinaUnaWeb.Services
             // get the current HttpContext to access the tokens
             var currentContext = _httpContextAccessor.HttpContext;
             // get access token
-            // accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false); ;
             string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             HttpClient httpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))

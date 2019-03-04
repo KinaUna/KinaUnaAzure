@@ -18,7 +18,7 @@ namespace KinaUnaWeb.Services
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
 
         public ProgenyHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
         {
@@ -30,12 +30,16 @@ namespace KinaUnaWeb.Services
 
         public async Task<string> GetNewToken()
         {
-            var client = new DiscoveryClient(_configuration.GetValue<string>("AuthenticationServer"));
-            var doc = await client.GetAsync();
-            var tokenClient = new TokenClient(doc.TokenEndpoint,
-                _configuration.GetValue<string>("AuthenticationServerClientId"),
-                _configuration.GetValue<string>("AuthenticationServerClientSecret"));
-            var tokenResponse = await tokenClient.RequestClientCredentialsAsync("kinaunaprogenyapi");
+            var discoveryClient = new HttpClient();
+
+            var tokenResponse = await discoveryClient.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
+            {
+                Address = _configuration.GetValue<string>("AuthenticationServer") + "/connect/token",
+
+                ClientId = _configuration.GetValue<string>("AuthenticationServerClientId"),
+                ClientSecret = _configuration.GetValue<string>("AuthenticationServerClientSecret"),
+                Scope = Constants.ProgenyApiName
+            });
 
             return tokenResponse.AccessToken;
         }
@@ -165,7 +169,7 @@ namespace KinaUnaWeb.Services
         {
             if (progenyId == 0)
             {
-                progenyId = 2;
+                progenyId = Constants.DefaultChildId;
             }
             HttpClient httpClient = new HttpClient();
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer");

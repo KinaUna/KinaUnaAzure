@@ -14,11 +14,11 @@ namespace KinaUnaWeb.Controllers
 {
     public class CalendarController : Controller
     {
-        private WebDbContext _context;
+        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private int _progId = 2;
+        private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
 
         public CalendarController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
         {
@@ -40,13 +40,13 @@ namespace KinaUnaWeb.Controllers
 
             if (_progId == 0)
             {
-                _progId = 2;
+                _progId = Constants.DefaultChildId;
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
-            int userAccessLevel = 5;
+            int userAccessLevel = (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
@@ -60,12 +60,12 @@ namespace KinaUnaWeb.Controllers
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
                 _userIsProgenyAdmin = true;
-                userAccessLevel = 0;
+                userAccessLevel = (int)AccessLevel.Private;
             }
 
             ApplicationUser currentUser = new ApplicationUser();
             currentUser.TimeZone = userinfo.Timezone;
-            var eventsList = _context.CalendarDb.Where(e => e.ProgenyId == _progId).ToList();
+            var eventsList = _context.CalendarDb.AsNoTracking().Where(e => e.ProgenyId == _progId).ToList();
             eventsList = eventsList.OrderBy(e => e.StartTime).ToList();
             CalendarItemViewModel events = new CalendarItemViewModel();
             events.IsAdmin = _userIsProgenyAdmin;
@@ -75,7 +75,7 @@ namespace KinaUnaWeb.Controllers
             
             foreach (CalendarItem ev in eventsList)
             {
-                if (ev.AccessLevel == 5 || ev.AccessLevel >= userAccessLevel)
+                if (ev.AccessLevel == (int)AccessLevel.Public || ev.AccessLevel >= userAccessLevel)
                 {
                     if (ev.StartTime.HasValue && ev.EndTime.HasValue)
                     {
@@ -91,6 +91,7 @@ namespace KinaUnaWeb.Controllers
                             ev.EndTime = TimeZoneInfo.ConvertTimeFromUtc(ev.EndTime.Value,
                                 TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
                         }
+                        // ToDo: Replace format string with configuration or userdefined value
                         ev.StartString = ev.StartTime.Value.ToString("yyyy-MM-dd") + "T" + ev.StartTime.Value.ToString("HH:mm:ss");
                         ev.EndString = ev.EndTime.Value.ToString("yyyy-MM-dd") + "T" + ev.EndTime.Value.ToString("HH:mm:ss");
                         events.EventsList.Add(ev);
@@ -105,7 +106,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ViewEvent(int eventId)
         {
-            CalendarItem eventItem = await _context.CalendarDb.SingleAsync(e => e.EventId == eventId);
+            CalendarItem eventItem = await _context.CalendarDb.AsNoTracking().SingleAsync(e => e.EventId == eventId);
 
             CalendarItemViewModel model = new CalendarItemViewModel();
 
@@ -116,7 +117,7 @@ namespace KinaUnaWeb.Controllers
             Progeny progeny = await _progenyHttpClient.GetProgeny(eventItem.ProgenyId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(eventItem.ProgenyId);
 
-            int userAccessLevel = 5;
+            int userAccessLevel = (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
@@ -130,7 +131,7 @@ namespace KinaUnaWeb.Controllers
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
                 _userIsProgenyAdmin = true;
-                userAccessLevel = 0;
+                userAccessLevel = (int)AccessLevel.Private;
             }
 
             if (eventItem.AccessLevel < userAccessLevel)

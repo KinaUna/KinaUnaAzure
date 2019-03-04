@@ -20,7 +20,7 @@ namespace KinaUnaWeb
             WebHost.CreateDefaultBuilder(args).
                 ConfigureAppConfiguration((ctx, builder) =>
                     {
-                        var keyVaultEndpoint = "https://kinaunakeyvault.vault.azure.net";
+                        var keyVaultEndpoint = Constants.KeyVaultEndPoint;
                         if (!string.IsNullOrEmpty(keyVaultEndpoint))
                         {
                             var azureServiceTokenProvider = new AzureServiceTokenProvider();

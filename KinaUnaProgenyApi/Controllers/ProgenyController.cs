@@ -48,7 +48,6 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-
         }
 
         // GET api/progeny/5

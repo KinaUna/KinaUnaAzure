@@ -13,8 +13,8 @@ namespace KinaUnaWeb.Controllers
     public class AccessManagementController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly string _defaultUser = "testuser@niviaq.com";
-        private int _progId = 2;
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
+        private int _progId = Constants.DefaultChildId;
 
         public AccessManagementController(IProgenyHttpClient progenyHttpClient)
         {
@@ -47,7 +47,7 @@ namespace KinaUnaWeb.Controllers
             model.Progeny = await _progenyHttpClient.GetProgeny(Int32.Parse(progenyId));
             model.ProgenyName = model.Progeny.Name;
             model.Email = "";
-            model.AccessLevel = 4;
+            model.AccessLevel = (int)AccessLevel.Users;
             model.UserId = "";
             model.ProgenyList = new List<SelectListItem>();
             if (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null)
@@ -154,7 +154,7 @@ namespace KinaUnaWeb.Controllers
             await _progenyHttpClient.UpdateUserAccess(uaModel);
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (model.AccessLevel == 0 && !progeny.Admins.ToUpper().Contains(model.UserId.ToUpper()))
+            if (model.AccessLevel == (int)AccessLevel.Private && !progeny.Admins.ToUpper().Contains(model.UserId.ToUpper()))
             {
 
                 progeny.Admins = progeny.Admins + ", " + (model.Email).ToUpper();

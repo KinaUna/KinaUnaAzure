@@ -10,11 +10,11 @@ namespace KinaUnaProgenyApi.Services
     public class ImageStore
     {
         CloudBlobClient blobClient;
-        string baseUri = "https://kinaunastorage.blob.core.windows.net/";
+        string baseUri = Constants.CloudBlobBase;
         
         public ImageStore(IConfiguration configuration)
         {
-            var credentials = new StorageCredentials("kinaunastorage", configuration["BlobStorageKey"]);
+            var credentials = new StorageCredentials(Constants.CloudBlobUsername, configuration["BlobStorageKey"]);
             blobClient = new CloudBlobClient(new Uri(baseUri), credentials);
         }
 

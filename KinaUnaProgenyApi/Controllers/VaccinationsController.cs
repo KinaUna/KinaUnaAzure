@@ -128,43 +128,5 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(result);
         }
-
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-            
-            HttpClient vaccinationsHttpClient = new HttpClient();
-            
-            vaccinationsHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            vaccinationsHttpClient.DefaultRequestHeaders.Accept.Clear();
-            vaccinationsHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            string vaccinationsApiPath = "/api/azureexport/vaccinationsexport";
-            var vaccinationsUri = "https://kinauna.com" + vaccinationsApiPath;
-
-            var vaccinationsResponseString = await vaccinationsHttpClient.GetStringAsync(vaccinationsUri);
-
-            List<Vaccination> vaccinationsList = JsonConvert.DeserializeObject<List<Vaccination>>(vaccinationsResponseString);
-            List<Vaccination> vaccinationsItems = new List<Vaccination>();
-            foreach (Vaccination value in vaccinationsList)
-            {
-                Vaccination vaccinationItem = new Vaccination();
-                vaccinationItem.AccessLevel = value.AccessLevel;
-                vaccinationItem.Author = value.Author;
-                vaccinationItem.Notes = value.Notes;
-                vaccinationItem.VaccinationDate = value.VaccinationDate;
-                vaccinationItem.ProgenyId = value.ProgenyId;
-                vaccinationItem.VaccinationDescription = value.VaccinationDescription;
-                vaccinationItem.VaccinationName = value.VaccinationName;
-                await _context.VaccinationsDb.AddAsync(vaccinationItem);
-                vaccinationsItems.Add(vaccinationItem);
-                
-            }
-            await _context.SaveChangesAsync();
-
-            return Ok(vaccinationsItems);
-        }
     }
 }

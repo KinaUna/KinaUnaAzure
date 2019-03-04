@@ -132,46 +132,5 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(result);
         }
-
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-            
-            HttpClient vocabularyHttpClient = new HttpClient();
-            
-            vocabularyHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            vocabularyHttpClient.DefaultRequestHeaders.Accept.Clear();
-            vocabularyHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            // GET api/pictures/[id]
-            string vocabularyApiPath = "/api/azureexport/vocabularyexport";
-            var vocabularyUri = "https://kinauna.com" + vocabularyApiPath;
-
-            var vocabularyResponseString = await vocabularyHttpClient.GetStringAsync(vocabularyUri);
-
-            List<VocabularyItem> vocabularyList = JsonConvert.DeserializeObject<List<VocabularyItem>>(vocabularyResponseString);
-            List<VocabularyItem> vocabularyItems = new List<VocabularyItem>();
-            foreach (VocabularyItem value in vocabularyList)
-            {
-                VocabularyItem vocabularyItem = new VocabularyItem();
-                vocabularyItem.AccessLevel = value.AccessLevel;
-                vocabularyItem.Author = value.Author;
-                vocabularyItem.Date = value.Date;
-                vocabularyItem.DateAdded = value.DateAdded;
-                vocabularyItem.ProgenyId = value.ProgenyId;
-                vocabularyItem.Description = value.Description;
-                vocabularyItem.Language = value.Language;
-                vocabularyItem.SoundsLike = value.SoundsLike;
-                vocabularyItem.Word = value.Word;
-                await _context.VocabularyDb.AddAsync(vocabularyItem);
-                    vocabularyItems.Add(vocabularyItem);
-                
-            }
-            await _context.SaveChangesAsync();
-
-            return Ok(vocabularyItems);
-        }
     }
 }

@@ -20,6 +20,7 @@ namespace KinaUnaMediaApi.Controllers
     public class CommentsController : ControllerBase
     {
         private readonly MediaDbContext _context;
+
         public CommentsController(MediaDbContext context)
         {
             _context = context;
@@ -118,60 +119,6 @@ namespace KinaUnaMediaApi.Controllers
             }
 
         }
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-
-            HttpClient commentsHttpClient = new HttpClient();
-
-            commentsHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            commentsHttpClient.DefaultRequestHeaders.Accept.Clear();
-            commentsHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            // GET api/pictures/[id]
-            string commentsApiPath = "/api/azureexport/commentsexport";
-            var commentsUri = "https://kinauna.com" + commentsApiPath;
-
-            var commentsResponseString = await commentsHttpClient.GetStringAsync(commentsUri);
-
-            CommentDto commentsList = JsonConvert.DeserializeObject<CommentDto>(commentsResponseString);
-            List<Comment> addedComments = new List<Comment>();
-            foreach (Comment comment in commentsList.CommentsList)
-            {
-                Comment tempComment = await _context.CommentsDb.SingleOrDefaultAsync(l => l.CommentId == comment.CommentId);
-                if (tempComment == null)
-                {
-                    Comment newComment = new Comment();
-                    newComment.Author = comment.Author;
-                    newComment.CommentText = comment.CommentText;
-                    newComment.CommentThreadNumber = comment.CommentThreadNumber;
-                    newComment.Created = comment.Created;
-                    newComment.DisplayName = comment.DisplayName;
-
-                    await _context.CommentsDb.AddAsync(newComment);
-                    addedComments.Add(newComment);
-                }
-            }
-
-            foreach (CommentThread cThread in commentsList.CommentThreadsList)
-            {
-                CommentThread tempCommentThread = await _context.CommentThreadsDb.SingleOrDefaultAsync(l => l.CommentThreadId == cThread.CommentThreadId);
-
-                if (tempCommentThread == null)
-                {
-                    CommentThread newCommentThread = new CommentThread();
-                    newCommentThread.CommentThreadId = cThread.CommentThreadId;
-                    newCommentThread.CommentsCount = cThread.CommentsCount;
-
-                    await _context.CommentThreadsDb.AddAsync(newCommentThread);
-                }
-            }
-
-            await _context.SaveChangesAsync();
-
-            return Ok(addedComments);
-        }
+        
     }
 }

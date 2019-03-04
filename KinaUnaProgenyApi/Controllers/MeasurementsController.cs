@@ -134,46 +134,5 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(result);
         }
-
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-            
-            HttpClient measurementsHttpClient = new HttpClient();
-            
-            measurementsHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            measurementsHttpClient.DefaultRequestHeaders.Accept.Clear();
-            measurementsHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            string measurementsApiPath = "/api/azureexport/measurementsexport";
-            var measurementsUri = "https://kinauna.com" + measurementsApiPath;
-
-            var measurementsResponseString = await measurementsHttpClient.GetStringAsync(measurementsUri);
-
-            List<Measurement> measurementsList = JsonConvert.DeserializeObject<List<Measurement>>(measurementsResponseString);
-            List<Measurement> measurementsItems = new List<Measurement>();
-            foreach (Measurement value in measurementsList)
-            {
-                Measurement measurementItem = new Measurement();
-                measurementItem.AccessLevel = value.AccessLevel;
-                measurementItem.Author = value.Author;
-                measurementItem.Date = value.Date;
-                measurementItem.Circumference = value.Circumference;
-                measurementItem.ProgenyId = value.ProgenyId;
-                measurementItem.EyeColor = value.EyeColor;
-                measurementItem.CreatedDate = value.CreatedDate;
-                measurementItem.HairColor = value.HairColor;
-                measurementItem.Height = value.Height;
-                measurementItem.Weight = value.Weight;
-                await _context.MeasurementsDb.AddAsync(measurementItem);
-                measurementsItems.Add(measurementItem);
-                
-            }
-            await _context.SaveChangesAsync();
-
-            return Ok(measurementsItems);
-        }
     }
 }

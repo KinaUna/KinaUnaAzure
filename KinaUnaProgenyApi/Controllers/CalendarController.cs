@@ -163,47 +163,5 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
         }
-
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-            
-            HttpClient calendarHttpClient = new HttpClient();
-            
-            calendarHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            calendarHttpClient.DefaultRequestHeaders.Accept.Clear();
-            calendarHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            // GET api/pictures/[id]
-            string calendarApiPath = "/api/azureexport/calendarexport";
-            var calendarUri = "https://kinauna.com" + calendarApiPath;
-
-            var calendarResponseString = await calendarHttpClient.GetStringAsync(calendarUri);
-
-            List<CalendarItem> calendarList = JsonConvert.DeserializeObject<List<CalendarItem>>(calendarResponseString);
-            List<CalendarItem> calendarItems = new List<CalendarItem>();
-            foreach (CalendarItem cal in calendarList)
-            {
-                CalendarItem calendarItem = new CalendarItem();
-                calendarItem.AccessLevel = cal.AccessLevel;
-                calendarItem.Author = cal.Author;
-                calendarItem.Notes = cal.Notes;
-                calendarItem.ProgenyId = cal.ProgenyId;
-                calendarItem.AllDay = cal.AllDay;
-                calendarItem.Context = cal.Context;
-                calendarItem.Location = cal.Location;
-                calendarItem.Title = cal.Title;
-                calendarItem.StartTime = cal.StartTime;
-                calendarItem.EndTime = cal.EndTime;
-                await _context.CalendarDb.AddAsync(calendarItem);
-                    calendarItems.Add(calendarItem);
-                
-            }
-            await _context.SaveChangesAsync();
-
-            return Ok(calendarItems);
-        }
     }
 }

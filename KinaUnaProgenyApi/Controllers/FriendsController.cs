@@ -145,49 +145,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-            
-            HttpClient friendsHttpClient = new HttpClient();
-            
-            friendsHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            friendsHttpClient.DefaultRequestHeaders.Accept.Clear();
-            friendsHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            string friendsApiPath = "/api/azureexport/friendsexport";
-            var friendsUri = "https://kinauna.com" + friendsApiPath;
-
-            var friendsResponseString = await friendsHttpClient.GetStringAsync(friendsUri);
-
-            List<Friend> friendsList = JsonConvert.DeserializeObject<List<Friend>>(friendsResponseString);
-            List<Friend> friendsItems = new List<Friend>();
-            foreach (Friend value in friendsList)
-            {
-                Friend friendItem = new Friend();
-                friendItem.AccessLevel = value.AccessLevel;
-                friendItem.Author = value.Author;
-                friendItem.Context = value.Context;
-                friendItem.Name = value.Name;
-                friendItem.Type = value.Type;
-                friendItem.FriendAddedDate = value.FriendAddedDate;
-                friendItem.ProgenyId = value.ProgenyId;
-                friendItem.Description = value.Description;
-                friendItem.FriendSince = value.FriendSince;
-                friendItem.Notes = value.Notes;
-                friendItem.PictureLink = "https://" + value.PictureLink;
-                friendItem.Tags = value.Tags;
-                await _context.FriendsDb.AddAsync(friendItem);
-                friendsItems.Add(friendItem);
-                
-            }
-            await _context.SaveChangesAsync();
-
-            return Ok(friendsItems);
-        }
-
+        
         [HttpGet]
         [Route("[action]/{friendId}")]
         public async Task<IActionResult> DownloadPicture(int friendId)

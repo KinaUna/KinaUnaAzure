@@ -11,7 +11,7 @@ namespace KinaUnaWeb.Controllers
     {
         
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
 
         public FamilyController(IProgenyHttpClient progenyHttpClient)
         {

@@ -43,7 +43,7 @@ else
             let pixelRatio = window.devicePixelRatio || 1;
             let iconWidth = Math.floor(36 * pixelRatio + (pixelRatio -1) * 8);
             let iconHeight = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
-            let defaultIcon = new H.map.Icon("https://web.kinauna.com/images/purplemarker.svg", { size: { w: iconWidth, h: iconHeight } });
+            let defaultIcon = new H.map.Icon("@Constants.WebAppUrl/images/purplemarker.svg", { size: { w: iconWidth, h: iconHeight } });
             let prevSelectedMarker;
             let nearbyList = [];
             let lastNearby = 0;
@@ -126,7 +126,7 @@ else
                                     if (prevSelectedMarker instanceof mapsjs.map.Marker) {
                                         prevSelectedMarker.setIcon(defaultIcon);
                                     }
-                                    let selectedIcon = new H.map.Icon("https://web.kinauna.com/images/redmarker.svg", { size: { w: iconWidth, h: iconHeight } });
+                                    let selectedIcon = new H.map.Icon("@Constants.WebAppUrl/images/redmarker.svg", { size: { w: iconWidth, h: iconHeight } });
                                     target.setIcon(selectedIcon);
                                     prevSelectedMarker = target;
                                     markerPos = target.getPosition();
@@ -177,8 +177,8 @@ else
             }
 
             let platform = new H.service.Platform({
-                'app_id': 'bJjORf0UVOc5U4LjADgX',
-                'app_code': 'GNDm65qsmujcmIK9-2X_Uw',
+                'app_id': '@Constants.HereMapsId',
+                'app_code': '@Constants.HereMapsCode',
                 'useHTTPS': true
             });
             let maptypes = platform.createDefaultLayers({
@@ -239,7 +239,7 @@ else
                 <div class="card-body" style="background: #326ebe; background: rgba(50, 110, 190, 0.8)">
                     <div class="info-title"><span style="font-size: 24px; color: white; margin-right: 15px;" class="far fa-images"></span><strong class="text-warning"> Click a Marker on the Map</strong></div>
                     <div align="center" class="img-rounded" style="overflow: hidden; max-width: 60vw; margin: 2px; margin-left: 46px; padding: 1px; width: 270px; height: 270px; background-color: #000000; text-align: center; line-height: 271px; display: inline-block; position: relative;">
-                        <img src="https://web.kinauna.com/images/kinaunalogo192x192.png" style="max-height: 260px; max-width: 260px;">
+                        <img src="@Constants.WebAppUrl/images/kinaunalogo192x192.png" style="max-height: 260px; max-width: 260px;">
 
                     </div>
                 </div>

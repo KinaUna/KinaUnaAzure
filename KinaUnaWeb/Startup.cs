@@ -119,7 +119,7 @@ namespace KinaUnaWeb
                     options.ExpireTimeSpan = TimeSpan.FromDays(180);
                     if (!_env.IsDevelopment())
                     {
-                        options.Cookie.Domain = ".kinauna.com";
+                        options.Cookie.Domain = "." + Constants.AppRootDomain;
                     }
                 })
                 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
@@ -141,8 +141,8 @@ namespace KinaUnaWeb
                     options.Scope.Add("lastname");
                     options.Scope.Add("joindate");
                     options.Scope.Add("viewchild");
-                    options.Scope.Add("kinaunaprogenyapi");
-                    options.Scope.Add("kinaunamediaapi");
+                    options.Scope.Add(Constants.ProgenyApiName);
+                    options.Scope.Add(Constants.MediaApiName);
                     options.Scope.Add("offline_access");
                     options.SaveTokens = true;
                     options.ClientSecret = authenticationServerClientSecret;
@@ -206,23 +206,14 @@ namespace KinaUnaWeb
 
             var provider = new CookieRequestCultureProvider()
             {
-                CookieName = "KinaUnaLanguage"
+                CookieName = Constants.LanguageCookieName
             };
             localizationOptions.RequestCultureProviders.Insert(0, provider);
             
             app.UseRequestLocalization(localizationOptions);
 
             app.UseFileServer();
-            //app.UseStaticFiles(new StaticFileOptions
-            //{
-            //    OnPrepareResponse = ctx =>
-            //    {
-            //        const int durationInSeconds = 60 * 60 * 24 * 30;
-            //        ctx.Context.Response.Headers[HeaderNames.CacheControl] =
-            //            "public,max-age=" + durationInSeconds;
-            //    }
-            //});
-
+            
             app.UseAuthentication();
 
             

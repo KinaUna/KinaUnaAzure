@@ -21,7 +21,7 @@ namespace KinaUnaWeb.Controllers
 
         public NotificationsController(WebDbContext context, IHubContext<WebNotificationHub> hubContext, ImageStore imageStore)
         {
-            _context = context;
+            _context = context; // Todo: Replace _context with httpClient
             _hubContext = hubContext;
             _imageStore = imageStore;
         }
@@ -40,7 +40,7 @@ namespace KinaUnaWeb.Controllers
                 {
                     notif.DateTime = TimeZoneInfo.ConvertTimeFromUtc(notif.DateTime,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-                    notif.DateTimeString = notif.DateTime.ToString("dd-MMM-yyyy HH:mm");
+                    notif.DateTimeString = notif.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
                     if (!notif.Icon.StartsWith("/") && !notif.Icon.StartsWith("http"))
                     {
                         notif.Icon = _imageStore.UriFor(notif.Icon, "profiles");
@@ -97,7 +97,6 @@ namespace KinaUnaWeb.Controllers
                     updateNotification.IsRead = false;
                     _context.WebNotificationsDb.Update(updateNotification);
                     await _context.SaveChangesAsync();
-                    // await Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
                     await _hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
                 }
             }
@@ -118,7 +117,6 @@ namespace KinaUnaWeb.Controllers
                     updateNotification.IsRead = true;
                     _context.WebNotificationsDb.Update(updateNotification);
                     await _context.SaveChangesAsync();
-                    // await Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
                     await _hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
                 }
             }
@@ -138,7 +136,6 @@ namespace KinaUnaWeb.Controllers
                 {
                     _context.WebNotificationsDb.Remove(updateNotification);
                     await _context.SaveChangesAsync();
-                    // await Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
                     await _hubContext.Clients.User(userId).SendAsync("DeleteMessage", JsonConvert.SerializeObject(updateNotification));
                 }
             }

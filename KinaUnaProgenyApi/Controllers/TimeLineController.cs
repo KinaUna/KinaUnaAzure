@@ -164,45 +164,6 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Ok(new List<TimeLineItem>());
             }
-
-        }
-
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-
-            HttpClient timeLineHttpClient = new HttpClient();
-
-            timeLineHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            timeLineHttpClient.DefaultRequestHeaders.Accept.Clear();
-            timeLineHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            string timeLineApiPath = "/api/azureexport/timelineexport";
-            var timeLineUri = "https://kinauna.com" + timeLineApiPath;
-
-            var timeLineResponseString = await timeLineHttpClient.GetStringAsync(timeLineUri);
-
-            List<TimeLineItem> timeLineList = JsonConvert.DeserializeObject<List<TimeLineItem>>(timeLineResponseString);
-            List<TimeLineItem> timeLineItems = new List<TimeLineItem>();
-            foreach (TimeLineItem value in timeLineList)
-            {
-                TimeLineItem timeLineItem = new TimeLineItem();
-                timeLineItem.ProgenyId = value.ProgenyId;
-                timeLineItem.AccessLevel = value.AccessLevel;
-                timeLineItem.CreatedBy = value.CreatedBy;
-                timeLineItem.CreatedTime = value.CreatedTime;
-                timeLineItem.ItemId = value.ItemId;
-                timeLineItem.ItemType = value.ItemType;
-                timeLineItem.ProgenyTime = value.ProgenyTime;
-                await _context.TimeLineDb.AddAsync(timeLineItem);
-                timeLineItems.Add(timeLineItem);
-
-            }
-            await _context.SaveChangesAsync();
-
-            return Ok(timeLineItems);
         }
     }
 }

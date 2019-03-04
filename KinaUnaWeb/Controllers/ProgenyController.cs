@@ -17,13 +17,13 @@ namespace KinaUnaWeb.Controllers
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly WebDbContext _context;
         private readonly ImageStore _imageStore;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
 
         public ProgenyController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, WebDbContext context, ImageStore imagestore)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
-            _context = context;
+            _context = context; // Todo: Replace _context with httpClient
             _imageStore = imagestore;
         }
         public IActionResult Index()
@@ -66,7 +66,7 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                prog.PictureLink = "https://web.kinauna.com/photodb/childcareicon.jpg";
+                prog.PictureLink = Constants.WebAppUrl + "/photodb/childcareicon.jpg"; // Todo: Find better image
             }
 
             await _progenyHttpClient.AddProgeny(prog);
@@ -161,7 +161,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            List<Picture> photoList = await _mediaHttpClient.GetPictureList(model.Id, 0, userinfo.Timezone);
+            List<Picture> photoList = await _mediaHttpClient.GetPictureList(model.Id, (int)AccessLevel.Private, userinfo.Timezone);
             if (photoList.Any())
             {
                 foreach (Picture picture in photoList)

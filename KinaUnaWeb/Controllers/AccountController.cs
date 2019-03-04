@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Globalization;
@@ -20,14 +19,12 @@ namespace KinaUnaWeb.Controllers
     public class AccountController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly IHostingEnvironment _env;
         private readonly ApplicationDbContext _appDbContext;
         private readonly ImageStore _imageStore;
         private readonly IConfiguration _configuration;
-        public AccountController(IProgenyHttpClient progenyHttpClient, IHostingEnvironment env, ApplicationDbContext appDbContext, ImageStore imageStore, IConfiguration configuration)
+        public AccountController(IProgenyHttpClient progenyHttpClient, ApplicationDbContext appDbContext, ImageStore imageStore, IConfiguration configuration)
         {
             _progenyHttpClient = progenyHttpClient;
-            _env = env;
             _appDbContext = appDbContext;
             _imageStore = imageStore;
             _configuration = configuration;
@@ -106,17 +103,10 @@ namespace KinaUnaWeb.Controllers
 
         public async Task CheckOut(string returnUrl = null)
         {
-            // Clears the local cookie.
-            // await HttpContext.SignOutAsync("Cookie");
-            // await HttpContext.SignOutAsync("oidc");
-
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
-
-
-            //var homeUrl = Url.Action(nameof(HomeController.Index), "Home");
-            //return new SignOutResult(OpenIdConnectDefaults.AuthenticationScheme,
-            //    new Microsoft.AspNetCore.Authentication.AuthenticationProperties { RedirectUri = returnUrl });
+            
+            
         }
 
         public IActionResult AccessDenied()
@@ -138,7 +128,7 @@ namespace KinaUnaWeb.Controllers
 
             if (String.IsNullOrEmpty(userinfo.ProfilePicture))
             {
-                userinfo.ProfilePicture = "https://web.kinauna.com/photodb/profile.jpg";
+                userinfo.ProfilePicture = Constants.ProfilePictureUrl;
             }
 
             if (!userinfo.ProfilePicture.ToLower().StartsWith("http"))
@@ -166,14 +156,8 @@ namespace KinaUnaWeb.Controllers
                 model.UserName = model.UserEmail;
             }
 
-            if (_env.IsDevelopment())
-            {
-                model.ChangeLink = "https://localhost:44397/Account/ChangePassword";
-            }
-            else
-            {
-                model.ChangeLink = "https://auth.kinauna.com/Account/ChangePassword";
-            }
+            model.ChangeLink = _configuration["AuthenticationServer"] + "/Account/ChangePassword";
+            
             return View(model);
         }
 
@@ -200,7 +184,7 @@ namespace KinaUnaWeb.Controllers
 
             if (String.IsNullOrEmpty(userinfo.ProfilePicture))
             {
-                userinfo.ProfilePicture = "https://web.kinauna.com/photodb/profile.jpg";
+                userinfo.ProfilePicture = Constants.ProfilePictureUrl;
             }
 
             bool emailChanged = false;
@@ -283,14 +267,8 @@ namespace KinaUnaWeb.Controllers
                 PhoneNumber = HttpContext.User.FindFirst("phone_number")?.Value ?? "",
                 ProfilePicture = userinfo.ProfilePicture
             };
-            if (_env.IsDevelopment())
-            {
-                model.ChangeLink = "https://localhost:44397/Account/ChangeEmail?NewEmail=" + newEmail + "&OldEmail=" + oldEmail;
-            }
-            else
-            {
-                model.ChangeLink = "https://auth.kinauna.com/Account/ChangeEmail?NewEmail=" + newEmail + "&OldEmail=" + oldEmail;
-            }
+            model.ChangeLink = _configuration["AuthenticationServer"] + "/Account/ChangeEmail?NewEmail=" + newEmail + "&OldEmail=" + oldEmail;
+
             return View(model);
         }
 

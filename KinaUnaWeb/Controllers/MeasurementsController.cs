@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -15,13 +16,13 @@ namespace KinaUnaWeb.Controllers
     {
         private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private int _progId = 2;
+        private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
 
         public MeasurementsController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
         {
-            _context = context;
+            _context = context; // Todo: Replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
         }
 
@@ -39,13 +40,13 @@ namespace KinaUnaWeb.Controllers
 
             if (_progId == 0)
             {
-                _progId = 2;
+                _progId = Constants.DefaultChildId;
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
-            int userAccessLevel = 5;
+            int userAccessLevel = (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
@@ -59,11 +60,12 @@ namespace KinaUnaWeb.Controllers
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
                 _userIsProgenyAdmin = true;
-                userAccessLevel = 0;
+                userAccessLevel = (int)AccessLevel.Private;
             }
             MeasurementViewModel model = new MeasurementViewModel();
             
-            List<Measurement> mList = _context.MeasurementsDb.Where(m => m.ProgenyId == _progId).ToList();
+            // ToDo: Implement _progenyClient.GetMeasurements()
+            List<Measurement> mList = _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == _progId).ToList();
             List<Measurement> measurementsList = new List<Measurement>();
             foreach (Measurement m in mList)
             {

@@ -13,11 +13,11 @@ namespace KinaUnaWeb.Controllers
 {
     public class VocabularyController : Controller
     {
-        private WebDbContext _context;
+        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private int _progId = 2;
+        private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
 
         public VocabularyController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
         {
@@ -38,23 +38,27 @@ namespace KinaUnaWeb.Controllers
             }
             if (_progId == 0)
             {
-                _progId = 2;
+                _progId = Constants.DefaultChildId;
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+
+            int userAccessLevel = (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
                 UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
                 if (userAccess != null)
                 {
+                    userAccessLevel = userAccess.AccessLevel;
                 }
             }
 
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
                 _userIsProgenyAdmin = true;
+                userAccessLevel = (int)AccessLevel.Private;
             }
 
             List<VocabularyItemViewModel> model = new List<VocabularyItemViewModel>();
@@ -62,63 +66,64 @@ namespace KinaUnaWeb.Controllers
             wordList = wordList.OrderBy(w => w.Date).ToList();
             if (wordList.Count != 0)
             {
-                foreach (VocabularyItem w in wordList)
+                foreach (VocabularyItem vocabularyItem in wordList)
                 {
-                    VocabularyItemViewModel vIvm = new VocabularyItemViewModel();
-                    vIvm.ProgenyId = w.ProgenyId;
-                    vIvm.Date = w.Date;
-                    vIvm.DateAdded = w.DateAdded;
-                    vIvm.Description = w.Description;
-                    vIvm.Language = w.Language;
-                    vIvm.SoundsLike = w.SoundsLike;
-                    vIvm.Word = w.Word;
-                    vIvm.IsAdmin = _userIsProgenyAdmin;
-                    vIvm.WordId = w.WordId;
-                    model.Add(vIvm);
+                    if (vocabularyItem.AccessLevel >= userAccessLevel)
+                    {
+                        VocabularyItemViewModel vocabularyItemViewModel = new VocabularyItemViewModel();
+                        vocabularyItemViewModel.ProgenyId = vocabularyItem.ProgenyId;
+                        vocabularyItemViewModel.Date = vocabularyItem.Date;
+                        vocabularyItemViewModel.DateAdded = vocabularyItem.DateAdded;
+                        vocabularyItemViewModel.Description = vocabularyItem.Description;
+                        vocabularyItemViewModel.Language = vocabularyItem.Language;
+                        vocabularyItemViewModel.SoundsLike = vocabularyItem.SoundsLike;
+                        vocabularyItemViewModel.Word = vocabularyItem.Word;
+                        vocabularyItemViewModel.IsAdmin = _userIsProgenyAdmin;
+                        vocabularyItemViewModel.WordId = vocabularyItem.WordId;
+                        model.Add(vocabularyItemViewModel);
+                    }
+                    
                 }
             }
             else
             {
-                VocabularyItemViewModel m = new VocabularyItemViewModel();
-                m.ProgenyId = _progId;
-                m.Date = DateTime.UtcNow;
-                m.DateAdded = DateTime.UtcNow;
-                m.Description = "The vocabulary list is empty.";
-                m.Language = "English";
-                m.SoundsLike = "";
-                m.Word = "No words found.";
-                m.IsAdmin = _userIsProgenyAdmin;
-                model.Add(m);
+                VocabularyItemViewModel vocabularyItemViewModel = new VocabularyItemViewModel();
+                vocabularyItemViewModel.ProgenyId = _progId;
+                vocabularyItemViewModel.Date = DateTime.UtcNow;
+                vocabularyItemViewModel.DateAdded = DateTime.UtcNow;
+                vocabularyItemViewModel.Description = "The vocabulary list is empty.";
+                vocabularyItemViewModel.Language = "English";
+                vocabularyItemViewModel.SoundsLike = "";
+                vocabularyItemViewModel.Word = "No words found.";
+                vocabularyItemViewModel.IsAdmin = _userIsProgenyAdmin;
+                model.Add(vocabularyItemViewModel);
             }
 
             model[0].Progeny = progeny;
 
             List<WordDateCount> dateTimesList = new List<WordDateCount>();
             int wordCount = 0;
-            foreach (VocabularyItemViewModel vIvm in model)
+            foreach (VocabularyItemViewModel vocabularyItemViewModel in model)
             {
                 wordCount++;
-                if (vIvm.Date != null)
+                if (vocabularyItemViewModel.Date != null)
                 {
-
-                    if (dateTimesList.SingleOrDefault(d => d.WordDate.Date == vIvm.Date.Value.Date) == null)
+                    if (dateTimesList.SingleOrDefault(d => d.WordDate.Date == vocabularyItemViewModel.Date.Value.Date) == null)
                     {
                         WordDateCount newDate = new WordDateCount();
-                        newDate.WordDate = vIvm.Date.Value.Date;
+                        newDate.WordDate = vocabularyItemViewModel.Date.Value.Date;
                         newDate.WordCount = wordCount;
                         dateTimesList.Add(newDate);
                     }
                     else
                     {
-                        WordDateCount wrdDateCount = dateTimesList.SingleOrDefault(d => d.WordDate.Date == vIvm.Date.Value.Date);
+                        WordDateCount wrdDateCount = dateTimesList.SingleOrDefault(d => d.WordDate.Date == vocabularyItemViewModel.Date.Value.Date);
                         if (wrdDateCount != null)
                         {
                             wrdDateCount.WordCount = wordCount;
                         }
                     }
-
                 }
-
             }
 
             ViewBag.ChartData = dateTimesList;

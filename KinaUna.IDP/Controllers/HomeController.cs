@@ -16,16 +16,12 @@ namespace KinaUna.IDP.Controllers
     public class HomeController : Controller
     {
         private readonly IIdentityServerInteractionService _interaction;
-        // private readonly IOptionsSnapshot<AppSettings> _settings;
         private readonly IRedirectService _redirectSvc;
         private readonly IHostingEnvironment _env;
 
-        public HomeController(IIdentityServerInteractionService interaction, 
-            // IOptionsSnapshot<AppSettings> settings,
-            IRedirectService redirectSvc, IHostingEnvironment env)
+        public HomeController(IIdentityServerInteractionService interaction, IRedirectService redirectSvc, IHostingEnvironment env)
         {
             _interaction = interaction;
-            //_settings = settings;
             _redirectSvc = redirectSvc;
             _env = env;
         }
@@ -80,7 +76,7 @@ namespace KinaUna.IDP.Controllers
             if (_env.IsDevelopment())
             {
                 Response.Cookies.Append(
-                    "KinaUnaLanguage",
+                    Constants.LanguageCookieName,
                     CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
                     new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
                 );
@@ -88,9 +84,9 @@ namespace KinaUna.IDP.Controllers
             else
             {
                 Response.Cookies.Append(
-                    "KinaUnaLanguage",
+                    Constants.LanguageCookieName,
                     CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
-                    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = ".kinauna.com" }
+                    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain }
                 );
             }
             return Redirect(returnUrl);

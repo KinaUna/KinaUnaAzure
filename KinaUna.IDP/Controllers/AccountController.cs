@@ -25,6 +25,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.Extensions.Configuration;
 
 namespace KinaUna.IDP.Controllers
 {
@@ -32,29 +33,26 @@ namespace KinaUna.IDP.Controllers
     [EnableCors("KinaUnaCors")]
     public class AccountController : Controller
     {
-        //private readonly InMemoryUserLoginService _loginService;
         private readonly ILoginService<ApplicationUser> _loginService;
         private readonly IIdentityServerInteractionService _interaction;
-        // private readonly IClientStore _clientStore;
         private readonly ILogger<AccountController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailSender _emailSender;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext _context;
         private readonly ProgenyDbContext _progContext;
+        private readonly IConfiguration _configuration;
 
         public AccountController(
-
-            //InMemoryUserLoginService loginService,
             ILoginService<ApplicationUser> loginService,
             IIdentityServerInteractionService interaction,
-            // IClientStore clientStore,
             ILogger<AccountController> logger,
             IEmailSender emailSender,
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ApplicationDbContext context,
-            ProgenyDbContext progContext)
+            ProgenyDbContext progContext,
+            IConfiguration configuration)
         {
             _loginService = loginService;
             _interaction = interaction;
@@ -65,10 +63,10 @@ namespace KinaUna.IDP.Controllers
             _signInManager = signInManager;
             _context = context;
             _progContext = progContext;
+            _configuration = configuration;
         }
 
-        [TempData]
-        public string StatusMessage { get; set; }
+        [TempData] private string StatusMessage { get; set; }
 
         /// <summary>
         /// Show login page
@@ -83,7 +81,7 @@ namespace KinaUna.IDP.Controllers
                 return ExternalLogin(context.IdP, returnUrl);
             }
 
-            var vm = await BuildLoginViewModelAsync(returnUrl, context);
+            var vm = BuildLoginViewModel(returnUrl, context);
 
             ViewData["ReturnUrl"] = returnUrl;
 
@@ -103,16 +101,6 @@ namespace KinaUna.IDP.Controllers
                 var user = await _loginService.FindByUsername(model.Email);
                 if (await _loginService.ValidateCredentials(user, model.Password))
                 {
-                    //AuthenticationProperties props = null;
-                    //if (model.RememberMe)
-                    //{
-                    //    props = new AuthenticationProperties
-                    //    {
-                    //        IsPersistent = true,
-                    //        ExpiresUtc = DateTimeOffset.UtcNow.AddDays(180)
-                    //    };
-                    //};
-
                     await _loginService.SignIn(user);
                    
                     // make sure the returnUrl is still valid, and if yes - redirect back to authorize endpoint
@@ -135,18 +123,8 @@ namespace KinaUna.IDP.Controllers
             return View(vm);
         }
 
-        async Task<LoginViewModel> BuildLoginViewModelAsync(string returnUrl, AuthorizationRequest context)
+        LoginViewModel BuildLoginViewModel(string returnUrl, AuthorizationRequest context)
         {
-            //var allowLocal = true;
-            //if (context?.ClientId != null)
-            //{
-            //    var client = await _clientStore.FindEnabledClientByIdAsync(context.ClientId);
-            //    if (client != null)
-            //    {
-            //        allowLocal = client.EnableLocalLogin;
-            //    }
-            //}
-
             return new LoginViewModel
             {
                 ReturnUrl = returnUrl,
@@ -157,9 +135,9 @@ namespace KinaUna.IDP.Controllers
         async Task<LoginViewModel> BuildLoginViewModelAsync(LoginViewModel model)
         {
             var context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
-            var vm = await BuildLoginViewModelAsync(model.ReturnUrl, context);
+            var vm = BuildLoginViewModel(model.ReturnUrl, context);
             vm.Email = model.Email;
-            vm.RememberMe = true; //model.RememberMe;
+            vm.RememberMe = true;
             return vm;
         }
 
@@ -236,11 +214,11 @@ namespace KinaUna.IDP.Controllers
 
             // get context information (client name, post logout redirect URI and iframe for federated signout)
             var logout = await _interaction.GetLogoutContextAsync(model.LogoutId);
-            //if (logout.PostLogoutRedirectUri == null)
-            //{
-            //    logout.PostLogoutRedirectUri = "/";
-            //}
-            return Redirect(logout?.PostLogoutRedirectUri);
+            if (logout.PostLogoutRedirectUri == null)
+            {
+                logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServer"); // Todo: if Dev env use WebServerLocal
+            }
+            return Redirect(logout.PostLogoutRedirectUri);
             
         }
 
@@ -301,18 +279,14 @@ namespace KinaUna.IDP.Controllers
                 {
                     UserName = model.Email,
                     Email = model.Email,
-                    //FirstName = model.User.FirstName,
-                    //MiddleName = model.User.MiddleName,
-                    //LastName = model.User.LastName,
                     TimeZone = model.TimeZone,
-                    //PhoneNumber = model.User.PhoneNumber,
                     JoinDate = DateTime.UtcNow,
                     Role = "Standard"
                 };
 
                 if (user.TimeZone == null)
                 {
-                    user.TimeZone = (await _userManager.FindByEmailAsync("per.mogensen@gmail.com")).TimeZone;
+                    user.TimeZone = (await _userManager.FindByEmailAsync(Constants.AdminEmail)).TimeZone;
                 }
                 
                 var result = await _userManager.CreateAsync(user, model.Password);
@@ -326,7 +300,7 @@ namespace KinaUna.IDP.Controllers
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
                 await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl, model.Language);
-                await _emailSender.SendEmailAsync("per.mogensen@kinauna.com", "New User Registered",
+                await _emailSender.SendEmailAsync(Constants.AdminEmail, "New User Registered",
                     "A user registered with this email address: " + model.Email);
                 
             }
@@ -514,7 +488,7 @@ namespace KinaUna.IDP.Controllers
                 }
                 else
                 {
-                    await _emailSender.SendEmailAsync("per.mogensen@kinauna.com", "New User Confirmed Email",
+                    await _emailSender.SendEmailAsync(Constants.AdminEmail, "New User Confirmed Email",
                         "A user confirmed the email with this email address: " + user.Email);
                 }
                 
@@ -638,13 +612,7 @@ namespace KinaUna.IDP.Controllers
             {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
-
-            //var hasPassword = await _userManager.HasPasswordAsync(user);
-            //if (!hasPassword)
-            //{
-            //    return RedirectToAction(nameof(SetPassword));
-            //}
-
+            
             var model = new ChangePasswordViewModel { StatusMessage = StatusMessage };
             return View(model);
         }
@@ -685,79 +653,6 @@ namespace KinaUna.IDP.Controllers
             StatusMessage = statusMsg;
 
             return RedirectToAction(nameof(ChangePassword));
-        }
-
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ImportUsers()
-        {
-            ForgotPasswordViewModel model = new ForgotPasswordViewModel();
-            model.Email = "test@tester.com";
-            return View(model);
-        }
-
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ImportUsers(ForgotPasswordViewModel code)
-        {
-            if (code.Email != "unakina2018@kinauna.com")
-                return View(code);
-
-            
-
-            HttpClient usersHttpClient = new HttpClient();
-
-            usersHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            usersHttpClient.DefaultRequestHeaders.Accept.Clear();
-            usersHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            // GET api/pictures/[id]
-            string usersApiPath = "/api/azureexport/usersexport";
-            var usersUri = "https://kinauna.com" + usersApiPath;
-
-            var usersResponseString = await usersHttpClient.GetStringAsync(usersUri);
-
-            List<UserDto> UserList = JsonConvert.DeserializeObject<List<UserDto>>(usersResponseString);
-            List<ApplicationUser> addedUsers = new List<ApplicationUser>();
-            foreach (UserDto usr in UserList)
-            {
-                ApplicationUser tempUser = await _context.Users.SingleOrDefaultAsync(l => l.Id == usr.Id);
-                if (tempUser == null)
-                {
-                    ApplicationUser newUser = new ApplicationUser();
-                    newUser.Id = usr.Id;
-                    newUser.AccessFailedCount = usr.AccessFailedCount;
-                    newUser.ConcurrencyStamp = usr.ConcurrencyStamp;
-                    newUser.Email = usr.Email;
-                    newUser.EmailConfirmed = usr.EmailConfirmed;
-                    newUser.LockoutEnabled = usr.LockoutEnabled;
-                    newUser.LockoutEnd = usr.LockoutEnd;
-                    newUser.NormalizedEmail = usr.NormalizedEmail;
-                    newUser.NormalizedUserName = usr.NormalizedUserName;
-                    newUser.PasswordHash = usr.PasswordHash;
-                    newUser.PhoneNumber = usr.PhoneNumber;
-                    newUser.SecurityStamp = usr.SecurityStamp;
-                    newUser.TwoFactorEnabled = usr.TwoFactorEnabled;
-                    newUser.UserName = usr.UserName;
-                    newUser.FirstName = usr.FirstName;
-                    newUser.JoinDate = usr.JoinDate;
-                    newUser.LastName = usr.LastName;
-                    newUser.MiddleName = usr.MiddleName;
-                    newUser.TimeZone = usr.TimeZone;
-                    newUser.ViewChild = usr.ViewChild;
-                    newUser.Role = "Standard";
-                    
-                    await _context.Users.AddAsync(newUser);
-                    addedUsers.Add(newUser);
-                }
-            }
-
-            await _context.SaveChangesAsync();
-
-            code.Email = "UsersAdded@" + addedUsers.Count + ".net";
-            return View(code);
         }
     }
 }

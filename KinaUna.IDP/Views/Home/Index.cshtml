@@ -1,4 +1,5 @@
-﻿<div class="container">
+﻿@using KinaUna.IDP
+<div class="container">
     <br />
     <div class="row">
         <br />
@@ -6,7 +7,7 @@
             <br />
             <h1>
                 <img class="icon" src="~/icon.jpg">
-                Welcome to KinaUna Identity Server
+                Welcome to @Constants.AppName Identity Server
                 @if (User.Identity.IsAuthenticated)
                 {
                     <div>@User.Identity.Name</div>

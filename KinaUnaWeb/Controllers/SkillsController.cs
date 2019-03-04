@@ -13,15 +13,15 @@ namespace KinaUnaWeb.Controllers
 {
     public class SkillsController : Controller
     {
-        private WebDbContext _context;
+        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private int _progId = 2;
+        private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
 
         public SkillsController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
         {
-            _context = context;
+            _context = context; // Todo: replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
         }
 
@@ -38,13 +38,13 @@ namespace KinaUnaWeb.Controllers
             }
             if (_progId == 0)
             {
-                _progId = 2;
+                _progId = Constants.DefaultChildId;
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
-            int userAccessLevel = 5;
+            int userAccessLevel = (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
@@ -58,7 +58,7 @@ namespace KinaUnaWeb.Controllers
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
                 _userIsProgenyAdmin = true;
-                userAccessLevel = 0;
+                userAccessLevel = (int)AccessLevel.Private;
             }
             List<SkillViewModel> model = new List<SkillViewModel>();
             
@@ -66,37 +66,37 @@ namespace KinaUnaWeb.Controllers
             skillsList = skillsList.OrderBy(s => s.SkillFirstObservation).ToList();
             if (skillsList.Count != 0)
             {
-                foreach (Skill s in skillsList)
+                foreach (Skill skill in skillsList)
                 {
-                    SkillViewModel sIvm = new SkillViewModel();
-                    sIvm.ProgenyId = s.ProgenyId;
-                    sIvm.AccessLevel = s.AccessLevel;
-                    sIvm.Description = s.Description;
-                    sIvm.Category = s.Category;
-                    sIvm.Name = s.Name;
-                    sIvm.SkillFirstObservation = s.SkillFirstObservation;
-                    sIvm.SkillId = s.SkillId;
-                    sIvm.IsAdmin = _userIsProgenyAdmin;
-                    if (sIvm.AccessLevel >= userAccessLevel)
+                    SkillViewModel skillViewModel = new SkillViewModel();
+                    skillViewModel.ProgenyId = skill.ProgenyId;
+                    skillViewModel.AccessLevel = skill.AccessLevel;
+                    skillViewModel.Description = skill.Description;
+                    skillViewModel.Category = skill.Category;
+                    skillViewModel.Name = skill.Name;
+                    skillViewModel.SkillFirstObservation = skill.SkillFirstObservation;
+                    skillViewModel.SkillId = skill.SkillId;
+                    skillViewModel.IsAdmin = _userIsProgenyAdmin;
+                    if (skillViewModel.AccessLevel >= userAccessLevel)
                     {
-                        model.Add(sIvm);
+                        model.Add(skillViewModel);
                     }
 
                 }
             }
             else
             {
-                SkillViewModel s = new SkillViewModel();
-                s.ProgenyId = _progId;
-                s.AccessLevel = 5;
-                s.Description = "The skills list is empty.";
-                s.Category = "";
-                s.Name = "No items";
-                s.SkillFirstObservation = DateTime.UtcNow;
+                SkillViewModel skillViewModel = new SkillViewModel();
+                skillViewModel.ProgenyId = _progId;
+                skillViewModel.AccessLevel = (int)AccessLevel.Public;
+                skillViewModel.Description = "The skills list is empty.";
+                skillViewModel.Category = "";
+                skillViewModel.Name = "No items";
+                skillViewModel.SkillFirstObservation = DateTime.UtcNow;
 
-                s.IsAdmin = _userIsProgenyAdmin;
+                skillViewModel.IsAdmin = _userIsProgenyAdmin;
 
-                model.Add(s);
+                model.Add(skillViewModel);
             }
 
             model[0].Progeny = progeny;

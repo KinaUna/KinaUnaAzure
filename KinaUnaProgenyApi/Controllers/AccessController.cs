@@ -228,48 +228,5 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
         }
-
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-
-            HttpClient userAccessHttpClient = new HttpClient();
-
-            userAccessHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            userAccessHttpClient.DefaultRequestHeaders.Accept.Clear();
-            userAccessHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            // GET api/pictures/[id]
-            string userAccessApiPath = "/api/azureexport/useraccessexport";
-            var userAccessUri = "https://kinauna.com" + userAccessApiPath;
-
-            var userAccessResponseString = await userAccessHttpClient.GetStringAsync(userAccessUri);
-
-            List<UserAccess> userAccessList = JsonConvert.DeserializeObject<List<UserAccess>>(userAccessResponseString);
-            List<UserAccess> userAccessItems = new List<UserAccess>();
-            foreach (UserAccess ua in userAccessList)
-            {
-                UserAccess userAccess = new UserAccess();
-                userAccess.ProgenyId = ua.ProgenyId;
-                userAccess.AccessLevel = ua.AccessLevel;
-                userAccess.UserId = ua.UserId;
-                if (ua.AccessLevel == 0)
-                {
-                    userAccess.CanContribute = true;
-                }
-                else
-                {
-                    userAccess.CanContribute = false;
-                }
-                await _context.UserAccessDb.AddAsync(userAccess);
-                userAccessItems.Add(userAccess);
-
-            }
-            await _context.SaveChangesAsync();
-
-            return Ok(userAccessItems);
-        }
     }
 }

@@ -1,4 +1,5 @@
-﻿@model KinaUna.IDP.Models.AccountViewModels.LoginViewModel
+﻿@using KinaUna.IDP
+@model KinaUna.IDP.Models.AccountViewModels.LoginViewModel
 @{
     ViewData["Title"] = "Log in";
 }
@@ -7,7 +8,7 @@
         <section>
             <form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal" >
                 <input type="hidden" asp-for="ReturnUrl" />
-                <h4>Mit ein Kina Una Konto einloggen.</h4>
+                <h4>Mit ein @Constants.AppName Konto einloggen.</h4>
                 <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="form-group">
                     <label asp-for="Email" class="control-label form-label">E-Mail</label>

@@ -90,8 +90,8 @@ else
             }
 
             var platform = new H.service.Platform({
-                'app_id': 'bJjORf0UVOc5U4LjADgX',
-                'app_code': 'GNDm65qsmujcmIK9-2X_Uw',
+                'app_id': '@Constants.HereMapsId',
+                'app_code': '@Constants.HereMapsCode',
                 'useHTTPS': true
             });
             var pixelRatio = window.devicePixelRatio || 1;
@@ -116,7 +116,7 @@ else
             var iconWidth = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
             var iconHeight = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
 
-            var defaultIcon = new H.map.Icon("https://web.kinauna.com/images/purplemarker.svg", { size: { w: iconWidth, h: iconHeight } });
+            var defaultIcon = new H.map.Icon("@Constants.WebAppUrl/images/purplemarker.svg", { size: { w: iconWidth, h: iconHeight } });
             var group = new H.map.Group();
             @{
                 string locGroup = "[";

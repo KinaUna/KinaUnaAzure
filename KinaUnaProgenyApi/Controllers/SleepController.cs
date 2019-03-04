@@ -299,44 +299,5 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(model);
         }
-
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-            
-            HttpClient sleepHttpClient = new HttpClient();
-            
-            sleepHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            sleepHttpClient.DefaultRequestHeaders.Accept.Clear();
-            sleepHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            string sleepApiPath = "/api/azureexport/sleepexport";
-            var sleepUri = "https://kinauna.com" + sleepApiPath;
-
-            var sleepResponseString = await sleepHttpClient.GetStringAsync(sleepUri);
-
-            List<Sleep> sleepList = JsonConvert.DeserializeObject<List<Sleep>>(sleepResponseString);
-            List<Sleep> sleepItems = new List<Sleep>();
-            foreach (Sleep value in sleepList)
-            {
-                Sleep sleepItem = new Sleep();
-                sleepItem.AccessLevel = value.AccessLevel;
-                sleepItem.Author = value.Author;
-                sleepItem.SleepNotes = value.SleepNotes;
-                sleepItem.SleepRating = value.SleepRating;
-                sleepItem.ProgenyId = value.ProgenyId;
-                sleepItem.SleepStart = value.SleepStart;
-                sleepItem.SleepEnd = value.SleepEnd;
-                sleepItem.CreatedDate = value.CreatedDate;
-                await _context.SleepDb.AddAsync(sleepItem);
-                sleepItems.Add(sleepItem);
-                
-            }
-            await _context.SaveChangesAsync();
-
-            return Ok(sleepItems);
-        }
     }
 }

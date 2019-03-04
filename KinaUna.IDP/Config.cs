@@ -55,7 +55,7 @@ namespace KinaUna.IDP
             return new List<ApiResource>
             {
                 new ApiResource{
-                    Name = "kinaunaprogenyapi",
+                    Name = Constants.ProgenyApiName,
                     DisplayName = "KinaUna Progeny API",
                     UserClaims = new List<string> {"role" },
                     ApiSecrets = new List<Secret>
@@ -64,11 +64,11 @@ namespace KinaUna.IDP
                     },
                     Scopes = new List<Scope>
                     {
-                        new Scope("kinaunaprogenyapi")
+                        new Scope(Constants.ProgenyApiName)
                     }
                 },
                 new ApiResource{
-                    Name = "kinaunamediaapi",
+                    Name = Constants.MediaApiName,
                     DisplayName = "KinaUna Media API",
                     UserClaims = new List<string> {"role" },
                     ApiSecrets = new List<Secret>
@@ -77,7 +77,7 @@ namespace KinaUna.IDP
                     },
                     Scopes = new List<Scope>
                     {
-                        new Scope("kinaunamediaapi")
+                        new Scope(Constants.MediaApiName)
                     }
                 }
             };
@@ -89,13 +89,12 @@ namespace KinaUna.IDP
             var webServerAzureUrl = configuration.GetValue<string>("WebServerAzure");
             var webServerLocal = configuration.GetValue<string>("WebServerLocal");
             var secretString = configuration.GetValue<string>("SecretString");
-            // var xamarinString = "https://auth.kinauna.com";
             List<string> corsList = new List<string>();
-            corsList.Add("https://web.kinauna.com");
-            corsList.Add("https://auth.kinauna.com");
-            corsList.Add("https://progenyapi.kinauna.com");
-            corsList.Add("https://mediaapi.kinauna.com");
-            corsList.Add("https://kinauna.com");
+            corsList.Add(Constants.WebAppUrl);
+            corsList.Add(Constants.AuthAppUrl);
+            corsList.Add(Constants.ProgenyApiUrl);
+            corsList.Add(Constants.MediaApiUrl);
+            corsList.Add("https://" + Constants.AppRootDomain);
             return new List<Client>()
             {
                 new Client
@@ -112,7 +111,6 @@ namespace KinaUna.IDP
                     AllowOfflineAccess = true,
                     AlwaysIncludeUserClaimsInIdToken = false,
                     RefreshTokenExpiration = TokenExpiration.Sliding,
-                    //AbsoluteRefreshTokenLifetime = ...
                     UpdateAccessTokenClaimsOnRefresh = true,
                     AllowedCorsOrigins = corsList,
                     RedirectUris = new List<string>()
@@ -139,8 +137,8 @@ namespace KinaUna.IDP
                         "timezone",
                         "viewchild",
                         "joindate",
-                        "kinaunaprogenyapi",
-                        "kinaunamediaapi"
+                        Constants.ProgenyApiName,
+                        Constants.MediaApiName
                     },
                     ClientSecrets =
                     {
@@ -155,12 +153,9 @@ namespace KinaUna.IDP
                     RequireConsent = false,
                     AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
                     AccessTokenType = AccessTokenType.Reference,
-                    //IdentityTokenLifetime = ...
-                    //AuthorizationCodeLifetime = ...
                     AccessTokenLifetime = 2592000,
                     AllowOfflineAccess = true,
                     AlwaysIncludeUserClaimsInIdToken = false,
-                    //AbsoluteRefreshTokenLifetime = ...
                     UpdateAccessTokenClaimsOnRefresh = true,
                     RedirectUris = new List<string>()
                     {
@@ -186,8 +181,8 @@ namespace KinaUna.IDP
                         "timezone",
                         "viewchild",
                         "joindate",
-                        "kinaunaprogenyapi",
-                        "kinaunamediaapi"
+                        Constants.ProgenyApiName,
+                        Constants.MediaApiName
                     },
                     ClientSecrets =
                     {
@@ -235,8 +230,8 @@ namespace KinaUna.IDP
                         "timezone",
                         "viewchild",
                         "joindate",
-                        "kinaunaprogenyapi",
-                        "kinaunamediaapi"
+                        Constants.ProgenyApiName,
+                        Constants.MediaApiName
                     },
                     ClientSecrets =
                     {
@@ -267,8 +262,8 @@ namespace KinaUna.IDP
                         "timezone",
                         "viewchild",
                         "joindate",
-                        "kinaunaprogenyapi",
-                        "kinaunamediaapi"
+                        Constants.ProgenyApiName,
+                        Constants.MediaApiName
                     },
                     AccessTokenLifetime = 2592000,
                     AllowOfflineAccess = true,

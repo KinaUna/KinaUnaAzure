@@ -12,9 +12,6 @@ namespace KinaUnaMediaApi.Models
         public DateTime? VideoTime { get; set; }
         public string VideoLink { get; set; }
         public string ThumbLink { get; set; }
-        // public int VideoRotation { get; set; }
-        // public int VideoWidth { get; set; }
-        // public int VideoHeight { get; set; }
         public int ProgenyId { get; set; }
         public string Owners { get; set; } // Comma separated list of emails.
         public int AccessLevel { get; set; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUSers, 4= public.

@@ -17,7 +17,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 
@@ -26,7 +25,7 @@ namespace KinaUnaWeb.Controllers
     [AllowAnonymous]
     public class HomeController : Controller
     {
-        private int _progId = 2;
+        private int _progId = Constants.DefaultChildId;
         private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
@@ -34,13 +33,13 @@ namespace KinaUnaWeb.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ImageStore _imageStore;
         private readonly IHostingEnvironment _env;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
         
         public HomeController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, WebDbContext context, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, ImageStore imageStore, IHostingEnvironment env)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
-            _context = context;
+            _context = context;  // Todo: Replace _context with httpClient?
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _imageStore = imageStore;
@@ -52,15 +51,22 @@ namespace KinaUnaWeb.Controllers
         {
             int childId = id;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
+            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
             if (string.IsNullOrEmpty(userTimeZone))
             {
-                userTimeZone = "Romance Standard Time";
+                userTimeZone = Constants.DefaultTimezone;
             }
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            if (User.Identity.IsAuthenticated)
             {
-                _progId = userinfo.ViewChild;
+                if (childId == 0 && userinfo.ViewChild > 0)
+                {
+                    _progId = userinfo.ViewChild;
+                }
+            }
+            else
+            {
+                _progId = Constants.DefaultChildId;
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
@@ -71,7 +77,7 @@ namespace KinaUnaWeb.Controllers
             }
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
-            int userAccessLevel = 5;
+            int userAccessLevel = (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
@@ -84,7 +90,7 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
-                userAccessLevel = 0;
+                userAccessLevel = (int)AccessLevel.Private;
             }
 
             if (progeny.BirthDay.HasValue)
@@ -93,7 +99,7 @@ namespace KinaUnaWeb.Controllers
             }
             
             HomeFeedViewModel feedModel = new HomeFeedViewModel();
-            feedModel.UserAccessLevel = 5;
+            feedModel.UserAccessLevel = (int)AccessLevel.Public;
             if (accessList.Count != 0)
             {
                 UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
@@ -104,16 +110,16 @@ namespace KinaUnaWeb.Controllers
                 else
                 {
                     ViewBag.OriginalProgeny = progeny;
-                    progeny = await _progenyHttpClient.GetProgeny(2);
+                    progeny = await _progenyHttpClient.GetProgeny(Constants.DefaultChildId);
                 }
             }
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
-                feedModel.UserAccessLevel = 0;
+                feedModel.UserAccessLevel = (int)AccessLevel.Private;
             }
             
             BirthTime progBirthTime;
-            if (!String.IsNullOrEmpty(progeny.NickName) && progeny.BirthDay.HasValue && feedModel.UserAccessLevel < 5)
+            if (!String.IsNullOrEmpty(progeny.NickName) && progeny.BirthDay.HasValue && feedModel.UserAccessLevel < (int)AccessLevel.Public)
             {
                 progBirthTime = new BirthTime(progeny.BirthDay.Value,
                     TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
@@ -140,21 +146,21 @@ namespace KinaUnaWeb.Controllers
             Picture tempPicture = new Picture();
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny;
-            tempPicture.AccessLevel = 5;
+            tempPicture.AccessLevel = (int)AccessLevel.Public;
             tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
             Picture displayPicture = tempPicture;
 
-            if (feedModel.UserAccessLevel < 5)
+            if (feedModel.UserAccessLevel < (int)AccessLevel.Public)
             {
                 displayPicture = await _mediaHttpClient.GetRandomPicture(progeny.Id, feedModel.UserAccessLevel, userTimeZone);
             }
             PictureTime picTime = new PictureTime(new DateTime(2018, 02, 18, 20, 18, 00), new DateTime(2018, 02, 18, 20, 18, 00), TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
-            if (feedModel.UserAccessLevel == 5 || displayPicture == null)
+            if (feedModel.UserAccessLevel == (int)AccessLevel.Public || displayPicture == null)
             {
-                displayPicture = await _mediaHttpClient.GetRandomPicture(2, feedModel.UserAccessLevel, userTimeZone);
+                displayPicture = await _mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, feedModel.UserAccessLevel, userTimeZone);
                 if (!displayPicture.PictureLink600.StartsWith("https://"))
                 {
                     displayPicture.PictureLink600 = _imageStore.UriFor(displayPicture.PictureLink600);
@@ -198,22 +204,22 @@ namespace KinaUnaWeb.Controllers
 
             feedModel.Progeny = progeny;
             feedModel.EventsList = new List<CalendarItem>();
-            feedModel.EventsList = await _context.CalendarDb
+            feedModel.EventsList = await _context.CalendarDb.AsNoTracking()
                 .Where(e => e.ProgenyId == progeny.Id && e.EndTime > DateTime.UtcNow && e.AccessLevel >= userAccessLevel).ToListAsync();
             feedModel.EventsList = feedModel.EventsList.OrderBy(e => e.StartTime).ToList();
             feedModel.EventsList = feedModel.EventsList.Take(5).ToList();
-            foreach (CalendarItem ev in feedModel.EventsList)
+            foreach (CalendarItem eventItem in feedModel.EventsList)
             {
-                if (ev.StartTime.HasValue && ev.EndTime.HasValue)
+                if (eventItem.StartTime.HasValue && eventItem.EndTime.HasValue)
                 {
-                    ev.StartTime = TimeZoneInfo.ConvertTimeFromUtc(ev.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                    ev.EndTime = TimeZoneInfo.ConvertTimeFromUtc(ev.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                    eventItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                    eventItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
                 }
             }
 
             feedModel.LatestPosts = new TimeLineViewModel();
             feedModel.LatestPosts.TimeLineItems = new List<TimeLineItem>();
-            feedModel.LatestPosts.TimeLineItems = await _context.TimeLineDb.Where(t => t.ProgenyId == _progId && t.AccessLevel >= userAccessLevel && t.ProgenyTime < DateTime.UtcNow).ToListAsync();
+            feedModel.LatestPosts.TimeLineItems = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == _progId && t.AccessLevel >= userAccessLevel && t.ProgenyTime < DateTime.UtcNow).ToListAsync();
             if (feedModel.LatestPosts.TimeLineItems.Any())
             {
                 feedModel.LatestPosts.TimeLineItems = feedModel.LatestPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).Take(5).ToList();
@@ -226,6 +232,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public IActionResult RequestAccess(int childId)
         {
+            // ToDo: Implement access requests
             return View();
         }
 
@@ -234,15 +241,7 @@ namespace KinaUnaWeb.Controllers
         {
             return View();
         }
-
-        public async Task<IActionResult> Contact()
-        {
-            var claims = ((ClaimsIdentity)User.Identity).Claims;
-            ViewBag.TokenInfo = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.IdToken);
-            ViewBag.TimeZone = claims.FirstOrDefault(x => x.Type == "timezone")?.Value;
-            ViewBag.ViewChild = HttpContext.User.FindFirst("viewchild")?.Value;
-            return View(claims);
-        }
+        
 
         [AllowAnonymous]
         public IActionResult Privacy()
@@ -256,13 +255,7 @@ namespace KinaUnaWeb.Controllers
 
             return View();
         }
-
-        [AllowAnonymous]
-        public IActionResult Test()
-        {
-            return View();
-        }
-
+        
         [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
@@ -308,7 +301,7 @@ namespace KinaUnaWeb.Controllers
             if (_env.IsDevelopment())
             {
                 Response.Cookies.Append(
-                    "KinaUnaLanguage",
+                    Constants.LanguageCookieName,
                     CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
                     new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
                 );
@@ -316,9 +309,9 @@ namespace KinaUnaWeb.Controllers
             else
             {
                 Response.Cookies.Append(
-                    "KinaUnaLanguage",
+                    Constants.LanguageCookieName,
                     CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
-                    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = ".kinauna.com" }
+                    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain }
                 );
             }
             return Redirect(returnUrl);
@@ -327,7 +320,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public IActionResult Start()
         {
-            return Redirect("https://web.kinauna.com/");
+            return Redirect(Constants.WebAppUrl);
         }
         
     }

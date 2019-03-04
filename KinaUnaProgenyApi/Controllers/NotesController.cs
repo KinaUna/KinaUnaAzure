@@ -128,42 +128,5 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(result);
         }
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-            
-            HttpClient notesHttpClient = new HttpClient();
-            
-            notesHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            notesHttpClient.DefaultRequestHeaders.Accept.Clear();
-            notesHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            string notesApiPath = "/api/azureexport/notesexport";
-            var notesUri = "https://kinauna.com" + notesApiPath;
-
-            var notesResponseString = await notesHttpClient.GetStringAsync(notesUri);
-
-            List<Note> notesList = JsonConvert.DeserializeObject<List<Note>>(notesResponseString);
-            List<Note> notesItems = new List<Note>();
-            foreach (Note value in notesList)
-            {
-                Note noteItem = new Note();
-                noteItem.AccessLevel = value.AccessLevel;
-                noteItem.Owner = value.Owner;
-                noteItem.Content = value.Content;
-                noteItem.Category = value.Category;
-                noteItem.ProgenyId = value.ProgenyId;
-                noteItem.Title = value.Title;
-                noteItem.CreatedDate = value.CreatedDate;
-                await _context.NotesDb.AddAsync(noteItem);
-                notesItems.Add(noteItem);
-                
-            }
-            await _context.SaveChangesAsync();
-
-            return Ok(notesItems);
-        }
     }
 }

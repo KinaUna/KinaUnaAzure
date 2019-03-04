@@ -26,6 +26,7 @@ namespace KinaUnaMediaApi.Controllers
         {
             _context = context;
         }
+
         // GET api/videos
         [HttpGet]
         public async Task<IActionResult> Get()
@@ -443,53 +444,6 @@ namespace KinaUnaMediaApi.Controllers
 
             return Ok(model);
         }
-
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-
-            HttpClient videosHttpClient = new HttpClient();
-
-            videosHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            videosHttpClient.DefaultRequestHeaders.Accept.Clear();
-            videosHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            // GET api/pictures/[id]
-            string picturesApiPath = "/api/azureexport/videosexport";
-            var picturesUri = "https://kinauna.com" + picturesApiPath;
-
-            var picturesResponseString = await videosHttpClient.GetStringAsync(picturesUri);
-
-            List<OldVideoDto> videosList = JsonConvert.DeserializeObject<List<OldVideoDto>>(picturesResponseString);
-            List<Video> addedVideos = new List<Video>();
-            foreach (OldVideoDto vid in videosList)
-            {
-                Video tempVideo = await _context.VideoDb.SingleOrDefaultAsync(l => l.VideoId == vid.VideoId);
-                if (tempVideo == null)
-                {
-                    Video newVideo = new Video();
-                    newVideo.AccessLevel = vid.AccessLevel;
-                    newVideo.Owners = vid.Owners;
-                    newVideo.ProgenyId = vid.ProgenyId;
-                    newVideo.CommentThreadNumber = vid.CommentThreadNumber;
-                    newVideo.Tags = vid.Tags;
-                    newVideo.Author = vid.Author;
-                    newVideo.VideoLink = vid.VideoLink;
-                    newVideo.ThumbLink = vid.ThumbLink;
-                    newVideo.Duration = vid.Duration;
-                    newVideo.VideoTime = vid.VideoTime;
-                    newVideo.VideoType = vid.VideoType;
-
-                    await _context.VideoDb.AddAsync(newVideo);
-                    addedVideos.Add(newVideo);
-                }
-            }
-
-            await _context.SaveChangesAsync();
-
-            return Ok(addedVideos);
-        }
+        
     }
 }

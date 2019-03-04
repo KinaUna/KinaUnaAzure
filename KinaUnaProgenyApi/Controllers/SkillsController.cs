@@ -130,44 +130,5 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(result);
         }
-
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-            
-            HttpClient skillsHttpClient = new HttpClient();
-            
-            skillsHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            skillsHttpClient.DefaultRequestHeaders.Accept.Clear();
-            skillsHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            string skillsApiPath = "/api/azureexport/skillsexport";
-            var skillsUri = "https://kinauna.com" + skillsApiPath;
-
-            var skillsResponseString = await skillsHttpClient.GetStringAsync(skillsUri);
-
-            List<Skill> skillsList = JsonConvert.DeserializeObject<List<Skill>>(skillsResponseString);
-            List<Skill> skillsItems = new List<Skill>();
-            foreach (Skill value in skillsList)
-            {
-                Skill skillItem = new Skill();
-                skillItem.AccessLevel = value.AccessLevel;
-                skillItem.Author = value.Author;
-                skillItem.Category = value.Category;
-                skillItem.Name = value.Name;
-                skillItem.ProgenyId = value.ProgenyId;
-                skillItem.Description = value.Description;
-                skillItem.SkillAddedDate = value.SkillAddedDate;
-                skillItem.SkillFirstObservation = value.SkillFirstObservation;
-                await _context.SkillsDb.AddAsync(skillItem);
-                skillsItems.Add(skillItem);
-                
-            }
-            await _context.SaveChangesAsync();
-
-            return Ok(skillsItems);
-        }
     }
 }

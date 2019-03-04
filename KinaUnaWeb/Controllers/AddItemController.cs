@@ -22,7 +22,7 @@ namespace KinaUnaWeb.Controllers
         private int _progId;
         private readonly ImageStore _imageStore;
         private readonly WebDbContext _context;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
         private readonly IEmailSender _emailSender;
         private readonly IPushMessageSender _pushMessageSender;
 
@@ -31,7 +31,7 @@ namespace KinaUnaWeb.Controllers
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
             _imageStore = imageStore;
-            _context = context;
+            _context = context; // Todo: replace _context with httpClients
             _emailSender = emailSender;
             _pushMessageSender = pushMessageSender;
         }
@@ -198,7 +198,7 @@ namespace KinaUnaWeb.Controllers
                                 await _context.SaveChangesAsync();
 
                                 await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                                    notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunaphoto" + progeny.Id);
+                                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaphoto" + progeny.Id);
                             }
                         }
                     }
@@ -405,7 +405,7 @@ namespace KinaUnaWeb.Controllers
                             }
                             WebNotification notification = new WebNotification();
                             notification.To = uaUserInfo.UserId;
-                            notification.From = "KinaUna";
+                            notification.From = Constants.AppName;
                             notification.Message = "Photo deleted by " + authorName + "\r\nPhoto ID: " + model.PictureId + "\r\n" + picTimeString + "\r\n";
                             notification.DateTime = DateTime.UtcNow;
                             notification.Icon = "/images/kinaunalogo48x48.png";
@@ -449,7 +449,7 @@ namespace KinaUnaWeb.Controllers
                 Picture pic = await _mediaHttpClient.GetPicture(model.ItemId, userinfo.Timezone);
                 if (progeny != null)
                 {
-                    string imgLink = "https://web.kinauna.com/Pictures/Picture/" + model.ItemId + "?childId=" + model.ProgenyId;
+                    string imgLink = Constants.WebAppUrl + "/Pictures/Picture/" + model.ItemId + "?childId=" + model.ProgenyId;
                     List<string> emails = progeny.Admins.Split(",").ToList();
                     
                     foreach (string toMail in emails)
@@ -506,7 +506,7 @@ namespace KinaUnaWeb.Controllers
                                 await _context.SaveChangesAsync();
 
                                 await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                                    notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunacomment" + model.ItemId);
+                                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunacomment" + model.ItemId);
                             }
                         }
                     }
@@ -597,13 +597,13 @@ namespace KinaUnaWeb.Controllers
             video.AccessLevel = model.AccessLevel;
             video.Author = userinfo.UserId;
             video.Owners = model.Owners;
-            video.ThumbLink = "https://web.kinauna.com/videodb/" + "moviethumb.png";
+            video.ThumbLink = Constants.WebAppUrl + "/videodb/moviethumb.png";
             video.VideoTime = DateTime.UtcNow;
             if (model.VideoTime != null)
             {
                 video.VideoTime = TimeZoneInfo.ConvertTimeToUtc(model.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
             }
-            video.VideoType = 2;
+            video.VideoType = 2; // Todo: Replace with Enum or constant
             Int32.TryParse(model.DurationHours, out var durHours);
             Int32.TryParse(model.DurationMinutes, out var durMins);
             Int32.TryParse(model.DurationSeconds, out var durSecs);
@@ -708,7 +708,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunavideo" + progeny.Id);
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavideo" + progeny.Id);
                     }
                 }
             }
@@ -902,7 +902,7 @@ namespace KinaUnaWeb.Controllers
                 Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
                 if (progeny != null)
                 {
-                    string imgLink = "https://web.kinauna.com/Videos/Video/" + model.ItemId + "?childId=" + model.ProgenyId;
+                    string imgLink = Constants.WebAppUrl + "/Videos/Video/" + model.ItemId + "?childId=" + model.ProgenyId;
                     List<string> emails = progeny.Admins.Split(",").ToList();
                     foreach (string toMail in emails)
                     {
@@ -959,7 +959,7 @@ namespace KinaUnaWeb.Controllers
                                 await _context.SaveChangesAsync();
 
                                 await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                                    notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunacomment" + vid.VideoId);
+                                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunacomment" + vid.VideoId);
                             }
                         }
                     }
@@ -1099,7 +1099,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunanote" + progeny.Id);
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunanote" + progeny.Id);
                     }
                 }
             }
@@ -1373,7 +1373,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunacalendar" + progeny.Id);
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunacalendar" + progeny.Id);
                     }
                 }
             }
@@ -1651,7 +1651,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunavocabulary" + progeny.Id);
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavocabulary" + progeny.Id);
                     }
                 }
             }
@@ -1914,7 +1914,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunaskill" + progeny.Id);
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaskill" + progeny.Id);
                     }
                 }
             }
@@ -2160,7 +2160,7 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                friendItem.PictureLink = "https://web.kinauna.com/photodb/profile.jpg";
+                friendItem.PictureLink = Constants.ProfilePictureUrl;
             }
 
             await _context.FriendsDb.AddAsync(friendItem);
@@ -2225,7 +2225,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunafriend" + progeny.Id);
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunafriend" + progeny.Id);
                     }
                 }
             }
@@ -2545,7 +2545,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunameasurement" + progeny.Id);
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunameasurement" + progeny.Id);
                     }
                 }
             }
@@ -2793,7 +2793,7 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                contactItem.PictureLink = "https://web.kinauna.com/photodb/profile.jpg";
+                contactItem.PictureLink = Constants.ProfilePictureUrl;
             }
 
             if (model.AddressLine1 + model.AddressLine2 + model.City + model.Country + model.PostalCode + model.State !=
@@ -2866,7 +2866,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunacontact" + progeny.Id);
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunacontact" + progeny.Id);
                     }
                 }
             }
@@ -3240,7 +3240,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunavaccination" + progeny.Id);
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavaccination" + progeny.Id);
                     }
                 }
             }
@@ -3498,7 +3498,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title, notification.Message,
-                            "https://web.kinauna.com" + notification.Link, "kinaunasleep" + prog.Id);
+                            Constants.WebAppUrl + notification.Link, "kinaunasleep" + prog.Id);
                     }
                 }
             }
@@ -3843,7 +3843,7 @@ namespace KinaUnaWeb.Controllers
                         await _context.SaveChangesAsync();
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, "https://web.kinauna.com" + notification.Link, "kinaunalocation" + progeny.Id);
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunalocation" + progeny.Id);
                     }
                 }
             }

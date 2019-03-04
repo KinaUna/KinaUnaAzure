@@ -153,7 +153,7 @@ namespace KinaUnaMediaApi.Controllers
                     .Where(p => p.ProgenyId == picture.ProgenyId && p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToListAsync();
                 if (pictureList.Any())
                 {
-                    int currentIndex = 0; //pictureList.IndexOf(picture);
+                    int currentIndex = 0;
                     int indexer = 0;
                     foreach (Picture pic in pictureList)
                     {
@@ -233,18 +233,18 @@ namespace KinaUnaMediaApi.Controllers
                 return Ok(picturesList);
             }
             Progeny progeny = new Progeny();
-            progeny.Name = "Kina Una";
-            progeny.Admins = "per.mogensen@live.com";
-            progeny.NickName = "Kina Una";
+            progeny.Name = Constants.AppName;
+            progeny.Admins = Constants.AdminEmail;
+            progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
             progeny.Id = 0;
-            progeny.TimeZone = "Romance Standard Time";
+            progeny.TimeZone = Constants.DefaultTimezone;
             Picture tempPicture = new Picture();
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
@@ -266,18 +266,18 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             Progeny progeny = new Progeny();
-            progeny.Name = "Kina Una";
-            progeny.Admins = "per.mogensen@live.com";
-            progeny.NickName = "Kina Una";
+            progeny.Name = Constants.AppName;
+            progeny.Admins = Constants.AdminEmail;
+            progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
             progeny.Id = 0;
-            progeny.TimeZone = "Romance Standard Time";
+            progeny.TimeZone = Constants.DefaultTimezone;
             Picture tempPicture = new Picture();
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
@@ -295,18 +295,18 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             Progeny progeny = new Progeny();
-            progeny.Name = "Kina Una";
-            progeny.Admins = "per.mogensen@live.com";
-            progeny.NickName = "Kina Una";
+            progeny.Name = Constants.AppName;
+            progeny.Admins = Constants.AdminEmail;
+            progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
             progeny.Id = 0;
-            progeny.TimeZone = "Romance Standard Time";
+            progeny.TimeZone = Constants.DefaultTimezone;
             Picture tempPicture = new Picture();
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
@@ -527,9 +527,6 @@ namespace KinaUnaMediaApi.Controllers
                     memStream.Position = 0;
                     model.PictureLink600 = await _imageStore.SaveImage(memStream);
                 }
-
-                // image.Write(_hostingEnv.WebRootPath + $@"\photodb\{model.ProgenyId}\600\" + fileName);
-
             }
 
             using (MagickImage image = new MagickImage(memoryStream))
@@ -552,7 +549,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
 
                 image.Strip();
-                // image.Write(_hostingEnv.WebRootPath + $@"\photodb\{model.ProgenyId}\1200\" + fileName);
+                
                 using (MemoryStream memStream = new MemoryStream())
                 {
                     image.Write(memStream);
@@ -659,18 +656,18 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             Progeny progeny = new Progeny();
-            progeny.Name = "Kina Una";
-            progeny.Admins = "per.mogensen@live.com";
-            progeny.NickName = "Kina Una";
+            progeny.Name = Constants.AppName;
+            progeny.Admins = Constants.AdminEmail;
+            progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
             progeny.Id = 0;
-            progeny.TimeZone = "Romance Standard Time";
+            progeny.TimeZone = Constants.DefaultTimezone;
             Picture tempPicture = new Picture();
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny ;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
             return Ok(tempPicture);
@@ -698,18 +695,18 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             Progeny progeny = new Progeny();
-            progeny.Name = "Kina Una";
-            progeny.Admins = "per.mogensen@live.com";
-            progeny.NickName = "Kina Una";
+            progeny.Name = Constants.AppName;
+            progeny.Admins = Constants.AdminEmail;
+            progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
             progeny.Id = 0;
-            progeny.TimeZone = "Romance Standard Time";
+            progeny.TimeZone = Constants.DefaultTimezone;
             Picture tempPicture = new Picture();
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = "https://web.kinauna.com" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
             return Ok(tempPicture);
@@ -732,18 +729,18 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             Progeny progeny = new Progeny();
-            progeny.Name = "Kina Una";
-            progeny.Admins = "per.mogensen@live.com";
-            progeny.NickName = "Kina Una";
+            progeny.Name = Constants.AppName;
+            progeny.Admins = Constants.AdminEmail;
+            progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
             progeny.Id = 0;
-            progeny.TimeZone = "Romance Standard Time";
+            progeny.TimeZone = Constants.DefaultTimezone;
             Picture tempPicture = new Picture();
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
@@ -840,59 +837,8 @@ namespace KinaUnaMediaApi.Controllers
             return Ok(model);
         }
 
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-
-            HttpClient picturesHttpClient = new HttpClient();
-
-            picturesHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            picturesHttpClient.DefaultRequestHeaders.Accept.Clear();
-            picturesHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            // GET api/pictures/[id]
-            string picturesApiPath = "/api/azureexport/picturesexport";
-            var picturesUri = "https://kinauna.com" + picturesApiPath;
-
-            var picturesResponseString = await picturesHttpClient.GetStringAsync(picturesUri);
-
-            List<OldPictureDto> picturesList = JsonConvert.DeserializeObject<List<OldPictureDto>>(picturesResponseString);
-            List<Picture> addedPictures = new List<Picture>();
-            foreach (OldPictureDto pic in picturesList)
-            {
-                Picture tempPicture = await _context.PicturesDb.SingleOrDefaultAsync(l => l.PictureId == pic.PictureId);
-                if (tempPicture == null)
-                {
-                    Picture newPicture = new Picture();
-                    newPicture.AccessLevel = pic.AccessLevel;
-                    newPicture.Owners = pic.Owners;
-                    newPicture.PictureHeight = pic.PictureHeight;
-                    newPicture.PictureRotation = pic.PictureRotation;
-                    newPicture.PictureTime = pic.PictureTime;
-                    newPicture.PictureWidth = pic.PictureWidth;
-                    newPicture.ProgenyId = pic.ProgenyId;
-                    newPicture.CommentThreadNumber = pic.CommentThreadNumber;
-                    newPicture.Tags = pic.Tags;
-                    newPicture.Author = pic.Author;
-                    newPicture.Altitude = pic.Altitude;
-                    newPicture.Location = pic.Location;
-                    newPicture.Latitude = pic.Latitude;
-                    newPicture.Longtitude = pic.Longtitude;
-                    newPicture.PictureLink = "https://" + pic.PictureLink;
-                    newPicture.PictureLink600 = "https://" + pic.PictureLink.Insert(pic.PictureLink.LastIndexOf('/'), "/600");
-                    newPicture.PictureLink1200 = "https://" + pic.PictureLink.Insert(pic.PictureLink.LastIndexOf('/'), "/1200");
-                    await _context.PicturesDb.AddAsync(newPicture);
-                    addedPictures.Add(newPicture);
-                }
-            }
-
-            await _context.SaveChangesAsync();
-
-            return Ok(addedPictures);
-        }
-
+        
+        // Download pictures to StorageBlob from Url
         [HttpGet]
         [Route("[action]/{pictureId}")]
         public async Task<IActionResult> DownloadPicture(int pictureId)

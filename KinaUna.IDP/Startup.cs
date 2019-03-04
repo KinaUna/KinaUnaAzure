@@ -81,24 +81,16 @@ namespace KinaUna.IDP
 
             services.AddLocalization(o =>
             {
-                // We will put our translations in a folder called Resources
                 o.ResourcesPath = "Resources";
             });
-
             
-            //var identityServerCors = new DefaultCorsPolicyService(_loggerFactory.CreateLogger<DefaultCorsPolicyService>())
-            //{
-            //    AllowAll = true
-            //};
-            //services.AddSingleton<ICorsPolicyService>(identityServerCors);
-
             X509Certificate2 cert = null;
             using (X509Store certStore = new X509Store(StoreName.My, StoreLocation.CurrentUser))
             {
                 certStore.Open(OpenFlags.ReadOnly);
                 X509Certificate2Collection certCollection = certStore.Certificates.Find(
                     X509FindType.FindByThumbprint,
-                    "82330646766AFA6C4B589B40D5DDB2893EDB4CB2",
+                    Configuration["X509ThumbPrint"],
                     false);
                 // Get the first cert with the thumbprint
                 if (certCollection.Count > 0)
@@ -125,12 +117,12 @@ namespace KinaUna.IDP
                     options.AddPolicy("KinaUnaCors",
                         builder =>
                         {
-                            builder.WithOrigins("https://*.kinauna.com").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                            builder.WithOrigins("https://*." + Constants.AppRootDomain).SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
                         });
                 });
                 var cors = new DefaultCorsPolicyService(_loggerFactory.CreateLogger<DefaultCorsPolicyService>())
                 {
-                    AllowedOrigins = { "https://web.kinauna.com", "https://kinauna.com" }
+                    AllowedOrigins = { Constants.WebAppUrl, "https://" + Constants.AppRootDomain }
                 };
                 services.AddSingleton<ICorsPolicyService>(cors);
             }
@@ -196,7 +188,7 @@ namespace KinaUna.IDP
             };
             var provider = new CookieRequestCultureProvider()
             {
-                CookieName = "KinaUnaLanguage"
+                CookieName = Constants.LanguageCookieName
             };
             localizationOptions.RequestCultureProviders.Insert(0, provider);
 

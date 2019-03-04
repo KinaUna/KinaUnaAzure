@@ -6,8 +6,8 @@ namespace KinaUna.IDP.Services
 {
     public class EfLoginService : ILoginService<ApplicationUser>
     {
-        UserManager<ApplicationUser> _userManager;
-        SignInManager<ApplicationUser> _signInManager;
+        readonly UserManager<ApplicationUser> _userManager;
+        readonly SignInManager<ApplicationUser> _signInManager;
 
         public EfLoginService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {

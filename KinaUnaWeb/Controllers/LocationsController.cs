@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -17,13 +18,13 @@ namespace KinaUnaWeb.Controllers
         private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
-        private int _progId = 2;
+        private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
 
         public LocationsController(WebDbContext context, IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient)
         {
-            _context = context;
+            _context = context; // Todo: Replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
         }
@@ -41,13 +42,13 @@ namespace KinaUnaWeb.Controllers
 
             if (_progId == 0)
             {
-                _progId = 2;
+                _progId = Constants.DefaultChildId;
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
-            int userAccessLevel = 5;
+            int userAccessLevel = (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
@@ -61,15 +62,16 @@ namespace KinaUnaWeb.Controllers
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
                 _userIsProgenyAdmin = true;
-                userAccessLevel = 0;
+                userAccessLevel = (int)AccessLevel.Private;
             }
 
             List<string> tagsList = new List<string>();
 
-            var locationsList = _context.LocationsDb.Where(l => l.ProgenyId == _progId).OrderBy(l => l.Date).ToList();
+            // ToDo: Implement _progenyHttpClient.GetLocations() 
+            var locationsList = _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == _progId).OrderBy(l => l.Date).ToList();
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                locationsList = _context.LocationsDb.Where(l => l.ProgenyId == _progId && l.Tags.Contains(tagFilter)).OrderBy(l => l.Date).ToList();
+                locationsList = _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == _progId && l.Tags.Contains(tagFilter)).OrderBy(l => l.Date).ToList();
             }
             locationsList = locationsList.OrderBy(l => l.Date).ToList();
 
@@ -83,7 +85,7 @@ namespace KinaUnaWeb.Controllers
                 model.LocationsList = new List<Location>();
                 foreach (Location loc in locationsList)
                 {
-                    if (loc.AccessLevel == 5 || loc.AccessLevel >= userAccessLevel)
+                    if (loc.AccessLevel == (int)AccessLevel.Public || loc.AccessLevel >= userAccessLevel)
                     {
                         model.LocationsList.Add(loc);
                         if (!String.IsNullOrEmpty(loc.Tags))
@@ -101,12 +103,12 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            string tList = "";
+            string tags = "";
             foreach (string tstr in tagsList)
             {
-                tList = tList + tstr + ",";
+                tags = tags + tstr + ",";
             }
-            model.Tags = tList.TrimEnd(',');
+            model.Tags = tags.TrimEnd(',');
             
             if (sortBy == 1)
             {
@@ -133,7 +135,7 @@ namespace KinaUnaWeb.Controllers
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
-            int userAccessLevel = 5;
+            int userAccessLevel = (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
@@ -147,7 +149,7 @@ namespace KinaUnaWeb.Controllers
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
                 _userIsProgenyAdmin = true;
-                userAccessLevel = 0;
+                userAccessLevel = (int)AccessLevel.Private;
             }
             
             LocationViewModel model = new LocationViewModel();
@@ -191,7 +193,7 @@ namespace KinaUnaWeb.Controllers
                     validCoords = false;
                 }
 
-                if (validCoords && (pic.AccessLevel == 5 || pic.AccessLevel >= userAccessLevel))
+                if (validCoords && (pic.AccessLevel == (int)AccessLevel.Public || pic.AccessLevel >= userAccessLevel))
                 {
                     picLoc.LocationId = pic.PictureId;
                     model.LocationsList.Add(picLoc);
@@ -217,12 +219,12 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            string tList = "";
+            string tags = "";
             foreach (string tstr in tagsList)
             {
-                tList = tList + tstr + ",";
+                tags = tags + tstr + ",";
             }
-            model.Tags = tList.TrimEnd(',');
+            model.Tags = tags.TrimEnd(',');
             model.TagFilter = tagFilter;
             return View(model);
         }

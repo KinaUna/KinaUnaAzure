@@ -49,8 +49,6 @@ namespace KinaUnaMediaApi
 
             services.AddScoped<IAuthorizationHandler, MustBeAdminHandler>();
             services.AddSingleton<ImageStore>();
-            // services.AddAuthorization();
-            // services.AddCors();
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(options =>
                 {

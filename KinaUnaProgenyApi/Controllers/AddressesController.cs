@@ -101,42 +101,5 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
         }
-
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-            
-            HttpClient addressesHttpClient = new HttpClient();
-            
-            addressesHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            addressesHttpClient.DefaultRequestHeaders.Accept.Clear();
-            addressesHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            string addressesApiPath = "/api/azureexport/addressexport";
-            var addressesUri = "https://kinauna.com" + addressesApiPath;
-
-            var addressesResponseString = await addressesHttpClient.GetStringAsync(addressesUri);
-
-            List<Address> addressesList = JsonConvert.DeserializeObject<List<Address>>(addressesResponseString);
-            List<Address> addressesItems = new List<Address>();
-            foreach (Address adr in addressesList)
-            {
-                Address addressItem = new Address();
-                addressItem.AddressLine1 = adr.AddressLine1;
-                addressItem.AddressLine2 = adr.AddressLine2;
-                addressItem.City = adr.City;
-                addressItem.Country = adr.Country;
-                addressItem.PostalCode = adr.PostalCode;
-                addressItem.State = adr.State;
-                await _context.AddressDb.AddAsync(addressItem);
-                addressesItems.Add(addressItem);
-                
-            }
-            await _context.SaveChangesAsync();
-
-            return Ok(addressesItems);
-        }
     }
 }

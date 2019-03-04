@@ -1,4 +1,5 @@
-﻿@{
+﻿@using KinaUna.IDP
+@{
     ViewData["Title"] = "Bekræft email";
 }
 
@@ -9,6 +10,6 @@
     </p>
 </div>
 <div>
-    <br />Du kan nu logge ind på Kina Una<br/>
-    <a class="btn btn-success" href="http://web.kinauna.com">Gå til Kina Una Web App</a>
+    <br />Du kan nu logge ind på @Constants.AppName<br/>
+    <a class="btn btn-success" href="@Constants.WebAppUrl">Gå til @Constants.AppName Web App</a>
 </div>

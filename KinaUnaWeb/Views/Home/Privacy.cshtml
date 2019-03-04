@@ -8,7 +8,7 @@
         <div class="card-text">
             There are no third parties involved. Your account information and data you provide is not shared with any<br />
             You own your data and only the people you give access to it can see it.<br />
-            The developers (currently just me, Per Rosing Mogensen) can of course access the data, to ensure that no illegal content is hosted on this site, or for troubleshooting.<br />
+            The developers (currently just me, @Constants.OwnerName) can of course access the data, to ensure that no illegal content is hosted on this site, or for troubleshooting.<br />
             <br />
             You can delete your data at any time.<br /><br />
             <strong>To review and remove specific data:</strong><br />
@@ -62,7 +62,7 @@
         <div class="card-title">Cookies</div>
         <div class="card-text">
             Cookies are used to store login state, language settings, and check if the cookie banner has been accepted, nothing else.<br /><br />
-            Cookies used by KinaUna.com:<br />
+            Cookies used by @Constants.AppName:<br />
             <table class="table bg-light" style="margin-left: 25px; margin-top: 25px;">
                 <thead class="thead-dark bg-dark text-white">
                     <tr>
@@ -72,23 +72,23 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td style="padding: 15px;">.AspNetCore.Antiforgery. (kinauna.com)</td>
+                        <td style="padding: 15px;">.AspNetCore.Antiforgery. (@Constants.AppRootDomain)</td>
                         <td style="padding: 15px;">This is used to validate form submissions, so when you submit data it verifies if it was actually sent by you.</td>
                     </tr>
                     <tr>
-                        <td style="padding: 15px;">.AspNetCore.Culture (kinauna.com)</td>
+                        <td style="padding: 15px;">.AspNetCore.Culture (@Constants.AppRootDomain)</td>
                         <td style="padding: 15px;">This is used to save your language settings.</td>
                     </tr>
                     <tr>
-                        <td style="padding: 15px;">.AspNetCore.Identity.Application (kinauna.com)</td>
+                        <td style="padding: 15px;">.AspNetCore.Identity.Application (@Constants.AppRootDomain)</td>
                         <td style="padding: 15px;">This is used for login and account verification. </td>
                     </tr>
                     <tr>
-                        <td style="padding: 15px;">kinaUnaCompliancev100 (kinauna.com)</td>
+                        <td style="padding: 15px;">kinaUnaCompliancev100 (@Constants.AppRootDomain)</td>
                         <td style="padding: 15px;">This is used to determine if we should show or hide the Cookie Consent notifcation.<br />If it doesn't exist the Cookie Consent notification will be shown.</td>
                     </tr>
                     <tr>
-                        <td style="padding: 15px;">__cfduid (kinauna.com)</td>
+                        <td style="padding: 15px;">__cfduid (@Constants.AppRootDomain)</td>
                         <td style="padding: 15px;">The __cfduid cookie is used to identify individual clients behind a shared IP address and apply settings on a per-client basis.<br />It does not correspond to any user ID in the application, and does not store any personally identifiable information. </td>
                     </tr>
                     <tr>
@@ -105,14 +105,6 @@
                             Read more here: <a href="https://developers.google.com/fonts/faq#what_does_using_the_google_fonts_api_mean_for_the_privacy_of_my_users">Google Fonts FAQ</a>
                         </td>
                     </tr>
-                    <tr>
-                        <td style="padding: 15px;">Various (.telerik.com)</td>
-                        <td style="padding: 15px;">
-                            Some elements on KinaUna.com use Telerik components.<br />
-                            These are used to optimize download of scripts and stylesheets, as well as save settings and preferences.<br />
-                            See Telerik's Cookie Policy here: <a href="https://www.progress.com/legal/cookie-policy">Progress / Telerik Cookie Policy</a>
-                        </td>
-                    </tr>
                 </tbody>
             </table>
         </div>
@@ -122,7 +114,7 @@
     <div class="card-body" style="background: lightyellow;">
         <div class="card-title">Further Information</div>
         <div class="card-text">
-            If you have questions or comments regarding the privacy policy, your data, or cookies used by KinaUna.com, send an email to <a href="mailto://support@kinauna.com">support@kinauna.com</a>.<br />
+            If you have questions or comments regarding the privacy policy, your data, or cookies used by @Constants.AppName, send an email to <a href="mailto://@Constants.SupportEmail">@Constants.SupportEmail</a>.<br />
             <br />
             You can find the terms of use here: <a asp-controller="Home" asp-action="Terms">Terms</a><br />
         </div>

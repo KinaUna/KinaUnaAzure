@@ -16,22 +16,7 @@ namespace KinaUnaMediaApi.Authorization
                 context.Fail();
                 return Task.CompletedTask;
             }
-
-            //var imageId = filterContext.RouteData.Values["id"].ToString();
-
-            //if (!Guid.TryParse(imageId, out Guid imageIdAsGuid))
-            //{
-            //    context.Fail();
-            //    return Task.CompletedTask;
-            //}
-
-            // var ownerId = context.User.Claims.FirstOrDefault(c => c.Type == "sub").Value;
-
-            //if (!_galleryRepository.IsImageOwner(imageIdAsGuid, ownerId))
-            //{
-            //    context.Fail();
-            //    return Task.CompletedTask;
-            //}
+            
 
             // all checks out
             context.Succeed(requirement);

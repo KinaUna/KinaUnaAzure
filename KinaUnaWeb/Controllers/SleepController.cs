@@ -8,20 +8,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaWeb.Controllers
 {
     public class SleepController : Controller
     {
-        private WebDbContext _context;
+        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private int _progId = 2;
+        private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
 
         public SleepController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
         {
-            _context = context;
+            _context = context; // Todo: Replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
         }
 
@@ -38,13 +39,13 @@ namespace KinaUnaWeb.Controllers
             }
             if (_progId == 0)
             {
-                _progId = 2;
+                _progId = Constants.DefaultChildId;
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
-            int userAccessLevel = 5;
+            int userAccessLevel = (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
@@ -58,7 +59,7 @@ namespace KinaUnaWeb.Controllers
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
                 _userIsProgenyAdmin = true;
-                userAccessLevel = 0;
+                userAccessLevel = (int)AccessLevel.Private;
             }
 
             SleepViewModel model = new SleepViewModel();
@@ -66,7 +67,7 @@ namespace KinaUnaWeb.Controllers
             model.SleepTotal = TimeSpan.Zero;
             model.SleepLastYear = TimeSpan.Zero;
             model.SleepLastMonth = TimeSpan.Zero;
-            List<Sleep> sList = _context.SleepDb.Where(s => s.ProgenyId == _progId).ToList();
+            List<Sleep> sList = _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == _progId).ToList();
             List<Sleep> sleepList = new List<Sleep>();
             DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
@@ -113,19 +114,18 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                Sleep s = new Sleep();
-                s.ProgenyId = _progId;
-                s.SleepStart = DateTime.UtcNow;
-                s.SleepEnd = DateTime.UtcNow;
-                s.CreatedDate = DateTime.UtcNow;
-                s.SleepNotes = "No sleep data found.";
+                Sleep sleep = new Sleep();
+                sleep.ProgenyId = _progId;
+                sleep.SleepStart = DateTime.UtcNow;
+                sleep.SleepEnd = DateTime.UtcNow;
+                sleep.CreatedDate = DateTime.UtcNow;
+                sleep.SleepNotes = "No sleep data found.";
                 model.SleepList = new List<Sleep>();
-                model.SleepList.Add(s);
+                model.SleepList.Add(sleep);
                 model.TotalAverage = TimeSpan.Zero;
                 model.LastYearAverage = TimeSpan.Zero;
                 model.LastMonthAverage = TimeSpan.Zero;
             }
-
             
             model.IsAdmin = _userIsProgenyAdmin;
             model.Progeny = progeny;
@@ -144,7 +144,6 @@ namespace KinaUnaWeb.Controllers
                     }
                     else
                     {
-
                         Sleep newSleep = new Sleep();
                         newSleep.SleepStart = chartItem.SleepStart;
                         newSleep.SleepDuration = TimeSpan.FromMinutes(durationStartDate);
@@ -214,7 +213,7 @@ namespace KinaUnaWeb.Controllers
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
-            int userAccessLevel = 5;
+            int userAccessLevel = (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
@@ -228,18 +227,18 @@ namespace KinaUnaWeb.Controllers
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
                 _userIsProgenyAdmin = true;
-                userAccessLevel = 0;
+                userAccessLevel = (int)AccessLevel.Private;
             }
 
             SleepViewModel model = new SleepViewModel();
             model.ProgenyId = _progId;
             
-            List<Sleep> sList = _context.SleepDb.Where(s => s.ProgenyId == _progId).ToList();
+            List<Sleep> allSleepList = _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == _progId).ToList();
             List<Sleep> sleepList = new List<Sleep>();
 
-            if (sList.Count != 0)
+            if (allSleepList.Count != 0)
             {
-                foreach (Sleep s in sList)
+                foreach (Sleep s in allSleepList)
                 {
                     s.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(s.SleepStart,
                         TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
@@ -259,14 +258,14 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                Sleep s = new Sleep();
-                s.ProgenyId = _progId;
-                s.SleepStart = DateTime.UtcNow;
-                s.SleepEnd = DateTime.UtcNow;
-                s.CreatedDate = DateTime.UtcNow;
-                s.SleepNotes = "No sleep data found.";
+                Sleep sleep = new Sleep();
+                sleep.ProgenyId = _progId;
+                sleep.SleepStart = DateTime.UtcNow;
+                sleep.SleepEnd = DateTime.UtcNow;
+                sleep.CreatedDate = DateTime.UtcNow;
+                sleep.SleepNotes = "No sleep data found.";
                 model.SleepList = new List<Sleep>();
-                model.SleepList.Add(s);
+                model.SleepList.Add(sleep);
             }
             model.IsAdmin = _userIsProgenyAdmin;
             model.Progeny = progeny;

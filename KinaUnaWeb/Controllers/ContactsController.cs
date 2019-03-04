@@ -15,11 +15,11 @@ namespace KinaUnaWeb.Controllers
     public class ContactsController : Controller
     {
         private readonly WebDbContext _context;
-        private int _progId = 2;
+        private int _progId = Constants.DefaultChildId;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly ImageStore _imageStore;
         private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
 
         public ContactsController(WebDbContext context, IProgenyHttpClient progenyHttpClient, ImageStore imageStore)
         {
@@ -46,14 +46,14 @@ namespace KinaUnaWeb.Controllers
 
             if (_progId == 0)
             {
-                _progId = 2;
+                _progId = Constants.DefaultChildId;
             }
 
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
-            int userAccessLevel = 5;
+            int userAccessLevel = (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
@@ -67,56 +67,56 @@ namespace KinaUnaWeb.Controllers
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
                 _userIsProgenyAdmin = true;
-                userAccessLevel = 0;
+                userAccessLevel = (int)AccessLevel.Private;
             }
 
             List<ContactViewModel> model = new List<ContactViewModel>();
             
             List<string> tagsList = new List<string>();
 
-            List<Contact> cList = _context.ContactsDb.Where(w => w.ProgenyId == _progId).ToList();
+            List<Contact> contactList = _context.ContactsDb.AsNoTracking().Where(w => w.ProgenyId == _progId).ToList();
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                cList = _context.ContactsDb.Where(f => f.ProgenyId == _progId && f.Tags.Contains(tagFilter)).ToList();
+                contactList = _context.ContactsDb.AsNoTracking().Where(f => f.ProgenyId == _progId && f.Tags.Contains(tagFilter)).ToList();
             }
 
-            if (cList.Count != 0)
+            if (contactList.Count != 0)
             {
-                foreach (Contact c in cList)
+                foreach (Contact contact in contactList)
                 {
-                    ContactViewModel cIvm = new ContactViewModel();
-                    cIvm.ProgenyId = c.ProgenyId;
-                    cIvm.AccessLevel = c.AccessLevel;
-                    cIvm.FirstName = c.FirstName;
-                    cIvm.MiddleName = c.MiddleName;
-                    cIvm.LastName = c.LastName;
-                    cIvm.DisplayName = c.DisplayName;
-                    cIvm.AddressIdNumber = c.AddressIdNumber;
-                    cIvm.Email1 = c.Email1;
-                    cIvm.Email2 = c.Email2;
-                    cIvm.PhoneNumber = c.PhoneNumber;
-                    cIvm.MobileNumber = c.MobileNumber;
-                    cIvm.Notes = c.Notes;
-                    cIvm.PictureLink = c.PictureLink;
-                    cIvm.Active = c.Active;
-                    cIvm.IsAdmin = _userIsProgenyAdmin;
-                    cIvm.ContactId = c.ContactId;
-                    cIvm.Context = c.Context;
-                    cIvm.Website = c.Website;
-                    if (c.AddressIdNumber != null)
+                    ContactViewModel contactViewModel = new ContactViewModel();
+                    contactViewModel.ProgenyId = contact.ProgenyId;
+                    contactViewModel.AccessLevel = contact.AccessLevel;
+                    contactViewModel.FirstName = contact.FirstName;
+                    contactViewModel.MiddleName = contact.MiddleName;
+                    contactViewModel.LastName = contact.LastName;
+                    contactViewModel.DisplayName = contact.DisplayName;
+                    contactViewModel.AddressIdNumber = contact.AddressIdNumber;
+                    contactViewModel.Email1 = contact.Email1;
+                    contactViewModel.Email2 = contact.Email2;
+                    contactViewModel.PhoneNumber = contact.PhoneNumber;
+                    contactViewModel.MobileNumber = contact.MobileNumber;
+                    contactViewModel.Notes = contact.Notes;
+                    contactViewModel.PictureLink = contact.PictureLink;
+                    contactViewModel.Active = contact.Active;
+                    contactViewModel.IsAdmin = _userIsProgenyAdmin;
+                    contactViewModel.ContactId = contact.ContactId;
+                    contactViewModel.Context = contact.Context;
+                    contactViewModel.Website = contact.Website;
+                    if (contact.AddressIdNumber != null)
                     {
-                        Address address = await _context.AddressDb.SingleAsync(a => a.AddressId == c.AddressIdNumber);
-                        cIvm.AddressLine1 = address.AddressLine1;
-                        cIvm.AddressLine2 = address.AddressLine2;
-                        cIvm.City = address.City;
-                        cIvm.State = address.State;
-                        cIvm.PostalCode = address.PostalCode;
-                        cIvm.Country = address.Country;
+                        Address address = await _context.AddressDb.AsNoTracking().SingleAsync(a => a.AddressId == contact.AddressIdNumber);
+                        contactViewModel.AddressLine1 = address.AddressLine1;
+                        contactViewModel.AddressLine2 = address.AddressLine2;
+                        contactViewModel.City = address.City;
+                        contactViewModel.State = address.State;
+                        contactViewModel.PostalCode = address.PostalCode;
+                        contactViewModel.Country = address.Country;
                     }
-                    cIvm.Tags = c.Tags;
-                    if (!String.IsNullOrEmpty(cIvm.Tags))
+                    contactViewModel.Tags = contact.Tags;
+                    if (!String.IsNullOrEmpty(contactViewModel.Tags))
                     {
-                        List<string> cvmTags = cIvm.Tags.Split(',').ToList();
+                        List<string> cvmTags = contactViewModel.Tags.Split(',').ToList();
                         foreach (string tagstring in cvmTags)
                         {
                             if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
@@ -126,33 +126,33 @@ namespace KinaUnaWeb.Controllers
                         }
                     }
 
-                    if (!cIvm.PictureLink.StartsWith("https://"))
+                    if (!contactViewModel.PictureLink.StartsWith("https://"))
                     {
-                        cIvm.PictureLink = _imageStore.UriFor(cIvm.PictureLink, "contacts");
+                        contactViewModel.PictureLink = _imageStore.UriFor(contactViewModel.PictureLink, "contacts");
                     }
 
-                    if (cIvm.AccessLevel >= userAccessLevel)
+                    if (contactViewModel.AccessLevel >= userAccessLevel)
                     {
-                        model.Add(cIvm);
+                        model.Add(contactViewModel);
                     }
                 }
                 model = model.OrderBy(m => m.DisplayName).ToList();
 
-                string tList = "";
+                string tags = "";
                 foreach (string tstr in tagsList)
                 {
-                    tList = tList + tstr + ",";
+                    tags = tags + tstr + ",";
                 }
-                ViewBag.Tags = tList.TrimEnd(',');
+                ViewBag.Tags = tags.TrimEnd(',');
             }
             else
             {
-                ContactViewModel c = new ContactViewModel();
-                c.ProgenyId = _progId;
-                c.DisplayName = "No friends found.";
-                c.PictureLink = "https://web.kinauna.com/photodb/profile.jpg";
-                c.IsAdmin = _userIsProgenyAdmin;
-                model.Add(c);
+                ContactViewModel notfoundContactViewModel = new ContactViewModel();
+                notfoundContactViewModel.ProgenyId = _progId;
+                notfoundContactViewModel.DisplayName = "No friends found.";
+                notfoundContactViewModel.PictureLink = Constants.ProfilePictureUrl;
+                notfoundContactViewModel.IsAdmin = _userIsProgenyAdmin;
+                model.Add(notfoundContactViewModel);
             }
 
             model[0].Progeny = progeny;
@@ -166,11 +166,11 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            Contact contact = await _context.ContactsDb.SingleAsync(c => c.ContactId == contactId);
+            Contact contact = await _context.ContactsDb.AsNoTracking().SingleAsync(c => c.ContactId == contactId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(contact.ProgenyId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
-            int userAccessLevel = 5;
+            int userAccessLevel =  (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
@@ -184,7 +184,7 @@ namespace KinaUnaWeb.Controllers
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
                 _userIsProgenyAdmin = true;
-                userAccessLevel = 0;
+                userAccessLevel = (int)AccessLevel.Private;
             }
 
 
@@ -214,7 +214,7 @@ namespace KinaUnaWeb.Controllers
             model.Tags = contact.Tags;
             if (contact.AddressIdNumber != null)
             {
-                Address address = await _context.AddressDb.SingleAsync(a => a.AddressId == contact.AddressIdNumber);
+                Address address = await _context.AddressDb.AsNoTracking().SingleAsync(a => a.AddressId == contact.AddressIdNumber);
                 model.AddressLine1 = address.AddressLine1;
                 model.AddressLine2 = address.AddressLine2;
                 model.City = address.City;
@@ -231,7 +231,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<string> tagsList = new List<string>();
-            var contactsList1 = _context.ContactsDb.Where(c => c.ProgenyId == model.ProgenyId).ToList();
+            var contactsList1 = _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == model.ProgenyId).ToList();
             foreach (Contact cont in contactsList1)
             {
                 if (!String.IsNullOrEmpty(cont.Tags))

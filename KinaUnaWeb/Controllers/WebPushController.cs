@@ -13,7 +13,6 @@ namespace KinaUnaWeb.Controllers
     public class WebPushController : Controller
     {
         private readonly IConfiguration _configuration;
-
         private readonly WebDbContext _context;
 
         public WebPushController(WebDbContext context, IConfiguration configuration)
@@ -25,7 +24,8 @@ namespace KinaUnaWeb.Controllers
         public IActionResult Send(int? id)
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
-            if (userEmail.ToUpper() != "PER.MOGENSEN@GMAIL.COM")
+            // Todo: Replace with role based access
+            if (userEmail.ToUpper() != Constants.AdminEmail.ToUpper())
             {
                 return RedirectToAction("Index", "Home");
             }
@@ -38,7 +38,8 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Send(int id)
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
-            if (userEmail.ToUpper() != "PER.MOGENSEN@GMAIL.COM")
+            // Todo: Replace with role based access
+            if (userEmail.ToUpper() != Constants.AdminEmail.ToUpper())
             {
                 return RedirectToAction("Index", "Home");
             }
@@ -50,7 +51,7 @@ namespace KinaUnaWeb.Controllers
             string vapidPrivateKey = _configuration["VapidPrivateKey"];
 
             var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
-            var vapidDetails = new VapidDetails("mailto:support@kinauna.com", vapidPublicKey, vapidPrivateKey);
+            var vapidDetails = new VapidDetails("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
 
             var webPushClient = new WebPushClient();
             webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
@@ -61,7 +62,8 @@ namespace KinaUnaWeb.Controllers
         public IActionResult GenerateKeys()
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
-            if (userEmail.ToUpper() != "PER.MOGENSEN@GMAIL.COM")
+            // Todo: Replace with role based access
+            if (userEmail.ToUpper() != Constants.AdminEmail.ToUpper())
             {
                 return RedirectToAction("Index", "Home");
             }

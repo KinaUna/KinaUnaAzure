@@ -27,7 +27,7 @@ namespace KinaUnaWeb.Extensions
         private static string EncodeCredential(string userName, string password)
         {
             Encoding encoding = Encoding.GetEncoding("iso-8859-1");
-            string credential = String.Format("{0}:{1}", userName, password);
+            string credential = $"{userName}:{password}";
 
             return Convert.ToBase64String(encoding.GetBytes(credential));
         }

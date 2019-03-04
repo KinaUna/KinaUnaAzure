@@ -13,15 +13,15 @@ namespace KinaUnaWeb.Controllers
 {
     public class NotesController : Controller
     {
-        private WebDbContext _context;
+        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private int _progId = 2;
+        private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = "testuser@niviaq.com";
+        private readonly string _defaultUser = Constants.DefaultUserEmail;
 
         public NotesController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
         {
-            _context = context;
+            _context = context; // Todo: Replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
         }
 
@@ -39,13 +39,13 @@ namespace KinaUnaWeb.Controllers
 
             if (_progId == 0)
             {
-                _progId = 2;
+                _progId = Constants.DefaultChildId;
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
-            int userAccessLevel = 5;
+            int userAccessLevel = (int)AccessLevel.Public;
 
             if (accessList.Count != 0)
             {
@@ -59,30 +59,31 @@ namespace KinaUnaWeb.Controllers
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
                 _userIsProgenyAdmin = true;
-                userAccessLevel = 0;
+                userAccessLevel = (int)AccessLevel.Private;
             }
 
             List<NoteViewModel> model = new List<NoteViewModel>();
             
-            List<Note> nList = _context.NotesDb.Where(n => n.ProgenyId == _progId).ToList();
-            if (nList.Count != 0)
+            // Todo: Replace _context with _progenyClient.GetNotes()
+            List<Note> notes = _context.NotesDb.Where(n => n.ProgenyId == _progId).ToList();
+            if (notes.Count != 0)
             {
-                foreach (Note n in nList)
+                foreach (Note note in notes)
                 {
-                    NoteViewModel fIvm = new NoteViewModel();
-                    fIvm.ProgenyId = n.ProgenyId;
-                    fIvm.AccessLevel = n.AccessLevel;
-                    fIvm.Category = n.Category;
-                    fIvm.Content = n.Content;
-                    fIvm.NoteId = n.NoteId;
-                    fIvm.Title = n.Title;
-                    fIvm.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(n.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                    fIvm.IsAdmin = _userIsProgenyAdmin;
-                    UserInfo nUser = await _progenyHttpClient.GetUserInfoByUserId(n.Owner);
-                    fIvm.Owner = nUser.FirstName + " " + nUser.MiddleName + " " + nUser.LastName;
-                    if (fIvm.AccessLevel >= userAccessLevel)
+                    NoteViewModel notesViewModel = new NoteViewModel();
+                    notesViewModel.ProgenyId = note.ProgenyId;
+                    notesViewModel.AccessLevel = note.AccessLevel;
+                    notesViewModel.Category = note.Category;
+                    notesViewModel.Content = note.Content;
+                    notesViewModel.NoteId = note.NoteId;
+                    notesViewModel.Title = note.Title;
+                    notesViewModel.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(note.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                    notesViewModel.IsAdmin = _userIsProgenyAdmin;
+                    UserInfo nUser = await _progenyHttpClient.GetUserInfoByUserId(note.Owner);
+                    notesViewModel.Owner = nUser.FirstName + " " + nUser.MiddleName + " " + nUser.LastName;
+                    if (notesViewModel.AccessLevel >= userAccessLevel)
                     {
-                        model.Add(fIvm);
+                        model.Add(notesViewModel);
                     }
 
                 }
@@ -91,12 +92,12 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                NoteViewModel n = new NoteViewModel();
-                n.ProgenyId = _progId;
-                n.Title = "No notes found.";
-                n.Content = "The notes list is empty.";
-                n.IsAdmin = _userIsProgenyAdmin;
-                model.Add(n);
+                NoteViewModel noteViewModel = new NoteViewModel();
+                noteViewModel.ProgenyId = _progId;
+                noteViewModel.Title = "No notes found.";
+                noteViewModel.Content = "The notes list is empty.";
+                noteViewModel.IsAdmin = _userIsProgenyAdmin;
+                model.Add(noteViewModel);
             }
 
             model[0].Progeny = progeny;

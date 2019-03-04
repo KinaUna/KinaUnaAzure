@@ -186,57 +186,6 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> SyncAll()
-        {
-            
-            HttpClient contactsHttpClient = new HttpClient();
-            
-            contactsHttpClient.BaseAddress = new Uri("https://kinauna.com");
-            contactsHttpClient.DefaultRequestHeaders.Accept.Clear();
-            contactsHttpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
-
-            string contactsApiPath = "/api/azureexport/contactsexport";
-            var contactsUri = "https://kinauna.com" + contactsApiPath;
-
-            var contactsResponseString = await contactsHttpClient.GetStringAsync(contactsUri);
-
-            List<Contact> contactsList = JsonConvert.DeserializeObject<List<Contact>>(contactsResponseString);
-            List<Contact> contactsItems = new List<Contact>();
-            foreach (Contact value in contactsList)
-            {
-                Contact contactItem = new Contact();
-                contactItem.AccessLevel = value.AccessLevel;
-                contactItem.Active = value.Active;
-                contactItem.AddressIdNumber = value.AddressIdNumber;
-                contactItem.AddressString = value.AddressString;
-                contactItem.ProgenyId = value.ProgenyId;
-                contactItem.Author = value.Author;
-                contactItem.DateAdded = value.DateAdded;
-                contactItem.Context = value.Context;
-                contactItem.DisplayName = value.DisplayName;
-                contactItem.Email1 = value.Email1;
-                contactItem.Email2 = value.Email2;
-                contactItem.FirstName = value.FirstName;
-                contactItem.LastName = value.LastName;
-                contactItem.MiddleName = value.MiddleName;
-                contactItem.MobileNumber = value.MobileNumber;
-                contactItem.Notes = value.Notes;
-                contactItem.PhoneNumber = value.PhoneNumber;
-                contactItem.PictureLink = "https://" + value.PictureLink;
-                contactItem.Tags = value.Tags;
-                contactItem.Website = value.Website;
-                await _context.ContactsDb.AddAsync(contactItem);
-                contactsItems.Add(contactItem);
-                
-            }
-            await _context.SaveChangesAsync();
-
-            return Ok(contactsItems);
-        }
-
-        [HttpGet]
         [Route("[action]/{contactId}")]
         public async Task<IActionResult> DownloadPicture(int contactId)
         {

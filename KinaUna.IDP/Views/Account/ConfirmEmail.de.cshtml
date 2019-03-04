@@ -1,4 +1,5 @@
-﻿@{
+﻿@using KinaUna.IDP
+@{
     ViewData["Title"] = "E-Mail Bestätigung";
 }
 
@@ -10,5 +11,5 @@
 </div>
 <div>
     <br />Sie können sich jetzt als Benutzer anmelden.<br />
-    <a class="btn btn-success" href="http://web.kinauna.com">Gehe zu Kina Una Web App</a>
+    <a class="btn btn-success" href="@Constants.WebAppUrl">Gehe zu @Constants.AppName Web App</a>
 </div>

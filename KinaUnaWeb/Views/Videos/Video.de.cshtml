@@ -1,4 +1,5 @@
 ﻿@using System.Globalization
+@using Microsoft.Extensions.Diagnostics.HealthChecks
 @model KinaUnaWeb.Models.ItemViewModels.VideoViewModel
 
 @{
@@ -97,8 +98,8 @@
                 let iconHeight = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
                 let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: iconWidth, h: iconHeight } });
                 var platform = new H.service.Platform({
-                    'app_id': 'bJjORf0UVOc5U4LjADgX',
-                    'app_code': 'GNDm65qsmujcmIK9-2X_Uw',
+                    'app_id': '@Constants.HereMapsId',
+                    'app_code': '@Constants.HereMapsCode',
                     'useHTTPS': true
                 });
 
@@ -425,7 +426,8 @@
                             }
             @Html.Raw(myLoc)
             @Html.Raw(addLoc)
-            let selectedLoc = locations.find(obj => { return obj.id === $('#copyLocation').val() });
+            let locId = Number($('#copyLocation').val());
+            let selectedLoc = locations.find(obj => { return obj.id === locId });
             $('#latitude').val(selectedLoc.lat);
             $('#longitude').val(selectedLoc.lng);
             $('#location').val(selectedLoc.name);

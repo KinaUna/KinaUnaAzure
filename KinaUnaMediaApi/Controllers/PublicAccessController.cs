@@ -17,6 +17,7 @@ namespace KinaUnaMediaApi.Controllers
     {
         private readonly MediaDbContext _context;
         private readonly ImageStore _imageStore;
+
         public PublicAccessController(MediaDbContext context, ImageStore imageStore)
         {
             _context = context;
@@ -45,18 +46,18 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             Progeny progeny = new Progeny();
-            progeny.Name = "Kina Una";
-            progeny.Admins = "per.mogensen@live.com";
-            progeny.NickName = "Kina Una";
+            progeny.Name = Constants.AppName;
+            progeny.Admins = Constants.AdminEmail;
+            progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
             progeny.Id = 0;
-            progeny.TimeZone = "Romance Standard Time";
+            progeny.TimeZone = Constants.DefaultTimezone;
             Picture tempPicture = new Picture();
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = "https://web.kinauna.com" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
             return Ok(tempPicture);
@@ -83,18 +84,18 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             Progeny progeny = new Progeny();
-            progeny.Name = "Kina Una";
-            progeny.Admins = "per.mogensen@live.com";
-            progeny.NickName = "Kina Una";
+            progeny.Name = Constants.AppName;
+            progeny.Admins = Constants.AdminEmail;
+            progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
             progeny.Id = 0;
-            progeny.TimeZone = "Romance Standard Time";
+            progeny.TimeZone = Constants.DefaultTimezone;
             Picture tempPicture = new Picture();
             tempPicture.ProgenyId = 0;
             tempPicture.Progeny = progeny;
             tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
+            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
