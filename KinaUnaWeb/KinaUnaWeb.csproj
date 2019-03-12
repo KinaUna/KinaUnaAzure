@@ -65,6 +65,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\KinaUna.Data\KinaUna.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="Views\AccessManagement\AddAccess.de.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

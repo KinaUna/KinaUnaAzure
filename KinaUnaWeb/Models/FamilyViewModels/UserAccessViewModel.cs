@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.FamilyViewModels

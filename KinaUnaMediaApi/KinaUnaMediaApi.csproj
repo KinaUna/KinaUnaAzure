@@ -35,4 +35,8 @@
     <Folder Include="wwwroot\pictures\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\KinaUna.Data\KinaUna.Data.csproj" />
+  </ItemGroup>
+
 </Project>

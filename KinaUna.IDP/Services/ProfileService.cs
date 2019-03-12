@@ -8,7 +8,7 @@ using IdentityServer4.Models;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
-using KinaUna.IDP.Models;
+using KinaUna.Data.Models;
 
 namespace KinaUna.IDP.Services
 {

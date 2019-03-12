@@ -1,10 +1,10 @@
 ﻿using KinaUna.IDP.Data;
-using KinaUna.IDP.Models;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml.Linq;
+using KinaUna.Data.Models;
 
 namespace KinaUna.IDP.Services
 {

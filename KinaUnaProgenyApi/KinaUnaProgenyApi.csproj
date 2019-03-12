@@ -19,7 +19,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="2.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.2" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
-    <PackageReference Include="Microsoft.AspNetCore.All" />
+    <PackageReference Include="Microsoft.AspNetCore.All"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KinaUna.Data\KinaUna.Data.csproj" />
   </ItemGroup>
 
   <ItemGroup>

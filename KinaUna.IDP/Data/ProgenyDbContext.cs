@@ -1,4 +1,4 @@
-﻿using KinaUna.IDP.Models;
+﻿using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUna.IDP.Data

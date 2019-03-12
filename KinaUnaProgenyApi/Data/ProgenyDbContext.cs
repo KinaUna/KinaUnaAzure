@@ -1,4 +1,4 @@
-﻿using KinaUnaProgenyApi.Models;
+﻿using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Data

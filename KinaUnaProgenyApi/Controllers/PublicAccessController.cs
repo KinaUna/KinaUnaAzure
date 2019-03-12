@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Data;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;

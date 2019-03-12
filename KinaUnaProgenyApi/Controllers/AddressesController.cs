@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Data;
 using KinaUnaProgenyApi.Models;
 using Microsoft.AspNetCore.Authorization;

@@ -1,4 +1,4 @@
-﻿using KinaUnaWeb.Models;
+﻿using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

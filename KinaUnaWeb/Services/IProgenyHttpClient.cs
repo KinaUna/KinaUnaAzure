@@ -1,7 +1,7 @@
-﻿using KinaUnaWeb.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Services
 {

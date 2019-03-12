@@ -1,5 +1,6 @@
 ﻿using KinaUnaWeb.Models.ItemViewModels;
 using System.Collections.Generic;
+using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Models.HomeViewModels
 {

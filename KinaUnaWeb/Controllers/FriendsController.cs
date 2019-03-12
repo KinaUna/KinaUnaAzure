@@ -1,5 +1,4 @@
 ﻿using KinaUnaWeb.Data;
-using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.IDP;
+using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Controllers
 {

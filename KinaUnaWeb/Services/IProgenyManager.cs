@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using KinaUnaWeb.Models;
+using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Services
 {

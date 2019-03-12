@@ -1,4 +1,4 @@
-﻿using KinaUnaMediaApi.Models;
+﻿using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaMediaApi.Data

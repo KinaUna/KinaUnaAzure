@@ -1,6 +1,5 @@
 ﻿using IdentityModel;
 using KinaUnaWeb.Data;
-using KinaUnaWeb.Models;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -22,9 +21,11 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
+using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
+using KinaUna.IDP;
 
 namespace KinaUnaWeb
 {

@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
+using KinaUna.Data.Models;
+using KinaUna.IDP;
 using KinaUnaWeb.Hubs;
 using Microsoft.AspNetCore.SignalR;
 

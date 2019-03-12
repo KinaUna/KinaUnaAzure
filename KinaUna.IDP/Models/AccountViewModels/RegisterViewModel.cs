@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using KinaUna.Data.Models;
 
 namespace KinaUna.IDP.Models.AccountViewModels
 {

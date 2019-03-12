@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Models;
 using KinaUnaWeb.Data;
 using KinaUnaWeb.Hubs;
-using KinaUnaWeb.Models;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;

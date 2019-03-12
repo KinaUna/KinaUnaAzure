@@ -1,4 +1,5 @@
-﻿using KinaUna.IDP.Models;
+﻿using KinaUna.Data.Models;
+using KinaUna.IDP.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

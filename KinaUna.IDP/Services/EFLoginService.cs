@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using KinaUna.IDP.Models;
+using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace KinaUna.IDP.Services

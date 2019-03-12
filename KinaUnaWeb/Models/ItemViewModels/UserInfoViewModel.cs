@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace KinaUnaWeb.Models.ItemViewModels
