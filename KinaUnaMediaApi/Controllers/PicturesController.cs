@@ -1,18 +1,18 @@
 ﻿using ImageMagick;
-using KinaUnaMediaApi.Data;
 using KinaUnaMediaApi.Models.ViewModels;
 using KinaUnaMediaApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
+using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
-using KinaUna.IDP;
+using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaMediaApi.Controllers
 {

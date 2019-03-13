@@ -1,4 +1,4 @@
-﻿using KinaUna.IDP;
+﻿using KinaUna.Data;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Azure.KeyVault;

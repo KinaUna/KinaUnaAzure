@@ -1,10 +1,10 @@
-﻿using KinaUnaMediaApi.Data;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 
 namespace KinaUnaMediaApi.Controllers

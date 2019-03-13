@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
 

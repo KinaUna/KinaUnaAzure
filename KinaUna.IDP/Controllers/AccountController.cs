@@ -2,7 +2,6 @@
 using IdentityServer4;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
-using KinaUna.IDP.Data;
 using KinaUna.IDP.Extensions;
 using KinaUna.IDP.Models;
 using KinaUna.IDP.Models.AccountViewModels;
@@ -20,9 +19,11 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.Extensions.Configuration;
+using KinaUna.Data;
 
 namespace KinaUna.IDP.Controllers
 {

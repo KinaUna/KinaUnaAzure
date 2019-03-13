@@ -32,6 +32,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Data\" />
+    <Folder Include="Migrations\" />
     <Folder Include="wwwroot\pictures\" />
   </ItemGroup>
 

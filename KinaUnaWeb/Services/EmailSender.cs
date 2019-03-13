@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
-using KinaUna.IDP;
+using KinaUna.Data;
 
 namespace KinaUnaWeb.Services
 {

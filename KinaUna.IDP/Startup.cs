@@ -19,6 +19,8 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using KinaUna.Data;
+using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 
 namespace KinaUna.IDP
@@ -39,17 +41,43 @@ namespace KinaUna.IDP
         public void ConfigureServices(IServiceCollection services)
         {
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
-            
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration["AuthDefaultConnection"],
+
+            services.AddDbContext<ProgenyDbContext>(options =>
+                options.UseSqlServer(Configuration["ProgenyDefaultConnection"],
                     sqlServerOptionsAction: sqlOptions =>
                     {
                         sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
                         //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
-            services.AddDbContext<ProgenyDbContext>(options =>
-                options.UseSqlServer(Configuration["ProgenyDefaultConnection"]));
+
+            services.AddDbContext<WebDbContext>(options =>
+                options.UseSqlServer(Configuration["WebDefaultConnection"],
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
+                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
+                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                    }));
+
+
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(Configuration["DataProtectionConnection"],
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
+                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
+                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                    }));
+
+            services.AddDbContext<MediaDbContext>(options =>
+                options.UseSqlServer(Configuration["MediaDefaultConnection"],
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
+                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
+                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                    }));
 
             services.AddSingleton<IXmlRepository, DataProtectionKeyRepository>();
 
@@ -163,9 +191,7 @@ namespace KinaUna.IDP
             )
         {
             // This will do the initial DB population
-            bool resetDb = false;
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            InitializeDatabase(app, resetDb);
+            InitializeDatabase(app, Constants.ResetIdentityDb);
 
             if (_env.IsDevelopment())
             {
@@ -207,7 +233,11 @@ namespace KinaUna.IDP
 
                 var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
                 context.Database.Migrate();
-                
+
+                var usersContext = serviceScope.ServiceProvider.GetRequiredService<ProgenyDbContext>();
+
+                usersContext.Database.Migrate();
+
                 if (resetDb)
                 {
                     var contextClients = context.Clients.ToList();
@@ -258,6 +288,62 @@ namespace KinaUna.IDP
                         context.ApiResources.Add(resource.ToEntity());
                     }
                     context.SaveChanges();
+                }
+
+                if (usersContext.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == Constants.DefaultUserEmail.ToUpper()) == null)
+                {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.UserEmail = Constants.DefaultUserEmail;
+                    userInfo.FirstName = "System";
+                    userInfo.LastName = "Default User";
+                    userInfo.Timezone = Constants.DefaultTimezone;
+                    userInfo.UserName = Constants.DefaultUserEmail;
+                    userInfo.ViewChild = Constants.DefaultChildId;
+
+                    usersContext.UserInfoDb.Add(userInfo);
+                    usersContext.SaveChanges();
+                }
+
+                if (usersContext.ProgenyDb.SingleOrDefault(p => p.Id == Constants.DefaultChildId) == null)
+                {
+                    Progeny progeny = new Progeny();
+                    progeny.Admins = Constants.AdminEmail;
+                    progeny.BirthDay = DateTime.UtcNow;
+                    progeny.Name = Constants.AppName;
+                    progeny.NickName = Constants.AppName;
+                    progeny.PictureLink = Constants.ProfilePictureUrl;
+                    progeny.TimeZone = Constants.DefaultTimezone;
+
+                    usersContext.ProgenyDb.Add(progeny);
+                    usersContext.SaveChanges();
+                }
+
+                if (usersContext.UserAccessDb.SingleOrDefault(u =>
+                        u.ProgenyId == Constants.DefaultChildId &&
+                        u.UserId.ToUpper() == Constants.DefaultUserEmail.ToUpper()) == null)
+                {
+                    UserAccess userAccess = new UserAccess();
+                    userAccess.ProgenyId = Constants.DefaultChildId;
+                    userAccess.UserId = Constants.DefaultUserEmail.ToUpper();
+                    userAccess.AccessLevel = (int)AccessLevel.Users;
+                    userAccess.CanContribute = false;
+
+                    usersContext.UserAccessDb.Add(userAccess);
+                    usersContext.SaveChanges();
+                }
+
+                if (usersContext.UserAccessDb.SingleOrDefault(u =>
+                        u.ProgenyId == Constants.DefaultChildId &&
+                        u.UserId.ToUpper() == Constants.AdminEmail.ToUpper()) == null)
+                {
+                    UserAccess userAccess = new UserAccess();
+                    userAccess.ProgenyId = Constants.DefaultChildId;
+                    userAccess.UserId = Constants.AdminEmail.ToUpper();
+                    userAccess.AccessLevel = (int)AccessLevel.Private;
+                    userAccess.CanContribute = true;
+
+                    usersContext.UserAccessDb.Add(userAccess);
+                    usersContext.SaveChanges();
                 }
             }
         }

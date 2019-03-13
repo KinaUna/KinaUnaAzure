@@ -1,6 +1,6 @@
 ﻿using IdentityServer4.AccessTokenValidation;
+using KinaUna.Data.Contexts;
 using KinaUnaMediaApi.Authorization;
-using KinaUnaMediaApi.Data;
 using KinaUnaMediaApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;

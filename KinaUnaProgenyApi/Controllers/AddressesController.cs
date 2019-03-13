@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
-using KinaUnaProgenyApi.Data;
-using KinaUnaProgenyApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Controllers
 {

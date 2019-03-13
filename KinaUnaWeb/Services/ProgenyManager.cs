@@ -10,8 +10,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Models;
-using KinaUna.IDP;
 
 namespace KinaUnaWeb.Services
 {

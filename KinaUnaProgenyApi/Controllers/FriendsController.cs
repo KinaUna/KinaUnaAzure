@@ -1,5 +1,4 @@
-﻿using KinaUnaProgenyApi.Data;
-using KinaUnaProgenyApi.Services;
+﻿using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
+using KinaUna.Data.Contexts;
 
 namespace KinaUnaProgenyApi.Controllers
 {

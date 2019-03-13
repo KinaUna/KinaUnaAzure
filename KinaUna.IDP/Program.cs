@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore;
+﻿using KinaUna.Data;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
