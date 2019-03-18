@@ -29,5 +29,10 @@ namespace KinaUnaWeb.Services
         Task<Sleep> UpdateSleep(Sleep sleep);
         Task<bool> DeleteSleepItem(int sleepId);
         Task<List<Sleep>> GetSleepList(int progenyId, int accessLevel);
+        Task<CalendarItem> GetCalendarItem(int eventId);
+        Task<CalendarItem> AddCalendarItem(CalendarItem eventItem);
+        Task<CalendarItem> UpdateCalendarItem(CalendarItem eventItem);
+        Task<bool> DeleteCalendarItem(int sleepId);
+        Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel);
     }
 }

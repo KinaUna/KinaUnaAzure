@@ -15,15 +15,13 @@ namespace KinaUnaWeb.Controllers
 {
     public class CalendarController : Controller
     {
-        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public CalendarController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
+        public CalendarController(IProgenyHttpClient progenyHttpClient)
         {
-            _context = context;
             _progenyHttpClient = progenyHttpClient;
         }
 
@@ -66,7 +64,7 @@ namespace KinaUnaWeb.Controllers
 
             ApplicationUser currentUser = new ApplicationUser();
             currentUser.TimeZone = userinfo.Timezone;
-            var eventsList = _context.CalendarDb.AsNoTracking().Where(e => e.ProgenyId == _progId).ToList();
+            var eventsList = await _progenyHttpClient.GetCalendarList(_progId, userAccessLevel); // _context.CalendarDb.AsNoTracking().Where(e => e.ProgenyId == _progId).ToList();
             eventsList = eventsList.OrderBy(e => e.StartTime).ToList();
             CalendarItemViewModel events = new CalendarItemViewModel();
             events.IsAdmin = _userIsProgenyAdmin;
@@ -107,7 +105,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ViewEvent(int eventId)
         {
-            CalendarItem eventItem = await _context.CalendarDb.AsNoTracking().SingleAsync(e => e.EventId == eventId);
+            CalendarItem eventItem = await _progenyHttpClient.GetCalendarItem(eventId); // _context.CalendarDb.AsNoTracking().SingleAsync(e => e.EventId == eventId);
 
             CalendarItemViewModel model = new CalendarItemViewModel();
 

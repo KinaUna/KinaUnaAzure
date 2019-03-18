@@ -1305,27 +1305,11 @@ namespace KinaUnaWeb.Controllers
             eventItem.AllDay = model.AllDay;
             eventItem.AccessLevel = model.AccessLevel;
             eventItem.Author = userinfo.UserId;
-            await _context.CalendarDb.AddAsync(eventItem);
-            await _context.SaveChangesAsync();
+            eventItem = await _progenyHttpClient.AddCalendarItem(eventItem);
+            //await _context.CalendarDb.AddAsync(eventItem);
+            //await _context.SaveChangesAsync();
 
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = eventItem.ProgenyId;
-            tItem.AccessLevel = eventItem.AccessLevel;
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Calendar;
-            tItem.ItemId = eventItem.EventId.ToString();
-            tItem.CreatedBy = userinfo.UserId;
-            tItem.CreatedTime = DateTime.UtcNow;
-            if (eventItem.StartTime != null)
-            {
-                tItem.ProgenyTime = eventItem.StartTime.Value;
-            }
-            else
-            {
-                tItem.ProgenyTime = DateTime.UtcNow;
-            }
-
-            await _context.TimeLineDb.AddAsync(tItem);
-            await _context.SaveChangesAsync();
+            
             string authorName = "";
             if (!String.IsNullOrEmpty(userinfo.FirstName))
             {
@@ -1388,7 +1372,7 @@ namespace KinaUnaWeb.Controllers
         {
 
             CalendarItemViewModel model = new CalendarItemViewModel();
-            CalendarItem eventItem = await _context.CalendarDb.SingleAsync(e => e.EventId == itemId);
+            CalendarItem eventItem = await _progenyHttpClient.GetCalendarItem(itemId); // _context.CalendarDb.SingleAsync(e => e.EventId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
@@ -1450,18 +1434,11 @@ namespace KinaUnaWeb.Controllers
                 model.Location = eventItem.Location;
                 model.Context = eventItem.Context;
                 model.AllDay = eventItem.AllDay;
-                _context.CalendarDb.Update(model);
-                await _context.SaveChangesAsync();
+                await _progenyHttpClient.UpdateCalendarItem(model);
+                //_context.CalendarDb.Update(model);
+                //await _context.SaveChangesAsync();
 
-                TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                    t.ItemId == model.EventId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Calendar);
-                if (tItem != null && model.StartTime.HasValue && model.EndTime.HasValue)
-                {
-                    tItem.ProgenyTime = model.StartTime.Value;
-                    tItem.AccessLevel = model.AccessLevel;
-                    _context.TimeLineDb.Update(tItem);
-                    await _context.SaveChangesAsync();
-                }
+
 
             }
             return RedirectToAction("Index", "Calendar");
@@ -1470,7 +1447,7 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteEvent(int itemId)
         {
-            CalendarItem model = await _context.CalendarDb.SingleAsync(e => e.EventId == itemId);
+            CalendarItem model = await _progenyHttpClient.GetCalendarItem(itemId); // _context.CalendarDb.SingleAsync(e => e.EventId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
@@ -1487,7 +1464,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteEvent(CalendarItem model)
         {
-            CalendarItem eventItem = await _context.CalendarDb.SingleAsync(e => e.EventId == model.EventId);
+            CalendarItem eventItem = await _progenyHttpClient.GetCalendarItem(model.EventId); // _context.CalendarDb.SingleAsync(e => e.EventId == model.EventId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
@@ -1498,16 +1475,9 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                t.ItemId == model.EventId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Calendar);
-            if (tItem != null)
-            {
-                _context.TimeLineDb.Remove(tItem);
-                await _context.SaveChangesAsync();
-            }
-
-            _context.CalendarDb.Remove(eventItem);
-            await _context.SaveChangesAsync();
+            await _progenyHttpClient.DeleteCalendarItem(model.EventId);
+            //_context.CalendarDb.Remove(eventItem);
+            //await _context.SaveChangesAsync();
             return RedirectToAction("Index", "Calendar");
         }
 

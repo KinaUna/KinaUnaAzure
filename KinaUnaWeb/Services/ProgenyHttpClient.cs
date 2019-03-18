@@ -705,5 +705,160 @@ namespace KinaUnaWeb.Services
 
             return progenySleepList;
         }
+
+        public async Task<CalendarItem> GetCalendarItem(int eventId)
+        {
+            HttpClient httpClient = new HttpClient();
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                httpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                httpClient.SetBearerToken(accessToken);
+            }
+
+            httpClient.BaseAddress = new Uri(clientUri);
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            CalendarItem calendarItem = new CalendarItem();
+            string calendarApiPath = "/api/calendar/" + eventId;
+            var calendarUri = clientUri + calendarApiPath;
+            var calendarResponse = await httpClient.GetAsync(calendarUri).ConfigureAwait(false);
+            if (calendarResponse.IsSuccessStatusCode)
+            {
+                var calendarAsString = await calendarResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                calendarItem = JsonConvert.DeserializeObject<CalendarItem>(calendarAsString);
+            }
+
+            return calendarItem;
+        }
+
+        public async Task<CalendarItem> AddCalendarItem(CalendarItem eventItem)
+        {
+            HttpClient httpClient = new HttpClient();
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                httpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                httpClient.SetBearerToken(accessToken);
+            }
+
+            httpClient.BaseAddress = new Uri(clientUri);
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            string calendarApiPath = "/api/calendar/";
+            var calendarUri = clientUri + calendarApiPath;
+            await httpClient.PostAsync(calendarUri, new StringContent(JsonConvert.SerializeObject(eventItem), System.Text.Encoding.UTF8, "application/json")).Result.Content.ReadAsStringAsync();
+
+            return eventItem;
+        }
+
+        public async Task<CalendarItem> UpdateCalendarItem(CalendarItem eventItem)
+        {
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+
+            HttpClient updateCalendarHttpClient = new HttpClient();
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                updateCalendarHttpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                updateCalendarHttpClient.SetBearerToken(accessToken);
+            }
+            updateCalendarHttpClient.BaseAddress = new Uri(clientUri);
+            updateCalendarHttpClient.DefaultRequestHeaders.Accept.Clear();
+            updateCalendarHttpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            string updateCalendarApiPath = "/api/calendar/" + eventItem.EventId;
+            var updateCalendarUri = clientUri + updateCalendarApiPath;
+            var updateCalendarResponseString = await updateCalendarHttpClient.PutAsync(updateCalendarUri, eventItem, new JsonMediaTypeFormatter());
+            string returnString = await updateCalendarResponseString.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<CalendarItem>(returnString);
+        }
+
+        public async Task<bool> DeleteCalendarItem(int eventId)
+        {
+            HttpClient httpClient = new HttpClient();
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                httpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                httpClient.SetBearerToken(accessToken);
+            }
+
+            httpClient.BaseAddress = new Uri(clientUri);
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            string calendarApiPath = "/api/calendar/" + eventId;
+            var calendarUri = clientUri + calendarApiPath;
+            await httpClient.DeleteAsync(calendarUri).ConfigureAwait(false);
+
+            return true;
+        }
+
+        public async Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel)
+        {
+            List<CalendarItem> progenyCalendarList = new List<CalendarItem>();
+            HttpClient httpClient = new HttpClient();
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                httpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                httpClient.SetBearerToken(accessToken);
+            }
+
+            httpClient.BaseAddress = new Uri(clientUri);
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            string calendarApiPath = "/api/calendar/progeny/" + progenyId + "?accessLevel=" + accessLevel;
+            var calendarUri = clientUri + calendarApiPath;
+            var calendarResponse = await httpClient.GetAsync(calendarUri).ConfigureAwait(false);
+            if (calendarResponse.IsSuccessStatusCode)
+            {
+                var calendarAsString = await calendarResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                progenyCalendarList = JsonConvert.DeserializeObject<List<CalendarItem>>(calendarAsString);
+            }
+
+            return progenyCalendarList;
+        }
     }
 }
