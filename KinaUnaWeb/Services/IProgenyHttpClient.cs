@@ -24,5 +24,10 @@ namespace KinaUnaWeb.Services
         Task<UserAccess> UpdateUserAccess(UserAccess userAccess);
         Task<bool> DeleteUserAccess(int userAccessId);
         Task<UserInfo> UpdateUserInfo(UserInfo userinfo);
+        Task<Sleep> GetSleepItem(int sleepId);
+        Task<Sleep> AddSleep(Sleep sleep);
+        Task<Sleep> UpdateSleep(Sleep sleep);
+        Task<bool> DeleteSleepItem(int sleepId);
+        Task<List<Sleep>> GetSleepList(int progenyId, int accessLevel);
     }
 }

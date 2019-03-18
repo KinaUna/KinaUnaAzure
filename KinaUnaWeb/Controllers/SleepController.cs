@@ -7,23 +7,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaWeb.Controllers
 {
     public class SleepController : Controller
     {
-        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public SleepController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
+        public SleepController(IProgenyHttpClient progenyHttpClient)
         {
-            _context = context; // Todo: Replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
         }
 
@@ -68,7 +64,7 @@ namespace KinaUnaWeb.Controllers
             model.SleepTotal = TimeSpan.Zero;
             model.SleepLastYear = TimeSpan.Zero;
             model.SleepLastMonth = TimeSpan.Zero;
-            List<Sleep> sList = _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == _progId).ToList();
+            List<Sleep> sList = await _progenyHttpClient.GetSleepList(_progId, userAccessLevel); // _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == _progId).ToList();
             List<Sleep> sleepList = new List<Sleep>();
             DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
@@ -233,8 +229,8 @@ namespace KinaUnaWeb.Controllers
 
             SleepViewModel model = new SleepViewModel();
             model.ProgenyId = _progId;
-            
-            List<Sleep> allSleepList = _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == _progId).ToList();
+
+            List<Sleep> allSleepList = await _progenyHttpClient.GetSleepList(_progId, userAccessLevel); //_context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == _progId).ToList();
             List<Sleep> sleepList = new List<Sleep>();
 
             if (allSleepList.Count != 0)

@@ -3416,6 +3416,7 @@ namespace KinaUnaWeb.Controllers
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
+
             Sleep sleepItem = new Sleep();
             sleepItem.ProgenyId = model.ProgenyId;
             sleepItem.Progeny = prog;
@@ -3434,27 +3435,10 @@ namespace KinaUnaWeb.Controllers
             sleepItem.AccessLevel = model.AccessLevel;
             sleepItem.Author = userinfo.UserId;
 
-            await _context.SleepDb.AddAsync(sleepItem);
-            await _context.SaveChangesAsync();
-
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = sleepItem.ProgenyId;
-            tItem.AccessLevel = sleepItem.AccessLevel;
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Sleep;
-            tItem.ItemId = sleepItem.SleepId.ToString();
-            tItem.CreatedBy = userinfo.UserId;
-            tItem.CreatedTime = DateTime.UtcNow;
-            if (sleepItem.SleepStart != null)
-            {
-                tItem.ProgenyTime = sleepItem.SleepStart;
-            }
-            else
-            {
-                tItem.ProgenyTime = DateTime.UtcNow;
-            }
-
-            await _context.TimeLineDb.AddAsync(tItem);
-            await _context.SaveChangesAsync();
+            sleepItem = await _progenyHttpClient.AddSleep(sleepItem);
+            //await _context.SleepDb.AddAsync(sleepItem);
+            //await _context.SaveChangesAsync();
+            
             string authorName = "";
             if (!String.IsNullOrEmpty(userinfo.FirstName))
             {
@@ -3513,7 +3497,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditSleep(int itemId)
         {
             SleepViewModel model = new SleepViewModel();
-            Sleep sleep = await _context.SleepDb.SingleAsync(s => s.SleepId == itemId);
+            Sleep sleep = await _progenyHttpClient.GetSleepItem(itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
@@ -3599,18 +3583,10 @@ namespace KinaUnaWeb.Controllers
                     model.SleepRating = 3;
                 }
                 model.SleepNotes = sleep.SleepNotes;
-                _context.SleepDb.Update(model);
-                await _context.SaveChangesAsync();
-
-                TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                    t.ItemId == model.SleepId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Sleep);
-                if (tItem != null)
-                {
-                    tItem.ProgenyTime = model.SleepStart;
-                    tItem.AccessLevel = model.AccessLevel;
-                    _context.TimeLineDb.Update(tItem);
-                    await _context.SaveChangesAsync();
-                }
+                await _progenyHttpClient.UpdateSleep(model);
+                //_context.SleepDb.Update(model);
+                //await _context.SaveChangesAsync();
+                
             }
             return RedirectToAction("Index", "Sleep");
         }
@@ -3618,7 +3594,7 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteSleep(int itemId)
         {
-            Sleep model = await _context.SleepDb.SingleAsync(s => s.SleepId == itemId);
+            Sleep model = await _progenyHttpClient.GetSleepItem(itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
@@ -3635,7 +3611,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteSleep(Sleep model)
         {
-            Sleep sleep = await _context.SleepDb.SingleAsync(s => s.SleepId == model.SleepId);
+            Sleep sleep = await _progenyHttpClient.GetSleepItem(model.SleepId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
@@ -3645,16 +3621,10 @@ namespace KinaUnaWeb.Controllers
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
-            TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                t.ItemId == model.SleepId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Sleep);
-            if (tItem != null)
-            {
-                _context.TimeLineDb.Remove(tItem);
-                await _context.SaveChangesAsync();
-            }
 
-            _context.SleepDb.Remove(sleep);
-            await _context.SaveChangesAsync();
+            await _progenyHttpClient.DeleteSleepItem(model.SleepId);
+            //_context.SleepDb.Remove(sleep);
+            //await _context.SaveChangesAsync();
 
             return RedirectToAction("Index", "Sleep");
         }
