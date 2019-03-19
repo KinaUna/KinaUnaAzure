@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 
 namespace KinaUnaProgenyApi.Controllers
@@ -26,30 +28,25 @@ namespace KinaUnaProgenyApi.Controllers
             _context = context;
             _imageStore = imageStore;
         }
-        // GET api/contacts
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            List<Contact> resultList = await _context.ContactsDb.AsNoTracking().ToListAsync();
-
-            return Ok(resultList);
-        }
-
+        
         // GET api/contacts/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
-            List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == id && c.AccessLevel >= accessLevel).ToListAsync();
-            if (contactsList.Any())
+            string userEmail = User.GetEmail();
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            if (userAccess != null || id == Constants.DefaultChildId)
             {
-                return Ok(contactsList);
-            }
-            else
-            {
-                return NotFound();
+                List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == id && c.AccessLevel >= accessLevel).ToListAsync();
+                if (contactsList.Any())
+                {
+                    return Ok(contactsList);
+                }
             }
 
+            return NotFound();
         }
 
         // GET api/contacts/5
@@ -58,18 +55,41 @@ namespace KinaUnaProgenyApi.Controllers
         {
             Contact result = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
 
-            return Ok(result);
+            string userEmail = User.GetEmail();
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            if (userAccess != null || id == Constants.DefaultChildId)
+            {
+                return Ok(result);
+            }
+
+            return NotFound();
         }
 
         // POST api/contact
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Contact value)
         {
-            // Todo: address info
+            // Check if child exists.
+            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            string userEmail = User.GetEmail();
+            if (prog != null)
+            {
+                // Check if user is allowed to add contacts for this child.
+
+                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+            
             Contact contactItem = new Contact();
             contactItem.AccessLevel = value.AccessLevel;
             contactItem.Active = value.Active;
-            contactItem.AddressIdNumber = value.AddressIdNumber;
             contactItem.AddressString = value.AddressString;
             contactItem.ProgenyId = value.ProgenyId;
             contactItem.Author = value.Author;
@@ -87,8 +107,29 @@ namespace KinaUnaProgenyApi.Controllers
             contactItem.PictureLink = value.PictureLink;
             contactItem.Tags = value.Tags;
             contactItem.Website = value.Website;
+            contactItem.Address = value.Address;
+
+            if (contactItem.Address != null)
+            {
+                _context.AddressDb.Add(contactItem.Address);
+                await _context.SaveChangesAsync();
+                contactItem.AddressIdNumber = contactItem.Address.AddressId;
+            }
 
             _context.ContactsDb.Add(contactItem);
+            await _context.SaveChangesAsync();
+
+            TimeLineItem tItem = new TimeLineItem();
+            tItem.ProgenyId = contactItem.ProgenyId;
+            tItem.AccessLevel = contactItem.AccessLevel;
+            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Contact;
+            tItem.ItemId = contactItem.ContactId.ToString();
+            UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
+            tItem.CreatedBy = userinfo.UserId;
+            tItem.CreatedTime = DateTime.UtcNow;
+            tItem.ProgenyTime = DateTime.UtcNow;
+
+            await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
 
             return Ok(contactItem);
@@ -104,6 +145,23 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
+            // Check if child exists.
+            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            string userEmail = User.GetEmail();
+            if (prog != null)
+            {
+                // Check if user is allowed to edit contacts for this child.
+
+                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+
             contactItem.AccessLevel = value.AccessLevel;
             contactItem.Active = value.Active;
             contactItem.AddressIdNumber = value.AddressIdNumber;
@@ -124,9 +182,61 @@ namespace KinaUnaProgenyApi.Controllers
             contactItem.PictureLink = value.PictureLink;
             contactItem.Tags = value.Tags;
             contactItem.Website = value.Website;
+            contactItem.Address = value.Address;
+            if (contactItem.AddressIdNumber != null)
+            {
+                Address addressOld = await _context.AddressDb.SingleAsync(c => c.AddressId == contactItem.AddressIdNumber);
+                if (contactItem.Address != null)
+                {
+                    addressOld.AddressLine1 = contactItem.Address.AddressLine1;
+                    addressOld.AddressLine2 = contactItem.Address.AddressLine2;
+                    addressOld.City = contactItem.Address.City;
+                    addressOld.PostalCode = contactItem.Address.PostalCode;
+                    addressOld.State = contactItem.Address.State;
+                    addressOld.Country = contactItem.Address.Country;
+                    contactItem.Address = addressOld;
+
+                    _context.AddressDb.Update(addressOld);
+                }
+                else
+                {
+                    _context.AddressDb.Remove(addressOld);
+                    contactItem.AddressIdNumber = null;
+                }
+                
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                if (contactItem.Address.AddressLine1 + contactItem.Address.AddressLine2 + contactItem.Address.City + contactItem.Address.Country + contactItem.Address.PostalCode + contactItem.Address.State !=
+                    "")
+                {
+                    Address address = new Address();
+                    address.AddressLine1 = contactItem.Address.AddressLine1;
+                    address.AddressLine2 = contactItem.Address.AddressLine2;
+                    address.City = contactItem.Address.City;
+                    address.PostalCode = contactItem.Address.PostalCode;
+                    address.State = contactItem.Address.State;
+                    address.Country = contactItem.Address.Country;
+                    await _context.AddressDb.AddAsync(address);
+                    await _context.SaveChangesAsync();
+                    contactItem.AddressIdNumber = address.AddressId;
+                }
+            }
+
 
             _context.ContactsDb.Update(contactItem);
             await _context.SaveChangesAsync();
+
+            TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
+                t.ItemId == contactItem.ContactId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Contact);
+            if (tItem != null)
+            {
+                tItem.ProgenyTime = contactItem.DateAdded.Value;
+                tItem.AccessLevel = contactItem.AccessLevel;
+                _context.TimeLineDb.Update(tItem);
+                await _context.SaveChangesAsync();
+            }
 
             return Ok(contactItem);
         }
@@ -138,6 +248,40 @@ namespace KinaUnaProgenyApi.Controllers
             Contact contactItem = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == id);
             if (contactItem != null)
             {
+                // Check if child exists.
+                Progeny prog = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == contactItem.ProgenyId);
+                if (prog != null)
+                {
+                    // Check if user is allowed to delete contacts for this child.
+                    string userEmail = User.GetEmail();
+                    if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                    {
+                        return Unauthorized();
+                    }
+                }
+                else
+                {
+                    return NotFound();
+                }
+
+                TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
+                    t.ItemId == contactItem.ContactId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Contact);
+                if (tItem != null)
+                {
+                    _context.TimeLineDb.Remove(tItem);
+                    await _context.SaveChangesAsync();
+                }
+
+                if (contactItem.AddressIdNumber != null)
+                {
+                    Address address = await _context.AddressDb.SingleAsync(a => a.AddressId == contactItem.AddressIdNumber);
+                    _context.AddressDb.Remove(address);
+                }
+                if (!contactItem.PictureLink.ToLower().StartsWith("http"))
+                {
+                    await _imageStore.DeleteImage(contactItem.PictureLink, "contacts");
+                }
+
                 _context.ContactsDb.Remove(contactItem);
                 await _context.SaveChangesAsync();
                 return NoContent();

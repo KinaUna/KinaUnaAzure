@@ -860,5 +860,252 @@ namespace KinaUnaWeb.Services
 
             return progenyCalendarList;
         }
+
+        public async Task<Contact> GetContact(int contactId)
+        {
+            HttpClient httpClient = new HttpClient();
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                httpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                httpClient.SetBearerToken(accessToken);
+            }
+
+            httpClient.BaseAddress = new Uri(clientUri);
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            Contact contactItem = new Contact();
+            string contactsApiPath = "/api/contacts/" + contactId;
+            var contactsUri = clientUri + contactsApiPath;
+            var contactResponse = await httpClient.GetAsync(contactsUri).ConfigureAwait(false);
+            if (contactResponse.IsSuccessStatusCode)
+            {
+                var contactAsString = await contactResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                contactItem = JsonConvert.DeserializeObject<Contact>(contactAsString);
+            }
+
+            return contactItem;
+        }
+
+        public async Task<Contact> AddContact(Contact contact)
+        {
+            HttpClient httpClient = new HttpClient();
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                httpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                httpClient.SetBearerToken(accessToken);
+            }
+
+            httpClient.BaseAddress = new Uri(clientUri);
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            string contactsApiPath = "/api/contacts/";
+            var contactsUri = clientUri + contactsApiPath;
+            await httpClient.PostAsync(contactsUri, new StringContent(JsonConvert.SerializeObject(contact), System.Text.Encoding.UTF8, "application/json")).Result.Content.ReadAsStringAsync();
+
+            return contact;
+        }
+
+        public async Task<Contact> UpdateContact(Contact contact)
+        {
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+
+            HttpClient updateHttpClient = new HttpClient();
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                updateHttpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                updateHttpClient.SetBearerToken(accessToken);
+            }
+            updateHttpClient.BaseAddress = new Uri(clientUri);
+            updateHttpClient.DefaultRequestHeaders.Accept.Clear();
+            updateHttpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            string updateContactApiPath = "/api/contacts/" + contact.ContactId;
+            var updateContactUri = clientUri + updateContactApiPath;
+            var updateContactResponseString = await updateHttpClient.PutAsync(updateContactUri, contact, new JsonMediaTypeFormatter());
+            string returnString = await updateContactResponseString.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<Contact>(returnString);
+        }
+
+        public async Task<bool> DeleteContact(int contactId)
+        {
+            HttpClient httpClient = new HttpClient();
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                httpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                httpClient.SetBearerToken(accessToken);
+            }
+
+            httpClient.BaseAddress = new Uri(clientUri);
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            string contactApiPath = "/api/contacts/" + contactId;
+            var contactUri = clientUri + contactApiPath;
+            await httpClient.DeleteAsync(contactUri).ConfigureAwait(false);
+
+            return true;
+        }
+
+        public async Task<List<Contact>> GetContactsList(int progenyId, int accessLevel)
+        {
+            List<Contact> progenyContactsList = new List<Contact>();
+            HttpClient httpClient = new HttpClient();
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                httpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                httpClient.SetBearerToken(accessToken);
+            }
+
+            httpClient.BaseAddress = new Uri(clientUri);
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            string contactsApiPath = "/api/contacts/progeny/" + progenyId + "?accessLevel=" + accessLevel;
+            var contactsUri = clientUri + contactsApiPath;
+            var contactsResponse = await httpClient.GetAsync(contactsUri).ConfigureAwait(false);
+            if (contactsResponse.IsSuccessStatusCode)
+            {
+                var contactsAsString = await contactsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                progenyContactsList = JsonConvert.DeserializeObject<List<Contact>>(contactsAsString);
+            }
+
+            return progenyContactsList;
+        }
+
+        public async Task<Address> GetAddress(int addressId)
+        {
+            HttpClient httpClient = new HttpClient();
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                httpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                httpClient.SetBearerToken(accessToken);
+            }
+
+            httpClient.BaseAddress = new Uri(clientUri);
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            Address addressItem = new Address();
+            string addressApiPath = "/api/addresses/" + addressId;
+            var addressUri = clientUri + addressApiPath;
+            var addressResponse = await httpClient.GetAsync(addressUri).ConfigureAwait(false);
+            if (addressResponse.IsSuccessStatusCode)
+            {
+                var addressAsString = await addressResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                addressItem = JsonConvert.DeserializeObject<Address>(addressAsString);
+            }
+
+            return addressItem;
+        }
+
+        public async Task<Address> AddAddress(Address address)
+        {
+            HttpClient httpClient = new HttpClient();
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                httpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                httpClient.SetBearerToken(accessToken);
+            }
+
+            httpClient.BaseAddress = new Uri(clientUri);
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            string addressApiPath = "/api/addresses/";
+            var addressUri = clientUri + addressApiPath;
+            string returnString = await httpClient.PostAsync(addressUri, new StringContent(JsonConvert.SerializeObject(address), System.Text.Encoding.UTF8, "application/json")).Result.Content.ReadAsStringAsync();
+
+            return JsonConvert.DeserializeObject<Address>(returnString);
+        }
+
+        public async Task<Address> UpdateAddress(Address address)
+        {
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+
+            HttpClient updateHttpClient = new HttpClient();
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                updateHttpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                updateHttpClient.SetBearerToken(accessToken);
+            }
+            updateHttpClient.BaseAddress = new Uri(clientUri);
+            updateHttpClient.DefaultRequestHeaders.Accept.Clear();
+            updateHttpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            string updateAddressApiPath = "/api/addresses/" + address.AddressId;
+            var updateAddressUri = clientUri + updateAddressApiPath;
+            var updateAddressResponseString = await updateHttpClient.PutAsync(updateAddressUri, address, new JsonMediaTypeFormatter());
+            string returnString = await updateAddressResponseString.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<Address>(returnString);
+        }
     }
 }

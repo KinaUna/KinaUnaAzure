@@ -2685,7 +2685,7 @@ namespace KinaUnaWeb.Controllers
             }
             foreach (var item in accessList)
             {
-                var contactsList1 = _context.ContactsDb.Where(c => c.ProgenyId == item.Id).ToList();
+                var contactsList1 = await _progenyHttpClient.GetContactsList(item.Id, 0); // _context.ContactsDb.Where(c => c.ProgenyId == item.Id).ToList();
                 foreach (Contact cont in contactsList1)
                 {
                     if (!String.IsNullOrEmpty(cont.Tags))
@@ -2778,25 +2778,14 @@ namespace KinaUnaWeb.Controllers
                 address.PostalCode = model.PostalCode;
                 address.State = model.State;
                 address.Country = model.Country;
-                await _context.AddressDb.AddAsync(address);
-                await _context.SaveChangesAsync();
-                contactItem.AddressIdNumber = address.AddressId;
+                contactItem.Address = address;
             }
 
-            await _context.ContactsDb.AddAsync(contactItem);
-            await _context.SaveChangesAsync();
+            await _progenyHttpClient.AddContact(contactItem);
+            // await _context.ContactsDb.AddAsync(contactItem);
+            // await _context.SaveChangesAsync();
 
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = contactItem.ProgenyId;
-            tItem.AccessLevel = contactItem.AccessLevel;
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Contact;
-            tItem.ItemId = contactItem.ContactId.ToString();
-            tItem.CreatedBy = userinfo.UserId;
-            tItem.CreatedTime = DateTime.UtcNow;
-            tItem.ProgenyTime = DateTime.UtcNow;
-
-            await _context.TimeLineDb.AddAsync(tItem);
-            await _context.SaveChangesAsync();
+            
             string authorName = "";
             if (!String.IsNullOrEmpty(userinfo.FirstName))
             {
@@ -2849,7 +2838,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditContact(int itemId)
         {
             ContactViewModel model = new ContactViewModel();
-            Contact contact = await _context.ContactsDb.SingleAsync(c => c.ContactId == itemId);
+            Contact contact = await _progenyHttpClient.GetContact(itemId); // _context.ContactsDb.SingleAsync(c => c.ContactId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
@@ -2871,7 +2860,7 @@ namespace KinaUnaWeb.Controllers
             if (contact.AddressIdNumber != null)
             {
                 model.AddressIdNumber = contact.AddressIdNumber;
-                model.Address = await _context.AddressDb.SingleAsync(c => c.AddressId == model.AddressIdNumber);
+                model.Address = await _progenyHttpClient.GetAddress(model.AddressIdNumber.Value); // _context.AddressDb.SingleAsync(c => c.AddressId == model.AddressIdNumber);
                 model.AddressLine1 = model.Address.AddressLine1;
                 model.AddressLine2 = model.Address.AddressLine2;
                 model.City = model.Address.City;
@@ -2900,7 +2889,7 @@ namespace KinaUnaWeb.Controllers
             model.Tags = contact.Tags;
 
             List<string> tagsList = new List<string>();
-            var contactsList1 = _context.ContactsDb.Where(c => c.ProgenyId == model.ProgenyId).ToList();
+            var contactsList1 = await _progenyHttpClient.GetContactsList(model.ProgenyId, 0); // _context.ContactsDb.Where(c => c.ProgenyId == model.ProgenyId).ToList();
             foreach (Contact cont in contactsList1)
             {
                 if (!String.IsNullOrEmpty(cont.Tags))
@@ -2948,7 +2937,7 @@ namespace KinaUnaWeb.Controllers
             }
             if (ModelState.IsValid)
             {
-                Contact model = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contact.ContactId);
+                Contact model = await _progenyHttpClient.GetContact(contact.ContactId); // _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contact.ContactId);
                 model.ContactId = contact.ContactId;
                 model.ProgenyId = contact.ProgenyId;
                 model.Active = contact.Active;
@@ -2959,37 +2948,20 @@ namespace KinaUnaWeb.Controllers
                 model.LastName = contact.LastName;
                 model.DisplayName = contact.DisplayName;
                 model.DateAdded = contact.DateAdded;
-                if (contact.AddressIdNumber != null)
+                model.AddressIdNumber = contact.AddressIdNumber;
+                if (contact.AddressLine1 + contact.AddressLine2 + contact.City + contact.Country + contact.PostalCode +
+                    contact.State != "")
                 {
-                    Address addressOld = await _context.AddressDb.SingleAsync(c => c.AddressId == contact.AddressIdNumber);
-                    addressOld.AddressLine1 = contact.AddressLine1;
-                    addressOld.AddressLine2 = contact.AddressLine2;
-                    addressOld.City = contact.City;
-                    addressOld.PostalCode = contact.PostalCode;
-                    addressOld.State = contact.State;
-                    addressOld.Country = contact.Country;
-
-                    _context.AddressDb.Update(addressOld);
-                    await _context.SaveChangesAsync();
-                    model.AddressIdNumber = contact.AddressIdNumber;
+                    Address address = new Address();
+                    address.AddressLine1 = contact.AddressLine1;
+                    address.AddressLine2 = contact.AddressLine2;
+                    address.City = contact.City;
+                    address.PostalCode = contact.PostalCode;
+                    address.State = contact.State;
+                    address.Country = contact.Country;
+                    model.Address = address;
                 }
-                else
-                {
-                    if (contact.AddressLine1 + contact.AddressLine2 + contact.City + contact.Country + contact.PostalCode + contact.State !=
-                        "")
-                    {
-                        Address address = new Address();
-                        address.AddressLine1 = contact.AddressLine1;
-                        address.AddressLine2 = contact.AddressLine2;
-                        address.City = contact.City;
-                        address.PostalCode = contact.PostalCode;
-                        address.State = contact.State;
-                        address.Country = contact.Country;
-                        await _context.AddressDb.AddAsync(address);
-                        await _context.SaveChangesAsync();
-                        model.AddressIdNumber = address.AddressId;
-                    }
-                }
+                
                 model.Email1 = contact.Email1;
                 model.Email2 = contact.Email2;
                 model.PhoneNumber = contact.PhoneNumber;
@@ -3020,18 +2992,10 @@ namespace KinaUnaWeb.Controllers
                 {
                     model.Tags = contact.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
                 }
-                _context.ContactsDb.Update(model);
-                await _context.SaveChangesAsync();
 
-                TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                    t.ItemId == model.ContactId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Contact);
-                if (tItem != null)
-                {
-                    tItem.ProgenyTime = model.DateAdded.Value;
-                    tItem.AccessLevel = model.AccessLevel;
-                    _context.TimeLineDb.Update(tItem);
-                    await _context.SaveChangesAsync();
-                }
+                await _progenyHttpClient.UpdateContact(model);
+                // _context.ContactsDb.Update(model);
+                // await _context.SaveChangesAsync();
             }
 
             return RedirectToAction("Index", "Contacts");
@@ -3040,7 +3004,7 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteContact(int itemId)
         {
-            Contact model = await _context.ContactsDb.SingleAsync(c => c.ContactId == itemId);
+            Contact model = await _progenyHttpClient.GetContact(itemId); // _context.ContactsDb.SingleAsync(c => c.ContactId == itemId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
@@ -3057,7 +3021,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteContact(Contact model)
         {
-            Contact contact = await _context.ContactsDb.SingleAsync(c => c.ContactId == model.ContactId);
+            Contact contact = await _progenyHttpClient.GetContact(model.ContactId); // _context.ContactsDb.SingleAsync(c => c.ContactId == model.ContactId);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
@@ -3067,28 +3031,10 @@ namespace KinaUnaWeb.Controllers
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
+            
+            await _progenyHttpClient.DeleteContact(contact.ContactId); // _context.ContactsDb.Remove(contact));
+            // await _context.SaveChangesAsync();
 
-            TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                t.ItemId == model.ContactId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Contact);
-            if (tItem != null)
-            {
-                _context.TimeLineDb.Remove(tItem);
-                await _context.SaveChangesAsync();
-            }
-
-            _context.ContactsDb.Remove(contact);
-            if (contact.AddressIdNumber != null)
-            {
-                Address address = await _context.AddressDb.SingleAsync(a => a.AddressId == contact.AddressIdNumber);
-                _context.AddressDb.Remove(address);
-            }
-
-            await _context.SaveChangesAsync();
-
-            if (!contact.PictureLink.ToLower().StartsWith("http"))
-            {
-                await _imageStore.DeleteImage(contact.PictureLink, "contacts");
-            }
             return RedirectToAction("Index", "Contacts");
         }
 

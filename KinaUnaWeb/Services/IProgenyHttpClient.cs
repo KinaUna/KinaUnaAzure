@@ -34,5 +34,13 @@ namespace KinaUnaWeb.Services
         Task<CalendarItem> UpdateCalendarItem(CalendarItem eventItem);
         Task<bool> DeleteCalendarItem(int sleepId);
         Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel);
+        Task<Contact> GetContact(int contactId);
+        Task<Contact> AddContact(Contact contact);
+        Task<Contact> UpdateContact(Contact contact);
+        Task<bool> DeleteContact(int contactId);
+        Task<List<Contact>> GetContactsList(int progenyId, int accessLevel);
+        Task<Address> GetAddress(int addressId);
+        Task<Address> AddAddress(Address address);
+        Task<Address> UpdateAddress(Address address);
     }
 }

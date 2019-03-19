@@ -30,6 +30,9 @@ namespace KinaUna.Data.Models
         public Progeny Progeny { get; set; }
 
         [NotMapped]
+        public Address Address { get; set; }
+
+        [NotMapped]
         public string AddressString { get; set; }
     }
 }

@@ -22,7 +22,6 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
         
-        
         // GET api/addresses/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAddressItem(int id)
