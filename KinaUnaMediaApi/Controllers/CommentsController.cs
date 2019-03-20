@@ -22,13 +22,6 @@ namespace KinaUnaMediaApi.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            List<Comment> resultList = await _context.CommentsDb.ToListAsync();
-            return Ok(resultList);
-        }
-
         // GET api/comments/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetComment(int id)
@@ -40,6 +33,7 @@ namespace KinaUnaMediaApi.Controllers
             }
             
             return NotFound();
+            
         }
 
         // POST api/comments
