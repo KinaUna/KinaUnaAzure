@@ -31,7 +31,11 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
-            string userEmail = User.GetEmail();
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
             UserAccess userAccess = _context.UserAccessDb.SingleOrDefault(u =>
                 u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
@@ -52,7 +56,11 @@ namespace KinaUnaProgenyApi.Controllers
         {
             CalendarItem result = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == id);
 
-            string userEmail = User.GetEmail();
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
             UserAccess userAccess = _context.UserAccessDb.SingleOrDefault(u =>
                 u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
@@ -69,7 +77,11 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if child exists.
             Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
-            string userEmail = User.GetEmail();
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
             if (prog != null)
             {
                 // Check if user is allowed to add calendar items for this child.
@@ -133,7 +145,11 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if child exists.
             Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
-            string userEmail = User.GetEmail();
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
             if (prog != null)
             {
                 // Check if user is allowed to edit calendar items for this child.
@@ -186,7 +202,11 @@ namespace KinaUnaProgenyApi.Controllers
                 if (prog != null)
                 {
                     // Check if user is allowed to edit calendar items for this child.
-                    string userEmail = User.GetEmail();
+                    string userEmail = Constants.DefaultUserEmail;
+                    if (User != null)
+                    {
+                        userEmail = User.GetEmail();
+                    }
                     if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
                     {
                         return Unauthorized();
@@ -219,9 +239,14 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{progenyId}/{accessLevel}")]
         public async Task<IActionResult> EventList(int progenyId, int accessLevel)
         {
-            string userEmail = User.GetEmail();
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
             UserAccess userAccess = _context.UserAccessDb.SingleOrDefault(u =>
                 u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
             if (userAccess != null || progenyId == Constants.DefaultChildId)
             {
                 List<CalendarItem> model = await _context.CalendarDb
@@ -240,7 +265,12 @@ namespace KinaUnaProgenyApi.Controllers
         {
             CalendarItem result = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == id);
 
-            UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == User.GetEmail().ToUpper() && u.ProgenyId == result.ProgenyId);
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
+            UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == userEmail.ToUpper() && u.ProgenyId == result.ProgenyId);
             if (userAccess != null)
             {
                 return Ok(result);
@@ -253,7 +283,12 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
         {
-            UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == User.GetEmail().ToUpper() && u.ProgenyId == id);
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
+            UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == userEmail.ToUpper() && u.ProgenyId == id);
             if (userAccess != null)
             {
                 List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == id && c.AccessLevel >= accessLevel).ToListAsync();

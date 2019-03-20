@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Models;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
@@ -32,7 +33,12 @@ namespace KinaUnaProgenyApi.Controllers
             List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == id).ToListAsync();
             if (accessList.Any())
             {
-                string userEmail = User.GetEmail();
+                string userEmail = Constants.DefaultUserEmail;
+                if (User != null)
+                {
+                    userEmail = User.GetEmail();
+                }
+
                 bool allowedAccess = false;
                 foreach (UserAccess ua in accessList)
                 {
@@ -91,7 +97,11 @@ namespace KinaUnaProgenyApi.Controllers
             if (prog != null)
             {
                 // Check if user is allowed to add users for this child.
-                string userEmail = User.GetEmail();
+                string userEmail = Constants.DefaultUserEmail;
+                if (User != null)
+                {
+                    userEmail = User.GetEmail();
+                }
                 if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
                 {
                     return Unauthorized();
@@ -124,7 +134,11 @@ namespace KinaUnaProgenyApi.Controllers
             if (prog != null)
             {
                 // Check if user is allowed to edit user access for this child.
-                string userEmail = User.GetEmail();
+                string userEmail = Constants.DefaultUserEmail;
+                if (User != null)
+                {
+                    userEmail = User.GetEmail();
+                }
                 if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
                 {
                     return Unauthorized();
@@ -165,7 +179,11 @@ namespace KinaUnaProgenyApi.Controllers
                 if (prog != null)
                 {
                     // Check if user is allowed to delete users for this child.
-                    string userEmail = User.GetEmail();
+                    string userEmail = Constants.DefaultUserEmail;
+                    if (User != null)
+                    {
+                        userEmail = User.GetEmail();
+                    }
                     if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
                     {
                         return Unauthorized();
@@ -188,7 +206,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> ProgenyListByUser(string id)
         {
-            if (User.GetEmail().ToUpper() == id.ToUpper())
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
+            if (userEmail.ToUpper() == id.ToUpper())
             {
                 List<Progeny> result = new List<Progeny>();
                 List<UserAccess> userAccessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.UserId.ToUpper() == id.ToUpper()).ToListAsync();
@@ -212,7 +235,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> AccessListByUser(string id)
         {
-            if (User.GetEmail().ToUpper() == id.ToUpper())
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
+            if (userEmail.ToUpper() == id.ToUpper())
             {
                 List<UserAccess> userAccessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.UserId.ToUpper() == id.ToUpper()).ToListAsync();
                 if (userAccessList.Any())
@@ -232,7 +260,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> AdminListByUser(string id)
         {
-            if (User.GetEmail().ToUpper() == id.ToUpper())
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
+            if (userEmail.ToUpper() == id.ToUpper())
             {
                 List<UserAccess> userAccessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.UserId.ToUpper() == id.ToUpper() && u.AccessLevel == 0).ToListAsync();
                 List<Progeny> progenyList = new List<Progeny>();
@@ -259,7 +292,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{oldEmail}/{newEmail}")]
         public async Task<IActionResult> UpdateAccessListEmailChange(string oldEmail, string newEmail)
         {
-            if (User.GetEmail().ToUpper() == oldEmail.ToUpper())
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
+            if (userEmail.ToUpper() == oldEmail.ToUpper())
             {
                 List<UserAccess> userAccessList = await _context.UserAccessDb.Where(u => u.UserId.ToUpper() == oldEmail.ToUpper()).ToListAsync();
                 if (userAccessList.Any())

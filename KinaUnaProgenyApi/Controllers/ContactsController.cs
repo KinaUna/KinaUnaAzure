@@ -34,7 +34,11 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
-            string userEmail = User.GetEmail();
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
             UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                 u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
@@ -55,7 +59,11 @@ namespace KinaUnaProgenyApi.Controllers
         {
             Contact result = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
 
-            string userEmail = User.GetEmail();
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
             UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                 u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
@@ -72,7 +80,11 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if child exists.
             Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
-            string userEmail = User.GetEmail();
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
             if (prog != null)
             {
                 // Check if user is allowed to add contacts for this child.
@@ -147,7 +159,11 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if child exists.
             Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
-            string userEmail = User.GetEmail();
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
             if (prog != null)
             {
                 // Check if user is allowed to edit contacts for this child.
@@ -253,7 +269,11 @@ namespace KinaUnaProgenyApi.Controllers
                 if (prog != null)
                 {
                     // Check if user is allowed to delete contacts for this child.
-                    string userEmail = User.GetEmail();
+                    string userEmail = Constants.DefaultUserEmail;
+                    if (User != null)
+                    {
+                        userEmail = User.GetEmail();
+                    }
                     if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
                     {
                         return Unauthorized();
@@ -286,21 +306,33 @@ namespace KinaUnaProgenyApi.Controllers
                 await _context.SaveChangesAsync();
                 return NoContent();
             }
-            else
-            {
-                return NotFound();
-            }
+
+            return NotFound();
         }
 
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetContactMobile(int id)
         {
             Contact result = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
-            if (!result.PictureLink.ToLower().StartsWith("http"))
+
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
             {
-                result.PictureLink = _imageStore.UriFor(result.PictureLink, "contacts");
+                userEmail = User.GetEmail();
             }
-            return Ok(result);
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+            if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
+            {
+                if (!result.PictureLink.ToLower().StartsWith("http"))
+                {
+                    result.PictureLink = _imageStore.UriFor(result.PictureLink, "contacts");
+                }
+                return Ok(result);
+            }
+            
+            return NotFound();
         }
 
         [HttpGet]
@@ -308,7 +340,17 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
         {
             List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == id && c.AccessLevel >= accessLevel).ToListAsync();
-            if (contactsList.Any())
+
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+
+
+            if ((userAccess != null || id == Constants.DefaultChildId) && contactsList.Any())
             {
                 foreach (Contact cont in contactsList)
                 {
@@ -319,11 +361,8 @@ namespace KinaUnaProgenyApi.Controllers
                 }
                 return Ok(contactsList);
             }
-            else
-            {
-                return Ok(new List<Contact>());
-            }
 
+            return Ok(new List<Contact>());
         }
 
         [HttpGet]
@@ -331,7 +370,16 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> DownloadPicture(int contactId)
         {
             Contact contact = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contactId);
-            if (contact != null && contact.PictureLink.ToLower().StartsWith("http"))
+
+            string userEmail = Constants.DefaultUserEmail;
+            if (User != null)
+            {
+                userEmail = User.GetEmail();
+            }
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == contact.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+            if (userAccess != null && contact != null && contact.PictureLink.ToLower().StartsWith("http"))
             {
                 using (Stream stream = GetStreamFromUrl(contact.PictureLink))
                 {
