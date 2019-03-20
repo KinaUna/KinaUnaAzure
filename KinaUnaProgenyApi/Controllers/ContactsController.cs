@@ -295,17 +295,20 @@ namespace KinaUnaProgenyApi.Controllers
         {
             Contact result = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
 
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
-                u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
-
-            if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
+            if (result != null)
             {
-                if (!result.PictureLink.ToLower().StartsWith("http"))
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                    u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+                if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {
-                    result.PictureLink = _imageStore.UriFor(result.PictureLink, "contacts");
+                    if (!result.PictureLink.ToLower().StartsWith("http"))
+                    {
+                        result.PictureLink = _imageStore.UriFor(result.PictureLink, "contacts");
+                    }
+                    return Ok(result);
                 }
-                return Ok(result);
             }
             
             return NotFound();
@@ -342,12 +345,16 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> DownloadPicture(int contactId)
         {
             Contact contact = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contactId);
+            if (contact == null)
+            {
+                return NotFound();
+            }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                 u.ProgenyId == contact.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
-            if (userAccess != null && contact != null && contact.PictureLink.ToLower().StartsWith("http"))
+            if (userAccess != null && userAccess.AccessLevel > 0 && contact.PictureLink.ToLower().StartsWith("http"))
             {
                 using (Stream stream = GetStreamFromUrl(contact.PictureLink))
                 {
@@ -358,10 +365,8 @@ namespace KinaUnaProgenyApi.Controllers
                 await _context.SaveChangesAsync();
                 return Ok(contact);
             }
-            else
-            {
-                return NotFound();
-            }
+
+            return NotFound();
         }
 
         private static Stream GetStreamFromUrl(string url)

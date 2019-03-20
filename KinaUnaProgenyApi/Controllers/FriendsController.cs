@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Models;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -26,30 +28,26 @@ namespace KinaUnaProgenyApi.Controllers
             _context = context;
             _imageStore = imageStore;
         }
-        // GET api/friends
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            List<Friend> resultList = await _context.FriendsDb.AsNoTracking().ToListAsync();
-
-            return Ok(resultList);
-        }
-
+        
         // GET api/friends/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
-            List<Friend> friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == id && f.AccessLevel >= accessLevel).ToListAsync();
-            if (friendsList.Any())
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            if (userAccess != null || id == Constants.DefaultChildId)
             {
-                return Ok(friendsList);
-            }
-            else
-            {
+                List<Friend> friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == id && f.AccessLevel >= accessLevel).ToListAsync();
+                if (friendsList.Any())
+                {
+                    return Ok(friendsList);
+                }
                 return NotFound();
             }
 
+            return Unauthorized();
         }
 
         // GET api/friends/5
@@ -57,14 +55,43 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetFriendItem(int id)
         {
             Friend result = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
+            if (result == null)
+            {
+                return NotFound();
+            }
 
-            return Ok(result);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            if (userAccess != null || id == Constants.DefaultChildId)
+            {
+                return Ok(result);
+            }
+
+            return Unauthorized();
         }
 
         // POST api/friends
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Friend value)
         {
+            // Check if child exists.
+            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (prog != null)
+            {
+                // Check if user is allowed to add contacts for this child.
+
+                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+
             Friend friendItem = new Friend();
             friendItem.AccessLevel = value.AccessLevel;
             friendItem.Author = value.Author;
@@ -89,6 +116,23 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Friend value)
         {
+            // Check if child exists.
+            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (prog != null)
+            {
+                // Check if user is allowed to add contacts for this child.
+
+                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+
             Friend friendItem = await _context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == id);
             if (friendItem == null)
             {
@@ -121,6 +165,21 @@ namespace KinaUnaProgenyApi.Controllers
             Friend friendItem = await _context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == id);
             if (friendItem != null)
             {
+                // Check if child exists.
+                Progeny prog = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == friendItem.ProgenyId);
+                if (prog != null)
+                {
+                    // Check if user is allowed to delete contacts for this child.
+                    string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                    if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                    {
+                        return Unauthorized();
+                    }
+                }
+                else
+                {
+                    return NotFound();
+                }
                 _context.FriendsDb.Remove(friendItem);
                 await _context.SaveChangesAsync();
                 return NoContent();
@@ -135,11 +194,24 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetFriendMobile(int id)
         {
             Friend result = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
-            if (!result.PictureLink.ToLower().StartsWith("http"))
+
+            if (result != null)
             {
-                result.PictureLink = _imageStore.UriFor(result.PictureLink, "friends");
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                    u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+                if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
+                {
+                    if (!result.PictureLink.ToLower().StartsWith("http"))
+                    {
+                        result.PictureLink = _imageStore.UriFor(result.PictureLink, "friends");
+                    }
+                    return Ok(result);
+                }
             }
-            return Ok(result);
+
+            return NotFound();
         }
 
         
@@ -148,7 +220,18 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> DownloadPicture(int friendId)
         {
             Friend friend = await _context.FriendsDb.SingleOrDefaultAsync(c => c.FriendId == friendId);
-            if (friend != null && friend.PictureLink.ToLower().StartsWith("http"))
+
+            if (friend == null)
+            {
+                return NotFound();
+            }
+
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == friend.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+
+            if (userAccess != null && userAccess.AccessLevel > 0 && friend.PictureLink.ToLower().StartsWith("http"))
             {
                 using (Stream stream = GetStreamFromUrl(friend.PictureLink))
                 {
@@ -159,10 +242,10 @@ namespace KinaUnaProgenyApi.Controllers
                 await _context.SaveChangesAsync();
                 return Ok(friend);
             }
-            else
-            {
-                return NotFound();
-            }
+
+
+            return NotFound();
+            
         }
 
         private static Stream GetStreamFromUrl(string url)

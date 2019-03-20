@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 
 namespace KinaUnaMediaApi.Controllers
@@ -28,9 +30,17 @@ namespace KinaUnaMediaApi.Controllers
         // GET api/videos/page[?pageSize=3&pageIndex=10&progenyId=2&accessLevel=1&tagFilter=funny]
         [HttpGet]
         [Route("[action]")]
-        public async Task<IActionResult> Page([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = 2, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
-
+        public async Task<IActionResult> Page([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
         {
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _progenyDbContext.UserAccessDb.SingleOrDefault(u =>
+                u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
             if (pageIndex < 1)
             {
                 pageIndex = 1;
@@ -129,6 +139,16 @@ namespace KinaUnaMediaApi.Controllers
             Video video = await _context.VideoDb.SingleOrDefaultAsync(v => v.VideoId == id);
             if (video != null)
             {
+                // Check if user should be allowed access.
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                UserAccess userAccess = _progenyDbContext.UserAccessDb.SingleOrDefault(u =>
+                    u.ProgenyId == video.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+                if (userAccess == null && video.ProgenyId != Constants.DefaultChildId)
+                {
+                    return Unauthorized();
+                }
+
                 VideoViewModel model = new VideoViewModel();
                 model.VideoId = video.VideoId;
                 model.VideoType = video.VideoType;
@@ -227,6 +247,16 @@ namespace KinaUnaMediaApi.Controllers
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> Progeny(int id, int accessLevel)
         {
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _progenyDbContext.UserAccessDb.SingleOrDefault(u =>
+                u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+
+            if (userAccess == null && id != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+
             List<Video> videosList = await _context.VideoDb.Where(v => v.ProgenyId == id && v.AccessLevel >= accessLevel).ToListAsync();
             if (videosList.Any())
             {
@@ -244,14 +274,39 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> GetVideo(int id)
         {
             Video result = await _context.VideoDb.SingleOrDefaultAsync(v => v.VideoId == id);
-            
-            return Ok(result);
+
+            if (result != null)
+            {
+                // Check if user should be allowed access.
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                UserAccess userAccess = _progenyDbContext.UserAccessDb.SingleOrDefault(u =>
+                    u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+                if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
+                {
+                    return Unauthorized();
+                }
+
+                return Ok(result);
+            }
+
+            return NotFound();
         }
 
         [HttpGet("[action]/{videoLink}/{progenyId}")]
         public async Task<IActionResult> ByLink(string videoLink, int progenyId)
         {
             Video result = await _context.VideoDb.SingleOrDefaultAsync(v => v.VideoLink == videoLink && v.ProgenyId == progenyId);
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _progenyDbContext.UserAccessDb.SingleOrDefault(u =>
+                u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+            if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
 
             return Ok(result);
         }
@@ -260,6 +315,16 @@ namespace KinaUnaMediaApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Video model)
         {
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _progenyDbContext.UserAccessDb.SingleOrDefault(u =>
+                u.ProgenyId == model.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+            if (userAccess == null || userAccess.AccessLevel > 0)
+            {
+                return Unauthorized();
+            }
+
             Video vid = await _context.VideoDb.SingleOrDefaultAsync(v =>
                 v.VideoLink == model.VideoLink && v.ProgenyId == model.ProgenyId);
             if (vid == null)
@@ -295,6 +360,16 @@ namespace KinaUnaMediaApi.Controllers
                 return NotFound();
             }
 
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == video.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+            if (userAccess == null || userAccess.AccessLevel > 0)
+            {
+                return Unauthorized();
+            }
+
             video.Tags = value.Tags;
             video.AccessLevel = value.AccessLevel;
             video.Author = value.Author;
@@ -317,8 +392,32 @@ namespace KinaUnaMediaApi.Controllers
             Video video = await _context.VideoDb.SingleOrDefaultAsync(v => v.VideoId == id);
             if (video != null)
             {
-                // Todo: Delete content associated with picture, i.e. comments.
+                // Check if user should be allowed access.
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                UserAccess userAccess = _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                    u.ProgenyId == video.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
+                if (userAccess == null || userAccess.AccessLevel > 0)
+                {
+                    return Unauthorized();
+                }
+
+                List<Comment> comments = _context.CommentsDb
+                    .Where(c => c.CommentThreadNumber == video.CommentThreadNumber).ToList();
+                if (comments.Any())
+                {
+                    _context.CommentsDb.RemoveRange(comments);
+                    _context.SaveChanges();
+
+                }
+
+                CommentThread cmntThread =
+                    _context.CommentThreadsDb.SingleOrDefault(c => c.CommentThreadId == video.CommentThreadNumber);
+                if (cmntThread != null)
+                {
+                    _context.CommentThreadsDb.Remove(cmntThread);
+                    _context.SaveChanges();
+                }
                 _context.VideoDb.Remove(video);
                 await _context.SaveChangesAsync();
                 return NoContent();
@@ -335,14 +434,33 @@ namespace KinaUnaMediaApi.Controllers
         {
             Video result = await _context.VideoDb.SingleOrDefaultAsync(v => v.VideoId == id);
 
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+            if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+
             return Ok(result);
         }
 
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> PageMobile([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = 2, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
-
         {
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+
             if (pageIndex < 1)
             {
                 pageIndex = 1;
