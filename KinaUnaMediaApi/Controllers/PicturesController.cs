@@ -40,11 +40,7 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> Page([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
         {
             // Check if user should be allowed access.
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = _progenyDbContext.UserAccessDb.SingleOrDefault(u =>
                 u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -135,11 +131,7 @@ namespace KinaUnaMediaApi.Controllers
             if (picture != null)
             {
                 // Check if user should be allowed access.
-                string userEmail = Constants.DefaultUserEmail;
-                if (User != null)
-                {
-                    userEmail = User.GetEmail();
-                }
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 UserAccess userAccess = _progenyDbContext.UserAccessDb.SingleOrDefault(u =>
                     u.ProgenyId == picture.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -248,11 +240,7 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> Progeny(int id, int accessLevel)
         {
             // Check if user should be allowed access.
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = _progenyDbContext.UserAccessDb.SingleOrDefault(u =>
                 u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -295,11 +283,7 @@ namespace KinaUnaMediaApi.Controllers
             if (picture != null)
             {
                 // Check if user should be allowed access.
-                string userEmail = Constants.DefaultUserEmail;
-                if (User != null)
-                {
-                    userEmail = User.GetEmail();
-                }
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 UserAccess userAccess = _progenyDbContext.UserAccessDb.SingleOrDefault(u =>
                     u.ProgenyId == picture.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -340,11 +324,7 @@ namespace KinaUnaMediaApi.Controllers
             if (result != null)
             {
                 // Check if user should be allowed access.
-                string userEmail = Constants.DefaultUserEmail;
-                if (User != null)
-                {
-                    userEmail = User.GetEmail();
-                }
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 UserAccess userAccess = _progenyDbContext.UserAccessDb.SingleOrDefault(u =>
                     u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -379,11 +359,7 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> Post([FromBody] Picture model)
         {
             // Check if user should be allowed access.
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = _progenyDbContext.UserAccessDb.SingleOrDefault(u =>
                 u.ProgenyId == model.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -671,11 +647,7 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             // Check if user should be allowed access.
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                 u.ProgenyId == picture.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -710,11 +682,7 @@ namespace KinaUnaMediaApi.Controllers
             if (picture != null)
             {
                 // Check if user should be allowed access.
-                string userEmail = Constants.DefaultUserEmail;
-                if (User != null)
-                {
-                    userEmail = User.GetEmail();
-                }
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 UserAccess userAccess = _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                     u.ProgenyId == picture.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -762,11 +730,7 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> Random(int progenyId, int accessLevel)
         {
             // Check if user should be allowed access.
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                 u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -809,11 +773,7 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> RandomMobile(int progenyId, int accessLevel)
         {
             // Check if user should be allowed access.
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                 u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -865,11 +825,7 @@ namespace KinaUnaMediaApi.Controllers
             if (result != null)
             {
                 // Check if user should be allowed access.
-                string userEmail = Constants.DefaultUserEmail;
-                if (User != null)
-                {
-                    userEmail = User.GetEmail();
-                }
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 UserAccess userAccess = _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                     u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -911,11 +867,7 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> PageMobile([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
         {
             // Check if user should be allowed access.
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                 u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -1019,11 +971,7 @@ namespace KinaUnaMediaApi.Controllers
             if (picture != null && picture.PictureLink.ToLower().StartsWith("http"))
             {
                 // Check if user should be allowed access.
-                string userEmail = Constants.DefaultUserEmail;
-                if (User != null)
-                {
-                    userEmail = User.GetEmail();
-                }
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 UserAccess userAccess = _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                     u.ProgenyId == picture.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 

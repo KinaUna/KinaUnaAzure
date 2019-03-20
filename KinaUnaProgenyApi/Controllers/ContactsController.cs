@@ -34,11 +34,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                 u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
@@ -59,11 +55,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             Contact result = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
 
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                 u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
@@ -80,11 +72,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if child exists.
             Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (prog != null)
             {
                 // Check if user is allowed to add contacts for this child.
@@ -159,11 +147,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if child exists.
             Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (prog != null)
             {
                 // Check if user is allowed to edit contacts for this child.
@@ -269,11 +253,7 @@ namespace KinaUnaProgenyApi.Controllers
                 if (prog != null)
                 {
                     // Check if user is allowed to delete contacts for this child.
-                    string userEmail = Constants.DefaultUserEmail;
-                    if (User != null)
-                    {
-                        userEmail = User.GetEmail();
-                    }
+                    string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                     if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
                     {
                         return Unauthorized();
@@ -315,11 +295,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             Contact result = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
 
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                 u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -341,11 +317,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == id && c.AccessLevel >= accessLevel).ToListAsync();
 
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                 u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
 
@@ -371,11 +343,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             Contact contact = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contactId);
 
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
                 u.ProgenyId == contact.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 

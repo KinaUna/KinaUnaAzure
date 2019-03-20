@@ -33,11 +33,7 @@ namespace KinaUnaProgenyApi.Controllers
             List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == id).ToListAsync();
             if (accessList.Any())
             {
-                string userEmail = Constants.DefaultUserEmail;
-                if (User != null)
-                {
-                    userEmail = User.GetEmail();
-                }
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
 
                 bool allowedAccess = false;
                 foreach (UserAccess ua in accessList)
@@ -78,9 +74,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAccess(int id)
         {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess result = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.AccessId == id);
             result.Progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == result.ProgenyId);
-            if (result.Progeny.Admins.ToUpper().Contains(User.GetEmail().ToUpper()) || result.UserId.ToUpper() == User.GetEmail().ToUpper())
+            if (result.Progeny.Admins.ToUpper().Contains(User.GetEmail().ToUpper()) || result.UserId.ToUpper() == userEmail.ToUpper())
             {
                 return Ok(result);
             }
@@ -97,11 +94,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (prog != null)
             {
                 // Check if user is allowed to add users for this child.
-                string userEmail = Constants.DefaultUserEmail;
-                if (User != null)
-                {
-                    userEmail = User.GetEmail();
-                }
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
                 {
                     return Unauthorized();
@@ -134,11 +127,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (prog != null)
             {
                 // Check if user is allowed to edit user access for this child.
-                string userEmail = Constants.DefaultUserEmail;
-                if (User != null)
-                {
-                    userEmail = User.GetEmail();
-                }
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
                 {
                     return Unauthorized();
@@ -179,11 +168,7 @@ namespace KinaUnaProgenyApi.Controllers
                 if (prog != null)
                 {
                     // Check if user is allowed to delete users for this child.
-                    string userEmail = Constants.DefaultUserEmail;
-                    if (User != null)
-                    {
-                        userEmail = User.GetEmail();
-                    }
+                    string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                     if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
                     {
                         return Unauthorized();
@@ -206,11 +191,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> ProgenyListByUser(string id)
         {
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() == id.ToUpper())
             {
                 List<Progeny> result = new List<Progeny>();
@@ -235,11 +216,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> AccessListByUser(string id)
         {
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() == id.ToUpper())
             {
                 List<UserAccess> userAccessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.UserId.ToUpper() == id.ToUpper()).ToListAsync();
@@ -260,11 +237,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> AdminListByUser(string id)
         {
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() == id.ToUpper())
             {
                 List<UserAccess> userAccessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.UserId.ToUpper() == id.ToUpper() && u.AccessLevel == 0).ToListAsync();
@@ -292,11 +265,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{oldEmail}/{newEmail}")]
         public async Task<IActionResult> UpdateAccessListEmailChange(string oldEmail, string newEmail)
         {
-            string userEmail = Constants.DefaultUserEmail;
-            if (User != null)
-            {
-                userEmail = User.GetEmail();
-            }
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() == oldEmail.ToUpper())
             {
                 List<UserAccess> userAccessList = await _context.UserAccessDb.Where(u => u.UserId.ToUpper() == oldEmail.ToUpper()).ToListAsync();

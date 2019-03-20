@@ -18,19 +18,13 @@ namespace KinaUnaMediaApi.Controllers
     public class VideosController : ControllerBase
     {
         private readonly MediaDbContext _context;
-        public VideosController(MediaDbContext context)
+        private readonly ProgenyDbContext _progenyDbContext;
+        public VideosController(MediaDbContext context, ProgenyDbContext progenyDbContext)
         {
             _context = context;
+            _progenyDbContext = progenyDbContext;
         }
-
-        // GET api/videos
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            List<Video> resultList = await _context.VideoDb.ToListAsync();
-            return Ok(resultList);
-        }
-
+        
         // GET api/videos/page[?pageSize=3&pageIndex=10&progenyId=2&accessLevel=1&tagFilter=funny]
         [HttpGet]
         [Route("[action]")]

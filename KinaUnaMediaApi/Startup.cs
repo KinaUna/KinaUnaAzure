@@ -32,6 +32,9 @@ namespace KinaUnaMediaApi
             services.AddDbContext<MediaDbContext>(options =>
                 options.UseSqlServer(Configuration["MediaDefaultConnection"]));
 
+            services.AddDbContext<ProgenyDbContext>(options =>
+                options.UseSqlServer(Configuration["ProgenyDefaultConnection"]));
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddAuthorization(authorizationOptions =>
