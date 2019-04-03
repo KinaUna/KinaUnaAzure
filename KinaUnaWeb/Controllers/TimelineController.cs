@@ -2,29 +2,25 @@
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Controllers
 {
     public class TimelineController : Controller
     {
-        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
         private int _progId = Constants.DefaultChildId;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public TimelineController(WebDbContext context, IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore)
+        public TimelineController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore)
         {
-            _context = context; // Todo: Replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
             _imageStore = imageStore;
@@ -68,7 +64,7 @@ namespace KinaUnaWeb.Controllers
 
             TimeLineViewModel model = new TimeLineViewModel();
             model.TimeLineItems = new List<TimeLineItem>();
-            model.TimeLineItems = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == _progId && t.AccessLevel >= userAccessLevel && t.ProgenyTime < DateTime.UtcNow).ToListAsync();
+            model.TimeLineItems = await _progenyHttpClient.GetTimeline(_progId, userAccessLevel); // _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == _progId && t.AccessLevel >= userAccessLevel && t.ProgenyTime < DateTime.UtcNow).ToListAsync();
             if (sortBy == 1)
             {
                 model.TimeLineItems = model.TimeLineItems.OrderByDescending(t => t.ProgenyTime).ToList();
@@ -236,7 +232,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    CalendarItem evt = _context.CalendarDb.AsNoTracking().SingleOrDefault(e => e.EventId == itemId);
+                    CalendarItem evt = await _progenyHttpClient.GetCalendarItem(itemId); // _context.CalendarDb.AsNoTracking().SingleOrDefault(e => e.EventId == itemId);
                     if (evt != null && evt.StartTime.HasValue && evt.EndTime.HasValue)
                     {
                         evt.StartTime = TimeZoneInfo.ConvertTimeFromUtc(evt.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
@@ -250,7 +246,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    VocabularyItem voc = _context.VocabularyDb.AsNoTracking().SingleOrDefault(v => v.WordId == itemId);
+                    VocabularyItem voc = await _progenyHttpClient.GetWord(itemId); // _context.VocabularyDb.AsNoTracking().SingleOrDefault(v => v.WordId == itemId);
                     if (voc != null)
                     {
                         if (voc.Date != null)
@@ -267,7 +263,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Skill skl = _context.SkillsDb.AsNoTracking().SingleOrDefault(s => s.SkillId == itemId);
+                    Skill skl = await _progenyHttpClient.GetSkill(itemId); // _context.SkillsDb.AsNoTracking().SingleOrDefault(s => s.SkillId == itemId);
                     if (skl != null)
                     {
                         return PartialView("TimeLineSkillPartial", skl);
@@ -279,7 +275,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Friend frn = _context.FriendsDb.AsNoTracking().SingleOrDefault(f => f.FriendId == itemId);
+                    Friend frn = await _progenyHttpClient.GetFriend(itemId); // _context.FriendsDb.AsNoTracking().SingleOrDefault(f => f.FriendId == itemId);
                     if (frn != null)
                     {
                         if (!frn.PictureLink.StartsWith("https://"))
@@ -295,7 +291,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Measurement mes = _context.MeasurementsDb.AsNoTracking().SingleOrDefault(m => m.MeasurementId == itemId);
+                    Measurement mes = await _progenyHttpClient.GetMeasurement(itemId); // _context.MeasurementsDb.AsNoTracking().SingleOrDefault(m => m.MeasurementId == itemId);
                     if (mes != null)
                     {
                         return PartialView("TimeLineMeasurementPartial", mes);
@@ -307,7 +303,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Sleep slp = _context.SleepDb.AsNoTracking().SingleOrDefault(s => s.SleepId == itemId);
+                    Sleep slp = await _progenyHttpClient.GetSleepItem(itemId); // _context.SleepDb.AsNoTracking().SingleOrDefault(s => s.SleepId == itemId);
                     if (slp != null)
                     {
                         slp.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
@@ -326,7 +322,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Note nte = _context.NotesDb.AsNoTracking().SingleOrDefault(n => n.NoteId == itemId);
+                    Note nte = await _progenyHttpClient.GetNote(itemId); // _context.NotesDb.AsNoTracking().SingleOrDefault(n => n.NoteId == itemId);
                     if (nte != null)
                     {
                         nte.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(nte.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
@@ -339,7 +335,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Contact cnt = _context.ContactsDb.AsNoTracking().SingleOrDefault(c => c.ContactId == itemId);
+                    Contact cnt = await _progenyHttpClient.GetContact(itemId); // _context.ContactsDb.AsNoTracking().SingleOrDefault(c => c.ContactId == itemId);
                     if (cnt != null)
                     {
                         if (!cnt.PictureLink.StartsWith("https://"))
@@ -359,7 +355,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Vaccination vac = _context.VaccinationsDb.AsNoTracking().SingleOrDefault(v => v.VaccinationId == itemId);
+                    Vaccination vac = await _progenyHttpClient.GetVaccination(itemId); // _context.VaccinationsDb.AsNoTracking().SingleOrDefault(v => v.VaccinationId == itemId);
                     if (vac != null)
                     {
                         return PartialView("TimeLineVaccinationPartial", vac);
@@ -371,7 +367,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Location loc = _context.LocationsDb.AsNoTracking().SingleOrDefault(l => l.LocationId == itemId);
+                    Location loc = await _progenyHttpClient.GetLocation(itemId); // _context.LocationsDb.AsNoTracking().SingleOrDefault(l => l.LocationId == itemId);
                     if (loc != null)
                     {
                         return PartialView("TimeLineLocationPartial", loc);

@@ -2,29 +2,25 @@
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Controllers
 {
     public class FriendsController : Controller
     {
-        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly ImageStore _imageStore;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public FriendsController(WebDbContext context, IProgenyHttpClient progenyHttpClient, ImageStore imageStore)
+        public FriendsController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore)
         {
-            _context = context;
             _progenyHttpClient = progenyHttpClient;
             _imageStore = imageStore;
         }
@@ -69,10 +65,11 @@ namespace KinaUnaWeb.Controllers
             List<FriendViewModel> model = new List<FriendViewModel>();
             
             List<string> tagsList = new List<string>();
-            List<Friend> friendsList = _context.FriendsDb.AsNoTracking().Where(w => w.ProgenyId == _progId).ToList();
+            List<Friend> friendsList = await _progenyHttpClient.GetFriendsList(_progId, userAccessLevel); // _context.FriendsDb.AsNoTracking().Where(w => w.ProgenyId == _progId).ToList();
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                friendsList = _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == _progId && f.Tags.Contains(tagFilter)).ToList();
+                friendsList = friendsList.Where(c => c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
+                // friendsList = _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == _progId && f.Tags.Contains(tagFilter)).ToList();
             }
 
             friendsList = friendsList.OrderBy(f => f.FriendSince).ToList();
@@ -149,8 +146,8 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> FriendDetails(int friendId, string tagFilter)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            
-            Friend friend = await _context.FriendsDb.AsNoTracking().SingleAsync(f => f.FriendId == friendId);
+
+            Friend friend = await _progenyHttpClient.GetFriend(friendId); // await _context.FriendsDb.AsNoTracking().SingleAsync(f => f.FriendId == friendId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(friend.ProgenyId);
             List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
 
@@ -194,7 +191,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<string> tagsList = new List<string>();
-            var friendsList = _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == model.ProgenyId).ToList();
+            var friendsList = await _progenyHttpClient.GetFriendsList(model.ProgenyId, userAccessLevel); //_context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == model.ProgenyId).ToList();
             foreach (Friend frn in friendsList)
             {
                 if (!String.IsNullOrEmpty(frn.Tags))

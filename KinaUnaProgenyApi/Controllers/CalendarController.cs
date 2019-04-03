@@ -105,7 +105,7 @@ namespace KinaUnaProgenyApi.Controllers
             tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Calendar;
             tItem.ItemId = calendarItem.EventId.ToString();
             UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
-            tItem.CreatedBy = userinfo?.UserId ?? "Unknown";
+            tItem.CreatedBy = userinfo?.UserId ?? "User not found";
             tItem.CreatedTime = DateTime.UtcNow;
             if (calendarItem.StartTime != null)
             {

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,30 +25,26 @@ namespace KinaUnaProgenyApi.Controllers
             _context = context;
 
         }
-        // GET api/notes
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            List<Note> resultList = await _context.NotesDb.AsNoTracking().ToListAsync();
-
-            return Ok(resultList);
-        }
-
+        
         // GET api/notes/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
-            List<Note> notesList = await _context.NotesDb.AsNoTracking().Where(n => n.ProgenyId == id && n.AccessLevel >= accessLevel).ToListAsync();
-            if (notesList.Any())
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            if (userAccess != null || id == Constants.DefaultChildId)
             {
-                return Ok(notesList);
-            }
-            else
-            {
+                List<Note> notesList = await _context.NotesDb.AsNoTracking().Where(n => n.ProgenyId == id && n.AccessLevel >= accessLevel).ToListAsync();
+                if (notesList.Any())
+                {
+                    return Ok(notesList);
+                }
                 return NotFound();
             }
 
+            return Unauthorized();
         }
 
         // GET api/notes/5
@@ -55,13 +53,38 @@ namespace KinaUnaProgenyApi.Controllers
         {
             Note result = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
 
-            return Ok(result);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            if (userAccess != null || id == Constants.DefaultChildId)
+            {
+                return Ok(result);
+            }
+
+            return Unauthorized();
         }
 
         // POST api/notes
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Note value)
         {
+            // Check if child exists.
+            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (prog != null)
+            {
+                // Check if user is allowed to add notes for this child.
+
+                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+
             Note noteItem = new Note();
             noteItem.AccessLevel = value.AccessLevel;
             noteItem.Owner = value.Owner;
@@ -74,6 +97,19 @@ namespace KinaUnaProgenyApi.Controllers
             _context.NotesDb.Add(noteItem);
             await _context.SaveChangesAsync();
 
+            TimeLineItem tItem = new TimeLineItem();
+            tItem.ProgenyId = noteItem.ProgenyId;
+            tItem.AccessLevel = noteItem.AccessLevel;
+            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Note;
+            tItem.ItemId = noteItem.NoteId.ToString();
+            UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
+            tItem.CreatedBy = userinfo.UserId;
+            tItem.CreatedTime = noteItem.CreatedDate;
+            tItem.ProgenyTime = noteItem.CreatedDate;
+
+            await _context.TimeLineDb.AddAsync(tItem);
+            await _context.SaveChangesAsync();
+
             return Ok(noteItem);
         }
 
@@ -81,6 +117,22 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Note value)
         {
+            // Check if child exists.
+            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (prog != null)
+            {
+                // Check if user is allowed to edit notes for this child.
+                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+
             Note noteItem = await _context.NotesDb.SingleOrDefaultAsync(n => n.NoteId == id);
             if (noteItem == null)
             {
@@ -98,6 +150,16 @@ namespace KinaUnaProgenyApi.Controllers
             _context.NotesDb.Update(noteItem);
             await _context.SaveChangesAsync();
 
+            TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
+                t.ItemId == noteItem.NoteId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Note);
+            if (tItem != null)
+            {
+                tItem.ProgenyTime = noteItem.CreatedDate;
+                tItem.AccessLevel = noteItem.AccessLevel;
+                _context.TimeLineDb.Update(tItem);
+                await _context.SaveChangesAsync();
+            }
+
             return Ok(noteItem);
         }
 
@@ -108,14 +170,36 @@ namespace KinaUnaProgenyApi.Controllers
             Note noteItem = await _context.NotesDb.SingleOrDefaultAsync(n => n.NoteId == id);
             if (noteItem != null)
             {
+                // Check if child exists.
+                Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == noteItem.ProgenyId);
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                if (prog != null)
+                {
+                    // Check if user is allowed to delete notes for this child.
+                    if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                    {
+                        return Unauthorized();
+                    }
+                }
+                else
+                {
+                    return NotFound();
+                }
+
+                TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
+                    t.ItemId == noteItem.NoteId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Note);
+                if (tItem != null)
+                {
+                    _context.TimeLineDb.Remove(tItem);
+                    await _context.SaveChangesAsync();
+                }
+
                 _context.NotesDb.Remove(noteItem);
                 await _context.SaveChangesAsync();
                 return NoContent();
             }
-            else
-            {
-                return NotFound();
-            }
+
+            return NotFound();
         }
 
         [HttpGet("[action]/{id}")]
@@ -123,7 +207,21 @@ namespace KinaUnaProgenyApi.Controllers
         {
             Note result = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
 
-            return Ok(result);
+            if (result != null)
+            {
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                    u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+                if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
+                {
+                    return Ok(result);
+                }
+
+                return Unauthorized();
+            }
+
+            return NotFound();
         }
     }
 }

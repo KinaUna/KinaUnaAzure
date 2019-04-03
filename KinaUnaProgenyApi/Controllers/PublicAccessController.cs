@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Models;
@@ -30,14 +31,14 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            List<Progeny> resultList = await _context.ProgenyDb.AsNoTracking().Where(p => p.Id == 2).ToListAsync();
+            List<Progeny> resultList = await _context.ProgenyDb.AsNoTracking().Where(p => p.Id == Constants.DefaultChildId).ToListAsync();
             return Ok(resultList);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProgeny(int id)
         {
-            Progeny result = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == 2);
+            Progeny result = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == Constants.DefaultChildId);
             if (!result.PictureLink.ToLower().StartsWith("http"))
             {
                 result.PictureLink = _imageStore.UriFor(result.PictureLink, "progeny");
@@ -49,7 +50,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}")]
         public async Task<IActionResult> Access(int id)
         {
-            List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == 2).ToListAsync();
+            List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == Constants.DefaultChildId).ToListAsync();
             if (accessList.Any())
             {
                 foreach (UserAccess ua in accessList)
@@ -83,7 +84,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> ProgenyListByUser(string id)
         {
             List<Progeny> result = new List<Progeny>();
-            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == 2);
+            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == Constants.DefaultChildId);
             result.Add(prog);
             return Ok(result);
             
@@ -94,7 +95,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> EventList(int progenyId, int accessLevel)
         {
             var model = await _context.CalendarDb
-                .Where(e => e.ProgenyId == 2 && e.EndTime > DateTime.UtcNow && e.AccessLevel >= 5).ToListAsync();
+                .Where(e => e.ProgenyId == Constants.DefaultChildId && e.EndTime > DateTime.UtcNow && e.AccessLevel >= 5).ToListAsync();
             model = model.OrderBy(e => e.StartTime).ToList();
             model = model.Take(5).ToList();
 
@@ -105,7 +106,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}/{accessLevel}/{count}/{start}")]
         public async Task<IActionResult> ProgenyLatest(int id, int accessLevel = 5, int count = 5, int start = 0)
         {
-            List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == 2 && t.AccessLevel >= 5 && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime).ToListAsync();
+            List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == Constants.DefaultChildId && t.AccessLevel >= 5 && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime).ToListAsync();
             if (timeLineList.Any())
             {
                 timeLineList.Reverse();
@@ -123,19 +124,26 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetCalendarItemMobile(int id)
         {
             CalendarItem result = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == id);
-            if (result.ProgenyId == 2)
+            if (result.ProgenyId == Constants.DefaultChildId)
             {
                 return Ok(result);
             }
-            result = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == 50);
-            return Ok(result);
+            CalendarItem calItem = new CalendarItem();
+            calItem.ProgenyId = Constants.DefaultChildId;
+            calItem.AccessLevel = 5;
+            calItem.Title = "Launch of KinaUna.com";
+            UserInfo adminInfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == Constants.AdminEmail.ToUpper());
+            calItem.Author = adminInfo?.UserId ?? "Unknown Author"; 
+            calItem.StartTime = new DateTime(2018, 2, 18, 21, 02, 0);
+            calItem.EndTime = new DateTime(2018, 2, 18, 22, 02, 0);
+            return Ok(calItem);
         }
 
         [HttpGet]
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> ProgenyCalendarMobile(int id, int accessLevel = 5)
         {
-            List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == 2 && c.AccessLevel >= 5).ToListAsync();
+            List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == Constants.DefaultChildId && c.AccessLevel >= 5).ToListAsync();
             if (calendarList.Any())
             {
                 return Ok(calendarList);
@@ -151,9 +159,20 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetContactMobile(int id)
         {
             Contact result = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
-            if (result.ProgenyId != 2)
+            if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == 9);
+                result = new Contact();
+                result.AccessLevel = 5;
+                result.ProgenyId = Constants.DefaultChildId;
+                result.Active = true;
+                UserInfo adminInfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == Constants.AdminEmail.ToUpper());
+                result.Author = adminInfo?.UserId ?? "Unknown Author";
+                result.DisplayName = adminInfo?.UserName ?? "Unknown";
+                result.FirstName = adminInfo?.FirstName ?? "Unknown";
+                result.MiddleName = adminInfo?.MiddleName ?? "Unknown";
+                result.LastName = adminInfo?.LastName ?? "Unknown";
+                result.Email1 = Constants.SupportEmail;
+                result.PictureLink = Constants.ProfilePictureUrl;
             }
             if (!result.PictureLink.ToLower().StartsWith("http"))
             {
@@ -166,7 +185,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> ProgenyContactsMobile(int id, int accessLevel = 5)
         {
-            List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == 2 && c.AccessLevel >= 5).ToListAsync();
+            List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == Constants.DefaultChildId && c.AccessLevel >= 5).ToListAsync();
             if (contactsList.Any())
             {
                 foreach (Contact cont in contactsList)
@@ -189,9 +208,14 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetLocationMobile(int id)
         {
             Location result = await _context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == id);
-            if (result.ProgenyId != 2)
+            if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = await _context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == 12);
+                result = new Location();
+                result.AccessLevel = 5;
+                result.ProgenyId = Constants.DefaultChildId;
+                result.Name = Constants.AppName;
+                result.Latitude = 0.0;
+                result.Longitude = 0.0;
             }
             return Ok(result);
         }
@@ -200,9 +224,14 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetVocabularyItemMobile(int id)
         {
             VocabularyItem result = await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == id);
-            if (result.ProgenyId != 2)
+            if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == 45);
+                result = new VocabularyItem();
+                result.AccessLevel = 5;
+                result.ProgenyId = Constants.DefaultChildId;
+                result.Word = Constants.AppName;
+                result.DateAdded = DateTime.UtcNow;
+                result.Date = DateTime.UtcNow;
             }
             return Ok(result);
         }
@@ -211,9 +240,14 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSkillMobile(int id)
         {
             Skill result = await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == id);
-            if (result.ProgenyId != 2)
+            if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == 18);
+                result = new Skill();
+                result.AccessLevel = 5;
+                result.ProgenyId = Constants.DefaultChildId;
+                result.Name = "Launch website";
+                result.SkillAddedDate = DateTime.UtcNow;
+                result.SkillFirstObservation = DateTime.UtcNow;
             }
             return Ok(result);
         }
@@ -222,9 +256,18 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetFriendMobile(int id)
         {
             Friend result = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
-            if (result.ProgenyId != 2)
+            if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == 25);
+                result = new Friend();
+                result.AccessLevel = 5;
+                result.ProgenyId = Constants.DefaultChildId;
+                UserInfo adminInfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == Constants.AdminEmail.ToUpper());
+                result.Author = adminInfo?.UserId ?? "Unknown Author";
+                result.Name = adminInfo?.UserName ?? "Unknown";
+                result.FriendAddedDate = DateTime.UtcNow;
+                result.FriendSince = DateTime.UtcNow;
+                result.Type = 1;
+                result.PictureLink = Constants.ProfilePictureUrl;
             }
             if (!result.PictureLink.ToLower().StartsWith("http"))
             {
@@ -237,9 +280,18 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetMeasurementMobile(int id)
         {
             Measurement result = await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
-            if (result.ProgenyId != 2)
+            if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == 10);
+                result = new Measurement();
+                result.AccessLevel = 5;
+                result.ProgenyId = Constants.DefaultChildId;
+                result.Circumference = 0;
+                UserInfo adminInfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == Constants.AdminEmail.ToUpper());
+                result.Author = adminInfo?.UserId ?? "Unknown Author";
+                result.CreatedDate = DateTime.UtcNow;
+                result.Height = 1;
+                result.Weight = 1;
+                result.Date = DateTime.UtcNow;
             }
             return Ok(result);
         }
@@ -248,9 +300,17 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepMobile(int id)
         {
             Sleep result = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == id);
-            if (result.ProgenyId != 2)
+            if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == 591);
+                result = new Sleep();
+                result.AccessLevel = 5;
+                result.ProgenyId = Constants.DefaultChildId;
+                UserInfo adminInfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == Constants.AdminEmail.ToUpper());
+                result.Author = adminInfo?.UserId ?? "Unknown Author";
+                result.CreatedDate = DateTime.UtcNow;
+                result.SleepStart = DateTime.UtcNow - TimeSpan.FromHours(1);
+                result.SleepEnd = DateTime.UtcNow + TimeSpan.FromHours(2);
+                result.SleepRating = 3;
             }
             return Ok(result);
         }
@@ -260,7 +320,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
             var model = await _context.SleepDb
-                .Where(s => s.ProgenyId == 2 && s.AccessLevel >= 5).ToListAsync();
+                .Where(s => s.ProgenyId == Constants.DefaultChildId && s.AccessLevel >= 5).ToListAsync();
 
             model = model.OrderByDescending(s => s.SleepStart).ToList();
             model = model.Skip(start).Take(25).ToList();
@@ -270,12 +330,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{progenyId}/{accessLevel}")]
         public async Task<IActionResult> GetSleepStatsMobile(int progenyId, int accessLevel)
         {
-            string userTimeZone = "Romance Standard Time";
+            string userTimeZone = Constants.DefaultTimezone;
             SleepStatsModel model = new SleepStatsModel();
             model.SleepTotal = TimeSpan.Zero;
             model.SleepLastYear = TimeSpan.Zero;
             model.SleepLastMonth = TimeSpan.Zero;
-            List<Sleep> sList = await _context.SleepDb.Where(s => s.ProgenyId == 2).ToListAsync();
+            List<Sleep> sList = await _context.SleepDb.Where(s => s.ProgenyId == Constants.DefaultChildId).ToListAsync();
             List<Sleep> sleepList = new List<Sleep>();
             DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
@@ -332,8 +392,8 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{progenyId}/{accessLevel}")]
         public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
         {
-            string userTimeZone = "Romance Standard Time";
-            List<Sleep> sList = await _context.SleepDb.Where(s => s.ProgenyId == 2).ToListAsync();
+            string userTimeZone = Constants.DefaultTimezone;
+            List<Sleep> sList = await _context.SleepDb.Where(s => s.ProgenyId == Constants.DefaultChildId).ToListAsync();
             List<Sleep> chartList = new List<Sleep>();
             foreach (Sleep chartItem in sList)
             {
@@ -408,9 +468,14 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetNoteMobile(int id)
         {
             Note result = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
-            if (result.ProgenyId != 2)
+            if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == 50);
+                result = new Note();
+                result.AccessLevel = 5;
+                result.ProgenyId = Constants.DefaultChildId;
+                result.Content = "Sample Note";
+                result.CreatedDate = DateTime.UtcNow;
+                result.Title = "Sample";
             }
             return Ok(result);
         }
@@ -419,9 +484,13 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetVaccinationMobile(int id)
         {
             Vaccination result = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
-            if (result.ProgenyId != 2)
+            if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == 8);
+                result = new Vaccination();
+                result.AccessLevel = 5;
+                result.ProgenyId = Constants.DefaultChildId;
+                result.VaccinationDate = DateTime.UtcNow;
+                result.VaccinationName = "Test vaccination";
             }
             return Ok(result);
         }

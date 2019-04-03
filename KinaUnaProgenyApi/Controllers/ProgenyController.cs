@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -26,47 +28,69 @@ namespace KinaUnaProgenyApi.Controllers
             _imageStore = imageStore;
 
         }
-        // GET api/progeny
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            List<Progeny> resultList = await _context.ProgenyDb.AsNoTracking().ToListAsync();
-            return Ok(resultList);
-        }
-
+        
         // GET api/progeny/parent/[id]
         [HttpGet]
         [Route("[action]/{id}")]
         public async Task<IActionResult> Parent(string id)
         {
-            List<Progeny> progenyList = await _context.ProgenyDb.AsNoTracking().Where(p => p.Admins.Contains(id)).ToListAsync();
-            if (progenyList.Any())
+            // Check if user should be allowed to access this.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (userEmail.ToUpper() == id.ToUpper())
             {
-                return Ok(progenyList);
+                List<Progeny> progenyList = await _context.ProgenyDb.AsNoTracking().Where(p => p.Admins.Contains(id)).ToListAsync();
+                if (progenyList.Any())
+                {
+                    return Ok(progenyList);
+                }
+                else
+                {
+                    return NotFound();
+                }
             }
-            else
-            {
-                return NotFound();
-            }
+
+            return Unauthorized();
         }
 
         // GET api/progeny/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProgeny(int id)
         {
-            Progeny result = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
-            return Ok(result);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            if (userAccess != null || id == Constants.DefaultChildId)
+            {
+                Progeny result = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
+                
+                if (result != null)
+                {
+                    return Ok(result);
+                }
+                return NotFound();
+            }
+
+            return Unauthorized();
         }
 
+        // For Xamarin mobile app.
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> Mobile(int id)
         {
             Progeny result = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
-            if (!result.PictureLink.ToLower().StartsWith("http"))
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            if (userAccess != null || id == Constants.DefaultChildId)
             {
-                result.PictureLink = _imageStore.UriFor(result.PictureLink, "progeny");
+                if (!result.PictureLink.ToLower().StartsWith("http"))
+                {
+                    result.PictureLink = _imageStore.UriFor(result.PictureLink, "progeny");
+                }
+                return Ok(result);
             }
-            return Ok(result);
+
+            return Unauthorized();
         }
 
         // POST api/progeny
@@ -92,9 +116,11 @@ namespace KinaUnaProgenyApi.Controllers
                     ua.AccessLevel = 0;
                     ua.ProgenyId = progeny.Id;
                     ua.UserId = adminEmail.Trim();
-
-                    _context.UserAccessDb.Add(ua);
-                    await _context.SaveChangesAsync();
+                    if (ua.UserId.IsValidEmail())
+                    {
+                        _context.UserAccessDb.Add(ua);
+                        await _context.SaveChangesAsync();
+                    }
                 }
             }
             else
@@ -103,9 +129,12 @@ namespace KinaUnaProgenyApi.Controllers
                 ua.AccessLevel = 0;
                 ua.ProgenyId = progeny.Id;
                 ua.UserId = progeny.Admins.Trim();
+                if (ua.UserId.IsValidEmail())
+                {
+                    _context.UserAccessDb.Add(ua);
+                    await _context.SaveChangesAsync();
+                }
 
-                _context.UserAccessDb.Add(ua);
-                await _context.SaveChangesAsync();
             }
 
             return Ok(progeny);
@@ -122,6 +151,13 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
+            // Check if user is allowed to edit this child.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (!progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
+            {
+                return Unauthorized();
+            }
+            
             progeny.Admins = value.Admins;
             progeny.BirthDay = value.BirthDay;
             progeny.Name = value.Name;
@@ -142,6 +178,13 @@ namespace KinaUnaProgenyApi.Controllers
             Progeny progeny = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == id);
             if (progeny != null)
             {
+                // Check if user is allowed to edit this child.
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                if (!progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                {
+                    return Unauthorized();
+                }
+
                 // Todo: Delete content associated with progeny.
                 if (!progeny.PictureLink.ToLower().StartsWith("http") && !String.IsNullOrEmpty(progeny.PictureLink))
                 {

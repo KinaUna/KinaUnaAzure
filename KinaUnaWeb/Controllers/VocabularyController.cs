@@ -7,22 +7,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Controllers
 {
     public class VocabularyController : Controller
     {
-        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public VocabularyController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
+        public VocabularyController(IProgenyHttpClient progenyHttpClient)
         {
-            _context = context;
             _progenyHttpClient = progenyHttpClient;
         }
 
@@ -63,7 +60,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<VocabularyItemViewModel> model = new List<VocabularyItemViewModel>();
-            List<VocabularyItem> wordList = _context.VocabularyDb.Where(w => w.ProgenyId == _progId).ToList();
+            List<VocabularyItem> wordList = await _progenyHttpClient.GetWordsList(_progId, userAccessLevel); // _context.VocabularyDb.Where(w => w.ProgenyId == _progId).ToList();
             wordList = wordList.OrderBy(w => w.Date).ToList();
             if (wordList.Count != 0)
             {

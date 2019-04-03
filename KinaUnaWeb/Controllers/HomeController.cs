@@ -2,23 +2,16 @@
 using KinaUnaWeb.Models.HomeViewModels;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Hosting;
 
@@ -28,22 +21,16 @@ namespace KinaUnaWeb.Controllers
     public class HomeController : Controller
     {
         private int _progId = Constants.DefaultChildId;
-        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
-        private readonly IConfiguration _configuration;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ImageStore _imageStore;
         private readonly IHostingEnvironment _env;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
         
-        public HomeController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, WebDbContext context, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, ImageStore imageStore, IHostingEnvironment env)
+        public HomeController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IHostingEnvironment env)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
-            _context = context;  // Todo: Replace _context with httpClient?
-            _configuration = configuration;
-            _httpContextAccessor = httpContextAccessor;
             _imageStore = imageStore;
             _env = env;
         }
@@ -202,14 +189,11 @@ namespace KinaUnaWeb.Controllers
             feedModel.PicDays = picTime.CalcDays();
             feedModel.PicHours = picTime.CalcHours();
             feedModel.PicMinutes = picTime.CalcMinutes();
-            
-
             feedModel.Progeny = progeny;
             feedModel.EventsList = new List<CalendarItem>();
-            feedModel.EventsList = await _context.CalendarDb.AsNoTracking()
-                .Where(e => e.ProgenyId == progeny.Id && e.EndTime > DateTime.UtcNow && e.AccessLevel >= userAccessLevel).ToListAsync();
-            feedModel.EventsList = feedModel.EventsList.OrderBy(e => e.StartTime).ToList();
-            feedModel.EventsList = feedModel.EventsList.Take(5).ToList();
+            feedModel.EventsList = await _progenyHttpClient.GetUpcomingEvents(_progId, userAccessLevel); // _context.CalendarDb.AsNoTracking().Where(e => e.ProgenyId == progeny.Id && e.EndTime > DateTime.UtcNow && e.AccessLevel >= userAccessLevel).ToListAsync();
+            // feedModel.EventsList = feedModel.EventsList.OrderBy(e => e.StartTime).ToList();
+            // feedModel.EventsList = feedModel.EventsList.Take(5).ToList();
             foreach (CalendarItem eventItem in feedModel.EventsList)
             {
                 if (eventItem.StartTime.HasValue && eventItem.EndTime.HasValue)
@@ -221,7 +205,7 @@ namespace KinaUnaWeb.Controllers
 
             feedModel.LatestPosts = new TimeLineViewModel();
             feedModel.LatestPosts.TimeLineItems = new List<TimeLineItem>();
-            feedModel.LatestPosts.TimeLineItems = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == _progId && t.AccessLevel >= userAccessLevel && t.ProgenyTime < DateTime.UtcNow).ToListAsync();
+            feedModel.LatestPosts.TimeLineItems = await _progenyHttpClient.GetProgenyLatestPosts(_progId, userAccessLevel); // _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == _progId && t.AccessLevel >= userAccessLevel && t.ProgenyTime < DateTime.UtcNow).ToListAsync();
             if (feedModel.LatestPosts.TimeLineItems.Any())
             {
                 feedModel.LatestPosts.TimeLineItems = feedModel.LatestPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).Take(5).ToList();
@@ -271,25 +255,9 @@ namespace KinaUnaWeb.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                HttpClient httpClient = new HttpClient();
-                string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
-                var currentContext = _httpContextAccessor.HttpContext;
-                string accessToken = await AuthenticationHttpContextExtensions.GetTokenAsync(currentContext, OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-                if (!string.IsNullOrWhiteSpace(accessToken))
-                {
-                    httpClient.SetBearerToken(accessToken);
-                }
-                httpClient.BaseAddress = new Uri(clientUri);
-                httpClient.DefaultRequestHeaders.Accept.Clear();
-                httpClient.DefaultRequestHeaders.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue("application/json"));
-                
                 UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
                 userinfo.ViewChild = childId;
-                
-                string setChildApiPath = "/api/userinfo/" + userId;
-                var setChildUri = clientUri + setChildApiPath;
-                await httpClient.PutAsJsonAsync(setChildUri, userinfo);
+                await _progenyHttpClient.SetViewChild(userId, userinfo);
             }
 
             return Redirect(returnUrl);

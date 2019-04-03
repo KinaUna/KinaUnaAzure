@@ -6,23 +6,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaWeb.Controllers
 {
     public class VaccinationsController : Controller
     {
-        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public VaccinationsController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
+        public VaccinationsController(IProgenyHttpClient progenyHttpClient)
         {
-            _context = context; // Todo: Replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
         }
 
@@ -64,7 +60,7 @@ namespace KinaUnaWeb.Controllers
 
             VaccinationViewModel model = new VaccinationViewModel();
             model.VaccinationList = new List<Vaccination>();
-            List<Vaccination> vaccinations = _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == _progId).ToList();
+            List<Vaccination> vaccinations = await _progenyHttpClient.GetVaccinationsList(_progId, userAccessLevel); // _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == _progId).ToList();
 
             if (vaccinations.Count != 0)
             {

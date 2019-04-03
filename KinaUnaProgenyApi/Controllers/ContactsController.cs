@@ -125,7 +125,7 @@ namespace KinaUnaProgenyApi.Controllers
             tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Contact;
             tItem.ItemId = contactItem.ContactId.ToString();
             UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
-            tItem.CreatedBy = userinfo.UserId;
+            tItem.CreatedBy = userinfo?.UserId ?? "User not found";
             tItem.CreatedTime = DateTime.UtcNow;
             tItem.ProgenyTime = DateTime.UtcNow;
 

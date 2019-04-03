@@ -17,12 +17,11 @@ namespace KinaUnaWeb.Controllers
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
         private int _progId = Constants.DefaultChildId;
-        private readonly string _userEmail;
-
+        
         public AccessManagementController(IProgenyHttpClient progenyHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
-            _userEmail = User?.GetEmail() ?? _defaultUser;
+            
         }
 
         public IActionResult Index()
@@ -33,8 +32,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddAccess(string progenyId)
         {
-            
-            var userinfo = await _progenyHttpClient.GetUserInfo(_userEmail);
+            string userEmail = User?.GetEmail() ?? _defaultUser;
+            var userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
             if (userinfo == null)
             {
                 return RedirectToAction("Index");
@@ -55,9 +54,9 @@ namespace KinaUnaWeb.Controllers
             model.AccessLevel = (int)AccessLevel.Users;
             model.UserId = "";
             model.ProgenyList = new List<SelectListItem>();
-            if (User.Identity.IsAuthenticated && _userEmail != null && userinfo.UserId != null)
+            if (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null)
             {
-                var accessList = await _progenyHttpClient.GetProgenyAdminList(_userEmail);
+                var accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
                 if (accessList.Any())
                 {
                     foreach (Progeny prog in accessList)
@@ -83,7 +82,8 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddAccess(UserAccessViewModel model)
         {
-            var userinfo = await _progenyHttpClient.GetUserInfo(_userEmail);
+            string userEmail = User?.GetEmail() ?? _defaultUser;
+            var userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
             if (userinfo != null && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;

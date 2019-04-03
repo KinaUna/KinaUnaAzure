@@ -109,6 +109,26 @@ namespace KinaUnaProgenyApi.Controllers
             _context.FriendsDb.Add(friendItem);
             await _context.SaveChangesAsync();
 
+            TimeLineItem tItem = new TimeLineItem();
+            tItem.ProgenyId = friendItem.ProgenyId;
+            tItem.AccessLevel = friendItem.AccessLevel;
+            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Friend;
+            tItem.ItemId = friendItem.FriendId.ToString();
+            UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
+            tItem.CreatedBy = userinfo?.UserId ?? "User Not Found";
+            tItem.CreatedTime = DateTime.UtcNow;
+            if (friendItem.FriendSince != null)
+            {
+                tItem.ProgenyTime = friendItem.FriendSince.Value;
+            }
+            else
+            {
+                tItem.ProgenyTime = DateTime.UtcNow;
+            }
+
+            await _context.TimeLineDb.AddAsync(tItem);
+            await _context.SaveChangesAsync();
+
             return Ok(friendItem);
         }
 
@@ -147,13 +167,24 @@ namespace KinaUnaProgenyApi.Controllers
             friendItem.FriendAddedDate = DateTime.UtcNow;
             friendItem.ProgenyId = value.ProgenyId;
             friendItem.Description = value.Description;
-            friendItem.FriendSince = value.FriendSince;
+            friendItem.FriendSince = value.FriendSince ?? DateTime.UtcNow;
             friendItem.Notes = value.Notes;
             friendItem.PictureLink = value.PictureLink;
             friendItem.Tags = value.Tags;
 
             _context.FriendsDb.Update(friendItem);
             await _context.SaveChangesAsync();
+
+            // Update timeline
+            TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
+                t.ItemId == friendItem.FriendId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Friend);
+            if (tItem != null)
+            {
+                tItem.ProgenyTime = friendItem.FriendSince.Value;
+                tItem.AccessLevel = friendItem.AccessLevel;
+                _context.TimeLineDb.Update(tItem);
+                await _context.SaveChangesAsync();
+            }
 
             return Ok(friendItem);
         }
@@ -180,6 +211,22 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     return NotFound();
                 }
+
+                // Remove item from timeline.
+                TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
+                    t.ItemId == friendItem.FriendId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Friend);
+                if (tItem != null)
+                {
+                    _context.TimeLineDb.Remove(tItem);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Remove picture
+                if (!friendItem.PictureLink.ToLower().StartsWith("http"))
+                {
+                    await _imageStore.DeleteImage(friendItem.PictureLink, "friends");
+                }
+
                 _context.FriendsDb.Remove(friendItem);
                 await _context.SaveChangesAsync();
                 return NoContent();

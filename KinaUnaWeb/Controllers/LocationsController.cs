@@ -8,24 +8,20 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaWeb.Controllers
 {
     public class LocationsController : Controller
     {
-        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public LocationsController(WebDbContext context, IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient)
+        public LocationsController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient)
         {
-            _context = context; // Todo: Replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
         }
@@ -69,10 +65,10 @@ namespace KinaUnaWeb.Controllers
             List<string> tagsList = new List<string>();
 
             // ToDo: Implement _progenyHttpClient.GetLocations() 
-            var locationsList = _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == _progId).OrderBy(l => l.Date).ToList();
+            var locationsList = await _progenyHttpClient.GetLocationsList(_progId, userAccessLevel); // _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == _progId).OrderBy(l => l.Date).ToList();
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                locationsList = _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == _progId && l.Tags.Contains(tagFilter)).OrderBy(l => l.Date).ToList();
+                locationsList = locationsList.Where(l => l.Tags.Contains(tagFilter)).ToList();
             }
             locationsList = locationsList.OrderBy(l => l.Date).ToList();
 

@@ -15,15 +15,13 @@ namespace KinaUnaWeb.Controllers
 {
     public class MeasurementsController : Controller
     {
-        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public MeasurementsController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
+        public MeasurementsController(IProgenyHttpClient progenyHttpClient)
         {
-            _context = context; // Todo: Replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
         }
 
@@ -66,7 +64,7 @@ namespace KinaUnaWeb.Controllers
             MeasurementViewModel model = new MeasurementViewModel();
             
             // ToDo: Implement _progenyClient.GetMeasurements()
-            List<Measurement> mList = _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == _progId).ToList();
+            List<Measurement> mList = await _progenyHttpClient.GetMeasurementsList(_progId, userAccessLevel); // _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == _progId).ToList();
             List<Measurement> measurementsList = new List<Measurement>();
             foreach (Measurement m in mList)
             {

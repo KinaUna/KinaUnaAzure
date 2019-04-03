@@ -7,22 +7,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Controllers
 {
     public class SkillsController : Controller
     {
-        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public SkillsController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
+        public SkillsController(IProgenyHttpClient progenyHttpClient)
         {
-            _context = context; // Todo: replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
         }
 
@@ -62,8 +59,8 @@ namespace KinaUnaWeb.Controllers
                 userAccessLevel = (int)AccessLevel.Private;
             }
             List<SkillViewModel> model = new List<SkillViewModel>();
-            
-            List<Skill> skillsList = _context.SkillsDb.Where(w => w.ProgenyId == _progId).ToList();
+
+            List<Skill> skillsList = await _progenyHttpClient.GetSkillsList(_progId, userAccessLevel); // _context.SkillsDb.Where(w => w.ProgenyId == _progId).ToList();
             skillsList = skillsList.OrderBy(s => s.SkillFirstObservation).ToList();
             if (skillsList.Count != 0)
             {

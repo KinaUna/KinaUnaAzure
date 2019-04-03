@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,30 +25,27 @@ namespace KinaUnaProgenyApi.Controllers
             _context = context;
 
         }
-        // GET api/vaccinations
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            List<Vaccination> resultList = await _context.VaccinationsDb.AsNoTracking().ToListAsync();
-
-            return Ok(resultList);
-        }
-
+       
         // GET api/vaccinations/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
-            List<Vaccination> vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == id && v.AccessLevel >= accessLevel).ToListAsync();
-            if (vaccinationsList.Any())
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            if (userAccess != null || id == Constants.DefaultChildId)
             {
-                return Ok(vaccinationsList);
-            }
-            else
-            {
+                List<Vaccination> vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == id && v.AccessLevel >= accessLevel).ToListAsync();
+                if (vaccinationsList.Any())
+                {
+                    return Ok(vaccinationsList);
+                }
+
                 return NotFound();
             }
 
+            return Unauthorized();
         }
 
         // GET api/vaccinations/5
@@ -54,13 +54,38 @@ namespace KinaUnaProgenyApi.Controllers
         {
             Vaccination result = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
 
-            return Ok(result);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            if (userAccess != null || id == Constants.DefaultChildId)
+            {
+                return Ok(result);
+            }
+
+            return Unauthorized();
         }
 
         // POST api/vaccinations
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Vaccination value)
         {
+            // Check if child exists.
+            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (prog != null)
+            {
+                // Check if user is allowed to add vaccinations for this child.
+
+                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+
             Vaccination vaccinationItem = new Vaccination();
             vaccinationItem.AccessLevel = value.AccessLevel;
             vaccinationItem.Author = value.Author;
@@ -73,6 +98,19 @@ namespace KinaUnaProgenyApi.Controllers
             _context.VaccinationsDb.Add(vaccinationItem);
             await _context.SaveChangesAsync();
 
+            TimeLineItem tItem = new TimeLineItem();
+            tItem.ProgenyId = vaccinationItem.ProgenyId;
+            tItem.AccessLevel = vaccinationItem.AccessLevel;
+            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Vaccination;
+            tItem.ItemId = vaccinationItem.VaccinationId.ToString();
+            UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
+            tItem.CreatedBy = userinfo.UserId;
+            tItem.CreatedTime = DateTime.UtcNow;
+            tItem.ProgenyTime = vaccinationItem.VaccinationDate;
+
+            await _context.TimeLineDb.AddAsync(tItem);
+            await _context.SaveChangesAsync();
+
             return Ok(vaccinationItem);
         }
 
@@ -80,6 +118,22 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Vaccination value)
         {
+            // Check if child exists.
+            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (prog != null)
+            {
+                // Check if user is allowed to edit vaccinations for this child.
+                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+
             Vaccination vaccinationItem = await _context.VaccinationsDb.SingleOrDefaultAsync(v => v.VaccinationId == id);
             if (vaccinationItem == null)
             {
@@ -97,6 +151,16 @@ namespace KinaUnaProgenyApi.Controllers
             _context.VaccinationsDb.Update(vaccinationItem);
             await _context.SaveChangesAsync();
 
+            TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
+                t.ItemId == vaccinationItem.VaccinationId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Vaccination);
+            if (tItem != null)
+            {
+                tItem.ProgenyTime = vaccinationItem.VaccinationDate;
+                tItem.AccessLevel = vaccinationItem.AccessLevel;
+                _context.TimeLineDb.Update(tItem);
+                await _context.SaveChangesAsync();
+            }
+
             return Ok(vaccinationItem);
         }
 
@@ -107,6 +171,30 @@ namespace KinaUnaProgenyApi.Controllers
             Vaccination vaccinationItem = await _context.VaccinationsDb.SingleOrDefaultAsync(v => v.VaccinationId == id);
             if (vaccinationItem != null)
             {
+                // Check if child exists.
+                Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == vaccinationItem.ProgenyId);
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                if (prog != null)
+                {
+                    // Check if user is allowed to delete vaccinations for this child.
+                    if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                    {
+                        return Unauthorized();
+                    }
+                }
+                else
+                {
+                    return NotFound();
+                }
+
+                TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
+                    t.ItemId == vaccinationItem.VaccinationId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Vaccination);
+                if (tItem != null)
+                {
+                    _context.TimeLineDb.Remove(tItem);
+                    await _context.SaveChangesAsync();
+                }
+
                 _context.VaccinationsDb.Remove(vaccinationItem);
                 await _context.SaveChangesAsync();
                 return NoContent();
@@ -122,7 +210,21 @@ namespace KinaUnaProgenyApi.Controllers
         {
             Vaccination result = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
 
-            return Ok(result);
+            if (result != null)
+            {
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
+                    u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+                if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
+                {
+                    return Ok(result);
+                }
+
+                return Unauthorized();
+            }
+
+            return NotFound();
         }
     }
 }

@@ -78,7 +78,7 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail();
             if (prog != null)
             {
-                // Check if user is allowed to edit user access for this child.
+                // Check if user is allowed to add sleep for this child.
                 
                 if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
                 {
@@ -134,7 +134,7 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail();
             if (prog != null)
             {
-                // Check if user is allowed to edit user access for this child.
+                // Check if user is allowed to edit sleep for this child.
 
                 if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
                 {
@@ -182,7 +182,7 @@ namespace KinaUnaProgenyApi.Controllers
                 Progeny prog = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == sleepItem.ProgenyId);
                 if (prog != null)
                 {
-                    // Check if user is allowed to edit user access for this child.
+                    // Check if user is allowed to delete sleep for this child.
                     string userEmail = User.GetEmail();
                     if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
                     {
@@ -217,7 +217,8 @@ namespace KinaUnaProgenyApi.Controllers
         {
             
             Sleep result = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == id);
-            UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == User.GetEmail().ToUpper() && u.ProgenyId == result.ProgenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == userEmail.ToUpper() && u.ProgenyId == result.ProgenyId);
             if (userAccess != null)
             {
                 return Ok(result);
@@ -229,7 +230,8 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{progenyId}/{accessLevel}/{start}")]
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
-            UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == User.GetEmail().ToUpper() && u.ProgenyId == progenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == userEmail.ToUpper() && u.ProgenyId == progenyId);
             if (userAccess != null)
             {
                 List<Sleep> result = await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == progenyId && s.AccessLevel >= accessLevel).ToListAsync();
@@ -248,10 +250,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{progenyId}/{accessLevel}")]
         public async Task<IActionResult> GetSleepStatsMobile(int progenyId, int accessLevel)
         {
-            UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == User.GetEmail().ToUpper() && u.ProgenyId == progenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == userEmail.ToUpper() && u.ProgenyId == progenyId);
             if (userAccess != null)
             {
-                string userTimeZone = "Romance Standard Time";
+                string userTimeZone = Constants.DefaultTimezone;
                 SleepStatsModel model = new SleepStatsModel();
                 model.SleepTotal = TimeSpan.Zero;
                 model.SleepLastYear = TimeSpan.Zero;
@@ -316,10 +319,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{progenyId}/{accessLevel}")]
         public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
         {
-            UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == User.GetEmail().ToUpper() && u.ProgenyId == progenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == userEmail.ToUpper() && u.ProgenyId == progenyId);
             if (userAccess != null)
             {
-                string userTimeZone = "Romance Standard Time";
+                string userTimeZone = Constants.DefaultTimezone;
                 List<Sleep> sList = await _context.SleepDb.Where(s => s.ProgenyId == progenyId).ToListAsync();
                 List<Sleep> sleepList = new List<Sleep>();
                 foreach (Sleep s in sList)

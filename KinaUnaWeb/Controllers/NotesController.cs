@@ -7,22 +7,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Controllers
 {
     public class NotesController : Controller
     {
-        private readonly WebDbContext _context;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public NotesController(WebDbContext context, IProgenyHttpClient progenyHttpClient)
+        public NotesController(IProgenyHttpClient progenyHttpClient)
         {
-            _context = context; // Todo: Replace _context with httpClient
             _progenyHttpClient = progenyHttpClient;
         }
 
@@ -66,7 +63,7 @@ namespace KinaUnaWeb.Controllers
             List<NoteViewModel> model = new List<NoteViewModel>();
             
             // Todo: Replace _context with _progenyClient.GetNotes()
-            List<Note> notes = _context.NotesDb.Where(n => n.ProgenyId == _progId).ToList();
+            List<Note> notes = await _progenyHttpClient.GetNotesList(_progId, userAccessLevel); // _context.NotesDb.Where(n => n.ProgenyId == _progId).ToList();
             if (notes.Count != 0)
             {
                 foreach (Note note in notes)
