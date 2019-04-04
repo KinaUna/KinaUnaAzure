@@ -4,15 +4,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <UserSecretsId>aspnet-KinaUnaWeb-3CFF80E1-DFC0-426E-B569-60032DF70BB3</UserSecretsId>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="nget.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="nget.xml" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="4.5.3.1" />
     <PackageReference Include="IdentityModel" Version="3.10.4" />
