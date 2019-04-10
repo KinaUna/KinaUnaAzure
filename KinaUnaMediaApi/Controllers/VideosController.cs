@@ -179,11 +179,18 @@ namespace KinaUnaMediaApi.Controllers
                 model.TagsList = "";
                 List<string> tagsList = new List<string>();
                 List<Video> videosList = _dataService.GetVideosList(video.ProgenyId); // await _context.VideoDb.Where(p => p.ProgenyId == video.ProgenyId && p.AccessLevel >= accessLevel).ToListAsync();
-                videosList = videosList.Where(p => p.AccessLevel >= accessLevel).ToList();
+                videosList = videosList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToList();
                 if (videosList.Any())
                 {
+                    int currentIndex = 0;
+                    int indexer = 0;
                     foreach (Video vid in videosList)
                     {
+                        if (vid.VideoId == video.VideoId)
+                        {
+                            currentIndex = indexer;
+                        }
+                        indexer++;
                         if (!String.IsNullOrEmpty(vid.Tags))
                         {
                             List<string> pvmTags = vid.Tags.Split(',').ToList();
@@ -196,8 +203,6 @@ namespace KinaUnaMediaApi.Controllers
                             }
                         }
                     }
-                    videosList = videosList.OrderBy(p => p.VideoTime).ToList();
-                    int currentIndex = videosList.IndexOf(video);
                     model.VideoNumber = currentIndex + 1;
                     model.VideoCount = videosList.Count;
                     if(currentIndex > 0)

@@ -96,6 +96,7 @@ namespace KinaUna.IDP
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+
             services.Configure<AppSettings>(Configuration);
 
             services.Configure<DataProtectionTokenProviderOptions>(options =>
@@ -183,7 +184,17 @@ namespace KinaUna.IDP
                     // This enables automatic token cleanup. this is optional.
                     options.EnableTokenCleanup = true;
                     options.TokenCleanupInterval = 3600;
-                }).Services.AddTransient<IProfileService, ProfileService>();
+                })
+                .AddRedisCaching(options =>
+                {
+                    options.RedisConnectionString = Configuration["RedisConnection"];
+                    options.KeyPrefix = Constants.AppName + "idp";
+                })
+                .AddClientStoreCache<IdentityServer4.EntityFramework.Stores.ClientStore>()
+                .AddResourceStoreCache<IdentityServer4.EntityFramework.Stores.ResourceStore>()
+                .AddCorsPolicyCache<IdentityServer4.EntityFramework.Services.CorsPolicyService>()
+                .AddProfileServiceCache<ProfileService>()
+                .Services.AddTransient<IProfileService, ProfileService>();
 
         }
 
