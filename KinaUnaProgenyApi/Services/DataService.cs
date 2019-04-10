@@ -21,7 +21,7 @@ namespace KinaUnaProgenyApi.Services
             _context = context;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
-            _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(96, 0, 0)); // Expire after 24 hours.
+            _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
         
         public List<Progeny> GetProgenyUserIsAdmin(string email)
@@ -644,7 +644,7 @@ namespace KinaUnaProgenyApi.Services
             _cache.SetString(Constants.AppName + "note" + id, JsonConvert.SerializeObject(note), _cacheOptionsSliding);
 
             List<Contact> contactsList = _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == note.ProgenyId).ToList();
-            _cache.SetString(Constants.AppName + "contactslist" + note.ProgenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
+            _cache.SetString(Constants.AppName + "noteslist" + note.ProgenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
 
             return note;
         }
