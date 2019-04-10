@@ -6,6 +6,7 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,24 +20,25 @@ namespace KinaUnaProgenyApi.Controllers
     public class SkillsController : ControllerBase
     {
         private readonly ProgenyDbContext _context;
+        private readonly IDataService _dataService;
 
-        public SkillsController(ProgenyDbContext context)
+        public SkillsController(ProgenyDbContext context, IDataService dataService)
         {
             _context = context;
-
+            _dataService = dataService;
         }
         
         // GET api/skills/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
-        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
+        public IActionResult Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
-                u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Skill> skillsList = await _context.SkillsDb.AsNoTracking().Where(s => s.ProgenyId == id && s.AccessLevel >= accessLevel).ToListAsync();
+                List<Skill> skillsList = _dataService.GetSkillsList(id); // await _context.SkillsDb.AsNoTracking().Where(s => s.ProgenyId == id && s.AccessLevel >= accessLevel).ToListAsync();
+                skillsList = skillsList.Where(s => s.AccessLevel >= accessLevel).ToList();
                 if (skillsList.Any())
                 {
                     return Ok(skillsList);
@@ -49,13 +51,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         // GET api/skills/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetSkillItem(int id)
+        public IActionResult GetSkillItem(int id)
         {
-            Skill result = await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == id);
+            Skill result = _dataService.GetSkill(id); // await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
-                u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -97,6 +98,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             _context.SkillsDb.Add(skillItem);
             await _context.SaveChangesAsync();
+            _dataService.SetSkill(skillItem.SkillId);
 
             TimeLineItem tItem = new TimeLineItem();
             tItem.ProgenyId = skillItem.ProgenyId;
@@ -110,6 +112,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+            _dataService.SetTimeLineItem(tItem.TimeLineId);
 
             return Ok(skillItem);
         }
@@ -151,6 +154,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             _context.SkillsDb.Update(skillItem);
             await _context.SaveChangesAsync();
+            _dataService.SetSkill(skillItem.SkillId);
 
             TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
                 t.ItemId == skillItem.SkillId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Skill);
@@ -163,6 +167,7 @@ namespace KinaUnaProgenyApi.Controllers
                 tItem.AccessLevel = skillItem.AccessLevel;
                 _context.TimeLineDb.Update(tItem);
                 await _context.SaveChangesAsync();
+                _dataService.SetTimeLineItem(tItem.TimeLineId);
             }
             return Ok(skillItem);
         }
@@ -196,10 +201,13 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     _context.TimeLineDb.Remove(tItem);
                     await _context.SaveChangesAsync();
+                    _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
                 }
 
                 _context.SkillsDb.Remove(skillItem);
                 await _context.SaveChangesAsync();
+                _dataService.RemoveSkill(skillItem.SkillId, skillItem.ProgenyId);
+
                 return NoContent();
             }
             else
@@ -209,15 +217,14 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]/{id}")]
-        public async Task<IActionResult> GetSkillMobile(int id)
+        public IActionResult GetSkillMobile(int id)
         {
-            Skill result = await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == id);
+            Skill result = _dataService.GetSkill(id); // await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == id);
 
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
-                    u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+                UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {

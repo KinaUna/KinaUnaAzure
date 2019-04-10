@@ -31,7 +31,12 @@ namespace KinaUnaProgenyApi
 
             services.AddDbContext<ProgenyDbContext>(options =>
                 options.UseSqlServer(Configuration["ProgenyDefaultConnection"]));
-            
+
+            services.AddDistributedRedisCache(option =>
+                option.Configuration = Configuration["RedisConnection"]);
+
+            services.AddScoped<IDataService, DataService>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddAuthorization(authorizationOptions =>

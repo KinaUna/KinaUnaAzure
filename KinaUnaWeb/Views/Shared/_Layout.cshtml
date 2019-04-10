@@ -48,7 +48,7 @@
 
 @if (User.Identity.IsAuthenticated)
 {
-    string userEmail = User.FindFirst("email")?.Value;
+    string userEmail = User.FindFirst("email")?.Value ?? Constants.DefaultUserEmail;
     userinfo = await ChildManager.GetInfo(userEmail);
     if (userinfo.UserId == "401")
     {

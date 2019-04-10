@@ -68,7 +68,7 @@ namespace KinaUnaWeb.Controllers
             var locationsList = await _progenyHttpClient.GetLocationsList(_progId, userAccessLevel); // _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == _progId).OrderBy(l => l.Date).ToList();
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                locationsList = locationsList.Where(l => l.Tags.Contains(tagFilter)).ToList();
+                locationsList = locationsList.Where(l => l.Tags != null && l.Tags.Contains(tagFilter)).ToList();
             }
             locationsList = locationsList.OrderBy(l => l.Date).ToList();
 
@@ -162,7 +162,7 @@ namespace KinaUnaWeb.Controllers
             else
             {
                 pictures = pictures.FindAll(p =>
-                    !string.IsNullOrEmpty(p.Longtitude) && p.Tags.ToUpper().Contains(tagFilter.ToUpper()));
+                    !string.IsNullOrEmpty(p.Longtitude) && p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper()));
             }
             pictures = pictures.OrderBy(p => p.PictureTime).ToList();
             List<Picture> locPictures = new List<Picture>();

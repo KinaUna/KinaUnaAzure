@@ -6,6 +6,7 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,24 +20,25 @@ namespace KinaUnaProgenyApi.Controllers
     public class VaccinationsController : ControllerBase
     {
         private readonly ProgenyDbContext _context;
+        private readonly IDataService _dataService;
 
-        public VaccinationsController(ProgenyDbContext context)
+        public VaccinationsController(ProgenyDbContext context, IDataService dataService)
         {
             _context = context;
-
+            _dataService = dataService;
         }
        
         // GET api/vaccinations/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
-        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
+        public IActionResult Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
-                u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Vaccination> vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == id && v.AccessLevel >= accessLevel).ToListAsync();
+                List<Vaccination> vaccinationsList = _dataService.GetVaccinationsList(id); // await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == id && v.AccessLevel >= accessLevel).ToListAsync();
+                vaccinationsList = vaccinationsList.Where(v => v.AccessLevel >= accessLevel).ToList();
                 if (vaccinationsList.Any())
                 {
                     return Ok(vaccinationsList);
@@ -50,13 +52,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         // GET api/vaccinations/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetVaccinationItem(int id)
+        public IActionResult GetVaccinationItem(int id)
         {
-            Vaccination result = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
+            Vaccination result = _dataService.GetVaccination(id); // await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
-                u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -97,6 +98,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             _context.VaccinationsDb.Add(vaccinationItem);
             await _context.SaveChangesAsync();
+            _dataService.SetVaccination(vaccinationItem.VaccinationId);
 
             TimeLineItem tItem = new TimeLineItem();
             tItem.ProgenyId = vaccinationItem.ProgenyId;
@@ -110,6 +112,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
+            _dataService.SetTimeLineItem(tItem.TimeLineId);
 
             return Ok(vaccinationItem);
         }
@@ -150,6 +153,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             _context.VaccinationsDb.Update(vaccinationItem);
             await _context.SaveChangesAsync();
+            _dataService.SetVaccination(vaccinationItem.VaccinationId);
 
             TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
                 t.ItemId == vaccinationItem.VaccinationId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Vaccination);
@@ -159,6 +163,7 @@ namespace KinaUnaProgenyApi.Controllers
                 tItem.AccessLevel = vaccinationItem.AccessLevel;
                 _context.TimeLineDb.Update(tItem);
                 await _context.SaveChangesAsync();
+                _dataService.SetTimeLineItem(tItem.TimeLineId);
             }
 
             return Ok(vaccinationItem);
@@ -193,10 +198,13 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     _context.TimeLineDb.Remove(tItem);
                     await _context.SaveChangesAsync();
+                    _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
                 }
 
                 _context.VaccinationsDb.Remove(vaccinationItem);
                 await _context.SaveChangesAsync();
+                _dataService.RemoveVaccination(vaccinationItem.VaccinationId, vaccinationItem.ProgenyId);
+
                 return NoContent();
             }
             else
@@ -206,15 +214,14 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]/{id}")]
-        public async Task<IActionResult> GetVaccinationMobile(int id)
+        public IActionResult GetVaccinationMobile(int id)
         {
-            Vaccination result = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
+            Vaccination result = _dataService.GetVaccination(id); // await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
 
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
-                    u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+                UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {

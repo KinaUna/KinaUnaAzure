@@ -24,6 +24,7 @@ using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.Extensions.Configuration;
 using KinaUna.Data;
+using Microsoft.AspNetCore.Hosting;
 
 namespace KinaUna.IDP.Controllers
 {
@@ -40,6 +41,7 @@ namespace KinaUna.IDP.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ProgenyDbContext _progContext;
         private readonly IConfiguration _configuration;
+        private readonly IHostingEnvironment _env;
 
         public AccountController(
             ILoginService<ApplicationUser> loginService,
@@ -50,7 +52,8 @@ namespace KinaUna.IDP.Controllers
             SignInManager<ApplicationUser> signInManager,
             ApplicationDbContext context,
             ProgenyDbContext progContext,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IHostingEnvironment env)
         {
             _loginService = loginService;
             _interaction = interaction;
@@ -62,6 +65,7 @@ namespace KinaUna.IDP.Controllers
             _context = context;
             _progContext = progContext;
             _configuration = configuration;
+            _env = env;
         }
 
         [TempData] private string StatusMessage { get; set; }
@@ -148,7 +152,17 @@ namespace KinaUna.IDP.Controllers
             if (User.Identity.IsAuthenticated == false)
             {
                 // if the user is not authenticated, then just show logged out page
-                return await Logout(new LogoutViewModel { LogoutId = logoutId });
+                //return await Logout(new LogoutViewModel { LogoutId = logoutId });
+                string logoutRedirectUri;
+                if (_env.IsDevelopment())
+                {
+                    logoutRedirectUri = _configuration.GetValue<string>("WebServerLocal");
+                }
+                else
+                {
+                    logoutRedirectUri = _configuration.GetValue<string>("WebServer");
+                }
+                return Redirect(logoutRedirectUri);
             }
 
             //Test for Xamarin. 
@@ -214,7 +228,15 @@ namespace KinaUna.IDP.Controllers
             var logout = await _interaction.GetLogoutContextAsync(model.LogoutId);
             if (logout.PostLogoutRedirectUri == null)
             {
-                logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServer"); // Todo: if Dev env use WebServerLocal
+                if (_env.IsDevelopment())
+                {
+                    logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServerLocal");
+                }
+                else
+                {
+                    logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServer");
+                }
+                
             }
             return Redirect(logout.PostLogoutRedirectUri);
             

@@ -76,7 +76,7 @@ namespace KinaUnaWeb.Controllers
             List<Contact> contactList = await _progenyHttpClient.GetContactsList(_progId, userAccessLevel); // _context.ContactsDb.AsNoTracking().Where(w => w.ProgenyId == _progId).ToList();
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                contactList = contactList.Where(c => c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
+                contactList = contactList.Where(c => c.Tags != null && c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
             }
 
             if (contactList.Count != 0)

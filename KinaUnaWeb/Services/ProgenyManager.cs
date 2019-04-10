@@ -79,6 +79,9 @@ namespace KinaUnaWeb.Services
             {
                 userinfo.UserId = "401";
                 userinfo.UserName = e.Message;
+                userinfo.UserEmail = Constants.DefaultUserEmail;
+                userinfo.CanUserAddItems = false;
+                userinfo.ViewChild = Constants.DefaultChildId;
                 return userinfo;
             }
 

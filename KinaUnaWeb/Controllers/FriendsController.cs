@@ -68,7 +68,7 @@ namespace KinaUnaWeb.Controllers
             List<Friend> friendsList = await _progenyHttpClient.GetFriendsList(_progId, userAccessLevel); // _context.FriendsDb.AsNoTracking().Where(w => w.ProgenyId == _progId).ToList();
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                friendsList = friendsList.Where(c => c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
+                friendsList = friendsList.Where(c => c.Tags != null && c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
                 // friendsList = _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == _progId && f.Tags.Contains(tagFilter)).ToList();
             }
 

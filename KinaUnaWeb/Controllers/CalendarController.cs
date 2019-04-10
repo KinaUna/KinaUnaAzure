@@ -2,13 +2,11 @@
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Controllers
@@ -16,8 +14,6 @@ namespace KinaUnaWeb.Controllers
     public class CalendarController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private int _progId = Constants.DefaultChildId;
-        private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
         public CalendarController(IProgenyHttpClient progenyHttpClient)
@@ -28,22 +24,22 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int? id, int childId = 0)
         {
-            _progId = childId;
+            int progId = childId;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
+                progId = userinfo.ViewChild;
             }
 
-            if (_progId == 0)
+            if (progId == 0)
             {
-                _progId = Constants.DefaultChildId;
+                progId = Constants.DefaultChildId;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(progId);
+            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -56,18 +52,19 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
+            bool userIsProgenyAdmin = false;
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
-                _userIsProgenyAdmin = true;
+                userIsProgenyAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
 
             ApplicationUser currentUser = new ApplicationUser();
             currentUser.TimeZone = userinfo.Timezone;
-            var eventsList = await _progenyHttpClient.GetCalendarList(_progId, userAccessLevel); // _context.CalendarDb.AsNoTracking().Where(e => e.ProgenyId == _progId).ToList();
+            var eventsList = await _progenyHttpClient.GetCalendarList(progId, userAccessLevel); // _context.CalendarDb.AsNoTracking().Where(e => e.ProgenyId == _progId).ToList();
             eventsList = eventsList.OrderBy(e => e.StartTime).ToList();
             CalendarItemViewModel events = new CalendarItemViewModel();
-            events.IsAdmin = _userIsProgenyAdmin;
+            events.IsAdmin = userIsProgenyAdmin;
             events.UserData = currentUser;
             events.Progeny = progeny;
             events.EventsList = new List<CalendarItem>();
@@ -127,9 +124,10 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
+            bool userIsProgenyAdmin = false;
             if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
             {
-                _userIsProgenyAdmin = true;
+                userIsProgenyAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
 
@@ -155,7 +153,7 @@ namespace KinaUnaWeb.Controllers
             model.Location = eventItem.Location;
             model.Context = eventItem.Context;
             model.AccessLevel = eventItem.AccessLevel;
-            model.IsAdmin = _userIsProgenyAdmin;
+            model.IsAdmin = userIsProgenyAdmin;
             
             return View(model);
         }
