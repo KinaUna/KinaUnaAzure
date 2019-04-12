@@ -34,13 +34,13 @@ namespace KinaUnaProgenyApi.Controllers
         // GET api/contacts/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
-        public IActionResult Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Contact> contactsList = _dataService.GetContactsList(id); // await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == id && c.AccessLevel >= accessLevel).ToListAsync();
+                List<Contact> contactsList = await _dataService.GetContactsList(id); // await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == id && c.AccessLevel >= accessLevel).ToListAsync();
                 contactsList = contactsList.Where(c => c.AccessLevel >= accessLevel).ToList();
                 if (contactsList.Any())
                 {
@@ -53,12 +53,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         // GET api/contacts/5
         [HttpGet("{id}")]
-        public IActionResult GetContactItem(int id)
+        public async Task<IActionResult> GetContactItem(int id)
         {
-            Contact result = _dataService.GetContact(id); // await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
+            Contact result = await _dataService.GetContact(id); // await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -119,7 +119,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             _context.ContactsDb.Add(contactItem);
             await _context.SaveChangesAsync();
-            _dataService.SetContact(contactItem.ContactId);
+            await _dataService.SetContact(contactItem.ContactId);
 
             TimeLineItem tItem = new TimeLineItem();
             tItem.ProgenyId = contactItem.ProgenyId;
@@ -133,7 +133,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
-            _dataService.SetTimeLineItem(tItem.TimeLineId);
+            await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
             return Ok(contactItem);
         }
@@ -230,7 +230,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             _context.ContactsDb.Update(contactItem);
             await _context.SaveChangesAsync();
-            _dataService.SetContact(contactItem.ContactId);
+            await _dataService.SetContact(contactItem.ContactId);
 
             TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
                 t.ItemId == contactItem.ContactId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Contact);
@@ -240,7 +240,7 @@ namespace KinaUnaProgenyApi.Controllers
                 tItem.AccessLevel = contactItem.AccessLevel;
                 _context.TimeLineDb.Update(tItem);
                 await _context.SaveChangesAsync();
-                _dataService.SetTimeLineItem(tItem.TimeLineId);
+                await _dataService.SetTimeLineItem(tItem.TimeLineId);
             }
 
             return Ok(contactItem);
@@ -275,14 +275,14 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     _context.TimeLineDb.Remove(tItem);
                     await _context.SaveChangesAsync();
-                    _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
+                    await _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
                 }
 
                 if (contactItem.AddressIdNumber != null)
                 {
                     Address address = await _context.AddressDb.SingleAsync(a => a.AddressId == contactItem.AddressIdNumber);
                     _context.AddressDb.Remove(address);
-                    _dataService.RemoveAddressItem(address.AddressId);
+                    await _dataService.RemoveAddressItem(address.AddressId);
                 }
                 if (!contactItem.PictureLink.ToLower().StartsWith("http"))
                 {
@@ -291,7 +291,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                 _context.ContactsDb.Remove(contactItem);
                 await _context.SaveChangesAsync();
-                _dataService.RemoveContact(contactItem.ContactId, contactItem.ProgenyId);
+                await _dataService.RemoveContact(contactItem.ContactId, contactItem.ProgenyId);
 
                 return NoContent();
             }
@@ -300,14 +300,14 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]/{id}")]
-        public IActionResult GetContactMobile(int id)
+        public async Task<IActionResult> GetContactMobile(int id)
         {
-            Contact result = _dataService.GetContact(id); // await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
+            Contact result = await _dataService.GetContact(id); // await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
 
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {
@@ -324,13 +324,13 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{id}/{accessLevel}")]
-        public IActionResult ProgenyMobile(int id, int accessLevel = 5)
+        public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
         {
-            List<Contact> contactsList = _dataService.GetContactsList(id); // await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == id && c.AccessLevel >= accessLevel).ToListAsync();
+            List<Contact> contactsList = await _dataService.GetContactsList(id); // await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == id && c.AccessLevel >= accessLevel).ToListAsync();
             contactsList = contactsList.Where(c => c.AccessLevel >= accessLevel).ToList();
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
             
             if ((userAccess != null || id == Constants.DefaultChildId) && contactsList.Any())
             {

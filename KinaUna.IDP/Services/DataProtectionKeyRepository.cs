@@ -1,5 +1,4 @@
-﻿using KinaUna.IDP.Data;
-using Microsoft.AspNetCore.DataProtection.Repositories;
+﻿using Microsoft.AspNetCore.DataProtection.Repositories;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;

@@ -31,13 +31,13 @@ namespace KinaUnaProgenyApi.Controllers
         // GET api/notes/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
-        public IActionResult Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Note> notesList = _dataService.GetNotesList(id); // await _context.NotesDb.AsNoTracking().Where(n => n.ProgenyId == id && n.AccessLevel >= accessLevel).ToListAsync();
+                List<Note> notesList = await _dataService.GetNotesList(id); // await _context.NotesDb.AsNoTracking().Where(n => n.ProgenyId == id && n.AccessLevel >= accessLevel).ToListAsync();
                 notesList = notesList.Where(n => n.AccessLevel >= accessLevel).ToList();
                 if (notesList.Any())
                 {
@@ -51,12 +51,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         // GET api/notes/5
         [HttpGet("{id}")]
-        public IActionResult GetNoteItem(int id)
+        public async Task<IActionResult> GetNoteItem(int id)
         {
-            Note result = _dataService.GetNote(id); // await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
+            Note result = await _dataService.GetNote(id); // await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -97,7 +97,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             _context.NotesDb.Add(noteItem);
             await _context.SaveChangesAsync();
-            _dataService.SetNote(noteItem.NoteId);
+            await _dataService.SetNote(noteItem.NoteId);
 
             // Add to Timeline.
             TimeLineItem tItem = new TimeLineItem();
@@ -106,13 +106,16 @@ namespace KinaUnaProgenyApi.Controllers
             tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Note;
             tItem.ItemId = noteItem.NoteId.ToString();
             UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
-            tItem.CreatedBy = userinfo.UserId;
+            if (userinfo != null)
+            {
+                tItem.CreatedBy = userinfo.UserId;
+            }
             tItem.CreatedTime = noteItem.CreatedDate;
             tItem.ProgenyTime = noteItem.CreatedDate;
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
-            _dataService.SetTimeLineItem(tItem.TimeLineId);
+            await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
             return Ok(noteItem);
         }
@@ -153,7 +156,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             _context.NotesDb.Update(noteItem);
             await _context.SaveChangesAsync();
-            _dataService.SetNote(noteItem.NoteId);
+            await _dataService.SetNote(noteItem.NoteId);
 
             // Update Timeline.
             TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
@@ -164,7 +167,7 @@ namespace KinaUnaProgenyApi.Controllers
                 tItem.AccessLevel = noteItem.AccessLevel;
                 _context.TimeLineDb.Update(tItem);
                 await _context.SaveChangesAsync();
-                _dataService.SetTimeLineItem(tItem.TimeLineId);
+                await _dataService.SetTimeLineItem(tItem.TimeLineId);
             }
 
             return Ok(noteItem);
@@ -199,12 +202,12 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     _context.TimeLineDb.Remove(tItem);
                     await _context.SaveChangesAsync();
-                    _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
+                    await _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
                 }
 
                 _context.NotesDb.Remove(noteItem);
                 await _context.SaveChangesAsync();
-                _dataService.RemoveNote(noteItem.NoteId, noteItem.ProgenyId);
+                await _dataService.RemoveNote(noteItem.NoteId, noteItem.ProgenyId);
 
                 return NoContent();
             }
@@ -213,14 +216,14 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]/{id}")]
-        public IActionResult GetNoteMobile(int id)
+        public async Task<IActionResult> GetNoteMobile(int id)
         {
-            Note result = _dataService.GetNote(id); // await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
+            Note result = await _dataService.GetNote(id); // await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
 
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {

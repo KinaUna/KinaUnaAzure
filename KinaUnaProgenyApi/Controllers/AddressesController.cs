@@ -24,9 +24,9 @@ namespace KinaUnaProgenyApi.Controllers
         
         // GET api/addresses/5
         [HttpGet("{id}")]
-        public IActionResult GetAddressItem(int id)
+        public async Task<IActionResult> GetAddressItem(int id)
         {
-            Address result = _dataService.GetAddressItem(id); // await _context.AddressDb.AsNoTracking().SingleOrDefaultAsync(n => n.AddressId == id);
+            Address result = await _dataService.GetAddressItem(id); // await _context.AddressDb.AsNoTracking().SingleOrDefaultAsync(n => n.AddressId == id);
             return Ok(result);
         }
 
@@ -44,7 +44,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             _context.AddressDb.Add(addressItem);
             await _context.SaveChangesAsync();
-            _dataService.SetAddressItem(addressItem.AddressId);
+            await _dataService.SetAddressItem(addressItem.AddressId);
 
             return Ok(addressItem);
         }
@@ -68,7 +68,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             _context.AddressDb.Update(addressItem);
             await _context.SaveChangesAsync();
-            _dataService.SetAddressItem(addressItem.AddressId);
+            await _dataService.SetAddressItem(addressItem.AddressId);
 
             return Ok(addressItem);
         }
@@ -82,7 +82,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 _context.AddressDb.Remove(addressItem);
                 await _context.SaveChangesAsync();
-                _dataService.RemoveAddressItem(id);
+                await _dataService.RemoveAddressItem(id);
                 return NoContent();
             }
             else

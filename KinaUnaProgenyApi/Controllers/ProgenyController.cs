@@ -33,13 +33,13 @@ namespace KinaUnaProgenyApi.Controllers
         // GET api/progeny/parent/[id]
         [HttpGet]
         [Route("[action]/{id}")]
-        public IActionResult Parent(string id)
+        public async Task<IActionResult> Parent(string id)
         {
             // Check if user should be allowed to access this.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() == id.ToUpper())
             {
-                List<Progeny> progenyList = _dataService.GetProgenyUserIsAdmin(id); // await _context.ProgenyDb.AsNoTracking().Where(p => p.Admins.Contains(id)).ToListAsync();
+                List<Progeny> progenyList = await _dataService.GetProgenyUserIsAdmin(id); // await _context.ProgenyDb.AsNoTracking().Where(p => p.Admins.Contains(id)).ToListAsync();
                 if (progenyList.Any())
                 {
                     return Ok(progenyList);
@@ -55,13 +55,13 @@ namespace KinaUnaProgenyApi.Controllers
 
         // GET api/progeny/5
         [HttpGet("{id}")]
-        public IActionResult GetProgeny(int id)
+        public async Task<IActionResult> GetProgeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                Progeny result = _dataService.GetProgeny(id); // await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
+                Progeny result = await _dataService.GetProgeny(id); // await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
                 
                 if (result != null)
                 {
@@ -75,11 +75,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         // For Xamarin mobile app.
         [HttpGet("[action]/{id}")]
-        public IActionResult Mobile(int id)
+        public async Task<IActionResult> Mobile(int id)
         {
-            Progeny result = _dataService.GetProgeny(id); // await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
+            Progeny result = await _dataService.GetProgeny(id); // await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 if (!result.PictureLink.ToLower().StartsWith("http"))
@@ -106,7 +106,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             _context.ProgenyDb.Add(progeny);
             await _context.SaveChangesAsync();
-            _dataService.SetProgeny(progeny.Id);
+            await _dataService.SetProgeny(progeny.Id);
 
             if (progeny.Admins.Contains(','))
             {
@@ -121,9 +121,9 @@ namespace KinaUnaProgenyApi.Controllers
                     {
                         _context.UserAccessDb.Add(ua);
                         await _context.SaveChangesAsync();
-                        _dataService.SetProgenyUserIsAdmin(ua.UserId);
-                        _dataService.SetProgenyUserAccessList(progeny.Id);
-                        _dataService.SetUsersUserAccessList(ua.UserId);
+                        await _dataService.SetProgenyUserIsAdmin(ua.UserId);
+                        await _dataService.SetProgenyUserAccessList(progeny.Id);
+                        await _dataService.SetUsersUserAccessList(ua.UserId);
                     }
                 }
             }
@@ -137,9 +137,9 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     _context.UserAccessDb.Add(ua);
                     await _context.SaveChangesAsync();
-                    _dataService.SetProgenyUserIsAdmin(ua.UserId);
-                    _dataService.SetProgenyUserAccessList(progeny.Id);
-                    _dataService.SetUsersUserAccessList(ua.UserId);
+                    await _dataService.SetProgenyUserIsAdmin(ua.UserId);
+                    await _dataService.SetProgenyUserAccessList(progeny.Id);
+                    await _dataService.SetUsersUserAccessList(ua.UserId);
                 }
 
             }
@@ -175,7 +175,7 @@ namespace KinaUnaProgenyApi.Controllers
             _context.ProgenyDb.Update(progeny);
             await _context.SaveChangesAsync();
 
-            _dataService.SetProgeny(progeny.Id);
+            await _dataService.SetProgeny(progeny.Id);
 
             return Ok(progeny);
         }
@@ -223,13 +223,13 @@ namespace KinaUnaProgenyApi.Controllers
                     {
                         _context.UserAccessDb.Remove(ua);
                         _context.SaveChanges();
-                        _dataService.RemoveUserAccess(ua.AccessId, ua.ProgenyId, ua.UserId);
+                        await _dataService.RemoveUserAccess(ua.AccessId, ua.ProgenyId, ua.UserId);
                     }
                 }
                 _context.ProgenyDb.Remove(progeny);
                 await _context.SaveChangesAsync();
 
-                _dataService.RemoveProgeny(id);
+                await _dataService.RemoveProgeny(id);
                 return NoContent();
             }
             else

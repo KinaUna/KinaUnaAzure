@@ -31,13 +31,13 @@ namespace KinaUnaProgenyApi.Controllers
         // GET api/vocabulary/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
-        public IActionResult Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<VocabularyItem> wordList = _dataService.GetVocabularyList(id); // await _context.VocabularyDb.AsNoTracking().Where(w => w.ProgenyId == id && w.AccessLevel >= accessLevel).ToListAsync();
+                List<VocabularyItem> wordList = await _dataService.GetVocabularyList(id); // await _context.VocabularyDb.AsNoTracking().Where(w => w.ProgenyId == id && w.AccessLevel >= accessLevel).ToListAsync();
                 wordList = wordList.Where(w => w.AccessLevel >= accessLevel).ToList();
                 if (wordList.Any())
                 {
@@ -51,12 +51,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         // GET api/vocabulary/5
         [HttpGet("{id}")]
-        public IActionResult GetVocabularyItem(int id)
+        public async Task<IActionResult> GetVocabularyItem(int id)
         {
-            VocabularyItem result = _dataService.GetVocabularyItem(id); // await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == id);
+            VocabularyItem result = await _dataService.GetVocabularyItem(id); // await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -99,7 +99,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             _context.VocabularyDb.Add(vocabularyItem);
             await _context.SaveChangesAsync();
-            _dataService.SetVocabularyItem(vocabularyItem.WordId);
+            await _dataService.SetVocabularyItem(vocabularyItem.WordId);
 
             TimeLineItem tItem = new TimeLineItem();
             tItem.ProgenyId = vocabularyItem.ProgenyId;
@@ -107,7 +107,10 @@ namespace KinaUnaProgenyApi.Controllers
             tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Vocabulary;
             tItem.ItemId = vocabularyItem.WordId.ToString();
             UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
-            tItem.CreatedBy = userinfo.UserId;
+            if (userinfo != null)
+            {
+                tItem.CreatedBy = userinfo.UserId;
+            }
             tItem.CreatedTime = DateTime.UtcNow;
             if (vocabularyItem.Date != null)
             {
@@ -120,7 +123,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
-            _dataService.SetTimeLineItem(tItem.TimeLineId);
+            await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
             return Ok(vocabularyItem);
         }
@@ -163,7 +166,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             _context.VocabularyDb.Update(vocabularyItem);
             await _context.SaveChangesAsync();
-            _dataService.SetVocabularyItem(vocabularyItem.WordId);
+            await _dataService.SetVocabularyItem(vocabularyItem.WordId);
 
             TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
                 t.ItemId == vocabularyItem.WordId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Vocabulary);
@@ -176,7 +179,7 @@ namespace KinaUnaProgenyApi.Controllers
                 tItem.AccessLevel = vocabularyItem.AccessLevel;
                 _context.TimeLineDb.Update(tItem);
                 await _context.SaveChangesAsync();
-                _dataService.SetTimeLineItem(tItem.TimeLineId);
+                await _dataService.SetTimeLineItem(tItem.TimeLineId);
             }
 
             return Ok(vocabularyItem);
@@ -210,14 +213,14 @@ namespace KinaUnaProgenyApi.Controllers
                 if (tItem != null)
                 {
                     _context.TimeLineDb.Remove(tItem);
-                    _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
+                    await _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
                     await _context.SaveChangesAsync();
-                    _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
+                    await _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
                 }
 
                 _context.VocabularyDb.Remove(vocabularyItem);
                 await _context.SaveChangesAsync();
-                _dataService.RemoveVocabularyItem(vocabularyItem.WordId, vocabularyItem.ProgenyId);
+                await _dataService.RemoveVocabularyItem(vocabularyItem.WordId, vocabularyItem.ProgenyId);
 
                 return NoContent();
             }
@@ -226,14 +229,14 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]/{id}")]
-        public IActionResult GetItemMobile(int id)
+        public async Task<IActionResult> GetItemMobile(int id)
         {
-            VocabularyItem result = _dataService.GetVocabularyItem(id); // await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == id);
+            VocabularyItem result = await _dataService.GetVocabularyItem(id); // await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == id);
 
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1315,28 +1314,34 @@ namespace KinaUnaWeb.Controllers
                     UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
                     if (uaUserInfo.UserId != "Unknown")
                     {
-                        var startTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value,
+                        if (eventItem.StartTime != null)
+                        {
+                            var startTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value,
                                 TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
-                        string eventTimeString = "\r\nStart: " + startTime.ToString("dd-MMM-yyyy HH:mm");
-                        
-                        var endTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value,
-                                TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
-                        eventTimeString = eventTimeString + "\r\nEnd: " + endTime.ToString("dd-MMM-yyyy HH:mm");
-                        
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = authorName;
-                        notification.Message = eventItem.Title + eventTimeString;
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = userinfo.ProfilePicture;
-                        notification.Title = "A new calendar event was added for " + progeny.NickName;
-                        notification.Link = "/Calendar/ViewEvent?eventId=" + eventItem.EventId + "&childId=" + progeny.Id;
-                        notification.Type = "Notification";
-                        await _context.WebNotificationsDb.AddAsync(notification);
-                        await _context.SaveChangesAsync();
+                            string eventTimeString = "\r\nStart: " + startTime.ToString("dd-MMM-yyyy HH:mm");
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunacalendar" + progeny.Id);
+                            if (eventItem.EndTime != null)
+                            {
+                                var endTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value,
+                                    TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                                eventTimeString = eventTimeString + "\r\nEnd: " + endTime.ToString("dd-MMM-yyyy HH:mm");
+                            }
+
+                            WebNotification notification = new WebNotification();
+                            notification.To = uaUserInfo.UserId;
+                            notification.From = authorName;
+                            notification.Message = eventItem.Title + eventTimeString;
+                            notification.DateTime = DateTime.UtcNow;
+                            notification.Icon = userinfo.ProfilePicture;
+                            notification.Title = "A new calendar event was added for " + progeny.NickName;
+                            notification.Link = "/Calendar/ViewEvent?eventId=" + eventItem.EventId + "&childId=" + progeny.Id;
+                            notification.Type = "Notification";
+                            await _context.WebNotificationsDb.AddAsync(notification);
+                            await _context.SaveChangesAsync();
+
+                            await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                                notification.Message, Constants.WebAppUrl + notification.Link, "kinaunacalendar" + progeny.Id);
+                        }
                     }
                 }
             }
@@ -1563,13 +1568,10 @@ namespace KinaUnaWeb.Controllers
                     UserInfo uaUserInfo = await _progenyHttpClient.GetUserInfo(ua.UserId);
                     if (uaUserInfo.UserId != "Unknown")
                     {
-                        string vocabTimeString = "";
-                        if (vocabItem.Date.HasValue)
-                        {
-                            var startTime = TimeZoneInfo.ConvertTimeFromUtc(vocabItem.Date.Value,
+                        string vocabTimeString;
+                        var startTime = TimeZoneInfo.ConvertTimeFromUtc(vocabItem.Date.Value,
                                 TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
                             vocabTimeString = "\r\nDate: " + startTime.ToString("dd-MMM-yyyy");
-                        }
                         
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;

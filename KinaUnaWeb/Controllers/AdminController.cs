@@ -1,5 +1,4 @@
 ﻿using KinaUnaWeb.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -30,6 +29,7 @@ namespace KinaUnaWeb.Controllers
             _pushMessageSender = pushMessageSender;
         }
 
+        // ReSharper disable once UnusedAutoPropertyAccessor.Local
         private IBackgroundTaskQueue Queue { get; }
 
         public IActionResult Index()

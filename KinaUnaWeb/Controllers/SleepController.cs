@@ -188,13 +188,6 @@ namespace KinaUnaWeb.Controllers
             
             model.IsAdmin = _userIsProgenyAdmin;
             model.Progeny = progeny;
-
-            
-            foreach (Sleep chartItem in model.SleepList)
-            {
-                
-            }
-
             
             return View(model);
         }

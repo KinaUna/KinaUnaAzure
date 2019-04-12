@@ -8,7 +8,6 @@ using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
-using Org.BouncyCastle.Asn1.X509;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -16,13 +15,11 @@ namespace KinaUnaWeb.Controllers
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
-        private readonly ImageStore _imageStore;
 
-        public MyDataController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore)
+        public MyDataController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
-            _imageStore = imageStore;
         }
         public IActionResult Index()
         {

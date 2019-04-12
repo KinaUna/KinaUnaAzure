@@ -31,13 +31,13 @@ namespace KinaUnaProgenyApi.Controllers
         // GET api/measurements/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
-        public IActionResult Progeny(int id, [FromQuery] int accessLevel = 5)
+        public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Measurement> measurementsList = _dataService.GetMeasurementsList(id); // await _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == id && m.AccessLevel >= accessLevel).ToListAsync();
+                List<Measurement> measurementsList = await _dataService.GetMeasurementsList(id); // await _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == id && m.AccessLevel >= accessLevel).ToListAsync();
                 measurementsList = measurementsList.Where(m => m.AccessLevel >= accessLevel).ToList();
                 if (measurementsList.Any())
                 {
@@ -51,12 +51,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         // GET api/measurements/5
         [HttpGet("{id}")]
-        public IActionResult GetMeasurementItem(int id)
+        public async Task<IActionResult> GetMeasurementItem(int id)
         {
-            Measurement result = _dataService.GetMeasurement(id); // await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
+            Measurement result = await _dataService.GetMeasurement(id); // await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -100,7 +100,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             _context.MeasurementsDb.Add(measurementItem);
             await _context.SaveChangesAsync();
-            _dataService.SetMeasurement(measurementItem.MeasurementId);
+            await _dataService.SetMeasurement(measurementItem.MeasurementId);
 
             TimeLineItem tItem = new TimeLineItem();
             tItem.ProgenyId = measurementItem.ProgenyId;
@@ -114,7 +114,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
-            _dataService.SetTimeLineItem(tItem.TimeLineId);
+            await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
             return Ok(measurementItem);
         }
@@ -158,7 +158,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             _context.MeasurementsDb.Update(measurementItem);
             await _context.SaveChangesAsync();
-            _dataService.SetMeasurement(measurementItem.MeasurementId);
+            await _dataService.SetMeasurement(measurementItem.MeasurementId);
 
             TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
                 t.ItemId == measurementItem.MeasurementId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Measurement);
@@ -168,7 +168,7 @@ namespace KinaUnaProgenyApi.Controllers
                 tItem.AccessLevel = measurementItem.AccessLevel;
                 _context.TimeLineDb.Update(tItem);
                 await _context.SaveChangesAsync();
-                _dataService.SetTimeLineItem(tItem.TimeLineId);
+                await _dataService.SetTimeLineItem(tItem.TimeLineId);
             }
             return Ok(measurementItem);
         }
@@ -202,12 +202,12 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     _context.TimeLineDb.Remove(tItem);
                     await _context.SaveChangesAsync();
-                    _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
+                    await _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
                 }
 
                 _context.MeasurementsDb.Remove(measurementItem);
                 await _context.SaveChangesAsync();
-                _dataService.RemoveMeasurement(measurementItem.MeasurementId, measurementItem.ProgenyId);
+                await _dataService.RemoveMeasurement(measurementItem.MeasurementId, measurementItem.ProgenyId);
                 return NoContent();
             }
             else
@@ -217,14 +217,14 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]/{id}")]
-        public IActionResult GetMeasurementMobile(int id)
+        public async Task<IActionResult> GetMeasurementMobile(int id)
         {
-            Measurement result = _dataService.GetMeasurement(id); // await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
+            Measurement result = await _dataService.GetMeasurement(id); // await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
 
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {

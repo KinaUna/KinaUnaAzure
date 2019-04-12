@@ -26,9 +26,9 @@ namespace KinaUnaMediaApi.Controllers
 
         // GET api/comments/5
         [HttpGet("{id}")]
-        public IActionResult GetComment(int id)
+        public async Task<IActionResult> GetComment(int id)
         {
-            Comment result = _dataService.GetComment(id); // await _context.CommentsDb.SingleOrDefaultAsync(c => c.CommentId == id);
+            Comment result = await _dataService.GetComment(id); // await _context.CommentsDb.SingleOrDefaultAsync(c => c.CommentId == id);
             if (result != null)
             {
                 return Ok(result);
@@ -56,10 +56,10 @@ namespace KinaUnaMediaApi.Controllers
                 await _context.CommentThreadsDb.SingleOrDefaultAsync(c => c.CommentThreadId == model.CommentThreadNumber);
             cmntThread.CommentsCount = cmntThread.CommentsCount + 1;
             _context.CommentThreadsDb.Update(cmntThread);
-            _dataService.SetCommentsList(cmntThread.CommentThreadId);
+            await _dataService.SetCommentsList(cmntThread.CommentThreadId);
 
             await _context.SaveChangesAsync();
-            _dataService.SetComment(newComment.CommentId);
+            await _dataService.SetComment(newComment.CommentId);
 
             return Ok(newComment);
         }
@@ -83,7 +83,7 @@ namespace KinaUnaMediaApi.Controllers
 
             _context.CommentsDb.Update(comment);
             await _context.SaveChangesAsync();
-            _dataService.SetComment(comment.CommentId);
+            await _dataService.SetComment(comment.CommentId);
             return Ok(comment);
         }
 
@@ -101,12 +101,12 @@ namespace KinaUnaMediaApi.Controllers
                     cmntThread.CommentsCount = cmntThread.CommentsCount - 1;
                     _context.CommentThreadsDb.Update(cmntThread);
                     await _context.SaveChangesAsync();
-                    _dataService.SetCommentsList(cmntThread.CommentThreadId);
+                    await _dataService.SetCommentsList(cmntThread.CommentThreadId);
                 }
                 
                 _context.CommentsDb.Remove(comment);
                 await _context.SaveChangesAsync();
-                _dataService.RemoveComment(comment.CommentId, comment.CommentThreadNumber);
+                await _dataService.RemoveComment(comment.CommentId, comment.CommentThreadNumber);
                 return NoContent();
             }
             else

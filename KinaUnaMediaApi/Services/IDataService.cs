@@ -1,26 +1,27 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using KinaUna.Data.Models;
 
 namespace KinaUnaMediaApi.Services
 {
     public interface IDataService
     {
-        UserAccess GetProgenyUserAccessForUser(int progenyId, string userEmail);
-        Picture GetPicture(int id);
-        Picture SetPicture(int id);
-        void RemovePicture(int pictureId, int progenyId);
-        List<Picture> GetPicturesList(int progenyId);
-        List<Picture> SetPicturesList(int progenyId);
-        Video GetVideo(int id);
-        Video SetVideo(int id);
-        void RemoveVideo(int videoId, int progenyId);
-        List<Video> GetVideosList(int progenyId);
-        List<Video> SetVideosList(int progenyId);
-        Comment GetComment(int commentId);
-        Comment SetComment(int commentId);
-        void RemoveComment(int commentId, int commentThreadId);
-        List<Comment> GetCommentsList(int commentThreadId);
-        List<Comment> SetCommentsList(int commentThreadId);
-        void RemoveCommentsList(int commentThreadId);
+        Task<UserAccess> GetProgenyUserAccessForUser(int progenyId, string userEmail);
+        Task<Picture> GetPicture(int id);
+        Task<Picture> SetPicture(int id);
+        Task RemovePicture(int pictureId, int progenyId);
+        Task<List<Picture>> GetPicturesList(int progenyId);
+        Task<List<Picture>> SetPicturesList(int progenyId);
+        Task<Video> GetVideo(int id);
+        Task<Video> SetVideo(int id);
+        Task RemoveVideo(int videoId, int progenyId);
+        Task<List<Video>> GetVideosList(int progenyId);
+        Task<List<Video>> SetVideosList(int progenyId);
+        Task<Comment> GetComment(int commentId);
+        Task<Comment> SetComment(int commentId);
+        Task RemoveComment(int commentId, int commentThreadId);
+        Task<List<Comment>> GetCommentsList(int commentThreadId);
+        Task<List<Comment>> SetCommentsList(int commentThreadId);
+        Task RemoveCommentsList(int commentThreadId);
     }
 }

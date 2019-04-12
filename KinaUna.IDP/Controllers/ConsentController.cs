@@ -119,7 +119,7 @@ namespace KinaUna.IDP.Controllers
                     var resources = await _resourceStore.FindEnabledResourcesByScopeAsync(request.ScopesRequested);
                     if (resources != null && (resources.IdentityResources.Any() || resources.ApiResources.Any()))
                     {
-                        return new ConsentViewModel(model, returnUrl, request, client, resources);
+                        return new ConsentViewModel(model, returnUrl, client, resources);
                     }
                     else
                     {

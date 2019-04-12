@@ -54,7 +54,7 @@ namespace KinaUnaWeb.Controllers
             model.AccessLevel = (int)AccessLevel.Users;
             model.UserId = "";
             model.ProgenyList = new List<SelectListItem>();
-            if (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null)
+            if (User != null && (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null))
             {
                 var accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
                 if (accessList.Any())

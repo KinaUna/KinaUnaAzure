@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace KinaUna.Data.Models
+﻿namespace KinaUna.Data.Models
 {
     public enum AccessLevel
     {
