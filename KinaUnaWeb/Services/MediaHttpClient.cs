@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
@@ -464,7 +465,6 @@ namespace KinaUnaWeb.Services
 
             string pageApiPath = "/api/pictures/pictureviewmodel/" + id + "/" + userAccessLevel + "?sortBy=" + sortBy;
             var pictureUri = clientUri + pageApiPath;
-
             var pictureResponseString = await pictureHttpClient.GetStringAsync(pictureUri);
 
             PictureViewModel picture = JsonConvert.DeserializeObject<PictureViewModel>(pictureResponseString);
@@ -476,6 +476,7 @@ namespace KinaUnaWeb.Services
                         TimeZoneInfo.FindSystemTimeZoneById(timeZone));
                 }
             }
+
             return picture;
         }
 

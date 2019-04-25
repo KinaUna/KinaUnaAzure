@@ -122,7 +122,7 @@ namespace KinaUnaProgenyApi.Controllers
             await _dataService.SetProgenyUserAccessList(userAccess.ProgenyId);
             await _dataService.SetUsersUserAccessList(userAccess.UserId);
             await _dataService.SetUserAccess(userAccess.AccessId);
-
+            
             return CreatedAtAction(nameof(GetAccess), new {id = userAccess.AccessId });
         }
 

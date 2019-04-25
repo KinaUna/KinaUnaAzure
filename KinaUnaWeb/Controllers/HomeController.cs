@@ -260,7 +260,8 @@ namespace KinaUnaWeb.Controllers
                 await _progenyHttpClient.SetViewChild(userId, userinfo);
             }
 
-            return Redirect(returnUrl);
+            // return Redirect(returnUrl);
+            return RedirectToAction("Index", new{childId = childId});
         }
 
         [AllowAnonymous]

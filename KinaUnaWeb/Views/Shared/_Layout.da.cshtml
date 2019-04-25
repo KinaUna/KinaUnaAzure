@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="da">
 @using KinaUna.Data
 @using Microsoft.AspNetCore.Http.Extensions
 @using KinaUnaWeb.Services
@@ -82,7 +82,7 @@
         <div class="container" style="max-height: 50px;">
             @if (User.Identity.IsAuthenticated)
             {
-                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage">
+                <a asp-area="" asp-controller="Home" asp-action="Index" asp-route-childId="@userinfo.ViewChild" class="navbar-brand leavePage" aria-label="Home">
                     <img src="/images/Square44x44Logo.scale-100.png" style="max-height: 44px; margin-top: -6px; background: white; border-radius: 20px; padding: 3px;" />
                 </a>
             }
@@ -166,6 +166,10 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Pictures" asp-action="Index" method="get">
+                                    <input type="number" name="id" value="1" hidden="hidden" />
+                                    <input type="number" name="pageSize" value="8" hidden="hidden" />
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
+                                    <input type="number" name="sortBy" value="1" hidden="hidden" />
                                     <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
                                         <i class="material-icons">photo_library</i><span> Foto</span>
                                     </button>
@@ -173,6 +177,10 @@
                             </div>
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Videos" asp-action="Index" asp-route-id="1" method="get">
+                                    <input type="number" name="id" value="1" hidden="hidden" />
+                                    <input type="number" name="pageSize" value="8" hidden="hidden" />
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
+                                    <input type="number" name="sortBy" value="1" hidden="hidden" />
                                     <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
                                         <i class="material-icons">videocam</i><span> Video</span>
                                     </button>
@@ -180,26 +188,31 @@
                             </div>
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Calendar" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                     <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">event_note</i> Kalender</button>
                                 </form>
                             </div>
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Locations" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                     <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">person_pin</i> Steder</button>
                                 </form>
                             </div>
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Vocabulary" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                     <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">forum</i> Ord</button>
                                 </form>
                             </div>
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Skills" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                     <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">school</i> Færdigheder</button>
                                 </form>
                             </div>
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Friends" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                     <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">face</i> Venner</button>
                                 </form>
                             </div>
@@ -212,31 +225,37 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="TimeLine" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                     <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">update</i> Tidslinje</button>
                                 </form>
                             </div>
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Measurements" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                     <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">straighten</i> Målinger</button>
                                 </form>
                             </div>
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Sleep" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                     <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">hotel</i> Søvn</button>
                                 </form>
                             </div>
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Notes" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                     <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">note</i> Noter</button>
                                 </form>
                             </div>
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Contacts" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                     <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">contact_phone</i> Kontakter</button>
                                 </form>
                             </div>
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Vaccinations" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                     <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">local_pharmacy</i> Vaccinationer</button>
                                 </form>
                             </div>

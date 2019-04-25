@@ -145,4 +145,5 @@ $(document).ready(function () {
     $(".leavePage2").click(function() {
         runWaitMeLeave2();
     });
+    
 });

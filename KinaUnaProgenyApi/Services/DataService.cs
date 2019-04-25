@@ -644,8 +644,8 @@ namespace KinaUnaProgenyApi.Services
             Note note = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
             await _cache.SetStringAsync(Constants.AppName + "note" + id, JsonConvert.SerializeObject(note), _cacheOptionsSliding);
 
-            List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == note.ProgenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "noteslist" + note.ProgenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
+            List<Note> notesList = await _context.NotesDb.AsNoTracking().Where(c => c.ProgenyId == note.ProgenyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + "noteslist" + note.ProgenyId, JsonConvert.SerializeObject(notesList), _cacheOptionsSliding);
 
             return note;
         }

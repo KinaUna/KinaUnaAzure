@@ -74,7 +74,8 @@ namespace KinaUnaProgenyApi
             {
                 app.UseHsts();
             }
-            
+
+            app.UseStaticFiles();
             app.UseAuthentication();
             app.UseHttpsRedirection();
             app.UseMvc();
