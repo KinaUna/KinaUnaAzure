@@ -2226,7 +2226,7 @@ namespace KinaUnaWeb.Controllers
                     friend.FileName = friend.File.FileName;
                     using (var stream = friend.File.OpenReadStream())
                     {
-                        friend.PictureLink = await _imageStore.SaveImage(stream, "friends");
+                        model.PictureLink = await _imageStore.SaveImage(stream, "friends");
                     }
 
                     if (!oldPictureLink.ToLower().StartsWith("http"))
