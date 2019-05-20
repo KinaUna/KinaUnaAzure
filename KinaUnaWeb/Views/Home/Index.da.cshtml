@@ -81,7 +81,14 @@
                     Seneste indlæg:
                 </div>
                 await Html.RenderPartialAsync("LatestPostsPartial", Model.LatestPosts);
-
+            <br/>
+            }
+            @if (Model.YearAgoPosts.TimeLineItems.Any())
+            {
+                <div>
+                    På denne dag, for et år siden:
+                </div>
+                await Html.RenderPartialAsync("YearAgoPartial", Model.YearAgoPosts);
             }
         </div>
     </div>

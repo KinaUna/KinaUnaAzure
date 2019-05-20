@@ -75,6 +75,33 @@ namespace KinaUnaProgenyApi.Controllers
             return Unauthorized();
         }
 
+        [HttpGet]
+        [Route("[action]/{id}/{accessLevel}")]
+        public async Task<IActionResult> ProgenyYearAgo(int id, int accessLevel = 5)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            if (userAccess != null || id == Constants.DefaultChildId)
+            {
+                List<TimeLineItem> timeLineList = await _dataService.GetTimeLineList(id); // await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == id && t.AccessLevel >= accessLevel && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime).ToListAsync();
+                DateTime yearAgo = DateTime.Today.AddYears(-1);
+                timeLineList = timeLineList
+                    .Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime.Date == yearAgo.Date).OrderBy(t => t.ProgenyTime).ToList();
+                if (timeLineList.Any())
+                {
+                    timeLineList.Reverse();
+
+                    return Ok(timeLineList);
+                }
+                else
+                {
+                    return Ok(new List<TimeLineItem>());
+                }
+            }
+
+            return Unauthorized();
+        }
+
         [HttpGet("[action]/{itemId}/{itemType}")]
         public async Task<IActionResult> GetTimeLineItemByItemId(string itemId, int itemType)
         {

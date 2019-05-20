@@ -82,19 +82,26 @@
         <div class="col-12 col-sm-12 col-md-12 col-lg-4" style="float: right; margin-top: 10px; padding-left: 25px;">
             @if (Model.EventsList.Any())
             {
-                <div>
-                    Current and upcoming events:
-                </div>
+            <div>
+                Current and upcoming events:
+            </div>
                 await Html.RenderPartialAsync("EventsPartial", Model.EventsList);
-                <br />
+            <br />
             }
             @if (Model.LatestPosts.TimeLineItems.Any())
             {
-                <div>
-                    Latest posts:
-                </div>
+            <div>
+                Latest posts:
+            </div>
                 await Html.RenderPartialAsync("LatestPostsPartial", Model.LatestPosts);
-
+            <br />
+            }
+            @if (Model.YearAgoPosts.TimeLineItems.Any())
+            {
+            <div>
+                On this day a year ago:
+            </div>
+                await Html.RenderPartialAsync("YearAgoPartial", Model.YearAgoPosts);
             }
         </div>
 

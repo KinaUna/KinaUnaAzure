@@ -20,6 +20,7 @@ namespace KinaUnaWeb.Services
         Task<List<UserAccess>> GetUserAccessList(string userEmail);
         Task<List<Location>> GetProgenyLocations(int progenyId, int accessLevel);
         Task<List<TimeLineItem>> GetProgenyLatestPosts(int progenyId, int accessLevel);
+        Task<List<TimeLineItem>> GetProgenyYearAgo(int progenyId, int accessLevel);
         Task<UserAccess> GetUserAccess(int userAccessId);
         Task<UserAccess> AddUserAccess(UserAccess userAccess);
         Task<UserAccess> UpdateUserAccess(UserAccess userAccess);

@@ -1,0 +1,57 @@
+﻿@model KinaUnaWeb.Models.ItemViewModels.TimeLineViewModel
+
+<div id="yearAgoItems" style="opacity: 0.85">
+
+</div>
+
+<script type="text/javascript">
+    let currentYearAgoItemNumber = 0;
+    let yearAgoMaxNumber = @Model.TimeLineItems.Count;
+
+    @{
+        string[] yearAgoIdNumbers = new String[Model.TimeLineItems.Count];
+        int[] yearAgoItemType = new int[Model.TimeLineItems.Count];
+        int yearAgoTiCount = 0;
+        foreach (TimeLineItem tItm in Model.TimeLineItems)
+        {
+            yearAgoIdNumbers[yearAgoTiCount] = tItm.ItemId;
+            yearAgoItemType[yearAgoTiCount] = tItm.ItemType;
+            yearAgoTiCount++;
+        }
+    }
+    let yearAgoItemId = [@string.Join(",", yearAgoIdNumbers)];
+    let yearAgoItemType = [@string.Join(",", yearAgoItemType)];
+    
+    $(document).ready(function() {
+        async function getYearAgoItemHist() {
+            let g;
+            for (g = 0; g < yearAgoMaxNumber; g++) {
+                await getYearAgoHistItem();
+            };
+        };
+
+        async function getYearAgoHistItem() {
+            let timelineItemData = { typeId: yearAgoItemType[currentYearAgoItemNumber], itemId: yearAgoItemId[currentYearAgoItemNumber] };
+            currentYearAgoItemNumber++;
+            await getYearAgoItemLoad(timelineItemData);
+        };
+
+        getYearAgoItemHist();
+
+        function getYearAgoItemLoad(tData) {
+            return $.ajax({
+                type: "GET",
+                url: "/LatestPosts/GetTimeLineItem",
+                data: tData,
+                datatype: "html",
+                async: true,
+                success: function(data) {
+                    $('#yearAgoItems').append(data);
+                },
+                error: function (jqXhr, textStatus, errorThrown) {
+                    console.log(textStatus, errorThrown);
+                }
+            });
+        }
+    });
+</script>

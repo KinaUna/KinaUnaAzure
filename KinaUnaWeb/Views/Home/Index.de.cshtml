@@ -81,7 +81,14 @@
                     Neueste Beiträge:
                 </div>
                 await Html.RenderPartialAsync("LatestPostsPartial", Model.LatestPosts);
-
+            <br/>
+            }
+            @if (Model.YearAgoPosts.TimeLineItems.Any())
+            {
+                <div>
+                    An diesem Tag vor einem Jahr:
+                </div>
+                await Html.RenderPartialAsync("YearAgoPartial", Model.YearAgoPosts);
             }
         </div>
     </div>

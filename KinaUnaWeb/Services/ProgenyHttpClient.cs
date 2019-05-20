@@ -501,6 +501,41 @@ namespace KinaUnaWeb.Services
             return progenyPosts;
         }
 
+        public async Task<List<TimeLineItem>> GetProgenyYearAgo(int progenyId, int accessLevel)
+        {
+            List<TimeLineItem> yearAgoPosts = new List<TimeLineItem>();
+            HttpClient httpClient = new HttpClient();
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            var currentContext = _httpContextAccessor.HttpContext;
+            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                httpClient.SetBearerToken(accessToken);
+            }
+            else
+            {
+                accessToken = await GetNewToken();
+                httpClient.SetBearerToken(accessToken);
+            }
+
+            httpClient.BaseAddress = new Uri(clientUri);
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            string yearAgoApiPath = "/api/timeline/progenyyearago/" + progenyId + "/" + accessLevel;
+            var yearAgoUri = clientUri + yearAgoApiPath;
+            var yearAgoResponse = await httpClient.GetAsync(yearAgoUri).ConfigureAwait(false);
+            if (yearAgoResponse.IsSuccessStatusCode)
+            {
+                var yearAgoAsString = await yearAgoResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                yearAgoPosts = JsonConvert.DeserializeObject<List<TimeLineItem>>(yearAgoAsString);
+            }
+
+            return yearAgoPosts;
+        }
+
         public async Task<UserAccess> AddUserAccess(UserAccess userAccess)
         {
             HttpClient httpClient = new HttpClient();

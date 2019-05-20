@@ -211,6 +211,13 @@ namespace KinaUnaWeb.Controllers
                 feedModel.LatestPosts.TimeLineItems = feedModel.LatestPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).Take(5).ToList();
             }
 
+            feedModel.YearAgoPosts = new TimeLineViewModel();
+            feedModel.YearAgoPosts.TimeLineItems = new List<TimeLineItem>();
+            feedModel.YearAgoPosts.TimeLineItems = await _progenyHttpClient.GetProgenyYearAgo(_progId, userAccessLevel);
+            if (feedModel.YearAgoPosts.TimeLineItems.Any())
+            {
+                feedModel.YearAgoPosts.TimeLineItems = feedModel.YearAgoPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).ToList();
+            }
 
             return View(feedModel);
         }

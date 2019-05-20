@@ -39,5 +39,6 @@ namespace KinaUnaWeb.Models.HomeViewModels
         public string Tags { get; set; }
         public string Location { get; set; }
         public TimeLineViewModel LatestPosts { get; set; }
+        public TimeLineViewModel YearAgoPosts { get; set; }
     }
 }
