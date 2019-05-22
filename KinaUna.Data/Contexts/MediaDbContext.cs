@@ -14,6 +14,6 @@ namespace KinaUna.Data.Contexts
         public DbSet<Video> VideoDb { get; set; }
         public DbSet<CommentThread> CommentThreadsDb { get; set; }
         public DbSet<Comment> CommentsDb { get; set; }
-
+        
     }
 }

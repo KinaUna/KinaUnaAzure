@@ -339,10 +339,9 @@ namespace KinaUnaMediaApi.Controllers
                 CommentThread commentThread = new CommentThread();
                 await _context.CommentThreadsDb.AddAsync(commentThread);
                 await _context.SaveChangesAsync();
-                commentThread.CommentThreadId = commentThread.Id;
                 _context.CommentThreadsDb.Update(commentThread);
                 await _context.SaveChangesAsync();
-                model.CommentThreadNumber = commentThread.CommentThreadId;
+                model.CommentThreadNumber = commentThread.Id;
 
                 await _context.VideoDb.AddAsync(model);
                 await _context.SaveChangesAsync();
@@ -425,7 +424,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
 
                 CommentThread cmntThread =
-                    _context.CommentThreadsDb.SingleOrDefault(c => c.CommentThreadId == video.CommentThreadNumber);
+                    _context.CommentThreadsDb.SingleOrDefault(c => c.Id == video.CommentThreadNumber);
                 if (cmntThread != null)
                 {
                     _context.CommentThreadsDb.Remove(cmntThread);
