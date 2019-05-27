@@ -19,6 +19,12 @@ namespace KinaUnaWeb.Services
             blobClient = new CloudBlobClient(new Uri(baseUri), credentials);
         }
 
+        /// <summary>
+        /// Saves an image file to the storage account specified in Constants.CloudBlobBase.
+        /// </summary>
+        /// <param name="imageStream">Stream: The stream for the image file.</param>
+        /// <param name="containerName">string: The name of the Azure Storage Blob Container. Default: pictures</param>
+        /// <returns>string: The file name (Picture.PictureLink)</returns>
         public async Task<string> SaveImage(Stream imageStream, string containerName = "pictures")
         {
             var imageId = Guid.NewGuid().ToString();
@@ -28,6 +34,12 @@ namespace KinaUnaWeb.Services
             return imageId;
         }
 
+        /// <summary>
+        /// Gets the URI, including access signature, for an image stored in an Azure Storage Blob container.
+        /// </summary>
+        /// <param name="imageId">string: The image Id (Picture.PictureLink).</param>
+        /// <param name="containerName">string: The name of the Azure Storage Blob Container. Default: pictures</param>
+        /// <returns>string: The URI for the image.</returns>
         public string UriFor(string imageId, string containerName = "pictures")
         {
             var sasPolicy = new SharedAccessBlobPolicy
@@ -43,6 +55,12 @@ namespace KinaUnaWeb.Services
             return $"{baseUri}{containerName}/{imageId}{sas}";
         }
 
+        /// <summary>
+        /// Removes an image from the Azure Storage Blob.
+        /// </summary>
+        /// <param name="imageId">string: The image Id (Picture.PictureLink).</param>
+        /// <param name="containerName">string: The name of the Azure Storage Blob Container. Default: pictures</param>
+        /// <returns>string: The image Id (Picture.PictureLink).</returns>
         public async Task<string> DeleteImage(string imageId, string containerName = "pictures")
         {
             var container = blobClient.GetContainerReference(containerName);
