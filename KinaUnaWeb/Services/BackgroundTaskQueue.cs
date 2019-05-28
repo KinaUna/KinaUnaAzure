@@ -7,6 +7,10 @@ namespace KinaUnaWeb.Services
 {
     // Source: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services?view=aspnetcore-2.1#queued-background-tasks
 
+    /// <summary>
+    /// A service for executing long running tasks in the background.
+    /// For example database maintenance, moving files, batch photo editing.
+    /// </summary>
     public class BackgroundTaskQueue : IBackgroundTaskQueue
     {
         private ConcurrentQueue<Func<CancellationToken, Task>> _workItems =
