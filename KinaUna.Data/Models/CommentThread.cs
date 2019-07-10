@@ -6,7 +6,6 @@ namespace KinaUna.Data.Models
     {
         [Key]
         public int Id { get; set; }
-        //public int CommentThreadId { get; set; }
         public int CommentsCount { get; set; }
     }
 }

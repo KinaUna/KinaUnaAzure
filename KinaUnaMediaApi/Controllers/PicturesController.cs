@@ -13,6 +13,7 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaMediaApi.Controllers
@@ -891,7 +892,7 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             List<Picture> allItems;
-            if (tagFilter != "")
+            if (!string.IsNullOrEmpty(tagFilter))
             {
                 allItems = await _dataService.GetPicturesList(progenyId); // await _context.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToListAsync();
                 allItems = allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToList();
@@ -972,7 +973,136 @@ namespace KinaUnaMediaApi.Controllers
             return Ok(model);
         }
 
-        
+        [HttpGet]
+        [Route("[action]/{id}/{accessLevel}")]
+        public async Task<IActionResult> PictureViewModelMobile(int id, int accessLevel, [FromQuery] int sortBy = 1)
+        {
+            Picture picture = await _dataService.GetPicture(id); // await _context.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == id);
+
+            if (picture != null)
+            {
+                // Check if user should be allowed access.
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail); // _progenyDbContext.UserAccessDb.SingleOrDefault(u => u.ProgenyId == picture.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+                if (userAccess == null && picture.ProgenyId != Constants.DefaultChildId)
+                {
+                    return Unauthorized();
+                }
+
+                PictureViewModel model = new PictureViewModel();
+                model.PictureId = picture.PictureId;
+                model.PictureTime = picture.PictureTime;
+                model.ProgenyId = picture.ProgenyId;
+                model.Owners = picture.Owners;
+                model.PictureLink = picture.PictureLink1200;
+                if (!model.PictureLink.ToLower().StartsWith("http"))
+                {
+                    model.PictureLink = _imageStore.UriFor(model.PictureLink);
+                }
+                model.AccessLevel = picture.AccessLevel;
+                model.Author = picture.Author;
+                model.CommentThreadNumber = picture.CommentThreadNumber;
+                model.Tags = picture.Tags;
+                model.Location = picture.Location;
+                model.Latitude = picture.Latitude;
+                model.Longtitude = picture.Longtitude;
+                model.Altitude = picture.Altitude;
+                model.PictureNumber = 1;
+                model.PictureCount = 1;
+                model.CommentsList = await _dataService.GetCommentsList(picture.CommentThreadNumber); // await _context.CommentsDb.Where(c => c.CommentThreadNumber == picture.CommentThreadNumber).ToListAsync();
+                model.TagsList = "";
+                List<string> tagsList = new List<string>();
+                List<Picture> pictureList = await _dataService.GetPicturesList(picture.ProgenyId); // await _context.PicturesDb.AsNoTracking()
+                pictureList = pictureList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToList();
+                if (pictureList.Any())
+                {
+                    int currentIndex = 0;
+                    int indexer = 0;
+                    foreach (Picture pic in pictureList)
+                    {
+                        if (pic.PictureId == picture.PictureId)
+                        {
+                            currentIndex = indexer;
+                        }
+                        indexer++;
+                        if (!String.IsNullOrEmpty(pic.Tags))
+                        {
+                            List<string> pvmTags = pic.Tags.Split(',').ToList();
+                            foreach (string tagstring in pvmTags)
+                            {
+                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                                {
+                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                                }
+                            }
+                        }
+                    }
+                    model.PictureNumber = currentIndex + 1;
+                    model.PictureCount = pictureList.Count;
+                    if (currentIndex > 0)
+                    {
+                        model.PrevPicture = pictureList[currentIndex - 1].PictureId;
+                    }
+                    else
+                    {
+                        model.PrevPicture = pictureList.Last().PictureId;
+                    }
+
+                    if (currentIndex + 1 < pictureList.Count)
+                    {
+                        model.NextPicture = pictureList[currentIndex + 1].PictureId;
+                    }
+                    else
+                    {
+                        model.NextPicture = pictureList.First().PictureId;
+                    }
+
+                    if (sortBy == 1)
+                    {
+                        int tempVal = model.NextPicture;
+                        model.NextPicture = model.PrevPicture;
+                        model.PrevPicture = tempVal;
+                    }
+
+                }
+                string tagItems = "[";
+                if (tagsList.Any())
+                {
+                    foreach (string tagstring in tagsList)
+                    {
+                        tagItems = tagItems + "'" + tagstring + "',";
+                    }
+
+                    tagItems = tagItems.Remove(tagItems.Length - 1);
+                    tagItems = tagItems + "]";
+                }
+
+                model.TagsList = tagItems;
+                return Ok(model);
+            }
+
+            return NotFound();
+        }
+
+        [Route("[action]")]
+        [HttpPost]
+        public async Task<IActionResult> UploadPicture([FromForm]IFormFile file)
+        {
+            string pictureLink = "";
+            using (var stream = file.OpenReadStream())
+            {
+                pictureLink = await _imageStore.SaveImage(stream);
+            }
+
+            if (pictureLink != "")
+            {
+                return Ok(pictureLink);
+            }
+
+            return NoContent();
+        }
+
         // Download pictures to StorageBlob from Url
         [HttpGet]
         [Route("[action]/{pictureId}")]

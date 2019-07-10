@@ -95,9 +95,6 @@ namespace KinaUna.IDP
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-
-            services.Configure<AppSettings>(Configuration);
-
             services.Configure<DataProtectionTokenProviderOptions>(options =>
             {
                 options.TokenLifespan = TimeSpan.FromDays(90);

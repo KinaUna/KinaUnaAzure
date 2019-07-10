@@ -12,6 +12,7 @@ using KinaUna.Data.Models;
 using KinaUnaWeb.Models.ItemViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
@@ -475,6 +476,15 @@ namespace KinaUnaWeb.Services
                     picture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(picture.PictureTime.Value,
                         TimeZoneInfo.FindSystemTimeZoneById(timeZone));
                 }
+
+                if (picture.CommentsList.Any())
+                {
+                    foreach (Comment cmnt in picture.CommentsList)
+                    {
+                        cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created,
+                            TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                    }
+                }
             }
 
             return picture;
@@ -565,6 +575,15 @@ namespace KinaUnaWeb.Services
                 {
                    video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(video.VideoTime.Value,
                         TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                }
+
+                if (video.CommentsList.Any())
+                {
+                    foreach (Comment cmnt in video.CommentsList)
+                    {
+                        cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created,
+                            TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                    }
                 }
             }
             return video;

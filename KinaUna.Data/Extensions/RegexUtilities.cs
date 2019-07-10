@@ -6,8 +6,16 @@ using System.Text.RegularExpressions;
 
 namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Regex Utilities for validating string content. 
+    /// </summary>
     public static class RegexUtilities
     {
+        /// <summary>
+        /// Checks if a string is valid email address.
+        /// </summary>
+        /// <param name="email">string: The email address text to validate.</param>
+        /// <returns>bool: True if a valid email address.</returns>
         public static bool IsValidEmail(this string email)
         {
             if (string.IsNullOrWhiteSpace(email))

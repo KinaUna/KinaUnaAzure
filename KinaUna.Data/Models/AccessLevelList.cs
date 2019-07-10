@@ -3,10 +3,24 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Select Lists for setting the access level of data.
+    /// </summary>
     public class AccessLevelList
     {
+        /// <summary>
+        /// The English Access Level List.
+        /// </summary>
         public List<SelectListItem> AccessLevelListEn { get; set; }
+
+        /// <summary>
+        /// The Danish Access Level List.
+        /// </summary>
         public List<SelectListItem> AccessLevelListDa { get; set; }
+
+        /// <summary>
+        /// The German Access Level List.
+        /// </summary>
         public List<SelectListItem> AccessLevelListDe { get; set; }
 
         public AccessLevelList()

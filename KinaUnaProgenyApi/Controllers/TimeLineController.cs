@@ -254,32 +254,37 @@ namespace KinaUnaProgenyApi.Controllers
             if (prog != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                // Check if user is allowed to add notes for this child.
-                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+                if (userAccess != null)
                 {
-                    return Unauthorized();
+                    // Check if the correct access level is used. If not use the one retrieved from database.
+                    if (accessLevel < userAccess.AccessLevel)
+                    {
+                        accessLevel = userAccess.AccessLevel;
+                    }
+                    DateTime startDate;
+                    if (year != 0 && month != 0 && day != 0)
+                    {
+                        startDate = new DateTime(year, month, day, 23, 59, 59, DateTimeKind.Utc);
+
+                    }
+                    else
+                    {
+                        startDate = DateTime.UtcNow;
+                    }
+
+                    List<TimeLineItem> timeLineList = await _dataService.GetTimeLineList(id); // await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == id && t.AccessLevel >= accessLevel && t.ProgenyTime < startDate).OrderBy(t => t.ProgenyTime).ToListAsync();
+                    timeLineList = timeLineList.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime < startDate)
+                        .OrderBy(t => t.ProgenyTime).ToList();
+                    if (timeLineList.Any())
+                    {
+                        timeLineList.Reverse();
+
+                        return Ok(timeLineList.Skip(start).Take(count));
+                    }
                 }
                 
-                DateTime startDate;
-                if (year != 0 && month != 0 && day != 0)
-                {
-                    startDate = new DateTime(year, month, day, 23, 59, 59, DateTimeKind.Utc);
-
-                }
-                else
-                {
-                    startDate = DateTime.UtcNow;
-                }
-
-                List<TimeLineItem> timeLineList = await _dataService.GetTimeLineList(id); // await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == id && t.AccessLevel >= accessLevel && t.ProgenyTime < startDate).OrderBy(t => t.ProgenyTime).ToListAsync();
-                timeLineList = timeLineList.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime < startDate)
-                    .OrderBy(t => t.ProgenyTime).ToList();
-                if (timeLineList.Any())
-                {
-                    timeLineList.Reverse();
-
-                    return Ok(timeLineList.Skip(start).Take(count));
-                }
             }
 
             return Ok(new List<TimeLineItem>());

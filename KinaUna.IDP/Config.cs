@@ -6,8 +6,13 @@ using System.Collections.Generic;
 
 namespace KinaUna.IDP
 {
+    /// <summary>
+    /// Configuration for the Identity Server.
+    /// </summary>
     public static class Config
     {
+        // If you make changes here, temporarily set ResetIdentityDb (KinaUna.Data/Constants.cs) to true to reset the database.
+
         // identity-related resources (scopes)
         public static IEnumerable<IdentityResource> GetIdentityResources()
         {

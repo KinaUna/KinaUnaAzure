@@ -171,7 +171,15 @@ namespace KinaUnaProgenyApi.Controllers
             contactItem.AddressString = value.AddressString;
             contactItem.ProgenyId = value.ProgenyId;
             contactItem.Author = value.Author;
-            contactItem.DateAdded = DateTime.UtcNow;
+            if (value.DateAdded.HasValue)
+            {
+                contactItem.DateAdded = value.DateAdded.Value.ToUniversalTime();
+            }
+            else
+            {
+                contactItem.DateAdded = DateTime.UtcNow;
+            }
+            
             contactItem.Context = value.Context;
             contactItem.DisplayName = value.DisplayName;
             contactItem.Email1 = value.Email1;
