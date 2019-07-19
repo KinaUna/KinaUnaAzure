@@ -84,9 +84,9 @@ namespace KinaUnaProgenyApi.Controllers
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 List<TimeLineItem> timeLineList = await _dataService.GetTimeLineList(id); // await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == id && t.AccessLevel >= accessLevel && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime).ToListAsync();
-                DateTime yearAgo = DateTime.Today.AddYears(-1);
+                
                 timeLineList = timeLineList
-                    .Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime.Date == yearAgo.Date).OrderBy(t => t.ProgenyTime).ToList();
+                    .Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day).OrderBy(t => t.ProgenyTime).ToList();
                 if (timeLineList.Any())
                 {
                     timeLineList.Reverse();

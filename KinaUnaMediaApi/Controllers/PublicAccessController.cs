@@ -117,7 +117,7 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             List<Picture> allItems;
-            if (tagFilter != "")
+            if (!string.IsNullOrEmpty(tagFilter))
             {
                 allItems = await _dataService.GetPicturesList(Constants.DefaultChildId); // await _context.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == 2 && p.AccessLevel >= 5 && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToListAsync();
                 allItems = allItems.Where(p => p.AccessLevel >= 5 && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToList();
