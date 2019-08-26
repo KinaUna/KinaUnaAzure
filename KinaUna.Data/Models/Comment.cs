@@ -14,7 +14,6 @@ namespace KinaUna.Data.Models
         public DateTime Created { get; set; }
 
         [NotMapped]
-        [JsonIgnore]
         public string AuthorImage { get; set; }
     }
 }

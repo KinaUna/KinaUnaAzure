@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaMediaApi.Models.ViewModels;
 using KinaUnaMediaApi.Services;
@@ -20,11 +22,13 @@ namespace KinaUnaMediaApi.Controllers
     {
         private readonly MediaDbContext _context;
         private readonly IDataService _dataService;
+        private readonly ImageStore _imageStore;
 
-        public CommentsController(MediaDbContext context, IDataService dataService)
+        public CommentsController(MediaDbContext context, IDataService dataService, ImageStore imageStore)
         {
             _context = context;
             _dataService = dataService;
+            _imageStore = imageStore;
         }
 
         // GET api/comments/5
@@ -39,6 +43,64 @@ namespace KinaUnaMediaApi.Controllers
             
             return NotFound();
             
+        }
+
+        // GET api/comments/getcommentsbythread/5
+        [HttpGet]
+        [Route("[action]/{threadId}")]
+        public async Task<IActionResult> GetCommentsByThread(int threadId)
+        {
+            List<Comment> result = await _dataService.GetCommentsList(threadId);
+            if (result != null)
+            {
+                foreach (Comment comment in result)
+                {
+                    UserInfo cmntAuthor = await _dataService.GetUserInfoByUserId(comment.Author);
+                    string authorImg = cmntAuthor?.ProfilePicture ?? "";
+                    string authorName = "";
+                    if (!String.IsNullOrEmpty(authorImg))
+                    {
+                        if (!authorImg.ToLower().StartsWith("http"))
+                        {
+                            authorImg = _imageStore.UriFor(authorImg, "profiles");
+                        }
+                    }
+                    
+                    comment.AuthorImage = authorImg;
+                    if (string.IsNullOrEmpty(comment.AuthorImage))
+                    {
+                        comment.AuthorImage = Constants.ProfilePictureUrl;
+                    }
+
+                    if (!String.IsNullOrEmpty(cmntAuthor.FirstName))
+                    {
+                        authorName = cmntAuthor.FirstName;
+                    }
+                    if (!String.IsNullOrEmpty(cmntAuthor.MiddleName))
+                    {
+                        authorName = authorName + " " + cmntAuthor.MiddleName;
+                    }
+                    if (!String.IsNullOrEmpty(cmntAuthor.LastName))
+                    {
+                        authorName = authorName + " " + cmntAuthor.LastName;
+                    }
+
+                    authorName = authorName.Trim();
+                    if (String.IsNullOrEmpty(authorName))
+                    {
+                        authorName = cmntAuthor.UserName;
+                        if (String.IsNullOrEmpty(authorName))
+                        {
+                            authorName = comment.DisplayName;
+                        }
+                    }
+
+                    comment.DisplayName = authorName;
+                }
+                return Ok(result);
+            }
+
+            return NotFound();
         }
 
         // POST api/comments
@@ -94,9 +156,16 @@ namespace KinaUnaMediaApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
+            
             Comment comment = await _context.CommentsDb.SingleOrDefaultAsync(c => c.CommentId == id);
             if (comment != null)
             {
+                UserInfo userInfo = await _dataService.GetUserInfoByEmail(User.GetEmail());
+                if (userInfo.UserId != comment.Author)
+                {
+                    return Unauthorized();
+                }
+
                 CommentThread cmntThread =
                     await _context.CommentThreadsDb.SingleOrDefaultAsync(c => c.Id == comment.CommentThreadNumber);
                 if (cmntThread.CommentsCount > 0)

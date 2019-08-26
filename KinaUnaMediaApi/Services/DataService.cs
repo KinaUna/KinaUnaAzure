@@ -264,5 +264,39 @@ namespace KinaUnaMediaApi.Services
         {
             await _cache.RemoveAsync(Constants.AppName + "commentslist" + commentThreadId);
         }
+
+        public async Task<UserInfo> GetUserInfoByUserId(string id)
+        {
+            UserInfo userinfo;
+            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + "userinfobyuserid" + id);
+            if (!string.IsNullOrEmpty(cachedUserInfo))
+            {
+                userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
+            }
+            else
+            {
+                userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserId.ToUpper() == id.ToUpper());
+                await _cache.SetStringAsync(Constants.AppName + "userinfobyuserid" + id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+            }
+
+            return userinfo;
+        }
+
+        public async Task<UserInfo> GetUserInfoByEmail(string userEmail)
+        {
+            UserInfo userinfo;
+            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + "userinfobymail" + userEmail);
+            if (!string.IsNullOrEmpty(cachedUserInfo))
+            {
+                userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
+            }
+            else
+            {
+                userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
+                await _cache.SetStringAsync(Constants.AppName + "userinfobymail" + userEmail, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+            }
+
+            return userinfo;
+        }
     }
 }
