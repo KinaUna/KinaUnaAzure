@@ -1103,6 +1103,66 @@ namespace KinaUnaMediaApi.Controllers
             return NoContent();
         }
 
+        [Route("[action]")]
+        [HttpPost]
+        public async Task<IActionResult> UploadProgenyPicture([FromForm]IFormFile file)
+        {
+            string pictureLink = "";
+
+            using (MagickImage image = new MagickImage(file.OpenReadStream()))
+            {
+                int newWidth = 60;
+                int newHeight = (60 / image.Width) * image.Height;
+
+                image.Resize(newWidth, newHeight);
+                image.Strip();
+
+                using (MemoryStream memStream = new MemoryStream())
+                {
+                    image.Write(memStream);
+                    memStream.Position = 0;
+                    pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Progeny);
+                }
+            }
+            
+            if (pictureLink != "")
+            {
+                return Ok(pictureLink);
+            }
+
+            return NoContent();
+        }
+
+        [Route("[action]")]
+        [HttpPost]
+        public async Task<IActionResult> UploadProfilePicture([FromForm]IFormFile file)
+        {
+            string pictureLink = "";
+
+            using (MagickImage image = new MagickImage(file.OpenReadStream()))
+            {
+                int newWidth = 60;
+                int newHeight = (60 / image.Width) * image.Height;
+
+                image.Resize(newWidth, newHeight);
+                image.Strip();
+
+                using (MemoryStream memStream = new MemoryStream())
+                {
+                    image.Write(memStream);
+                    memStream.Position = 0;
+                    pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Profiles);
+                }
+            }
+
+            if (pictureLink != "")
+            {
+                return Ok(pictureLink);
+            }
+
+            return NoContent();
+        }
+
         // Download pictures to StorageBlob from Url
         [HttpGet]
         [Route("[action]/{pictureId}")]
