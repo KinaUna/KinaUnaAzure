@@ -816,15 +816,16 @@ namespace KinaUnaMediaApi.Controllers
             progeny.Admins = Constants.AdminEmail;
             progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
-
             progeny.Id = 0;
             progeny.TimeZone = Constants.DefaultTimezone;
+
             Picture tempPicture = new Picture();
-            tempPicture.ProgenyId = 0;
+            tempPicture.ProgenyId = progenyId;
             tempPicture.Progeny = progeny;
             tempPicture.AccessLevel = 5;
+            tempPicture.PictureLink = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
-            tempPicture.ProgenyId = progeny.Id;
+            tempPicture.PictureLink1200 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
             return Ok(tempPicture);
         }
@@ -1111,9 +1112,13 @@ namespace KinaUnaMediaApi.Controllers
 
             using (MagickImage image = new MagickImage(file.OpenReadStream()))
             {
-                int newWidth = 60;
-                int newHeight = (60 / image.Width) * image.Height;
-
+                int newWidth = (180 / image.Height) * image.Width;
+                int newHeight = 180;
+                if (image.Width > image.Height)
+                {
+                    newWidth = 180;
+                    newHeight = (180 / image.Width) * image.Height;
+                }
                 image.Resize(newWidth, newHeight);
                 image.Strip();
 
@@ -1141,9 +1146,14 @@ namespace KinaUnaMediaApi.Controllers
 
             using (MagickImage image = new MagickImage(file.OpenReadStream()))
             {
-                int newWidth = 60;
-                int newHeight = (60 / image.Width) * image.Height;
-
+                
+                int newWidth = (180 / image.Height) * image.Width;
+                int newHeight = 180;
+                if (image.Width > image.Height)
+                {
+                    newWidth = 180;
+                    newHeight = (180 / image.Width) * image.Height;
+                }
                 image.Resize(newWidth, newHeight);
                 image.Strip();
 
@@ -1161,6 +1171,28 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             return NoContent();
+        }
+
+        [Route("[action]/{id}")]
+        [HttpGet]
+        public IActionResult GetProfilePicture(string id)
+        {
+            string result = "";
+            if (!String.IsNullOrEmpty(id))
+            {
+                if (!id.ToLower().StartsWith("http"))
+                {
+                    result = _imageStore.UriFor(id, "profiles");
+                }
+            }
+
+            
+            if (string.IsNullOrEmpty(result))
+            {
+                result = Constants.ProfilePictureUrl;
+            }
+
+            return Ok(result);
         }
 
         // Download pictures to StorageBlob from Url

@@ -1,4 +1,6 @@
-﻿using IdentityServer4.AccessTokenValidation;
+﻿using System;
+using System.Reflection;
+using IdentityServer4.AccessTokenValidation;
 using KinaUna.Data.Contexts;
 using KinaUnaProgenyApi.Authorization;
 using KinaUnaProgenyApi.Services;
@@ -31,6 +33,15 @@ namespace KinaUnaProgenyApi
 
             services.AddDbContext<ProgenyDbContext>(options =>
                 options.UseSqlServer(Configuration["ProgenyDefaultConnection"]));
+
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(Configuration["DataProtectionConnection"],
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
+                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
+                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                    }));
 
             services.AddDistributedRedisCache(option =>
                 option.Configuration = Configuration["RedisConnection"]);

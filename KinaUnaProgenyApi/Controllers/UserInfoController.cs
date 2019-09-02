@@ -20,12 +20,16 @@ namespace KinaUnaProgenyApi.Controllers
     public class UserInfoController : ControllerBase
     {
         private readonly ProgenyDbContext _context;
+        private readonly ApplicationDbContext _appDbContext;
         private readonly IDataService _dataService;
+        private readonly ImageStore _imageStore;
 
-        public UserInfoController(ProgenyDbContext context, IDataService dataService)
+        public UserInfoController(ProgenyDbContext context, IDataService dataService, ApplicationDbContext appDbContext, ImageStore imageStore)
         {
             _context = context;
             _dataService = dataService;
+            _appDbContext = appDbContext;
+            _imageStore = imageStore;
         }
         
         // GET api/userinfo/byemail/[useremail]
@@ -281,47 +285,53 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+
+            // Only allow the user themselves to change userinfo.
             if (userEmail.ToUpper() != userinfo.UserEmail.ToUpper())
             {
                 return Unauthorized();
             }
 
-            if (!String.IsNullOrEmpty(value.FirstName))
-            {
-                userinfo.FirstName = value.FirstName;
-            }
-            if (!String.IsNullOrEmpty(value.MiddleName))
-            {
-                userinfo.MiddleName = value.MiddleName;
-            }
-            if (!String.IsNullOrEmpty(value.LastName))
-            {
-                userinfo.LastName = value.LastName;
-            }
-            if (!String.IsNullOrEmpty(value.UserName))
-            {
-                userinfo.UserName = value.UserName;
-            }
-            if (!String.IsNullOrEmpty(value.UserEmail))
-            {
-                userinfo.UserEmail = value.UserEmail;
-            }
+            userinfo.FirstName = value.FirstName;
+            userinfo.MiddleName = value.MiddleName;
+            userinfo.LastName = value.LastName;
+            userinfo.UserName = value.UserName;
+            userinfo.ViewChild = value.ViewChild;
             if (!String.IsNullOrEmpty(value.Timezone))
             {
                 userinfo.Timezone = value.Timezone;
             }
             if (!String.IsNullOrEmpty(value.ProfilePicture))
             {
+                string oldPictureLink = userinfo.ProfilePicture;
+                if (!oldPictureLink.ToLower().StartsWith("http") && !String.IsNullOrEmpty(oldPictureLink))
+                {
+                    if (oldPictureLink != value.ProfilePicture)
+                    {
+                        await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Profiles);
+                    }
+                }
+                
                 userinfo.ProfilePicture = value.ProfilePicture;
             }
-
-            userinfo.UserId = value.UserId;
-            userinfo.ViewChild = value.ViewChild;
             
             _context.UserInfoDb.Update(userinfo);
             await _context.SaveChangesAsync();
 
             await _dataService.SetUserInfoByEmail(userinfo.UserEmail);
+
+            // Todo: This should be done via api instead of direct database access.
+            ApplicationUser user = await _appDbContext.Users.SingleOrDefaultAsync(u => u.Id == userinfo.UserId);
+            user.FirstName = userinfo.FirstName;
+            user.MiddleName = userinfo.MiddleName;
+            user.LastName = userinfo.LastName;
+            user.UserName = userinfo.UserName;
+            user.TimeZone = userinfo.Timezone;
+
+            _appDbContext.Users.Update(user);
+
+            await _appDbContext.SaveChangesAsync();
+
 
             return Ok(userinfo);
         }
