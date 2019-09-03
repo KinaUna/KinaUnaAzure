@@ -164,12 +164,28 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
-            
-            progeny.Admins = value.Admins;
+
+            string[] admins = value.Admins.Split(',');
+            bool validAdminEmails = true;
+            foreach (string str in admins)
+            {
+                if (!str.Trim().IsValidEmail())
+                {
+                    validAdminEmails = false;
+                }
+            }
+
+            if (validAdminEmails)
+            {
+                progeny.Admins = value.Admins;
+            }
             progeny.BirthDay = value.BirthDay;
             progeny.Name = value.Name;
             progeny.NickName = value.NickName;
-            progeny.PictureLink = value.PictureLink;
+            if (!string.IsNullOrEmpty(value.PictureLink))
+            {
+                progeny.PictureLink = value.PictureLink;
+            }
             progeny.TimeZone = value.TimeZone;
             
             _context.ProgenyDb.Update(progeny);

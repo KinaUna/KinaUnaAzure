@@ -1112,6 +1112,45 @@ namespace KinaUnaMediaApi.Controllers
 
             using (MagickImage image = new MagickImage(file.OpenReadStream()))
             {
+                ExifProfile profile = image.GetExifProfile();
+                if (profile != null)
+                {
+                    int rotation;
+                    try
+                    {
+                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation).Value);
+                        switch (rotation)
+                        {
+                            case 1:
+                                rotation = 0;
+                                break;
+                            case 3:
+                                rotation = 180;
+                                break;
+                            case 6:
+                                rotation = 90;
+                                break;
+                            case 8:
+                                rotation = 270;
+                                break;
+
+                        }
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        rotation = 0;
+                    }
+                    catch (NullReferenceException)
+                    {
+                        rotation = 0;
+                    }
+
+                    if (rotation != 0)
+                    {
+                        image.Rotate(rotation);
+                    }
+                }
+
                 int newWidth = (180 / image.Height) * image.Width;
                 int newHeight = 180;
                 if (image.Width > image.Height)
@@ -1146,7 +1185,45 @@ namespace KinaUnaMediaApi.Controllers
 
             using (MagickImage image = new MagickImage(file.OpenReadStream()))
             {
-                
+                ExifProfile profile = image.GetExifProfile();
+                if (profile != null)
+                {
+                    int rotation;
+                    try
+                    {
+                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation).Value);
+                        switch (rotation)
+                        {
+                            case 1:
+                                rotation = 0;
+                                break;
+                            case 3:
+                                rotation = 180;
+                                break;
+                            case 6:
+                                rotation = 90;
+                                break;
+                            case 8:
+                                rotation = 270;
+                                break;
+
+                        }
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        rotation = 0;
+                    }
+                    catch (NullReferenceException)
+                    {
+                        rotation = 0;
+                    }
+
+                    if (rotation != 0)
+                    {
+                        image.Rotate(rotation);
+                    }
+                }
+
                 int newWidth = (180 / image.Height) * image.Width;
                 int newHeight = 180;
                 if (image.Width > image.Height)
