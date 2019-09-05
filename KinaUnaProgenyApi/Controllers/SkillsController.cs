@@ -76,7 +76,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user is allowed to add skills for this child.
 
-                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                if (!prog.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -139,7 +139,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (prog != null)
             {
                 // Check if user is allowed to edit skills for this child.
-                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                if (!prog.IsInAdminList(userEmail.ToUpper()))
                 {
                     return Unauthorized();
                 }
@@ -191,7 +191,7 @@ namespace KinaUnaProgenyApi.Controllers
                 if (prog != null)
                 {
                     // Check if user is allowed to delete skills for this child.
-                    if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                    if (!prog.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }

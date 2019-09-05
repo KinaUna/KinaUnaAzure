@@ -104,14 +104,7 @@ namespace KinaUnaWeb.Controllers
                 await _progenyHttpClient.DeleteUserAccess(oldUserAccess.AccessId);
                 await _progenyHttpClient.AddUserAccess(accessModel);
             }
-            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (model.AccessLevel == 0 && !progeny.Admins.ToUpper().Contains(model.UserId.ToUpper()))
-            {
-                
-                progeny.Admins = progeny.Admins + ", " + (accessModel.UserId).ToUpper();
-                await _progenyHttpClient.UpdateProgeny(progeny);
-            }
-
+            
             // Todo: Notify user of update
             return RedirectToAction("Index");
         }
@@ -156,14 +149,6 @@ namespace KinaUnaWeb.Controllers
             uaModel.UserId = model.Email;
             uaModel.AccessLevel = model.AccessLevel;
             await _progenyHttpClient.UpdateUserAccess(uaModel);
-
-            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (model.AccessLevel == (int)AccessLevel.Private && !progeny.Admins.ToUpper().Contains(model.UserId.ToUpper()))
-            {
-
-                progeny.Admins = progeny.Admins + ", " + (model.Email).ToUpper();
-                await _progenyHttpClient.UpdateProgeny(progeny);
-            }
             
             // To do: Notify user of update
             return RedirectToAction("Index");
@@ -204,19 +189,7 @@ namespace KinaUnaWeb.Controllers
         {
             await _progenyHttpClient.GetUserAccess(model.AccessId);
             await _progenyHttpClient.DeleteUserAccess(model.AccessId);
-
-            if (model.AccessLevel == 0)
-            {
-                Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-                progeny.Admins = progeny.Admins.Replace(model.Email.ToUpper(), "");
-                progeny.Admins = progeny.Admins.Replace(",,", "");
-                if (progeny.Admins.StartsWith(","))
-                {
-                    progeny.Admins.Remove(0);
-                }
-                await _progenyHttpClient.UpdateProgeny(progeny);
-            }
-
+            
             // To do: Notify user of update
             return RedirectToAction("Index");
         }

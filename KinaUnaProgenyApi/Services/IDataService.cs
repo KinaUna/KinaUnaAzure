@@ -72,5 +72,6 @@ namespace KinaUnaProgenyApi.Services
         Task<VocabularyItem> SetVocabularyItem(int id);
         Task RemoveVocabularyItem(int id, int progenyId);
         Task<List<VocabularyItem>> GetVocabularyList(int progenyId);
+        Task UpdateProgenyAdmins(Progeny progeny);
     }
 }

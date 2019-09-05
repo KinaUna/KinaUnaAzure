@@ -45,7 +45,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                List<Progeny> progenyList = await _dataService.GetProgenyUserIsAdmin(userEmail); // _context.ProgenyDb.Where(p => p.Admins.ToUpper().Contains(userEmail.ToUpper())).ToList();
+                List<Progeny> progenyList = await _dataService.GetProgenyUserIsAdmin(userEmail); 
                 if (progenyList.Any())
                 {
                     foreach (Progeny prog in progenyList)
@@ -102,7 +102,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetInfo(int id)
         {
-            UserInfo result = await _dataService.GetUserInfoById(id); // await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
+            UserInfo result = await _dataService.GetUserInfoById(id);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             bool allowAccess = false;
             if (userEmail.ToUpper() == result.UserEmail.ToUpper())
@@ -111,12 +111,12 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                List<Progeny> progenyList = await _dataService.GetProgenyUserIsAdmin(userEmail); // _context.ProgenyDb.Where(p => p.Admins.ToUpper().Contains(userEmail.ToUpper())).ToList();
+                List<Progeny> progenyList = await _dataService.GetProgenyUserIsAdmin(userEmail);
                 if (progenyList.Any())
                 {
                     foreach (Progeny prog in progenyList)
                     {
-                        List<UserAccess> accessList = await _dataService.GetProgenyUserAccessList(prog.Id); // _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == prog.Id).ToList();
+                        List<UserAccess> accessList = await _dataService.GetProgenyUserAccessList(prog.Id);
                         if (accessList.Any())
                         {
                             foreach (UserAccess userAccess in accessList)
@@ -177,7 +177,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                List<Progeny> progenyList = await _dataService.GetProgenyUserIsAdmin(userEmail); // _context.ProgenyDb.Where(p => p.Admins.ToUpper().Contains(userEmail.ToUpper())).ToList();
+                List<Progeny> progenyList = await _dataService.GetProgenyUserIsAdmin(userEmail);
                 if (progenyList.Any())
                 {
                     foreach (Progeny prog in progenyList)

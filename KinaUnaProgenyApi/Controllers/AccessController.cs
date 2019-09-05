@@ -79,7 +79,7 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess result = await _dataService.GetUserAccess(id); // await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.AccessId == id);
             result.Progeny = await _dataService.GetProgeny(result.ProgenyId); // await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == result.ProgenyId);
-            if (result.Progeny.Admins.ToUpper().Contains(User.GetEmail().ToUpper()) || result.UserId.ToUpper() == userEmail.ToUpper())
+            if (result.Progeny.IsInAdminList(User.GetEmail()) || result.UserId.ToUpper() == userEmail.ToUpper())
             {
                 return Ok(result);
             }
@@ -97,7 +97,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user is allowed to add users for this child.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                if (!prog.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -127,6 +127,15 @@ namespace KinaUnaProgenyApi.Controllers
 
             _context.UserAccessDb.Add(userAccess);
             await _context.SaveChangesAsync();
+
+            Progeny progeny = await _dataService.GetProgeny(userAccess.ProgenyId);
+            if (userAccess.AccessLevel == (int)AccessLevel.Private && !progeny.IsInAdminList(userAccess.UserId))
+            {
+
+                progeny.Admins = progeny.Admins + ", " + userAccess.UserId.ToUpper();
+                await _dataService.UpdateProgenyAdmins(progeny);
+            }
+
             if (userAccess.AccessLevel == (int) AccessLevel.Private)
             {
                 await _dataService.SetProgenyUserIsAdmin(userAccess.UserId);
@@ -149,7 +158,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user is allowed to edit user access for this child.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                if (!prog.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -173,6 +182,14 @@ namespace KinaUnaProgenyApi.Controllers
             _context.UserAccessDb.Update(userAccess);
             await _context.SaveChangesAsync();
 
+            Progeny progeny = await _dataService.GetProgeny(userAccess.ProgenyId);
+            if (userAccess.AccessLevel == (int)AccessLevel.Private && !progeny.IsInAdminList(userAccess.UserId))
+            {
+
+                progeny.Admins = progeny.Admins + ", " + userAccess.UserId.ToUpper();
+                await _dataService.UpdateProgenyAdmins(progeny);
+            }
+
             if (userAccess.AccessLevel == (int)AccessLevel.Private)
             {
                 await _dataService.SetProgenyUserIsAdmin(userAccess.UserId);
@@ -182,7 +199,7 @@ namespace KinaUnaProgenyApi.Controllers
             await _dataService.SetUsersUserAccessList(userAccess.UserId);
             await _dataService.SetUserAccess(userAccess.AccessId);
 
-            return CreatedAtAction(nameof(GetAccess), new {id = userAccess.AccessId });
+            return Ok(userAccess);
         }
 
         // DELETE api/access/5
@@ -199,7 +216,7 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     // Check if user is allowed to delete users for this child.
                     string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                    if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                    if (!prog.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }
@@ -207,6 +224,22 @@ namespace KinaUnaProgenyApi.Controllers
                 else
                 {
                     return NotFound();
+                }
+
+                Progeny progeny = await _dataService.GetProgeny(userAccess.ProgenyId);
+                if (userAccess.AccessLevel == (int)AccessLevel.Private && progeny.IsInAdminList(userAccess.UserId))
+                {
+                    string[] adminList = progeny.Admins.Split(',');
+                    progeny.Admins = "";
+                    foreach (string adminItem in adminList)
+                    {
+                        if (!adminItem.Trim().ToUpper().Equals(userAccess.UserId.Trim().ToUpper()))
+                        {
+                            progeny.Admins = progeny.Admins + ", " + userAccess.UserId.ToUpper();
+                        }
+                    }
+                    progeny.Admins = progeny.Admins.Trim(',');
+                    await _dataService.UpdateProgenyAdmins(progeny);
                 }
 
                 _context.UserAccessDb.Remove(userAccess);

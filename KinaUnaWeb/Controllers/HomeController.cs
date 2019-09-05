@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Hosting;
 
@@ -77,7 +78,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
+            if (progeny.IsInAdminList(userEmail))
             {
                 userAccessLevel = (int)AccessLevel.Private;
             }
@@ -102,7 +103,7 @@ namespace KinaUnaWeb.Controllers
                     progeny = await _progenyHttpClient.GetProgeny(Constants.DefaultChildId);
                 }
             }
-            if (progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
+            if (progeny.IsInAdminList(userEmail))
             {
                 feedModel.UserAccessLevel = (int)AccessLevel.Private;
             }

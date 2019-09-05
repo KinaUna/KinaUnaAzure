@@ -83,7 +83,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user is allowed to add contacts for this child.
 
-                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                if (!prog.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -147,7 +147,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user is allowed to add contacts for this child.
 
-                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                if (!prog.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -208,7 +208,7 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     // Check if user is allowed to delete contacts for this child.
                     string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                    if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                    if (!prog.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }

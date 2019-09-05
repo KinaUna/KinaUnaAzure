@@ -76,7 +76,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user is allowed to add notes for this child.
 
-                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                if (!prog.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -130,7 +130,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (prog != null)
             {
                 // Check if user is allowed to edit notes for this child.
-                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                if (!prog.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -186,7 +186,7 @@ namespace KinaUnaProgenyApi.Controllers
                 if (prog != null)
                 {
                     // Check if user is allowed to delete notes for this child.
-                    if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                    if (!prog.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }

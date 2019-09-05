@@ -160,25 +160,64 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if user is allowed to edit this child.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
+            if (!progeny.IsInAdminList(userEmail))
             {
                 return Unauthorized();
             }
 
-            string[] admins = value.Admins.Split(',');
-            bool validAdminEmails = true;
-            foreach (string str in admins)
+            if (!progeny.Admins.ToUpper().Equals(value.Admins.ToUpper()))
             {
-                if (!str.Trim().IsValidEmail())
+                string[] admins = value.Admins.Split(',');
+                string[] oldAdmins = progeny.Admins.Split(',');
+                bool validAdminEmails = true;
+                foreach (string str in admins)
                 {
-                    validAdminEmails = false;
+                    if (!str.Trim().IsValidEmail())
+                    {
+                        validAdminEmails = false;
+                    }
+                }
+
+                if (validAdminEmails)
+                {
+                    progeny.Admins = value.Admins;
+
+                    foreach (string email in admins)
+                    {
+                        UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progeny.Id, email.Trim());
+                        if (userAccess.AccessLevel != (int)AccessLevel.Private)
+                        {
+                            userAccess.AccessLevel = (int)AccessLevel.Private;
+                            _context.UserAccessDb.Update(userAccess);
+                            await _context.SaveChangesAsync();
+                            await _dataService.SetUserAccess(userAccess.AccessId);
+                        }
+                    }
+
+                    foreach (string email in oldAdmins)
+                    {
+                        bool isInNewList = false;
+                        foreach (string newEmail in admins)
+                        {
+                            if (email.Trim().ToUpper().Equals(newEmail.Trim().ToUpper()))
+                            {
+                                isInNewList = true;
+                            }
+                        }
+
+                        if (!isInNewList)
+                        {
+                            UserAccess userAccess =
+                                await _dataService.GetProgenyUserAccessForUser(progeny.Id, email.Trim());
+                            userAccess.AccessLevel = (int) AccessLevel.Family;
+                            _context.UserAccessDb.Update(userAccess);
+                            await _context.SaveChangesAsync();
+                            await _dataService.SetUserAccess(userAccess.AccessId);
+                        }
+                    }
                 }
             }
-
-            if (validAdminEmails)
-            {
-                progeny.Admins = value.Admins;
-            }
+            
             progeny.BirthDay = value.BirthDay;
             progeny.Name = value.Name;
             progeny.NickName = value.NickName;
@@ -206,7 +245,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user is allowed to edit this child.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                if (!progeny.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }

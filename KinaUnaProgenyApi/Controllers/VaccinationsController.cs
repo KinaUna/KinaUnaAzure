@@ -77,7 +77,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user is allowed to add vaccinations for this child.
 
-                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                if (!prog.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -130,7 +130,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (prog != null)
             {
                 // Check if user is allowed to edit vaccinations for this child.
-                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                if (!prog.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -185,7 +185,7 @@ namespace KinaUnaProgenyApi.Controllers
                 if (prog != null)
                 {
                     // Check if user is allowed to delete vaccinations for this child.
-                    if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                    if (!prog.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }

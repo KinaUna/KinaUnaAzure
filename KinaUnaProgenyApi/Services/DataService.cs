@@ -886,5 +886,19 @@ namespace KinaUnaProgenyApi.Services
 
             return vocabularyList;
         }
+
+        public async Task UpdateProgenyAdmins(Progeny progeny)
+        {
+            Progeny oldProgeny = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progeny.Id);
+
+            if (oldProgeny != null)
+            {
+                oldProgeny.Admins = progeny.Admins;
+                _context.ProgenyDb.Update(oldProgeny);
+                await _context.SaveChangesAsync();
+
+                await _cache.SetStringAsync(Constants.AppName + "progeny" + progeny.Id, JsonConvert.SerializeObject(oldProgeny), _cacheOptionsSliding);
+            }
+        }
     }
 }

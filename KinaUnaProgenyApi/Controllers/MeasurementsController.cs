@@ -76,7 +76,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user is allowed to add measurements for this child.
 
-                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                if (!prog.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -129,7 +129,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (prog != null)
             {
                 // Check if user is allowed to edit measurements for this child.
-                if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                if (!prog.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -186,7 +186,7 @@ namespace KinaUnaProgenyApi.Controllers
                 if (prog != null)
                 {
                     // Check if user is allowed to delete measurements for this child.
-                    if (!prog.Admins.ToUpper().Contains(userEmail.ToUpper()))
+                    if (!prog.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }

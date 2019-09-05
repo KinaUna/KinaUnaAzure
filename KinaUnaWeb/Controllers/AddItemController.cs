@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUna.Data;
+using KinaUna.Data.Extensions;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -93,7 +94,7 @@ namespace KinaUnaWeb.Controllers
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (progeny != null)
             {
-                if (progeny.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+                if (progeny.IsInAdminList(userinfo.UserEmail))
                 {
                     isAdmin = true;
                 }
@@ -233,7 +234,7 @@ namespace KinaUnaWeb.Controllers
                 Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
                 if (progeny != null)
                 {
-                    if (progeny.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+                    if (progeny.IsInAdminList(userinfo.UserEmail))
                     {
                         model.IsAdmin = true;
                     }
@@ -313,7 +314,7 @@ namespace KinaUnaWeb.Controllers
             PictureViewModel model = new PictureViewModel();
             if (progeny != null)
             {
-                if (progeny.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+                if (progeny.IsInAdminList(userinfo.UserEmail))
                 {
                     model.IsAdmin = true;
                 }
@@ -348,7 +349,7 @@ namespace KinaUnaWeb.Controllers
             bool pictureDeleted = false;
             if (progeny != null)
             {
-                if (progeny.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+                if (progeny.IsInAdminList(userinfo.UserEmail))
                 {
                     pictureDeleted = await _mediaHttpClient.DeletePicture(model.PictureId);
 
@@ -580,7 +581,7 @@ namespace KinaUnaWeb.Controllers
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (progeny != null)
             {
-                if (progeny.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+                if (progeny.IsInAdminList(userinfo.UserEmail))
                 {
                     isAdmin = true;
                 }
@@ -733,7 +734,7 @@ namespace KinaUnaWeb.Controllers
                 Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
                 if (progeny != null)
                 {
-                    if (progeny.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+                    if (progeny.IsInAdminList(userinfo.UserEmail))
                     {
                         model.IsAdmin = true;
                     }
@@ -827,7 +828,7 @@ namespace KinaUnaWeb.Controllers
             VideoViewModel model = new VideoViewModel();
             if (progeny != null)
             {
-                if (progeny.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+                if (progeny.IsInAdminList(userinfo.UserEmail))
                 {
                     model.IsAdmin = true;
                 }
@@ -858,7 +859,7 @@ namespace KinaUnaWeb.Controllers
             bool videoDeleted = false;
             if (progeny != null)
             {
-                if (progeny.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+                if (progeny.IsInAdminList(userinfo.UserEmail))
                 {
                     videoDeleted = await _mediaHttpClient.DeleteVideo(model.VideoId);
 
@@ -1109,7 +1110,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(note.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1143,7 +1144,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(note.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1176,7 +1177,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1193,7 +1194,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(note.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1255,7 +1256,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1359,7 +1360,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(eventItem.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1394,7 +1395,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(eventItem.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1434,7 +1435,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1451,7 +1452,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(eventItem.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1514,7 +1515,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1603,7 +1604,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(vocab.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1637,7 +1638,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(vocab.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1677,7 +1678,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1695,7 +1696,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1757,7 +1758,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1840,7 +1841,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(skill.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1873,7 +1874,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(skill.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1912,7 +1913,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -1929,7 +1930,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2021,7 +2022,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2120,7 +2121,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(friend.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2195,7 +2196,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(friend.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2250,7 +2251,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2267,7 +2268,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(friend.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2331,7 +2332,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2410,7 +2411,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(measurement.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2441,7 +2442,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(measurement.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2476,7 +2477,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2493,7 +2494,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(measurement.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2591,7 +2592,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2706,7 +2707,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(contact.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2793,7 +2794,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(contact.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2872,7 +2873,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2889,7 +2890,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(contact.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -2951,7 +2952,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -3027,7 +3028,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(vaccination.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -3054,7 +3055,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(vaccination.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -3086,7 +3087,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -3103,7 +3104,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -3165,7 +3166,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -3256,7 +3257,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(sleep.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -3312,7 +3313,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(sleep.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -3353,7 +3354,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -3370,7 +3371,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(sleep.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -3467,7 +3468,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -3666,7 +3667,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -3714,7 +3715,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -3732,7 +3733,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
             Progeny prog = await _progenyHttpClient.GetProgeny(locItem.ProgenyId);
-            if (!prog.Admins.ToUpper().Contains(userinfo.UserEmail.ToUpper()))
+            if (!prog.IsInAdminList(userinfo.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
