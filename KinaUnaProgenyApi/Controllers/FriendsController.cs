@@ -231,7 +231,7 @@ namespace KinaUnaProgenyApi.Controllers
                 // Remove picture
                 if (!friendItem.PictureLink.ToLower().StartsWith("http"))
                 {
-                    await _imageStore.DeleteImage(friendItem.PictureLink, "friends");
+                    await _imageStore.DeleteImage(friendItem.PictureLink, BlobContainers.Friends);
                 }
 
                 _context.FriendsDb.Remove(friendItem);
@@ -248,18 +248,18 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetFriendMobile(int id)
         {
-            Friend result = await _dataService.GetFriend(id); // await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
+            Friend result = await _dataService.GetFriend(id); 
 
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); 
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {
                     if (!result.PictureLink.ToLower().StartsWith("http"))
                     {
-                        result.PictureLink = _imageStore.UriFor(result.PictureLink, "friends");
+                        result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Friends);
                     }
                     return Ok(result);
                 }
@@ -268,7 +268,33 @@ namespace KinaUnaProgenyApi.Controllers
             return NotFound();
         }
 
-        
+        [HttpGet]
+        [Route("[action]/{id}/{accessLevel}")]
+        public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); 
+            if (userAccess != null || id == Constants.DefaultChildId)
+            {
+                List<Friend> friendsList = await _dataService.GetFriendsList(id);
+                friendsList = friendsList.Where(f => f.AccessLevel >= accessLevel).ToList();
+                if (friendsList.Any())
+                {
+                    foreach (Friend friend in friendsList)
+                    {
+                        if (!friend.PictureLink.ToLower().StartsWith("http"))
+                        {
+                            friend.PictureLink = _imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
+                        }
+                    }
+                    return Ok(friendsList);
+                }
+                return NotFound();
+            }
+
+            return Unauthorized();
+        }
+
         [HttpGet]
         [Route("[action]/{friendId}")]
         public async Task<IActionResult> DownloadPicture(int friendId)
@@ -289,7 +315,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 using (Stream stream = GetStreamFromUrl(friend.PictureLink))
                 {
-                    friend.PictureLink = await _imageStore.SaveImage(stream, "friends");
+                    friend.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Friends);
                 }
 
                 _context.FriendsDb.Update(friend);

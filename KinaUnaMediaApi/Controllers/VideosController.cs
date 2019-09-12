@@ -50,7 +50,7 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             List<Video> allItems; 
-            if (tagFilter != "")
+            if (!string.IsNullOrEmpty(tagFilter))
             {
                 allItems = await _dataService.GetVideosList(progenyId); // await _context.VideoDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToListAsync();
                 allItems = allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToList();
@@ -479,7 +479,7 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             List<Video> allItems;
-            if (tagFilter != "")
+            if (!string.IsNullOrEmpty(tagFilter))
             {
                 allItems = await _dataService.GetVideosList(progenyId); // await _context.VideoDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToListAsync();
                 allItems = allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToList();

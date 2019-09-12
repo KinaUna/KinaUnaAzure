@@ -14,6 +14,10 @@ namespace KinaUna.Data.Extensions
         /// <returns>bool: True if the email address is in the admin list, otherwise false.</returns>
         public static bool IsInAdminList(this Progeny progeny, string email)
         {
+            if (progeny == null || string.IsNullOrEmpty(progeny.Admins) || string.IsNullOrEmpty(email))
+            {
+                return false;
+            }
             string[] adminList = progeny.Admins.Split(',');
             string emailTrimmed = email.Trim().ToUpper();
             foreach (string adminItem in adminList)

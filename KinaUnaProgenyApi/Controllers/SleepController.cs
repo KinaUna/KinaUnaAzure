@@ -234,6 +234,60 @@ namespace KinaUnaProgenyApi.Controllers
             return Unauthorized();
         }
 
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetSleepListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        {
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); // _progenyDbContext.UserAccessDb.SingleOrDefault(u => u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+
+            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<Sleep> allItems = await _dataService.GetSleepList(progenyId);
+            
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int sleepCounter = 1;
+            int slpCount = allItems.Count;
+            foreach (Sleep slp in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    slp.SleepNumber = slpCount - sleepCounter + 1;
+                }
+                else
+                {
+                    slp.SleepNumber = sleepCounter;
+                }
+
+                sleepCounter++;
+            }
+
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            SleepListPage model = new SleepListPage();
+            model.SleepList = itemsOnPage;
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+            
+            return Ok(model);
+        }
+        
         [HttpGet("[action]/{progenyId}/{accessLevel}/{start}")]
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
