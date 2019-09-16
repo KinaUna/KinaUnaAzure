@@ -1250,6 +1250,152 @@ namespace KinaUnaMediaApi.Controllers
             return NoContent();
         }
 
+        [Route("[action]")]
+        [HttpPost]
+        public async Task<IActionResult> UploadFriendPicture([FromForm]IFormFile file)
+        {
+            string pictureLink = "";
+
+            using (MagickImage image = new MagickImage(file.OpenReadStream()))
+            {
+                ExifProfile profile = image.GetExifProfile();
+                if (profile != null)
+                {
+                    int rotation;
+                    try
+                    {
+                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation).Value);
+                        switch (rotation)
+                        {
+                            case 1:
+                                rotation = 0;
+                                break;
+                            case 3:
+                                rotation = 180;
+                                break;
+                            case 6:
+                                rotation = 90;
+                                break;
+                            case 8:
+                                rotation = 270;
+                                break;
+
+                        }
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        rotation = 0;
+                    }
+                    catch (NullReferenceException)
+                    {
+                        rotation = 0;
+                    }
+
+                    if (rotation != 0)
+                    {
+                        image.Rotate(rotation);
+                    }
+                }
+
+                int newWidth = (180 / image.Height) * image.Width;
+                int newHeight = 180;
+                if (image.Width > image.Height)
+                {
+                    newWidth = 180;
+                    newHeight = (180 / image.Width) * image.Height;
+                }
+                image.Resize(newWidth, newHeight);
+                image.Strip();
+
+                using (MemoryStream memStream = new MemoryStream())
+                {
+                    image.Write(memStream);
+                    memStream.Position = 0;
+                    pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Friends);
+                }
+            }
+
+            if (pictureLink != "")
+            {
+                return Ok(pictureLink);
+            }
+
+            return NoContent();
+        }
+
+        [Route("[action]")]
+        [HttpPost]
+        public async Task<IActionResult> UploadContactPicture([FromForm]IFormFile file)
+        {
+            string pictureLink = "";
+
+            using (MagickImage image = new MagickImage(file.OpenReadStream()))
+            {
+                ExifProfile profile = image.GetExifProfile();
+                if (profile != null)
+                {
+                    int rotation;
+                    try
+                    {
+                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation).Value);
+                        switch (rotation)
+                        {
+                            case 1:
+                                rotation = 0;
+                                break;
+                            case 3:
+                                rotation = 180;
+                                break;
+                            case 6:
+                                rotation = 90;
+                                break;
+                            case 8:
+                                rotation = 270;
+                                break;
+
+                        }
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        rotation = 0;
+                    }
+                    catch (NullReferenceException)
+                    {
+                        rotation = 0;
+                    }
+
+                    if (rotation != 0)
+                    {
+                        image.Rotate(rotation);
+                    }
+                }
+
+                int newWidth = (180 / image.Height) * image.Width;
+                int newHeight = 180;
+                if (image.Width > image.Height)
+                {
+                    newWidth = 180;
+                    newHeight = (180 / image.Width) * image.Height;
+                }
+                image.Resize(newWidth, newHeight);
+                image.Strip();
+
+                using (MemoryStream memStream = new MemoryStream())
+                {
+                    image.Write(memStream);
+                    memStream.Position = 0;
+                    pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Contacts);
+                }
+            }
+
+            if (pictureLink != "")
+            {
+                return Ok(pictureLink);
+            }
+
+            return NoContent();
+        }
+
         [Route("[action]/{id}")]
         [HttpGet]
         public IActionResult GetProfilePicture(string id)

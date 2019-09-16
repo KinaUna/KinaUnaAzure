@@ -294,7 +294,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
                 if (!contactItem.PictureLink.ToLower().StartsWith("http"))
                 {
-                    await _imageStore.DeleteImage(contactItem.PictureLink, "contacts");
+                    await _imageStore.DeleteImage(contactItem.PictureLink, BlobContainers.Contacts);
                 }
 
                 _context.ContactsDb.Remove(contactItem);
@@ -321,7 +321,7 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     if (!result.PictureLink.ToLower().StartsWith("http"))
                     {
-                        result.PictureLink = _imageStore.UriFor(result.PictureLink, "contacts");
+                        result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Contacts);
                     }
                     return Ok(result);
                 }
@@ -334,11 +334,11 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
         {
-            List<Contact> contactsList = await _dataService.GetContactsList(id); // await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == id && c.AccessLevel >= accessLevel).ToListAsync();
+            List<Contact> contactsList = await _dataService.GetContactsList(id); 
             contactsList = contactsList.Where(c => c.AccessLevel >= accessLevel).ToList();
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); 
             
             if ((userAccess != null || id == Constants.DefaultChildId) && contactsList.Any())
             {
@@ -346,7 +346,7 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     if (!cont.PictureLink.ToLower().StartsWith("http"))
                     {
-                        cont.PictureLink = _imageStore.UriFor(cont.PictureLink, "contacts");
+                        cont.PictureLink = _imageStore.UriFor(cont.PictureLink, BlobContainers.Contacts);
                     }
                 }
                 return Ok(contactsList);
@@ -373,7 +373,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 using (Stream stream = GetStreamFromUrl(contact.PictureLink))
                 {
-                    contact.PictureLink = await _imageStore.SaveImage(stream, "contacts");
+                    contact.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Contacts);
                 }
 
                 _context.ContactsDb.Update(contact);
