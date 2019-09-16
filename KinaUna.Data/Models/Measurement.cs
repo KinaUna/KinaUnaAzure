@@ -19,5 +19,8 @@ namespace KinaUna.Data.Models
 
         [NotMapped]
         public Progeny Progeny { get; set; }
+
+        [NotMapped]
+        public int MeasurementNumber { get; set; }
     }
 }

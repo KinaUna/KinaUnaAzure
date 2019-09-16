@@ -240,7 +240,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); // _progenyDbContext.UserAccessDb.SingleOrDefault(u => u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); 
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {
@@ -292,10 +292,10 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); // await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == userEmail.ToUpper() && u.ProgenyId == progenyId);
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail);
             if (userAccess != null)
             {
-                List<Sleep> result = await _dataService.GetSleepList(progenyId); // await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == progenyId && s.AccessLevel >= accessLevel).ToListAsync();
+                List<Sleep> result = await _dataService.GetSleepList(progenyId); 
                 result = result.Where(s => s.AccessLevel >= accessLevel).ToList();
                 result = result.OrderByDescending(s => s.SleepStart).ToList();
                 if (start != -1)
@@ -313,7 +313,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepStatsMobile(int progenyId, int accessLevel)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); // await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == userEmail.ToUpper() && u.ProgenyId == progenyId);
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); 
             if (userAccess != null)
             {
                 string userTimeZone = Constants.DefaultTimezone;
@@ -321,7 +321,7 @@ namespace KinaUnaProgenyApi.Controllers
                 model.SleepTotal = TimeSpan.Zero;
                 model.SleepLastYear = TimeSpan.Zero;
                 model.SleepLastMonth = TimeSpan.Zero;
-                List<Sleep> sList = await _dataService.GetSleepList(progenyId); // await _context.SleepDb.Where(s => s.ProgenyId == progenyId).ToListAsync();
+                List<Sleep> sList = await _dataService.GetSleepList(progenyId); 
                 List<Sleep> sleepList = new List<Sleep>();
                 DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
                 DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);

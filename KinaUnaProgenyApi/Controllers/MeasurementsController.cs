@@ -6,6 +6,7 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -219,12 +220,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetMeasurementMobile(int id)
         {
-            Measurement result = await _dataService.GetMeasurement(id); // await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
+            Measurement result = await _dataService.GetMeasurement(id);
 
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); 
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {
@@ -235,6 +236,60 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             return NotFound();
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetMeasurementsListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        {
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail);
+
+            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<Measurement> allItems = await _dataService.GetMeasurementsList(progenyId);
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int measurementsCounter = 1;
+            int measurementsCount = allItems.Count;
+            foreach (Measurement mes in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    mes.MeasurementNumber = measurementsCount - measurementsCounter + 1;
+                }
+                else
+                {
+                    mes.MeasurementNumber = measurementsCounter;
+                }
+
+                measurementsCounter++;
+            }
+
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            MeasurementsListPage model = new MeasurementsListPage();
+            model.MeasurementsList = itemsOnPage;
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+
+            return Ok(model);
         }
     }
 }
