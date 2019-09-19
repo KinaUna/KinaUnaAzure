@@ -256,6 +256,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<Measurement> allItems = await _dataService.GetMeasurementsList(progenyId);
+            allItems = allItems.OrderBy(m => m.Date).ToList();
 
             if (sortBy == 1)
             {

@@ -6,6 +6,7 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -247,6 +248,61 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             return NotFound();
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetVocabularyListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        {
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail);
+
+            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<VocabularyItem> allItems = await _dataService.GetVocabularyList(progenyId);
+            allItems = allItems.OrderBy(v => v.Date).ToList();
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int vocabularyCounter = 1;
+            int vocabularyCount = allItems.Count;
+            foreach (VocabularyItem word in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    word.VocabularyItemNumber = vocabularyCount - vocabularyCounter + 1;
+                }
+                else
+                {
+                    word.VocabularyItemNumber = vocabularyCounter;
+                }
+
+                vocabularyCounter++;
+            }
+
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            VocabularyListPage model = new VocabularyListPage();
+            model.VocabularyList = itemsOnPage;
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+
+            return Ok(model);
         }
     }
 }

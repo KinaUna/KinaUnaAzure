@@ -262,6 +262,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<Skill> allItems = await _dataService.GetSkillsList(progenyId);
+            allItems = allItems.OrderBy(s => s.SkillFirstObservation).ToList();
 
             if (sortBy == 1)
             {

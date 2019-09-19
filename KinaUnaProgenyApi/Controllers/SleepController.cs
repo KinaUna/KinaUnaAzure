@@ -252,7 +252,8 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<Sleep> allItems = await _dataService.GetSleepList(progenyId);
-            
+            allItems = allItems.OrderBy(s => s.SleepStart).ToList();
+
             if (sortBy == 1)
             {
                 allItems.Reverse();
