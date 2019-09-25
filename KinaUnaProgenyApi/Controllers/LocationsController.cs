@@ -244,6 +244,7 @@ namespace KinaUnaProgenyApi.Controllers
                     tItem.AccessLevel = location.AccessLevel;
                     _context.TimeLineDb.Remove(tItem);
                     await _context.SaveChangesAsync();
+                    await _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
                 }
 
                 _context.LocationsDb.Remove(location);

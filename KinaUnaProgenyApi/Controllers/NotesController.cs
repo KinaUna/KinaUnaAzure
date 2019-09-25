@@ -6,6 +6,7 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -234,6 +235,61 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             return NotFound();
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetNotesListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        {
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail);
+
+            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<Note> allItems = await _dataService.GetNotesList(progenyId);
+            allItems = allItems.OrderBy(v => v.CreatedDate).ToList();
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int noteCounter = 1;
+            int notesCount = allItems.Count;
+            foreach (Note note in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    note.NoteNumber = notesCount - noteCounter + 1;
+                }
+                else
+                {
+                    note.NoteNumber = noteCounter;
+                }
+
+                noteCounter++;
+            }
+
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            NotesListPage model = new NotesListPage();
+            model.NotesList = itemsOnPage;
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+
+            return Ok(model);
         }
     }
 }
