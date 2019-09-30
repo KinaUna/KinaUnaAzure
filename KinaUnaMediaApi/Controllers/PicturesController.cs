@@ -258,6 +258,23 @@ namespace KinaUnaMediaApi.Controllers
             picturesList = picturesList.Where(p => p.AccessLevel >= accessLevel).ToList();
             if (picturesList.Any())
             {
+                foreach (Picture pic in picturesList)
+                {
+                    pic.Comments = await _dataService.GetCommentsList(pic.CommentThreadNumber); // await _context.CommentsDb.AsNoTracking().Where(c => c.CommentThreadNumber == pic.CommentThreadNumber).ToListAsync();
+                    if (!pic.PictureLink.ToLower().StartsWith("http"))
+                    {
+                        pic.PictureLink = _imageStore.UriFor(pic.PictureLink);
+                    }
+                    if (!pic.PictureLink1200.ToLower().StartsWith("http"))
+                    {
+                        pic.PictureLink1200 = _imageStore.UriFor(pic.PictureLink1200);
+                    }
+                    if (!pic.PictureLink600.ToLower().StartsWith("http"))
+                    {
+                        pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
+                    }
+                }
+
                 return Ok(picturesList);
             }
             Progeny progeny = new Progeny();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
@@ -24,5 +25,8 @@ namespace KinaUna.Data.Models
         public string Tags { get; set; }
         public DateTime? DateAdded { get; set; }
         public string Author { get; set; }
+
+        [NotMapped]
+        public int LocationNumber { get; set; }
     }
 }

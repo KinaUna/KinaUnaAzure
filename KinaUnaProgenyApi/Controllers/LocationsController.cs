@@ -6,6 +6,7 @@ using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +28,7 @@ namespace KinaUnaProgenyApi.Controllers
             _context = context;
             _dataService = dataService;
         }
-        
+
 
         // GET api/locations/progeny/[id]
         [HttpGet]
@@ -35,15 +36,16 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); 
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Location> locationsList = await _dataService.GetLocationsList(id); // await _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == id && l.AccessLevel >= accessLevel).ToListAsync();
+                List<Location> locationsList = await _dataService.GetLocationsList(id);
                 locationsList = locationsList.Where(l => l.AccessLevel >= accessLevel).ToList();
                 if (locationsList.Any())
                 {
                     return Ok(locationsList);
                 }
+
                 return NotFound();
             }
 
@@ -54,7 +56,8 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLocationItem(int id)
         {
-            Location result = await _dataService.GetLocation(id); // await _context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == id);
+            Location
+                result = await _dataService.GetLocation(id);
 
             if (result == null)
             {
@@ -62,7 +65,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -111,7 +114,7 @@ namespace KinaUnaProgenyApi.Controllers
             location.State = value.State;
             location.StreetName = value.StreetName;
             location.Tags = value.Tags;
-            
+
             _context.LocationsDb.Add(location);
             await _context.SaveChangesAsync();
             await _dataService.SetLocation(location.LocationId);
@@ -119,13 +122,14 @@ namespace KinaUnaProgenyApi.Controllers
             TimeLineItem tItem = new TimeLineItem();
             tItem.ProgenyId = location.ProgenyId;
             tItem.AccessLevel = location.AccessLevel;
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Location;
+            tItem.ItemType = (int) KinaUnaTypes.TimeLineType.Location;
             tItem.ItemId = location.LocationId.ToString();
             UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
             if (userinfo != null)
             {
                 tItem.CreatedBy = userinfo.UserId;
             }
+
             tItem.CreatedTime = DateTime.UtcNow;
             if (location.Date.HasValue)
             {
@@ -194,13 +198,14 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Update Timeline.
             TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                t.ItemId == location.LocationId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Location);
+                t.ItemId == location.LocationId.ToString() && t.ItemType == (int) KinaUnaTypes.TimeLineType.Location);
             if (tItem != null)
             {
                 if (location.Date.HasValue)
                 {
                     tItem.ProgenyTime = location.Date.Value;
                 }
+
                 tItem.AccessLevel = location.AccessLevel;
                 _context.TimeLineDb.Update(tItem);
                 await _context.SaveChangesAsync();
@@ -234,13 +239,15 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                    t.ItemId == location.LocationId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Location);
+                    t.ItemId == location.LocationId.ToString() &&
+                    t.ItemType == (int) KinaUnaTypes.TimeLineType.Location);
                 if (tItem != null)
                 {
                     if (location.Date.HasValue)
                     {
                         tItem.ProgenyTime = location.Date.Value;
                     }
+
                     tItem.AccessLevel = location.AccessLevel;
                     _context.TimeLineDb.Remove(tItem);
                     await _context.SaveChangesAsync();
@@ -261,11 +268,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetLocationMobile(int id)
         {
-            Location result = await _dataService.GetLocation(id); // await _context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == id);
-            if(result != null)
+            Location result = await _dataService.GetLocation(id); 
+            if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {
@@ -276,6 +283,64 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             return NotFound();
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetLocationsListPage([FromQuery] int pageSize = 8,
+            [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId,
+            [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        {
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail);
+
+            if (userAccess == null && progenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<Location> allItems = await _dataService.GetLocationsList(progenyId);
+            allItems = allItems.OrderBy(v => v.Date).ToList();
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int locationCounter = 1;
+            int locationsCount = allItems.Count;
+            foreach (Location location in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    location.LocationNumber = locationsCount - locationCounter + 1;
+                }
+                else
+                {
+                    location.LocationNumber = locationCounter;
+                }
+
+                locationCounter++;
+            }
+
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            LocationsListPage model = new LocationsListPage();
+            model.LocationsList = itemsOnPage;
+            model.TotalPages = (int) Math.Ceiling(allItems.Count / (double) pageSize);
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+
+            return Ok(model);
         }
     }
 }
