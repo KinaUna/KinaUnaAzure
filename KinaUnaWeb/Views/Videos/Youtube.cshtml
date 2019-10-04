@@ -1,0 +1,20 @@
+﻿<!DOCTYPE html>
+@model string
+
+<html>
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width =device-width, initial-scale=1.0"/>
+</head>
+<body style="background-color: black">
+    @{
+        string url = "https://www.youtube.com/embed/";
+        url = url + Model;
+        url = url + "?rel=0";
+    }
+<div align="center" style="max-width: 100%">
+    <iframe src="@url" style="width: 95vw; height: 95vh; border: none;" allow="encrypted-media" allowfullscreen></iframe>
+</div>
+</body>
+</html>

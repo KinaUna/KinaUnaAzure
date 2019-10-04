@@ -897,7 +897,7 @@ namespace KinaUnaMediaApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); // _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); 
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {
@@ -910,37 +910,10 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             List<Picture> allItems;
-            if (!string.IsNullOrEmpty(tagFilter))
-            {
-                allItems = await _dataService.GetPicturesList(progenyId); // await _context.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToListAsync();
-                allItems = allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToList();
-            }
-            else
-            {
-                allItems = await _dataService.GetPicturesList(progenyId); // await _context.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToListAsync();
-                allItems = allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToList();
-            }
-
-            if (sortBy == 1)
-            {
-                allItems.Reverse();
-            }
-
-            int pictureCounter = 1;
-            int picCount = allItems.Count;
+            allItems = await _dataService.GetPicturesList(progenyId);
             List<string> tagsList = new List<string>();
             foreach (Picture pic in allItems)
             {
-                if (sortBy == 1)
-                {
-                    pic.PictureNumber = picCount - pictureCounter + 1;
-                }
-                else
-                {
-                    pic.PictureNumber = pictureCounter;
-                }
-
-                pictureCounter++;
                 if (!String.IsNullOrEmpty(pic.Tags))
                 {
                     List<string> pvmTags = pic.Tags.Split(',').ToList();
@@ -953,6 +926,38 @@ namespace KinaUnaMediaApi.Controllers
                     }
                 }
             }
+            if (!string.IsNullOrEmpty(tagFilter))
+            {
+                
+                allItems = allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToList();
+            }
+            else
+            {
+                allItems = allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToList();
+            }
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int pictureCounter = 1;
+            int picCount = allItems.Count;
+            
+            foreach (Picture pic in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    pic.PictureNumber = picCount - pictureCounter + 1;
+                }
+                else
+                {
+                    pic.PictureNumber = pictureCounter;
+                }
+
+                pictureCounter++;
+                
+            }
 
             var itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
@@ -961,7 +966,7 @@ namespace KinaUnaMediaApi.Controllers
 
             foreach (Picture pic in itemsOnPage)
             {
-                pic.Comments = await _dataService.GetCommentsList(pic.CommentThreadNumber); // await _context.CommentsDb.AsNoTracking().Where(c => c.CommentThreadNumber == pic.CommentThreadNumber).ToListAsync();
+                pic.Comments = await _dataService.GetCommentsList(pic.CommentThreadNumber);
                 if (!pic.PictureLink.ToLower().StartsWith("http"))
                 {
                     pic.PictureLink = _imageStore.UriFor(pic.PictureLink);
@@ -995,13 +1000,13 @@ namespace KinaUnaMediaApi.Controllers
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> PictureViewModelMobile(int id, int accessLevel, [FromQuery] int sortBy = 1)
         {
-            Picture picture = await _dataService.GetPicture(id); // await _context.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == id);
+            Picture picture = await _dataService.GetPicture(id);
 
             if (picture != null)
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail); // _progenyDbContext.UserAccessDb.SingleOrDefault(u => u.ProgenyId == picture.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
 
                 if (userAccess == null && picture.ProgenyId != Constants.DefaultChildId)
                 {

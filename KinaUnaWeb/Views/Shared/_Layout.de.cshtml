@@ -161,9 +161,15 @@
                     }
                     <div class="navbar-nav nav-item dropdown">
                         <a class="dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                            <i class="material-icons">favorite</i><span class="d-sm-inline d-md-inline d-lg-inline"> Vitae </span>
+                            <i class="material-icons">favorite</i><span class="d-sm-inline d-md-inline d-lg-inline"> Menü </span>
                         </a>
                         <div class="dropdown-menu">
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="TimeLine" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">update</i> Chronik</button>
+                                </form>
+                            </div>
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Pictures" asp-action="Index" method="get">
                                     <input type="number" name="id" value="1" hidden="hidden" />
@@ -193,46 +199,9 @@
                                 </form>
                             </div>
                             <div class="dropdown-item">
-                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Locations" asp-action="Index" method="get">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Notes" asp-action="Index" method="get">
                                     <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">person_pin</i> Orte</button>
-                                </form>
-                            </div>
-                            <div class="dropdown-item">
-                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Vocabulary" asp-action="Index" method="get">
-                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                    <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">forum</i> Wortschatz</button>
-                                </form>
-                            </div>
-                            <div class="dropdown-item">
-                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Skills" asp-action="Index" method="get">
-                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                    <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">school</i> Fähigkeiten</button>
-                                </form>
-                            </div>
-                            <div class="dropdown-item">
-                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Friends" asp-action="Index" method="get">
-                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                    <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">face</i> Freunde</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="nav-item dropdown">
-                        <a class="dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                            <i class="material-icons">grade</i><span class="d-sm-inline d-md-inline d-lg-inline"> Notae </span>
-                        </a>
-                        <div class="dropdown-menu">
-                            <div class="dropdown-item">
-                                <form class="form-inline-fullwidth" asp-area="" asp-controller="TimeLine" asp-action="Index" method="get">
-                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">update</i> Chronik</button>
-                                </form>
-                            </div>
-                            <div class="dropdown-item">
-                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Measurements" asp-action="Index" method="get">
-                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">straighten</i> Messungen</button>
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">note</i> Notizen</button>
                                 </form>
                             </div>
                             <div class="dropdown-item">
@@ -242,15 +211,39 @@
                                 </form>
                             </div>
                             <div class="dropdown-item">
-                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Notes" asp-action="Index" method="get">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Friends" asp-action="Index" method="get">
                                     <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">note</i> Notizen</button>
+                                    <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">face</i> Freunde</button>
                                 </form>
                             </div>
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Contacts" asp-action="Index" method="get">
                                     <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                     <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">contact_phone</i> Kontakte</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Locations" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">person_pin</i> Orte</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Measurements" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">straighten</i> Messungen</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Skills" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
+                                    <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">school</i> Fähigkeiten</button>
+                                </form>
+                            </div>
+                            <div class="dropdown-item">
+                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Vocabulary" asp-action="Index" method="get">
+                                    <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
+                                    <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">forum</i> Wortschatz</button>
                                 </form>
                             </div>
                             <div class="dropdown-item">

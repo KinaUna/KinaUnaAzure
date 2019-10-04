@@ -248,5 +248,11 @@ namespace KinaUnaWeb.Controllers
 
             return View(model);
         }
+
+        [AllowAnonymous]
+        public IActionResult Youtube(string link)
+        {
+            return PartialView("Youtube", link);
+        }
     }
 }

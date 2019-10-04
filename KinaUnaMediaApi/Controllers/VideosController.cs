@@ -479,14 +479,29 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             List<Video> allItems;
+            allItems = await _dataService.GetVideosList(progenyId);
+            List<string> tagsList = new List<string>();
+            foreach (Video vid in allItems)
+            {
+                if (!String.IsNullOrEmpty(vid.Tags))
+                {
+                    List<string> pvmTags = vid.Tags.Split(',').ToList();
+                    foreach (string tagstring in pvmTags)
+                    {
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                        {
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                        }
+                    }
+                }
+            }
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                allItems = await _dataService.GetVideosList(progenyId); // await _context.VideoDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToListAsync();
+
                 allItems = allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToList();
             }
             else
             {
-                allItems = await _dataService.GetVideosList(progenyId); // await _context.VideoDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToListAsync();
                 allItems = allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToList();
             }
 
@@ -497,7 +512,6 @@ namespace KinaUnaMediaApi.Controllers
 
             int videoCounter = 1;
             int vidCount = allItems.Count;
-            List<string> tagsList = new List<string>();
             foreach (Video vid in allItems)
             {
                 if (sortBy == 1)
@@ -510,18 +524,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
 
                 videoCounter++;
-                if (!String.IsNullOrEmpty(vid.Tags))
-                {
-                    List<string> pvmTags = vid.Tags.Split(',').ToList();
-                    foreach (string tagstring in pvmTags)
-                    {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                        {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                        }
-                    }
-                }
-
+                
                 if (vid.Duration != null)
                 {
                     vid.DurationHours = vid.Duration.Value.Hours.ToString();
