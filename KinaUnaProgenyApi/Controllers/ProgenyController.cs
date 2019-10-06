@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() == id.ToUpper())
             {
-                List<Progeny> progenyList = await _dataService.GetProgenyUserIsAdmin(id); // await _context.ProgenyDb.AsNoTracking().Where(p => p.Admins.Contains(id)).ToListAsync();
+                List<Progeny> progenyList = await _dataService.GetProgenyUserIsAdmin(id); 
                 if (progenyList.Any())
                 {
                     return Ok(progenyList);
@@ -58,10 +58,10 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetProgeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); 
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                Progeny result = await _dataService.GetProgeny(id); // await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
+                Progeny result = await _dataService.GetProgeny(id); 
                 
                 if (result != null)
                 {

@@ -195,6 +195,7 @@ namespace KinaUnaWeb
             services.AddAuthorization();
             services.AddSignalR().AddMessagePackProtocol();
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+            services.AddApplicationInsightsTelemetry();
         }
 
         public void Configure(IApplicationBuilder app)

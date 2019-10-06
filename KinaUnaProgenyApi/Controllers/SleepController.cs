@@ -35,10 +35,10 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Sleep> sleepList = await _dataService.GetSleepList(id); // await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == id && s.AccessLevel >= accessLevel).ToListAsync();
+                List<Sleep> sleepList = await _dataService.GetSleepList(id); 
                 sleepList = sleepList.Where(s => s.AccessLevel >= accessLevel).ToList();
                 if (sleepList.Any())
                 {
@@ -54,14 +54,14 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepItem(int id)
         {
 
-            Sleep result = await _dataService.GetSleep(id); // await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == id);
+            Sleep result = await _dataService.GetSleep(id);
             if (result.AccessLevel == (int) AccessLevel.Public || result.ProgenyId == Constants.DefaultChildId)
             {
                 return Ok(result);
             }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null)
             {
                 return Ok(result);
@@ -223,9 +223,9 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepMobile(int id)
         {
 
-            Sleep result = await _dataService.GetSleep(id); // await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == id);
+            Sleep result = await _dataService.GetSleep(id);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == userEmail.ToUpper() && u.ProgenyId == result.ProgenyId);
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); 
             if (userAccess != null)
             {
                 return Ok(result);
@@ -383,11 +383,11 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); // await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == userEmail.ToUpper() && u.ProgenyId == progenyId);
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); 
             if (userAccess != null)
             {
                 string userTimeZone = Constants.DefaultTimezone;
-                List<Sleep> sList = await _dataService.GetSleepList(progenyId); // await _context.SleepDb.Where(s => s.ProgenyId == progenyId).ToListAsync();
+                List<Sleep> sList = await _dataService.GetSleepList(progenyId);
                 List<Sleep> sleepList = new List<Sleep>();
                 foreach (Sleep s in sList)
                 {
@@ -473,6 +473,78 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 List<Sleep> model = chartList.OrderBy(s => s.SleepStart).ToList();
+
+                return Ok(model);
+            }
+
+            return Unauthorized();
+        }
+
+        [HttpGet("[action]/{sleepId}/{accessLevel}/{sortOrder}")]
+        public async Task<IActionResult> GetSleepDetails(int sleepId, int accessLevel, int sortOrder)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            Sleep currentSleep = await _dataService.GetSleep(sleepId);
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(currentSleep.ProgenyId, userEmail);
+            if (userAccess != null)
+            {
+                string userTimeZone = Constants.DefaultTimezone;
+                List<Sleep> sList = await _dataService.GetSleepList(currentSleep.ProgenyId);
+                List<Sleep> sleepList = new List<Sleep>();
+                foreach (Sleep s in sList)
+                {
+                    if (s.AccessLevel >= accessLevel)
+                    {
+                        sleepList.Add(s);
+                    }
+                }
+
+                if (sortOrder == 0)
+                {
+                    sleepList = sleepList.OrderBy(s => s.SleepStart).ToList();
+                }
+                else
+                {
+                    sleepList = sleepList.OrderByDescending(s => s.SleepStart).ToList();
+                }
+                
+                List<Sleep> model = new List<Sleep>();
+                
+                if (currentSleep != null)
+                {
+                    model.Add(currentSleep);
+                    int currentSleepIndex = sleepList.IndexOf(currentSleep);
+                    if (currentSleepIndex > 0)
+                    {
+                        model.Add(sleepList[currentSleepIndex -1]);
+                    }
+                    else
+                    {
+                        model.Add(sleepList[sleepList.Count - 1]);
+                    }
+
+                    if (sleepList.Count < currentSleepIndex + 1)
+                    {
+                        model.Add(sleepList[currentSleepIndex + 1]);
+                    }
+                    else
+                    {
+                        model.Add(sleepList[0]);
+                    }
+
+                    foreach (Sleep s in model)
+                    {
+                        s.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(s.SleepStart,
+                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
+                        s.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(s.SleepEnd,
+                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
+                        DateTimeOffset sOffset = new DateTimeOffset(s.SleepStart,
+                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
+                        DateTimeOffset eOffset = new DateTimeOffset(s.SleepEnd,
+                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
+                        s.SleepDuration = eOffset - sOffset;
+                    }
+                }
 
                 return Ok(model);
             }
