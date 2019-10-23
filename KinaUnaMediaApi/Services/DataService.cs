@@ -298,5 +298,73 @@ namespace KinaUnaMediaApi.Services
 
             return userinfo;
         }
+
+        public async Task<List<CalendarItem>> GetCalendarList(int progenyId)
+        {
+            List<CalendarItem> calendarList;
+            string cachedCalendar = await _cache.GetStringAsync(Constants.AppName + "calendarlist" + progenyId);
+            if (!string.IsNullOrEmpty(cachedCalendar))
+            {
+                calendarList = JsonConvert.DeserializeObject<List<CalendarItem>>(cachedCalendar);
+            }
+            else
+            {
+                calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
+                await _cache.SetStringAsync(Constants.AppName + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
+            }
+
+            return calendarList;
+        }
+
+        public async Task<List<Location>> GetLocationsList(int progenyId)
+        {
+            List<Location> locationsList;
+            string cachedLocationsList = await _cache.GetStringAsync(Constants.AppName + "locationslist" + progenyId);
+            if (!string.IsNullOrEmpty(cachedLocationsList))
+            {
+                locationsList = JsonConvert.DeserializeObject<List<Location>>(cachedLocationsList);
+            }
+            else
+            {
+                locationsList = await _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == progenyId).ToListAsync();
+                await _cache.SetStringAsync(Constants.AppName + "locationslist" + progenyId, JsonConvert.SerializeObject(locationsList), _cacheOptionsSliding);
+            }
+
+            return locationsList;
+        }
+
+        public async Task<List<Friend>> GetFriendsList(int progenyId)
+        {
+            List<Friend> friendsList;
+            string cachedFriendsList = await _cache.GetStringAsync(Constants.AppName + "friendslist" + progenyId);
+            if (!string.IsNullOrEmpty(cachedFriendsList))
+            {
+                friendsList = JsonConvert.DeserializeObject<List<Friend>>(cachedFriendsList);
+            }
+            else
+            {
+                friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == progenyId).ToListAsync();
+                await _cache.SetStringAsync(Constants.AppName + "friendslist" + progenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
+            }
+
+            return friendsList;
+        }
+
+        public async Task<List<Contact>> GetContactsList(int progenyId)
+        {
+            List<Contact> contactsList;
+            string cachedContactsList = await _cache.GetStringAsync(Constants.AppName + "contactslist" + progenyId);
+            if (!string.IsNullOrEmpty(cachedContactsList))
+            {
+                contactsList = JsonConvert.DeserializeObject<List<Contact>>(cachedContactsList);
+            }
+            else
+            {
+                contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
+                await _cache.SetStringAsync(Constants.AppName + "contactslist" + progenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
+            }
+
+            return contactsList;
+        }
     }
 }

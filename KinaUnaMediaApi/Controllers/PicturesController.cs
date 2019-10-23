@@ -638,13 +638,14 @@ namespace KinaUnaMediaApi.Controllers
 
             if (model.Longtitude != "" && model.Latitude != "")
             {
-                model.Location = model.Latitude + ", " + model.Longtitude;
+                if (string.IsNullOrEmpty(model.Location))
+                {
+                    model.Location = model.Latitude + ", " + model.Longtitude;
+                }
             }
 
             CommentThread commentThread = new CommentThread();
             await _context.CommentThreadsDb.AddAsync(commentThread);
-            await _context.SaveChangesAsync();
-            _context.CommentThreadsDb.Update(commentThread);
             await _context.SaveChangesAsync();
             model.CommentThreadNumber = commentThread.Id;
 
@@ -1439,6 +1440,105 @@ namespace KinaUnaMediaApi.Controllers
 
             return Ok(result);
         }
+
+        [Route("[action]/{id}/{accessLevel}")]
+        [HttpGet]
+        public async Task<IActionResult> GetLocationAutoSuggestList(int id, int accessLevel)
+        {
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+
+            if (userAccess == null && id != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+            
+
+            List<Picture> allItems = await _dataService.GetPicturesList(id);
+            allItems = allItems.Where(p => p.AccessLevel >= accessLevel).ToList();
+            List<string> autoSuggestList = new List<string>();
+            foreach (Picture picture in allItems)
+            {
+                if (!string.IsNullOrEmpty(picture.Location))
+                {
+                    if (!autoSuggestList.Contains(picture.Location))
+                    {
+                        autoSuggestList.Add(picture.Location);
+                    }
+                }
+            }
+
+            List<Video> allVideos = await _dataService.GetVideosList(id);
+            allVideos = allVideos.Where(p => p.AccessLevel >= accessLevel).ToList();
+            foreach (Video video in allVideos)
+            {
+                if (!string.IsNullOrEmpty(video.Location))
+                {
+                    if (!autoSuggestList.Contains(video.Location))
+                    {
+                        autoSuggestList.Add(video.Location);
+                    }
+                }
+            }
+            
+            autoSuggestList.Sort();
+            return Ok(autoSuggestList);
+        }
+
+        [Route("[action]/{id}/{accessLevel}")]
+        [HttpGet]
+        public async Task<IActionResult> GetTagsAutoSuggestList(int id, int accessLevel)
+        {
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+
+            if (userAccess == null && id != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+
+
+            List<Picture> allItems = await _dataService.GetPicturesList(id);
+            allItems = allItems.Where(p => p.AccessLevel >= accessLevel).ToList();
+            List<string> autoSuggestList = new List<string>();
+            foreach (Picture picture in allItems)
+            {
+                if (!string.IsNullOrEmpty(picture.Tags))
+                {
+                    List<string> tagsList = picture.Tags.Split(',').ToList();
+                    foreach (string tagString in tagsList)
+                    {
+                        if (!autoSuggestList.Contains(tagString.Trim()))
+                        {
+                            autoSuggestList.Add(tagString.Trim());
+                        }
+                    }
+                }
+            }
+
+            List<Video> allVideos = await _dataService.GetVideosList(id);
+            allVideos = allVideos.Where(p => p.AccessLevel >= accessLevel).ToList();
+            foreach (Video video in allVideos)
+            {
+                if (!string.IsNullOrEmpty(video.Tags))
+                {
+                    List<string> tagsList = video.Tags.Split(',').ToList();
+                    foreach (string tagString in tagsList)
+                    {
+                        if (!autoSuggestList.Contains(tagString.Trim()))
+                        {
+                            autoSuggestList.Add(tagString.Trim());
+                        }
+                    }
+                }
+            }
+            autoSuggestList.Sort();
+            return Ok(autoSuggestList);
+        }
+
+        
 
         // Download pictures to StorageBlob from Url
         [HttpGet]

@@ -173,7 +173,10 @@ namespace KinaUnaProgenyApi.Controllers
             friendItem.Description = value.Description;
             friendItem.FriendSince = value.FriendSince ?? DateTime.UtcNow;
             friendItem.Notes = value.Notes;
-            friendItem.PictureLink = value.PictureLink;
+            if (value.PictureLink != "[KeepExistingLink]")
+            {
+                friendItem.PictureLink = value.PictureLink;
+            }
             friendItem.Tags = value.Tags;
 
             _context.FriendsDb.Update(friendItem);

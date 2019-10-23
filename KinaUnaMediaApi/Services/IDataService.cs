@@ -25,5 +25,9 @@ namespace KinaUnaMediaApi.Services
         Task RemoveCommentsList(int commentThreadId);
         Task<UserInfo> GetUserInfoByUserId(string id);
         Task<UserInfo> GetUserInfoByEmail(string userEmail);
+        Task<List<CalendarItem>> GetCalendarList(int id);
+        Task<List<Location>> GetLocationsList(int id);
+        Task<List<Friend>> GetFriendsList(int id);
+        Task<List<Contact>> GetContactsList(int id);
     }
 }

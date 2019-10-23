@@ -534,10 +534,6 @@ namespace KinaUnaProgenyApi.Controllers
 
                     foreach (Sleep s in model)
                     {
-                        s.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(s.SleepStart,
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-                        s.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(s.SleepEnd,
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                         DateTimeOffset sOffset = new DateTimeOffset(s.SleepStart,
                             TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
                         DateTimeOffset eOffset = new DateTimeOffset(s.SleepEnd,

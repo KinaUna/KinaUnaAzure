@@ -28,5 +28,8 @@ namespace KinaUna.Data.Models
 
         [NotMapped]
         public int LocationNumber { get; set; }
+
+        [NotMapped]
+        public Progeny Progeny { get; set; }
     }
 }

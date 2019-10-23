@@ -339,8 +339,6 @@ namespace KinaUnaMediaApi.Controllers
                 CommentThread commentThread = new CommentThread();
                 await _context.CommentThreadsDb.AddAsync(commentThread);
                 await _context.SaveChangesAsync();
-                _context.CommentThreadsDb.Update(commentThread);
-                await _context.SaveChangesAsync();
                 model.CommentThreadNumber = commentThread.Id;
 
                 await _context.VideoDb.AddAsync(model);
