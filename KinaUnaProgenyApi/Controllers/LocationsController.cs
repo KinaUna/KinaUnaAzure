@@ -22,13 +22,14 @@ namespace KinaUnaProgenyApi.Controllers
     {
         private readonly ProgenyDbContext _context;
         private readonly IDataService _dataService;
+        private readonly AzureNotifications _azureNotifications;
 
-        public LocationsController(ProgenyDbContext context, IDataService dataService)
+        public LocationsController(ProgenyDbContext context, IDataService dataService, AzureNotifications azureNotifications)
         {
             _context = context;
             _dataService = dataService;
+            _azureNotifications = azureNotifications;
         }
-
 
         // GET api/locations/progeny/[id]
         [HttpGet]
@@ -144,6 +145,10 @@ namespace KinaUnaProgenyApi.Controllers
             await _context.SaveChangesAsync();
             await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
+            string title = "Location added for " + prog.NickName;
+            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new location for " + prog.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+
             return Ok(location);
         }
 
@@ -212,6 +217,10 @@ namespace KinaUnaProgenyApi.Controllers
                 await _dataService.SetTimeLineItem(tItem.TimeLineId);
             }
 
+            UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
+            string title = "Location edited for " + prog.NickName;
+            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a location for " + prog.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
             return Ok(location);
         }
 
@@ -258,6 +267,11 @@ namespace KinaUnaProgenyApi.Controllers
                 await _context.SaveChangesAsync();
                 await _dataService.RemoveLocation(location.LocationId, location.ProgenyId);
 
+                UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
+                string title = "Location deleted for " + prog.NickName;
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a location for " + prog.NickName + ". Location: " + location.Name;
+                tItem.AccessLevel = 0;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
                 return NoContent();
             }
 

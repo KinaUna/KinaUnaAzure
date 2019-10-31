@@ -366,5 +366,39 @@ namespace KinaUnaMediaApi.Services
 
             return contactsList;
         }
+
+        public async Task<List<UserAccess>> GetProgenyUserAccessList(int progenyId)
+        {
+            List<UserAccess> accessList;
+            string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + "accessList" + progenyId);
+            if (!string.IsNullOrEmpty(cachedAccessList))
+            {
+                accessList = JsonConvert.DeserializeObject<List<UserAccess>>(cachedAccessList);
+            }
+            else
+            {
+                accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == progenyId).ToListAsync();
+                await _cache.SetStringAsync(Constants.AppName + "accessList" + progenyId, JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
+            }
+
+            return accessList;
+        }
+
+        public async Task<Progeny> GetProgeny(int id)
+        {
+            Progeny progeny;
+            string cachedProgeny = await _cache.GetStringAsync(Constants.AppName + "progeny" + id);
+            if (!string.IsNullOrEmpty(cachedProgeny))
+            {
+                progeny = JsonConvert.DeserializeObject<Progeny>(cachedProgeny);
+            }
+            else
+            {
+                progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
+                await _cache.SetStringAsync(Constants.AppName + "progeny" + id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
+            }
+
+            return progeny;
+        }
     }
 }

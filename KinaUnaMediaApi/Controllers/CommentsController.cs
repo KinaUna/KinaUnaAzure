@@ -3,13 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using KinaUnaMediaApi.Models.ViewModels;
 using KinaUnaMediaApi.Services;
 
 namespace KinaUnaMediaApi.Controllers
@@ -23,12 +21,14 @@ namespace KinaUnaMediaApi.Controllers
         private readonly MediaDbContext _context;
         private readonly IDataService _dataService;
         private readonly ImageStore _imageStore;
+        private readonly AzureNotifications _azureNotifications;
 
-        public CommentsController(MediaDbContext context, IDataService dataService, ImageStore imageStore)
+        public CommentsController(MediaDbContext context, IDataService dataService, ImageStore imageStore, AzureNotifications azureNotifications)
         {
             _context = context;
             _dataService = dataService;
             _imageStore = imageStore;
+            _azureNotifications = azureNotifications;
         }
 
         // GET api/comments/5
@@ -126,6 +126,15 @@ namespace KinaUnaMediaApi.Controllers
             await _context.SaveChangesAsync();
             await _dataService.SetComment(newComment.CommentId);
 
+            string title = "New comment for " + model.Progeny.NickName;
+            string message = model.DisplayName + " added a new comment for " + model.Progeny.NickName;
+            TimeLineItem tItem = new TimeLineItem();
+            tItem.ProgenyId = model.Progeny.Id;
+            tItem.ItemId = model.ItemId;
+            tItem.ItemType = model.ItemType;
+            tItem.AccessLevel = model.AccessLevel;
+            UserInfo userinfo = await _dataService.GetUserInfoByUserId(model.Author);
+            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
             return Ok(newComment);
         }
 

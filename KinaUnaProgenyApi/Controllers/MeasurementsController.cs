@@ -22,11 +22,13 @@ namespace KinaUnaProgenyApi.Controllers
     {
         private readonly ProgenyDbContext _context;
         private readonly IDataService _dataService;
+        private readonly AzureNotifications _azureNotifications;
 
-        public MeasurementsController(ProgenyDbContext context, IDataService dataService)
+        public MeasurementsController(ProgenyDbContext context, IDataService dataService, AzureNotifications azureNotifications)
         {
             _context = context;
             _dataService = dataService;
+            _azureNotifications = azureNotifications;
         }
         
         // GET api/measurements/progeny/[id]
@@ -35,10 +37,10 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Measurement> measurementsList = await _dataService.GetMeasurementsList(id); // await _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == id && m.AccessLevel >= accessLevel).ToListAsync();
+                List<Measurement> measurementsList = await _dataService.GetMeasurementsList(id);
                 measurementsList = measurementsList.Where(m => m.AccessLevel >= accessLevel).ToList();
                 if (measurementsList.Any())
                 {
@@ -54,10 +56,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetMeasurementItem(int id)
         {
-            Measurement result = await _dataService.GetMeasurement(id); // await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
+            Measurement result = await _dataService.GetMeasurement(id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -117,6 +119,10 @@ namespace KinaUnaProgenyApi.Controllers
             await _context.SaveChangesAsync();
             await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
+            string title = "Measurement added for " + prog.NickName;
+            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new measurement for " + prog.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+
             return Ok(measurementItem);
         }
 
@@ -171,6 +177,12 @@ namespace KinaUnaProgenyApi.Controllers
                 await _context.SaveChangesAsync();
                 await _dataService.SetTimeLineItem(tItem.TimeLineId);
             }
+
+            UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
+            string title = "Measurement edited for " + prog.NickName;
+            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a measurement for " + prog.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+
             return Ok(measurementItem);
         }
 
@@ -209,6 +221,13 @@ namespace KinaUnaProgenyApi.Controllers
                 _context.MeasurementsDb.Remove(measurementItem);
                 await _context.SaveChangesAsync();
                 await _dataService.RemoveMeasurement(measurementItem.MeasurementId, measurementItem.ProgenyId);
+
+                UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
+                string title = "Measurement deleted for " + prog.NickName;
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a measurement for " + prog.NickName + ". Measurement date: " + measurementItem.Date.Date.ToString("dd-MMM-yyyy");
+                tItem.AccessLevel = 0;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+
                 return NoContent();
             }
             else

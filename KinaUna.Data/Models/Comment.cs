@@ -15,5 +15,13 @@ namespace KinaUna.Data.Models
 
         [NotMapped]
         public string AuthorImage { get; set; }
+        [NotMapped]
+        public Progeny Progeny { get; set; }
+        [NotMapped]
+        public int ItemType { get; set; }
+        [NotMapped]
+        public string ItemId { get; set; }
+        [NotMapped]
+        public int AccessLevel { get; set; }
     }
 }

@@ -443,7 +443,8 @@ namespace KinaUnaWeb.Controllers
             cmnt.Author = userinfo.UserId;
             cmnt.DisplayName = userinfo.UserName + "(" + userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + ")";
             cmnt.Created = DateTime.UtcNow;
-
+            cmnt.ItemType = (int) KinaUnaTypes.TimeLineType.Photo;
+            cmnt.ItemId = model.ItemId.ToString();
             bool commentAdded = await _mediaHttpClient.AddPictureComment(cmnt);
 
             if (commentAdded)
@@ -898,6 +899,8 @@ namespace KinaUnaWeb.Controllers
             cmnt.Author = userinfo.UserId;
             cmnt.DisplayName = userinfo.UserName + "(" + userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + ")";
             cmnt.Created = DateTime.UtcNow;
+            cmnt.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
+            cmnt.ItemId = model.ItemId.ToString();
 
             bool commentAdded = await _mediaHttpClient.AddVideoComment(cmnt);
 

@@ -29,5 +29,7 @@ namespace KinaUnaMediaApi.Services
         Task<List<Location>> GetLocationsList(int id);
         Task<List<Friend>> GetFriendsList(int id);
         Task<List<Contact>> GetContactsList(int id);
+        Task<List<UserAccess>> GetProgenyUserAccessList(int progenyId);
+        Task<Progeny> GetProgeny(int id);
     }
 }

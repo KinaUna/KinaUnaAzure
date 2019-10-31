@@ -22,11 +22,13 @@ namespace KinaUnaProgenyApi.Controllers
     {
         private readonly ProgenyDbContext _context;
         private readonly IDataService _dataService;
+        private readonly AzureNotifications _azureNotifications;
 
-        public NotesController(ProgenyDbContext context, IDataService dataService)
+        public NotesController(ProgenyDbContext context, IDataService dataService, AzureNotifications azureNotifications)
         {
             _context = context;
             _dataService = dataService;
+            _azureNotifications = azureNotifications;
         }
         
         // GET api/notes/progeny/[id]
@@ -94,8 +96,8 @@ namespace KinaUnaProgenyApi.Controllers
             noteItem.Category = value.Category;
             noteItem.ProgenyId = value.ProgenyId;
             noteItem.Title = value.Title;
-            noteItem.CreatedDate = DateTime.UtcNow;
-
+            noteItem.CreatedDate = value?.CreatedDate ?? DateTime.UtcNow;
+            
             _context.NotesDb.Add(noteItem);
             await _context.SaveChangesAsync();
             await _dataService.SetNote(noteItem.NoteId);
@@ -117,6 +119,11 @@ namespace KinaUnaProgenyApi.Controllers
             await _context.TimeLineDb.AddAsync(tItem);
             await _context.SaveChangesAsync();
             await _dataService.SetTimeLineItem(tItem.TimeLineId);
+
+            string title = "Note added for " + prog.NickName;
+            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new note for " + prog.NickName;
+
+            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
 
             return Ok(noteItem);
         }
@@ -171,6 +178,10 @@ namespace KinaUnaProgenyApi.Controllers
                 await _dataService.SetTimeLineItem(tItem.TimeLineId);
             }
 
+            UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
+            string title = "Note edited for " + prog.NickName;
+            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a note for " + prog.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
             return Ok(noteItem);
         }
 
@@ -210,6 +221,11 @@ namespace KinaUnaProgenyApi.Controllers
                 await _context.SaveChangesAsync();
                 await _dataService.RemoveNote(noteItem.NoteId, noteItem.ProgenyId);
 
+                UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
+                string title = "Note deleted for " + prog.NickName;
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a note for " + prog.NickName + ". Note: " + noteItem.Title;
+                tItem.AccessLevel = 0;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
                 return NoContent();
             }
 

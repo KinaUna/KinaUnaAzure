@@ -23,12 +23,14 @@ namespace KinaUnaMediaApi.Controllers
         private readonly MediaDbContext _context;
         private readonly ProgenyDbContext _progenyDbContext;
         private readonly IDataService _dataService;
+        private readonly AzureNotifications _azureNotifications;
 
-        public VideosController(MediaDbContext context, ProgenyDbContext progenyDbContext, IDataService dataService)
+        public VideosController(MediaDbContext context, ProgenyDbContext progenyDbContext, IDataService dataService, AzureNotifications azureNotifications)
         {
             _context = context;
             _progenyDbContext = progenyDbContext;
             _dataService = dataService;
+            _azureNotifications = azureNotifications;
         }
         
         // GET api/videos/page[?pageSize=3&pageIndex=10&progenyId=2&accessLevel=1&tagFilter=funny]
@@ -38,7 +40,7 @@ namespace KinaUnaMediaApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); // _progenyDbContext.UserAccessDb.SingleOrDefault(u => u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail);
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {
@@ -52,12 +54,12 @@ namespace KinaUnaMediaApi.Controllers
             List<Video> allItems; 
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                allItems = await _dataService.GetVideosList(progenyId); // await _context.VideoDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToListAsync();
+                allItems = await _dataService.GetVideosList(progenyId);
                 allItems = allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToList();
             }
             else
             {
-                allItems = await _dataService.GetVideosList(progenyId); // await _context.VideoDb.Where(p => p.ProgenyId == progenyId && p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToListAsync();
+                allItems = await _dataService.GetVideosList(progenyId); 
                 allItems = allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToList();
             }
 
@@ -120,7 +122,7 @@ namespace KinaUnaMediaApi.Controllers
 
             foreach (Video vid in itemsOnPage)
             {
-                vid.Comments = await _dataService.GetCommentsList(vid.CommentThreadNumber); // await _context.CommentsDb.Where(c => c.CommentThreadNumber == vid.CommentThreadNumber).ToListAsync();
+                vid.Comments = await _dataService.GetCommentsList(vid.CommentThreadNumber);
             }
             VideoPageViewModel model = new VideoPageViewModel();
             model.VideosList = itemsOnPage;
@@ -141,13 +143,12 @@ namespace KinaUnaMediaApi.Controllers
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> VideoViewModel(int id, int accessLevel, [FromQuery] int sortBy = 1)
         {
-            Video video = await _dataService.GetVideo(id); // await _context.VideoDb.SingleOrDefaultAsync(v => v.VideoId == id);
+            Video video = await _dataService.GetVideo(id); 
             if (video != null)
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail); // _progenyDbContext.UserAccessDb.SingleOrDefault(u => u.ProgenyId == video.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
-
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail); 
                 if (userAccess == null && video.ProgenyId != Constants.DefaultChildId)
                 {
                     return Unauthorized();
@@ -171,14 +172,14 @@ namespace KinaUnaMediaApi.Controllers
                 model.Tags = video.Tags;
                 model.VideoNumber = 1;
                 model.VideoCount = 1;
-                model.CommentsList = await _dataService.GetCommentsList(video.CommentThreadNumber); // await _context.CommentsDb.Where(c => c.CommentThreadNumber == video.CommentThreadNumber).ToListAsync();
+                model.CommentsList = await _dataService.GetCommentsList(video.CommentThreadNumber); 
                 model.Location = video.Location;
                 model.Longtitude = video.Longtitude;
                 model.Latitude = video.Latitude;
                 model.Altitude = video.Latitude;
                 model.TagsList = "";
                 List<string> tagsList = new List<string>();
-                List<Video> videosList = await _dataService.GetVideosList(video.ProgenyId); // await _context.VideoDb.Where(p => p.ProgenyId == video.ProgenyId && p.AccessLevel >= accessLevel).ToListAsync();
+                List<Video> videosList = await _dataService.GetVideosList(video.ProgenyId); 
                 videosList = videosList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToList();
                 if (videosList.Any())
                 {
@@ -258,20 +259,20 @@ namespace KinaUnaMediaApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _progenyDbContext.UserAccessDb.SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); 
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
                 return Unauthorized();
             }
 
-            List<Video> videosList = await _dataService.GetVideosList(id); // await _context.VideoDb.Where(v => v.ProgenyId == id && v.AccessLevel >= accessLevel).ToListAsync();
+            List<Video> videosList = await _dataService.GetVideosList(id);
             videosList = videosList.Where(v => v.AccessLevel >= accessLevel).ToList();
             if (videosList.Any())
             {
                 foreach (Video video in videosList)
                 {
-                    video.Comments = await _dataService.GetCommentsList(video.CommentThreadNumber); // await _context.CommentsDb.Where(c => c.CommentThreadNumber == video.CommentThreadNumber).ToListAsync();
+                    video.Comments = await _dataService.GetCommentsList(video.CommentThreadNumber); 
                 }
             }
             return Ok(videosList);
@@ -282,13 +283,12 @@ namespace KinaUnaMediaApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVideo(int id)
         {
-            Video result = await _dataService.GetVideo(id); // await _context.VideoDb.SingleOrDefaultAsync(v => v.VideoId == id);
-
+            Video result = await _dataService.GetVideo(id);
             if (result != null)
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _progenyDbContext.UserAccessDb.SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
                 if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
                 {
@@ -308,7 +308,7 @@ namespace KinaUnaMediaApi.Controllers
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _progenyDbContext.UserAccessDb.SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
             if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
             {
@@ -344,6 +344,17 @@ namespace KinaUnaMediaApi.Controllers
                 await _context.VideoDb.AddAsync(model);
                 await _context.SaveChangesAsync();
                 await _dataService.SetVideo(model.VideoId);
+
+                Progeny prog = await _dataService.GetProgeny(model.ProgenyId);
+                UserInfo userinfo = await _dataService.GetUserInfoByEmail(User.GetEmail());
+                string title = "New Video added for " + prog.NickName;
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new video for " + prog.NickName;
+                TimeLineItem tItem = new TimeLineItem();
+                tItem.ProgenyId = model.ProgenyId;
+                tItem.ItemId = model.VideoId.ToString();
+                tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
+                tItem.AccessLevel = model.AccessLevel;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
 
                 return Ok(model);
             }
@@ -387,6 +398,17 @@ namespace KinaUnaMediaApi.Controllers
             _context.VideoDb.Update(video);
             await _context.SaveChangesAsync();
             await _dataService.SetVideo(video.VideoId);
+
+            Progeny prog = await _dataService.GetProgeny(video.ProgenyId);
+            UserInfo userinfo = await _dataService.GetUserInfoByEmail(User.GetEmail());
+            string title = "Video Edited for " + prog.NickName;
+            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a video for " + prog.NickName;
+            TimeLineItem tItem = new TimeLineItem();
+            tItem.ProgenyId = video.ProgenyId;
+            tItem.ItemId = video.VideoId.ToString();
+            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
+            tItem.AccessLevel = video.AccessLevel;
+            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
 
             return Ok(video);
         }
@@ -432,6 +454,18 @@ namespace KinaUnaMediaApi.Controllers
                 _context.VideoDb.Remove(video);
                 await _context.SaveChangesAsync();
                 await _dataService.RemoveVideo(video.VideoId, video.ProgenyId);
+
+                Progeny prog = await _dataService.GetProgeny(video.ProgenyId);
+                UserInfo userinfo = await _dataService.GetUserInfoByEmail(User.GetEmail());
+                string title = "Video deleted for " + prog.NickName;
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a video for " + prog.NickName;
+                TimeLineItem tItem = new TimeLineItem();
+                tItem.ProgenyId = video.ProgenyId;
+                tItem.ItemId = video.VideoId.ToString();
+                tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
+                tItem.AccessLevel = 0;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+
                 return NoContent();
             }
             else
@@ -444,11 +478,11 @@ namespace KinaUnaMediaApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetVideoMobile(int id)
         {
-            Video result = await _dataService.GetVideo(id); // await _context.VideoDb.SingleOrDefaultAsync(v => v.VideoId == id);
+            Video result = await _dataService.GetVideo(id);
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
             if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
             {
@@ -464,7 +498,7 @@ namespace KinaUnaMediaApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); // _progenyDbContext.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail);
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {
@@ -547,7 +581,7 @@ namespace KinaUnaMediaApi.Controllers
 
             foreach (Video vid in itemsOnPage)
             {
-                vid.Comments = await _dataService.GetCommentsList(vid.CommentThreadNumber); // await _context.CommentsDb.Where(c => c.CommentThreadNumber == vid.CommentThreadNumber).ToListAsync();
+                vid.Comments = await _dataService.GetCommentsList(vid.CommentThreadNumber);
             }
             VideoPageViewModel model = new VideoPageViewModel();
             model.VideosList = itemsOnPage;

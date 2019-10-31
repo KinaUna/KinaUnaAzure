@@ -23,12 +23,14 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly ProgenyDbContext _context;
         private readonly ImageStore _imageStore;
         private readonly IDataService _dataService;
+        private readonly AzureNotifications _azureNotifications;
 
-        public FriendsController(ProgenyDbContext context, ImageStore imageStore, IDataService dataService)
+        public FriendsController(ProgenyDbContext context, ImageStore imageStore, IDataService dataService, AzureNotifications azureNotifications)
         {
             _context = context;
             _imageStore = imageStore;
             _dataService = dataService;
+            _azureNotifications = azureNotifications;
         }
         
         // GET api/friends/progeny/[id]
@@ -37,10 +39,10 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == id && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Friend> friendsList = await _dataService.GetFriendsList(id); // await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == id && f.AccessLevel >= accessLevel).ToListAsync();
+                List<Friend> friendsList = await _dataService.GetFriendsList(id);
                 friendsList = friendsList.Where(f => f.AccessLevel >= accessLevel).ToList();
                 if (friendsList.Any())
                 {
@@ -56,14 +58,14 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetFriendItem(int id)
         {
-            Friend result = await _dataService.GetFriend(id); // await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
+            Friend result = await _dataService.GetFriend(id);
             if (result == null)
             {
                 return NotFound();
             }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); // _context.UserAccessDb.AsNoTracking().SingleOrDefault(u => u.ProgenyId == result.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -133,6 +135,10 @@ namespace KinaUnaProgenyApi.Controllers
             await _context.SaveChangesAsync();
             await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
+            string title = "Friend added for " + prog.NickName;
+            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new friend for " + prog.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+
             return Ok(friendItem);
         }
 
@@ -195,6 +201,11 @@ namespace KinaUnaProgenyApi.Controllers
                 await _dataService.SetTimeLineItem(tItem.TimeLineId);
             }
 
+            UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
+            string title = "Friend edited for " + prog.NickName;
+            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a friend for " + prog.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+
             return Ok(friendItem);
         }
 
@@ -205,12 +216,12 @@ namespace KinaUnaProgenyApi.Controllers
             Friend friendItem = await _context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == id);
             if (friendItem != null)
             {
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 // Check if child exists.
                 Progeny prog = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == friendItem.ProgenyId);
                 if (prog != null)
                 {
                     // Check if user is allowed to delete contacts for this child.
-                    string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                     if (!prog.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
@@ -240,6 +251,14 @@ namespace KinaUnaProgenyApi.Controllers
                 _context.FriendsDb.Remove(friendItem);
                 await _context.SaveChangesAsync();
                 await _dataService.RemoveFriend(friendItem.FriendId, friendItem.ProgenyId);
+
+                UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
+                string title = "Friend deleted for " + prog.NickName;
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a friend for " + prog.NickName + ". Friend: " + friendItem.Name;
+                
+                tItem.AccessLevel = 0;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+
                 return NoContent();
             }
             else
