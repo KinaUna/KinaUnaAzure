@@ -115,7 +115,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<UserAccess>> GetUsersUserAccessList(string email)
         {
             List<UserAccess> accessList;
-            string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + "usersaccesslist" + email);
+            string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + "usersaccesslist" + email.ToUpper());
             if (!string.IsNullOrEmpty(cachedAccessList))
             {
                 accessList = JsonConvert.DeserializeObject<List<UserAccess>>(cachedAccessList);
@@ -123,7 +123,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.UserId.ToUpper() == email.ToUpper()).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "usersaccesslist" + email, JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + "usersaccesslist" + email.ToUpper(), JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
             }
 
             return accessList;
@@ -132,7 +132,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<UserAccess>> SetUsersUserAccessList(string email)
         {
             List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.UserId.ToUpper() == email.ToUpper()).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "usersaccesslist" + email, JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + "usersaccesslist" + email.ToUpper(), JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
             
             return accessList;
         }
@@ -175,7 +175,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<UserAccess> GetProgenyUserAccessForUser(int progenyId, string userEmail)
         {
             UserAccess userAccess;
-            string cachedUserAccess = await _cache.GetStringAsync(Constants.AppName + "progenyuseraccess" + progenyId + userEmail);
+            string cachedUserAccess = await _cache.GetStringAsync(Constants.AppName + "progenyuseraccess" + progenyId + userEmail.ToUpper());
             if (!string.IsNullOrEmpty(cachedUserAccess))
             {
                 userAccess = JsonConvert.DeserializeObject<UserAccess>(cachedUserAccess);
@@ -183,7 +183,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 userAccess = await _context.UserAccessDb.SingleOrDefaultAsync(u => u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
-                await _cache.SetStringAsync(Constants.AppName + "progenyuseraccess" + progenyId + userEmail, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + "progenyuseraccess" + progenyId + userEmail.ToUpper(), JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
             }
 
             return userAccess;
@@ -192,7 +192,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<UserInfo> GetUserInfoByEmail(string userEmail)
         {
             UserInfo userinfo;
-            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + "userinfobymail" + userEmail);
+            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + "userinfobymail" + userEmail.ToUpper());
             if (!string.IsNullOrEmpty(cachedUserInfo))
             {
                 userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
@@ -200,7 +200,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
-                await _cache.SetStringAsync(Constants.AppName + "userinfobymail" + userEmail, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + "userinfobymail" + userEmail.ToUpper(), JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
             }
 
             return userinfo;
@@ -209,7 +209,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<UserInfo> SetUserInfoByEmail(string userEmail)
         {
             UserInfo userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
-            await _cache.SetStringAsync(Constants.AppName + "userinfobymail" + userEmail, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + "userinfobymail" + userEmail.ToUpper(), JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
             await _cache.SetStringAsync(Constants.AppName + "userinfobyuserid" + userinfo.UserId, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
             await _cache.SetStringAsync(Constants.AppName + "userinfobyid" + userinfo.Id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
 
@@ -218,7 +218,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task RemoveUserInfoByEmail(string userEmail, string userId, int userinfoId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "userinfobymail" + userEmail);
+            await _cache.RemoveAsync(Constants.AppName + "userinfobymail" + userEmail.ToUpper());
             await _cache.RemoveAsync(Constants.AppName + "userinfobyuserid" + userId);
             await _cache.RemoveAsync(Constants.AppName + "userinfobyid" + userinfoId);
         }
