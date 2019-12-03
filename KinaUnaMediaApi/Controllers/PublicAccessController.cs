@@ -402,7 +402,7 @@ namespace KinaUnaMediaApi.Controllers
 
             foreach (Video vid in itemsOnPage)
             {
-                vid.Comments = await _dataService.GetCommentsList(vid.CommentThreadNumber); // await _context.CommentsDb.Where(c => c.CommentThreadNumber == vid.CommentThreadNumber).ToListAsync();
+                vid.Comments = await _dataService.GetCommentsList(vid.CommentThreadNumber);
             }
             VideoPageViewModel model = new VideoPageViewModel();
             model.VideosList = itemsOnPage;
@@ -418,6 +418,118 @@ namespace KinaUnaMediaApi.Controllers
             model.TagsList = tList.TrimEnd(',');
 
             return Ok(model);
+        }
+
+        [HttpGet]
+        [Route("[action]/{id}/{accessLevel}")]
+        public async Task<IActionResult> VideoViewModelMobile(int id, int accessLevel, [FromQuery] int sortBy = 1)
+        {
+
+            Video video = await _dataService.GetVideo(id);
+
+            if (video != null)
+            {
+                if (video.ProgenyId != Constants.DefaultChildId)
+                {
+                    return NotFound();
+                }
+
+                VideoViewModel model = new VideoViewModel();
+                model.VideoId = video.VideoId;
+                model.VideoType = video.VideoType;
+                model.VideoTime = video.VideoTime;
+                model.Duration = video.Duration;
+                model.ProgenyId = video.ProgenyId;
+                model.Owners = video.Owners;
+                model.VideoLink = video.VideoLink;
+                model.ThumbLink = video.ThumbLink;
+                model.AccessLevel = video.AccessLevel;
+                model.Author = video.Author;
+                model.AccessLevelListEn[video.AccessLevel].Selected = true;
+                model.AccessLevelListDa[video.AccessLevel].Selected = true;
+                model.AccessLevelListDe[video.AccessLevel].Selected = true;
+                model.CommentThreadNumber = video.CommentThreadNumber;
+                model.Tags = video.Tags;
+                model.VideoNumber = 1;
+                model.VideoCount = 1;
+                model.CommentsList = await _dataService.GetCommentsList(video.CommentThreadNumber);
+                model.Location = video.Location;
+                model.Longtitude = video.Longtitude;
+                model.Latitude = video.Latitude;
+                model.Altitude = video.Latitude;
+                model.TagsList = "";
+                List<string> tagsList = new List<string>();
+                List<Video> videosList = await _dataService.GetVideosList(video.ProgenyId);
+                videosList = videosList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToList();
+                if (videosList.Any())
+                {
+                    int currentIndex = 0;
+                    int indexer = 0;
+                    foreach (Video vid in videosList)
+                    {
+                        if (vid.VideoId == video.VideoId)
+                        {
+                            currentIndex = indexer;
+                        }
+                        indexer++;
+                        if (!String.IsNullOrEmpty(vid.Tags))
+                        {
+                            List<string> pvmTags = vid.Tags.Split(',').ToList();
+                            foreach (string tagstring in pvmTags)
+                            {
+                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                                {
+                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                                }
+                            }
+                        }
+                    }
+                    model.VideoNumber = currentIndex + 1;
+                    model.VideoCount = videosList.Count;
+                    if (currentIndex > 0)
+                    {
+                        model.PrevVideo = videosList[currentIndex - 1].VideoId;
+                    }
+                    else
+                    {
+                        model.PrevVideo = videosList.Last().VideoId;
+                    }
+
+                    if (currentIndex + 1 < videosList.Count)
+                    {
+                        model.NextVideo = videosList[currentIndex + 1].VideoId;
+                    }
+                    else
+                    {
+                        model.NextVideo = videosList.First().VideoId;
+                    }
+
+                    if (sortBy == 1)
+                    {
+                        int tempVal = model.NextVideo;
+                        model.NextVideo = model.PrevVideo;
+                        model.PrevVideo = tempVal;
+                    }
+
+                }
+                string tagItems = "[";
+                if (tagsList.Any())
+                {
+                    foreach (string tagstring in tagsList)
+                    {
+                        tagItems = tagItems + "'" + tagstring + "',";
+                    }
+
+                    tagItems = tagItems.Remove(tagItems.Length - 1);
+                    tagItems = tagItems + "]";
+                }
+
+                model.TagsList = tagItems;
+
+                return Ok(model);
+            }
+
+            return NotFound();
         }
 
         [HttpGet]

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
@@ -535,6 +536,240 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Ok(new List<TimeLineItem>());
             }
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetNotesListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        {
+
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<Note> allItems = await _dataService.GetNotesList(Constants.DefaultChildId);
+            allItems = allItems.Where(n => n.AccessLevel == 5).OrderBy(v => v.CreatedDate).ToList();
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int noteCounter = 1;
+            int notesCount = allItems.Count;
+            foreach (Note note in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    note.NoteNumber = notesCount - noteCounter + 1;
+                }
+                else
+                {
+                    note.NoteNumber = noteCounter;
+                }
+
+                noteCounter++;
+            }
+
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            NotesListPage model = new NotesListPage();
+            model.NotesList = itemsOnPage;
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+
+            return Ok(model);
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetSleepListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        {
+
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<Sleep> allItems = await _dataService.GetSleepList(Constants.DefaultChildId);
+            allItems = allItems.Where(s => s.AccessLevel == 5).OrderBy(s => s.SleepStart).ToList();
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int sleepCounter = 1;
+            int slpCount = allItems.Count;
+            foreach (Sleep slp in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    slp.SleepNumber = slpCount - sleepCounter + 1;
+                }
+                else
+                {
+                    slp.SleepNumber = sleepCounter;
+                }
+
+                sleepCounter++;
+            }
+
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            SleepListPage model = new SleepListPage();
+            model.SleepList = itemsOnPage;
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+
+            return Ok(model);
+        }
+
+        [HttpGet("[action]/{sleepId}/{accessLevel}/{sortOrder}")]
+        public async Task<IActionResult> GetSleepDetails(int sleepId, int accessLevel, int sortOrder)
+        {
+            
+            Sleep currentSleep = await _dataService.GetSleep(sleepId);
+            if (currentSleep != null && currentSleep.ProgenyId == Constants.DefaultChildId)
+            {
+                string userTimeZone = Constants.DefaultTimezone;
+                List<Sleep> sList = await _dataService.GetSleepList(currentSleep.ProgenyId);
+                List<Sleep> sleepList = new List<Sleep>();
+                foreach (Sleep s in sList)
+                {
+                    if (s.AccessLevel >= accessLevel)
+                    {
+                        sleepList.Add(s);
+                    }
+                }
+
+                if (sortOrder == 0)
+                {
+                    sleepList = sleepList.OrderBy(s => s.SleepStart).ToList();
+                }
+                else
+                {
+                    sleepList = sleepList.OrderByDescending(s => s.SleepStart).ToList();
+                }
+
+                List<Sleep> model = new List<Sleep>();
+
+                if (currentSleep != null)
+                {
+                    model.Add(currentSleep);
+                    int currentSleepIndex = sleepList.IndexOf(currentSleep);
+                    if (currentSleepIndex > 0)
+                    {
+                        model.Add(sleepList[currentSleepIndex - 1]);
+                    }
+                    else
+                    {
+                        model.Add(sleepList[sleepList.Count - 1]);
+                    }
+
+                    if (sleepList.Count < currentSleepIndex + 1)
+                    {
+                        model.Add(sleepList[currentSleepIndex + 1]);
+                    }
+                    else
+                    {
+                        model.Add(sleepList[0]);
+                    }
+
+                    foreach (Sleep s in model)
+                    {
+                        DateTimeOffset sOffset = new DateTimeOffset(s.SleepStart,
+                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
+                        DateTimeOffset eOffset = new DateTimeOffset(s.SleepEnd,
+                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
+                        s.SleepDuration = eOffset - sOffset;
+                    }
+                }
+
+                return Ok(model);
+            }
+
+            return Unauthorized();
+        }
+
+        [HttpGet]
+        [Route("[action]/{id}")]
+        public async Task<IActionResult> LocationsList(int id, [FromQuery] int accessLevel = 5)
+        {
+            if (id == Constants.DefaultChildId)
+            {
+                List<Location> locationsList = await _dataService.GetLocationsList(id);
+                locationsList = locationsList.Where(l => l.AccessLevel == 5).ToList();
+                if (locationsList.Any())
+                {
+                    return Ok(locationsList);
+                }
+
+                return NotFound();
+            }
+
+            return Unauthorized();
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetLocationsListPage([FromQuery] int pageSize = 8,
+            [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId,
+            [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        {
+
+            if (progenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<Location> allItems = await _dataService.GetLocationsList(progenyId);
+            allItems = allItems.OrderBy(v => v.Date).ToList();
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int locationCounter = 1;
+            int locationsCount = allItems.Count;
+            foreach (Location location in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    location.LocationNumber = locationsCount - locationCounter + 1;
+                }
+                else
+                {
+                    location.LocationNumber = locationCounter;
+                }
+
+                locationCounter++;
+            }
+
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            LocationsListPage model = new LocationsListPage();
+            model.LocationsList = itemsOnPage;
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+
+            return Ok(model);
         }
     }
 }
