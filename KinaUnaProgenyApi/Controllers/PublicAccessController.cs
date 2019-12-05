@@ -771,5 +771,213 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(model);
         }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetMeasurementsListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        {
+
+            if (progenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<Measurement> allItems = await _dataService.GetMeasurementsList(progenyId);
+            allItems = allItems.OrderBy(m => m.Date).ToList();
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int measurementsCounter = 1;
+            int measurementsCount = allItems.Count;
+            foreach (Measurement mes in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    mes.MeasurementNumber = measurementsCount - measurementsCounter + 1;
+                }
+                else
+                {
+                    mes.MeasurementNumber = measurementsCounter;
+                }
+
+                measurementsCounter++;
+            }
+
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            MeasurementsListPage model = new MeasurementsListPage();
+            model.MeasurementsList = itemsOnPage;
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+
+            return Ok(model);
+        }
+
+        [HttpGet]
+        [Route("[action]/{id}")]
+        public async Task<IActionResult> MeasurementsList(int id, [FromQuery] int accessLevel = 5)
+        {
+            if (id == Constants.DefaultChildId)
+            {
+                List<Measurement> measurementsList = await _dataService.GetMeasurementsList(id);
+                measurementsList = measurementsList.Where(m => m.AccessLevel >= accessLevel).ToList();
+                if (measurementsList.Any())
+                {
+                    return Ok(measurementsList);
+                }
+                return NotFound();
+            }
+
+            return Unauthorized();
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetSkillsListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        {
+
+            if (progenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<Skill> allItems = await _dataService.GetSkillsList(progenyId);
+            allItems = allItems.OrderBy(s => s.SkillFirstObservation).ToList();
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int skillsCounter = 1;
+            int skillsCount = allItems.Count;
+            foreach (Skill skill in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    skill.SkillNumber = skillsCount - skillsCounter + 1;
+                }
+                else
+                {
+                    skill.SkillNumber = skillsCounter;
+                }
+
+                skillsCounter++;
+            }
+
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            SkillsListPage model = new SkillsListPage();
+            model.SkillsList = itemsOnPage;
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+
+            return Ok(model);
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetVocabularyListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        {
+
+            if (progenyId != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            List<VocabularyItem> allItems = await _dataService.GetVocabularyList(progenyId);
+            allItems = allItems.OrderBy(v => v.Date).ToList();
+
+            if (sortBy == 1)
+            {
+                allItems.Reverse();
+            }
+
+            int vocabularyCounter = 1;
+            int vocabularyCount = allItems.Count;
+            foreach (VocabularyItem word in allItems)
+            {
+                if (sortBy == 1)
+                {
+                    word.VocabularyItemNumber = vocabularyCount - vocabularyCounter + 1;
+                }
+                else
+                {
+                    word.VocabularyItemNumber = vocabularyCounter;
+                }
+
+                vocabularyCounter++;
+            }
+
+            var itemsOnPage = allItems
+                .Skip(pageSize * (pageIndex - 1))
+                .Take(pageSize)
+                .ToList();
+
+            VocabularyListPage model = new VocabularyListPage();
+            model.VocabularyList = itemsOnPage;
+            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
+            model.PageNumber = pageIndex;
+            model.SortBy = sortBy;
+
+            return Ok(model);
+        }
+
+        [HttpGet]
+        [Route("[action]/{id}")]
+        public async Task<IActionResult> VocabularyList(int id, [FromQuery] int accessLevel = 5)
+        {
+            if (id == Constants.DefaultChildId)
+            {
+                List<VocabularyItem> wordList = await _dataService.GetVocabularyList(id);
+                wordList = wordList.Where(w => w.AccessLevel >= accessLevel).ToList();
+                if (wordList.Any())
+                {
+                    return Ok(wordList);
+                }
+                return NotFound();
+            }
+
+            return Unauthorized();
+        }
+
+        [HttpGet]
+        [Route("[action]/{id}")]
+        public async Task<IActionResult> VaccinationsList(int id, [FromQuery] int accessLevel = 5)
+        {
+            if (id == Constants.DefaultChildId)
+            {
+                List<Vaccination> vaccinationsList = await _dataService.GetVaccinationsList(id);
+                vaccinationsList = vaccinationsList.Where(v => v.AccessLevel >= accessLevel).ToList();
+                if (vaccinationsList.Any())
+                {
+                    return Ok(vaccinationsList);
+                }
+
+                return NotFound();
+            }
+
+            return Unauthorized();
+        }
     }
 }
