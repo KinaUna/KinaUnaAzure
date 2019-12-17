@@ -57,7 +57,7 @@ namespace KinaUnaMediaApi
 
             services.AddScoped<IAuthorizationHandler, MustBeAdminHandler>();
             services.AddSingleton<ImageStore>();
-            services.AddSingleton<AzureNotifications>();
+            services.AddScoped<AzureNotifications>();
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(options =>
                 {

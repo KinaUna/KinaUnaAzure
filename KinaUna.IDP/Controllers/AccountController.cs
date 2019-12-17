@@ -168,6 +168,7 @@ namespace KinaUna.IDP.Controllers
 
             //Test for Xamarin. 
             var context = await _interaction.GetLogoutContextAsync(logoutId);
+            
             if (context?.ShowSignoutPrompt == false)
             {
                 //it's safe to automatically sign-out
@@ -237,7 +238,6 @@ namespace KinaUna.IDP.Controllers
                 {
                     logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServer");
                 }
-                
             }
             return Redirect(logout.PostLogoutRedirectUri);
             

@@ -31,7 +31,7 @@ namespace KinaUnaProgenyApi
             var authenticationServerClientSecret = Configuration["AuthenticationServerClientSecret"];
 
             services.AddSingleton<ImageStore>();
-            services.AddSingleton<AzureNotifications>();
+            services.AddScoped<AzureNotifications>();
 
             services.AddDbContext<ProgenyDbContext>(options =>
                 options.UseSqlServer(Configuration["ProgenyDefaultConnection"]));

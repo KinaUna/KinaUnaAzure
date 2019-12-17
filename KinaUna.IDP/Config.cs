@@ -93,6 +93,7 @@ namespace KinaUna.IDP
         {
             var webServerUrl = configuration.GetValue<string>("WebServer");
             var webServerAzureUrl = configuration.GetValue<string>("WebServerAzure");
+            var supportServerUrl = configuration.GetValue<string>("SupportServer");
             var webServerLocal = configuration.GetValue<string>("WebServerLocal");
             var secretString = configuration.GetValue<string>("SecretString");
             List<string> corsList = new List<string>();
@@ -100,6 +101,7 @@ namespace KinaUna.IDP
             corsList.Add(Constants.AuthAppUrl);
             corsList.Add(Constants.ProgenyApiUrl);
             corsList.Add(Constants.MediaApiUrl);
+            corsList.Add(Constants.SupportUrl);
             corsList.Add("https://" + Constants.AppRootDomain);
             return new List<Client>()
             {
@@ -278,6 +280,53 @@ namespace KinaUna.IDP
                     UpdateAccessTokenClaimsOnRefresh = true,
                     RefreshTokenUsage = TokenUsage.ReUse
                     
+                },
+                new Client
+                {
+                    ClientName = "KinaUnaSupport",
+                    ClientId = "kinaunasupport",
+                    ClientUri = supportServerUrl,
+                    RequireConsent = false,
+                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
+                    AccessTokenType = AccessTokenType.Reference,
+                    IdentityTokenLifetime = 2592000,
+                    AuthorizationCodeLifetime = 2592000,
+                    AccessTokenLifetime = 2592000,
+                    AllowOfflineAccess = true,
+                    AlwaysIncludeUserClaimsInIdToken = false,
+                    RefreshTokenExpiration = TokenExpiration.Sliding,
+                    //AbsoluteRefreshTokenLifetime = ...
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    AllowedCorsOrigins = corsList,
+                    RedirectUris = new List<string>()
+                    {
+                        supportServerUrl + "/signin-oidc"
+
+                    },
+                    PostLogoutRedirectUris = new List<string>()
+                    {
+                        supportServerUrl + "/signout-callback-oidc"
+                    },
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.OfflineAccess,
+                        IdentityServerConstants.StandardScopes.Address,
+                        IdentityServerConstants.StandardScopes.Email,
+                        IdentityServerConstants.StandardScopes.Phone,
+                        "firstname",
+                        "middlename",
+                        "lastname",
+                        "roles",
+                        "timezone",
+                        "viewchild",
+                        "joindate"
+                    },
+                    ClientSecrets =
+                    {
+                        new Secret(secretString.Sha256())
+                    }
                 }
             };
 
