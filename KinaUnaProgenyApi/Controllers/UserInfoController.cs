@@ -242,7 +242,7 @@ namespace KinaUnaProgenyApi.Controllers
             userinfo.MiddleName = value?.MiddleName ?? "";
             userinfo.LastName = value?.LastName ?? "";
             userinfo.ProfilePicture = value?.ProfilePicture ?? "";
-            userinfo.UserName = value?.UserName ?? "";
+            userinfo.UserName = value?.UserName ?? userinfo.UserEmail;
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() != userinfo.UserEmail.ToUpper())

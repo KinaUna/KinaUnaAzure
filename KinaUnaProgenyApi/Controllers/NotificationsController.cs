@@ -80,7 +80,6 @@ namespace KinaUnaProgenyApi.Controllers
             return new HttpResponseMessage(ret);
         }
 
-        // GET api/timeline/progeny/[id]
         [HttpGet]
         [Route("[action]/{count}/{start}/{language}")]
         public async Task<IActionResult> Latest(int count, int start = 0, string language = "EN")
@@ -95,19 +94,58 @@ namespace KinaUnaProgenyApi.Controllers
                 .Where(n => n.UserId == userId && n.Language.ToUpper() == language.ToUpper()).ToListAsync();
             if (notifications.Any())
             {
-                notifications = notifications.OrderByDescending(n => n.Time).Skip(start).Take(count).ToList();
-
+                if (start > notifications.Count)
+                {
+                    return Ok(new List<MobileNotification>());
+                }
+                notifications = notifications.OrderByDescending(n => n.Time).ToList();
+                notifications = notifications.Skip(start).Take(count).ToList();
+                foreach (MobileNotification notif in notifications)
+                {
+                    if (!string.IsNullOrEmpty(notif.IconLink) && !notif.IconLink.ToLower().StartsWith("http"))
+                    {
+                        notif.IconLink = _imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
+                    }
+                    else
+                    {
+                        notif.IconLink = Constants.ProfilePictureUrl;
+                    }
+                }
             }
 
-            foreach (MobileNotification notif in notifications)
+            return Ok(notifications);
+        }
+
+        [HttpGet]
+        [Route("[action]/{count}/{start}/{language}")]
+        public async Task<IActionResult> Unread(int count, int start = 0, string language = "EN")
+        {
+            string userId = User.GetUserId();
+            if (string.IsNullOrEmpty(userId))
             {
-                if (!string.IsNullOrEmpty(notif.IconLink) && !notif.IconLink.ToLower().StartsWith("http"))
+                return Unauthorized();
+            }
+
+            List<MobileNotification> notifications = await _context.MobileNotificationsDb
+                .Where(n => n.UserId == userId && n.Read == false && n.Language.ToUpper() == language.ToUpper()).ToListAsync();
+            if (notifications.Any())
+            {
+                if (start > notifications.Count)
                 {
-                    notif.IconLink = _imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
+                    return Ok(new List<MobileNotification>());
                 }
-                else
+                notifications = notifications.OrderByDescending(n => n.Time).ToList();
+                notifications = notifications.Skip(start).Take(count).ToList();
+                foreach (MobileNotification notif in notifications)
                 {
-                    notif.IconLink = Constants.ProfilePictureUrl;
+                    if (!string.IsNullOrEmpty(notif.IconLink) && !notif.IconLink.ToLower().StartsWith("http"))
+                    {
+                        notif.IconLink = _imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
+                    }
+                    else
+                    {
+                        notif.IconLink = Constants.ProfilePictureUrl;
+                    }
                 }
             }
 

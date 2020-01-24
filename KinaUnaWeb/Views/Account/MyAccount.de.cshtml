@@ -104,12 +104,12 @@
                 if (isSubscribed) {
                     console.log('User is already subscribed to push notifications');
                     enableBtn.style.display = 'none';
-                    disableBtn.style.display = 'block';
+                    disableBtn.style.display = 'inline-block';
 
                 } else {
                     console.log('User is not yet subscribed to push notifications');
                     disableBtn.style.display = 'none';
-                    enableBtn.style.display = 'block';
+                    enableBtn.style.display = 'inline-block';
                 }
             })
             .catch(function (err) {
