@@ -371,7 +371,7 @@
     display: flex;
     width: 100%;
     flex-flow: row wrap;
-    align-items: left;
+    align-items: start;
 }
 
 .dropdown-menu .dropdown-item, .dropdown-menu li > a {
