@@ -4,14 +4,13 @@ using IdentityServer4.Services;
 using KinaUna.IDP.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Globalization;
@@ -21,20 +20,20 @@ using System.Security.Cryptography.X509Certificates;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
+using Microsoft.Azure.Storage.Auth;
+using Microsoft.Azure.Storage.Blob;
 
 namespace KinaUna.IDP
 {
     public class Startup
     {
         private IConfiguration Configuration { get; }
-        private readonly IHostingEnvironment _env;
-        private readonly ILoggerFactory _loggerFactory;
+        private readonly IWebHostEnvironment _env;
 
-        public Startup(IConfiguration configuration, IHostingEnvironment environment, ILoggerFactory loggerFactory)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             Configuration = configuration;
             _env = environment;
-            _loggerFactory = loggerFactory;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -78,10 +77,20 @@ namespace KinaUna.IDP
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
-            services.AddSingleton<IXmlRepository, DataProtectionKeyRepository>();
+            // services.AddSingleton<IXmlRepository, DataProtectionKeyRepository>();
 
-            var built = services.BuildServiceProvider();
-            services.AddDataProtection().AddKeyManagementOptions(options => options.XmlRepository = built.GetService<IXmlRepository>()).SetApplicationName("KinaUnaWebApp");
+            //var built = services.BuildServiceProvider();
+            //services.AddDataProtection().AddKeyManagementOptions(options => options.XmlRepository = built.GetService<IXmlRepository>()).SetApplicationName("KinaUnaWebApp");
+
+            var credentials = new StorageCredentials(Constants.CloudBlobUsername, Configuration["BlobStorageKey"]);
+            CloudBlobClient blobClient = new CloudBlobClient(new Uri(Constants.CloudBlobBase), credentials);
+            CloudBlobContainer container = blobClient.GetContainerReference("dataprotection");
+
+            container.CreateIfNotExistsAsync().GetAwaiter().GetResult();
+
+            services.AddDataProtection()
+                .SetApplicationName("KinaUnaWebApp")
+                .PersistKeysToAzureBlobStorage(container, "kukeys.xml");
 
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
                 {
@@ -131,7 +140,7 @@ namespace KinaUna.IDP
                     options.AddPolicy("KinaUnaCors",
                         builder =>
                         {
-                            builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                            builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                         });
                 });
             }
@@ -139,22 +148,27 @@ namespace KinaUna.IDP
             {
                 services.AddCors(options =>
                 {
+                    options.AddDefaultPolicy(builder =>
+                        {
+                            builder.WithOrigins(Constants.WebAppUrl, "https://" + Constants.AppRootDomain);
+                        });
                     options.AddPolicy("KinaUnaCors",
                         builder =>
                         {
                             builder.WithOrigins("https://*." + Constants.AppRootDomain).SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
                         });
                 });
-                var cors = new DefaultCorsPolicyService(_loggerFactory.CreateLogger<DefaultCorsPolicyService>())
-                {
-                    AllowedOrigins = { Constants.WebAppUrl, "https://" + Constants.AppRootDomain }
-                };
-                services.AddSingleton<ICorsPolicyService>(cors);
+                //var cors = new DefaultCorsPolicyService(_loggerFactory.CreateLogger<DefaultCorsPolicyService>())
+                //{
+                //    AllowedOrigins = { Constants.WebAppUrl, "https://" + Constants.AppRootDomain }
+                //};
+                // services.AddSingleton<ICorsPolicyService>(cors);
             }
             
 
-            services.AddMvc().AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
-            
+            //services.AddMvc().AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix);
+            services.AddControllersWithViews()
+                .AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix);
 
             services.AddIdentityServer(x =>
                 {
@@ -194,7 +208,7 @@ namespace KinaUna.IDP
 
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment hostingEnvironment
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment hostingEnvironment
             )
         {
             // This will do the initial DB population
@@ -204,8 +218,7 @@ namespace KinaUna.IDP
             {
                 app.UseDeveloperExceptionPage();
             }
-            app.UseCors("KinaUnaCors");
-
+            
             var supportedCultures = new[]
             {
                 new CultureInfo("en-US"),
@@ -226,10 +239,14 @@ namespace KinaUna.IDP
             localizationOptions.RequestCultureProviders.Insert(0, provider);
 
             app.UseRequestLocalization(localizationOptions);
-
-            app.UseIdentityServer();
             app.UseStaticFiles();
-            app.UseMvcWithDefaultRoute();
+            app.UseRouting();
+            app.UseCors("KinaUnaCors");
+            app.UseIdentityServer();
+            // app.UseMvcWithDefaultRoute();
+            app.UseEndpoints(endpoints => {
+                endpoints.MapDefaultControllerRoute();
+            });
         }
 
         private void InitializeDatabase(IApplicationBuilder app, bool resetDb)

@@ -26,6 +26,7 @@ using Microsoft.Extensions.Configuration;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace KinaUna.IDP.Controllers
 {
@@ -42,7 +43,7 @@ namespace KinaUna.IDP.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ProgenyDbContext _progContext;
         private readonly IConfiguration _configuration;
-        private readonly IHostingEnvironment _env;
+        private readonly IWebHostEnvironment _env;
 
         public AccountController(
             ILoginService<ApplicationUser> loginService,
@@ -54,7 +55,7 @@ namespace KinaUna.IDP.Controllers
             ApplicationDbContext context,
             ProgenyDbContext progContext,
             IConfiguration configuration,
-            IHostingEnvironment env)
+            IWebHostEnvironment env)
         {
             _loginService = loginService;
             _interaction = interaction;
@@ -465,6 +466,15 @@ namespace KinaUna.IDP.Controllers
                 throw new ApplicationException($"Unable to load user with ID '{userId}'.");
 
             }
+
+            if (string.IsNullOrWhiteSpace(user.UserName))
+            {
+                user.UserName = user.Email;
+                _context.Users.Update(user);
+                _context.SaveChanges();
+            }
+
+
             if (user.EmailConfirmed)
             {
                 RedirectToAction("Login");

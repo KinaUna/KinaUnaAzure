@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
@@ -477,7 +476,7 @@ namespace KinaUnaWeb.Services
                         TimeZoneInfo.FindSystemTimeZoneById(timeZone));
                 }
 
-                if (picture.CommentsList.Any())
+                if (picture.CommentsList.Count > 0)
                 {
                     foreach (Comment cmnt in picture.CommentsList)
                     {
@@ -577,7 +576,7 @@ namespace KinaUnaWeb.Services
                         TimeZoneInfo.FindSystemTimeZoneById(timeZone));
                 }
 
-                if (video.CommentsList.Any())
+                if (video.CommentsList.Count > 0)
                 {
                     foreach (Comment cmnt in video.CommentsList)
                     {

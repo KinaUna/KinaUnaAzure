@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Syncfusion.EJ2.Schedule;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -29,6 +30,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string StartString { get; set; }
         public string EndString { get; set; }
 
+        public List<ScheduleView> ViewOptions { get; set; }
+
         public CalendarItemViewModel()
         {
             ProgenyList = new List<SelectListItem>();
@@ -36,6 +39,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             AccessLevelListEn = accList.AccessLevelListEn;
             AccessLevelListDa = accList.AccessLevelListDa;
             AccessLevelListDe = accList.AccessLevelListDe;
+            ViewOptions = new List<ScheduleView>();
         }
     }
 }

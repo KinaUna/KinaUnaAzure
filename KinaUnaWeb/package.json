@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "name": "asp.net",
+  "private": true,
+  "devDependencies": {
+    "del": "5.1.0",
+    "gulp": "4.0.2"
+  },
+  "dependencies": {
+    "cldr-data": "^36.0.0"
+  }
+}

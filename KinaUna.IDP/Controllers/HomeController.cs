@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace KinaUna.IDP.Controllers
 {
@@ -18,9 +19,9 @@ namespace KinaUna.IDP.Controllers
     {
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IRedirectService _redirectSvc;
-        private readonly IHostingEnvironment _env;
+        private readonly IWebHostEnvironment _env;
 
-        public HomeController(IIdentityServerInteractionService interaction, IRedirectService redirectSvc, IHostingEnvironment env)
+        public HomeController(IIdentityServerInteractionService interaction, IRedirectService redirectSvc, IWebHostEnvironment env)
         {
             _interaction = interaction;
             _redirectSvc = redirectSvc;

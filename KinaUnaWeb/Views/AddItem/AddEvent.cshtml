@@ -84,8 +84,7 @@
     <div class="form-group">
         <label asp-for="AllDay" class="col-lg-3 col-sm-3 control-label">All Day</label>
         <div class="col-lg-1">
-            @{ string allDayChecked = Model.AllDay ? "checked" : "";}
-            <input type="checkbox" asp-for="AllDay" class="form-control" @allDayChecked value="@Model.AllDay" />
+            <input type="checkbox" asp-for="AllDay" class="form-control" checked="@Model.AllDay" value="@Model.AllDay" />
         </div>
     </div>
     <div class="form-group">

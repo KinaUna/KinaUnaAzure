@@ -1,11 +1,10 @@
 ﻿using KinaUna.Data;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.AzureKeyVault;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaMediaApi
 {
@@ -13,33 +12,36 @@ namespace KinaUnaMediaApi
     {
         public static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            // CreateWebHostBuilder(args).Build().Run();
+            CreateHostBuilder(args).Build().Run();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((ctx, builder) =>
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((context, config) =>
                 {
-                    var keyVaultEndpoint = Constants.KeyVaultEndPoint;
-                    if (!string.IsNullOrEmpty(keyVaultEndpoint))
+                    if (context.HostingEnvironment.IsProduction())
                     {
-                        var azureServiceTokenProvider = new AzureServiceTokenProvider();
-                        var keyVaultClient = new KeyVaultClient(
-                            new KeyVaultClient.AuthenticationCallback(
-                                azureServiceTokenProvider.KeyVaultTokenCallback));
-                        builder.AddAzureKeyVault(
-                            keyVaultEndpoint, keyVaultClient, new DefaultKeyVaultSecretManager());
+                        var keyVaultEndpoint = Constants.KeyVaultEndPoint;
+                        if (!string.IsNullOrEmpty(keyVaultEndpoint))
+                        {
+                            var builtConfig = config.Build();
 
+                            var azureServiceTokenProvider = new AzureServiceTokenProvider();
+                            var keyVaultClient = new KeyVaultClient(
+                                new KeyVaultClient.AuthenticationCallback(
+                                    azureServiceTokenProvider.KeyVaultTokenCallback));
+
+                            config.AddAzureKeyVault(
+                                keyVaultEndpoint,
+                                keyVaultClient,
+                                new DefaultKeyVaultSecretManager());
+                        }
                     }
                 })
-                .UseStartup<Startup>()
-                .ConfigureLogging((hostingContext, builder) =>
+                .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    builder.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    builder.AddConsole();
-                    builder.AddDebug();
-                    builder.AddAzureWebAppDiagnostics();
-                })
-                .UseApplicationInsights();
+                    webBuilder.UseStartup<Startup>();
+                });
     }
 }

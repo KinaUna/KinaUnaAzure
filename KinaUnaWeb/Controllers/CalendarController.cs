@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using Syncfusion.EJ2.Schedule;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -65,6 +66,10 @@ namespace KinaUnaWeb.Controllers
             var eventsList = await _progenyHttpClient.GetCalendarList(progId, userAccessLevel); // _context.CalendarDb.AsNoTracking().Where(e => e.ProgenyId == _progId).ToList();
             eventsList = eventsList.OrderBy(e => e.StartTime).ToList();
             CalendarItemViewModel events = new CalendarItemViewModel();
+            events.ViewOptions.Add(new ScheduleView{Option = Syncfusion.EJ2.Schedule.View.Day, DateFormat = "dd/MMM/yyyy", FirstDayOfWeek = 1});
+            events.ViewOptions.Add(new ScheduleView { Option = Syncfusion.EJ2.Schedule.View.Week, FirstDayOfWeek=1, ShowWeekNumber = true, DateFormat = "dd/MMM/yyyy" });
+            events.ViewOptions.Add(new ScheduleView { Option = Syncfusion.EJ2.Schedule.View.Month, FirstDayOfWeek = 1, ShowWeekNumber = true, DateFormat = "dd/MMM/yyyy" });
+            events.ViewOptions.Add(new ScheduleView { Option = Syncfusion.EJ2.Schedule.View.Agenda, FirstDayOfWeek = 1, DateFormat = "dd/MMM/yyyy" });
             events.IsAdmin = userIsProgenyAdmin;
             events.UserData = currentUser;
             events.Progeny = progeny;
@@ -91,6 +96,10 @@ namespace KinaUnaWeb.Controllers
                         // ToDo: Replace format string with configuration or userdefined value
                         ev.StartString = ev.StartTime.Value.ToString("yyyy-MM-dd") + "T" + ev.StartTime.Value.ToString("HH:mm:ss");
                         ev.EndString = ev.EndTime.Value.ToString("yyyy-MM-dd") + "T" + ev.EndTime.Value.ToString("HH:mm:ss");
+                        ev.Start = ev.StartTime.Value;
+                        ev.End = ev.EndTime.Value;
+                        ev.IsReadonly = !events.IsAdmin;
+                        // Todo: Add color property
                         events.EventsList.Add(ev);
                     }
                 }
@@ -157,6 +166,6 @@ namespace KinaUnaWeb.Controllers
             model.IsAdmin = userIsProgenyAdmin;
             
             return View(model);
-        }
+        }                
     }
 }

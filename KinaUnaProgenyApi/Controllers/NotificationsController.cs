@@ -21,7 +21,6 @@ namespace KinaUnaProgenyApi.Controllers
     public class NotificationsController : ControllerBase
     {
         private readonly AzureNotifications _azureNotifications;
-        private readonly IDataService _dataService;
         private readonly ProgenyDbContext _context;
         private readonly ImageStore _imageStore;
 

@@ -24,5 +24,11 @@ namespace KinaUna.Data.Models
 
         [NotMapped]
         public Progeny Progeny { get; set; }
+        [NotMapped]
+        public DateTime Start { get; set; }
+        [NotMapped]
+        public DateTime End { get; set; }
+        [NotMapped]
+        public bool IsReadonly { get; set; }
     }
 }

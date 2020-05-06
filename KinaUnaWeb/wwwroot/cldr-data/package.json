@@ -1,0 +1,83 @@
+{
+  "_from": "cldr-data",
+  "_id": "cldr-data@36.0.0",
+  "_inBundle": false,
+  "_integrity": "sha512-F3n+9DUs41vhys8eF/hsCgkmYlgXMCiwaE75uGZjUbS/jkszBnLylXj7xW3bBlMU1d2IuAptpoNAb6lTCu/RSg==",
+  "_location": "/cldr-data",
+  "_phantomChildren": {
+    "inflight": "1.0.6",
+    "inherits": "2.0.4",
+    "minimatch": "3.0.4",
+    "once": "1.4.0",
+    "path-is-absolute": "1.0.1"
+  },
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "cldr-data",
+    "name": "cldr-data",
+    "escapedName": "cldr-data",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/cldr-data/-/cldr-data-36.0.0.tgz",
+  "_shasum": "55b3a50b187c28d59203182cb57e98141558c91b",
+  "_spec": "cldr-data",
+  "_where": "G:\\repos\\KinaUna\\KinaUnaAzure\\KinaUnaWeb",
+  "author": {
+    "name": "Rafael Xavier de Souza",
+    "email": "rxaviers@gmail.com",
+    "url": "http://rafael.xavier.blog.br"
+  },
+  "bugs": {
+    "url": "https://github.com/rxaviers/cldr-data-npm/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "cldr-data-downloader": "0.3.x",
+    "glob": "5.x.x"
+  },
+  "deprecated": false,
+  "description": "Npm module for Unicode CLDR JSON data",
+  "devDependencies": {
+    "grunt": "0.4.x",
+    "grunt-contrib-jshint": "0.10.x",
+    "grunt-dco": "0.0.3",
+    "matchdep": "*"
+  },
+  "files": [
+    "DCO.md",
+    "index.js",
+    "install.js",
+    "urls.json"
+  ],
+  "homepage": "https://github.com/rxaviers/cldr-data-npm",
+  "keywords": [
+    "unicode",
+    "CLDR",
+    "JSON",
+    "data"
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/rxaviers/cldr-data-npm/blob/master/LICENSE"
+    }
+  ],
+  "main": "index.js",
+  "name": "cldr-data",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/rxaviers/cldr-data-npm.git"
+  },
+  "scripts": {
+    "install": "node install.js",
+    "test": "grunt && node test/index.js"
+  },
+  "version": "36.0.0"
+}

@@ -55,13 +55,15 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetCalendarItem(int id)
         {
             CalendarItem result = await _dataService.GetCalendarItem(id);
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
+            if(result != null)
             {
-                return Ok(result);
-            }
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+                if (userAccess != null || id == Constants.DefaultChildId)
+                {
+                    return Ok(result);
+                }
+            }            
 
             return NotFound();
         }

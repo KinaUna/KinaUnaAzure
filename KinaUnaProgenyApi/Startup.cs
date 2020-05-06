@@ -2,16 +2,15 @@
 using System.Reflection;
 using IdentityServer4.AccessTokenValidation;
 using KinaUna.Data.Contexts;
-using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Authorization;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaProgenyApi
 {
@@ -50,7 +49,8 @@ namespace KinaUnaProgenyApi
 
             services.AddScoped<IDataService, DataService>();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            // services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddControllers().AddNewtonsoftJson();
 
             services.AddAuthorization(authorizationOptions =>
             {
@@ -77,7 +77,7 @@ namespace KinaUnaProgenyApi
                 });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -91,7 +91,10 @@ namespace KinaUnaProgenyApi
             app.UseStaticFiles();
             app.UseAuthentication();
             app.UseHttpsRedirection();
-            app.UseMvc();
+            app.UseRouting();
+            app.UseAuthorization();
+            //app.UseMvc();
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }
