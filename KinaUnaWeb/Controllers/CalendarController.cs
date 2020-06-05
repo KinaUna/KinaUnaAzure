@@ -83,16 +83,9 @@ namespace KinaUnaWeb.Controllers
                     {
                         ev.StartTime = TimeZoneInfo.ConvertTimeFromUtc(ev.StartTime.Value,
                             TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                        if (ev.AllDay)
-                        {
-                            ev.EndTime = TimeZoneInfo.ConvertTimeFromUtc(ev.EndTime.Value + TimeSpan.FromDays(1),
+                        ev.EndTime = TimeZoneInfo.ConvertTimeFromUtc(ev.EndTime.Value,
                                 TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                        }
-                        else
-                        {
-                            ev.EndTime = TimeZoneInfo.ConvertTimeFromUtc(ev.EndTime.Value,
-                                TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                        }
+                        
                         // ToDo: Replace format string with configuration or userdefined value
                         ev.StartString = ev.StartTime.Value.ToString("yyyy-MM-dd") + "T" + ev.StartTime.Value.ToString("HH:mm:ss");
                         ev.EndString = ev.EndTime.Value.ToString("yyyy-MM-dd") + "T" + ev.EndTime.Value.ToString("HH:mm:ss");

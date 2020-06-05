@@ -133,6 +133,14 @@ function removeServiceWorkers() {
 }
 
 $(document).ready(function () {
+    $(document).click(function (event) {
+        var clickover = $(event.target);
+        var _opened = $(".navbar-collapse").hasClass("show");
+        if (_opened === true && !clickover.hasClass("navbar-toggler")) {
+            $(".navbar-toggler").click();
+        }
+    });
+
     $('.leavePage').click(function () {
         $(this).closest('.dropdown-menu').prev().dropdown('toggle');
         if ($('.navbar-toggler').css('display') !== 'none' && document.getElementById('bodyClick')) {

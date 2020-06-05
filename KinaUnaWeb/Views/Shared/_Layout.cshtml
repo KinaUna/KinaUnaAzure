@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
+<!DOCTYPE html>
 <html lang="en">
 @using KinaUna.Data
 @using Microsoft.AspNetCore.Http.Extensions
@@ -37,6 +38,7 @@
                 });
         }
     </script>
+    @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 @{ var returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl(); }
 @inject IProgenyManager ChildManager
@@ -332,13 +334,13 @@
                 <div class="navbar-nav">
                     <div class="nav-item">
                         <environment include="Development">
-                            <form id="loginForm" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post" target="loginFrame">
-                                <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" data-toggle="modal" data-target="#loginModal"><i class="material-icons">exit_to_app</i> Login or Register</button>
+                            <form id="loginForm" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post" >
+                                <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" ><i class="material-icons">exit_to_app</i> Login or Register</button>
                             </form>
                         </environment>
                         <environment exclude="Development">
-                            <form id="loginForm" class="form-inline-fullwidth" action="@Constants.WebAppUrl/account/login" method="post" target="loginFrame">
-                                <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" data-toggle="modal" data-target="#loginModal"><i class="material-icons">exit_to_app</i> Login or Register</button>
+                            <form id="loginForm" class="form-inline-fullwidth" action="@Constants.WebAppUrl/account/login" method="post" >
+                                <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" ><i class="material-icons">exit_to_app</i> Login or Register</button>
                             </form>
                         </environment>
                     </div>

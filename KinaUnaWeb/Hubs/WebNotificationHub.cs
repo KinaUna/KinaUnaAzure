@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Services;
@@ -42,7 +43,7 @@ namespace KinaUnaWeb.Hubs
         public async Task GetUpdateForUser(int count = 10, int start = 1)
         {
             string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
-            string userTimeZone = Context.GetHttpContext().User.FindFirst("timezone").Value;
+            string userTimeZone = Context.GetHttpContext().User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
             if (userId != "NoUser")
             {
                 List<WebNotification> notifications = await

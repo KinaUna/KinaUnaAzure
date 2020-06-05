@@ -152,6 +152,10 @@ namespace KinaUnaWeb.Controllers
             if (feedModel.UserAccessLevel == (int)AccessLevel.Public || displayPicture == null)
             {
                 displayPicture = await _mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, feedModel.UserAccessLevel, userTimeZone);
+                if(displayPicture == null)
+                {
+                    displayPicture = tempPicture;
+                }
                 if (!displayPicture.PictureLink600.StartsWith("https://"))
                 {
                     displayPicture.PictureLink600 = _imageStore.UriFor(displayPicture.PictureLink600);

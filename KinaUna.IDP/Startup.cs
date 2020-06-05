@@ -22,6 +22,7 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using Microsoft.Azure.Storage.Auth;
 using Microsoft.Azure.Storage.Blob;
+using IdentityServer4;
 
 namespace KinaUna.IDP
 {
@@ -193,7 +194,7 @@ namespace KinaUna.IDP
 
                     // This enables automatic token cleanup. this is optional.
                     options.EnableTokenCleanup = true;
-                    options.TokenCleanupInterval = 21600;
+                    options.TokenCleanupInterval = 3600;
                 })
                 .AddRedisCaching(options =>
                 {
@@ -206,6 +207,21 @@ namespace KinaUna.IDP
                 .AddProfileServiceCache<ProfileService>()
                 .Services.AddTransient<IProfileService, ProfileService>();
 
+            services.AddAuthentication().AddGoogle("Google", "Google", options =>
+            {
+                options.ClientId = Configuration["GoogleClientId"];
+                options.ClientSecret = Configuration["GoogleClientSecret"];
+            }).AddFacebook("Facebook", "Facebook", options =>
+            {
+                options.ClientId = Configuration["FacebookClientId"];
+                options.ClientSecret = Configuration["FacebookClientSecret"];
+            }).AddMicrosoftAccount("Microsoft", "Microsoft", microsoftOptions =>
+            {
+                microsoftOptions.ClientId = Configuration["MicrosoftClientId"];
+                microsoftOptions.ClientSecret = Configuration["MicrosoftClientSecret"];
+            });
+
+            services.AddApplicationInsightsTelemetry();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment hostingEnvironment
@@ -243,6 +259,8 @@ namespace KinaUna.IDP
             app.UseRouting();
             app.UseCors("KinaUnaCors");
             app.UseIdentityServer();
+            app.UseAuthentication();
+            app.UseAuthorization();
             // app.UseMvcWithDefaultRoute();
             app.UseEndpoints(endpoints => {
                 endpoints.MapDefaultControllerRoute();

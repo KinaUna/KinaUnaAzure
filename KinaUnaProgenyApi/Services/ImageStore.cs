@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.WindowsAzure.Storage.Auth;
-using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using KinaUna.Data;
+using Microsoft.Azure.Storage.Blob;
+using Microsoft.Azure.Storage.Auth;
 
 namespace KinaUnaProgenyApi.Services
 {

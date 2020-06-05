@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
+<!DOCTYPE html>
 @*@{ var returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl(); }*@
 <html>
 <head>
@@ -23,6 +24,7 @@
     <script src="~/lib/material-kit-205/js/material-kit.min.js"></script>
     <script src="~/js/waitMe.min.js"></script>
     @RenderSection("Scripts", required: false)
+    @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
     <div class="main" style="margin-top: -40px;">

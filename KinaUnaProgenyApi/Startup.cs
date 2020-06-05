@@ -2,7 +2,6 @@
 using System.Reflection;
 using IdentityServer4.AccessTokenValidation;
 using KinaUna.Data.Contexts;
-using KinaUnaProgenyApi.Authorization;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -52,21 +51,22 @@ namespace KinaUnaProgenyApi
             // services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddControllers().AddNewtonsoftJson();
 
-            services.AddAuthorization(authorizationOptions =>
-            {
-                authorizationOptions.AddPolicy(
-                    "MustBeAdmin",
-                    policyBuilder =>
-                    {
-                        policyBuilder.RequireAuthenticatedUser();
-                        policyBuilder.AddRequirements(
-                            new MustBeAdminRequirement());
-                    });
-
-            });
-
-            services.AddScoped<IAuthorizationHandler, MustBeAdminHandler>();
             
+            //services.AddAuthorization(authorizationOptions =>
+            //{
+            //    authorizationOptions.AddPolicy(
+            //        "MustBeAdmin",
+            //        policyBuilder =>
+            //        {
+            //            policyBuilder.RequireAuthenticatedUser();
+            //            policyBuilder.AddRequirements(
+            //                new MustBeAdminRequirement());
+            //        });
+
+            //});
+
+            //services.AddScoped<IAuthorizationHandler, MustBeAdminHandler>();
+
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(options =>
                 {
@@ -75,6 +75,8 @@ namespace KinaUnaProgenyApi
                     options.ApiSecret = authenticationServerClientSecret;
                     options.RequireHttpsMetadata = false;
                 });
+            services.AddAuthorization();
+            services.AddApplicationInsightsTelemetry();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -83,15 +85,16 @@ namespace KinaUnaProgenyApi
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                app.UseHsts();
-            }
+            //else
+            //{
+            //    app.UseHsts();
+            //}
 
-            app.UseStaticFiles();
-            app.UseAuthentication();
+            // app.UseStaticFiles();
             app.UseHttpsRedirection();
             app.UseRouting();
+
+            app.UseAuthentication();
             app.UseAuthorization();
             //app.UseMvc();
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });

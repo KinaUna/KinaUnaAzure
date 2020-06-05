@@ -42,21 +42,22 @@ namespace KinaUnaMediaApi
 
             // services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddControllers().AddNewtonsoftJson();
+            
+            
+            //services.AddAuthorization(authorizationOptions =>
+            //{
+            //    authorizationOptions.AddPolicy(
+            //        "MustBeAdmin",
+            //        policyBuilder =>
+            //        {
+            //            policyBuilder.RequireAuthenticatedUser();
+            //            policyBuilder.AddRequirements(
+            //                new MustBeAdminRequirement());
+            //        });
 
-            services.AddAuthorization(authorizationOptions =>
-            {
-                authorizationOptions.AddPolicy(
-                    "MustBeAdmin",
-                    policyBuilder =>
-                    {
-                        policyBuilder.RequireAuthenticatedUser();
-                        policyBuilder.AddRequirements(
-                            new MustBeAdminRequirement());
-                    });
+            //});
 
-            });
-
-            services.AddScoped<IAuthorizationHandler, MustBeAdminHandler>();
+            // services.AddScoped<IAuthorizationHandler, MustBeAdminHandler>();
             services.AddSingleton<ImageStore>();
             services.AddScoped<AzureNotifications>();
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
@@ -67,6 +68,8 @@ namespace KinaUnaMediaApi
                     options.ApiSecret = authenticationServerClientSecret;
                     options.RequireHttpsMetadata = true;
                 });
+            services.AddAuthorization();
+            services.AddApplicationInsightsTelemetry();
         }
     
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -76,16 +79,17 @@ namespace KinaUnaMediaApi
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                app.UseHsts();
-            }
+            //else
+            //{
+            //    app.UseHsts();
+            //}
 
-            app.UseStaticFiles();
+            // app.UseStaticFiles();
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseAuthentication();
             app.UseAuthorization();
             //app.UseMvc();
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });

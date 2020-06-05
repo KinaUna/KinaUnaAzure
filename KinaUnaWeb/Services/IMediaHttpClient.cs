@@ -12,7 +12,7 @@ namespace KinaUnaWeb.Services
     /// </summary>
     public interface IMediaHttpClient
     {
-        Task<HttpClient> GetClient();
+        //Task<HttpClient> GetClient();
 
         /// <summary>
         /// Gets the picture with the given PictureId, with the PictureTime converted to the given time zone.

@@ -706,3 +706,16 @@ button.Zebra_DatePicker_Icon {
     left: 0;
     z-index: 1003;
 }
+
+#bodyClick {
+    height: 0;
+    width: 0;
+    position: fixed;
+    opacity: 0;
+    top: 0;
+    left: auto;
+    right: 0;
+    content: "";
+    z-index: 1029;
+    overflow-x: hidden
+}
