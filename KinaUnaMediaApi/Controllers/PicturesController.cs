@@ -59,7 +59,7 @@ namespace KinaUnaMediaApi.Controllers
             }
 
             List<Picture> allItems; 
-            if (tagFilter != "")
+            if (!string.IsNullOrEmpty(tagFilter))
             {
                 allItems = await _dataService.GetPicturesList(progenyId);
                 allItems = allItems

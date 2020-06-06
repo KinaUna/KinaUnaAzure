@@ -21,17 +21,15 @@ namespace KinaUnaWeb.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IIdentityParser<ApplicationUser> _userManager;
         private readonly ImageStore _imageStore;
-        private readonly IIdentityServerClient _identityServerClient;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
 
-        public ProgenyManager(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IIdentityParser<ApplicationUser> userManager, ImageStore imageStore, IIdentityServerClient identityServerClient, HttpClient httpClient, ApiTokenInMemoryClient apiTokenClient)
+        public ProgenyManager(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IIdentityParser<ApplicationUser> userManager, ImageStore imageStore, HttpClient httpClient, ApiTokenInMemoryClient apiTokenClient)
         {
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _userManager = userManager;
             _imageStore = imageStore;
-            _identityServerClient = identityServerClient;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
@@ -45,7 +43,7 @@ namespace KinaUnaWeb.Services
         {
             var access_token = await _apiTokenClient.GetApiToken(
                     _configuration.GetValue<string>("AuthenticationServerClientId"),
-                    Constants.ProgenyApiName,
+                    Constants.ProgenyApiName + " " + Constants.MediaApiName,
                     _configuration.GetValue<string>("AuthenticationServerClientSecret"));
             return access_token;
         }

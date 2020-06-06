@@ -23,15 +23,13 @@ namespace KinaUnaWeb.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
-        private readonly IIdentityServerClient _identityServerClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
 
-        public MediaHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IIdentityServerClient identityServerClient, ApiTokenInMemoryClient apiTokenClient)
+        public MediaHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
-            _identityServerClient = identityServerClient;
             _apiTokenClient = apiTokenClient;
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
             httpClient.BaseAddress = new Uri(clientUri);
@@ -44,7 +42,7 @@ namespace KinaUnaWeb.Services
         {
             var access_token = await _apiTokenClient.GetApiToken(
                     _configuration.GetValue<string>("AuthenticationServerClientId"),
-                    Constants.MediaApiName,
+                    Constants.ProgenyApiName + " " + Constants.MediaApiName,
                     _configuration.GetValue<string>("AuthenticationServerClientSecret"));
             return access_token;
         }
@@ -138,8 +136,8 @@ namespace KinaUnaWeb.Services
 
             string pictureApiPath = "api/pictures/random/" + progenyId + "/" + accessLevel;
             //var pictureUri = clientUri + pictureApiPath;
-            var resp = await _httpClient.GetAsync(pictureApiPath);
-            string pictureResponseString = await resp.Content.ReadAsStringAsync();
+            var resp = await _httpClient.GetAsync(pictureApiPath).ConfigureAwait(false);
+            string pictureResponseString = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
             
             Picture resultPicture = JsonConvert.DeserializeObject<Picture>(pictureResponseString);
             if (timeZone != "" && resultPicture != null)
@@ -412,14 +410,14 @@ namespace KinaUnaWeb.Services
             //_httpClient.BaseAddress = new Uri(clientUri);
             //_httpClient.DefaultRequestHeaders.Accept.Clear();
             //_httpClient.DefaultRequestHeaders.Accept.Add(
-             //   new MediaTypeWithQualityHeaderValue("application/json"));
+            //   new MediaTypeWithQualityHeaderValue("application/json"));
 
             string pageApiPath = "/api/pictures/page?pageSize=" + pageSize + "&pageIndex=" + id + "&progenyId=" + progenyId + "&accessLevel=" + userAccessLevel + "&sortBy=" + sortBy;
             if (tagFilter != "")
             {
                 pageApiPath = pageApiPath + "&tagFilter=" + tagFilter;
             }
-            
+
             //var pageUri = clientUri + pageApiPath;
 
             //var pageResponseString = await _httpClient.GetStringAsync(pageApiPath);
@@ -431,14 +429,11 @@ namespace KinaUnaWeb.Services
             {
                 foreach (Picture pic in model.PicturesList)
                 {
-
                     if (pic.PictureTime.HasValue)
                     {
                         pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
                             TimeZoneInfo.FindSystemTimeZoneById(timeZone));
                     }
-
-
                 }
             }
             

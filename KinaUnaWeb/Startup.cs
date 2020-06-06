@@ -95,19 +95,19 @@ namespace KinaUnaWeb
             var authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
             var authenticationServerClientSecret = Configuration.GetValue<string>("AuthenticationServerClientSecret");
 
-            services.AddSingleton(new ClientCredentialsTokenRequest
-            {
-                Address = authorityServerUrl + "/connect/token",
-                ClientId = authenticationServerClientId,
-                ClientSecret = authenticationServerClientSecret,
-                Scope = Constants.ProgenyApiName + " " + Constants.MediaApiName
-            });
+            //services.AddSingleton(new ClientCredentialsTokenRequest
+            //{
+            //    Address = authorityServerUrl + "/connect/token",
+            //    ClientId = authenticationServerClientId,
+            //    ClientSecret = authenticationServerClientSecret,
+            //    Scope = Constants.ProgenyApiName + " " + Constants.MediaApiName
+            //});
 
-            services.AddHttpClient<IIdentityServerClient, IdentityServerClient>(client =>
-            {
-                client.BaseAddress = new Uri(authorityServerUrl);
-                client.DefaultRequestHeaders.Add("Accept", "application/json");
-            });
+            //services.AddHttpClient<IIdentityServerClient, IdentityServerClient>(client =>
+            //{
+            //    client.BaseAddress = new Uri(authorityServerUrl);
+            //    client.DefaultRequestHeaders.Add("Accept", "application/json");
+            //});
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddHttpClient();
@@ -122,7 +122,8 @@ namespace KinaUnaWeb
             services.AddTransient<IPushMessageSender, PushMessageSender>();
             services.AddSingleton<ApiTokenInMemoryClient>();
 
-            services.Configure<AuthConfigurations>(config => { config.StsServer = authorityServerUrl; config.ProtectedApiUrl = Configuration.GetValue<string>("ProgenyApiServer"); });
+            services.Configure<AuthConfigurations>(config => { config.StsServer = authorityServerUrl; config.ProtectedApiUrl = Configuration.GetValue<string>("ProgenyApiServer") + " " + Configuration.GetValue<string>("MediaApiServer"); });
+
 
             services.AddCors(o => o.AddPolicy("localCors", builder =>
             {

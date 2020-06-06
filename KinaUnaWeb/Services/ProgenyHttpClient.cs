@@ -20,15 +20,13 @@ namespace KinaUnaWeb.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
-        private readonly IIdentityServerClient _identityServerClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
 
-        public ProgenyHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IIdentityServerClient identityServerClient, ApiTokenInMemoryClient apiTokenClient)
+        public ProgenyHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
-            _identityServerClient = identityServerClient;
             _apiTokenClient = apiTokenClient;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
             httpClient.BaseAddress = new Uri(clientUri);
@@ -42,7 +40,7 @@ namespace KinaUnaWeb.Services
             //var accessToken = await _identityServerClient.RequestClientCredentialsTokenAsync();
             var access_token = await _apiTokenClient.GetApiToken(
                     _configuration.GetValue<string>("AuthenticationServerClientId"),
-                    Constants.ProgenyApiName,
+                    Constants.ProgenyApiName + " " + Constants.MediaApiName,
                     _configuration.GetValue<string>("AuthenticationServerClientSecret"));
             return access_token; // tokenResponse.AccessToken;
         }
