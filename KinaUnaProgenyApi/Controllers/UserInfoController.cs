@@ -50,7 +50,7 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     foreach (Progeny prog in progenyList)
                     {
-                        List<UserAccess> accessList = await _dataService.GetProgenyUserAccessList(prog.Id); // _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == prog.Id).ToList();
+                        List<UserAccess> accessList = await _dataService.GetProgenyUserAccessList(prog.Id);
                         if (accessList.Any())
                         {
                             foreach (UserAccess userAccess in accessList)
@@ -65,17 +65,17 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            UserInfo userinfo = await _dataService.GetUserInfoByEmail(id); // await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == id.ToUpper());
+            UserInfo userinfo = await _dataService.GetUserInfoByEmail(id); 
             if (allowAccess && userinfo != null)
             {
                 userinfo.CanUserAddItems = false;
-                userinfo.AccessList = await _dataService.GetUsersUserAccessList(userinfo.UserEmail); // await _context.UserAccessDb.Where(u => u.UserId.ToUpper() == userinfo.UserEmail.ToUpper()).ToListAsync();
+                userinfo.AccessList = await _dataService.GetUsersUserAccessList(userinfo.UserEmail);
                 userinfo.ProgenyList = new List<Progeny>();
                 if (userinfo.AccessList.Any())
                 {
                     foreach (UserAccess ua in userinfo.AccessList)
                     {
-                        Progeny progeny = await _dataService.GetProgeny(ua.ProgenyId); // await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == ua.ProgenyId);
+                        Progeny progeny = await _dataService.GetProgeny(ua.ProgenyId);
                         userinfo.ProgenyList.Add(progeny);
                         if (ua.AccessLevel == 0 || ua.CanContribute)
                         {
@@ -134,13 +134,13 @@ namespace KinaUnaProgenyApi.Controllers
             if (allowAccess)
             {
                 result.CanUserAddItems = false;
-                result.AccessList = await _dataService.GetUsersUserAccessList(result.UserEmail); // await _context.UserAccessDb.Where(u => u.UserId.ToUpper() == result.UserEmail.ToUpper()).ToListAsync();
+                result.AccessList = await _dataService.GetUsersUserAccessList(result.UserEmail); 
                 result.ProgenyList = new List<Progeny>();
                 if (result.AccessList.Any())
                 {
                     foreach (UserAccess ua in result.AccessList)
                     {
-                        Progeny progeny = await _dataService.GetProgeny(ua.ProgenyId); // await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == ua.ProgenyId);
+                        Progeny progeny = await _dataService.GetProgeny(ua.ProgenyId); 
                         result.ProgenyList.Add(progeny);
                         if (ua.AccessLevel == 0 || ua.CanContribute)
                         {
@@ -167,7 +167,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> ByUserId(string id)
         {
-            UserInfo result = await _dataService.GetUserInfoByUserId(id); // await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == id);
+            UserInfo result = await _dataService.GetUserInfoByUserId(id); 
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             bool allowAccess = false;
@@ -182,7 +182,7 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     foreach (Progeny prog in progenyList)
                     {
-                        List<UserAccess> accessList = await _dataService.GetProgenyUserAccessList(prog.Id); // _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == prog.Id).ToList();
+                        List<UserAccess> accessList = await _dataService.GetProgenyUserAccessList(prog.Id); 
                         if (accessList.Any())
                         {
                             foreach (UserAccess userAccess in accessList)
@@ -200,13 +200,13 @@ namespace KinaUnaProgenyApi.Controllers
             if (allowAccess)
             {
                 result.CanUserAddItems = false;
-                result.AccessList = await _dataService.GetUsersUserAccessList(result.UserEmail); // await _context.UserAccessDb.Where(u => u.UserId.ToUpper() == result.UserEmail.ToUpper()).ToListAsync();
+                result.AccessList = await _dataService.GetUsersUserAccessList(result.UserEmail);
                 result.ProgenyList = new List<Progeny>();
                 if (result.AccessList.Any())
                 {
                     foreach (UserAccess ua in result.AccessList)
                     {
-                        Progeny progeny = await _dataService.GetProgeny(ua.ProgenyId); // await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == ua.ProgenyId);
+                        Progeny progeny = await _dataService.GetProgeny(ua.ProgenyId); 
                         result.ProgenyList.Add(progeny);
                         if (ua.AccessLevel == 0 || ua.CanContribute)
                         {

@@ -48,25 +48,8 @@ namespace KinaUnaProgenyApi
 
             services.AddScoped<IDataService, DataService>();
 
-            // services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddControllers().AddNewtonsoftJson();
-
             
-            //services.AddAuthorization(authorizationOptions =>
-            //{
-            //    authorizationOptions.AddPolicy(
-            //        "MustBeAdmin",
-            //        policyBuilder =>
-            //        {
-            //            policyBuilder.RequireAuthenticatedUser();
-            //            policyBuilder.AddRequirements(
-            //                new MustBeAdminRequirement());
-            //        });
-
-            //});
-
-            //services.AddScoped<IAuthorizationHandler, MustBeAdminHandler>();
-
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(options =>
                 {
@@ -85,18 +68,16 @@ namespace KinaUnaProgenyApi
             {
                 app.UseDeveloperExceptionPage();
             }
-            //else
-            //{
-            //    app.UseHsts();
-            //}
+            else
+            {
+                app.UseHsts();
+            }
 
-            // app.UseStaticFiles();
             app.UseHttpsRedirection();
             app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
-            //app.UseMvc();
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }

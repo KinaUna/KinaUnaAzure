@@ -78,11 +78,6 @@ namespace KinaUna.IDP
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
-            // services.AddSingleton<IXmlRepository, DataProtectionKeyRepository>();
-
-            //var built = services.BuildServiceProvider();
-            //services.AddDataProtection().AddKeyManagementOptions(options => options.XmlRepository = built.GetService<IXmlRepository>()).SetApplicationName("KinaUnaWebApp");
-
             var credentials = new StorageCredentials(Constants.CloudBlobUsername, Configuration["BlobStorageKey"]);
             CloudBlobClient blobClient = new CloudBlobClient(new Uri(Constants.CloudBlobBase), credentials);
             CloudBlobContainer container = blobClient.GetContainerReference("dataprotection");
@@ -159,15 +154,9 @@ namespace KinaUna.IDP
                             builder.WithOrigins("https://*." + Constants.AppRootDomain).SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
                         });
                 });
-                //var cors = new DefaultCorsPolicyService(_loggerFactory.CreateLogger<DefaultCorsPolicyService>())
-                //{
-                //    AllowedOrigins = { Constants.WebAppUrl, "https://" + Constants.AppRootDomain }
-                //};
-                // services.AddSingleton<ICorsPolicyService>(cors);
             }
             
 
-            //services.AddMvc().AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix);
             services.AddControllersWithViews()
                 .AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix);
 
@@ -261,7 +250,6 @@ namespace KinaUna.IDP
             app.UseIdentityServer();
             app.UseAuthentication();
             app.UseAuthorization();
-            // app.UseMvcWithDefaultRoute();
             app.UseEndpoints(endpoints => {
                 endpoints.MapDefaultControllerRoute();
             });

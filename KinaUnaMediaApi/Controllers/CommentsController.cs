@@ -35,7 +35,7 @@ namespace KinaUnaMediaApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetComment(int id)
         {
-            Comment result = await _dataService.GetComment(id); // await _context.CommentsDb.SingleOrDefaultAsync(c => c.CommentId == id);
+            Comment result = await _dataService.GetComment(id);
             if (result != null)
             {
                 return Ok(result);
