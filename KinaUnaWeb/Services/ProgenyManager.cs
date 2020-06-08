@@ -51,13 +51,10 @@ namespace KinaUnaWeb.Services
 
         public async Task<UserInfo> GetInfo(string userEmail)
         {
-            //HttpClient _httpClient = new HttpClient();
-            //string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
             var currentContext = _httpContextAccessor.HttpContext;
             string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
-                // set as Bearer token
                 _httpClient.SetBearerToken(accessToken);
             }
             else
@@ -65,13 +62,8 @@ namespace KinaUnaWeb.Services
                 accessToken = await GetNewToken();
                 _httpClient.SetBearerToken(accessToken);
             }
-            //_httpClient.BaseAddress = new Uri(clientUri);
-            //_httpClient.DefaultRequestHeaders.Accept.Clear();
-            //_httpClient.DefaultRequestHeaders.Accept.Add(
-            //    new MediaTypeWithQualityHeaderValue("application/json"));
             
             string userinfoApiPath = "/api/userinfo/byemail/" + userEmail;
-            //var userinfoUri = clientUri + userinfoApiPath;
             UserInfo userinfo = new UserInfo();
             try
             {
@@ -91,10 +83,8 @@ namespace KinaUnaWeb.Services
             if (userinfo.UserEmail == "Unknown")
             {
                 ApplicationUser userId = _userManager.Parse(currentContext.User);
-                //HttpClient _httpClient = new HttpClient();
                 if (!string.IsNullOrWhiteSpace(accessToken))
                 {
-                    // set as Bearer token
                     _httpClient.SetBearerToken(accessToken);
                 }
                 else
@@ -102,10 +92,7 @@ namespace KinaUnaWeb.Services
                     accessToken = await GetNewToken();
                     _httpClient.SetBearerToken(accessToken);
                 }
-                //_httpClient.BaseAddress = new Uri(clientUri);
-                //_httpClient.DefaultRequestHeaders.Accept.Clear();
-                //_httpClient.DefaultRequestHeaders.Accept.Add(
-                //    new MediaTypeWithQualityHeaderValue("application/json"));
+            
                 UserInfo newUserinfo = new UserInfo();
                 newUserinfo.UserEmail = userId.Email;
                 newUserinfo.ViewChild = 0;
@@ -124,8 +111,6 @@ namespace KinaUnaWeb.Services
                 }
 
                 string newUserinfoApiPath = "/api/userinfo/";
-                //var newUserinfoUri = clientUri + newUserinfoApiPath;
-
                 var newUserResponseString = await _httpClient.PostAsync(newUserinfoApiPath, new StringContent(JsonConvert.SerializeObject(newUserinfo), System.Text.Encoding.UTF8, "application/json")).Result.Content.ReadAsStringAsync();
                 userinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
             }
@@ -157,11 +142,9 @@ namespace KinaUnaWeb.Services
 
         public async Task<UserInfo> UpdateUserInfo(UserInfo userinfo)
         {
-            //string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
             var currentContext = _httpContextAccessor.HttpContext;
             string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
-            //HttpClient _httpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
                 _httpClient.SetBearerToken(accessToken);
@@ -171,15 +154,9 @@ namespace KinaUnaWeb.Services
                 accessToken = await GetNewToken();
                 _httpClient.SetBearerToken(accessToken);
             }
-            //_httpClient.BaseAddress = new Uri(clientUri);
-            //_httpClient.DefaultRequestHeaders.Accept.Clear();
-            //_httpClient.DefaultRequestHeaders.Accept.Add(
-             //   new MediaTypeWithQualityHeaderValue("application/json"));
             
             // Todo: ProfilePicture
             string newUserinfoApiPath = "/api/userinfo/" + userinfo.Id;
-            //var newUserinfoUri = clientUri + newUserinfoApiPath;
-
             var newUserResponseString = await _httpClient.PutAsync(newUserinfoApiPath, new StringContent(JsonConvert.SerializeObject(userinfo), System.Text.Encoding.UTF8, "application/json")).Result.Content.ReadAsStringAsync();
             var updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
             return updatedUserinfo;
@@ -187,15 +164,11 @@ namespace KinaUnaWeb.Services
 
         public async Task<Progeny> CurrentChildAsync(int progenyId, string userId)
         {
-            //string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
-            // get the current HttpContext to access the tokens
             var currentContext = _httpContextAccessor.HttpContext;
-            // get access token
             string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-            //HttpClient _httpClient = new HttpClient();
+            
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
-                // set as Bearer token
                 _httpClient.SetBearerToken(accessToken);
             }
             else
@@ -203,19 +176,12 @@ namespace KinaUnaWeb.Services
                 accessToken = await GetNewToken();
                 _httpClient.SetBearerToken(accessToken);
             }
-            //_httpClient.BaseAddress = new Uri(clientUri);
-            //_httpClient.DefaultRequestHeaders.Accept.Clear();
-            //_httpClient.DefaultRequestHeaders.Accept.Add(
-            //    new MediaTypeWithQualityHeaderValue("application/json"));
-
+            
             string progenyApiPath = "/api/progeny/" + progenyId;
-            //var progenyUri = clientUri + progenyApiPath;
             var progenyResponseString = await _httpClient.GetStringAsync(progenyApiPath);
             Progeny child = JsonConvert.DeserializeObject<Progeny>(progenyResponseString);
-
             bool hasAccess = false;
             string accessApiPath = "/api/access/progeny/" + progenyId;
-            //var accessUri = clientUri + accessApiPath;
             var accessResponseString = await _httpClient.GetStringAsync(accessApiPath);
             List<UserAccess> accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessResponseString);
 
@@ -251,13 +217,10 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> CanUserAddItems(string userId)
         {
-            //HttpClient _httpClient = new HttpClient();
-            //string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
             HttpContext currentContext = _httpContextAccessor.HttpContext;
             string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
-                // set as Bearer token
                 _httpClient.SetBearerToken(accessToken);
             }
             else
@@ -265,13 +228,8 @@ namespace KinaUnaWeb.Services
                 accessToken = await GetNewToken();
                 _httpClient.SetBearerToken(accessToken);
             }
-            //_httpClient.BaseAddress = new Uri(clientUri);
-            //_httpClient.DefaultRequestHeaders.Accept.Clear();
-            //_httpClient.DefaultRequestHeaders.Accept.Add(
-            //    new MediaTypeWithQualityHeaderValue("application/json"));
-
+            
             string accessApiPath = "/api/access/accesslistbyuser/" + userId;
-            //var accessUri = clientUri + accessApiPath;
             var accessResponseString = await _httpClient.GetStringAsync(accessApiPath);
             List<UserAccess> accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessResponseString);
 
@@ -296,13 +254,10 @@ namespace KinaUnaWeb.Services
 
         public async Task SetViewChild(string userEmail, int childId, string userId)
         {
-            //HttpClient _httpClient = new HttpClient();
-            //string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
             HttpContext currentContext = _httpContextAccessor.HttpContext;
             string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
-                // set as Bearer token
                 _httpClient.SetBearerToken(accessToken);
             }
             else
@@ -310,18 +265,13 @@ namespace KinaUnaWeb.Services
                 accessToken = await GetNewToken();
                 _httpClient.SetBearerToken(accessToken);
             }
-            //_httpClient.BaseAddress = new Uri(clientUri);
-            //_httpClient.DefaultRequestHeaders.Accept.Clear();
-            //_httpClient.DefaultRequestHeaders.Accept.Add(
-            //    new MediaTypeWithQualityHeaderValue("application/json"));
-
+            
             UserInfo userinfo = new UserInfo();
             userinfo.UserEmail = userEmail;
             userinfo.ViewChild = childId;
             userinfo.UserId = userId;
 
             string setChildApiPath = "/api/userinfo/" + userId;
-            //var setChildUri = clientUri + setChildApiPath;
             await _httpClient.PutAsJsonAsync(setChildApiPath, userinfo);
         }
     }

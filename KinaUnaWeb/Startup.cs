@@ -77,10 +77,6 @@ namespace KinaUnaWeb
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
-            // services.AddSingleton<IXmlRepository, DataProtectionKeyRepository>();
-            // var built = services.BuildServiceProvider();
-            // services.AddDataProtection().AddKeyManagementOptions(options => options.XmlRepository = built.GetService<IXmlRepository>()).SetApplicationName("KinaUnaWebApp");
-
             var credentials = new StorageCredentials(Constants.CloudBlobUsername, Configuration["BlobStorageKey"]);
             CloudBlobClient blobClient = new CloudBlobClient(new Uri(Constants.CloudBlobBase), credentials);
             CloudBlobContainer container = blobClient.GetContainerReference("dataprotection");
@@ -94,20 +90,6 @@ namespace KinaUnaWeb
             var authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
             var authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
             var authenticationServerClientSecret = Configuration.GetValue<string>("AuthenticationServerClientSecret");
-
-            //services.AddSingleton(new ClientCredentialsTokenRequest
-            //{
-            //    Address = authorityServerUrl + "/connect/token",
-            //    ClientId = authenticationServerClientId,
-            //    ClientSecret = authenticationServerClientSecret,
-            //    Scope = Constants.ProgenyApiName + " " + Constants.MediaApiName
-            //});
-
-            //services.AddHttpClient<IIdentityServerClient, IdentityServerClient>(client =>
-            //{
-            //    client.BaseAddress = new Uri(authorityServerUrl);
-            //    client.DefaultRequestHeaders.Add("Accept", "application/json");
-            //});
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddHttpClient();
