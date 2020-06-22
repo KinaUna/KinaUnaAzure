@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "appInsights1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroup')]/providers/microsoft.insights/components/KinaUnaAuth",
+      "type": "appInsights.azure",
+      "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY",
+      "secretStore": "AzureAppSettings"
+    },
+    "secrets1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroup')]/providers/Microsoft.KeyVault/vaults/KinaUnaKeyVault",
+      "type": "secrets.keyVault",
+      "connectionId": "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT",
+      "secretStore": "AzureAppSettings"
+    }
+  }
+}
