@@ -1454,6 +1454,25 @@ namespace KinaUnaMediaApi.Controllers
             return NoContent();
         }
 
+        [Route("[action]")]
+        [HttpPost]
+        public async Task<IActionResult> UploadNoteImage([FromForm] IFormFile file)
+        {
+            string pictureLink = "";
+            using (var stream = file.OpenReadStream())
+            {
+                pictureLink = await _imageStore.SaveImage(stream, BlobContainers.Notes);
+                pictureLink = _imageStore.UriFor(pictureLink, BlobContainers.Notes);
+            }
+
+            if (pictureLink != "")
+            {
+                return Ok(pictureLink);
+            }
+
+            return NoContent();
+        }
+
         [Route("[action]/{id}")]
         [HttpGet]
         public IActionResult GetProfilePicture(string id)

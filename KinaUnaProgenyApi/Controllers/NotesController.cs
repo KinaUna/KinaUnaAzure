@@ -23,12 +23,14 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly ProgenyDbContext _context;
         private readonly IDataService _dataService;
         private readonly AzureNotifications _azureNotifications;
+        private readonly ImageStore _imageStore;
 
-        public NotesController(ProgenyDbContext context, IDataService dataService, AzureNotifications azureNotifications)
+        public NotesController(ProgenyDbContext context, IDataService dataService, AzureNotifications azureNotifications, ImageStore imageStore)
         {
             _context = context;
             _dataService = dataService;
             _azureNotifications = azureNotifications;
+            _imageStore = imageStore;
         }
         
         // GET api/notes/progeny/[id]
@@ -44,6 +46,10 @@ namespace KinaUnaProgenyApi.Controllers
                 notesList = notesList.Where(n => n.AccessLevel >= accessLevel).ToList();
                 if (notesList.Any())
                 {
+                    foreach (Note note in notesList)
+                    {
+                        note.Content = _imageStore.UpdateBlobLinks(note.Content);
+                    }
                     return Ok(notesList);
                 }
                 return NotFound();
@@ -62,6 +68,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
+                result.Content = _imageStore.UpdateBlobLinks(result.Content);
                 return Ok(result);
             }
 
@@ -244,6 +251,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {
+                    result.Content = _imageStore.UpdateBlobLinks(result.Content);
                     return Ok(result);
                 }
 
@@ -298,6 +306,11 @@ namespace KinaUnaProgenyApi.Controllers
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
+
+            foreach (Note note in itemsOnPage)
+            {
+                note.Content = _imageStore.UpdateBlobLinks(note.Content);
+            }
 
             NotesListPage model = new NotesListPage();
             model.NotesList = itemsOnPage;

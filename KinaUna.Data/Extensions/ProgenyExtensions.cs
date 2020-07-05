@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using KinaUna.Data.Models;
+﻿using KinaUna.Data.Models;
 
 namespace KinaUna.Data.Extensions
 {
@@ -10,6 +7,7 @@ namespace KinaUna.Data.Extensions
         /// <summary>
         /// Verifies if an email address is in the admin list.
         /// </summary>
+        /// <param name="progeny">Progeny</param>
         /// <param name="email">string: The email address to verify.</param>
         /// <returns>bool: True if the email address is in the admin list, otherwise false.</returns>
         public static bool IsInAdminList(this Progeny progeny, string email)

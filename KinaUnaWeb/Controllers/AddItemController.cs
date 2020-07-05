@@ -7,12 +7,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -1124,7 +1127,7 @@ namespace KinaUnaWeb.Controllers
             model.Category = note.Category;
             model.Title = note.Title;
             model.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(note.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-            model.Content = note.Content;
+            model.Content = _imageStore.UpdateBlobLinks(note.Content);
             model.Owner = note.Owner;
             if (model.Owner.Contains("@"))
             {
@@ -1176,6 +1179,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteNote(int itemId)
         {
             Note model = await _progenyHttpClient.GetNote(itemId); // _context.NotesDb.SingleAsync(n => n.NoteId == itemId);
+            model.Content = _imageStore.UpdateBlobLinks(model.Content);
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
 
@@ -3754,6 +3758,40 @@ namespace KinaUnaWeb.Controllers
         {
             
             throw new NotImplementedException();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> SaveRtfFile(IList<IFormFile> UploadFiles)
+        {
+            try
+            {
+                foreach (IFormFile file in UploadFiles)
+                {
+                    if (UploadFiles != null)
+                    {
+                        string filename = "";
+                        await using (var stream = file.OpenReadStream())
+                        {
+                            filename = await _imageStore.SaveImage(stream, BlobContainers.Notes);
+                        }
+
+                        string resultName = _imageStore.UriFor(filename, BlobContainers.Notes);
+                        Response.Clear();
+                        Response.ContentType = "application/json; charset=utf-8";
+                        Response.Headers.Add("name", resultName);
+                        Response.StatusCode = 204;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Response.Clear();
+                Response.ContentType = "application/json; charset=utf-8";
+                Response.StatusCode = 204;
+                Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = "No Content";
+                Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = e.Message;
+            }
+            return Content("");
         }
     }
 }
