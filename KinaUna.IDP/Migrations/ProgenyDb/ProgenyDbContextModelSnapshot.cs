@@ -4,11 +4,11 @@ using KinaUna.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace KinaUna.IDP.Migrations.ProgenyDb
 {
     [DbContext(typeof(ProgenyDbContext))]
+    // ReSharper disable once PartialTypeWithSinglePart
     partial class ProgenyDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

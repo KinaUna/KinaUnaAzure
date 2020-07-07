@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
-using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
@@ -661,36 +659,33 @@ namespace KinaUnaProgenyApi.Controllers
 
                 List<Sleep> model = new List<Sleep>();
 
-                if (currentSleep != null)
+                model.Add(currentSleep);
+                int currentSleepIndex = sleepList.IndexOf(currentSleep);
+                if (currentSleepIndex > 0)
                 {
-                    model.Add(currentSleep);
-                    int currentSleepIndex = sleepList.IndexOf(currentSleep);
-                    if (currentSleepIndex > 0)
-                    {
-                        model.Add(sleepList[currentSleepIndex - 1]);
-                    }
-                    else
-                    {
-                        model.Add(sleepList[sleepList.Count - 1]);
-                    }
+                    model.Add(sleepList[currentSleepIndex - 1]);
+                }
+                else
+                {
+                    model.Add(sleepList[sleepList.Count - 1]);
+                }
 
-                    if (sleepList.Count < currentSleepIndex + 1)
-                    {
-                        model.Add(sleepList[currentSleepIndex + 1]);
-                    }
-                    else
-                    {
-                        model.Add(sleepList[0]);
-                    }
+                if (sleepList.Count < currentSleepIndex + 1)
+                {
+                    model.Add(sleepList[currentSleepIndex + 1]);
+                }
+                else
+                {
+                    model.Add(sleepList[0]);
+                }
 
-                    foreach (Sleep s in model)
-                    {
-                        DateTimeOffset sOffset = new DateTimeOffset(s.SleepStart,
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
-                        DateTimeOffset eOffset = new DateTimeOffset(s.SleepEnd,
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
-                        s.SleepDuration = eOffset - sOffset;
-                    }
+                foreach (Sleep s in model)
+                {
+                    DateTimeOffset sOffset = new DateTimeOffset(s.SleepStart,
+                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
+                    DateTimeOffset eOffset = new DateTimeOffset(s.SleepEnd,
+                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
+                    s.SleepDuration = eOffset - sOffset;
                 }
 
                 return Ok(model);

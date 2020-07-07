@@ -149,13 +149,16 @@ namespace KinaUnaProgenyApi.Controllers
 
             string title = "User added for " + prog.NickName;
             UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == User.GetEmail().ToUpper());
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added user: " + userAccess.UserId;
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = userAccess.ProgenyId;
-            tItem.AccessLevel = 0;
-            tItem.ItemId = userAccess.AccessId.ToString();
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            if (userinfo != null)
+            {
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added user: " + userAccess.UserId;
+                TimeLineItem tItem = new TimeLineItem();
+                tItem.ProgenyId = userAccess.ProgenyId;
+                tItem.AccessLevel = 0;
+                tItem.ItemId = userAccess.AccessId.ToString();
+                tItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            }
 
             return Ok(userAccess);
         }
@@ -213,13 +216,16 @@ namespace KinaUnaProgenyApi.Controllers
 
             string title = "User access modified for " + prog.NickName;
             UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == User.GetEmail().ToUpper());
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " modified access for user: " + userAccess.UserId;
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = userAccess.ProgenyId;
-            tItem.AccessLevel = 0;
-            tItem.ItemId = userAccess.AccessId.ToString();
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            if (userinfo != null)
+            {
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " modified access for user: " + userAccess.UserId;
+                TimeLineItem tItem = new TimeLineItem();
+                tItem.ProgenyId = userAccess.ProgenyId;
+                tItem.AccessLevel = 0;
+                tItem.ItemId = userAccess.AccessId.ToString();
+                tItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            }
 
             return Ok(userAccess);
         }
@@ -270,13 +276,16 @@ namespace KinaUnaProgenyApi.Controllers
 
                 string title = "User removed for " + prog.NickName;
                 UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == User.GetEmail().ToUpper());
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " removed user: " + userAccess.UserId;
-                TimeLineItem tItem = new TimeLineItem();
-                tItem.ProgenyId = userAccess.ProgenyId;
-                tItem.AccessLevel = 0;
-                tItem.ItemId = userAccess.AccessId.ToString();
-                tItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                if (userinfo != null)
+                {
+                    string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " removed user: " + userAccess.UserId;
+                    TimeLineItem tItem = new TimeLineItem();
+                    tItem.ProgenyId = userAccess.ProgenyId;
+                    tItem.AccessLevel = 0;
+                    tItem.ItemId = userAccess.AccessId.ToString();
+                    tItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
+                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                }
 
                 return NoContent();
             }

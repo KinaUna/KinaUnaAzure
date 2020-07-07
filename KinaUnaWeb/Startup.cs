@@ -29,7 +29,6 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Azure.Storage.Auth;
 using Microsoft.Azure.Storage.Blob;
-using IdentityModel.Client;
 
 namespace KinaUnaWeb
 {

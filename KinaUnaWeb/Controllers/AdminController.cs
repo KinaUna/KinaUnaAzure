@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -15,17 +14,15 @@ namespace KinaUnaWeb.Controllers
     public class AdminController: Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly IMediaHttpClient _mediaHttpClient;
         private readonly WebDbContext _context;
         private readonly IHubContext<WebNotificationHub> _hubContext;
         private readonly IPushMessageSender _pushMessageSender;
         private readonly string _adminEmail = Constants.AdminEmail;
 
-        public AdminController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, WebDbContext context,
+        public AdminController(IProgenyHttpClient progenyHttpClient, WebDbContext context,
             IBackgroundTaskQueue queue, IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender)
         {
             _progenyHttpClient = progenyHttpClient;
-            _mediaHttpClient = mediaHttpClient;
             _context = context;
             Queue = queue;
             _hubContext = hubContext;

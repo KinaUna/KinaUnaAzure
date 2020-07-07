@@ -124,8 +124,12 @@ namespace KinaUnaProgenyApi.Controllers
             await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
             string title = "Skill added for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new skill for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            if (userinfo != null)
+            {
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
+                                 " added a new skill for " + prog.NickName;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            }
 
             return Ok(skillItem);
         }
@@ -230,8 +234,11 @@ namespace KinaUnaProgenyApi.Controllers
                 UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
                 string title = "Skill deleted for " + prog.NickName;
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a skill for " + prog.NickName + ". Measurement date: " + skillItem.Name;
-                tItem.AccessLevel = 0;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                if (tItem != null)
+                {
+                    tItem.AccessLevel = 0;
+                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                }
 
                 return NoContent();
             }

@@ -332,16 +332,9 @@
                 {
                     <div class="navbar-nav">
                         <div class="nav-item">
-                            <environment include="Development">
-                                <form id="loginForm" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post" >
-                                    <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" ><i class="material-icons">exit_to_app</i> Log ind eller opret bruger</button>
-                                </form>
-                            </environment>
-                            <environment exclude="Development">
-                                <form id="loginForm" class="form-inline-fullwidth" action="@Constants.WebAppUrl/account/login" method="post" >
-                                    <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" ><i class="material-icons">exit_to_app</i> Log ind eller opret bruger</button>
-                                </form>
-                            </environment>
+                            <form id="loginForm" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post" >
+                                <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" ><i class="material-icons">exit_to_app</i> Log ind eller opret bruger</button>
+                            </form>
                         </div>
                     </div>
                 }

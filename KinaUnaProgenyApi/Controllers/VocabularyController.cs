@@ -129,8 +129,12 @@ namespace KinaUnaProgenyApi.Controllers
             await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
             string title = "Word added for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new word for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            if (userinfo != null)
+            {
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
+                                 " added a new word for " + prog.NickName;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            }
 
             return Ok(vocabularyItem);
         }
@@ -237,8 +241,11 @@ namespace KinaUnaProgenyApi.Controllers
                 UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
                 string title = "Word deleted for " + prog.NickName;
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a word for " + prog.NickName + ". Word: " + vocabularyItem.Word;
-                tItem.AccessLevel = 0;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                if (tItem != null)
+                {
+                    tItem.AccessLevel = 0;
+                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                }
 
                 return NoContent();
             }

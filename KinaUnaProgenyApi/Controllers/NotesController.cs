@@ -103,7 +103,7 @@ namespace KinaUnaProgenyApi.Controllers
             noteItem.Category = value.Category;
             noteItem.ProgenyId = value.ProgenyId;
             noteItem.Title = value.Title;
-            noteItem.CreatedDate = value?.CreatedDate ?? DateTime.UtcNow;
+            noteItem.CreatedDate = value.CreatedDate;
             
             _context.NotesDb.Add(noteItem);
             await _context.SaveChangesAsync();
@@ -128,9 +128,13 @@ namespace KinaUnaProgenyApi.Controllers
             await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
             string title = "Note added for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new note for " + prog.NickName;
+            if (userinfo != null)
+            {
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
+                                 " added a new note for " + prog.NickName;
 
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            }
 
             return Ok(noteItem);
         }
@@ -231,8 +235,12 @@ namespace KinaUnaProgenyApi.Controllers
                 UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
                 string title = "Note deleted for " + prog.NickName;
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a note for " + prog.NickName + ". Note: " + noteItem.Title;
-                tItem.AccessLevel = 0;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                if (tItem != null)
+                {
+                    tItem.AccessLevel = 0;
+                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                }
+
                 return NoContent();
             }
 

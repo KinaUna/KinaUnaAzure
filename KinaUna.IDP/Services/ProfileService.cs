@@ -24,7 +24,7 @@ namespace KinaUna.IDP.Services
         public async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
             var subject = context.Subject ?? throw new ArgumentNullException(nameof(context.Subject));
-            var subjectIdClaim = subject?.Claims.FirstOrDefault(x => x.Type == "sub");
+            var subjectIdClaim = subject.Claims.FirstOrDefault(x => x.Type == "sub");
             if (subjectIdClaim != null)
             {
                 var subjectId = subjectIdClaim.Value;
@@ -42,7 +42,7 @@ namespace KinaUna.IDP.Services
         {
             var subject = context.Subject ?? throw new ArgumentNullException(nameof(context.Subject));
 
-            var subjectIdClaim = subject?.Claims.FirstOrDefault(x => x.Type == "sub");
+            var subjectIdClaim = subject.Claims.FirstOrDefault(x => x.Type == "sub");
             if (subjectIdClaim != null)
             {
                 var subjectId = subjectIdClaim.Value;

@@ -24,7 +24,7 @@ namespace KinaUna.IDP
                         var keyVaultEndpoint = Constants.KeyVaultEndPoint;
                         if (!string.IsNullOrEmpty(keyVaultEndpoint))
                         {
-                            var builtConfig = config.Build();
+                            config.Build();
 
                             var azureServiceTokenProvider = new AzureServiceTokenProvider();
                             var keyVaultClient = new KeyVaultClient(

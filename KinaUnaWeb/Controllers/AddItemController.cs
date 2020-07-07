@@ -7,9 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
@@ -3767,9 +3765,9 @@ namespace KinaUnaWeb.Controllers
             {
                 foreach (IFormFile file in UploadFiles)
                 {
-                    if (UploadFiles != null)
+                    if (UploadFiles.Any())
                     {
-                        string filename = "";
+                        string filename;
                         await using (var stream = file.OpenReadStream())
                         {
                             filename = await _imageStore.SaveImage(stream, BlobContainers.Notes);

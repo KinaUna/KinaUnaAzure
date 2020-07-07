@@ -46,14 +46,17 @@ namespace KinaUnaWeb.Services
             if (_accessTokens.ContainsKey(api_name))
             {
                 var accessToken = _accessTokens.GetValueOrDefault(api_name);
-                if (accessToken.ExpiresIn > DateTime.UtcNow)
+                if (accessToken != null)
                 {
-                    return accessToken.AccessToken;
-                }
-                else
-                {
-                    // remove
-                    _accessTokens.TryRemove(api_name, out AccessTokenItem accessTokenItem);
+                    if (accessToken.ExpiresIn > DateTime.UtcNow)
+                    {
+                        return accessToken.AccessToken;
+                    }
+                    else
+                    {
+                        // remove
+                        _accessTokens.TryRemove(api_name, out AccessTokenItem _);
+                    }
                 }
             }
 

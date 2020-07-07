@@ -136,8 +136,11 @@ namespace KinaUnaProgenyApi.Controllers
             await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
             string title = "Friend added for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new friend for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            if (userinfo != null)
+            {
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new friend for " + prog.NickName;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            }
 
             return Ok(friendItem);
         }
@@ -255,9 +258,12 @@ namespace KinaUnaProgenyApi.Controllers
                 UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
                 string title = "Friend deleted for " + prog.NickName;
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a friend for " + prog.NickName + ". Friend: " + friendItem.Name;
-                
-                tItem.AccessLevel = 0;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+
+                if (tItem != null)
+                {
+                    tItem.AccessLevel = 0;
+                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                }
 
                 return NoContent();
             }

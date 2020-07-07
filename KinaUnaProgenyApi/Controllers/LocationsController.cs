@@ -146,8 +146,12 @@ namespace KinaUnaProgenyApi.Controllers
             await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
             string title = "Location added for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new location for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            if (userinfo != null)
+            {
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
+                                 " added a new location for " + prog.NickName;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            }
 
             return Ok(location);
         }
@@ -270,8 +274,12 @@ namespace KinaUnaProgenyApi.Controllers
                 UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
                 string title = "Location deleted for " + prog.NickName;
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a location for " + prog.NickName + ". Location: " + location.Name;
-                tItem.AccessLevel = 0;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                if (tItem != null)
+                {
+                    tItem.AccessLevel = 0;
+                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                }
+
                 return NoContent();
             }
 

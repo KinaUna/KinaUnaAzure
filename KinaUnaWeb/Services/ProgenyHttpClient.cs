@@ -192,7 +192,6 @@ namespace KinaUnaWeb.Services
             var currentContext = _httpContextAccessor.HttpContext;
             string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
 
-            HttpClient _httpClient = new HttpClient();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
                 _httpClient.SetBearerToken(accessToken);

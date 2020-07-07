@@ -274,7 +274,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             // return Redirect(returnUrl);
-            return RedirectToAction("Index", new{childId = childId});
+            return RedirectToAction("Index", new{ childId });
         }
 
         [AllowAnonymous]

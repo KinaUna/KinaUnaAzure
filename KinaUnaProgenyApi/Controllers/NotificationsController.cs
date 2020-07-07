@@ -16,7 +16,7 @@ namespace KinaUnaProgenyApi.Controllers
 {
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
-    [Microsoft.AspNetCore.Mvc.Route("api/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class NotificationsController : ControllerBase
     {
@@ -180,7 +180,6 @@ namespace KinaUnaProgenyApi.Controllers
             MobileNotification mobileNotification = await _context.MobileNotificationsDb.SingleOrDefaultAsync(m => m.NotificationId == id);
             if (mobileNotification != null)
             {
-                string userEmail = User.GetEmail();
                 if (mobileNotification.UserId == User.GetUserId())
                 {
                     _context.MobileNotificationsDb.Remove(mobileNotification);

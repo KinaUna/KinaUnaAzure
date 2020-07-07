@@ -10,8 +10,6 @@ using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json.Linq;
 using Constants = KinaUna.Data.Constants;
 
 namespace KinaUnaProgenyApi.Controllers
@@ -124,8 +122,12 @@ namespace KinaUnaProgenyApi.Controllers
             await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
             string title = "Sleep added for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new sleep item for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            if (userinfo != null)
+            {
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
+                                 " added a new sleep item for " + prog.NickName;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            }
 
             return Ok(sleepItem);
         }
@@ -183,9 +185,13 @@ namespace KinaUnaProgenyApi.Controllers
 
             string title = "Sleep for " + prog.NickName + " edited";
             UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a sleep item for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
-            
+            if (userinfo != null)
+            {
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
+                                 " edited a sleep item for " + prog.NickName;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            }
+
             return Ok(sleepItem);
         }
 
@@ -228,8 +234,13 @@ namespace KinaUnaProgenyApi.Controllers
 
                 string title = "Sleep for " + prog.NickName + " deleted";
                 UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a sleep item for " + prog.NickName + ". Sleep start: " + sleepItem.SleepStart.ToString("dd-MMM-yyyy HH:mm");
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                if (userinfo != null)
+                {
+                    string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
+                                     " deleted a sleep item for " + prog.NickName + ". Sleep start: " +
+                                     sleepItem.SleepStart.ToString("dd-MMM-yyyy HH:mm");
+                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                }
 
                 return NoContent();
             }
@@ -529,37 +540,34 @@ namespace KinaUnaProgenyApi.Controllers
                 }
                 
                 List<Sleep> model = new List<Sleep>();
-                
-                if (currentSleep != null)
+
+                model.Add(currentSleep);
+                int currentSleepIndex = sleepList.IndexOf(currentSleep);
+                if (currentSleepIndex > 0)
                 {
-                    model.Add(currentSleep);
-                    int currentSleepIndex = sleepList.IndexOf(currentSleep);
-                    if (currentSleepIndex > 0)
-                    {
-                        model.Add(sleepList[currentSleepIndex -1]);
-                    }
-                    else
-                    {
-                        model.Add(sleepList[sleepList.Count - 1]);
-                    }
+                    model.Add(sleepList[currentSleepIndex - 1]);
+                }
+                else
+                {
+                    model.Add(sleepList[sleepList.Count - 1]);
+                }
 
-                    if (sleepList.Count < currentSleepIndex + 1)
-                    {
-                        model.Add(sleepList[currentSleepIndex + 1]);
-                    }
-                    else
-                    {
-                        model.Add(sleepList[0]);
-                    }
+                if (sleepList.Count < currentSleepIndex + 1)
+                {
+                    model.Add(sleepList[currentSleepIndex + 1]);
+                }
+                else
+                {
+                    model.Add(sleepList[0]);
+                }
 
-                    foreach (Sleep s in model)
-                    {
-                        DateTimeOffset sOffset = new DateTimeOffset(s.SleepStart,
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
-                        DateTimeOffset eOffset = new DateTimeOffset(s.SleepEnd,
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
-                        s.SleepDuration = eOffset - sOffset;
-                    }
+                foreach (Sleep s in model)
+                {
+                    DateTimeOffset sOffset = new DateTimeOffset(s.SleepStart,
+                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
+                    DateTimeOffset eOffset = new DateTimeOffset(s.SleepEnd,
+                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
+                    s.SleepDuration = eOffset - sOffset;
                 }
 
                 return Ok(model);

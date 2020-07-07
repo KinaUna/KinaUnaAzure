@@ -145,7 +145,7 @@ else
                                             if (mapObjects[i].getData() !== target.getData()) {
                                                 //console.log('Marker(' + i + '): ' + mapObjects[i].getData())
                                                 //console.log('Coords: ' + mapObjects[i].getPosition());
-                                                markerDist = mapObjects[i].getPosition().distance(markerPos);
+                                                let markerDist = mapObjects[i].getPosition().distance(markerPos);
                                                 if (markerDist < 50) {
                                                     getNearbyPicture(mapObjects[i]);
                                                 }

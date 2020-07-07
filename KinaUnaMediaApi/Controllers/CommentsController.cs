@@ -56,46 +56,49 @@ namespace KinaUnaMediaApi.Controllers
                 foreach (Comment comment in result)
                 {
                     UserInfo cmntAuthor = await _dataService.GetUserInfoByUserId(comment.Author);
-                    string authorImg = cmntAuthor?.ProfilePicture ?? "";
-                    string authorName = "";
-                    if (!String.IsNullOrEmpty(authorImg))
+                    if (cmntAuthor != null)
                     {
-                        if (!authorImg.ToLower().StartsWith("http"))
+                        string authorImg = cmntAuthor.ProfilePicture ?? "";
+                        string authorName = "";
+                        if (!String.IsNullOrEmpty(authorImg))
                         {
-                            authorImg = _imageStore.UriFor(authorImg, "profiles");
+                            if (!authorImg.ToLower().StartsWith("http"))
+                            {
+                                authorImg = _imageStore.UriFor(authorImg, "profiles");
+                            }
                         }
-                    }
-                    
-                    comment.AuthorImage = authorImg;
-                    if (string.IsNullOrEmpty(comment.AuthorImage))
-                    {
-                        comment.AuthorImage = Constants.ProfilePictureUrl;
-                    }
 
-                    if (!String.IsNullOrEmpty(cmntAuthor.FirstName))
-                    {
-                        authorName = cmntAuthor.FirstName;
-                    }
-                    if (!String.IsNullOrEmpty(cmntAuthor.MiddleName))
-                    {
-                        authorName = authorName + " " + cmntAuthor.MiddleName;
-                    }
-                    if (!String.IsNullOrEmpty(cmntAuthor.LastName))
-                    {
-                        authorName = authorName + " " + cmntAuthor.LastName;
-                    }
+                        comment.AuthorImage = authorImg;
+                        if (string.IsNullOrEmpty(comment.AuthorImage))
+                        {
+                            comment.AuthorImage = Constants.ProfilePictureUrl;
+                        }
 
-                    authorName = authorName.Trim();
-                    if (String.IsNullOrEmpty(authorName))
-                    {
-                        authorName = cmntAuthor.UserName;
+                        if (!String.IsNullOrEmpty(cmntAuthor.FirstName))
+                        {
+                            authorName = cmntAuthor.FirstName;
+                        }
+                        if (!String.IsNullOrEmpty(cmntAuthor.MiddleName))
+                        {
+                            authorName = authorName + " " + cmntAuthor.MiddleName;
+                        }
+                        if (!String.IsNullOrEmpty(cmntAuthor.LastName))
+                        {
+                            authorName = authorName + " " + cmntAuthor.LastName;
+                        }
+
+                        authorName = authorName.Trim();
                         if (String.IsNullOrEmpty(authorName))
                         {
-                            authorName = comment.DisplayName;
+                            authorName = cmntAuthor.UserName;
+                            if (String.IsNullOrEmpty(authorName))
+                            {
+                                authorName = comment.DisplayName;
+                            }
                         }
-                    }
 
-                    comment.DisplayName = authorName;
+                        comment.DisplayName = authorName;
+                    }
                 }
                 return Ok(result);
             }

@@ -96,7 +96,7 @@ namespace KinaUnaProgenyApi.Controllers
             contactItem.AddressString = value.AddressString;
             contactItem.ProgenyId = value.ProgenyId;
             contactItem.Author = value.Author;
-            contactItem.DateAdded = value?.DateAdded ?? DateTime.UtcNow;
+            contactItem.DateAdded = value.DateAdded ?? DateTime.UtcNow;
             contactItem.Context = value.Context;
             contactItem.DisplayName = value.DisplayName;
             contactItem.Email1 = value.Email1;
@@ -150,8 +150,11 @@ namespace KinaUnaProgenyApi.Controllers
             await _dataService.SetTimeLineItem(tItem.TimeLineId);
 
             string title = "Contact added for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new contact for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            if (userinfo != null)
+            {
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new contact for " + prog.NickName;
+                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            }
 
             return Ok(contactItem);
         }
@@ -333,8 +336,11 @@ namespace KinaUnaProgenyApi.Controllers
                 UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
                 string title = "Contact deleted for " + prog.NickName;
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a contact for " + prog.NickName + ". Contact: " + contactItem.DisplayName;
-                tItem.AccessLevel = 0;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                if (tItem != null)
+                {
+                    tItem.AccessLevel = 0;
+                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                }
 
                 return NoContent();
             }

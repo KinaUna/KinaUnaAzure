@@ -1148,7 +1148,7 @@ namespace KinaUnaMediaApi.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadPicture([FromForm]IFormFile file)
         {
-            string pictureLink = "";
+            string pictureLink;
             using (var stream = file.OpenReadStream())
             {
                 pictureLink = await _imageStore.SaveImage(stream);
@@ -1166,7 +1166,7 @@ namespace KinaUnaMediaApi.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadProgenyPicture([FromForm]IFormFile file)
         {
-            string pictureLink = "";
+            string pictureLink;
 
             using (MagickImage image = new MagickImage(file.OpenReadStream()))
             {
@@ -1239,7 +1239,7 @@ namespace KinaUnaMediaApi.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadProfilePicture([FromForm]IFormFile file)
         {
-            string pictureLink = "";
+            string pictureLink;
 
             using (MagickImage image = new MagickImage(file.OpenReadStream()))
             {
@@ -1312,7 +1312,7 @@ namespace KinaUnaMediaApi.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadFriendPicture([FromForm]IFormFile file)
         {
-            string pictureLink = "";
+            string pictureLink;
 
             using (MagickImage image = new MagickImage(file.OpenReadStream()))
             {
@@ -1385,7 +1385,7 @@ namespace KinaUnaMediaApi.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadContactPicture([FromForm]IFormFile file)
         {
-            string pictureLink = "";
+            string pictureLink;
 
             using (MagickImage image = new MagickImage(file.OpenReadStream()))
             {
@@ -1458,7 +1458,7 @@ namespace KinaUnaMediaApi.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadNoteImage([FromForm] IFormFile file)
         {
-            string pictureLink = "";
+            string pictureLink;
             using (var stream = file.OpenReadStream())
             {
                 pictureLink = await _imageStore.SaveImage(stream, BlobContainers.Notes);

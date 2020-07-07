@@ -13,16 +13,15 @@ namespace KinaUnaProgenyApi.Controllers
 {
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
-    [Microsoft.AspNetCore.Mvc.Route("api/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class RegisterController : ControllerBase
     {
-        private NotificationHubClient hub;
-        private readonly AzureNotifications _azureNotifications;
+        private readonly NotificationHubClient _hub;
+
         public RegisterController(AzureNotifications azureNotifications)
         {
-            _azureNotifications = azureNotifications;
-            hub = _azureNotifications.Hub;
+            _hub = azureNotifications.Hub;
         }
 
         public class DeviceRegistration
@@ -42,7 +41,7 @@ namespace KinaUnaProgenyApi.Controllers
             // make sure there are no existing registrations for this push handle (used for iOS and Android)
             if (handle != null)
             {
-                var registrations = await hub.GetRegistrationsByChannelAsync(handle, 100);
+                var registrations = await _hub.GetRegistrationsByChannelAsync(handle, 100);
 
                 foreach (RegistrationDescription registration in registrations)
                 {
@@ -52,13 +51,13 @@ namespace KinaUnaProgenyApi.Controllers
                     }
                     else
                     {
-                        await hub.DeleteRegistrationAsync(registration);
+                        await _hub.DeleteRegistrationAsync(registration);
                     }
                 }
             }
 
             if (newRegistrationId == null)
-                newRegistrationId = await hub.CreateRegistrationIdAsync();
+                newRegistrationId = await _hub.CreateRegistrationIdAsync();
 
             return newRegistrationId;
         }
@@ -68,7 +67,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] DeviceRegistration deviceUpdate)
         {
-            RegistrationDescription registration = null;
+            RegistrationDescription registration;
             switch (deviceUpdate.Platform)
             {
                 case "mpns":
@@ -90,7 +89,7 @@ namespace KinaUnaProgenyApi.Controllers
             registration.RegistrationId = id;
              
             var username = User.GetEmail();
-            var userId = User.GetUserId();
+            //var userId = User.GetUserId();
             if (string.IsNullOrEmpty(username))
             {
                 return Unauthorized();
@@ -102,7 +101,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             try
             {
-                await hub.CreateOrUpdateRegistrationAsync(registration);
+                await _hub.CreateOrUpdateRegistrationAsync(registration);
             }
             catch (MessagingException e)
             {
@@ -116,18 +115,21 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            await hub.DeleteRegistrationAsync(id);
+            await _hub.DeleteRegistrationAsync(id);
             return Ok();
         }
 
         private static void ReturnGoneIfHubResponseIsGone(MessagingException e)
         {
             var webex = e.InnerException as WebException;
-            if (webex.Status == WebExceptionStatus.ProtocolError)
+            if (webex != null)
             {
-                var response = (HttpWebResponse)webex.Response;
-                if (response.StatusCode == HttpStatusCode.Gone)
-                    throw new HttpRequestException(HttpStatusCode.Gone.ToString());
+                if (webex.Status == WebExceptionStatus.ProtocolError)
+                {
+                    var response = (HttpWebResponse)webex.Response;
+                    if (response.StatusCode == HttpStatusCode.Gone)
+                        throw new HttpRequestException(HttpStatusCode.Gone.ToString());
+                }
             }
         }
     }

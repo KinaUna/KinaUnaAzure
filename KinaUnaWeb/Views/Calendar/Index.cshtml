@@ -1,13 +1,8 @@
-﻿@using System.Web
-@using Syncfusion.EJ2.Schedule
-@using Syncfusion.EJ2;
-@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
+﻿@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
 @{
     ViewData["Title"] = Model.Progeny.NickName + "'s Calendar";
 }
-@{
-    var Modalanimation = new Syncfusion.EJ2.Popups.DialogAnimationSettings { Effect = Syncfusion.EJ2.Popups.DialogEffect.None };
-}
+
 @if (Model.IsAdmin)
 {
     <div class="btn-group" style="float: right;">
