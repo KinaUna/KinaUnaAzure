@@ -15,7 +15,7 @@
 <br />
 <br />
 <div style="clear: both; height: 90vh; min-height: 600px; max-height: 1180px;">
-    <ejs-schedule id="schedule" height="95%" width="100%" locale="en-DK" dateFormat="dd/MMM/yyyy" views="@Model.ViewOptions" cellClick="onCellClick" eventClick="onEventClick" popupOpen="onPopupOpen">
+    <ejs-schedule id="schedule" height="95%" width="100%" locale="en-DK" dateFormat="dd/MMM/yyyy" views="@Model.ViewOptions" cellClick="onCellClick" cellDoubleClick="onCellDoubleClick" eventClick="onEventClick" popupOpen="onPopupOpen">
         <e-schedule-eventsettings dataSource="@Model.EventsList">
             <e-eventsettings-fields id="EventId">
                 <e-field-subject name="Title"></e-field-subject>
@@ -27,54 +27,115 @@
             </e-eventsettings-fields>
         </e-schedule-eventsettings>
     </ejs-schedule>
-    <script>
-        var selectedEventId = 0;
-        loadCultureFiles('en-DK');
-        function loadCultureFiles(name) {
-            var files = ['ca-gregorian.json', 'numberingSystems.json', 'numbers.json', 'timeZoneNames.json', 'ca-islamic.json'];
-            var loader = ej.base.loadCldr;
-            var loadCulture = function (prop) {
-                var val, ajax;
-                if (files[prop] === 'numberingSystems.json') {
-                    ajax = new ej.base.Ajax(location.origin + '/../cldr-data/supplemental/' + files[prop], 'GET', false);
-                } else {
-                    ajax = new ej.base.Ajax(location.origin + '/../cldr-data/main/' + name + '/' + files[prop], 'GET', false);
-                }
-                ajax.onSuccess = function (value) {
-                    val = value;
+    @if (Model.IsAdmin)
+    {
+        <script>
+            var selectedEventId = 0;
+            loadCultureFiles('en-DK');
+            function loadCultureFiles(name) {
+                var files = ['ca-gregorian.json', 'numberingSystems.json', 'numbers.json', 'timeZoneNames.json', 'ca-islamic.json'];
+                var loader = ej.base.loadCldr;
+                var loadCulture = function (prop) {
+                    var val, ajax;
+                    if (files[prop] === 'numberingSystems.json') {
+                        ajax = new ej.base.Ajax(location.origin + '/../cldr-data/supplemental/' + files[prop], 'GET', false);
+                    } else {
+                        ajax = new ej.base.Ajax(location.origin + '/../cldr-data/main/' + name + '/' + files[prop], 'GET', false);
+                    }
+                    ajax.onSuccess = function (value) {
+                        val = value;
+                    };
+                    ajax.send();
+                    loader(JSON.parse(val));
                 };
-                ajax.send();
-                loader(JSON.parse(val));
-            };
-            for (var prop = 0; prop < files.length; prop++) {
-                loadCulture(prop);
-            }
-        }
-
-        function onPopupOpen(args) {
-            console.log('OnPopUp args.type: ' + args.type);
-            if (args.type === 'Editor') {
-                args.cancel = true;
-                if (selectedEventId > 0) {
-                    window.location.href = '/AddItem/EditEvent?itemId=' + selectedEventId;
+                for (var prop = 0; prop < files.length; prop++) {
+                    loadCulture(prop);
                 }
             }
-            if (args.type === 'DeleteAlert') {
-                args.cancel = true;
-                if (selectedEventId > 0) {
-                    window.location.href = '/AddItem/DeleteEvent?itemId=' + selectedEventId;
+
+            function onPopupOpen(args) {
+                console.log('OnPopUp args.type: ' + args.type);
+                if (args.type === 'Editor') {
+                    args.cancel = true;
+                    if (selectedEventId > 0) {
+                        window.location.href = '/AddItem/EditEvent?itemId=' + selectedEventId;
+                    }
+                }
+                if (args.type === 'DeleteAlert') {
+                    args.cancel = true;
+                    if (selectedEventId > 0) {
+                        window.location.href = '/AddItem/DeleteEvent?itemId=' + selectedEventId;
+                    }
                 }
             }
-        }
 
-        function onEventClick(args) {
-            var scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
-            var event = scheduleObj.getEventDetails(args.element);
-            selectedEventId = event.EventId;
-        }
+            function onEventClick(args) {
+                var scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
+                var event = scheduleObj.getEventDetails(args.element);
+                selectedEventId = event.EventId;
+            }
 
-        function onCellClick(args) {
-            args.cancel = true;
-        }
-    </script>
+            function onCellClick(args) {
+                args.cancel = true;
+                // Todo: Show add event form
+            }
+
+            function onCellDoubleClick(args) {
+                args.cancel = true;
+            }
+        </script>
+    }
+    else
+    {
+        <script>
+            var selectedEventId = 0;
+            loadCultureFiles('en-DK');
+            function loadCultureFiles(name) {
+                var files = ['ca-gregorian.json', 'numberingSystems.json', 'numbers.json', 'timeZoneNames.json', 'ca-islamic.json'];
+                var loader = ej.base.loadCldr;
+                var loadCulture = function (prop) {
+                    var val, ajax;
+                    if (files[prop] === 'numberingSystems.json') {
+                        ajax = new ej.base.Ajax(location.origin + '/../cldr-data/supplemental/' + files[prop], 'GET', false);
+                    } else {
+                        ajax = new ej.base.Ajax(location.origin + '/../cldr-data/main/' + name + '/' + files[prop], 'GET', false);
+                    }
+                    ajax.onSuccess = function (value) {
+                        val = value;
+                    };
+                    ajax.send();
+                    loader(JSON.parse(val));
+                };
+                for (var prop = 0; prop < files.length; prop++) {
+                    loadCulture(prop);
+                }
+            }
+
+            function onPopupOpen(args) {
+                console.log('OnPopUp args.type: ' + args.type);
+                if (args.type === 'Editor') {
+                    args.cancel = true;
+                }
+                if (args.type === 'DeleteAlert') {
+                    args.cancel = true;
+                }
+            }
+
+            function onEventClick(args) {
+                var scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
+                var event = scheduleObj.getEventDetails(args.element);
+                selectedEventId = event.EventId;
+            }
+
+            function onCellClick(args) {
+                args.cancel = true;
+                
+            }
+
+            function onCellDoubleClick(args) {
+                args.cancel = true;
+            }
+        </script>
+    }
+
 </div>
