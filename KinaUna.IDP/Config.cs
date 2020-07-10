@@ -83,7 +83,7 @@ namespace KinaUna.IDP
                     },
                     Scopes = new List<string>
                     {
-                        Constants.MediaApiName
+                        Constants.ProgenyApiName
                     }
                 },
                 new ApiResource{
@@ -136,6 +136,8 @@ namespace KinaUna.IDP
                     ClientName = "KinaUnaWeb",
                     ClientId = "kinaunawebclient",
                     ClientUri = webServerUrl,
+                    RequirePkce = false,
+                    AllowPlainTextPkce = false,
                     RequireConsent = false,
                     AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
                     AccessTokenType = AccessTokenType.Reference,
@@ -184,6 +186,8 @@ namespace KinaUna.IDP
                     ClientName = "KinaUnaWebLocal",
                     ClientId = "kinaunawebclientlocal",
                     ClientUri = webServerLocal,
+                    RequirePkce = false,
+                    AllowPlainTextPkce = false,
                     RequireConsent = false,
                     AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
                     AccessTokenType = AccessTokenType.Reference,
@@ -228,6 +232,8 @@ namespace KinaUna.IDP
                     ClientName = "KinaUnaWebAzure",
                     ClientId = "kinaunawebclientAzure",
                     ClientUri = webServerAzureUrl,
+                    RequirePkce = false,
+                    AllowPlainTextPkce = false,
                     RequireConsent = false,
                     AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
                     AccessTokenType = AccessTokenType.Reference,
@@ -341,6 +347,8 @@ namespace KinaUna.IDP
                     ClientName = "KinaUnaSupport",
                     ClientId = "kinaunasupport",
                     ClientUri = supportServerUrl,
+                    RequirePkce = false,
+                    AllowPlainTextPkce = false,
                     RequireConsent = false,
                     AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
                     AccessTokenType = AccessTokenType.Reference,
@@ -388,6 +396,8 @@ namespace KinaUna.IDP
                     ClientName = "pivoqweb",
                     ClientId = "pivoqwebclient",
                     ClientUri = pivoqWebServerUrl,
+                    RequirePkce = false,
+                    AllowPlainTextPkce = false,
                     RequireConsent = false,
                     AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
                     AccessTokenType = AccessTokenType.Reference,
@@ -437,6 +447,8 @@ namespace KinaUna.IDP
                     ClientName = "PivoqWebLocal",
                     ClientId = "pivoqwebclientlocal",
                     ClientUri = pivoqWebServerLocal,
+                    RequirePkce = false,
+                    AllowPlainTextPkce = false,
                     RequireConsent = false,
                     AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
                     AccessTokenType = AccessTokenType.Reference,

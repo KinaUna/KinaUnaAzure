@@ -135,9 +135,8 @@ namespace KinaUnaWeb
             .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
             .AddRazorRuntimeCompilation();
 
-            
+            var webServerLocal = Configuration.GetValue<string>("WebServerLocal");
 
-            
             services.AddAuthentication(options =>
                 {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -165,6 +164,7 @@ namespace KinaUnaWeb
                     options.Authority = authorityServerUrl;
                     options.ClientId = authenticationServerClientId;
                     options.ResponseType = "code id_token";
+                    options.UsePkce = false;
                     options.RequireHttpsMetadata = true;
                     options.Scope.Add("openid");
                     options.Scope.Add("profile");
