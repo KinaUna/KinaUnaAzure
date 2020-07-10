@@ -19,7 +19,7 @@ namespace KinaUna.IDP.Data
             {
                 foreach (var client in Config.GetClients(configuration))
                 {
-                    context.Clients.Add(client.ToEntity());
+                    await context.Clients.AddAsync(client.ToEntity());
                 }
                 await context.SaveChangesAsync();
             }
@@ -49,18 +49,27 @@ namespace KinaUna.IDP.Data
             {
                 foreach (var resource in Config.GetIdentityResources())
                 {
-                    context.IdentityResources.Add(resource.ToEntity());
+                    await context.IdentityResources.AddAsync(resource.ToEntity());
                 }
                 await context.SaveChangesAsync();
             }
 
-            if (!context.ApiResources.Any())
-            {
-                foreach (var api in Config.GetApiResources(configuration))
-                {
-                    context.ApiResources.Add(api.ToEntity());
-                }
+            //if (!context.ApiResources.Any())
+            //{
+            //    foreach (var api in Config.GetApiResources(configuration))
+            //    {
+            //        context.ApiResources.Add(api.ToEntity());
+            //    }
 
+            //    await context.SaveChangesAsync();
+            //}
+
+            if (!context.ApiScopes.Any())
+            {
+                foreach (var resource in Config.ApiScopes)
+                {
+                    await context.ApiScopes.AddAsync(resource.ToEntity());
+                }
                 await context.SaveChangesAsync();
             }
         }

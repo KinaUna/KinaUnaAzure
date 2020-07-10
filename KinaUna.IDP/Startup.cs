@@ -194,6 +194,8 @@ namespace KinaUna.IDP
                 .AddProfileServiceCache<ProfileService>()
                 .Services.AddTransient<IProfileService, ProfileService>();
 
+            services.AddLocalApiAuthentication();
+
             services.AddAuthentication().AddGoogle("Google", "Google", options =>
             {
                 options.ClientId = Configuration["GoogleClientId"];
@@ -286,6 +288,12 @@ namespace KinaUna.IDP
                         context.IdentityResources.Remove(identityToDelete);
                     }
 
+                    var contextApiScopes = context.ApiScopes.ToList();
+                    foreach (var apiScopeToDelete in contextApiScopes)
+                    {
+                        context.ApiScopes.Remove(apiScopeToDelete);
+                    }
+
                     context.SaveChanges();
                 }
 
@@ -307,13 +315,22 @@ namespace KinaUna.IDP
                     }
                     context.SaveChanges();
                 }
-                
+
 
                 if (!context.ApiResources.Any())
                 {
                     foreach (var resource in Config.GetApiResources(Configuration))
                     {
                         context.ApiResources.Add(resource.ToEntity());
+                    }
+                    context.SaveChanges();
+                }
+
+                if (!context.ApiScopes.Any())
+                {
+                    foreach (var resource in Config.ApiScopes)
+                    {
+                        context.ApiScopes.Add(resource.ToEntity());
                     }
                     context.SaveChanges();
                 }

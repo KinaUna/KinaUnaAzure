@@ -1,4 +1,6 @@
-﻿using IdentityServer4.Models;
+﻿using System;
+using System.Collections.Generic;
+using IdentityServer4.Models;
 using IdentityServer4.Services;
 using IdentityServer4.Stores;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +8,7 @@ using KinaUna.IDP.Models.AccountViewModels;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
+using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Cors;
 
 namespace KinaUna.IDP.Controllers
@@ -66,7 +69,7 @@ namespace KinaUna.IDP.Controllers
             // user clicked 'no' - send back the standard 'access_denied' response
             if (model.Button == "no")
             {
-                response = ConsentResponse.Denied;
+                response = new ConsentResponse { Error = AuthorizationError.AccessDenied };
             }
             // user clicked 'yes' - validate the data
             else if (model.Button == "yes")
@@ -77,7 +80,7 @@ namespace KinaUna.IDP.Controllers
                     response = new ConsentResponse
                     {
                         RememberConsent = model.RememberConsent,
-                        ScopesConsented = model.ScopesConsented
+                        ScopesValuesConsented = model.ScopesConsented.ToArray()
                     };
                 }
                 else
@@ -113,23 +116,7 @@ namespace KinaUna.IDP.Controllers
             var request = await _interaction.GetAuthorizationContextAsync(returnUrl);
             if (request != null)
             {
-                var client = await _clientStore.FindEnabledClientByIdAsync(request.ClientId);
-                if (client != null)
-                {
-                    var resources = await _resourceStore.FindEnabledResourcesByScopeAsync(request.ScopesRequested);
-                    if (resources != null && (resources.IdentityResources.Any() || resources.ApiResources.Any()))
-                    {
-                        return new ConsentViewModel(model, returnUrl, client, resources);
-                    }
-                    else
-                    {
-                        _logger.LogError("No scopes matching: {0}", request.ScopesRequested.Aggregate((x, y) => x + ", " + y));
-                    }
-                }
-                else
-                {
-                    _logger.LogError("Invalid client id: {0}", request.ClientId);
-                }
+                return CreateConsentViewModel(model, returnUrl, request);
             }
             else
             {
@@ -137,6 +124,98 @@ namespace KinaUna.IDP.Controllers
             }
 
             return null;
+        }
+
+        private ConsentViewModel CreateConsentViewModel(
+            ConsentInputModel model, string returnUrl,
+            AuthorizationRequest request)
+        {
+            var vm = new ConsentViewModel
+            {
+                RememberConsent = model?.RememberConsent ?? true,
+                ScopesConsented = model?.ScopesConsented ?? Enumerable.Empty<string>(),
+                
+                ReturnUrl = returnUrl,
+
+                ClientName = request.Client.ClientName ?? request.Client.ClientId,
+                ClientUrl = request.Client.ClientUri,
+                ClientLogoUrl = request.Client.LogoUri,
+                AllowRememberConsent = request.Client.AllowRememberConsent
+            };
+
+            vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources.Select(x => CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null)).ToArray();
+
+            var apiScopes = new List<ScopeViewModel>();
+            foreach (var parsedScope in request.ValidatedResources.ParsedScopes)
+            {
+                var apiScope = request.ValidatedResources.Resources.FindApiScope(parsedScope.ParsedName);
+                if (apiScope != null)
+                {
+                    var scopeVm = CreateScopeViewModel(parsedScope, apiScope, vm.ScopesConsented.Contains(parsedScope.RawValue) || model == null);
+                    apiScopes.Add(scopeVm);
+                }
+            }
+            if (ConsentOptions.EnableOfflineAccess && request.ValidatedResources.Resources.OfflineAccess)
+            {
+                apiScopes.Add(GetOfflineAccessScope(vm.ScopesConsented.Contains(IdentityServer4.IdentityServerConstants.StandardScopes.OfflineAccess) || model == null));
+            }
+            vm.ApiScopes = apiScopes;
+
+            return vm;
+        }
+
+        private ScopeViewModel CreateScopeViewModel(IdentityResource identity, bool check)
+        {
+            return new ScopeViewModel
+            {
+                Value = identity.Name,
+                DisplayName = identity.DisplayName ?? identity.Name,
+                Description = identity.Description,
+                Emphasize = identity.Emphasize,
+                Required = identity.Required,
+                Checked = check || identity.Required
+            };
+        }
+
+        public ScopeViewModel CreateScopeViewModel(ParsedScopeValue parsedScopeValue, ApiScope apiScope, bool check)
+        {
+            var displayName = apiScope.DisplayName ?? apiScope.Name;
+            if (!String.IsNullOrWhiteSpace(parsedScopeValue.ParsedParameter))
+            {
+                displayName += ":" + parsedScopeValue.ParsedParameter;
+            }
+
+            return new ScopeViewModel
+            {
+                Value = parsedScopeValue.RawValue,
+                DisplayName = displayName,
+                Description = apiScope.Description,
+                Emphasize = apiScope.Emphasize,
+                Required = apiScope.Required,
+                Checked = check || apiScope.Required
+            };
+        }
+
+        private ScopeViewModel GetOfflineAccessScope(bool check)
+        {
+            return new ScopeViewModel
+            {
+                Value = IdentityServer4.IdentityServerConstants.StandardScopes.OfflineAccess,
+                DisplayName = ConsentOptions.OfflineAccessDisplayName,
+                Description = ConsentOptions.OfflineAccessDescription,
+                Emphasize = true,
+                Checked = check
+            };
+        }
+        
+        public static class ConsentOptions
+        {
+            public static bool EnableOfflineAccess = true;
+            public static string OfflineAccessDisplayName = "Offline Access";
+            public static string OfflineAccessDescription = "Access to your applications and resources, even when you are offline";
+
+            public static readonly string MustChooseOneErrorMessage = "You must pick at least one permission";
+            public static readonly string InvalidSelectionErrorMessage = "Invalid selection";
         }
     }
 }

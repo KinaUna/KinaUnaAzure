@@ -68,9 +68,9 @@ namespace KinaUna.IDP
                     {
                         new Secret(secretString.Sha256())
                     },
-                    Scopes = new List<Scope>
+                    Scopes = new List<string>
                     {
-                        new Scope(Constants.ProgenyApiName)
+                       Constants.ProgenyApiName
                     }
                 },
                 new ApiResource{
@@ -81,9 +81,9 @@ namespace KinaUna.IDP
                     {
                         new Secret(secretString.Sha256())
                     },
-                    Scopes = new List<Scope>
+                    Scopes = new List<string>
                     {
-                        new Scope(Constants.MediaApiName)
+                        Constants.MediaApiName
                     }
                 },
                 new ApiResource{
@@ -94,13 +94,22 @@ namespace KinaUna.IDP
                     {
                         new Secret(secretString.Sha256())
                     },
-                    Scopes = new List<Scope>
+                    Scopes = new List<string>
                     {
-                        new Scope(Constants.PivoqApiName)
+                        Constants.PivoqApiName
                     }
                 }
             };
         }
+
+        public static IEnumerable<ApiScope> ApiScopes =>
+            new List<ApiScope>
+            {
+                new ApiScope(Constants.ProgenyApiName, "KinaUna Progeny API",new List<string> {"role" }),
+                new ApiScope(Constants.MediaApiName, "KinaUna Media API",new List<string> {"role" }),
+                new ApiScope(Constants.PivoqApiName, "Pivoq API",new List<string> {"role" })
+
+            };
 
         public static IEnumerable<Client> GetClients(IConfiguration configuration)
         {

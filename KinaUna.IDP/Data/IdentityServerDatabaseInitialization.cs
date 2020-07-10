@@ -53,11 +53,20 @@ namespace KinaUna.IDP.Data
                 context.SaveChanges();
             }
 
-            if (!context.ApiResources.Any())
+            //if (!context.ApiResources.Any())
+            //{
+            //    foreach (var resource in Config.GetApiResources(configuration))
+            //    {
+            //        context.ApiResources.Add(resource.ToEntity());
+            //    }
+            //    context.SaveChanges();
+            //}
+
+            if (!context.ApiScopes.Any())
             {
-                foreach (var resource in Config.GetApiResources(configuration))
+                foreach (var resource in Config.ApiScopes)
                 {
-                    context.ApiResources.Add(resource.ToEntity());
+                    context.ApiScopes.Add(resource.ToEntity());
                 }
                 context.SaveChanges();
             }
