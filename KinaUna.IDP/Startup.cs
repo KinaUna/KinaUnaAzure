@@ -156,7 +156,7 @@ namespace KinaUna.IDP
             
 
             services.AddControllersWithViews()
-                .AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix);
+                .AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix).AddRazorRuntimeCompilation();
 
             services.AddIdentityServer(x =>
                 {
