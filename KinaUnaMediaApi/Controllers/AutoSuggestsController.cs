@@ -90,6 +90,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
 
+            autoSuggestList = autoSuggestList.Distinct().ToList();
             autoSuggestList.Sort();
             return Ok(autoSuggestList);
         }
@@ -193,6 +194,8 @@ namespace KinaUnaMediaApi.Controllers
                     }
                 }
             }
+
+            autoSuggestList = autoSuggestList.Distinct().ToList();
             autoSuggestList.Sort();
             return Ok(autoSuggestList);
         }

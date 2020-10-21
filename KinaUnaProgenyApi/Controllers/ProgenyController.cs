@@ -102,7 +102,12 @@ namespace KinaUnaProgenyApi.Controllers
             progeny.BirthDay = value.BirthDay;
             progeny.TimeZone = value.TimeZone;
             progeny.Admins = value.Admins;
+            if (string.IsNullOrEmpty(value.PictureLink))
+            {
+                value.PictureLink = Constants.ProfilePictureUrl;
+            }
             progeny.PictureLink = value.PictureLink;
+            
 
             _context.ProgenyDb.Add(progeny);
             await _context.SaveChangesAsync();

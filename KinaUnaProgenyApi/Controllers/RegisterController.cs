@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Azure.NotificationHubs;
@@ -131,6 +132,25 @@ namespace KinaUnaProgenyApi.Controllers
                         throw new HttpRequestException(HttpStatusCode.Gone.ToString());
                 }
             }
+        }
+
+        [HttpGet("[action]/{handle}")]
+        public async Task<string> GetRegistrationId(string handle)
+        {
+            var regList = await _hub.GetRegistrationsByChannelAsync(handle, 1);
+
+            if (regList.Any())
+            {
+                foreach (var regItem in regList)
+                {
+                    if (regItem.PnsHandle == handle)
+                    {
+                        return regItem.RegistrationId;
+                    }
+                }
+            }
+
+            return "NO_DATA";
         }
     }
 }

@@ -196,7 +196,14 @@ namespace KinaUna.IDP
 
             services.AddLocalApiAuthentication();
 
-            services.AddAuthentication().AddGoogle("Google", "Google", options =>
+            services.AddAuthentication().AddApple(options =>
+            {
+                options.ClientId = Configuration["AppleClientId"];
+                options.KeyId = Configuration["AppleKeyId"];
+                options.TeamId = Configuration["AppleTeamId"];
+                options.UsePrivateKey(
+                    (keyId) => _env.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
+            }).AddGoogle("Google", "Google", options =>
             {
                 options.ClientId = Configuration["GoogleClientId"];
                 options.ClientSecret = Configuration["GoogleClientSecret"];

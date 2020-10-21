@@ -54,49 +54,59 @@
             }
             else
             {
-                <form asp-action="ExternalLogin" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
-                    <div>
-                        <p>
-                            @foreach (var provider in loginProviders)
+    <form asp-action="ExternalLogin" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
+        <div>
+            <p>
+                @foreach (var provider in loginProviders)
+                {
+                    if (provider.Name.ToLower().Contains("apple"))
+                    {
+                        <button type="submit" class="btn btn-social btn-fill btn-linkedin leavePage" style="background-color: #000000;"
+                                name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
+                            <i class="fab fa-apple"></i> @provider.Name
+                        </button>
+                    }
+                    else
+                    {
+                        if (provider.Name.ToLower().Contains("facebook"))
+                        {
+                            <button type="submit" class="btn btn-social btn-fill btn-facebook leavePage" style="background-color: #4267B2;"
+                                    name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
+                                <i class="fab fa-facebook-square"></i> @provider.Name
+                            </button>
+                        }
+                        else
+                        {
+                            if (provider.Name.ToLower().Contains("google"))
                             {
-                                if (provider.Name.ToLower().Contains("facebook"))
+                                <button type="submit" class="btn btn-social btn-fill btn-google leavePage" style="background-color: #DB4437;"
+                                        name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
+                                    <i class="fab fa-google"></i> @provider.Name
+                                </button>
+                            }
+                            else
+                            {
+                                if (provider.Name.ToLower().Contains("microsoft"))
                                 {
-                                    <button type="submit" class="btn btn-social btn-fill btn-facebook leavePage" style="background-color: #4267B2;"
+                                    <button type="submit" class="btn btn-social btn-fill btn-linkedin leavePage" style="background-color: #00A4EF;"
                                             name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
-                                        <i class="fab fa-facebook-square"></i> @provider.Name
+                                        <i class="fab fa-microsoft"></i> @provider.Name
                                     </button>
                                 }
                                 else
                                 {
-                                    if (provider.Name.ToLower().Contains("google"))
-                                    {
-                                        <button type="submit" class="btn btn-social btn-fill btn-google leavePage" style="background-color: #DB4437;"
-                                                name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
-                                            <i class="fab fa-google"></i> @provider.Name
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        if (provider.Name.ToLower().Contains("microsoft"))
-                                        {
-                                            <button type="submit" class="btn btn-social btn-fill btn-linkedin leavePage" style="background-color: #00A4EF;"
-                                                    name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
-                                                <i class="fab fa-microsoft"></i> @provider.Name
-                                            </button>
-                                        }
-                                        else
-                                        {
-                                            <button type="submit" class="btn btn-social btn-fill leavePage"
-                                                    name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
-                                                <i class=""></i> @provider.Name
-                                            </button>
-                                        }
-                                    }
+                                    <button type="submit" class="btn btn-social btn-fill leavePage"
+                                            name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
+                                        <i class=""></i> @provider.Name
+                                    </button>
                                 }
                             }
-                        </p>
-                    </div>
-                </form>
+                        }
+                    }
+                }
+            </p>
+        </div>
+    </form>
             }
         }
     </section>

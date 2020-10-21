@@ -308,6 +308,10 @@ namespace KinaUnaProgenyApi.Controllers
                     foreach (UserAccess ua in userAccessList)
                     {
                         Progeny prog = await _dataService.GetProgeny(ua.ProgenyId);
+                        if (string.IsNullOrEmpty(prog.PictureLink))
+                        {
+                            prog.PictureLink = Constants.ProfilePictureUrl;
+                        }
                         result.Add(prog);
                     }
 
@@ -333,6 +337,10 @@ namespace KinaUnaProgenyApi.Controllers
                     foreach (UserAccess ua in userAccessList)
                     {
                         Progeny prog = await _dataService.GetProgeny(ua.ProgenyId);
+                        if (string.IsNullOrEmpty(prog.PictureLink))
+                        {
+                            prog.PictureLink = Constants.ProfilePictureUrl;
+                        }
                         if (!prog.PictureLink.ToLower().StartsWith("http"))
                         {
                             prog.PictureLink = _imageStore.UriFor(prog.PictureLink, "progeny");
