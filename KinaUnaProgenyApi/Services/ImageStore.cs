@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using Microsoft.Azure.Storage.Blob;
 using Microsoft.Azure.Storage.Auth;
+using Microsoft.Azure.Storage.Blob;
 
 namespace KinaUnaProgenyApi.Services
 {
