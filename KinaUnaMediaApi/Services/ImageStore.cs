@@ -3,61 +3,77 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using Microsoft.Azure.Storage.Auth;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage;
+using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
 
 namespace KinaUnaMediaApi.Services
 {
     public class ImageStore
     {
-        CloudBlobClient blobClient;
+        private BlobServiceClient _blobServiceClient;
+        private string _storageKey;
         string baseUri = Constants.CloudBlobBase;
         
         public ImageStore(IConfiguration configuration)
         {
-            var credentials = new StorageCredentials(Constants.CloudBlobUsername, configuration["BlobStorageKey"]);
-            blobClient = new CloudBlobClient(new Uri(baseUri), credentials);
+            _blobServiceClient = new BlobServiceClient(configuration["BlobStorageConnectionString"]);
+            _storageKey = configuration["BlobStorageKey"];
         }
 
 
         public async Task<string> SaveImage(Stream imageStream, string containerName = "pictures")
         {
             var imageId = Guid.NewGuid().ToString();
-            var container = blobClient.GetContainerReference(containerName);
-            var blob = container.GetBlockBlobReference(imageId);
-            await blob.UploadFromStreamAsync(imageStream);
+            BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
+
+            var blob = container.GetBlobClient(imageId);
+
+            await blob.UploadAsync(imageStream);
             return imageId;
         }
 
         public string UriFor(string imageId, string containerName = "pictures")
         {
-            var sasPolicy = new SharedAccessBlobPolicy
+            BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
+
+            var blob = container.GetBlobClient(imageId);
+            
+            var credential = new StorageSharedKeyCredential(Constants.CloudBlobUsername, _storageKey);
+            var sas = new BlobSasBuilder
             {
-                Permissions = SharedAccessBlobPermissions.Read,
-                SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-15),
-                SharedAccessExpiryTime = DateTime.UtcNow.AddMinutes(60)
+                BlobName = imageId,
+                BlobContainerName = containerName,
+                StartsOn = DateTime.UtcNow.AddMinutes(-15),
+                ExpiresOn = DateTime.UtcNow.AddMinutes(60)
             };
 
-            var container = blobClient.GetContainerReference(containerName);
-            var blob = container.GetBlockBlobReference(imageId);
-            var sas = blob.GetSharedAccessSignature(sasPolicy);
-            return $"{baseUri}{containerName}/{imageId}{sas}";
+            sas.SetPermissions(BlobAccountSasPermissions.Read);
+            UriBuilder sasUri = new UriBuilder($"{baseUri}{containerName}/{imageId}");
+            
+            sasUri.Query = sas.ToSasQueryParameters(credential).ToString();
+
+            return sasUri.Uri.AbsoluteUri;
         }
 
         public async Task<MemoryStream> GetStream(string imageId, string containerName = "pictures")
         {
-            var container = blobClient.GetContainerReference(containerName);
-            var blob = container.GetBlockBlobReference(imageId);
+            BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
+
+            var blob = container.GetBlobClient(imageId);
             var memoryStream = new MemoryStream();
-            await blob.DownloadToStreamAsync(memoryStream).ConfigureAwait(false);
+            await blob.DownloadToAsync(memoryStream).ConfigureAwait(false);
+            
             return memoryStream;
         }
 
         public async Task<string> DeleteImage(string imageId, string containerName = "pictures")
         {
-            var container = blobClient.GetContainerReference(containerName);
-            var blob = container.GetBlockBlobReference(imageId);
+            BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
+
+            var blob = container.GetBlobClient(imageId);
             await blob.DeleteIfExistsAsync();
+
             return imageId;
         }
     }
