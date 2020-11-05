@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -41,6 +43,27 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 List<CalendarItem> calendarList = await _dataService.GetCalendarList(id);
                 calendarList = calendarList.Where(c => c.AccessLevel >= accessLevel).ToList();
+                if (calendarList.Any())
+                {
+                    return Ok(calendarList);
+                }
+            }
+
+            return NotFound();
+        }
+
+        [HttpGet]
+        [Route("[action]/{id}")]
+        public async Task<IActionResult> ProgenyInterval(int id, [FromQuery] string start, [FromQuery] string end, [FromQuery] int accessLevel = 5)
+        {
+            bool startParsed = DateTime.TryParseExact(start, "dd-MM-yyyy", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime startDate);
+            bool endParsed = DateTime.TryParseExact(end, "dd-MM-yyyy", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime endDate);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+            if (userAccess != null || id == Constants.DefaultChildId && startParsed && endParsed)
+            {
+                List<CalendarItem> calendarList = await _dataService.GetCalendarList(id);
+                calendarList = calendarList.Where(c => c.AccessLevel >= accessLevel && c.EndTime > startDate && c.StartTime < endDate ).ToList();
                 if (calendarList.Any())
                 {
                     return Ok(calendarList);
