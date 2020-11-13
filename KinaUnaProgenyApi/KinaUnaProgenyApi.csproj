@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>05227611-949b-4b9a-8c51-681ec00f8009</UserSecretsId>
     <Platforms>AnyCPU;x64</Platforms>
     <ApplicationInsightsResourceId>/subscriptions/2a9afdaa-1e5a-4b6f-a1c0-c626b6b0e7aa/resourcegroups/KinaUna/providers/microsoft.insights/components/KinaUnaProgenyApi</ApplicationInsightsResourceId>
@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.0.2" />
+    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.0.1" />
     <PackageReference Include="Azure.Identity" Version="1.2.3" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.7.0" />
     <PackageReference Include="IdentityModel" Version="4.4.0" />

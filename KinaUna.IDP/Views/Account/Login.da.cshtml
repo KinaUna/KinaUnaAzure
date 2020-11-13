@@ -62,8 +62,8 @@
                     if (provider.Name.ToLower().Contains("apple"))
                     {
                         <button type="submit" class="btn btn-social btn-fill btn-linkedin leavePage" style="background-color: #000000;"
-                                name="provider" value="@provider.Name" title="Log ind med @provider.DisplayName">
-                            <i class="fab fa-apple" style="font-size: 1.3rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Log ind med @provider.Name</span>
+                                name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
+                            <i class="fab fa-apple"></i> @provider.Name
                         </button>
                     }
                     else
@@ -71,8 +71,8 @@
                         if (provider.Name.ToLower().Contains("facebook"))
                         {
                             <button type="submit" class="btn btn-social btn-fill btn-facebook leavePage" style="background-color: #4267B2;"
-                                    name="provider" value="@provider.Name" title="Log ind med @provider.DisplayName">
-                                <i class="fab fa-facebook-square" style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Log ind med @provider.Name</span>
+                                    name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
+                                <i class="fab fa-facebook-square"></i> @provider.Name
                             </button>
                         }
                         else
@@ -80,8 +80,8 @@
                             if (provider.Name.ToLower().Contains("google"))
                             {
                                 <button type="submit" class="btn btn-social btn-fill btn-google leavePage" style="background-color: #DB4437;"
-                                        name="provider" value="@provider.Name" title="Log ind med @provider.DisplayName">
-                                    <i class="fab fa-google" style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Log ind med @provider.Name</span>
+                                        name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
+                                    <i class="fab fa-google"></i> @provider.Name
                                 </button>
                             }
                             else
@@ -89,15 +89,15 @@
                                 if (provider.Name.ToLower().Contains("microsoft"))
                                 {
                                     <button type="submit" class="btn btn-social btn-fill btn-linkedin leavePage" style="background-color: #00A4EF;"
-                                            name="provider" value="@provider.Name" title="Log ind med @provider.DisplayName">
-                                        <i class="fab fa-microsoft" style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Log ind med @provider.Name</span>
+                                            name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
+                                        <i class="fab fa-microsoft"></i> @provider.Name
                                     </button>
                                 }
                                 else
                                 {
                                     <button type="submit" class="btn btn-social btn-fill leavePage"
-                                            name="provider" value="@provider.Name" title="Log ind med @provider.DisplayName">
-                                        <i style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Log ind med @provider.Name</span>
+                                            name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
+                                        <i class=""></i> @provider.Name
                                     </button>
                                 }
                             }
