@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <UserSecretsId>aspnet-KinaUnaWeb-3CFF80E1-DFC0-426E-B569-60032DF70BB3</UserSecretsId>
     <Platforms>AnyCPU;x64</Platforms>
     <ApplicationInsightsResourceId>/subscriptions/2a9afdaa-1e5a-4b6f-a1c0-c626b6b0e7aa/resourcegroups/KinaUna/providers/microsoft.insights/components/KinaUnaWeb</ApplicationInsightsResourceId>
@@ -15,7 +15,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.0.1" />
+    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.0.2" />
     <PackageReference Include="Azure.Identity" Version="1.2.3" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.AzureStorage" Version="3.1.9" />
@@ -30,7 +30,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="EPPlus" Version="5.4.0" />
+    <PackageReference Include="EPPlus" Version="5.4.1" />
     <PackageReference Include="IdentityModel" Version="4.4.0" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.15.0" />
@@ -40,7 +40,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.1.9" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.9" />
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="3.1.9" />
-    <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="18.3.0.44" />
+    <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="18.3.0.47" />
     <PackageReference Include="WebPush" Version="1.0.11" />
   </ItemGroup>
 
