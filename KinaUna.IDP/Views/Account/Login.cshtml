@@ -10,23 +10,23 @@
     <div class="col-md-10">
         <section>
             <form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
-                <input type="hidden" asp-for="ReturnUrl"/>
+                <input type="hidden" asp-for="ReturnUrl" />
                 <h4>Log in with a @Constants.AppName account.</h4>
                 <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="form-group">
                     <label asp-for="Email" class="control-label form-label"></label>
-                    <input asp-for="Email" class="form-control form-input form-input-center"/>
+                    <input asp-for="Email" class="form-control form-input form-input-center" />
                     <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label asp-for="Password" class="control-label form-label"></label>
-                    <input asp-for="Password" class="form-control form-input form-input-center"/>
+                    <input asp-for="Password" class="form-control form-input form-input-center" />
                     <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-success leavePage closeModal">&nbsp;LOG IN&nbsp;</button>
                 </div>
-                <br/><br/>
+                <br /><br />
                 <p>
                     <a class="leavePage" asp-action="ForgotPassword">Forgot your password?</a>
                 </p>
@@ -40,7 +40,7 @@
 <div class="col-md-6 col-md-offset-2">
     <section>
         <h4>Use another service to log in.</h4>
-        <hr/>
+        <hr />
         @{
             var loginProviders = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (!loginProviders.Any())
@@ -62,8 +62,8 @@
                                 if (provider.Name.ToLower().Contains("apple"))
                                 {
                                     <button type="submit" class="btn btn-social btn-fill btn-linkedin leavePage" style="background-color: #000000;"
-                                            name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
-                                        <i class="fab fa-apple" style="font-size: 1.3rem;"></i><span style="margin: 10px;">@provider.Name</span> 
+                                            name="provider" value="@provider.Name" title="Sign in with @provider.DisplayName">
+                                        <i class="fab fa-apple" style="font-size: 1.3rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Sign in with @provider.Name</span>
                                     </button>
                                 }
                                 else
@@ -71,8 +71,8 @@
                                     if (provider.Name.ToLower().Contains("facebook"))
                                     {
                                         <button type="submit" class="btn btn-social btn-fill btn-facebook leavePage" style="background-color: #4267B2;"
-                                                name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
-                                            <i class="fab fa-facebook-square" style="font-size: 1.3rem;"></i><span style="margin: 10px;">@provider.Name</span>
+                                                name="provider" value="@provider.Name" title="Sign in with @provider.DisplayName">
+                                            <i class="fab fa-facebook-square" style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Sign in with @provider.Name</span>
                                         </button>
                                     }
                                     else
@@ -80,8 +80,8 @@
                                         if (provider.Name.ToLower().Contains("google"))
                                         {
                                             <button type="submit" class="btn btn-social btn-fill btn-google leavePage" style="background-color: #DB4437;"
-                                                    name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
-                                                <i class="fab fa-google" style="font-size: 1.3rem;"></i><span style="margin: 10px;">@provider.Name</span>
+                                                    name="provider" value="@provider.Name" title="Sign in with @provider.DisplayName">
+                                                <i class="fab fa-google" style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Sign in with @provider.Name</span>
                                             </button>
                                         }
                                         else
@@ -89,15 +89,15 @@
                                             if (provider.Name.ToLower().Contains("microsoft"))
                                             {
                                                 <button type="submit" class="btn btn-social btn-fill btn-linkedin leavePage" style="background-color: #00A4EF;"
-                                                        name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
-                                                    <i class="fab fa-microsoft" style="font-size: 1.3rem;"></i><span style="margin: 10px;">@provider.Name</span>
+                                                        name="provider" value="@provider.Name" title="Sign in with @provider.DisplayName">
+                                                    <i class="fab fa-microsoft" style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Sign in with @provider.Name</span>
                                                 </button>
                                             }
                                             else
                                             {
                                                 <button type="submit" class="btn btn-social btn-fill leavePage"
-                                                        name="provider" value="@provider.Name" title="Log in with @provider.DisplayName">
-                                                    <i style="font-size: 1.3rem;"></i><span style="margin: 10px;">@provider.Name</span>
+                                                        name="provider" value="@provider.Name" title="Sign in with @provider.DisplayName">
+                                                    <i style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Sign in with @provider.Name</span>
                                                 </button>
                                             }
                                         }
