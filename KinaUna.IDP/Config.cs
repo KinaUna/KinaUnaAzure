@@ -117,8 +117,12 @@ namespace KinaUna.IDP
             var webServerAzureUrl = configuration.GetValue<string>("WebServerAzure");
             var supportServerUrl = configuration.GetValue<string>("SupportServer");
             var webServerLocal = configuration.GetValue<string>("WebServerLocal");
+            var webServerNuuk2015 = configuration.GetValue<string>("WebServerDevNuuk2015");
+            var webServerNuuk2020 = configuration.GetValue<string>("WebServerDevNuuk2020");
             var pivoqWebServerUrl = configuration.GetValue<string>("PivoqWebServer");
             var pivoqWebServerLocal = configuration.GetValue<string>("PivoqWebServerLocal");
+            var pivoqWebServerNuuk2015 = configuration.GetValue<string>("PivoqWebServerDevNuuk2015");
+            var pivoqWebServerNuuk2020 = configuration.GetValue<string>("PivoqWebServerDevNuuk2020");
             var secretString = configuration.GetValue<string>("SecretString");
             List<string> corsList = new List<string>();
             corsList.Add(Constants.WebAppUrl);
@@ -129,6 +133,13 @@ namespace KinaUna.IDP
             corsList.Add(Constants.PivoqUrl);
             corsList.Add(Constants.PivoqApiUrl);
             corsList.Add("https://" + Constants.AppRootDomain);
+            corsList.Add(webServerNuuk2015);
+            corsList.Add("https://nuuk2015.kinauna.io");
+            corsList.Add(webServerNuuk2020);
+            corsList.Add("https://nuuk2020.kinauna.io");
+            corsList.Add("https://*.kinauna.io");
+            corsList.Add(pivoqWebServerNuuk2015);
+            corsList.Add(pivoqWebServerNuuk2020);
             return new List<Client>()
             {
                 new Client
@@ -229,6 +240,98 @@ namespace KinaUna.IDP
                 },
                 new Client
                 {
+                    ClientName = "KinaUnaWebNuuk2015",
+                    ClientId = "kinaunawebclientnuuk2015",
+                    ClientUri = webServerNuuk2015,
+                    RequirePkce = false,
+                    AllowPlainTextPkce = false,
+                    RequireConsent = false,
+                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
+                    AccessTokenType = AccessTokenType.Reference,
+                    AccessTokenLifetime = 2592000,
+                    AllowOfflineAccess = true,
+                    AlwaysIncludeUserClaimsInIdToken = false,
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    RedirectUris = new List<string>()
+                    {
+                        webServerNuuk2015 + "/signin-oidc"
+                        
+                    },
+                    PostLogoutRedirectUris = new List<string>()
+                    {
+                        webServerNuuk2015 + "/signout-callback-oidc"
+                    },
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.OfflineAccess,
+                        IdentityServerConstants.StandardScopes.Address,
+                        IdentityServerConstants.StandardScopes.Email,
+                        IdentityServerConstants.StandardScopes.Phone,
+                        "firstname",
+                        "middlename",
+                        "lastname",
+                        "roles",
+                        "timezone",
+                        "viewchild",
+                        "joindate",
+                        Constants.ProgenyApiName,
+                        Constants.MediaApiName
+                    },
+                    ClientSecrets =
+                    {
+                        new Secret(secretString.Sha256())
+                    }
+                },
+                new Client
+                {
+                    ClientName = "KinaUnaWebNuuk2020",
+                    ClientId = "kinaunawebclientnuuk2020",
+                    ClientUri = webServerNuuk2020,
+                    RequirePkce = false,
+                    AllowPlainTextPkce = false,
+                    RequireConsent = false,
+                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
+                    AccessTokenType = AccessTokenType.Reference,
+                    AccessTokenLifetime = 2592000,
+                    AllowOfflineAccess = true,
+                    AlwaysIncludeUserClaimsInIdToken = false,
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    RedirectUris = new List<string>()
+                    {
+                        webServerNuuk2020 + "/signin-oidc"
+                        
+                    },
+                    PostLogoutRedirectUris = new List<string>()
+                    {
+                        webServerNuuk2020 + "/signout-callback-oidc"
+                    },
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.OfflineAccess,
+                        IdentityServerConstants.StandardScopes.Address,
+                        IdentityServerConstants.StandardScopes.Email,
+                        IdentityServerConstants.StandardScopes.Phone,
+                        "firstname",
+                        "middlename",
+                        "lastname",
+                        "roles",
+                        "timezone",
+                        "viewchild",
+                        "joindate",
+                        Constants.ProgenyApiName,
+                        Constants.MediaApiName
+                    },
+                    ClientSecrets =
+                    {
+                        new Secret(secretString.Sha256())
+                    }
+                },
+                new Client
+                {
                     ClientName = "KinaUnaWebAzure",
                     ClientId = "kinaunawebclientAzure",
                     ClientUri = webServerAzureUrl,
@@ -248,12 +351,12 @@ namespace KinaUna.IDP
                     AllowedCorsOrigins = corsList,
                     RedirectUris = new List<string>()
                     {
-                        webServerUrl + "/signin-oidc"
+                        webServerAzureUrl + "/signin-oidc"
 
                     },
                     PostLogoutRedirectUris = new List<string>()
                     {
-                        webServerUrl + "/signout-callback-oidc"
+                        webServerAzureUrl + "/signout-callback-oidc"
                     },
                     AllowedScopes =
                     {
@@ -464,6 +567,100 @@ namespace KinaUna.IDP
                     PostLogoutRedirectUris = new List<string>()
                     {
                         pivoqWebServerLocal + "/signout-callback-oidc"
+                    },
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.OfflineAccess,
+                        IdentityServerConstants.StandardScopes.Address,
+                        IdentityServerConstants.StandardScopes.Email,
+                        IdentityServerConstants.StandardScopes.Phone,
+                        "firstname",
+                        "middlename",
+                        "lastname",
+                        "roles",
+                        "timezone",
+                        "viewchild",
+                        "joindate",
+                        Constants.ProgenyApiName,
+                        Constants.MediaApiName,
+                        Constants.PivoqApiName
+                    },
+                    ClientSecrets =
+                    {
+                        new Secret(secretString.Sha256())
+                    }
+                },
+                new Client
+                {
+                    ClientName = "PivoqWebNuuk2015",
+                    ClientId = "pivoqwebclientnuuk2015",
+                    ClientUri = pivoqWebServerNuuk2015,
+                    RequirePkce = false,
+                    AllowPlainTextPkce = false,
+                    RequireConsent = false,
+                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
+                    AccessTokenType = AccessTokenType.Reference,
+                    AccessTokenLifetime = 2592000,
+                    AllowOfflineAccess = true,
+                    AlwaysIncludeUserClaimsInIdToken = false,
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    RedirectUris = new List<string>()
+                    {
+                        pivoqWebServerNuuk2015 + "/signin-oidc"
+
+                    },
+                    PostLogoutRedirectUris = new List<string>()
+                    {
+                        pivoqWebServerNuuk2015 + "/signout-callback-oidc"
+                    },
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.OfflineAccess,
+                        IdentityServerConstants.StandardScopes.Address,
+                        IdentityServerConstants.StandardScopes.Email,
+                        IdentityServerConstants.StandardScopes.Phone,
+                        "firstname",
+                        "middlename",
+                        "lastname",
+                        "roles",
+                        "timezone",
+                        "viewchild",
+                        "joindate",
+                        Constants.ProgenyApiName,
+                        Constants.MediaApiName,
+                        Constants.PivoqApiName
+                    },
+                    ClientSecrets =
+                    {
+                        new Secret(secretString.Sha256())
+                    }
+                },
+                new Client
+                {
+                    ClientName = "PivoqWebNuuk2020",
+                    ClientId = "pivoqwebclientnuuk2020",
+                    ClientUri = pivoqWebServerNuuk2020,
+                    RequirePkce = false,
+                    AllowPlainTextPkce = false,
+                    RequireConsent = false,
+                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
+                    AccessTokenType = AccessTokenType.Reference,
+                    AccessTokenLifetime = 2592000,
+                    AllowOfflineAccess = true,
+                    AlwaysIncludeUserClaimsInIdToken = false,
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    RedirectUris = new List<string>()
+                    {
+                        pivoqWebServerNuuk2020 + "/signin-oidc"
+
+                    },
+                    PostLogoutRedirectUris = new List<string>()
+                    {
+                        pivoqWebServerNuuk2020 + "/signout-callback-oidc"
                     },
                     AllowedScopes =
                     {

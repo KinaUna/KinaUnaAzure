@@ -6,12 +6,14 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
 using System.Net.Http.Formatting;
+using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaWeb.Services
 {
@@ -21,27 +23,41 @@ namespace KinaUnaWeb.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly IHostEnvironment _env;
 
-        public ProgenyHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public ProgenyHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
+            _env = env;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
+            {
+                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer);
+            }
+
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
+           
         }
 
         private async Task<string> GetNewToken()
         {
+            var authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
+            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
+            {
+                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer);
+            }
+
             var access_token = await _apiTokenClient.GetApiToken(
-                    _configuration.GetValue<string>("AuthenticationServerClientId"),
-                    Constants.ProgenyApiName + " " + Constants.MediaApiName,
-                    _configuration.GetValue<string>("AuthenticationServerClientSecret"));
-            return access_token; // tokenResponse.AccessToken;
+                authenticationServerClientId,
+                Constants.ProgenyApiName + " " + Constants.MediaApiName,
+                _configuration.GetValue<string>("AuthenticationServerClientSecret"));
+            return access_token;
         }
 
         public async Task<UserInfo> GetUserInfo(string email)

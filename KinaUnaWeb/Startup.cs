@@ -87,7 +87,15 @@ namespace KinaUnaWeb
                 .PersistKeysToAzureBlobStorage(container, "kukeys.xml");
 
             var authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
+            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
+            {
+                authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer" + Constants.DebugKinaUnaServer);
+            }
             var authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
+            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
+            {
+                authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer);
+            }
             var authenticationServerClientSecret = Configuration.GetValue<string>("AuthenticationServerClientSecret");
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -103,22 +111,50 @@ namespace KinaUnaWeb
             services.AddTransient<IPushMessageSender, PushMessageSender>();
             services.AddSingleton<ApiTokenInMemoryClient>();
 
-            services.Configure<AuthConfigurations>(config => { config.StsServer = authorityServerUrl; config.ProtectedApiUrl = Configuration.GetValue<string>("ProgenyApiServer") + " " + Configuration.GetValue<string>("MediaApiServer"); });
-
-
-            services.AddCors(o => o.AddPolicy("localCors", builder =>
+            var progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer");
+            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
             {
-                builder.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
-            }));
+                progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer);
+            }
 
-            services.AddCors(o => o.AddPolicy("KinaUnaCors", builder =>
-            { // Todo: Update cors policy
-                builder.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
-            }));
+            var mediaServerUrl = Configuration.GetValue<string>("MediaApiServer");
+            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
+            {
+                mediaServerUrl = Configuration.GetValue<string>("MediaApiServer" + Constants.DebugKinaUnaServer);
+            }
+
+            services.Configure<AuthConfigurations>(config => { config.StsServer = authorityServerUrl; config.ProtectedApiUrl = progenyServerUrl + " " + mediaServerUrl;});
+            
+            services.AddCors(o =>
+            {
+                if (_env.IsDevelopment())
+                {
+                    o.AddDefaultPolicy(builder =>
+                    {
+                        builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324",
+                            "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397",
+                            "https://nuuk2020.kinauna.io:44397", "https://nuuk2015.kinauna.io",
+                            "https://nuuk2020.kinauna.io").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                    });
+                }
+
+                o.AddPolicy("KinaUnaCors", builder =>
+                {
+                    // Todo: Update cors policy
+                    if (_env.IsDevelopment())
+                    {
+                        builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324",
+                                "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397",
+                                "https://nuuk2020.kinauna.io:44397", "https://nuuk2015.kinauna.io",
+                                "https://nuuk2020.kinauna.io").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                    }
+                    else
+                    {
+                        builder.WithOrigins("https://*." + Constants.AppRootDomain)
+                            .SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                    }
+                });
+            });
 
             services.AddLocalization(o =>
             {
@@ -135,12 +171,10 @@ namespace KinaUnaWeb
             .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
             .AddRazorRuntimeCompilation();
 
-            var webServerLocal = Configuration.GetValue<string>("WebServerLocal");
-
             services.AddAuthentication(options =>
                 {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
                 {
                     options.Cookie.Name = "KinaUnaCookie";
@@ -149,13 +183,19 @@ namespace KinaUnaWeb
                     {
                         context.CookieOptions.Expires = DateTimeOffset.UtcNow.AddDays(30);
                         return Task.CompletedTask;
-
                     };
 
                     if (!_env.IsDevelopment())
                     {
                         options.Cookie.Domain = "web." + Constants.AppRootDomain;
 
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
+                        {
+                            options.Cookie.Domain = ".kinauna.io";
+                        }
                     }
                 })
                 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
@@ -215,7 +255,7 @@ namespace KinaUnaWeb
         public void Configure(IApplicationBuilder app)
         {
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(Configuration["SyncfusionKey"]);
-            app.UseHttpsRedirection();
+            
             app.UseCookiePolicy();
             var supportedCultures = new[]
             {
@@ -246,15 +286,15 @@ namespace KinaUnaWeb
             if (_env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseCors("localCors");
             }
             else
             {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
-                app.UseCors("KinaUnaCors");
             }
 
+            app.UseCors("KinaUnaCors");
+            app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
                         

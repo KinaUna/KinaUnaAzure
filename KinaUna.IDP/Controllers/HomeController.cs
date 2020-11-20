@@ -14,7 +14,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace KinaUna.IDP.Controllers
 {
-    [EnableCors("KinaUnaCors")]
+    //[EnableCors("KinaUnaCors")]
     public class HomeController : Controller
     {
         private readonly IIdentityServerInteractionService _interaction;

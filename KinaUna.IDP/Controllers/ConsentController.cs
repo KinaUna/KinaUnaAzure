@@ -16,7 +16,7 @@ namespace KinaUna.IDP.Controllers
     /// <summary>
     /// This controller implements the consent logic
     /// </summary>
-    [EnableCors("KinaUnaCors")]
+    //[EnableCors("KinaUnaCors")]
     public class ConsentController : Controller
     {
         private readonly ILogger<ConsentController> _logger;

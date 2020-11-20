@@ -19,6 +19,7 @@ using System.Security.Cryptography.X509Certificates;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Storage.Auth;
 using Microsoft.Azure.Storage.Blob;
 
@@ -131,11 +132,29 @@ namespace KinaUna.IDP
             {
                 services.AddCors(options =>
                 {
-                    options.AddPolicy("KinaUnaCors",
-                        builder =>
+                    if (string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
+                    {
+                        options.AddPolicy("KinaUnaCors",
+                            builder =>
+                            {
+                                builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                            });
+                    }
+                    else
+                    {
+                        options.AddDefaultPolicy(builder =>
                         {
-                            builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                            builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324", "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397", "https://nuuk2020.kinauna.io:44397", "https://nuuk2015.kinauna.io", "https://nuuk2020.kinauna.io")
+                                .SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
                         });
+
+                        options.AddPolicy("KinaUnaCors",
+                            builder =>
+                            {
+                                builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324", "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397", "https://nuuk2020.kinauna.io:44397", "https://nuuk2015.kinauna.io", "https://nuuk2020.kinauna.io")
+                                    .SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                            });
+                    }
                 });
             }
             else
@@ -162,6 +181,11 @@ namespace KinaUna.IDP
                 {
                     x.Authentication.CookieLifetime = TimeSpan.FromDays(90);
                     x.Authentication.CookieSlidingExpiration = true;
+                    if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
+                    {
+                        x.IssuerUri =
+                            Configuration.GetValue<string>("AuthenticationServer" + Constants.DebugKinaUnaServer);
+                    }
                 })
                 .AddSigningCredential(cert)
                 .AddAspNetIdentity<ApplicationUser>()

@@ -30,7 +30,7 @@ using Microsoft.Extensions.Hosting;
 namespace KinaUna.IDP.Controllers
 {
     [AllowAnonymous]
-    [EnableCors("KinaUnaCors")]
+    //[EnableCors("KinaUnaCors")]
     public class AccountController : Controller
     {
         private readonly ILoginService<ApplicationUser> _loginService;

@@ -12,6 +12,7 @@ using KinaUnaWeb.Models.ItemViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 
@@ -23,14 +24,20 @@ namespace KinaUnaWeb.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
+        private readonly IHostEnvironment _env;
 
-        public MediaHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public MediaHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
+            _env = env;
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
+            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
+            {
+                clientUri = _configuration.GetValue<string>("MediaApiServer" + Constants.DebugKinaUnaServer);
+            }
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(
@@ -39,8 +46,14 @@ namespace KinaUnaWeb.Services
 
         private async Task<string> GetNewToken()
         {
+            var authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
+            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
+            {
+                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer);
+            }
+
             var access_token = await _apiTokenClient.GetApiToken(
-                    _configuration.GetValue<string>("AuthenticationServerClientId"),
+                    authenticationServerClientId,
                     Constants.ProgenyApiName + " " + Constants.MediaApiName,
                     _configuration.GetValue<string>("AuthenticationServerClientSecret"));
             return access_token;
