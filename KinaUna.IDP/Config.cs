@@ -137,7 +137,7 @@ namespace KinaUna.IDP
             corsList.Add("https://nuuk2015.kinauna.io");
             corsList.Add(webServerNuuk2020);
             corsList.Add("https://nuuk2020.kinauna.io");
-            corsList.Add("https://*.kinauna.io");
+            //corsList.Add("https://*.kinauna.io");
             corsList.Add(pivoqWebServerNuuk2015);
             corsList.Add(pivoqWebServerNuuk2020);
             return new List<Client>()
