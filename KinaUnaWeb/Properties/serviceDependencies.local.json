@@ -2,6 +2,18 @@
   "dependencies": {
     "secrets1": {
       "type": "secrets.user"
+    },
+    "mssql1": {
+      "type": "mssql",
+      "connectionId": "FakeConnection",
+      "suggestion": "true",
+      "ignored": "true"
+    },
+    "appInsights1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/microsoft.insights/components/KinaUnaWeb",
+      "type": "appInsights.azure",
+      "connectionId": "APPINSIGHTS_CONNECTIONSTRING",
+      "secretStore": "LocalSecretsFile"
     }
   }
 }

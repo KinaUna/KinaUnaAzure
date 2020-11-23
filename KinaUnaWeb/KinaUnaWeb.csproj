@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>aspnet-KinaUnaWeb-3CFF80E1-DFC0-426E-B569-60032DF70BB3</UserSecretsId>
     <Platforms>AnyCPU;x64</Platforms>
-    <ApplicationInsightsResourceId>/subscriptions/2a9afdaa-1e5a-4b6f-a1c0-c626b6b0e7aa/resourcegroups/KinaUna/providers/microsoft.insights/components/KinaUnaWeb</ApplicationInsightsResourceId>
+    <ApplicationInsightsResourceId>/subscriptions/2a9afdaa-1e5a-4b6f-a1c0-c626b6b0e7aa/resourceGroups/KinaUna/providers/microsoft.insights/components/KinaUnaWeb</ApplicationInsightsResourceId>
   </PropertyGroup>
 
   <ItemGroup>

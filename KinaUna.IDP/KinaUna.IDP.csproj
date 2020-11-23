@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>c03f1034-a4a3-400f-9bf1-ee16f3fb489a</UserSecretsId>
     <Platforms>AnyCPU;x64</Platforms>
-    <ApplicationInsightsResourceId>/subscriptions/2a9afdaa-1e5a-4b6f-a1c0-c626b6b0e7aa/resourcegroups/KinaUna.IDP/providers/microsoft.insights/components/KinaUna.IDP</ApplicationInsightsResourceId>
+    <ApplicationInsightsResourceId>/subscriptions/2a9afdaa-1e5a-4b6f-a1c0-c626b6b0e7aa/resourceGroups/KinaUna/providers/microsoft.insights/components/KinaUnaAuth</ApplicationInsightsResourceId>
   </PropertyGroup>
 
   <ItemGroup>

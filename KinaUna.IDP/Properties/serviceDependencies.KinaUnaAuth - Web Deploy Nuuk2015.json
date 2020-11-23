@@ -1,15 +1,9 @@
 {
   "dependencies": {
-    "mssql1": {
-      "type": "mssql",
-      "connectionId": "FakeConnection",
-      "suggestion": "true",
-      "ignored": "true"
-    },
     "appInsights1": {
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/microsoft.insights/components/KinaUnaAuth",
       "type": "appInsights.azure",
-      "connectionId": "APPINSIGHTS_CONNECTIONSTRING",
+      "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY",
       "secretStore": "AzureAppSettings"
     },
     "secrets1": {
@@ -17,6 +11,12 @@
       "type": "secrets.keyVault",
       "connectionId": "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT",
       "secretStore": "AzureAppSettings"
+    },
+    "mssql1": {
+      "type": "mssql",
+      "connectionId": "FakeConnection",
+      "suggestion": "true",
+      "ignored": "true"
     }
   }
 }

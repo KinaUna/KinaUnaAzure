@@ -2,6 +2,30 @@
   "dependencies": {
     "secrets1": {
       "type": "secrets.user"
+    },
+    "redis1": {
+      "type": "redis",
+      "connectionId": "",
+      "suggestion": "true",
+      "ignored": "true"
+    },
+    "mssql1": {
+      "type": "mssql",
+      "connectionId": "FakeConnection",
+      "suggestion": "true",
+      "ignored": "true"
+    },
+    "storage1": {
+      "type": "storage",
+      "connectionId": "",
+      "suggestion": "true",
+      "ignored": "true"
+    },
+    "appInsights1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/microsoft.insights/components/KinaUnaProgenyApi",
+      "type": "appInsights.azure",
+      "connectionId": "APPINSIGHTS_CONNECTIONSTRING",
+      "secretStore": "LocalSecretsFile"
     }
   }
 }
