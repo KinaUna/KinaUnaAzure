@@ -61,7 +61,7 @@ namespace KinaUnaWeb
                 options.UseSqlServer(Configuration["WebDefaultConnection"],
                     sqlServerOptionsAction: sqlOptions =>
                     {
-                        sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
+                        sqlOptions.MigrationsAssembly("KinaUna.IDP");
                         //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));

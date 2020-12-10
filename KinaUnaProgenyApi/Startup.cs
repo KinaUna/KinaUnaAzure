@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi
             services.AddScoped<AzureNotifications>();
 
             services.AddDbContext<ProgenyDbContext>(options =>
-                options.UseSqlServer(Configuration["ProgenyDefaultConnection"]));
+                options.UseSqlServer(Configuration["ProgenyDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration["DataProtectionConnection"],

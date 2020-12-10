@@ -36,10 +36,10 @@ namespace KinaUnaMediaApi
             var authenticationServerClientSecret = Configuration["AuthenticationServerClientSecret"];
 
             services.AddDbContext<MediaDbContext>(options =>
-                options.UseSqlServer(Configuration["MediaDefaultConnection"]));
+                options.UseSqlServer(Configuration["MediaDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
 
             services.AddDbContext<ProgenyDbContext>(options =>
-                options.UseSqlServer(Configuration["ProgenyDefaultConnection"]));
+                options.UseSqlServer(Configuration["ProgenyDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
 
             services.AddDistributedRedisCache(option =>
                 option.Configuration = Configuration["RedisConnection"]);
