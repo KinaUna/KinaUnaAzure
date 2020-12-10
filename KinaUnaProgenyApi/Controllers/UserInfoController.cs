@@ -243,6 +243,8 @@ namespace KinaUnaProgenyApi.Controllers
             userinfo.LastName = value?.LastName ?? "";
             userinfo.ProfilePicture = value?.ProfilePicture ?? "";
             userinfo.UserName = value?.UserName ?? userinfo.UserEmail;
+            userinfo.IsKinaUnaUser = value.IsKinaUnaUser;
+            userinfo.IsPivoqUser = value.IsPivoqUser;
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() != userinfo.UserEmail.ToUpper())
@@ -297,6 +299,8 @@ namespace KinaUnaProgenyApi.Controllers
             userinfo.LastName = value.LastName;
             userinfo.UserName = value.UserName;
             userinfo.ViewChild = value.ViewChild;
+            userinfo.IsKinaUnaUser = value.IsKinaUnaUser;
+            userinfo.IsPivoqUser = value.IsPivoqUser;
             if (!String.IsNullOrEmpty(value.Timezone))
             {
                 userinfo.Timezone = value.Timezone;

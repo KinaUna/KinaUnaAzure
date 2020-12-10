@@ -15,6 +15,8 @@ namespace KinaUna.Data.Models
         public int ViewChild { get; set; }
         public string Timezone { get; set; }
         public string ProfilePicture { get; set; }
+        public bool IsKinaUnaUser { get; set; }
+        public bool IsPivoqUser { get; set; }
 
         [NotMapped]
         public List<Progeny> ProgenyList { get; set; }

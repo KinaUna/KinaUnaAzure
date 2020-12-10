@@ -82,6 +82,11 @@ namespace KinaUnaWeb.Services
             {
                 var userinfoResponseString = await _httpClient.GetStringAsync(userinfoApiPath);
                 userinfo = JsonConvert.DeserializeObject<UserInfo>(userinfoResponseString);
+                if (userinfo != null && !userinfo.IsKinaUnaUser)
+                {
+                    userinfo.IsKinaUnaUser = true;
+                    await UpdateUserInfo(userinfo);
+                }
             }
             catch (Exception e)
             {

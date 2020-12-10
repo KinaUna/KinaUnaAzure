@@ -30,7 +30,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<UserAccess> GetProgenyUserAccessForUser(int progenyId, string userEmail)
         {
             UserAccess userAccess;
-            string cachedUserAccess = await _cache.GetStringAsync(Constants.AppName + "progenyuseraccess" + progenyId + userEmail);
+            string cachedUserAccess = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + progenyId + userEmail);
             if (!string.IsNullOrEmpty(cachedUserAccess))
             {
                 userAccess = JsonConvert.DeserializeObject<UserAccess>(cachedUserAccess);
@@ -38,7 +38,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
-                await _cache.SetStringAsync(Constants.AppName + "progenyuseraccess" + progenyId + userEmail, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + progenyId + userEmail, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
             }
 
             return userAccess;
@@ -47,7 +47,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<Picture> GetPicture(int id)
         {
             Picture picture;
-            string cachedPicture = await _cache.GetStringAsync(Constants.AppName + "picture" + id);
+            string cachedPicture = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id);
             if (!string.IsNullOrEmpty(cachedPicture))
             {
                 picture = JsonConvert.DeserializeObject<Picture>(cachedPicture);
@@ -55,7 +55,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 picture = await _mediaContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == id);
-                await _cache.SetStringAsync(Constants.AppName + "picture" + id, JsonConvert.SerializeObject(picture), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id, JsonConvert.SerializeObject(picture), _cacheOptionsSliding);
             }
 
             return picture;
@@ -64,7 +64,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<Picture> SetPicture(int id)
         {
             Picture picture = await _mediaContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == id);
-            await _cache.SetStringAsync(Constants.AppName + "picture" + id, JsonConvert.SerializeObject(picture), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id, JsonConvert.SerializeObject(picture), _cacheOptionsSliding);
             if (picture != null)
             {
                 await SetPicturesList(picture.ProgenyId);
@@ -77,7 +77,7 @@ namespace KinaUnaMediaApi.Services
 
         public async Task RemovePicture(int pictureId, int progenyId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "picture" + pictureId);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "picture" + pictureId);
 
             await SetPicturesList(progenyId);
         }
@@ -85,7 +85,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<List<Picture>> GetPicturesList(int progenyId)
         {
             List<Picture> picturesList;
-            string cachedPicturesList = await _cache.GetStringAsync(Constants.AppName + "pictureslist" + progenyId);
+            string cachedPicturesList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedPicturesList))
             {
                 picturesList = JsonConvert.DeserializeObject<List<Picture>>(cachedPicturesList);
@@ -93,7 +93,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 picturesList = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "pictureslist" + progenyId, JsonConvert.SerializeObject(picturesList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId, JsonConvert.SerializeObject(picturesList), _cacheOptionsSliding);
             }
 
             return picturesList;
@@ -102,7 +102,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<List<Picture>> SetPicturesList(int progenyId)
         {
             List<Picture> picturesList = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "pictureslist" + progenyId, JsonConvert.SerializeObject(picturesList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId, JsonConvert.SerializeObject(picturesList), _cacheOptionsSliding);
             
             return picturesList;
         }
@@ -110,7 +110,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<Video> GetVideo(int id)
         {
             Video video;
-            string cachedVideo = await _cache.GetStringAsync(Constants.AppName + "video" + id);
+            string cachedVideo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id);
             if (!string.IsNullOrEmpty(cachedVideo))
             {
                 video = JsonConvert.DeserializeObject<Video>(cachedVideo);
@@ -118,7 +118,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 video = await _mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(v => v.VideoId == id);
-                await _cache.SetStringAsync(Constants.AppName + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
             }
 
             return video;
@@ -127,7 +127,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<Video> SetVideo(int id)
         {
             Video video = await _mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(v => v.VideoId == id);
-            await _cache.SetStringAsync(Constants.AppName + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
             if (video != null)
             {
                 await SetVideosList(video.ProgenyId);
@@ -139,7 +139,7 @@ namespace KinaUnaMediaApi.Services
 
         public async Task RemoveVideo(int videoId, int progenyId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "video" + videoId);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "video" + videoId);
 
             await SetVideosList(progenyId);
         }
@@ -147,7 +147,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<List<Video>> GetVideosList(int progenyId)
         {
             List<Video> videosList;
-            string cachedVideosList = await _cache.GetStringAsync(Constants.AppName + "videoslist" + progenyId);
+            string cachedVideosList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVideosList))
             {
                 videosList = JsonConvert.DeserializeObject<List<Video>>(cachedVideosList);
@@ -155,7 +155,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 videosList = await _mediaContext.VideoDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "videoslist" + progenyId, JsonConvert.SerializeObject(videosList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId, JsonConvert.SerializeObject(videosList), _cacheOptionsSliding);
             }
 
             return videosList;
@@ -164,7 +164,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<List<Video>> SetVideosList(int progenyId)
         {
             List<Video> videosList = await _mediaContext.VideoDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "videoslist" + progenyId, JsonConvert.SerializeObject(videosList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId, JsonConvert.SerializeObject(videosList), _cacheOptionsSliding);
 
             return videosList;
         }
@@ -172,7 +172,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<Comment> GetComment(int commentId)
         {
             Comment comment;
-            string cachedComment = await _cache.GetStringAsync(Constants.AppName + "comment" + commentId);
+            string cachedComment = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId);
             if (!string.IsNullOrEmpty(cachedComment))
             {
                 comment = JsonConvert.DeserializeObject<Comment>(cachedComment);
@@ -180,7 +180,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 comment = await _mediaContext.CommentsDb.AsNoTracking().SingleOrDefaultAsync(c => c.CommentId == commentId);
-                await _cache.SetStringAsync(Constants.AppName + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
             }
 
             return comment;
@@ -189,7 +189,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<Comment> SetComment(int commentId)
         {
             Comment comment = await _mediaContext.CommentsDb.AsNoTracking().SingleOrDefaultAsync(c => c.CommentId == commentId);
-            _cache.SetString(Constants.AppName + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
+            _cache.SetString(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
             if (comment != null)
             {
                 await SetCommentsList(comment.CommentThreadNumber);
@@ -215,7 +215,7 @@ namespace KinaUnaMediaApi.Services
 
         public async Task RemoveComment(int commentId, int commentThreadId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "comment" + commentId);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId);
             await SetCommentsList(commentThreadId);
 
             Picture picture = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.CommentThreadNumber == commentThreadId);
@@ -238,7 +238,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<List<Comment>> GetCommentsList(int commentThreadId)
         {
             List<Comment> commentsList;
-            string cachedCommentsList = await _cache.GetStringAsync(Constants.AppName + "commentslist" + commentThreadId);
+            string cachedCommentsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId);
             if (!string.IsNullOrEmpty(cachedCommentsList))
             {
                 commentsList = JsonConvert.DeserializeObject<List<Comment>>(cachedCommentsList);
@@ -246,7 +246,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 commentsList = await _mediaContext.CommentsDb.AsNoTracking().Where(c => c.CommentThreadNumber == commentThreadId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "commentslist" + commentThreadId, JsonConvert.SerializeObject(commentsList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId, JsonConvert.SerializeObject(commentsList), _cacheOptionsSliding);
             }
 
             return commentsList;
@@ -255,20 +255,20 @@ namespace KinaUnaMediaApi.Services
         public async Task<List<Comment>> SetCommentsList(int commentThreadId)
         {
             List<Comment> commentsList = await _mediaContext.CommentsDb.AsNoTracking().Where(c => c.CommentThreadNumber == commentThreadId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "commentslist" + commentThreadId, JsonConvert.SerializeObject(commentsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId, JsonConvert.SerializeObject(commentsList), _cacheOptionsSliding);
             
             return commentsList;
         }
 
         public async Task RemoveCommentsList(int commentThreadId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "commentslist" + commentThreadId);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId);
         }
 
         public async Task<UserInfo> GetUserInfoByUserId(string id)
         {
             UserInfo userinfo;
-            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + "userinfobyuserid" + id);
+            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + id);
             if (!string.IsNullOrEmpty(cachedUserInfo))
             {
                 userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
@@ -276,7 +276,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserId.ToUpper() == id.ToUpper());
-                await _cache.SetStringAsync(Constants.AppName + "userinfobyuserid" + id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
             }
 
             return userinfo;
@@ -285,7 +285,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<UserInfo> GetUserInfoByEmail(string userEmail)
         {
             UserInfo userinfo;
-            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + "userinfobymail" + userEmail);
+            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail);
             if (!string.IsNullOrEmpty(cachedUserInfo))
             {
                 userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
@@ -293,7 +293,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
-                await _cache.SetStringAsync(Constants.AppName + "userinfobymail" + userEmail, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
             }
 
             return userinfo;
@@ -302,7 +302,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<List<CalendarItem>> GetCalendarList(int progenyId)
         {
             List<CalendarItem> calendarList;
-            string cachedCalendar = await _cache.GetStringAsync(Constants.AppName + "calendarlist" + progenyId);
+            string cachedCalendar = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId);
             if (!string.IsNullOrEmpty(cachedCalendar))
             {
                 calendarList = JsonConvert.DeserializeObject<List<CalendarItem>>(cachedCalendar);
@@ -310,7 +310,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
             }
 
             return calendarList;
@@ -319,7 +319,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<List<Location>> GetLocationsList(int progenyId)
         {
             List<Location> locationsList;
-            string cachedLocationsList = await _cache.GetStringAsync(Constants.AppName + "locationslist" + progenyId);
+            string cachedLocationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedLocationsList))
             {
                 locationsList = JsonConvert.DeserializeObject<List<Location>>(cachedLocationsList);
@@ -327,7 +327,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 locationsList = await _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "locationslist" + progenyId, JsonConvert.SerializeObject(locationsList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId, JsonConvert.SerializeObject(locationsList), _cacheOptionsSliding);
             }
 
             return locationsList;
@@ -336,7 +336,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<List<Friend>> GetFriendsList(int progenyId)
         {
             List<Friend> friendsList;
-            string cachedFriendsList = await _cache.GetStringAsync(Constants.AppName + "friendslist" + progenyId);
+            string cachedFriendsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedFriendsList))
             {
                 friendsList = JsonConvert.DeserializeObject<List<Friend>>(cachedFriendsList);
@@ -344,7 +344,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "friendslist" + progenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
             }
 
             return friendsList;
@@ -353,7 +353,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<List<Contact>> GetContactsList(int progenyId)
         {
             List<Contact> contactsList;
-            string cachedContactsList = await _cache.GetStringAsync(Constants.AppName + "contactslist" + progenyId);
+            string cachedContactsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedContactsList))
             {
                 contactsList = JsonConvert.DeserializeObject<List<Contact>>(cachedContactsList);
@@ -361,7 +361,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "contactslist" + progenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
             }
 
             return contactsList;
@@ -370,7 +370,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<List<UserAccess>> GetProgenyUserAccessList(int progenyId)
         {
             List<UserAccess> accessList;
-            string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + "accessList" + progenyId);
+            string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "accessList" + progenyId);
             if (!string.IsNullOrEmpty(cachedAccessList))
             {
                 accessList = JsonConvert.DeserializeObject<List<UserAccess>>(cachedAccessList);
@@ -378,7 +378,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "accessList" + progenyId, JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "accessList" + progenyId, JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
             }
 
             return accessList;
@@ -387,7 +387,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<Progeny> GetProgeny(int id)
         {
             Progeny progeny;
-            string cachedProgeny = await _cache.GetStringAsync(Constants.AppName + "progeny" + id);
+            string cachedProgeny = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id);
             if (!string.IsNullOrEmpty(cachedProgeny))
             {
                 progeny = JsonConvert.DeserializeObject<Progeny>(cachedProgeny);
@@ -395,7 +395,7 @@ namespace KinaUnaMediaApi.Services
             else
             {
                 progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
-                await _cache.SetStringAsync(Constants.AppName + "progeny" + id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
             }
 
             return progeny;

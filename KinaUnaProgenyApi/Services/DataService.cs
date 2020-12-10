@@ -28,7 +28,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Progeny>> GetProgenyUserIsAdmin(string email)
         {
             List<Progeny> progenyList;
-            string cachedProgenyList = await _cache.GetStringAsync(Constants.AppName + "progenywhereadmin" + email);
+            string cachedProgenyList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progenywhereadmin" + email);
             if (!string.IsNullOrEmpty(cachedProgenyList))
             {
                 progenyList = JsonConvert.DeserializeObject<List<Progeny>>(cachedProgenyList);
@@ -36,7 +36,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 progenyList = await _context.ProgenyDb.AsNoTracking().Where(p => p.Admins.Contains(email)).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "progenywhereadmin" + email, JsonConvert.SerializeObject(progenyList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenywhereadmin" + email, JsonConvert.SerializeObject(progenyList), _cacheOptionsSliding);
             }
 
             return progenyList;
@@ -45,7 +45,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Progeny>> SetProgenyUserIsAdmin(string email)
         {
             List<Progeny> progenyList = await _context.ProgenyDb.AsNoTracking().Where(p => p.Admins.Contains(email)).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "progenywhereadmin" + email, JsonConvert.SerializeObject(progenyList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenywhereadmin" + email, JsonConvert.SerializeObject(progenyList), _cacheOptionsSliding);
             
             return progenyList;
         }
@@ -53,7 +53,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Progeny> GetProgeny(int id)
         {
             Progeny progeny;
-            string cachedProgeny = await _cache.GetStringAsync(Constants.AppName + "progeny" + id);
+            string cachedProgeny = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id);
             if (!string.IsNullOrEmpty(cachedProgeny))
             {
                 progeny = JsonConvert.DeserializeObject<Progeny>(cachedProgeny);
@@ -61,7 +61,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
-                await _cache.SetStringAsync(Constants.AppName + "progeny" + id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
             }
 
             return progeny;
@@ -72,11 +72,11 @@ namespace KinaUnaProgenyApi.Services
             Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
             if (progeny != null)
             {
-                await _cache.SetStringAsync(Constants.AppName + "progeny" + id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
             }
             else
             {
-                await _cache.RemoveAsync(Constants.AppName + "progeny" + id);
+                await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id);
             }
 
             return progeny;
@@ -84,13 +84,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task RemoveProgeny(int id)
         {
-            await _cache.RemoveAsync(Constants.AppName + "progeny" + id);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id);
         }
 
         public async Task<List<UserAccess>> GetProgenyUserAccessList(int progenyId)
         {
             List<UserAccess> accessList;
-            string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + "accessList" + progenyId);
+            string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "accessList" + progenyId);
             if (!string.IsNullOrEmpty(cachedAccessList))
             {
                 accessList = JsonConvert.DeserializeObject<List<UserAccess>>(cachedAccessList);
@@ -98,7 +98,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "accessList" + progenyId, JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "accessList" + progenyId, JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
             }
 
             return accessList;
@@ -107,7 +107,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<UserAccess>> SetProgenyUserAccessList(int progenyId)
         {
             List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "accessList" + progenyId, JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "accessList" + progenyId, JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
             
             return accessList;
         }
@@ -115,7 +115,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<UserAccess>> GetUsersUserAccessList(string email)
         {
             List<UserAccess> accessList;
-            string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + "usersaccesslist" + email.ToUpper());
+            string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "usersaccesslist" + email.ToUpper());
             if (!string.IsNullOrEmpty(cachedAccessList))
             {
                 accessList = JsonConvert.DeserializeObject<List<UserAccess>>(cachedAccessList);
@@ -123,7 +123,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.UserId.ToUpper() == email.ToUpper()).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "usersaccesslist" + email.ToUpper(), JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "usersaccesslist" + email.ToUpper(), JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
             }
 
             return accessList;
@@ -132,7 +132,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<UserAccess>> SetUsersUserAccessList(string email)
         {
             List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.UserId.ToUpper() == email.ToUpper()).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "usersaccesslist" + email.ToUpper(), JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "usersaccesslist" + email.ToUpper(), JsonConvert.SerializeObject(accessList), _cacheOptionsSliding);
             
             return accessList;
         }
@@ -140,7 +140,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<UserAccess> GetUserAccess(int id)
         {
             UserAccess userAccess;
-            string cachedUserAccess = await _cache.GetStringAsync(Constants.AppName + "useraccess" + id);
+            string cachedUserAccess = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id);
             if (!string.IsNullOrEmpty(cachedUserAccess))
             {
                 userAccess = JsonConvert.DeserializeObject<UserAccess>(cachedUserAccess);
@@ -148,7 +148,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.AccessId == id);
-                await _cache.SetStringAsync(Constants.AppName + "useraccess" + id, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
             }
 
             return userAccess;
@@ -157,16 +157,16 @@ namespace KinaUnaProgenyApi.Services
         public async Task<UserAccess> SetUserAccess(int id)
         {
             UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.AccessId == id);
-            await _cache.SetStringAsync(Constants.AppName + "useraccess" + id, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
-            await _cache.SetStringAsync(Constants.AppName + "progenyuseraccess" + userAccess.ProgenyId + userAccess.UserId, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + userAccess.ProgenyId + userAccess.UserId, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
 
             return userAccess;
         }
 
         public async Task RemoveUserAccess(int id, int progenyId, string userId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "useraccess" + id);
-            await _cache.RemoveAsync(Constants.AppName + "progenyuseraccess" + progenyId + userId);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + progenyId + userId);
             await SetUsersUserAccessList(userId);
             await SetProgenyUserAccessList(progenyId);
             await SetProgenyUserIsAdmin(userId);
@@ -175,7 +175,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<UserAccess> GetProgenyUserAccessForUser(int progenyId, string userEmail)
         {
             UserAccess userAccess;
-            string cachedUserAccess = await _cache.GetStringAsync(Constants.AppName + "progenyuseraccess" + progenyId + userEmail.ToUpper());
+            string cachedUserAccess = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + progenyId + userEmail.ToUpper());
             if (!string.IsNullOrEmpty(cachedUserAccess))
             {
                 userAccess = JsonConvert.DeserializeObject<UserAccess>(cachedUserAccess);
@@ -183,7 +183,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 userAccess = await _context.UserAccessDb.SingleOrDefaultAsync(u => u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());
-                await _cache.SetStringAsync(Constants.AppName + "progenyuseraccess" + progenyId + userEmail.ToUpper(), JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + progenyId + userEmail.ToUpper(), JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
             }
 
             return userAccess;
@@ -192,7 +192,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<UserInfo> GetUserInfoByEmail(string userEmail)
         {
             UserInfo userinfo;
-            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + "userinfobymail" + userEmail.ToUpper());
+            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper());
             if (!string.IsNullOrEmpty(cachedUserInfo))
             {
                 userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
@@ -200,7 +200,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
-                await _cache.SetStringAsync(Constants.AppName + "userinfobymail" + userEmail.ToUpper(), JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper(), JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
             }
 
             return userinfo;
@@ -209,24 +209,24 @@ namespace KinaUnaProgenyApi.Services
         public async Task<UserInfo> SetUserInfoByEmail(string userEmail)
         {
             UserInfo userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
-            await _cache.SetStringAsync(Constants.AppName + "userinfobymail" + userEmail.ToUpper(), JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
-            await _cache.SetStringAsync(Constants.AppName + "userinfobyuserid" + userinfo.UserId, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
-            await _cache.SetStringAsync(Constants.AppName + "userinfobyid" + userinfo.Id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper(), JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userinfo.UserId, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userinfo.Id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
 
             return userinfo;
         }
 
         public async Task RemoveUserInfoByEmail(string userEmail, string userId, int userinfoId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "userinfobymail" + userEmail.ToUpper());
-            await _cache.RemoveAsync(Constants.AppName + "userinfobyuserid" + userId);
-            await _cache.RemoveAsync(Constants.AppName + "userinfobyid" + userinfoId);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper());
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userId);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userinfoId);
         }
 
         public async Task<UserInfo> GetUserInfoById(int id)
         {
             UserInfo userinfo;
-            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + "userinfobyid" + id);
+            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + id);
             if (!string.IsNullOrEmpty(cachedUserInfo))
             {
                 userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
@@ -234,7 +234,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.Id == id);
-                await _cache.SetStringAsync(Constants.AppName + "userinfobyid" + id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
             }
 
             return userinfo;
@@ -243,7 +243,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<UserInfo> GetUserInfoByUserId(string id)
         {
             UserInfo userinfo;
-            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + "userinfobyuserid" + id);
+            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + id);
             if (!string.IsNullOrEmpty(cachedUserInfo))
             {
                 userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
@@ -251,7 +251,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserId.ToUpper() == id.ToUpper());
-                await _cache.SetStringAsync(Constants.AppName + "userinfobyuserid" + id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
             }
 
             return userinfo;
@@ -260,7 +260,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Address> GetAddressItem(int id)
         {
             Address address;
-            string cachedAddress = await _cache.GetStringAsync(Constants.AppName + "address" + id);
+            string cachedAddress = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "address" + id);
             if (!string.IsNullOrEmpty(cachedAddress))
             {
                 address = JsonConvert.DeserializeObject<Address>(cachedAddress);
@@ -268,7 +268,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 address = await _context.AddressDb.AsNoTracking().SingleOrDefaultAsync(a => a.AddressId == id);
-                await _cache.SetStringAsync(Constants.AppName + "address" + id, JsonConvert.SerializeObject(address), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "address" + id, JsonConvert.SerializeObject(address), _cacheOptionsSliding);
 
             }
 
@@ -278,20 +278,20 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Address> SetAddressItem(int id)
         {
             Address addressItem = await _context.AddressDb.AsNoTracking().SingleOrDefaultAsync(a => a.AddressId == id);
-            await _cache.SetStringAsync(Constants.AppName + "address" + id, JsonConvert.SerializeObject(addressItem), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "address" + id, JsonConvert.SerializeObject(addressItem), _cacheOptionsSliding);
             
             return addressItem;
         }
 
         public async Task RemoveAddressItem(int id)
         {
-            await _cache.RemoveAsync(Constants.AppName + "address" + id);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "address" + id);
         }
 
         public async Task<CalendarItem> GetCalendarItem(int id)
         {
             CalendarItem calendarItem;
-            string cachedCalendarItem = await _cache.GetStringAsync(Constants.AppName + "calendaritem" + id);
+            string cachedCalendarItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id);
             if (!string.IsNullOrEmpty(cachedCalendarItem))
             {
                 calendarItem = JsonConvert.DeserializeObject<CalendarItem>(cachedCalendarItem);
@@ -299,7 +299,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 calendarItem = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == id);
-                await _cache.SetStringAsync(Constants.AppName + "calendaritem" + id, JsonConvert.SerializeObject(calendarItem), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id, JsonConvert.SerializeObject(calendarItem), _cacheOptionsSliding);
             }
 
             return calendarItem;
@@ -308,25 +308,25 @@ namespace KinaUnaProgenyApi.Services
         public async Task<CalendarItem> SetCalendarItem(int id)
         {
             CalendarItem calendarItem = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == id);
-            await _cache.SetStringAsync(Constants.AppName + "calendaritem" + id, JsonConvert.SerializeObject(calendarItem), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id, JsonConvert.SerializeObject(calendarItem), _cacheOptionsSliding);
 
             List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == calendarItem.ProgenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "calendarlist" + calendarItem.ProgenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + calendarItem.ProgenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
             return calendarItem;
         }
 
         public async Task RemoveCalendarItem(int id, int progenyId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "calendaritem" + id);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id);
 
             List<CalendarItem> calendarList = _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToList();
-            _cache.SetString(Constants.AppName + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
+            _cache.SetString(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
         }
 
         public async Task<List<CalendarItem>> GetCalendarList(int progenyId)
         {
             List<CalendarItem> calendarList;
-            string cachedCalendar = await _cache.GetStringAsync(Constants.AppName + "calendarlist" + progenyId);
+            string cachedCalendar = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId);
             if (!string.IsNullOrEmpty(cachedCalendar))
             {
                 calendarList = JsonConvert.DeserializeObject<List<CalendarItem>>(cachedCalendar);
@@ -334,7 +334,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
             }
 
             return calendarList;
@@ -343,7 +343,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Contact> GetContact(int id)
         {
             Contact contact;
-            string cachedContact = await _cache.GetStringAsync(Constants.AppName + "contact" + id);
+            string cachedContact = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id);
             if (!string.IsNullOrEmpty(cachedContact))
             {
                 contact = JsonConvert.DeserializeObject<Contact>(cachedContact);
@@ -351,7 +351,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 contact = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
-                await _cache.SetStringAsync(Constants.AppName + "contact" + id, JsonConvert.SerializeObject(contact), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id, JsonConvert.SerializeObject(contact), _cacheOptionsSliding);
             }
 
             return contact;
@@ -360,26 +360,26 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Contact> SetContact(int id)
         {
             Contact contact = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
-            await _cache.SetStringAsync(Constants.AppName + "contact" + id, JsonConvert.SerializeObject(contact), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id, JsonConvert.SerializeObject(contact), _cacheOptionsSliding);
 
             List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == contact.ProgenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "contactslist" + contact.ProgenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + contact.ProgenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
 
             return contact;
         }
 
         public async Task RemoveContact(int id, int progenyId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "contact" + id);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "contact" + id);
 
             List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "contactslist" + progenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
         }
 
         public async Task<List<Contact>> GetContactsList(int progenyId)
         {
             List<Contact> contactsList;
-            string cachedContactsList = await _cache.GetStringAsync(Constants.AppName + "contactslist" + progenyId);
+            string cachedContactsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedContactsList))
             {
                 contactsList = JsonConvert.DeserializeObject<List<Contact>>(cachedContactsList);
@@ -387,7 +387,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "contactslist" + progenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
             }
 
             return contactsList;
@@ -396,7 +396,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Friend> GetFriend(int id)
         {
             Friend friend;
-            string cachedFriend = await _cache.GetStringAsync(Constants.AppName + "friend" + id);
+            string cachedFriend = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "friend" + id);
             if (!string.IsNullOrEmpty(cachedFriend))
             {
                 friend = JsonConvert.DeserializeObject<Friend>(cachedFriend);
@@ -404,7 +404,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 friend = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
-                await _cache.SetStringAsync(Constants.AppName + "friend" + id, JsonConvert.SerializeObject(friend), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friend" + id, JsonConvert.SerializeObject(friend), _cacheOptionsSliding);
             }
 
             return friend;
@@ -413,26 +413,26 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Friend> SetFriend(int id)
         {
             Friend friend = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
-            await _cache.SetStringAsync(Constants.AppName + "friend" + id, JsonConvert.SerializeObject(friend), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friend" + id, JsonConvert.SerializeObject(friend), _cacheOptionsSliding);
 
             List<Friend> friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == friend.ProgenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "friendslist" + friend.ProgenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + friend.ProgenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
 
             return friend;
         }
 
         public async Task RemoveFriend(int id, int progenyId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "friend" + id);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "friend" + id);
 
             List<Friend> friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "friendslist" + progenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
         }
 
         public async Task<List<Friend>> GetFriendsList(int progenyId)
         {
             List<Friend> friendsList;
-            string cachedFriendsList = await _cache.GetStringAsync(Constants.AppName + "friendslist" + progenyId);
+            string cachedFriendsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedFriendsList))
             {
                 friendsList = JsonConvert.DeserializeObject<List<Friend>>(cachedFriendsList);
@@ -440,7 +440,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "friendslist" + progenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
             }
 
             return friendsList;
@@ -449,7 +449,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Location> GetLocation(int id)
         {
             Location location;
-            string cachedLocation = await _cache.GetStringAsync(Constants.AppName + "location" + id);
+            string cachedLocation = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "location" + id);
             if (!string.IsNullOrEmpty(cachedLocation))
             {
                 location = JsonConvert.DeserializeObject<Location>(cachedLocation);
@@ -457,7 +457,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 location = await _context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == id);
-                _cache.SetString(Constants.AppName + "location" + id, JsonConvert.SerializeObject(location), _cacheOptionsSliding);
+                _cache.SetString(Constants.AppName + Constants.ApiVersion + "location" + id, JsonConvert.SerializeObject(location), _cacheOptionsSliding);
             }
 
             return location;
@@ -466,26 +466,26 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Location> SetLocation(int id)
         {
             Location location = await _context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == id);
-            await _cache.SetStringAsync(Constants.AppName + "location" + id, JsonConvert.SerializeObject(location), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "location" + id, JsonConvert.SerializeObject(location), _cacheOptionsSliding);
 
             List<Location> locationsList = await _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == location.ProgenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "locationslist" + location.ProgenyId, JsonConvert.SerializeObject(locationsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + location.ProgenyId, JsonConvert.SerializeObject(locationsList), _cacheOptionsSliding);
 
             return location;
         }
         
         public async Task RemoveLocation(int id, int progenyId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "location" + id);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "location" + id);
 
             List<Location> locationsList = await _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "locationslist" + progenyId, JsonConvert.SerializeObject(locationsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId, JsonConvert.SerializeObject(locationsList), _cacheOptionsSliding);
         }
 
         public async Task<List<Location>> GetLocationsList(int progenyId)
         {
             List<Location> locationsList;
-            string cachedLocationsList = await _cache.GetStringAsync(Constants.AppName + "locationslist" + progenyId);
+            string cachedLocationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedLocationsList))
             {
                 locationsList = JsonConvert.DeserializeObject<List<Location>>(cachedLocationsList);
@@ -493,7 +493,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 locationsList = await _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "locationslist" + progenyId, JsonConvert.SerializeObject(locationsList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId, JsonConvert.SerializeObject(locationsList), _cacheOptionsSliding);
             }
 
             return locationsList;
@@ -502,7 +502,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<TimeLineItem> GetTimeLineItem(int id)
         {
             TimeLineItem timeLineItem;
-            string cachedTimeLineItem = await _cache.GetStringAsync(Constants.AppName + "timelineitem" + id);
+            string cachedTimeLineItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id);
             if (!string.IsNullOrEmpty(cachedTimeLineItem))
             {
                 timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(cachedTimeLineItem);
@@ -510,7 +510,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 timeLineItem = await _context.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(t => t.TimeLineId == id);
-                await _cache.SetStringAsync(Constants.AppName + "timelineitem" + id, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
             }
 
             return timeLineItem;
@@ -519,26 +519,26 @@ namespace KinaUnaProgenyApi.Services
         public async Task<TimeLineItem> SetTimeLineItem(int id)
         {
             TimeLineItem timeLineItem = await _context.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(t => t.TimeLineId == id);
-            await _cache.SetStringAsync(Constants.AppName + "timelineitem" + id, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
-            await _cache.SetStringAsync(Constants.AppName + "timelineitembyid" + timeLineItem.ItemId + "type" + timeLineItem.ItemType, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + timeLineItem.ItemId + "type" + timeLineItem.ItemType, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
             List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == timeLineItem.ProgenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "timelinelist" + timeLineItem.ProgenyId, JsonConvert.SerializeObject(timeLineList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + timeLineItem.ProgenyId, JsonConvert.SerializeObject(timeLineList), _cacheOptionsSliding);
             
             return timeLineItem;
         }
 
         public async Task RemoveTimeLineItem(int timeLineItemId, int timeLineType, int progenyId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "timelineitem" + timeLineItemId);
-            await _cache.RemoveAsync(Constants.AppName + "timelineitembyid" + timeLineItemId + "type" + timeLineType);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + timeLineItemId);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + timeLineItemId + "type" + timeLineType);
             List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "timelinelist" + progenyId, JsonConvert.SerializeObject(timeLineList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId, JsonConvert.SerializeObject(timeLineList), _cacheOptionsSliding);
         }
 
         public async Task<TimeLineItem> GetTimeLineItemByItemId(string itemId, int itemType)
         {
             TimeLineItem timeLineItem;
-            string cachedTimeLineItem = await _cache.GetStringAsync(Constants.AppName + "timelineitembyid" + itemId + itemType);
+            string cachedTimeLineItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + itemId + itemType);
             if (!string.IsNullOrEmpty(cachedTimeLineItem))
             {
                 timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(cachedTimeLineItem);
@@ -546,7 +546,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 timeLineItem = await _context.TimeLineDb.SingleOrDefaultAsync(t => t.ItemId == itemId && t.ItemType == itemType);
-                await _cache.SetStringAsync(Constants.AppName + "timelineitembyid" + itemId + "type" + itemType, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + itemId + "type" + itemType, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
             }
 
             return timeLineItem;
@@ -555,7 +555,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<TimeLineItem>> GetTimeLineList(int progenyId)
         {
             List<TimeLineItem> timeLineList;
-            string cachedTimeLineList = await _cache.GetStringAsync(Constants.AppName + "timelinelist" + progenyId);
+            string cachedTimeLineList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId);
             if (!string.IsNullOrEmpty(cachedTimeLineList))
             {
                 timeLineList = JsonConvert.DeserializeObject<List<TimeLineItem>>(cachedTimeLineList);
@@ -563,7 +563,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "timelinelist" + progenyId, JsonConvert.SerializeObject(timeLineList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId, JsonConvert.SerializeObject(timeLineList), _cacheOptionsSliding);
             }
 
             return timeLineList;
@@ -572,7 +572,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Measurement> GetMeasurement(int id)
         {
             Measurement measurement;
-            string cachedMeasurement = await _cache.GetStringAsync(Constants.AppName + "measurement" + id);
+            string cachedMeasurement = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "measurement" + id);
             if (!string.IsNullOrEmpty(cachedMeasurement))
             {
                 measurement = JsonConvert.DeserializeObject<Measurement>(cachedMeasurement);
@@ -580,7 +580,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 measurement = await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
-                await _cache.SetStringAsync(Constants.AppName + "measurement" + id, JsonConvert.SerializeObject(measurement), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurement" + id, JsonConvert.SerializeObject(measurement), _cacheOptionsSliding);
             }
 
             return measurement;
@@ -589,26 +589,26 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Measurement> SetMeasurement(int id)
         {
             Measurement measurement = await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
-            await _cache.SetStringAsync(Constants.AppName + "measurement" + id, JsonConvert.SerializeObject(measurement), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurement" + id, JsonConvert.SerializeObject(measurement), _cacheOptionsSliding);
 
             List<Measurement> measurementsList = await _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == measurement.ProgenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "measurementslist" + measurement.ProgenyId, JsonConvert.SerializeObject(measurementsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + measurement.ProgenyId, JsonConvert.SerializeObject(measurementsList), _cacheOptionsSliding);
 
             return measurement;
         }
 
         public async Task RemoveMeasurement(int id, int progenyId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "measurement" + id);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "measurement" + id);
 
             List<Measurement> measurementsList = await _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "measurementslist" + progenyId, JsonConvert.SerializeObject(measurementsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + progenyId, JsonConvert.SerializeObject(measurementsList), _cacheOptionsSliding);
         }
 
         public async Task<List<Measurement>> GetMeasurementsList(int progenyId)
         {
             List<Measurement> measurementsList;
-            string cachedMeasurementsList = await _cache.GetStringAsync(Constants.AppName + "measurementslist" + progenyId);
+            string cachedMeasurementsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedMeasurementsList))
             {
                 measurementsList = JsonConvert.DeserializeObject<List<Measurement>>(cachedMeasurementsList);
@@ -616,7 +616,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 measurementsList = await _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "measurementslist" + progenyId, JsonConvert.SerializeObject(measurementsList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + progenyId, JsonConvert.SerializeObject(measurementsList), _cacheOptionsSliding);
             }
 
             return measurementsList;
@@ -625,7 +625,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Note> GetNote(int id)
         {
             Note note;
-            string cachedNote = await _cache.GetStringAsync(Constants.AppName + "note" + id);
+            string cachedNote = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "note" + id);
             if (!string.IsNullOrEmpty(cachedNote))
             {
                 note = JsonConvert.DeserializeObject<Note>(cachedNote);
@@ -633,7 +633,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 note = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
-                await _cache.SetStringAsync(Constants.AppName + "note" + id, JsonConvert.SerializeObject(note), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "note" + id, JsonConvert.SerializeObject(note), _cacheOptionsSliding);
             }
 
             return note;
@@ -642,26 +642,26 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Note> SetNote(int id)
         {
             Note note = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
-            await _cache.SetStringAsync(Constants.AppName + "note" + id, JsonConvert.SerializeObject(note), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "note" + id, JsonConvert.SerializeObject(note), _cacheOptionsSliding);
 
             List<Note> notesList = await _context.NotesDb.AsNoTracking().Where(c => c.ProgenyId == note.ProgenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "noteslist" + note.ProgenyId, JsonConvert.SerializeObject(notesList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + note.ProgenyId, JsonConvert.SerializeObject(notesList), _cacheOptionsSliding);
 
             return note;
         }
 
         public async Task RemoveNote(int id, int progenyId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "note" + id);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "note" + id);
 
             List<Note> notesList = await _context.NotesDb.AsNoTracking().Where(n => n.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "noteslist" + progenyId, JsonConvert.SerializeObject(notesList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId, JsonConvert.SerializeObject(notesList), _cacheOptionsSliding);
         }
 
         public async Task<List<Note>> GetNotesList(int progenyId)
         {
             List<Note> notesList;
-            string cachedNotesList = await _cache.GetStringAsync(Constants.AppName + "noteslist" + progenyId);
+            string cachedNotesList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedNotesList))
             {
                 notesList = JsonConvert.DeserializeObject<List<Note>>(cachedNotesList);
@@ -669,7 +669,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 notesList = await _context.NotesDb.AsNoTracking().Where(n => n.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "noteslist" + progenyId, JsonConvert.SerializeObject(notesList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId, JsonConvert.SerializeObject(notesList), _cacheOptionsSliding);
             }
 
             return notesList;
@@ -678,7 +678,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Skill> GetSkill(int id)
         {
             Skill skill;
-            string cachedSkill = await _cache.GetStringAsync(Constants.AppName + "skill" + id);
+            string cachedSkill = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + id);
             if (!string.IsNullOrEmpty(cachedSkill))
             {
                 skill = JsonConvert.DeserializeObject<Skill>(cachedSkill);
@@ -686,7 +686,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 skill = await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == id);
-                await _cache.SetStringAsync(Constants.AppName + "skill" + id, JsonConvert.SerializeObject(skill), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + id, JsonConvert.SerializeObject(skill), _cacheOptionsSliding);
             }
 
             return skill;
@@ -695,26 +695,26 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Skill> SetSkill(int id)
         {
             Skill skill = await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == id);
-            await _cache.SetStringAsync(Constants.AppName + "skill" + id, JsonConvert.SerializeObject(skill), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + id, JsonConvert.SerializeObject(skill), _cacheOptionsSliding);
 
             List<Skill> skillsList = await _context.SkillsDb.AsNoTracking().Where(s => s.ProgenyId == skill.ProgenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "skillslist" + skill.ProgenyId, JsonConvert.SerializeObject(skillsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + skill.ProgenyId, JsonConvert.SerializeObject(skillsList), _cacheOptionsSliding);
 
             return skill;
         }
 
         public async Task RemoveSkill(int id, int progenyId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "skill" + id);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "skill" + id);
 
             List<Skill> skillsList = await _context.SkillsDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "skillslist" + progenyId, JsonConvert.SerializeObject(skillsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + progenyId, JsonConvert.SerializeObject(skillsList), _cacheOptionsSliding);
         }
 
         public async Task<List<Skill>> GetSkillsList(int progenyId)
         {
             List<Skill> skillsList;
-            string cachedSkillsList = await _cache.GetStringAsync(Constants.AppName + "skillslist" + progenyId);
+            string cachedSkillsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedSkillsList))
             {
                 skillsList = JsonConvert.DeserializeObject<List<Skill>>(cachedSkillsList);
@@ -722,7 +722,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 skillsList = await _context.SkillsDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "skillslist" + progenyId, JsonConvert.SerializeObject(skillsList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + progenyId, JsonConvert.SerializeObject(skillsList), _cacheOptionsSliding);
             }
 
             return skillsList;
@@ -731,7 +731,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Sleep> GetSleep(int id)
         {
             Sleep sleep;
-            string cachedSleep = await _cache.GetStringAsync(Constants.AppName + "sleep" + id);
+            string cachedSleep = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id);
             if (!string.IsNullOrEmpty(cachedSleep))
             {
                 sleep = JsonConvert.DeserializeObject<Sleep>(cachedSleep);
@@ -739,7 +739,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 sleep = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == id);
-                await _cache.SetStringAsync(Constants.AppName + "sleep" + id, JsonConvert.SerializeObject(sleep), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id, JsonConvert.SerializeObject(sleep), _cacheOptionsSliding);
             }
 
             return sleep;
@@ -748,26 +748,26 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Sleep> SetSleep(int id)
         {
             Sleep sleep = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == id);
-            await _cache.SetStringAsync(Constants.AppName + "sleep" + id, JsonConvert.SerializeObject(sleep), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id, JsonConvert.SerializeObject(sleep), _cacheOptionsSliding);
 
             List<Sleep> sleepList = await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == sleep.ProgenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "sleeplist" + sleep.ProgenyId, JsonConvert.SerializeObject(sleepList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + sleep.ProgenyId, JsonConvert.SerializeObject(sleepList), _cacheOptionsSliding);
 
             return sleep;
         }
 
         public async Task RemoveSleep(int id, int progenyId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "sleep" + id);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id);
 
             List<Sleep> sleepList = await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "sleeplist" + progenyId, JsonConvert.SerializeObject(sleepList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId, JsonConvert.SerializeObject(sleepList), _cacheOptionsSliding);
         }
 
         public async Task<List<Sleep>> GetSleepList(int progenyId)
         {
             List<Sleep> sleepList;
-            string cachedSleepList = await _cache.GetStringAsync(Constants.AppName + "sleeplist" + progenyId);
+            string cachedSleepList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId);
             if (!string.IsNullOrEmpty(cachedSleepList))
             {
                 sleepList = JsonConvert.DeserializeObject<List<Sleep>>(cachedSleepList);
@@ -775,7 +775,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 sleepList = await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "sleeplist" + progenyId, JsonConvert.SerializeObject(sleepList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId, JsonConvert.SerializeObject(sleepList), _cacheOptionsSliding);
             }
 
             return sleepList;
@@ -784,7 +784,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Vaccination> GetVaccination(int id)
         {
             Vaccination vaccination;
-            string cachedVaccination = await _cache.GetStringAsync(Constants.AppName + "vaccination" + id);
+            string cachedVaccination = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id);
             if (!string.IsNullOrEmpty(cachedVaccination))
             {
                 vaccination = JsonConvert.DeserializeObject<Vaccination>(cachedVaccination);
@@ -792,7 +792,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 vaccination = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
-                await _cache.SetStringAsync(Constants.AppName + "vaccination" + id, JsonConvert.SerializeObject(vaccination), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id, JsonConvert.SerializeObject(vaccination), _cacheOptionsSliding);
             }
 
             return vaccination;
@@ -801,26 +801,26 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Vaccination> SetVaccination(int id)
         {
             Vaccination vaccination = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
-            await _cache.SetStringAsync(Constants.AppName + "vaccination" + id, JsonConvert.SerializeObject(vaccination), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id, JsonConvert.SerializeObject(vaccination), _cacheOptionsSliding);
 
             List<Vaccination> vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == vaccination.ProgenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "vaccinationslist" + vaccination.ProgenyId, JsonConvert.SerializeObject(vaccinationsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + vaccination.ProgenyId, JsonConvert.SerializeObject(vaccinationsList), _cacheOptionsSliding);
 
             return vaccination;
         }
 
         public async Task RemoveVaccination(int id, int progenyId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "vaccination" + id);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id);
 
             List<Vaccination> vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "vaccinationslist" + progenyId, JsonConvert.SerializeObject(vaccinationsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId, JsonConvert.SerializeObject(vaccinationsList), _cacheOptionsSliding);
         }
 
         public async Task<List<Vaccination>> GetVaccinationsList(int progenyId)
         {
             List<Vaccination> vaccinationsList;
-            string cachedVaccinationsList = await _cache.GetStringAsync(Constants.AppName + "vaccinationslist" + progenyId);
+            string cachedVaccinationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVaccinationsList))
             {
                 vaccinationsList = JsonConvert.DeserializeObject<List<Vaccination>>(cachedVaccinationsList);
@@ -828,7 +828,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "vaccinationslist" + progenyId, JsonConvert.SerializeObject(vaccinationsList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId, JsonConvert.SerializeObject(vaccinationsList), _cacheOptionsSliding);
             }
 
             return vaccinationsList;
@@ -837,7 +837,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<VocabularyItem> GetVocabularyItem(int id)
         {
             VocabularyItem vocabularyItem;
-            string cachedVocabularyItem = await _cache.GetStringAsync(Constants.AppName + "vocabularyitem" + id);
+            string cachedVocabularyItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id);
             if (!string.IsNullOrEmpty(cachedVocabularyItem))
             {
                 vocabularyItem = JsonConvert.DeserializeObject<VocabularyItem>(cachedVocabularyItem);
@@ -845,7 +845,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 vocabularyItem = await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(v => v.WordId == id);
-                await _cache.SetStringAsync(Constants.AppName + "vocabularyitem" + id, JsonConvert.SerializeObject(vocabularyItem), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id, JsonConvert.SerializeObject(vocabularyItem), _cacheOptionsSliding);
             }
 
             return vocabularyItem;
@@ -854,26 +854,26 @@ namespace KinaUnaProgenyApi.Services
         public async Task<VocabularyItem> SetVocabularyItem(int id)
         {
             VocabularyItem word = await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == id);
-            await _cache.SetStringAsync(Constants.AppName + "vocabularyitem" + id, JsonConvert.SerializeObject(word), _cacheOptions);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id, JsonConvert.SerializeObject(word), _cacheOptions);
 
             List<VocabularyItem> wordList = await _context.VocabularyDb.AsNoTracking().Where(w => w.ProgenyId == word.ProgenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "vocabularylist" + word.ProgenyId, JsonConvert.SerializeObject(wordList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularylist" + word.ProgenyId, JsonConvert.SerializeObject(wordList), _cacheOptionsSliding);
 
             return word;
         }
 
         public async Task RemoveVocabularyItem(int id, int progenyId)
         {
-            await _cache.RemoveAsync(Constants.AppName + "vocabularyitem" + id);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id);
 
             List<VocabularyItem> wordList = await _context.VocabularyDb.AsNoTracking().Where(w => w.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + "vocabularylist" + progenyId, JsonConvert.SerializeObject(wordList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularylist" + progenyId, JsonConvert.SerializeObject(wordList), _cacheOptionsSliding);
         }
 
         public async Task<List<VocabularyItem>> GetVocabularyList(int progenyId)
         {
             List<VocabularyItem> vocabularyList;
-            string cachedVocabularyList = await _cache.GetStringAsync(Constants.AppName + "vocabularylist" + progenyId);
+            string cachedVocabularyList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularylist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVocabularyList))
             {
                 vocabularyList = JsonConvert.DeserializeObject<List<VocabularyItem>>(cachedVocabularyList);
@@ -881,7 +881,7 @@ namespace KinaUnaProgenyApi.Services
             else
             {
                 vocabularyList = await _context.VocabularyDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + "vocabularylist" + progenyId, JsonConvert.SerializeObject(vocabularyList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularylist" + progenyId, JsonConvert.SerializeObject(vocabularyList), _cacheOptionsSliding);
             }
 
             return vocabularyList;
@@ -897,7 +897,7 @@ namespace KinaUnaProgenyApi.Services
                 _context.ProgenyDb.Update(oldProgeny);
                 await _context.SaveChangesAsync();
 
-                await _cache.SetStringAsync(Constants.AppName + "progeny" + progeny.Id, JsonConvert.SerializeObject(oldProgeny), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + progeny.Id, JsonConvert.SerializeObject(oldProgeny), _cacheOptionsSliding);
             }
         }
     }
