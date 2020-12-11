@@ -60,7 +60,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\KinaUna.Data\KinaUna.Data.csproj" />
-    <ProjectReference Include="..\KinaUna.IDP\KinaUna.IDP.csproj" />
   </ItemGroup>
 
   <ItemGroup>
