@@ -263,7 +263,8 @@ namespace KinaUnaProgenyApi.Controllers
             userinfo.UserName = value?.UserName ?? userinfo.UserEmail;
             userinfo.IsKinaUnaUser = value.IsKinaUnaUser;
             userinfo.IsPivoqUser = value.IsPivoqUser;
-            
+            userinfo.IsKinaUnaAdmin = false;
+            userinfo.IsPivoqAdmin = false;
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() != userinfo.UserEmail.ToUpper())
             {
@@ -352,7 +353,7 @@ namespace KinaUnaProgenyApi.Controllers
                 userinfo.ProfilePicture = value.ProfilePicture;
             }
 
-            if (userinfo.IsKinaUnaAdmin != value.IsKinaUnaAdmin || userinfo.IsPivoqAdmin != value.IsPivoqAdmin)
+            if (value.UpdateIsAdmin)
             {
                 if (requester.IsKinaUnaAdmin || requester.IsPivoqAdmin)
                 {
