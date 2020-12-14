@@ -1,11 +1,5 @@
 {
   "dependencies": {
-    "appInsights1": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/microsoft.insights/components/KinaUnaAuth",
-      "type": "appInsights.azure",
-      "connectionId": "APPINSIGHTS_INSTRUMENTATIONKEY",
-      "secretStore": "AzureAppSettings"
-    },
     "secrets1": {
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.KeyVault/vaults/kinauna",
       "type": "secrets.keyVault",
@@ -17,6 +11,12 @@
       "connectionId": "FakeConnection",
       "suggestion": "true",
       "ignored": "true"
+    },
+    "appInsights1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/microsoft.insights/components/KinaUnaAuth",
+      "type": "appInsights.azure",
+      "connectionId": "APPINSIGHTS_CONNECTIONSTRING",
+      "secretStore": "AzureAppSettings"
     }
   }
 }

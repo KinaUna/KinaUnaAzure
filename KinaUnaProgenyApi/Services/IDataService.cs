@@ -19,6 +19,7 @@ namespace KinaUnaProgenyApi.Services
         Task<UserAccess> SetUserAccess(int id);
         Task RemoveUserAccess(int id, int progenyId, string userId);
         Task<UserAccess> GetProgenyUserAccessForUser(int progenyId, string userEmail);
+        Task<List<UserInfo>> GetAllUserInfos();
         Task<UserInfo> GetUserInfoByEmail(string userEmail);
         Task<UserInfo> SetUserInfoByEmail(string userEmail);
         Task RemoveUserInfoByEmail(string userEmail, string userId, int userinfoId);

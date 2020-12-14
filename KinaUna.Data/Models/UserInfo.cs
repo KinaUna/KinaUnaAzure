@@ -17,6 +17,8 @@ namespace KinaUna.Data.Models
         public string ProfilePicture { get; set; }
         public bool IsKinaUnaUser { get; set; }
         public bool IsPivoqUser { get; set; }
+        public bool IsKinaUnaAdmin { get; set; }
+        public bool IsPivoqAdmin { get; set; }
 
         [NotMapped]
         public List<Progeny> ProgenyList { get; set; }

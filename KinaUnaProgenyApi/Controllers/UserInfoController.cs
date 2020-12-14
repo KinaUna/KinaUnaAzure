@@ -229,6 +229,24 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        [HttpGet("[action]/")]
+        public async Task<IActionResult> GetAll()
+        {
+            
+            
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserInfo currentUserInfo = await _dataService.GetUserInfoByEmail(userEmail);
+
+            if (currentUserInfo.IsKinaUnaAdmin || currentUserInfo.IsPivoqAdmin)
+            {
+                List<UserInfo> result = await _dataService.GetAllUserInfos();
+
+                return Ok(result);
+            }
+
+            return Ok(new List<UserInfo>());
+        }
+
         // POST api/userinfo
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] UserInfo value)

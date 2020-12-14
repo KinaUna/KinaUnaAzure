@@ -189,6 +189,23 @@ namespace KinaUnaProgenyApi.Services
             return userAccess;
         }
 
+        public async Task<List<UserInfo>> GetAllUserInfos()
+        {
+            List<UserInfo> userinfo;
+            string cachedUserInfos = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "alluserinfos");
+            if (!string.IsNullOrEmpty(cachedUserInfos))
+            {
+                userinfo = JsonConvert.DeserializeObject<List<UserInfo>>(cachedUserInfos);
+            }
+            else
+            {
+                userinfo = await _context.UserInfoDb.ToListAsync();
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "alluserinfos", JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+            }
+
+            return userinfo;
+        }
+
         public async Task<UserInfo> GetUserInfoByEmail(string userEmail)
         {
             UserInfo userinfo;

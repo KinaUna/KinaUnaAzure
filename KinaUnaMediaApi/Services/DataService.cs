@@ -298,7 +298,7 @@ namespace KinaUnaMediaApi.Services
 
             return userinfo;
         }
-
+        
         public async Task<List<CalendarItem>> GetCalendarList(int progenyId)
         {
             List<CalendarItem> calendarList;
