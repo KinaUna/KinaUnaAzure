@@ -263,7 +263,7 @@ namespace KinaUnaProgenyApi.Controllers
             userinfo.UserName = value?.UserName ?? userinfo.UserEmail;
             userinfo.IsKinaUnaUser = value.IsKinaUnaUser;
             userinfo.IsPivoqUser = value.IsPivoqUser;
-
+            
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() != userinfo.UserEmail.ToUpper())
             {
@@ -305,9 +305,23 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
+            UserInfo requester = await _dataService.GetUserInfoByEmail(userEmail);
             // Only allow the user themselves to change userinfo.
-            if (userEmail.ToUpper() != userinfo.UserEmail.ToUpper())
+            bool allowAccess = false;
+            if (userEmail.ToUpper() == userinfo.UserEmail.ToUpper())
+            {
+
+                allowAccess = true;
+            }
+            else
+            {
+                if (requester.IsKinaUnaAdmin || requester.IsPivoqAdmin)
+                {
+                    allowAccess = true;
+                }
+            }
+
+            if (!allowAccess)
             {
                 return Unauthorized();
             }
@@ -319,6 +333,7 @@ namespace KinaUnaProgenyApi.Controllers
             userinfo.ViewChild = value.ViewChild;
             userinfo.IsKinaUnaUser = value.IsKinaUnaUser;
             userinfo.IsPivoqUser = value.IsPivoqUser;
+
             if (!String.IsNullOrEmpty(value.Timezone))
             {
                 userinfo.Timezone = value.Timezone;
@@ -335,6 +350,15 @@ namespace KinaUnaProgenyApi.Controllers
                 }
                 
                 userinfo.ProfilePicture = value.ProfilePicture;
+            }
+
+            if (userinfo.IsKinaUnaAdmin != value.IsKinaUnaAdmin || userinfo.IsPivoqAdmin != value.IsPivoqAdmin)
+            {
+                if (requester.IsKinaUnaAdmin || requester.IsPivoqAdmin)
+                {
+                    userinfo.IsKinaUnaAdmin = value.IsKinaUnaAdmin;
+                    userinfo.IsPivoqAdmin = value.IsPivoqAdmin;
+                }
             }
             
             _context.UserInfoDb.Update(userinfo);
