@@ -5,12 +5,12 @@ namespace KinaUna.IDP.Extensions
 {
     public static class UrlHelperExtensions
     {
-        public static string EmailConfirmationLink(this IUrlHelper urlHelper, string userId, string code, string scheme, string client)
+        public static string EmailConfirmationLink(this IUrlHelper urlHelper, string userId, string code, string scheme, string client, string language)
         {
             return urlHelper.Action(
                 action: nameof(AccountController.ConfirmEmail),
                 controller: "Account",
-                values: new { client, userId, code },
+                values: new { client, language, userId, code },
                 protocol: scheme);
         }
 

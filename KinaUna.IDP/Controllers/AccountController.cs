@@ -361,7 +361,7 @@ namespace KinaUna.IDP.Controllers
                 {
                     clientId = "Pivoq";
                 }
-                var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, clientId);
+                var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, clientId, model.Language);
                 await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl, clientId, model.Language);
                 await _emailSender.SendEmailAsync(Constants.AdminEmail, "New User Registered",
                     "A user registered with this email address: " + model.Email, clientId);
@@ -472,7 +472,7 @@ namespace KinaUna.IDP.Controllers
                         return View("ChangeEmail", model);
                     }
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, client);
+                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, client, Language);
                     await _emailSender.SendEmailUpdateConfirmationAsync(NewEmail, callbackUrl + "&newEmail=" + NewEmail + "&oldEmail=" + OldEmail, client, Language);
 
                     UserInfo userinfo = await _progContext.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == user.Id);
@@ -495,7 +495,7 @@ namespace KinaUna.IDP.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code, string newEmail = "", string oldEmail = "", string client = "KinaUna")
+        public async Task<IActionResult> ConfirmEmail(string userId, string code, string newEmail = "", string oldEmail = "", string client = "KinaUna", string language="")
         {
             if (userId == null || code == null)
             {
@@ -590,8 +590,8 @@ namespace KinaUna.IDP.Controllers
 
             
             var code1 = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var callbackUrl = Url.EmailConfirmationLink(user.Id, code1, Request.Scheme, client);
-            await _emailSender.SendEmailConfirmationAsync(user.Email, callbackUrl, client);
+            var callbackUrl = Url.EmailConfirmationLink(user.Id, code1, Request.Scheme, client, language);
+            await _emailSender.SendEmailConfirmationAsync(user.Email, callbackUrl, client, language);
             return RedirectToAction("VerificationMailSent");
         }
 
