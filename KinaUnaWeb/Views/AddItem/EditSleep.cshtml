@@ -12,9 +12,7 @@
             <div class="input-group date">
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text"
                        class="form-control" data-zdp_readonly_element="false" asp-for="SleepStart"
-                       value="@{
-                                  System.Diagnostics.Debug.Assert(Model.SleepStart != null, "Model.SleepStart != null");
-                              }@Model.SleepStart.Value.ToString("dd-MMM-yyyy HH:mm")" />
+                       value="@Model.SleepStart.Value.ToString("dd-MMM-yyyy HH:mm")" />
             </div>
         </div>
     </div>
@@ -32,9 +30,7 @@
             <div class="input-group date">
                 <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text"
                        class="form-control" data-zdp_readonly_element="false" asp-for="SleepEnd"
-                       value="@{
-                                  System.Diagnostics.Debug.Assert(Model.SleepEnd != null, "Model.SleepEnd != null");
-                              }@Model.SleepEnd.Value.ToString("dd-MMM-yyyy HH:mm")" />
+                       value="@Model.SleepEnd.Value.ToString("dd-MMM-yyyy HH:mm")" />
             </div>
         </div>
     </div>

@@ -107,9 +107,7 @@
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text"
-                       class="form-control" data-zdp_readonly_element="false" asp-for="Date" value="@{
-                                                                                                        System.Diagnostics.Debug.Assert(Model.Date != null, "Model.Date != null");
-                                                                                                    }@Model.Date.Value.ToString("dd-MMM-yyyy HH:mm")"/>
+                       class="form-control" data-zdp_readonly_element="false" asp-for="Date" value="@Model.Date.Value.ToString("dd-MMM-yyyy HH:mm")"/>
             </div>
         </div>
     </div>
