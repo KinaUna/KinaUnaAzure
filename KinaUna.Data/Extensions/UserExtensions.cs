@@ -27,5 +27,15 @@ namespace KinaUna.Data.Extensions
         {
             return principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.Subject))?.Value;
         }
+
+        public static string GetUserTimeZone(this ClaimsPrincipal principal)
+        {
+            return principal?.FindFirst(x => x.Type.Equals("timezone" ))?.Value;
+        }
+
+        public static string GetUserUserName(this ClaimsPrincipal principal)
+        {
+            return principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.PreferredUserName ))?.Value;
+        }
     }
 }

@@ -86,13 +86,34 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                userinfo = new UserInfo();
-                userinfo.ViewChild = 0;
-                userinfo.UserEmail = "Unknown";
-                userinfo.CanUserAddItems = false;
-                userinfo.UserId = "Unknown";
-                userinfo.AccessList = new List<UserAccess>();
-                userinfo.ProgenyList = new List<Progeny>();
+                if (userEmail.ToUpper() == id.ToUpper())
+                {
+                    UserInfo newUserinfo = new UserInfo();
+                    newUserinfo.UserEmail = userEmail;
+                    newUserinfo.ViewChild = 0;
+                    newUserinfo.UserId = User.GetUserId();
+                    newUserinfo.Timezone = User.GetUserTimeZone();
+                    newUserinfo.UserName = User.GetUserUserName();
+                    if (String.IsNullOrEmpty(newUserinfo.UserName))
+                    {
+                        newUserinfo.UserName = newUserinfo.UserEmail;
+                    }
+
+                    _context.UserInfoDb.Add(newUserinfo);
+                    await _context.SaveChangesAsync();
+                    await _dataService.SetUserInfoByEmail(userEmail);
+                }
+                else
+                {
+                    userinfo = new UserInfo();
+                    userinfo.ViewChild = 0;
+                    userinfo.UserEmail = "Unknown";
+                    userinfo.CanUserAddItems = false;
+                    userinfo.UserId = "Unknown";
+                    userinfo.AccessList = new List<UserAccess>();
+                    userinfo.ProgenyList = new List<Progeny>();
+                }
+                
             }
 
             return Ok(userinfo);
