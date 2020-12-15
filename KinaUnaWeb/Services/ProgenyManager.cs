@@ -84,8 +84,11 @@ namespace KinaUnaWeb.Services
                 userinfo = JsonConvert.DeserializeObject<UserInfo>(userinfoResponseString);
                 if (userinfo != null && !userinfo.IsKinaUnaUser)
                 {
-                    userinfo.IsKinaUnaUser = true;
-                    await UpdateUserInfo(userinfo);
+                    if (userinfo.UserEmail != "Unknown")
+                    {
+                        userinfo.IsKinaUnaUser = true;
+                        await UpdateUserInfo(userinfo);
+                    }
                 }
             }
             catch (Exception e)
@@ -122,7 +125,7 @@ namespace KinaUnaWeb.Services
                 // Todo: ProfilePicture
                 newUserinfo.Timezone = userId.TimeZone;
                 newUserinfo.UserName = userId.UserName;
-
+                newUserinfo.IsKinaUnaUser = true;
                 if (String.IsNullOrEmpty(newUserinfo.UserName))
                 {
                     newUserinfo.UserName = newUserinfo.UserEmail;
