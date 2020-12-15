@@ -362,6 +362,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
             
+            
             _context.UserInfoDb.Update(userinfo);
             await _context.SaveChangesAsync();
 

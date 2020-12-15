@@ -206,6 +206,13 @@ namespace KinaUnaProgenyApi.Services
             return userinfo;
         }
 
+        public async Task RefreshAllUserInfos()
+        {
+            List<UserInfo> userinfo = await _context.UserInfoDb.ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "alluserinfos", JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+            
+        }
+
         public async Task<UserInfo> GetUserInfoByEmail(string userEmail)
         {
             UserInfo userinfo;
@@ -229,7 +236,7 @@ namespace KinaUnaProgenyApi.Services
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper(), JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userinfo.UserId, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userinfo.Id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
-
+            await RefreshAllUserInfos();
             return userinfo;
         }
 
@@ -238,6 +245,7 @@ namespace KinaUnaProgenyApi.Services
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper());
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userId);
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userinfoId);
+            await RefreshAllUserInfos();
         }
 
         public async Task<UserInfo> GetUserInfoById(int id)
