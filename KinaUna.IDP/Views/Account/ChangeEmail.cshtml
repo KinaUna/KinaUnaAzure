@@ -22,8 +22,9 @@
                     <input asp-for="NewEmail" class="form-control" value="@Model.NewEmail" />
                 </div>
             </div>
-            <input asp-for="Language" value="en" hidden="hidden"/>
+            <input asp-for="Language" value="en" hidden="hidden" />
             <input asp-for="UserId" value="@Model.UserId" hidden="hidden" />
+            <input asp-for="Client" value="@Model.Client" hidden="hidden" />
             <button type="submit" class="btn btn-success leavePage">Send verification email</button>
         </form>
     </div>

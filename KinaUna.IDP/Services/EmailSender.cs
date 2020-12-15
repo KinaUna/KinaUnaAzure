@@ -14,7 +14,7 @@ namespace KinaUna.IDP.Services
         {
             _configuration = configuration;
         }
-        public Task SendEmailAsync(string email, string subject, string message)
+        public Task SendEmailAsync(string email, string subject, string message, string authclient)
         {
             SmtpClient client = new SmtpClient(Constants.SmtpServer);
             client.UseDefaultCredentials = false;
@@ -23,7 +23,7 @@ namespace KinaUna.IDP.Services
             client.Port = 587;
 
             MailMessage mailMessage = new MailMessage();
-            mailMessage.From = new MailAddress(Constants.SmtpFrom, "Support - " + Constants.AppName);
+            mailMessage.From = new MailAddress(Constants.SmtpFrom, "Support - " + authclient);
             mailMessage.To.Add(email);
             mailMessage.Body = message;
             mailMessage.IsBodyHtml = true;

@@ -5,15 +5,15 @@
         <br />
         <div class="col-sm-10">
             <br />
-            <h1>
+            <h3>
                 <img class="icon" src="~/icon.jpg">
-                Welcome to @Constants.AppName Identity Server
+                Welcome to KinaUna + Pivoq Identity Server
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <div>@User.Identity.Name</div>
+                    <span>@User.Identity.Name</span>
                 }
                 @*<small>(build {version})</small>*@
-            </h1>
+            </h3>
         </div>
         <br />
     </div>

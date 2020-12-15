@@ -11,7 +11,7 @@
         <section>
             <form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
                 <input type="hidden" asp-for="ReturnUrl" />
-                <h4>Log in med en @Constants.AppName konto.</h4>
+                <h4>Log in med en @ViewData["AccountType"] konto.</h4>
                 <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="form-group">
                     <label asp-for="Email" class="control-label form-label"></label>

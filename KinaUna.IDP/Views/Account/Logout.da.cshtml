@@ -3,7 +3,7 @@
 <h4>Logout</h4>
 <div class="row">
     <div class="col-sm-6">
-        <p>Vil du logge af @Constants.AppName?</p>
+        <p>Vil du logge af @ViewData["AccountType"]?</p>
         <form asp-action="Logout">
             <input type="hidden" name="logoutId" value="@Model.LogoutId"  />
             <fieldset>

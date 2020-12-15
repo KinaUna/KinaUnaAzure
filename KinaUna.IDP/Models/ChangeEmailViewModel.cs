@@ -7,5 +7,6 @@
         public string UserId { get; set; }
         public string Language { get; set; }
         public string ErrorMessage { get; set; }
+        public string Client { get; set; }
     }
 }

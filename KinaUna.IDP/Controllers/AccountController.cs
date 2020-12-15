@@ -90,6 +90,14 @@ namespace KinaUna.IDP.Controllers
             var vm = BuildLoginViewModel(returnUrl, context);
 
             ViewData["ReturnUrl"] = returnUrl;
+            if (context != null && context.Client.ClientId.ToLower().Contains("pivoq"))
+            {
+                ViewData["AccountType"] = "Pivoq + KinaUna";
+            }
+            else
+            {
+                ViewData["AccountType"] = "KinaUna + Pivoq";
+            }
 
             return View(vm);
         }
@@ -153,6 +161,7 @@ namespace KinaUna.IDP.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout(string logoutId)
         {
+            var context = await _interaction.GetLogoutContextAsync(logoutId);
             if (User.Identity.IsAuthenticated == false)
             {
                 // if the user is not authenticated, then just show logged out page
@@ -160,17 +169,32 @@ namespace KinaUna.IDP.Controllers
                 string logoutRedirectUri;
                 if (_env.IsDevelopment())
                 {
-                    logoutRedirectUri = _configuration.GetValue<string>("WebServerLocal");
+                    if (context != null && context.ClientId.ToLower().Contains("pivoq"))
+                    {
+                        logoutRedirectUri = _configuration.GetValue<string>("PivoqWebServerDevNuuk2015");
+                    }
+                    else
+                    {
+                        logoutRedirectUri = _configuration.GetValue<string>("WebServerLocal");
+                    }
+                    
                 }
                 else
                 {
-                    logoutRedirectUri = _configuration.GetValue<string>("WebServer");
+                    if (context != null && context.ClientId.ToLower().Contains("pivoq"))
+                    {
+                        logoutRedirectUri = _configuration.GetValue<string>("PivoqWebServer");
+                    }
+                    else
+                    {
+                        logoutRedirectUri = _configuration.GetValue<string>("WebServer");
+                    }
+                   
                 }
                 return Redirect(logoutRedirectUri);
             }
 
             //Test for Xamarin. 
-            var context = await _interaction.GetLogoutContextAsync(logoutId);
             
             if (context?.ShowSignoutPrompt == false)
             {
@@ -184,6 +208,15 @@ namespace KinaUna.IDP.Controllers
             {
                 LogoutId = logoutId
             };
+
+            if (context != null && context.ClientId.ToLower().Contains("pivoq"))
+            {
+                ViewData["AccountType"] = "Pivoq";
+            }
+            else
+            {
+                ViewData["AccountType"] = "KinaUna";
+            }
             return View(vm);
         }
 
@@ -235,11 +268,27 @@ namespace KinaUna.IDP.Controllers
             {
                 if (_env.IsDevelopment())
                 {
-                    logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServerLocal");
+                    if (logout.ClientId.ToLower().Contains("pivoq"))
+                    {
+                        logout.PostLogoutRedirectUri = _configuration.GetValue<string>("PivoqWebServerDevNuuk2015");
+                    }
+                    else
+                    {
+                        logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServerLocal");
+                    }
+                    
                 }
                 else
                 {
-                    logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServer");
+                    if (logout.ClientId.ToLower().Contains("pivoq"))
+                    {
+                        logout.PostLogoutRedirectUri = _configuration.GetValue<string>("PivoqWebServer");
+                    }
+                    else
+                    {
+                        logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServer");
+                    }
+                   
                 }
             }
             return Redirect(logout.PostLogoutRedirectUri);
@@ -264,6 +313,14 @@ namespace KinaUna.IDP.Controllers
         {
             ViewData["ReturnUrl"] = returnUrl;
             RegisterViewModel model = new RegisterViewModel();
+            if (returnUrl != null && returnUrl.ToLower().Contains("pivoq"))
+            {
+                ViewData["AccountType"] = "Pivoq / KinaUna";
+            }
+            else
+            {
+                ViewData["AccountType"] = "KinaUna / Pivoq";
+            }
             return View(model);
         }
 
@@ -291,7 +348,7 @@ namespace KinaUna.IDP.Controllers
                 }
                 
                 var result = await _userManager.CreateAsync(user, model.Password);
-                if (result.Errors.Count() > 0)
+                if (result != null && result.Errors.Count() > 0)
                 {
                     AddErrors(result);
                     // If we got this far, something failed, redisplay form
@@ -299,10 +356,15 @@ namespace KinaUna.IDP.Controllers
                 }
 
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
+                string clientId = "KinaUna";
+                if (returnUrl != null && returnUrl.ToLower().Contains("pivoq"))
+                {
+                    clientId = "Pivoq";
+                }
+                var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, clientId);
                 await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl, model.Language);
                 await _emailSender.SendEmailAsync(Constants.AdminEmail, "New User Registered",
-                    "A user registered with this email address: " + model.Email);
+                    "A user registered with this email address: " + model.Email, clientId);
                 
             }
 
@@ -335,7 +397,7 @@ namespace KinaUna.IDP.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ChangeEmail(string NewEmail, string OldEmail, string Language = "en")
+        public async Task<IActionResult> ChangeEmail(string NewEmail, string OldEmail, string Language = "en", string client="KinaUna")
         {
             
             if (User.Identity.IsAuthenticated)
@@ -366,6 +428,7 @@ namespace KinaUna.IDP.Controllers
                         model.ErrorMessage = errorMsg;
                     }
                     model.UserId = user.Id;
+                    model.Client = client;
                     return View(model);
                 }
             }
@@ -377,7 +440,7 @@ namespace KinaUna.IDP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SendConfirmationMail(string UserId, string NewEmail, string OldEmail, string Language)
+        public async Task<IActionResult> SendConfirmationMail(string UserId, string NewEmail, string OldEmail, string Language, string client="KinaUna")
         {
             if (User.Identity.IsAuthenticated)
             {
@@ -409,7 +472,7 @@ namespace KinaUna.IDP.Controllers
                         return View("ChangeEmail", model);
                     }
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
+                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, client);
                     await _emailSender.SendEmailUpdateConfirmationAsync(NewEmail, callbackUrl + "&newEmail=" + NewEmail + "&oldEmail=" + OldEmail, Language);
 
                     UserInfo userinfo = await _progContext.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == user.Id);
@@ -432,7 +495,7 @@ namespace KinaUna.IDP.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code, string newEmail = "", string oldEmail = "")
+        public async Task<IActionResult> ConfirmEmail(string userId, string code, string newEmail = "", string oldEmail = "", string client = "KinaUna")
         {
             if (userId == null || code == null)
             {
@@ -450,7 +513,7 @@ namespace KinaUna.IDP.Controllers
             {
                 user.UserName = user.Email;
                 _context.Users.Update(user);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
 
 
@@ -498,16 +561,37 @@ namespace KinaUna.IDP.Controllers
                 }
                 else
                 {
+                    string clientType = "";
+                    if (client.ToLower() == "pivoq")
+                    {
+                        clientType = "Pivoq";
+                    }
+                    else
+                    {
+                        clientType = "KinaUna";
+                    }
+
                     await _emailSender.SendEmailAsync(Constants.AdminEmail, "New User Confirmed Email",
-                        "A user confirmed the email with this email address: " + user.Email);
+                        "A user confirmed the email with this email address: " + user.Email, clientType);
+                    await _emailSender.SendEmailAsync(Constants.AdminEmail2, "New User Confirmed Email",
+                        "A user confirmed the email with this email address: " + user.Email, clientType);
                 }
-                
+
+                if (client.ToLower() == "pivoq")
+                {
+                    ViewData["AccountType"] = "Pivoq / KinaUna";
+                }
+                else
+                {
+                    ViewData["AccountType"] = "KinaUna / KinaUna";
+                }
                 return View();
             }
 
+            
             var code1 = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var callbackUrl = Url.EmailConfirmationLink(user.Id, code1, Request.Scheme);
-            await _emailSender.SendEmailConfirmationAsync(user.Email, callbackUrl);
+            var callbackUrl = Url.EmailConfirmationLink(user.Id, code1, Request.Scheme, client);
+            await _emailSender.SendEmailConfirmationAsync(user.Email, callbackUrl, client);
             return RedirectToAction("VerificationMailSent");
         }
 
@@ -557,7 +641,7 @@ namespace KinaUna.IDP.Controllers
                 }
 
                 await _emailSender.SendEmailAsync(model.Email, emailTitle,
-                    emailText);
+                    emailText, "KinaUna - Pivoq");
                 return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
 
