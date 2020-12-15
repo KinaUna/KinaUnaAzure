@@ -362,7 +362,7 @@ namespace KinaUna.IDP.Controllers
                     clientId = "Pivoq";
                 }
                 var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, clientId);
-                await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl, model.Language);
+                await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl, clientId, model.Language);
                 await _emailSender.SendEmailAsync(Constants.AdminEmail, "New User Registered",
                     "A user registered with this email address: " + model.Email, clientId);
                 
@@ -473,7 +473,7 @@ namespace KinaUna.IDP.Controllers
                     }
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, client);
-                    await _emailSender.SendEmailUpdateConfirmationAsync(NewEmail, callbackUrl + "&newEmail=" + NewEmail + "&oldEmail=" + OldEmail, Language);
+                    await _emailSender.SendEmailUpdateConfirmationAsync(NewEmail, callbackUrl + "&newEmail=" + NewEmail + "&oldEmail=" + OldEmail, client, Language);
 
                     UserInfo userinfo = await _progContext.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == user.Id);
                     if (userinfo != null)
