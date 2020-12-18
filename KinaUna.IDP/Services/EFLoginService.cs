@@ -17,7 +17,14 @@ namespace KinaUna.IDP.Services
 
         public async Task<ApplicationUser> FindByUsername(string user)
         {
-            return await _userManager.FindByEmailAsync(user);
+            ApplicationUser appUser = await _userManager.FindByEmailAsync(user);
+            if (string.IsNullOrEmpty(appUser.UserName))
+            {
+                appUser.UserName = appUser.Email;
+                await _userManager.UpdateAsync(appUser);
+            }
+
+            return appUser;
         }
 
         public async Task<bool> ValidateCredentials(ApplicationUser user, string password)
