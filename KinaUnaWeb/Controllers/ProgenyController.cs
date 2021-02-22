@@ -91,7 +91,7 @@ namespace KinaUnaWeb.Controllers
             model.PictureLink = prog.PictureLink;
             if (!prog.PictureLink.ToLower().StartsWith("http"))
             {
-                model.PictureLink = _imageStore.UriFor(prog.PictureLink, "progeny");
+                model.PictureLink = _imageStore.UriFor(prog.PictureLink, BlobContainers.Progeny);
             }
             
             return View(model);
@@ -123,12 +123,12 @@ namespace KinaUnaWeb.Controllers
                 string oldPictureLink = prog.PictureLink;
                 using (var stream = model.File.OpenReadStream())
                 {
-                    prog.PictureLink = await _imageStore.SaveImage(stream, "progeny");
+                    prog.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Progeny);
                 }
 
                 if (!oldPictureLink.ToLower().StartsWith("http") && !String.IsNullOrEmpty(oldPictureLink))
                 {
-                    await _imageStore.DeleteImage(oldPictureLink, "progeny");
+                    await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Progeny);
                 }
             }
             await _progenyHttpClient.UpdateProgeny(prog);

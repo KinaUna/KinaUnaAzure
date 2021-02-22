@@ -1,4 +1,5 @@
-﻿using KinaUnaWeb.Services;
+﻿using System;
+using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index()
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
             Family myFamily = new Family();
             myFamily.Children = await _progenyHttpClient.GetProgenyAdminList(userEmail);
             myFamily.FamilyMembers = new List<ApplicationUser>();
@@ -31,11 +33,15 @@ namespace KinaUnaWeb.Controllers
             {
                 foreach (Progeny prog in myFamily.Children)
                 {
+                    if (prog.BirthDay.HasValue)
+                    {
+                        prog.BirthDay = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(prog.BirthDay.Value,prog.TimeZone,userinfo.Timezone);
+                    }
                     List<UserAccess> uaList = await _progenyHttpClient.GetProgenyAccessList(prog.Id);
                     myFamily.AccessList.AddRange(uaList);
                 }
             }
-             myFamily.AccessLevelList = new AccessLevelList();
+            myFamily.AccessLevelList = new AccessLevelList();
             return View(myFamily);
         }
     }
