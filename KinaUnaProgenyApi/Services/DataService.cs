@@ -153,23 +153,59 @@ namespace KinaUnaProgenyApi.Services
 
             return userAccess;
         }
-
+        
         public async Task<UserAccess> SetUserAccess(int id)
         {
             UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.AccessId == id);
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + userAccess.ProgenyId + userAccess.UserId, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
+            if (userAccess != null)
+            {
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + userAccess.ProgenyId + userAccess.UserId, JsonConvert.SerializeObject(userAccess), _cacheOptionsSliding);
+            }
+            else
+            {
+                await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id);
+            }
 
+            return userAccess;
+        }
+
+        public async Task<UserAccess> AddUserAccess(UserAccess userAccess)
+        {
+            await _context.UserAccessDb.AddAsync(userAccess);
+            await _context.SaveChangesAsync();
+
+            await SetUserAccess(userAccess.AccessId);
+            await SetProgenyUserAccessList(userAccess.ProgenyId);
+            await SetProgenyUserIsAdmin(userAccess.UserId);
+            return userAccess;
+        }
+
+        public async Task<UserAccess> UpdateUserAccess(UserAccess userAccess)
+        {
+            _context.UserAccessDb.Update(userAccess);
+            await _context.SaveChangesAsync();
+
+            await SetUserAccess(userAccess.AccessId);
+            await SetProgenyUserAccessList(userAccess.ProgenyId);
+            await SetProgenyUserIsAdmin(userAccess.UserId);
             return userAccess;
         }
 
         public async Task RemoveUserAccess(int id, int progenyId, string userId)
         {
-            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id);
-            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + progenyId + userId);
-            await SetUsersUserAccessList(userId);
-            await SetProgenyUserAccessList(progenyId);
-            await SetProgenyUserIsAdmin(userId);
+            UserAccess deleteUserAccess = await _context.UserAccessDb.SingleOrDefaultAsync(u => u.AccessId == id && u.ProgenyId == progenyId);
+            if (deleteUserAccess != null)
+            {
+                _context.UserAccessDb.Remove(deleteUserAccess);
+                await _context.SaveChangesAsync();
+                await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id);
+                await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + progenyId + userId);
+                await SetUsersUserAccessList(userId);
+                await SetProgenyUserAccessList(progenyId);
+                await SetProgenyUserIsAdmin(userId);
+            }
+            
         }
 
         public async Task<UserAccess> GetProgenyUserAccessForUser(int progenyId, string userEmail)
@@ -308,8 +344,32 @@ namespace KinaUnaProgenyApi.Services
             return addressItem;
         }
 
+        public async Task<Address> AddAddressItem(Address addressItem)
+        {
+            await _context.AddressDb.AddAsync(addressItem);
+            await _context.SaveChangesAsync();
+
+            await SetAddressItem(addressItem.AddressId);
+
+            return addressItem;
+        }
+
+        public async Task<Address> UpdateAddressItem(Address addressItem)
+        {
+            _context.AddressDb.Update(addressItem);
+            await _context.SaveChangesAsync();
+
+            await SetAddressItem(addressItem.AddressId);
+
+            return addressItem;
+        }
+
         public async Task RemoveAddressItem(int id)
         {
+            Address addressItem = await _context.AddressDb.SingleOrDefaultAsync(a => a.AddressId == id);
+            _context.AddressDb.Remove(addressItem);
+            await _context.SaveChangesAsync();
+
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "address" + id);
         }
 

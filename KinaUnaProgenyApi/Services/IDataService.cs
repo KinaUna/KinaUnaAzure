@@ -17,6 +17,8 @@ namespace KinaUnaProgenyApi.Services
         Task RemoveProgeny(int id);
         Task<UserAccess> GetUserAccess(int id);
         Task<UserAccess> SetUserAccess(int id);
+        Task<UserAccess> AddUserAccess(UserAccess userAccess);
+        Task<UserAccess> UpdateUserAccess(UserAccess userAccess);
         Task RemoveUserAccess(int id, int progenyId, string userId);
         Task<UserAccess> GetProgenyUserAccessForUser(int progenyId, string userEmail);
         Task<List<UserInfo>> GetAllUserInfos();
@@ -26,6 +28,8 @@ namespace KinaUnaProgenyApi.Services
         Task<UserInfo> GetUserInfoById(int id);
         Task<UserInfo> GetUserInfoByUserId(string id);
         Task<Address> GetAddressItem(int id);
+        Task<Address> AddAddressItem(Address addressItem);
+        Task<Address> UpdateAddressItem(Address addressItem);
         Task<Address> SetAddressItem(int id);
         Task RemoveAddressItem(int id);
         Task<CalendarItem> GetCalendarItem(int id);

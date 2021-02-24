@@ -14,11 +14,10 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class AddressesController : ControllerBase
     {
-        private readonly ProgenyDbContext _context;
+        // Todo: Security check, verify that users can view/change addresses.
         private readonly IDataService _dataService;
         public AddressesController(ProgenyDbContext context, IDataService dataService)
         {
-            _context = context;
             _dataService = dataService;
         }
         
@@ -41,11 +40,9 @@ namespace KinaUnaProgenyApi.Controllers
             addressItem.Country = value.Country;
             addressItem.PostalCode = value.PostalCode;
             addressItem.State = value.State;
-
-            _context.AddressDb.Add(addressItem);
-            await _context.SaveChangesAsync();
-            await _dataService.SetAddressItem(addressItem.AddressId);
-
+            
+            addressItem = await _dataService.AddAddressItem(addressItem);
+            
             return Ok(addressItem);
         }
 
@@ -53,7 +50,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Address value)
         {
-            Address addressItem = await _context.AddressDb.SingleOrDefaultAsync(a => a.AddressId == id);
+            Address addressItem = await _dataService.GetAddressItem(id); // _context.AddressDb.SingleOrDefaultAsync(a => a.AddressId == id);
             if (addressItem == null)
             {
                 return NotFound();
@@ -65,11 +62,9 @@ namespace KinaUnaProgenyApi.Controllers
             addressItem.Country = value.Country;
             addressItem.PostalCode = value.PostalCode;
             addressItem.State = value.State;
-
-            _context.AddressDb.Update(addressItem);
-            await _context.SaveChangesAsync();
-            await _dataService.SetAddressItem(addressItem.AddressId);
-
+            
+            addressItem = await _dataService.UpdateAddressItem(addressItem);
+            
             return Ok(addressItem);
         }
 
@@ -77,12 +72,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Address addressItem = await _context.AddressDb.SingleOrDefaultAsync(a => a.AddressId == id);
+            Address addressItem = await _dataService.GetAddressItem(id); // _context.AddressDb.SingleOrDefaultAsync(a => a.AddressId == id);
             if (addressItem != null)
             {
-                _context.AddressDb.Remove(addressItem);
-                await _context.SaveChangesAsync();
-                await _dataService.RemoveAddressItem(id);
+                await _dataService.RemoveAddressItem(id); 
+                
                 return NoContent();
             }
             else

@@ -281,8 +281,6 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     foreach (UserAccess ua in userAccessList)
                     {
-                        _context.UserAccessDb.Remove(ua);
-                        _context.SaveChanges();
                         await _dataService.RemoveUserAccess(ua.AccessId, ua.ProgenyId, ua.UserId);
                     }
                 }

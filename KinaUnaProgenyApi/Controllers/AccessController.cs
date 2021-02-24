@@ -20,14 +20,12 @@ namespace KinaUnaProgenyApi.Controllers
     {
         private readonly IDataService _dataService;
         private readonly ImageStore _imageStore;
-        private readonly ProgenyDbContext _context;
         private readonly AzureNotifications _azureNotifications;
 
-        public AccessController(IDataService dataService, ImageStore imageStore, ProgenyDbContext context, AzureNotifications azureNotifications)
+        public AccessController(IDataService dataService, ImageStore imageStore, AzureNotifications azureNotifications)
         {
             _dataService = dataService;
             _imageStore = imageStore;
-            _context = context;
             _azureNotifications = azureNotifications;
         }
         
@@ -94,7 +92,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Post([FromBody] UserAccess value)
         {
             // Check if child exists.
-            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            Progeny prog = await _dataService.GetProgeny(value.ProgenyId); // _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
             if (prog != null)
             {
                 // Check if user is allowed to add users for this child.
@@ -117,18 +115,15 @@ namespace KinaUnaProgenyApi.Controllers
             userAccess.CanContribute = value.CanContribute;
 
             // If a UserAccess entry with the same user and progeny exists, replace it.
-            var progenyAccessList = await _context.UserAccessDb.Where(u => u.UserId.ToUpper() == userAccess.UserId.ToUpper()).ToListAsync();
+            var progenyAccessList = await _dataService.GetUsersUserAccessList(userAccess.UserId);// _context.UserAccessDb.Where(u => u.UserId.ToUpper() == userAccess.UserId.ToUpper()).ToListAsync();
             var oldUserAccess = progenyAccessList.SingleOrDefault(u => u.ProgenyId == userAccess.ProgenyId);
             if (oldUserAccess != null)
             {
-                _context.UserAccessDb.Remove(oldUserAccess);
-                await _context.SaveChangesAsync();
-                await _dataService.RemoveUserAccess(oldUserAccess.AccessId, oldUserAccess.ProgenyId,
-                    oldUserAccess.UserId);
+                await _dataService.RemoveUserAccess(oldUserAccess.AccessId, oldUserAccess.ProgenyId, oldUserAccess.UserId);
             }
 
-            _context.UserAccessDb.Add(userAccess);
-            await _context.SaveChangesAsync();
+            
+            userAccess = await _dataService.AddUserAccess(userAccess);
 
             Progeny progeny = await _dataService.GetProgeny(userAccess.ProgenyId);
             if (userAccess.AccessLevel == (int)AccessLevel.Private && !progeny.IsInAdminList(userAccess.UserId))
@@ -148,7 +143,7 @@ namespace KinaUnaProgenyApi.Controllers
             await _dataService.SetUserAccess(userAccess.AccessId);
 
             string title = "User added for " + prog.NickName;
-            UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == User.GetEmail().ToUpper());
+            UserInfo userinfo = await _dataService.GetUserInfoByEmail(User.GetEmail()); // _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == User.GetEmail().ToUpper());
             if (userinfo != null)
             {
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added user: " + userAccess.UserId;
@@ -168,7 +163,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Put(int id, [FromBody] UserAccess value)
         {
             // Check if child exists.
-            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            Progeny prog = await _dataService.GetProgeny(value.ProgenyId); // _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
             if (prog != null)
             {
                 // Check if user is allowed to edit user access for this child.
@@ -183,7 +178,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            UserAccess userAccess = await _context.UserAccessDb.SingleOrDefaultAsync(u => u.AccessId == id);
+            UserAccess userAccess = await _dataService.GetUserAccess(id); // _context.UserAccessDb.SingleOrDefaultAsync(u => u.AccessId == id);
 
             if (userAccess == null)
             {
@@ -193,10 +188,8 @@ namespace KinaUnaProgenyApi.Controllers
             userAccess.AccessLevel = value.AccessLevel;
             userAccess.UserId = value.UserId;
             userAccess.CanContribute = value.CanContribute;
-
-            _context.UserAccessDb.Update(userAccess);
-            await _context.SaveChangesAsync();
-
+            
+            userAccess = await _dataService.UpdateUserAccess(userAccess);
             Progeny progeny = await _dataService.GetProgeny(userAccess.ProgenyId);
             if (userAccess.AccessLevel == (int)AccessLevel.Private && !progeny.IsInAdminList(userAccess.UserId))
             {
@@ -215,7 +208,7 @@ namespace KinaUnaProgenyApi.Controllers
             await _dataService.SetUserAccess(userAccess.AccessId);
 
             string title = "User access modified for " + prog.NickName;
-            UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == User.GetEmail().ToUpper());
+            UserInfo userinfo = await _dataService.GetUserInfoByEmail(User.GetEmail()); // _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == User.GetEmail().ToUpper());
             if (userinfo != null)
             {
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " modified access for user: " + userAccess.UserId;
@@ -234,17 +227,18 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            
-            UserAccess userAccess = await _context.UserAccessDb.SingleOrDefaultAsync(u => u.AccessId == id);
+
+            UserAccess userAccess = await _dataService.GetUserAccess(id); // _context.UserAccessDb.SingleOrDefaultAsync(u => u.AccessId == id);
             if (userAccess != null)
             {
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 // Check if child exists.
-                Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == userAccess.ProgenyId);
-                if (prog != null)
+                Progeny progeny = await _dataService.GetProgeny(userAccess.ProgenyId); // _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == userAccess.ProgenyId);
+                if (progeny != null)
                 {
                     // Check if user is allowed to delete users for this child.
-                    string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                    if (!prog.IsInAdminList(userEmail))
+                    
+                    if (!progeny.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }
@@ -254,7 +248,6 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                Progeny progeny = await _dataService.GetProgeny(userAccess.ProgenyId);
                 if (userAccess.AccessLevel == (int)AccessLevel.Private && progeny.IsInAdminList(userAccess.UserId))
                 {
                     string[] adminList = progeny.Admins.Split(',');
@@ -270,12 +263,10 @@ namespace KinaUnaProgenyApi.Controllers
                     await _dataService.UpdateProgenyAdmins(progeny);
                 }
 
-                _context.UserAccessDb.Remove(userAccess);
-                await _context.SaveChangesAsync();
                 await _dataService.RemoveUserAccess(userAccess.AccessId, userAccess.ProgenyId, userAccess.UserId);
 
-                string title = "User removed for " + prog.NickName;
-                UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == User.GetEmail().ToUpper());
+                string title = "User removed for " + progeny.NickName;
+                UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail); // _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == User.GetEmail().ToUpper());
                 if (userinfo != null)
                 {
                     string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " removed user: " + userAccess.UserId;
@@ -412,16 +403,15 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() == oldEmail.ToUpper())
             {
-                List<UserAccess> userAccessList = await _context.UserAccessDb.Where(u => u.UserId.ToUpper() == oldEmail.ToUpper()).ToListAsync();
+                List<UserAccess> userAccessList = await _dataService.GetUsersUserAccessList(oldEmail); // _context.UserAccessDb.Where(u => u.UserId.ToUpper() == oldEmail.ToUpper()).ToListAsync();
                 if (userAccessList.Any())
                 {
                     foreach (UserAccess ua in userAccessList)
                     {
                         ua.UserId = newEmail;
+                        await _dataService.UpdateUserAccess(ua);
                     }
 
-                    _context.UserAccessDb.UpdateRange(userAccessList);
-                    await _context.SaveChangesAsync();
                     return Ok(userAccessList);
                 }
             }

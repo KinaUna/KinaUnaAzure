@@ -237,7 +237,6 @@ namespace KinaUnaProgenyApi.Controllers
                 else
                 {
                     int removedAddressId = addressOld.AddressId;
-                    _context.AddressDb.Remove(addressOld);
                     contactItem.AddressIdNumber = null;
                     await _dataService.RemoveAddressItem(removedAddressId);
                 }
@@ -320,9 +319,11 @@ namespace KinaUnaProgenyApi.Controllers
 
                 if (contactItem.AddressIdNumber != null)
                 {
-                    Address address = await _context.AddressDb.SingleAsync(a => a.AddressId == contactItem.AddressIdNumber);
-                    _context.AddressDb.Remove(address);
-                    await _dataService.RemoveAddressItem(address.AddressId);
+                    Address address = await _dataService.GetAddressItem(contactItem.AddressIdNumber.Value); //_context.AddressDb.SingleAsync(a => a.AddressId == contactItem.AddressIdNumber);
+                    if (address != null)
+                    {
+                        await _dataService.RemoveAddressItem(address.AddressId);
+                    }
                 }
                 if (!contactItem.PictureLink.ToLower().StartsWith("http"))
                 {
