@@ -19,13 +19,11 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class ProgenyController : ControllerBase
     {
-        private readonly ProgenyDbContext _context;
         private readonly ImageStore _imageStore;
         private readonly IDataService _dataService;
 
-        public ProgenyController(ProgenyDbContext context, ImageStore imageStore, IDataService dataService)
+        public ProgenyController(ImageStore imageStore, IDataService dataService)
         {
-            _context = context;
             _imageStore = imageStore;
             _dataService = dataService;
         }
@@ -107,11 +105,8 @@ namespace KinaUnaProgenyApi.Controllers
                 value.PictureLink = Constants.ProfilePictureUrl;
             }
             progeny.PictureLink = value.PictureLink;
-            
 
-            _context.ProgenyDb.Add(progeny);
-            await _context.SaveChangesAsync();
-            await _dataService.SetProgeny(progeny.Id);
+            progeny = await _dataService.AddProgeny(progeny);
 
             if (progeny.Admins.Contains(','))
             {
@@ -124,11 +119,7 @@ namespace KinaUnaProgenyApi.Controllers
                     ua.UserId = adminEmail.Trim();
                     if (ua.UserId.IsValidEmail())
                     {
-                        _context.UserAccessDb.Add(ua);
-                        await _context.SaveChangesAsync();
-                        await _dataService.SetProgenyUserIsAdmin(ua.UserId);
-                        await _dataService.SetProgenyUserAccessList(progeny.Id);
-                        await _dataService.SetUsersUserAccessList(ua.UserId);
+                        await _dataService.AddUserAccess(ua);
                     }
                 }
             }
@@ -140,11 +131,7 @@ namespace KinaUnaProgenyApi.Controllers
                 ua.UserId = progeny.Admins.Trim();
                 if (ua.UserId.IsValidEmail())
                 {
-                    _context.UserAccessDb.Add(ua);
-                    await _context.SaveChangesAsync();
-                    await _dataService.SetProgenyUserIsAdmin(ua.UserId);
-                    await _dataService.SetProgenyUserAccessList(progeny.Id);
-                    await _dataService.SetUsersUserAccessList(ua.UserId);
+                    await _dataService.AddUserAccess(ua);
                 }
 
             }
@@ -156,7 +143,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Progeny value)
         {
-            Progeny progeny = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == id);
+            Progeny progeny = await _dataService.GetProgeny(id); // _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == id);
 
             if (progeny == null)
             {
@@ -193,9 +180,7 @@ namespace KinaUnaProgenyApi.Controllers
                         if (userAccess.AccessLevel != (int)AccessLevel.Private)
                         {
                             userAccess.AccessLevel = (int)AccessLevel.Private;
-                            _context.UserAccessDb.Update(userAccess);
-                            await _context.SaveChangesAsync();
-                            await _dataService.SetUserAccess(userAccess.AccessId);
+                            await _dataService.UpdateUserAccess(userAccess);
                         }
                     }
 
@@ -212,12 +197,9 @@ namespace KinaUnaProgenyApi.Controllers
 
                         if (!isInNewList)
                         {
-                            UserAccess userAccess =
-                                await _dataService.GetProgenyUserAccessForUser(progeny.Id, email.Trim());
+                            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progeny.Id, email.Trim());
                             userAccess.AccessLevel = (int) AccessLevel.Family;
-                            _context.UserAccessDb.Update(userAccess);
-                            await _context.SaveChangesAsync();
-                            await _dataService.SetUserAccess(userAccess.AccessId);
+                            await _dataService.UpdateUserAccess(userAccess);
                         }
                     }
                 }
@@ -231,12 +213,9 @@ namespace KinaUnaProgenyApi.Controllers
                 progeny.PictureLink = value.PictureLink;
             }
             progeny.TimeZone = value.TimeZone;
+
+            progeny = await _dataService.UpdateProgeny(progeny);
             
-            _context.ProgenyDb.Update(progeny);
-            await _context.SaveChangesAsync();
-
-            await _dataService.SetProgeny(progeny.Id);
-
             return Ok(progeny);
         }
 
@@ -245,7 +224,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             // Todo: Implement confirmation mail to verify that all content really should be deleted.
-            Progeny progeny = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == id);
+            Progeny progeny = await _dataService.GetProgeny(id); // _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == id);
             if (progeny != null)
             {
                 // Check if user is allowed to edit this child.
@@ -275,8 +254,8 @@ namespace KinaUnaProgenyApi.Controllers
                     await _imageStore.DeleteImage(progeny.PictureLink, "progeny");
                 }
 
-                List<UserAccess> userAccessList =
-                    _context.UserAccessDb.Where(ua => ua.ProgenyId == progeny.Id).ToList();
+                List<UserAccess> userAccessList = await _dataService.GetProgenyUserAccessList(progeny.Id);
+                    
                 if (userAccessList.Any())
                 {
                     foreach (UserAccess ua in userAccessList)
@@ -284,10 +263,8 @@ namespace KinaUnaProgenyApi.Controllers
                         await _dataService.RemoveUserAccess(ua.AccessId, ua.ProgenyId, ua.UserId);
                     }
                 }
-                _context.ProgenyDb.Remove(progeny);
-                await _context.SaveChangesAsync();
 
-                await _dataService.RemoveProgeny(id);
+                await _dataService.RemoveProgeny(progeny);
                 return NoContent();
             }
             else

@@ -66,6 +66,34 @@ namespace KinaUnaProgenyApi.Services
 
             return progeny;
         }
+        public async Task<Progeny> AddProgeny(Progeny progeny)
+        {
+            await _context.ProgenyDb.AddAsync(progeny);
+            await _context.SaveChangesAsync();
+            
+            await SetProgeny(progeny.Id);
+
+            return progeny;
+        }
+
+        public async Task<Progeny> UpdateProgeny(Progeny progeny)
+        {
+            _context.ProgenyDb.Update(progeny);
+            await _context.SaveChangesAsync();
+            
+            await SetProgeny(progeny.Id);
+
+            return progeny;
+        }
+
+        public async Task<Progeny> RemoveProgeny(Progeny progeny)
+        {
+            await RemoveProgeny(progeny.Id);
+            _context.ProgenyDb.Remove(progeny);
+            await _context.SaveChangesAsync();
+
+            return progeny;
+        }
 
         public async Task<Progeny> SetProgeny(int id)
         {
