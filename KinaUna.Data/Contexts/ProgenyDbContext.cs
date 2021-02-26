@@ -26,6 +26,5 @@ namespace KinaUna.Data.Contexts
         public DbSet<Address> AddressDb { get; set; }
         public DbSet<Vaccination> VaccinationsDb { get; set; }
         public DbSet<MobileNotification> MobileNotificationsDb { get; set; }
-        public DbSet<PivoqAccess> PivoqAccessDb { get; set; }
     }
 }

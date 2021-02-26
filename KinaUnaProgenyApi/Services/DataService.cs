@@ -176,6 +176,7 @@ namespace KinaUnaProgenyApi.Services
             await _context.SaveChangesAsync();
 
             await SetUserAccess(userAccess.AccessId);
+            await SetUsersUserAccessList(userAccess.UserId);
             await SetProgenyUserAccessList(userAccess.ProgenyId);
             await SetProgenyUserIsAdmin(userAccess.UserId);
             return userAccess;
@@ -187,6 +188,7 @@ namespace KinaUnaProgenyApi.Services
             await _context.SaveChangesAsync();
 
             await SetUserAccess(userAccess.AccessId);
+            await SetUsersUserAccessList(userAccess.UserId);
             await SetProgenyUserAccessList(userAccess.ProgenyId);
             await SetProgenyUserIsAdmin(userAccess.UserId);
             return userAccess;
