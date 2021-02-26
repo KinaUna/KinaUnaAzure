@@ -390,8 +390,8 @@ namespace KinaUnaProgenyApi.Controllers
                         return Ok(progenyList);
                     }
 
-                    return Ok();
                 }
+                return Ok(progenyList);
             }
 
             return Ok();
