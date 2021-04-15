@@ -18,11 +18,16 @@ namespace KinaUna.IDP.Services
         public async Task<ApplicationUser> FindByUsername(string user)
         {
             ApplicationUser appUser = await _userManager.FindByEmailAsync(user);
-            if (string.IsNullOrEmpty(appUser.UserName))
+
+            if (appUser != null)
             {
-                appUser.UserName = appUser.Email;
-                await _userManager.UpdateAsync(appUser);
+                if (string.IsNullOrEmpty(appUser.UserName))
+                {
+                    appUser.UserName = appUser.Email;
+                    await _userManager.UpdateAsync(appUser);
+                }
             }
+            
 
             return appUser;
         }
