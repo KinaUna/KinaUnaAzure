@@ -362,12 +362,15 @@ namespace KinaUnaProgenyApi.Controllers
             }
             if (!String.IsNullOrEmpty(value.ProfilePicture))
             {
-                string oldPictureLink = userinfo.ProfilePicture;
-                if (!oldPictureLink.ToLower().StartsWith("http") && !String.IsNullOrEmpty(oldPictureLink))
+                if (!String.IsNullOrEmpty(userinfo.ProfilePicture))
                 {
-                    if (oldPictureLink != value.ProfilePicture)
+                    string oldPictureLink = userinfo.ProfilePicture;
+                    if (!oldPictureLink.ToLower().StartsWith("http") && !String.IsNullOrEmpty(oldPictureLink))
                     {
-                        await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Profiles);
+                        if (oldPictureLink != value.ProfilePicture)
+                        {
+                            await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Profiles);
+                        }
                     }
                 }
                 
