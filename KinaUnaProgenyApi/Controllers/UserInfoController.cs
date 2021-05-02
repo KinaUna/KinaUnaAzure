@@ -191,7 +191,8 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo result = await _dataService.GetUserInfoByUserId(id); 
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            bool allowAccess = false;
+            // Todo: do not allow access, unless user is a Pivoq Organizer or has been granted access otherwise.
+            bool allowAccess = true;
             if (userEmail.ToUpper() == result.UserEmail.ToUpper())
             {
                 allowAccess = true;
