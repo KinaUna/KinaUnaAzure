@@ -66,7 +66,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             UserInfo userinfo = await _dataService.GetUserInfoByEmail(id); 
-            if (allowAccess && userinfo != null)
+            if (allowAccess && userinfo != null && userinfo.Id != 0)
             {
                 userinfo.CanUserAddItems = false;
                 userinfo.AccessList = await _dataService.GetUsersUserAccessList(userinfo.UserEmail);
