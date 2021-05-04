@@ -102,6 +102,22 @@ namespace KinaUnaProgenyApi.Controllers
                     _context.UserInfoDb.Add(newUserinfo);
                     await _context.SaveChangesAsync();
                     await _dataService.SetUserInfoByEmail(userEmail);
+                    userinfo = await _dataService.GetUserInfoByEmail(id);
+                    userinfo.CanUserAddItems = false;
+                    userinfo.AccessList = await _dataService.GetUsersUserAccessList(userinfo.UserEmail);
+                    userinfo.ProgenyList = new List<Progeny>();
+                    if (userinfo.AccessList.Any())
+                    {
+                        foreach (UserAccess ua in userinfo.AccessList)
+                        {
+                            Progeny progeny = await _dataService.GetProgeny(ua.ProgenyId);
+                            userinfo.ProgenyList.Add(progeny);
+                            if (ua.AccessLevel == 0 || ua.CanContribute)
+                            {
+                                userinfo.CanUserAddItems = true;
+                            }
+                        }
+                    }
                 }
                 else
                 {
