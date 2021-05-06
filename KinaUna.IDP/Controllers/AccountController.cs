@@ -444,10 +444,11 @@ namespace KinaUna.IDP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SendConfirmationMail(string UserId, string NewEmail, string OldEmail, string Language, string client="KinaUna")
+        public async Task<IActionResult> SendConfirmationMail(string UserId, string NewEmail, string OldEmail, string Language, string Client="KinaUna")
         {
             if (User.Identity.IsAuthenticated)
             {
+                string client = Client;
                 ApplicationUser user = await _context.Users.SingleOrDefaultAsync(u => u.Id == UserId);
                 ApplicationUser test =
                     await _context.Users.SingleOrDefaultAsync(u => u.Email.ToUpper() == NewEmail.ToUpper());
@@ -528,6 +529,7 @@ namespace KinaUna.IDP.Controllers
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
             {
+                user = await _userManager.FindByIdAsync(userId);
                 if (user.JoinDate.AddDays(7) > DateTime.UtcNow)
                 {
                     user.JoinDate = DateTime.UtcNow;
