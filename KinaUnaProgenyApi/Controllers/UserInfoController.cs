@@ -135,6 +135,35 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(userinfo);
         }
 
+        [HttpGet]
+        [Route("[action]/{id}")]
+        public async Task<IActionResult> ByEmailPivoq(string id)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            bool allowAccess = userEmail.IsValidEmail() && userEmail.ToUpper() != Constants.DefaultUserEmail.ToUpper();
+            //Todo: verify that user should have access.
+
+            UserInfo userinfo = await _dataService.GetUserInfoByEmail(id); 
+            if (allowAccess && userinfo != null && userinfo.Id != 0)
+            {
+                userinfo.AccessList = new List<UserAccess>();
+                userinfo.ProgenyList = new List<Progeny>();
+            }
+            else
+            {
+                userinfo = new UserInfo();
+                userinfo.ViewChild = 0;
+                userinfo.UserEmail = "Unknown";
+                userinfo.CanUserAddItems = false;
+                userinfo.UserId = "Unknown";
+                userinfo.AccessList = new List<UserAccess>();
+                userinfo.ProgenyList = new List<Progeny>();
+
+            }
+
+            return Ok(userinfo);
+        }
+
         // GET api/userinfo/id
         [HttpGet("{id}")]
         public async Task<IActionResult> GetInfo(int id)
