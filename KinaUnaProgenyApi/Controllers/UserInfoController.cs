@@ -135,9 +135,9 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(userinfo);
         }
 
-        [HttpGet]
-        [Route("[action]/{id}")]
-        public async Task<IActionResult> ByEmailPivoq(string id)
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> ByEmailPivoq([FromBody] string id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             bool allowAccess = userEmail.IsValidEmail() && userEmail.ToUpper() != Constants.DefaultUserEmail.ToUpper();
@@ -232,6 +232,72 @@ namespace KinaUnaProgenyApi.Controllers
         // GET api/userinfo/id
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> ByUserId(string id)
+        {
+            UserInfo result = await _dataService.GetUserInfoByUserId(id); 
+
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            // Todo: do not allow access, unless user is a Pivoq Organizer or has been granted access otherwise.
+            bool allowAccess = true;
+            if (userEmail.ToUpper() == result.UserEmail.ToUpper())
+            {
+                allowAccess = true;
+            }
+            else
+            {
+                List<Progeny> progenyList = await _dataService.GetProgenyUserIsAdmin(userEmail);
+                if (progenyList.Any())
+                {
+                    foreach (Progeny prog in progenyList)
+                    {
+                        List<UserAccess> accessList = await _dataService.GetProgenyUserAccessList(prog.Id); 
+                        if (accessList.Any())
+                        {
+                            foreach (UserAccess userAccess in accessList)
+                            {
+                                if (userAccess.UserId.ToUpper() == result.UserEmail.ToUpper())
+                                {
+                                    allowAccess = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (allowAccess)
+            {
+                result.CanUserAddItems = false;
+                result.AccessList = await _dataService.GetUsersUserAccessList(result.UserEmail);
+                result.ProgenyList = new List<Progeny>();
+                if (result.AccessList.Any())
+                {
+                    foreach (UserAccess ua in result.AccessList)
+                    {
+                        Progeny progeny = await _dataService.GetProgeny(ua.ProgenyId); 
+                        result.ProgenyList.Add(progeny);
+                        if (ua.AccessLevel == 0 || ua.CanContribute)
+                        {
+                            result.CanUserAddItems = true;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                result = new UserInfo();
+                result.ViewChild = 0;
+                result.UserEmail = "Unknown";
+                result.CanUserAddItems = false;
+                result.UserId = "Unknown";
+                result.AccessList = new List<UserAccess>();
+                result.ProgenyList = new List<Progeny>();
+
+            }
+            return Ok(result);
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> ByUserIdPivoq([FromBody] string id)
         {
             UserInfo result = await _dataService.GetUserInfoByUserId(id); 
 
