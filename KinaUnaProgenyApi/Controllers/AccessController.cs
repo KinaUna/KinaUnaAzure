@@ -397,6 +397,34 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok();
         }
 
+        [HttpPost("[action]")]
+        public async Task<IActionResult> AdminListByUserPivoq([FromBody] string id)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            List<Progeny> progenyList = new List<Progeny>();
+            if (userEmail.ToUpper() == id.ToUpper())
+            {
+                List<UserAccess> userAccessList = await _dataService.GetUsersUserAccessList(id);
+                userAccessList = userAccessList.Where(u => u.AccessLevel == 0).ToList();
+                
+                if (userAccessList.Any())
+                {
+                    foreach (UserAccess ua in userAccessList)
+                    {
+                        Progeny progeny = await _dataService.GetProgeny(ua.ProgenyId);
+                        progenyList.Add(progeny);
+                    }
+
+                    if (progenyList.Any())
+                    {
+                        return Ok(progenyList);
+                    }
+                }
+            }
+
+            return Ok(progenyList);
+        }
+
         [HttpGet("[action]/{oldEmail}/{newEmail}")]
         public async Task<IActionResult> UpdateAccessListEmailChange(string oldEmail, string newEmail)
         {
