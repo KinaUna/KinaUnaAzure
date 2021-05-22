@@ -233,12 +233,21 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> ByUserId(string id)
         {
-            UserInfo result = await _dataService.GetUserInfoByUserId(id); 
-
+            UserInfo result = await _dataService.GetUserInfoByUserId(id);
+            if (result == null)
+            {
+                result = new UserInfo();
+                result.ViewChild = 0;
+                result.UserEmail = "Unknown";
+                result.CanUserAddItems = false;
+                result.UserId = "Unknown";
+                result.AccessList = new List<UserAccess>();
+                result.ProgenyList = new List<Progeny>();
+            }
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             // Todo: do not allow access, unless user is a Pivoq Organizer or has been granted access otherwise.
-            bool allowAccess = true;
-            if (userEmail.ToUpper() == result.UserEmail.ToUpper())
+            bool allowAccess = false;
+            if (userEmail.ToUpper() == result.UserEmail?.ToUpper())
             {
                 allowAccess = true;
             }
@@ -299,12 +308,22 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> ByUserIdPivoq([FromBody] string id)
         {
-            UserInfo result = await _dataService.GetUserInfoByUserId(id); 
+            UserInfo result = await _dataService.GetUserInfoByUserId(id);
+            if (result == null)
+            {
+                result = new UserInfo();
+                result.ViewChild = 0;
+                result.UserEmail = "Unknown";
+                result.CanUserAddItems = false;
+                result.UserId = "Unknown";
+                result.AccessList = new List<UserAccess>();
+                result.ProgenyList = new List<Progeny>();
 
+            }
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             // Todo: do not allow access, unless user is a Pivoq Organizer or has been granted access otherwise.
             bool allowAccess = true;
-            if (userEmail.ToUpper() == result.UserEmail.ToUpper())
+            if (userEmail.ToUpper() == result.UserEmail?.ToUpper())
             {
                 allowAccess = true;
             }
