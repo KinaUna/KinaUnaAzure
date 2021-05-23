@@ -135,6 +135,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(userinfo);
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> ByEmailPivoq([FromBody] string id)
@@ -305,6 +306,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        [AllowAnonymous]
         [HttpPost("[action]")]
         public async Task<IActionResult> ByUserIdPivoq([FromBody] string id)
         {
