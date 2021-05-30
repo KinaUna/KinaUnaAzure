@@ -318,8 +318,21 @@ namespace KinaUnaProgenyApi.Controllers
                 result.UserEmail = "Unknown";
                 result.CanUserAddItems = false;
                 result.UserId = "Unknown";
+                result.IsPivoqUser = true;
                 result.AccessList = new List<UserAccess>();
                 result.ProgenyList = new List<Progeny>();
+
+                if (User.Identity.IsAuthenticated)
+                {
+                    string userId = User.GetUserId() ?? "dc72bb31-e26f-410c-922d-09f25bc4992e";
+                    if (id == userId && userId != "dc72bb31-e26f-410c-922d-09f25bc4992e")
+                    {
+                        result.UserEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                        result.CanUserAddItems = false;
+                        result.UserId = userId;
+                        result.IsPivoqUser = false;
+                    }
+                }
 
             }
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
