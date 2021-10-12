@@ -19,6 +19,7 @@ using System.Security.Cryptography.X509Certificates;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Storage.Auth;
 using Microsoft.Azure.Storage.Blob;
@@ -38,6 +39,15 @@ namespace KinaUna.IDP
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                // Todo: Fix consent to work with my cookies and language selection
+                options.CheckConsentNeeded = context => false;
+                options.MinimumSameSitePolicy = SameSiteMode.Lax;
+                options.Secure = CookieSecurePolicy.Always;
+            });
+
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
             services.AddDbContext<ProgenyDbContext>(options =>
@@ -168,8 +178,9 @@ namespace KinaUna.IDP
                     options.AddPolicy("KinaUnaCors",
                         builder =>
                         {
-                            builder.WithOrigins("https://*." + Constants.AppRootDomain).SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                            builder.WithOrigins("https://*." + Constants.AppRootDomain, "https://*.pivoq.at").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
                         });
+                    options.AddPolicy("PivoqCors", builder => { builder.WithOrigins("https://*.pivoq.at").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials(); });
                 });
             }
             
@@ -220,25 +231,30 @@ namespace KinaUna.IDP
 
             services.AddLocalApiAuthentication();
 
-            services.AddAuthentication().AddApple(options =>
+            services.AddAuthentication(o => { o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme; })
+                .AddCookie()
+                .AddApple(options =>
             {
                 options.ClientId = Configuration["AppleClientId"];
                 options.KeyId = Configuration["AppleKeyId"];
                 options.TeamId = Configuration["AppleTeamId"];
-                options.UsePrivateKey(
-                    (keyId) => _env.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
+                options.UsePrivateKey((keyId) => _env.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
+                options.SaveTokens = true;
             }).AddGoogle("Google", "Google", options =>
             {
                 options.ClientId = Configuration["GoogleClientId"];
                 options.ClientSecret = Configuration["GoogleClientSecret"];
+                options.SaveTokens = true;
             }).AddFacebook("Facebook", "Facebook", options =>
             {
                 options.ClientId = Configuration["FacebookClientId"];
                 options.ClientSecret = Configuration["FacebookClientSecret"];
+                options.SaveTokens = true;
             }).AddMicrosoftAccount("Microsoft", "Microsoft", microsoftOptions =>
             {
                 microsoftOptions.ClientId = Configuration["MicrosoftClientId"];
                 microsoftOptions.ClientSecret = Configuration["MicrosoftClientSecret"];
+                microsoftOptions.SaveTokens = true;
             });
 
             services.AddApplicationInsightsTelemetry();
@@ -247,6 +263,7 @@ namespace KinaUna.IDP
         public void Configure(IApplicationBuilder app, IWebHostEnvironment hostingEnvironment
             )
         {
+            app.UseHttpsRedirection();
             // This will do the initial DB population
             InitializeDatabase(app, Constants.ResetIdentityDb);
 
@@ -273,7 +290,7 @@ namespace KinaUna.IDP
                 CookieName = Constants.LanguageCookieName
             };
             localizationOptions.RequestCultureProviders.Insert(0, provider);
-
+            app.UseCookiePolicy();
             app.UseRequestLocalization(localizationOptions);
             app.UseStaticFiles();
             app.UseRouting();

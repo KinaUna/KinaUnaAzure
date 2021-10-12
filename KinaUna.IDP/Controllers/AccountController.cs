@@ -187,7 +187,15 @@ namespace KinaUna.IDP.Controllers
                 {
                     if (context != null && context.ClientId.ToLower().Contains("pivoq"))
                     {
-                        logoutRedirectUri = _configuration.GetValue<string>("PivoqWebServer");
+                        if (context.ClientId.ToLower().Contains("core"))
+                        {
+                            logoutRedirectUri = _configuration.GetValue<string>("PivoqCoreWebServer");
+                        }
+                        else
+                        {
+                            logoutRedirectUri = _configuration.GetValue<string>("PivoqWebServer");
+                        }
+                        
                     }
                     else
                     {

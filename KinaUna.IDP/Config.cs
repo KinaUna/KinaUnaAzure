@@ -98,6 +98,20 @@ namespace KinaUna.IDP
                     {
                         Constants.PivoqApiName
                     }
+                },
+                new ApiResource
+                {
+                    Name = Constants.PivoqCoreApiName,
+                    DisplayName = "Pivoq Core API",
+                    UserClaims = new List<string> { "role" },
+                    ApiSecrets = new List<Secret>
+                    {
+                        new Secret(secretString.Sha256())
+                    },
+                    Scopes = new List<string>
+                    {
+                        Constants.PivoqApiName
+                    }
                 }
             };
         }
@@ -107,7 +121,8 @@ namespace KinaUna.IDP
             {
                 new ApiScope(Constants.ProgenyApiName, "KinaUna Progeny API",new List<string> {"role" }),
                 new ApiScope(Constants.MediaApiName, "KinaUna Media API",new List<string> {"role" }),
-                new ApiScope(Constants.PivoqApiName, "Pivoq API",new List<string> {"role" })
+                new ApiScope(Constants.PivoqApiName, "Pivoq API",new List<string> {"role" }),
+                new ApiScope(Constants.PivoqCoreApiName, "Pivoq Core API", new List<string> { "role" })
 
             };
 
@@ -120,6 +135,7 @@ namespace KinaUna.IDP
             var webServerNuuk2015 = configuration.GetValue<string>("WebServerDevNuuk2015");
             var webServerNuuk2020 = configuration.GetValue<string>("WebServerDevNuuk2020");
             var pivoqWebServerUrl = configuration.GetValue<string>("PivoqWebServer");
+            var pivoqCoreWebServerUrl = configuration.GetValue<string>("PivoqCoreWebServer");
             var pivoqWebServerLocal = configuration.GetValue<string>("PivoqWebServerLocal");
             var pivoqWebServerNuuk2015 = configuration.GetValue<string>("PivoqWebServerDevNuuk2015");
             var pivoqWebServerNuuk2020 = configuration.GetValue<string>("PivoqWebServerDevNuuk2020");
@@ -132,6 +148,8 @@ namespace KinaUna.IDP
             corsList.Add(Constants.SupportUrl);
             corsList.Add(Constants.PivoqUrl);
             corsList.Add(Constants.PivoqApiUrl);
+            corsList.Add(Constants.PivoqCoreUrl);
+            corsList.Add(Constants.PivoqCoreApiUrl);
             corsList.Add("https://" + Constants.AppRootDomain);
             corsList.Add(webServerNuuk2015);
             corsList.Add("https://nuuk2015.kinauna.io");
@@ -447,6 +465,39 @@ namespace KinaUna.IDP
                 },
                 new Client
                 {
+                    ClientName = "KinaUnaXamarin3",
+                    ClientId = "kinaunaxamarin3",
+                    AllowedGrantTypes = GrantTypes.Code,
+                    RedirectUris = { "net.kinauna.xamarin://callback" },
+                    PostLogoutRedirectUris = { "net.kinauna.xamarin://callback" },
+                    RequireClientSecret = false,
+                    RequireConsent = false,
+                    RequirePkce = true,
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.Email,
+                        "firstname",
+                        "middlename",
+                        "lastname",
+                        "roles",
+                        "timezone",
+                        "viewchild",
+                        "joindate",
+                        Constants.ProgenyApiName,
+                        Constants.MediaApiName
+                    },
+                    AccessTokenLifetime = 2592000,
+                    AllowOfflineAccess = true,
+                    AlwaysIncludeUserClaimsInIdToken = false,
+                    RefreshTokenExpiration = TokenExpiration.Sliding,
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    RefreshTokenUsage = TokenUsage.ReUse
+
+                },
+                new Client
+                {
                     ClientName = "KinaUnaSupport",
                     ClientId = "kinaunasupport",
                     ClientUri = supportServerUrl,
@@ -488,6 +539,58 @@ namespace KinaUna.IDP
                         "timezone",
                         "viewchild",
                         "joindate"
+                    },
+                    ClientSecrets =
+                    {
+                        new Secret(secretString.Sha256())
+                    }
+                },
+                new Client
+                {
+                    ClientName = "pivoqcoreweb",
+                    ClientId = "pivoqcorewebclient",
+                    ClientUri = pivoqCoreWebServerUrl,
+                    RequirePkce = false,
+                    AllowPlainTextPkce = false,
+                    RequireConsent = false,
+                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
+                    AccessTokenType = AccessTokenType.Reference,
+                    IdentityTokenLifetime = 2592000,
+                    AuthorizationCodeLifetime = 2592000,
+                    AccessTokenLifetime = 2592000,
+                    AllowOfflineAccess = true,
+                    AlwaysIncludeUserClaimsInIdToken = false,
+                    RefreshTokenExpiration = TokenExpiration.Sliding,
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    AllowedCorsOrigins = corsList,
+                    RedirectUris = new List<string>()
+                    {
+                        pivoqCoreWebServerUrl + "/signin-oidc"
+
+                    },
+                    PostLogoutRedirectUris = new List<string>()
+                    {
+                        pivoqCoreWebServerUrl + "/signout-callback-oidc"
+                    },
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.OfflineAccess,
+                        IdentityServerConstants.StandardScopes.Address,
+                        IdentityServerConstants.StandardScopes.Email,
+                        IdentityServerConstants.StandardScopes.Phone,
+                        "firstname",
+                        "middlename",
+                        "lastname",
+                        "roles",
+                        "timezone",
+                        "viewchild",
+                        "joindate",
+                        Constants.ProgenyApiName,
+                        Constants.MediaApiName,
+                        Constants.PivoqApiName,
+                        Constants.PivoqCoreApiName
                     },
                     ClientSecrets =
                     {
@@ -538,7 +641,8 @@ namespace KinaUna.IDP
                         "joindate",
                         Constants.ProgenyApiName,
                         Constants.MediaApiName,
-                        Constants.PivoqApiName
+                        Constants.PivoqApiName,
+                        Constants.PivoqCoreApiName
                     },
                     ClientSecrets =
                     {
@@ -585,7 +689,8 @@ namespace KinaUna.IDP
                         "joindate",
                         Constants.ProgenyApiName,
                         Constants.MediaApiName,
-                        Constants.PivoqApiName
+                        Constants.PivoqApiName,
+                        Constants.PivoqCoreApiName
                     },
                     ClientSecrets =
                     {
@@ -632,7 +737,8 @@ namespace KinaUna.IDP
                         "joindate",
                         Constants.ProgenyApiName,
                         Constants.MediaApiName,
-                        Constants.PivoqApiName
+                        Constants.PivoqApiName,
+                        Constants.PivoqCoreApiName
                     },
                     ClientSecrets =
                     {
@@ -679,7 +785,8 @@ namespace KinaUna.IDP
                         "joindate",
                         Constants.ProgenyApiName,
                         Constants.MediaApiName,
-                        Constants.PivoqApiName
+                        Constants.PivoqApiName,
+                        Constants.PivoqCoreApiName
                     },
                     ClientSecrets =
                     {

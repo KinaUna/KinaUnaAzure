@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "https://Nuuk2020.kinauna.io:44347/",
+      "applicationUrl": "https://localhost:44347/",
       "sslPort": 44347
     }
   },
