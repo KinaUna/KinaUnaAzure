@@ -175,7 +175,7 @@ namespace KinaUna.IDP.Controllers
                 {
                     if (context != null && context.ClientId.ToLower().Contains("pivoq"))
                     {
-                        logoutRedirectUri = _configuration.GetValue<string>("PivoqWebServerDevNuuk2015");
+                        logoutRedirectUri = _configuration.GetValue<string>("PivoqWebServerLocal");
                     }
                     else
                     {
@@ -282,7 +282,7 @@ namespace KinaUna.IDP.Controllers
                 {
                     if (logout.ClientId.ToLower().Contains("pivoq"))
                     {
-                        logout.PostLogoutRedirectUri = _configuration.GetValue<string>("PivoqWebServerDevNuuk2015");
+                        logout.PostLogoutRedirectUri = _configuration.GetValue<string>("PivoqWebServerLocal");
                     }
                     else
                     {
@@ -342,6 +342,7 @@ namespace KinaUna.IDP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
         {
+            string clientId = "KinaUna";
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
@@ -368,7 +369,7 @@ namespace KinaUna.IDP.Controllers
                 }
 
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                string clientId = "KinaUna";
+                
                 if (returnUrl != null && returnUrl.ToLower().Contains("pivoq"))
                 {
                     clientId = "Pivoq";
@@ -382,18 +383,31 @@ namespace KinaUna.IDP.Controllers
 
             if (returnUrl != null)
             {
-                if (HttpContext.User.Identity.IsAuthenticated)
-                    return Redirect(returnUrl);
-                else
-                    if (ModelState.IsValid)
-                    return RedirectToAction("Login", "Account", new { returnUrl });
-                else
-                    return View(model);
+                if (ModelState.IsValid)
+                {
+                    if (clientId == "Pivoq")
+                    {
+                        return Redirect(Constants.PivoqCoreUrl + "/Account/SignedUp");
+                    }
+                    else
+                    {
+                        return RedirectToAction("RegConfirm", "Account", new { returnUrl });
+                    }
+                }
+                    
+                
+                return View(model);
             }
 
             return RedirectToAction("Index", "Home");
         }
 
+        [HttpGet]
+        public IActionResult RegConfirm(string returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
         [HttpGet]
         public IActionResult Redirecting()
         {

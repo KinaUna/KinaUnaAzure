@@ -1,4 +1,5 @@
-﻿using IdentityServer4.AccessTokenValidation;
+﻿using System;
+using IdentityServer4.AccessTokenValidation;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUnaMediaApi.Services;
@@ -56,6 +57,8 @@ namespace KinaUnaMediaApi
                     options.ApiName = authenticationServerClientId;
                     options.ApiSecret = authenticationServerClientSecret;
                     options.RequireHttpsMetadata = true;
+                    options.EnableCaching = true;
+                    options.CacheDuration = TimeSpan.FromSeconds(600);
                 });
             services.AddAuthorization();
             services.AddApplicationInsightsTelemetry();

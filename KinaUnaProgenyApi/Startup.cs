@@ -64,6 +64,8 @@ namespace KinaUnaProgenyApi
                     options.ApiName = authenticationServerClientId;
                     options.ApiSecret = authenticationServerClientSecret;
                     options.RequireHttpsMetadata = false;
+                    options.EnableCaching = true;
+                    options.CacheDuration = TimeSpan.FromSeconds(600);
                 });
             services.AddAuthorization();
             services.AddApplicationInsightsTelemetry();

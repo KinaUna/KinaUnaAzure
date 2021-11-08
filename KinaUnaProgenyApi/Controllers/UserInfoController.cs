@@ -147,18 +147,53 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo userinfo = await _dataService.GetUserInfoByEmail(id); 
             if (allowAccess && userinfo != null && userinfo.Id != 0)
             {
+                if (!userinfo.IsPivoqUser)
+                {
+                    userinfo.IsPivoqUser = true;
+                    _context.UserInfoDb.Update(userinfo);
+                    await _context.SaveChangesAsync();
+                }
                 userinfo.AccessList = new List<UserAccess>();
                 userinfo.ProgenyList = new List<Progeny>();
             }
             else
             {
-                userinfo = new UserInfo();
-                userinfo.ViewChild = 0;
-                userinfo.UserEmail = "Unknown";
-                userinfo.CanUserAddItems = false;
-                userinfo.UserId = "Unknown";
-                userinfo.AccessList = new List<UserAccess>();
-                userinfo.ProgenyList = new List<Progeny>();
+                if (User.Identity.IsAuthenticated)
+                {
+                    if (userEmail.ToUpper() == User.GetEmail().ToUpper())
+                    {
+                        UserInfo newUserinfo = new UserInfo();
+                        newUserinfo.UserEmail = userEmail;
+                        newUserinfo.ViewChild = 0;
+                        newUserinfo.UserId = User.GetUserId();
+                        newUserinfo.Timezone = User.GetUserTimeZone();
+                        newUserinfo.UserName = User.GetUserUserName();
+                        if (String.IsNullOrEmpty(newUserinfo.UserName))
+                        {
+                            newUserinfo.UserName = newUserinfo.UserEmail;
+                        }
+
+                        newUserinfo.IsPivoqUser = true;
+
+                        _context.UserInfoDb.Add(newUserinfo);
+                        await _context.SaveChangesAsync();
+                        await _dataService.SetUserInfoByEmail(newUserinfo.UserEmail);
+                        userinfo = newUserinfo;
+                        userinfo.AccessList = new List<UserAccess>();
+                        userinfo.ProgenyList = new List<Progeny>();
+                    }
+                }
+                else
+                {
+                    userinfo = new UserInfo();
+                    userinfo.ViewChild = 0;
+                    userinfo.UserEmail = "Unknown";
+                    userinfo.CanUserAddItems = false;
+                    userinfo.UserId = "Unknown";
+                    userinfo.AccessList = new List<UserAccess>();
+                    userinfo.ProgenyList = new List<Progeny>();
+                }
+                
 
             }
 
@@ -310,6 +345,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> ByUserIdPivoq([FromBody] string id)
         {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo result = await _dataService.GetUserInfoByUserId(id);
             if (result == null)
             {
@@ -327,15 +363,33 @@ namespace KinaUnaProgenyApi.Controllers
                     string userId = User.GetUserId() ?? "dc72bb31-e26f-410c-922d-09f25bc4992e";
                     if (id == userId && userId != "dc72bb31-e26f-410c-922d-09f25bc4992e")
                     {
-                        result.UserEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                        result.CanUserAddItems = false;
-                        result.UserId = userId;
-                        result.IsPivoqUser = false;
+                        if (userEmail.ToUpper() == User.GetEmail().ToUpper())
+                        {
+                            UserInfo newUserinfo = new UserInfo();
+                            newUserinfo.UserEmail = userEmail;
+                            newUserinfo.ViewChild = 0;
+                            newUserinfo.UserId = User.GetUserId();
+                            newUserinfo.Timezone = User.GetUserTimeZone();
+                            newUserinfo.UserName = User.GetUserUserName();
+                            if (String.IsNullOrEmpty(newUserinfo.UserName))
+                            {
+                                newUserinfo.UserName = newUserinfo.UserEmail;
+                            }
+
+                            newUserinfo.IsPivoqUser = true;
+
+                            _context.UserInfoDb.Add(newUserinfo);
+                            await _context.SaveChangesAsync();
+                            await _dataService.SetUserInfoByEmail(result.UserEmail);
+                            result = newUserinfo;
+                            result.AccessList = new List<UserAccess>();
+                            result.ProgenyList = new List<Progeny>();
+                        }
                     }
                 }
 
             }
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+           
             // Todo: do not allow access, unless user is a Pivoq Organizer or has been granted access otherwise.
             bool allowAccess = true;
             if (userEmail.ToUpper() == result.UserEmail?.ToUpper())

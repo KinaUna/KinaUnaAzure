@@ -209,13 +209,8 @@ namespace KinaUnaWeb
                     options.Scope.Add("openid");
                     options.Scope.Add("profile");
                     options.Scope.Add("email");
-                    options.Scope.Add("address");
-                    options.Scope.Add("phone");
                     options.Scope.Add("roles");
                     options.Scope.Add("timezone");
-                    options.Scope.Add("firstname");
-                    options.Scope.Add("middlename");
-                    options.Scope.Add("lastname");
                     options.Scope.Add("joindate");
                     options.Scope.Add("viewchild");
                     options.Scope.Add(Constants.ProgenyApiName);
@@ -231,10 +226,6 @@ namespace KinaUnaWeb
                     options.ClaimActions.MapUniqueJsonKey("timezone", "timezone");
                     options.ClaimActions.MapUniqueJsonKey("email", "email");
                     options.ClaimActions.MapUniqueJsonKey("email_verified", "email_verified");
-                    options.ClaimActions.MapUniqueJsonKey("firstname", "firstname");
-                    options.ClaimActions.MapUniqueJsonKey("middlename", "middlename");
-                    options.ClaimActions.MapUniqueJsonKey("lastname", "lastname");
-                    options.ClaimActions.MapUniqueJsonKey("phone_number", "phone_number");
                     options.ClaimActions.MapUniqueJsonKey("viewchild", "viewchild");
                     options.ClaimActions.MapUniqueJsonKey("joindate", "joindate");
                     options.ClaimActions.MapUniqueJsonKey("preferred_username", "preferred_username");

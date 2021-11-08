@@ -245,17 +245,19 @@ namespace KinaUna.IDP
                 options.ClientId = Configuration["GoogleClientId"];
                 options.ClientSecret = Configuration["GoogleClientSecret"];
                 options.SaveTokens = true;
-            }).AddFacebook("Facebook", "Facebook", options =>
-            {
-                options.ClientId = Configuration["FacebookClientId"];
-                options.ClientSecret = Configuration["FacebookClientSecret"];
-                options.SaveTokens = true;
             }).AddMicrosoftAccount("Microsoft", "Microsoft", microsoftOptions =>
             {
                 microsoftOptions.ClientId = Configuration["MicrosoftClientId"];
                 microsoftOptions.ClientSecret = Configuration["MicrosoftClientSecret"];
                 microsoftOptions.SaveTokens = true;
             });
+
+            //    .AddFacebook("Facebook", "Facebook", options =>
+            //{
+            //    options.ClientId = Configuration["FacebookClientId"];
+            //    options.ClientSecret = Configuration["FacebookClientSecret"];
+            //    options.SaveTokens = true;
+            //})
 
             services.AddApplicationInsightsTelemetry();
         }
