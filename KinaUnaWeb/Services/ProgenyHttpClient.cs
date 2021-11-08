@@ -40,8 +40,8 @@ namespace KinaUnaWeb.Services
 
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            httpClient.DefaultRequestVersion = new Version(2, 0);
            
         }
 

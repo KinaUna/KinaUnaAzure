@@ -31,13 +31,11 @@ namespace KinaUnaWeb.Services
 
         private ConcurrentDictionary<string, AccessTokenItem> _accessTokens = new ConcurrentDictionary<string, AccessTokenItem>();
 
-        public ApiTokenInMemoryClient(
-            IOptions<AuthConfigurations> authConfigurations,
-            IHttpClientFactory httpClientFactory,
-            ILoggerFactory loggerFactory)
+        public ApiTokenInMemoryClient(IOptions<AuthConfigurations> authConfigurations, IHttpClientFactory httpClientFactory, ILoggerFactory loggerFactory)
         {
             _authConfigurations = authConfigurations;
             _httpClient = httpClientFactory.CreateClient();
+            _httpClient.DefaultRequestVersion = new Version(2, 0);
             _logger = loggerFactory.CreateLogger<ApiTokenInMemoryClient>();
         }
 

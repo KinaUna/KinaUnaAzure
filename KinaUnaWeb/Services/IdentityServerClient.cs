@@ -12,12 +12,10 @@ namespace KinaUnaWeb.Services
 		private readonly ClientCredentialsTokenRequest _tokenRequest;
 		private readonly ILogger<IdentityServerClient> _logger;
 
-		public IdentityServerClient(
-			HttpClient httpClient,
-			ClientCredentialsTokenRequest tokenRequest,
-			ILogger<IdentityServerClient> logger)
+		public IdentityServerClient(HttpClient httpClient, ClientCredentialsTokenRequest tokenRequest, ILogger<IdentityServerClient> logger)
 		{
 			_httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _httpClient.DefaultRequestVersion = new Version(2, 0);
 			_tokenRequest = tokenRequest ?? throw new ArgumentNullException(nameof(tokenRequest));
 			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		}

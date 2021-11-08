@@ -30,7 +30,6 @@ namespace KinaUnaWeb.Services
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
-            _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
             _env = env;
             string clientUri = _configuration.GetValue<string>("MediaApiServer");
@@ -40,8 +39,9 @@ namespace KinaUnaWeb.Services
             }
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            httpClient.DefaultRequestVersion = new Version(2, 0);
+            _httpClient = httpClient;
         }
 
         private async Task<string> GetNewToken()
