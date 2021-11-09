@@ -264,6 +264,7 @@ namespace KinaUnaProgenyApi.Services
         
         public async Task<UserInfo> GetUserInfoByEmail(string userEmail)
         {
+            userEmail = userEmail.Trim();
             UserInfo userinfo;
             string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper());
             if (!string.IsNullOrEmpty(cachedUserInfo))

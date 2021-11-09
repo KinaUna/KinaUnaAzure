@@ -140,6 +140,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]")]
         public async Task<IActionResult> ByEmailPivoq([FromBody] string id)
         {
+            id = id?.Trim();
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             bool allowAccess = userEmail.IsValidEmail() && userEmail.ToUpper() != Constants.DefaultUserEmail.ToUpper();
             //Todo: verify that user should have access.
@@ -160,7 +161,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (User.Identity.IsAuthenticated)
                 {
-                    if (userEmail.ToUpper() == User.GetEmail().ToUpper())
+                    if (id.ToUpper() == User.GetEmail().ToUpper())
                     {
                         UserInfo newUserinfo = new UserInfo();
                         newUserinfo.UserEmail = userEmail;
