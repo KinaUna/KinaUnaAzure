@@ -50,9 +50,7 @@ namespace KinaUnaProgenyApi
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
-            services.AddDistributedRedisCache(option =>
-                option.Configuration = Configuration["RedisConnection"]);
-
+            services.AddDistributedMemoryCache();
             services.AddScoped<IDataService, DataService>();
 
             services.AddControllers().AddNewtonsoftJson();
@@ -63,7 +61,7 @@ namespace KinaUnaProgenyApi
                     options.Authority = authorityServerUrl;
                     options.ApiName = authenticationServerClientId;
                     options.ApiSecret = authenticationServerClientSecret;
-                    options.RequireHttpsMetadata = false;
+                    options.RequireHttpsMetadata = true;
                     options.EnableCaching = true;
                     options.CacheDuration = TimeSpan.FromSeconds(600);
                 });

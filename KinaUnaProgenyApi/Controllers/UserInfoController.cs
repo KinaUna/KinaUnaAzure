@@ -381,7 +381,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                             _context.UserInfoDb.Add(newUserinfo);
                             await _context.SaveChangesAsync();
-                            await _dataService.SetUserInfoByEmail(result.UserEmail);
+                            await _dataService.SetUserInfoByEmail(newUserinfo.UserEmail);
                             result = newUserinfo;
                             result.AccessList = new List<UserAccess>();
                             result.ProgenyList = new List<Progeny>();
@@ -481,6 +481,7 @@ namespace KinaUnaProgenyApi.Controllers
             userinfo.FirstName = value?.FirstName ?? "";
             userinfo.MiddleName = value?.MiddleName ?? "";
             userinfo.LastName = value?.LastName ?? "";
+            userinfo.PhoneNumber = value?.PhoneNumber ?? "";
             userinfo.ProfilePicture = value?.ProfilePicture ?? "";
             userinfo.UserName = value?.UserName ?? userinfo.UserEmail;
             userinfo.IsKinaUnaUser = value.IsKinaUnaUser;
@@ -553,6 +554,7 @@ namespace KinaUnaProgenyApi.Controllers
             userinfo.MiddleName = value.MiddleName;
             userinfo.LastName = value.LastName;
             userinfo.UserName = value.UserName;
+            userinfo.PhoneNumber = value.PhoneNumber;
             userinfo.ViewChild = value.ViewChild;
             userinfo.IsKinaUnaUser = value.IsKinaUnaUser;
             userinfo.IsPivoqUser = value.IsPivoqUser;

@@ -42,9 +42,8 @@ namespace KinaUnaMediaApi
             services.AddDbContext<ProgenyDbContext>(options =>
                 options.UseSqlServer(Configuration["ProgenyDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
 
-            services.AddDistributedRedisCache(option =>
-                option.Configuration = Configuration["RedisConnection"]);
-
+            //services.AddDistributedRedisCache(option => option.Configuration = Configuration["RedisConnection"]);
+            services.AddDistributedMemoryCache();
             services.AddScoped<IDataService, DataService>();
 
             services.AddControllers().AddNewtonsoftJson();

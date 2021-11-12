@@ -183,7 +183,8 @@ namespace KinaUna.IDP
                     options.AddPolicy("PivoqCors", builder => { builder.WithOrigins("https://*.pivoq.at").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials(); });
                 });
             }
-            
+
+            services.AddDistributedMemoryCache();
 
             services.AddControllersWithViews()
                 .AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix).AddRazorRuntimeCompilation();
@@ -218,11 +219,7 @@ namespace KinaUna.IDP
                     options.EnableTokenCleanup = true;
                     options.TokenCleanupInterval = 3600;
                 })
-                .AddRedisCaching(options =>
-                {
-                    options.RedisConnectionString = Configuration["RedisConnection"];
-                    options.KeyPrefix = Constants.AppName + "idp";
-                })
+                .AddInMemoryCaching()
                 .AddClientStoreCache<IdentityServer4.EntityFramework.Stores.ClientStore>()
                 .AddResourceStoreCache<IdentityServer4.EntityFramework.Stores.ResourceStore>()
                 .AddCorsPolicyCache<IdentityServer4.EntityFramework.Services.CorsPolicyService>()

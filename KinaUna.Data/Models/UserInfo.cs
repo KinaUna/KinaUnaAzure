@@ -12,6 +12,7 @@ namespace KinaUna.Data.Models
         public string FirstName { get; set; }
         public string MiddleName { get; set; }
         public string LastName { get; set; }
+        public string PhoneNumber { get; set; }
         public int ViewChild { get; set; }
         public string Timezone { get; set; }
         public string ProfilePicture { get; set; }
