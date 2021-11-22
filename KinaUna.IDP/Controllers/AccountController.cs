@@ -173,7 +173,7 @@ namespace KinaUna.IDP.Controllers
                 string logoutRedirectUri;
                 if (_env.IsDevelopment())
                 {
-                    if (context != null && context.ClientId.ToLower().Contains("pivoq"))
+                    if (context != null && context.ClientId != null && context.ClientId.ToLower().Contains("pivoq"))
                     {
                         logoutRedirectUri = _configuration.GetValue<string>("PivoqWebServerLocal");
                     }
@@ -221,7 +221,7 @@ namespace KinaUna.IDP.Controllers
                 LogoutId = logoutId
             };
 
-            if (context != null && context.ClientId.ToLower().Contains("pivoq"))
+            if (context != null && context.ClientId != null && context.ClientId.ToLower().Contains("pivoq"))
             {
                 ViewData["AccountType"] = "Pivoq";
             }
@@ -280,7 +280,7 @@ namespace KinaUna.IDP.Controllers
             {
                 if (_env.IsDevelopment())
                 {
-                    if (logout.ClientId.ToLower().Contains("pivoq"))
+                    if (logout.ClientId != null && logout.ClientId.ToLower().Contains("pivoq"))
                     {
                         logout.PostLogoutRedirectUri = _configuration.GetValue<string>("PivoqWebServerLocal");
                     }
@@ -292,7 +292,7 @@ namespace KinaUna.IDP.Controllers
                 }
                 else
                 {
-                    if (logout.ClientId.ToLower().Contains("pivoq"))
+                    if ( logout.ClientId != null && logout.ClientId.ToLower().Contains("pivoq"))
                     {
                         logout.PostLogoutRedirectUri = _configuration.GetValue<string>("PivoqWebServer");
                     }

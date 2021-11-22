@@ -159,9 +159,9 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                if (User.Identity.IsAuthenticated)
+                if (User.Identity.IsAuthenticated && userEmail != Constants.DefaultUserEmail)
                 {
-                    if (id.ToUpper() == User.GetEmail().ToUpper())
+                    if (id.ToUpper() == userEmail.ToUpper())
                     {
                         UserInfo newUserinfo = new UserInfo();
                         newUserinfo.UserEmail = userEmail;
