@@ -20,7 +20,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.Extensions.Configuration;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;

@@ -44,5 +44,4 @@ namespace KinaUna.IDP
                     webBuilder.UseStartup<Startup>();
                 });
     }
-
 }
