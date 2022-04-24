@@ -396,21 +396,21 @@ namespace KinaUnaMediaApi.Controllers
             
             using (MagickImage image = new MagickImage(memoryStream))
             {
-                ExifProfile profile = image.GetExifProfile();
+                IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
                 {
                     int rotation;
                     try
                     {
 
-                        ExifValue gpsLongtitude = profile.GetValue(ExifTag.GPSLongitude);
-                        ExifValue gpsLatitude = profile.GetValue(ExifTag.GPSLatitude);
-                        ExifValue gpsAltitude = profile.GetValue(ExifTag.GPSAltitude);
+                        IExifValue gpsLongtitude = profile.GetValue(ExifTag.GPSLongitude);
+                        IExifValue gpsLatitude = profile.GetValue(ExifTag.GPSLatitude);
+                        IExifValue gpsAltitude = profile.GetValue(ExifTag.GPSAltitude);
 
                         if (gpsLongtitude != null && gpsLatitude != null)
                         {
-                            Rational[] longValues = gpsLongtitude.Value as Rational[];
-                            Rational[] latValues = gpsLatitude.Value as Rational[];
+                            Rational[] longValues = gpsLongtitude.GetValue() as Rational[];
+                            Rational[] latValues = gpsLatitude.GetValue() as Rational[];
 
 
                             if (longValues != null && (longValues[0].Denominator != 0 && longValues[1].Denominator != 0 &&
@@ -447,7 +447,7 @@ namespace KinaUnaMediaApi.Controllers
 
                         if (gpsAltitude != null)
                         {
-                            Rational altValues = (Rational)gpsAltitude.Value;
+                            Rational altValues = (Rational)gpsAltitude.GetValue();
                             if (altValues.Denominator != 0)
                             {
                                 double alt0 = altValues.Numerator / (double)altValues.Denominator;
@@ -1170,7 +1170,7 @@ namespace KinaUnaMediaApi.Controllers
 
             using (MagickImage image = new MagickImage(file.OpenReadStream()))
             {
-                ExifProfile profile = image.GetExifProfile();
+                IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
                 {
                     int rotation;
@@ -1243,7 +1243,7 @@ namespace KinaUnaMediaApi.Controllers
 
             using (MagickImage image = new MagickImage(file.OpenReadStream()))
             {
-                ExifProfile profile = image.GetExifProfile();
+                IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
                 {
                     int rotation;
@@ -1316,7 +1316,7 @@ namespace KinaUnaMediaApi.Controllers
 
             using (MagickImage image = new MagickImage(file.OpenReadStream()))
             {
-                ExifProfile profile = image.GetExifProfile();
+                IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
                 {
                     int rotation;
@@ -1389,7 +1389,7 @@ namespace KinaUnaMediaApi.Controllers
 
             using (MagickImage image = new MagickImage(file.OpenReadStream()))
             {
-                ExifProfile profile = image.GetExifProfile();
+                IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
                 {
                     int rotation;
