@@ -546,8 +546,11 @@ namespace KinaUnaMediaApi.Controllers
 
                     try
                     {
-                        model.PictureWidth = Convert.ToInt32(profile.GetValue(ExifTag.PixelXDimension).Value);
-                        model.PictureHeight = Convert.ToInt32(profile.GetValue(ExifTag.PixelYDimension).Value);
+                        Number w = profile.GetValue(ExifTag.PixelXDimension).Value;
+                        Number h = profile.GetValue(ExifTag.PixelYDimension).Value;
+                        
+                        model.PictureWidth = Convert.ToInt32((uint)w);
+                        model.PictureHeight = Convert.ToInt32((uint)h);
                     }
                     catch (FormatException)
                     {
