@@ -27,9 +27,10 @@ namespace KinaUnaProgenyApi.Services
         Task<List<UserInfo>> GetAllUserInfos();
         Task<UserInfo> GetUserInfoByEmail(string userEmail);
         Task<UserInfo> SetUserInfoByEmail(string userEmail);
-        Task RemoveUserInfoByEmail(string userEmail, string userId, int userinfoId);
+        Task RemoveUserInfoByEmail(string userEmail, string userId, int userInfoId);
         Task<UserInfo> GetUserInfoById(int id);
         Task<UserInfo> GetUserInfoByUserId(string id);
+        Task<List<UserInfo>> GetDeletedUserInfos();
         Task<Address> GetAddressItem(int id);
         Task<Address> AddAddressItem(Address addressItem);
         Task<Address> UpdateAddressItem(Address addressItem);

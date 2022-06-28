@@ -2,8 +2,11 @@
 <!DOCTYPE html>
 <html lang="en">
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using Microsoft.AspNetCore.Http.Extensions
 @using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Syncfusion.EJ2
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -49,31 +52,53 @@
     bool canUserAddItems = false;
     var usrName = "";
     UserInfo userinfo = new UserInfo();
+    bool showUndelete = false;
+    string userId = Constants.DefaultUserId;
 }
 
-@if (User.Identity.IsAuthenticated)
+@if (User.Identity != null && User.Identity.IsAuthenticated)
 {
+    userId = User.GetUserId();
     string userEmail = User.FindFirst("email")?.Value ?? Constants.DefaultUserEmail;
     userinfo = await ChildManager.GetInfo(userEmail);
-    if (userinfo.UserId == "401")
+    bool isAccountDeleted = userinfo.Deleted && userinfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30);
+    if (!isAccountDeleted && await ChildManager.IsUserLoginValid(userId))
     {
-        Context.Response.Redirect("/Account/CheckOut?returnUrl=" + returnUrl);
+        if (userinfo.UserId == "401")
+        {
+            Context.Response.Redirect("/Account/CheckOut?returnUrl=" + returnUrl);
+        }
+        else
+        {
+            if (userinfo.ViewChild == 0)
+            {
+                Context.Response.Redirect("/");
+            }
+            childList = userinfo.ProgenyList;
+            canUserAddItems = userinfo.CanUserAddItems;
+            child = userinfo.ProgenyList.SingleOrDefault(p => p.Id == userinfo.ViewChild);
+            usrName = userinfo.UserName;
+            if (String.IsNullOrEmpty(userinfo.UserName))
+            {
+                usrName = userinfo.UserEmail;
+            }
+        }
     }
     else
     {
-        if (userinfo.ViewChild == 0)
+        bool isApplicationUserValid = await ChildManager.IsApplicationUserValid(userId);
+
+        if (isApplicationUserValid && userinfo.Deleted && userinfo.DeletedTime > DateTime.UtcNow - TimeSpan.FromDays(30))
         {
-            Context.Response.Redirect("/");
+
+            showUndelete = true;
         }
-        childList = userinfo.ProgenyList;
-        canUserAddItems = userinfo.CanUserAddItems;
-        child = userinfo.ProgenyList.SingleOrDefault(p => p.Id == userinfo.ViewChild);
-        usrName = userinfo.UserName;
-        if (String.IsNullOrEmpty(userinfo.UserName))
+        else
         {
-            usrName = userinfo.UserEmail;
+            Context.Response.Redirect("/Account/SignIn?returnUrl=" + returnUrl);
         }
     }
+
 }
 <body>
 <script>
@@ -345,6 +370,29 @@
 </nav>
 <div class="container body-content">
     <div class="main main-raised" style="margin-top: 10px; margin-left: 5px; margin-right: 5px; padding: 5px; padding-left: 10px; padding-top: 10px;">
+        @if (showUndelete)
+        {
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <div class="bg-danger text-white p-3">
+                            <div class="space-20"></div>
+                            <span>
+                                Deletion of your account was initiated, but not completed by clicking the link sent to you.
+                            </span>
+                            <div class="space-20"></div>
+                            <span>
+                                <a class="btn-link-yellow" asp-action="DeleteAccount" asp-controller="Account">Click here to complete the deletion.</a>
+                            </span>
+                            <div class="space-20"></div>
+                            <span>
+                                <a class="btn-link-yellow" asp-action="UnDeleteAccount" asp-controller="Account">Click here to undo the deletion.</a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
         @RenderBody()
     </div>
     <br/>

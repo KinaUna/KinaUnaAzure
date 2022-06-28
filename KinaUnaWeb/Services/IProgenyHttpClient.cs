@@ -134,6 +134,11 @@ namespace KinaUnaWeb.Services
         /// <returns>UserInfo: The updated UserInfo object.</returns>
         Task<UserInfo> UpdateUserInfo(UserInfo userinfo);
 
+        Task<UserInfo> DeleteUserInfo(UserInfo userInfo);
+
+        Task<List<UserInfo>> GetDeletedUserInfos();
+
+        Task<UserInfo> RemoveUserInfoForGood(UserInfo userInfo);
         /// <summary>
         /// Gets a Sleep with a given SleepId.
         /// </summary>

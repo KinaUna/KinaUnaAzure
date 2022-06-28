@@ -25,6 +25,7 @@ using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 
 namespace KinaUna.IDP.Controllers
 {
@@ -1002,5 +1003,143 @@ namespace KinaUna.IDP.Controllers
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
         }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> CheckDeletePivoqAccount([FromBody] UserInfo userInfo)
+        {
+            UserInfo deletedUserInfo = await _progContext.DeletedUsers.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == userInfo.UserId);
+            if (deletedUserInfo != null)
+            {
+                UserInfo confirmDeleteUserInfo = new UserInfo();
+                confirmDeleteUserInfo.UserId = deletedUserInfo.UserId;
+                confirmDeleteUserInfo.DeletedTime = deletedUserInfo.DeletedTime;
+                confirmDeleteUserInfo.Deleted = deletedUserInfo.Deleted;
+                return Ok(confirmDeleteUserInfo);
+            }
+
+            return Ok(new UserInfo());
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> IsApplicationUserValid([FromBody] UserInfo userInfo)
+        {
+            ApplicationUser user = await _userManager.FindByIdAsync(userInfo.UserId);
+            if (user != null)
+            {
+                return Ok(userInfo);
+            }
+
+            return Ok(new UserInfo());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveDeletePivoqAccount([FromBody] UserInfo userInfo)
+        {
+            ApplicationUser user = await _userManager.Users.SingleOrDefaultAsync(u => u.Id == User.GetUserId());
+            if (user != null && user.Id != Constants.DefaultUserId && user.Id == userInfo.UserId)
+            {
+                UserInfo deletedUserInfo = await _progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == userInfo.UserId);
+                if (deletedUserInfo != null)
+                {
+                    UserInfo restoredDeleteUserInfo = new UserInfo();
+                    restoredDeleteUserInfo.UserId = deletedUserInfo.UserId;
+                    restoredDeleteUserInfo.DeletedTime = deletedUserInfo.DeletedTime;
+                    restoredDeleteUserInfo.Deleted = deletedUserInfo.Deleted;
+
+                    _progContext.DeletedUsers.Remove(deletedUserInfo);
+                    return Ok(restoredDeleteUserInfo);
+                }
+            }
+            
+            return Ok(new UserInfo());
+        }
+        
+        public async Task<IActionResult> DeleteAccount()
+        {
+            RegisterViewModel model = new RegisterViewModel();
+            //model.LanguageId = Request.GetLanguageIdFromCookie();
+            //model.RegionId = Request.GetRegionIdFromCookie();
+
+            ApplicationUser user = await _userManager.Users.SingleOrDefaultAsync(u => u.Id == User.GetUserId());
+            if (user != null && user.Id != Constants.DefaultUserId)
+            {
+                model.Email = user.Email;
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var callbackUrl = Url.EmailDeleteAccountLink(user.Id, code, Request.Scheme);
+                await _emailSender.SendEmailDeleteAsync(model.Email, callbackUrl, model.LanguageId);
+
+                UserInfo userInfo = await _progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == user.Id);
+                if (userInfo != null && !string.IsNullOrEmpty(userInfo.UserId))
+                {
+                    userInfo.UserName = user.UserName;
+                    userInfo.UserId = user.Id;
+                    userInfo.UserEmail = user.Email;
+                    userInfo.Deleted = false;
+                    userInfo.DeletedTime = DateTime.UtcNow;
+                    userInfo.UpdatedTime = DateTime.UtcNow;
+                    userInfo.ProfilePicture = JsonConvert.SerializeObject(user);
+                    _progContext.DeletedUsers.Update(userInfo);
+                    await _progContext.SaveChangesAsync();
+                }
+                else
+                {
+                    userInfo = new UserInfo();
+                    userInfo.UserName = user.UserName;
+                    userInfo.UserId = user.Id;
+                    userInfo.UserEmail = user.Email;
+                    userInfo.Deleted = false;
+                    userInfo.DeletedTime = DateTime.UtcNow;
+                    userInfo.UpdatedTime = DateTime.UtcNow;
+                    userInfo.ProfilePicture = JsonConvert.SerializeObject(user);
+                    await _progContext.DeletedUsers.AddAsync(userInfo);
+                    await _progContext.SaveChangesAsync();
+                }
+            }
+            
+
+            return View(model);
+        }
+
+        public async Task<IActionResult> ConfirmDeleteAccount(string userId, string code)
+        {
+            RegisterViewModel model = new RegisterViewModel();
+            //model.LanguageId = Request.GetLanguageIdFromCookie();
+            // model.RegionId = Request.GetRegionIdFromCookie();
+
+            if (userId == null || code == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+            if (result.Succeeded)
+            {
+                UserInfo userInfo = await _progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == user.Id);
+                if (userInfo != null)
+                {
+                    userInfo.Deleted = true;
+                    userInfo.DeletedTime = DateTime.UtcNow;
+                    userInfo.UpdatedTime = DateTime.UtcNow;
+                    _progContext.DeletedUsers.Update(userInfo);
+                    await _progContext.SaveChangesAsync();
+                    await _userManager.DeleteAsync(user);
+                    await _signInManager.SignOutAsync();
+                }
+
+            }
+
+            return View(model);
+        }
     }
+    
 }

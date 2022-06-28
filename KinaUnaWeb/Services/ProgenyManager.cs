@@ -25,8 +25,9 @@ namespace KinaUnaWeb.Services
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
         private readonly IHostEnvironment _env;
-
-        public ProgenyManager(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IIdentityParser<ApplicationUser> userManager, ImageStore imageStore, HttpClient httpClient, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
+        private readonly IAuthHttpClient _authHttpClient;
+        public ProgenyManager(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IIdentityParser<ApplicationUser> userManager, ImageStore imageStore, HttpClient httpClient, ApiTokenInMemoryClient apiTokenClient,
+            IHostEnvironment env, IAuthHttpClient authHttpClient)
         {
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
@@ -44,6 +45,7 @@ namespace KinaUnaWeb.Services
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestVersion = new Version(2, 0);
             _httpClient = httpClient;
+            _authHttpClient = authHttpClient;
         }
 
         private async Task<string> GetNewToken()
@@ -292,8 +294,44 @@ namespace KinaUnaWeb.Services
             userinfo.ViewChild = childId;
             userinfo.UserId = userId;
 
-            string setChildApiPath = "/api/userinfo/" + userId;
+            string setChildApiPath = "/api/UserInfo/" + userId;
             await _httpClient.PutAsJsonAsync(setChildApiPath, userinfo);
+        }
+
+        public async Task<bool> IsUserLoginValid(string userId)
+        {
+            if (userId != Constants.DefaultUserId && userId != "401")
+            {
+                HttpContext currentContext = _httpContextAccessor.HttpContext;
+
+                if (currentContext != null)
+                {
+                    string contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+
+                    if (!string.IsNullOrWhiteSpace(contextAccessToken))
+                    {
+                        _httpClient.SetBearerToken(contextAccessToken);
+                        const string userinfoApiPath = "/api/UserInfo/CheckCurrentUser/";
+                        HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userinfoApiPath, new StringContent(JsonConvert.SerializeObject(userId), System.Text.Encoding.UTF8, "application/json"));
+                        if (userInfoResponse.IsSuccessStatusCode)
+                        {
+                            string userInfoResponseAsString = await userInfoResponse.Content.ReadAsStringAsync();
+                            UserInfo userinfo = JsonConvert.DeserializeObject<UserInfo>(userInfoResponseAsString);
+                            if (userinfo?.UserId.ToUpper() == userId.ToUpper())
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public async Task<bool> IsApplicationUserValid(string userId)
+        {
+            return await _authHttpClient.IsApplicationUserValid(userId);
         }
     }
 }

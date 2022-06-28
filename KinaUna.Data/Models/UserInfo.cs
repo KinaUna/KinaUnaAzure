@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
@@ -20,6 +21,9 @@ namespace KinaUna.Data.Models
         public bool IsPivoqUser { get; set; }
         public bool IsKinaUnaAdmin { get; set; }
         public bool IsPivoqAdmin { get; set; }
+        public DateTime UpdatedTime { get; set; }
+        public bool Deleted { get; set; }
+        public DateTime DeletedTime { get; set; }
 
         [NotMapped]
         public List<Progeny> ProgenyList { get; set; }

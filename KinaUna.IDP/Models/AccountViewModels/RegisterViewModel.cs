@@ -27,7 +27,7 @@ namespace KinaUna.IDP.Models.AccountViewModels
         public SelectListItem[] TimezoneList { get; set; }
         public ApplicationUser User { get; set; }
         public string Language { get; set; }
-
+        public int LanguageId { get; set; }
         public RegisterViewModel()
         {
             var tzs = TimeZoneInfo.GetSystemTimeZones();

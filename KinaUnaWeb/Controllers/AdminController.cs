@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -18,21 +20,21 @@ namespace KinaUnaWeb.Controllers
         private readonly IHubContext<WebNotificationHub> _hubContext;
         private readonly IPushMessageSender _pushMessageSender;
         private readonly string _adminEmail = Constants.AdminEmail;
-
-        public AdminController(IProgenyHttpClient progenyHttpClient, WebDbContext context,
-            IBackgroundTaskQueue queue, IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender)
+        private readonly IAuthHttpClient _authHttpClient;
+        public AdminController(IProgenyHttpClient progenyHttpClient, WebDbContext context, IBackgroundTaskQueue queue, IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender, IAuthHttpClient authHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _context = context;
             Queue = queue;
             _hubContext = hubContext;
             _pushMessageSender = pushMessageSender;
+            _authHttpClient = authHttpClient;
         }
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Local
         private IBackgroundTaskQueue Queue { get; }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             // Todo: Implement Admin as role instead
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? Constants.DefaultUserEmail;
@@ -40,6 +42,22 @@ namespace KinaUnaWeb.Controllers
             if (userEmail.ToUpper() != _adminEmail.ToUpper())
             {
                 return RedirectToAction("Index", "Home");
+            }
+
+            List<UserInfo> deletedUserInfosList = await _progenyHttpClient.GetDeletedUserInfos();
+            if (deletedUserInfosList.Any())
+            {
+                foreach (UserInfo deletedUserInfo in deletedUserInfosList)
+                {
+                    if (deletedUserInfo.Deleted && deletedUserInfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30))
+                    {
+                        UserInfo authResponseUserInfo = await _authHttpClient.CheckDeleteUser(deletedUserInfo);
+                        if (authResponseUserInfo != null && authResponseUserInfo.UserId == deletedUserInfo.UserId && deletedUserInfo.Deleted && deletedUserInfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30))
+                        {
+                            await _progenyHttpClient.RemoveUserInfoForGood(deletedUserInfo);
+                        }
+                    }
+                }
             }
 
             return View();

@@ -110,6 +110,7 @@ namespace KinaUnaWeb
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IPushMessageSender, PushMessageSender>();
             services.AddSingleton<ApiTokenInMemoryClient>();
+            services.AddHttpClient<IAuthHttpClient, AuthHttpClient>();
 
             var progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer");
             if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))

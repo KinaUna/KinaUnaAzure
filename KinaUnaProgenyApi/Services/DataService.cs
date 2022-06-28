@@ -294,11 +294,11 @@ namespace KinaUnaProgenyApi.Services
             return userinfo;
         }
 
-        public async Task RemoveUserInfoByEmail(string userEmail, string userId, int userinfoId)
+        public async Task RemoveUserInfoByEmail(string userEmail, string userId, int userInfoId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper());
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userId);
-            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userinfoId);
+            await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userInfoId);
         }
 
         public async Task<UserInfo> GetUserInfoById(int id)
@@ -336,6 +336,12 @@ namespace KinaUnaProgenyApi.Services
             }
 
             return userinfo;
+        }
+
+        public async Task<List<UserInfo>> GetDeletedUserInfos()
+        {
+            List<UserInfo> deletedUserInfos = await _context.UserInfoDb.AsNoTracking().Where(u => u.Deleted).ToListAsync();
+            return deletedUserInfos;
         }
 
         public async Task<Address> GetAddressItem(int id)

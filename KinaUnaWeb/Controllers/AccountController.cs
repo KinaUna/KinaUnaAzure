@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using KinaUna.Data.Models;
 using Microsoft.Extensions.Configuration;
 using KinaUna.Data;
+using KinaUna.Data.Extensions;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -18,13 +19,15 @@ namespace KinaUnaWeb.Controllers
     public class AccountController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IAuthHttpClient _authHttpClient;
         private readonly ImageStore _imageStore;
         private readonly IConfiguration _configuration;
-        public AccountController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore, IConfiguration configuration)
+        public AccountController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore, IConfiguration configuration, IAuthHttpClient authHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _imageStore = imageStore;
             _configuration = configuration;
+            _authHttpClient = authHttpClient;
         }
 
         [Authorize]
@@ -33,19 +36,22 @@ namespace KinaUnaWeb.Controllers
             return View();
         }
 
-        [Authorize]
-        public async Task<IActionResult> SignIn(string returnUrl)
+        [AllowAnonymous]
+        public async Task SignIn(string returnUrl)
         {
-            var token = await HttpContext.GetTokenAsync("access_token");
+            // clear any existing external cookie to ensure a clean login process
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
 
-            if (token != null)
-            {
-                ViewData["access_token"] = token;
-            }
+            // see IdentityServer4 QuickStartUI AccountController ExternalLogin
+            // Todo: Check if returnUrl is a PivoQ address.
+            await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme,
+                new AuthenticationProperties()
+                {
+                    RedirectUri = returnUrl
+                });
 
-            // "Catalog" because UrlHelper doesn't support nameof() for controllers
-            // https://github.com/aspnet/Mvc/issues/5853
-            return RedirectToAction(nameof(HomeController.Index), "Home");
+            //return Redirect(returnUrl);
         }
         
         [HttpPost]
@@ -268,5 +274,93 @@ namespace KinaUnaWeb.Controllers
             return View();
         }
         
+        [Authorize]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            string userId = HttpContext.User.GetUserId();
+            DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out var joinDate);
+            UserInfo userInfo = await _progenyHttpClient.GetUserInfoByUserId(userId);
+            if (userInfo == null)
+            {
+                throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+            }
+
+            if (string.IsNullOrEmpty(userInfo.ProfilePicture))
+            {
+                userInfo.ProfilePicture = Constants.ProfilePictureUrl;
+            }
+
+            if (!userInfo.ProfilePicture.ToLower().StartsWith("http"))
+            {
+                userInfo.ProfilePicture = _imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
+            }
+
+            UserInfoViewModel model = new UserInfoViewModel
+            {
+                Id = userInfo.Id,
+                UserId = userInfo.UserId,
+                UserName = userInfo.UserName,
+                FirstName = userInfo.FirstName,
+                MiddleName = userInfo.MiddleName,
+                LastName = userInfo.LastName,
+                UserEmail = userInfo.UserEmail,
+                Timezone = userInfo.Timezone,
+                JoinDate = joinDate.ToString(CultureInfo.InvariantCulture),
+                PhoneNumber = HttpContext.User.FindFirst("phone_number")?.Value ?? "",
+                ProfilePicture = userInfo.ProfilePicture
+            };
+
+            if (string.IsNullOrEmpty(model.UserName))
+            {
+                model.UserName = model.UserEmail;
+            }
+            
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> DeleteAccount(UserInfoViewModel model)
+        {
+            string userId = HttpContext.User.GetUserId();
+            UserInfo userInfo = await _progenyHttpClient.GetUserInfoByUserId(userId);
+            if (userInfo != null && userInfo.UserEmail.ToUpper() == User.GetEmail().ToUpper())
+            {
+                model.UserId = userInfo.UserId;
+                model.UserEmail = userInfo.UserEmail;
+                model.FirstName = userInfo.FirstName;
+                model.MiddleName = userInfo.MiddleName;
+                model.LastName = userInfo.LastName;
+                model.UserName = userInfo.UserName;
+
+                _ = await _progenyHttpClient.DeleteUserInfo(userInfo);
+
+                model.ChangeLink = _configuration["AuthenticationServer"] + "/Account/DeleteAccount";
+            }
+
+
+            return Redirect(model.ChangeLink);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> UnDeleteAccount()
+        {
+            string userId = HttpContext.User.GetUserId();
+            UserInfo userInfo = await _progenyHttpClient.GetUserInfoByUserId(userId);
+            if (userInfo == null)
+            {
+                throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+            }
+
+            if (userInfo.UserId == userId)
+            {
+                userInfo.Deleted = false;
+                _ = await _progenyHttpClient.UpdateUserInfo(userInfo);
+                _ = await _authHttpClient.RemoveDeleteUser(userInfo);
+            }
+            
+            return RedirectToAction("Index", "Home");
+        }
     }
 }

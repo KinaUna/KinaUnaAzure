@@ -22,5 +22,14 @@ namespace KinaUna.IDP.Extensions
                 values: new { userId, code },
                 protocol: scheme);
         }
+
+        public static string EmailDeleteAccountLink(this IUrlHelper urlHelper, string userId, string code, string scheme)
+        {
+            return urlHelper.Action(
+                action: nameof(AccountController.ConfirmDeleteAccount),
+                controller: "Account",
+                values: new { userId, code },
+                protocol: scheme);
+        }
     }
 }

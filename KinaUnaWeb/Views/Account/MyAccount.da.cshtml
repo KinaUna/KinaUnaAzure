@@ -92,6 +92,13 @@
         <a id="disablePushButton" class="btn btn-warning leavePage" style="display: none;" asp-action="DisablePush">Slå push-meddelelser fra</a>
     </div>
 </div>
+<div class="row">
+    <div class="col-12">
+        <form id="deleteAccountForm" asp-action="DeleteAccount" method="get">
+            <button id="deleteAccountButton" type="submit" class="btn btn-secondary float-left"><span class="fas fa-sign-in-alt"></span>Slet konto</button>
+        </form>
+    </div>
+</div>
 <br />
 <script>
     navigator.serviceWorker.ready.then(function (reg) {

@@ -346,6 +346,41 @@ namespace KinaUnaProgenyApi.Controllers
             return NotFound();
         }
 
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> ProgenyListByUserPostMobile([FromBody] string id)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (userEmail.ToUpper() == id.ToUpper())
+            {
+                List<Progeny> result = new List<Progeny>();
+                List<UserAccess> userAccessList = await _dataService.GetUsersUserAccessList(id);
+
+                if (userAccessList.Any())
+                {
+                    foreach (UserAccess ua in userAccessList)
+                    {
+                        Progeny prog = await _dataService.GetProgeny(ua.ProgenyId);
+                        if (string.IsNullOrEmpty(prog.PictureLink))
+                        {
+                            prog.PictureLink = Constants.ProfilePictureUrl;
+                        }
+
+                        if (!prog.PictureLink.ToLower().StartsWith("http"))
+                        {
+                            prog.PictureLink = _imageStore.UriFor(prog.PictureLink, "progeny");
+                        }
+
+                        result.Add(prog);
+                    }
+
+                    return Ok(result);
+                }
+            }
+
+            return NotFound();
+        }
+
         // GET api/access/accesslistbyuser/[userid]
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> AccessListByUser(string id)
@@ -397,6 +432,35 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok();
         }
 
+        [HttpPost("[action]")]
+        public async Task<IActionResult> AdminListByUserPost([FromBody] string id)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (userEmail.ToUpper() == id.ToUpper())
+            {
+                List<UserAccess> userAccessList = await _dataService.GetUsersUserAccessList(id);
+                userAccessList = userAccessList.Where(u => u.AccessLevel == 0).ToList();
+                List<Progeny> progenyList = new List<Progeny>();
+                if (userAccessList.Any())
+                {
+                    foreach (UserAccess ua in userAccessList)
+                    {
+                        Progeny progeny = await _dataService.GetProgeny(ua.ProgenyId);
+                        progenyList.Add(progeny);
+                    }
+
+                    if (progenyList.Any())
+                    {
+                        return Ok(progenyList);
+                    }
+
+                }
+
+                return Ok(progenyList);
+            }
+
+            return Ok();
+        }
         [HttpPost("[action]")]
         public async Task<IActionResult> AdminListByUserPivoq([FromBody] string id)
         {

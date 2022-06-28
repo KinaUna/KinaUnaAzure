@@ -465,6 +465,15 @@ button.Zebra_DatePicker_Icon {
     vertical-align: middle;
 }
 
+.btn-link-yellow {
+    color: #fbd10d;
+}
+
+.btn-link-yellow:hover {
+    color: #ddffdd;
+    text-decoration: none;
+}
+
 .notifications-List {
     overflow-y: auto;
     max-height: 80vh;
@@ -828,4 +837,9 @@ button.Zebra_DatePicker_Icon {
     -moz-osx-font-smoothing: grayscale;
     /* Support for IE. */
     font-feature-settings: 'liga';
+}
+
+.space-20 {
+    height: 20px;
+    display: block;
 }

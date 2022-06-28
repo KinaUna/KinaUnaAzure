@@ -47,5 +47,25 @@ namespace KinaUna.IDP.Extensions
             return emailSender.SendEmailAsync(email, mailTitle, mailText, client);
         }
 
+        public static Task SendEmailDeleteAsync(this IEmailSender emailSender, string email, string link, int language = 1)
+        {
+            string mailTitle = "Confirm delete account";
+            string mailText = $"Please confirm that you want to delete your KinaUna account by clicking this link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>";
+
+            if (language == 3)
+            {
+                mailTitle = "Bekræft slet konto";
+                mailText = $"Bekræft venligst at du vil slette din KinaUna konto ved at klikke på dette link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>";
+            }
+
+            if (language == 2)
+            {
+                mailTitle = "Bestätigen löschen Konto";
+                mailText = $"Bitte bestätigen Sie, dass Sie Ihr KinaUna-Konto löschen möchten durch Klicken auf den Link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>";
+            }
+
+            return emailSender.SendEmailAsync(email, mailTitle, mailText, "KinaUna");
+        }
+
     }
 }

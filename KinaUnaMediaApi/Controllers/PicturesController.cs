@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -1615,17 +1616,17 @@ namespace KinaUnaMediaApi.Controllers
                     return Unauthorized();
                 }
 
-                using (Stream stream = GetStreamFromUrl(picture.PictureLink))
+                await using (Stream stream = await GetStreamFromUrl(picture.PictureLink))
                 {
                     picture.PictureLink = await _imageStore.SaveImage(stream);
                 }
 
-                using (Stream stream = GetStreamFromUrl(picture.PictureLink600))
+                await using (Stream stream = await GetStreamFromUrl(picture.PictureLink600))
                 {
                     picture.PictureLink600 = await _imageStore.SaveImage(stream);
                 }
 
-                using (Stream stream = GetStreamFromUrl(picture.PictureLink1200))
+                await using (Stream stream = await GetStreamFromUrl(picture.PictureLink1200))
                 {
                     picture.PictureLink1200 = await _imageStore.SaveImage(stream);
                 }
@@ -1640,14 +1641,12 @@ namespace KinaUnaMediaApi.Controllers
             }
         }
 
-        private static Stream GetStreamFromUrl(string url)
+        private static async Task<Stream> GetStreamFromUrl(string url)
         {
-            byte[] imageData;
-
-            using (var wc = new System.Net.WebClient())
-                imageData = wc.DownloadData(url);
-
-            return new MemoryStream(imageData);
+            using HttpClient client = new HttpClient();
+            using HttpResponseMessage response = await client.GetAsync(url);
+            await using Stream streamToReadFrom = await response.Content.ReadAsStreamAsync();
+            return streamToReadFrom;
         }
     }
 }
