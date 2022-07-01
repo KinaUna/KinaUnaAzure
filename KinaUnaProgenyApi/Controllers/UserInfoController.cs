@@ -714,7 +714,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] UserInfo value)
         {
-            UserInfo userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == id);
+            UserInfo userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == value.UserId);
+            if (userinfo == null)
+            {
+                userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == id);
+            }
 
             if (userinfo == null)
             {
@@ -828,7 +832,16 @@ namespace KinaUnaProgenyApi.Controllers
 
                 await _imageStore.DeleteImage(userinfo.ProfilePicture, BlobContainers.Profiles);
 
+                List<UserAccess> accessList = await _dataService.GetUsersUserAccessList(userinfo.UserEmail);
+                foreach (UserAccess access in accessList)
+                {
+                    await _dataService.RemoveUserAccess(access.AccessId, access.ProgenyId, access.UserId);
+                }
+
+                List<MobileNotification> notificationsList = await _context.MobileNotificationsDb.Where(n => n.UserId == userinfo.UserId).ToListAsync();
+                _context.MobileNotificationsDb.RemoveRange(notificationsList);
                 _context.UserInfoDb.Remove(userinfo);
+
                 await _context.SaveChangesAsync();
                 await _dataService.RemoveUserInfoByEmail(userinfo.UserEmail, userinfo.UserId, userinfo.Id);
                 

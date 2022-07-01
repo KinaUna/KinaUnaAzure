@@ -133,7 +133,7 @@ namespace KinaUnaWeb.Services
                 _httpClient.SetBearerToken(accessToken);
             }
             
-            string newUserinfoApiPath = "/api/userinfo/" + userinfo.UserId;
+            string newUserinfoApiPath = "/api/userinfo/";
             var newUserResponseString = await _httpClient.PutAsync(newUserinfoApiPath, new StringContent(JsonConvert.SerializeObject(userinfo), System.Text.Encoding.UTF8, "application/json")).Result.Content.ReadAsStringAsync();
             var updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
             return updatedUserinfo;
