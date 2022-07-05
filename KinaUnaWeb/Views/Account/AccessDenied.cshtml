@@ -6,7 +6,7 @@
 <h2>Access Denied</h2>
 
 @{
-    if (User.Identity.IsAuthenticated)
+    if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         <div> You are not authorized to view this content.</div>
     }

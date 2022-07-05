@@ -128,7 +128,7 @@ namespace KinaUnaProgenyApi.Controllers
                 if (webex.Status == WebExceptionStatus.ProtocolError)
                 {
                     var response = (HttpWebResponse)webex.Response;
-                    if (response.StatusCode == HttpStatusCode.Gone)
+                    if (response != null && response.StatusCode == HttpStatusCode.Gone)
                         throw new HttpRequestException(HttpStatusCode.Gone.ToString());
                 }
             }

@@ -1,10 +1,12 @@
 ﻿using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Primitives;
 using WebPush;
 
 namespace KinaUnaWeb.Controllers
@@ -45,17 +47,20 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var payload = Request.Form["payload"];
-            var device = await _context.PushDevices.SingleOrDefaultAsync(m => m.Id == id);
+            StringValues payload = Request.Form["payload"];
+            PushDevices device = await _context.PushDevices.SingleOrDefaultAsync(m => m.Id == id);
 
             string vapidPublicKey = _configuration["VapidPublicKey"];
             string vapidPrivateKey = _configuration["VapidPrivateKey"];
 
-            var pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
-            var vapidDetails = new VapidDetails("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
+            if (device != null)
+            {
+                PushSubscription pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
+                VapidDetails vapidDetails = new VapidDetails("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
 
-            var webPushClient = new WebPushClient();
-            webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
+                WebPushClient webPushClient = new WebPushClient();
+                webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
+            }
 
             return View();
         }
@@ -68,7 +73,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return RedirectToAction("Index", "Home");
             }
-            var keys = VapidHelper.GenerateVapidKeys();
+            VapidDetails keys = VapidHelper.GenerateVapidKeys();
             ViewBag.PublicKey = keys.PublicKey;
             ViewBag.PrivateKey = keys.PrivateKey;
             return View();

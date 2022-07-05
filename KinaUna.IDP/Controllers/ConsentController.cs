@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
-using IdentityServer4.Stores;
 using Microsoft.AspNetCore.Mvc;
 using KinaUna.IDP.Models.AccountViewModels;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Validation;
-using Microsoft.AspNetCore.Cors;
 
 namespace KinaUna.IDP.Controllers
 {
@@ -20,21 +18,15 @@ namespace KinaUna.IDP.Controllers
     public class ConsentController : Controller
     {
         private readonly ILogger<ConsentController> _logger;
-        private readonly IClientStore _clientStore;
-        private readonly IResourceStore _resourceStore;
         private readonly IIdentityServerInteractionService _interaction;
 
         
         public ConsentController(
             ILogger<ConsentController> logger,
-            IIdentityServerInteractionService interaction,
-            IClientStore clientStore,
-            IResourceStore resourceStore)
+            IIdentityServerInteractionService interaction)
         {
             _logger = logger;
             _interaction = interaction;
-            _clientStore = clientStore;
-            _resourceStore = resourceStore;
         }
 
         /// <summary>

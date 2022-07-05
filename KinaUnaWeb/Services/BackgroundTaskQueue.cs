@@ -33,7 +33,7 @@ namespace KinaUnaWeb.Services
             CancellationToken cancellationToken)
         {
             await _signal.WaitAsync(cancellationToken);
-            _workItems.TryDequeue(out var workItem);
+            _workItems.TryDequeue(out Func<CancellationToken, Task> workItem);
 
             return workItem;
         }

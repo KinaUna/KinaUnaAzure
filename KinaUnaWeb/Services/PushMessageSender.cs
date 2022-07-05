@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -30,17 +31,17 @@ namespace KinaUnaWeb.Services
             notification.Message = message;
             notification.Link = link;
             notification.Tag = tag;
-            var payload = JsonConvert.SerializeObject(notification);
+            string payload = JsonConvert.SerializeObject(notification);
             string vapidPublicKey = _configuration["VapidPublicKey"];
             string vapidPrivateKey = _configuration["VapidPrivateKey"];
 
-            var deviceList = await _context.PushDevices.Where(m => m.Name == user).ToListAsync();
+            List<PushDevices> deviceList = await _context.PushDevices.Where(m => m.Name == user).ToListAsync();
             if (deviceList.Any())
             {
                 foreach (PushDevices dev in deviceList)
                 {
-                    var pushSubscription = new PushSubscription(dev.PushEndpoint, dev.PushP256DH, dev.PushAuth);
-                    var vapidDetails = new VapidDetails("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
+                    PushSubscription pushSubscription = new PushSubscription(dev.PushEndpoint, dev.PushP256DH, dev.PushAuth);
+                    VapidDetails vapidDetails = new VapidDetails("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
                     if (String.IsNullOrEmpty(dev.PushAuth) || String.IsNullOrEmpty(dev.PushEndpoint))
                     {
                         _context.PushDevices.Remove(dev);
@@ -48,7 +49,7 @@ namespace KinaUnaWeb.Services
                     }
                     else
                     {
-                        var webPushClient = new WebPushClient();
+                        WebPushClient webPushClient = new WebPushClient();
                         try
                         {
                             webPushClient.SendNotification(pushSubscription, payload, vapidDetails);

@@ -14,9 +14,9 @@ namespace KinaUnaWeb.Services
             // assigns "claims" if "principal" is a "ClaimsPrincipal"
             if (principal is ClaimsPrincipal claims)
             {
-                var joinDateParse =
+                bool joinDateParse =
                     DateTime.TryParse(claims.Claims.FirstOrDefault(x => x.Type == "joindate")?.Value ?? "",
-                        out var joinDateValue);
+                        out DateTime joinDateValue);
                 if (!joinDateParse)
                 {
                     joinDateValue = DateTime.Now;

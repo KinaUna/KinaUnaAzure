@@ -19,15 +19,21 @@ namespace KinaUnaWeb.Controllers
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
+        private readonly ILocationsHttpClient _locationsHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public VideosController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore)
+        public VideosController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient, ILocationsHttpClient locationsHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
             _imageStore = imageStore;
+            _userInfosHttpClient = userInfosHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
+            _locationsHttpClient = locationsHttpClient;
         }
 
         [AllowAnonymous]
@@ -44,7 +50,7 @@ namespace KinaUnaWeb.Controllers
             {
                 userTimeZone = Constants.DefaultTimezone;
             }
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
@@ -61,7 +67,7 @@ namespace KinaUnaWeb.Controllers
 
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -99,14 +105,14 @@ namespace KinaUnaWeb.Controllers
             {
                 userTimeZone = Constants.DefaultTimezone;
             }
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -187,10 +193,10 @@ namespace KinaUnaWeb.Controllers
             {
                 foreach (Comment cmnt in model.CommentsList)
                 {
-                    UserInfo cmntAuthor = await _progenyHttpClient.GetUserInfoByUserId(cmnt.Author);
+                    UserInfo cmntAuthor = await _userInfosHttpClient.GetUserInfoByUserId(cmnt.Author);
                     string authorImg = cmntAuthor?.ProfilePicture ?? "";
                     string authorName = "";
-                    if (!String.IsNullOrEmpty(authorImg))
+                    if (!string.IsNullOrEmpty(authorImg))
                     {
                         if (!authorImg.ToLower().StartsWith("http"))
                         {
@@ -203,24 +209,24 @@ namespace KinaUnaWeb.Controllers
                     }
                     cmnt.AuthorImage = authorImg;
 
-                    if (!String.IsNullOrEmpty(cmntAuthor.FirstName))
+                    if (!string.IsNullOrEmpty(cmntAuthor.FirstName))
                     {
                         authorName = cmntAuthor.FirstName;
                     }
-                    if (!String.IsNullOrEmpty(cmntAuthor.MiddleName))
+                    if (!string.IsNullOrEmpty(cmntAuthor.MiddleName))
                     {
                         authorName = authorName + " " + cmntAuthor.MiddleName;
                     }
-                    if (!String.IsNullOrEmpty(cmntAuthor.LastName))
+                    if (!string.IsNullOrEmpty(cmntAuthor.LastName))
                     {
                         authorName = authorName + " " + cmntAuthor.LastName;
                     }
 
                     authorName = authorName.Trim();
-                    if (String.IsNullOrEmpty(authorName))
+                    if (string.IsNullOrEmpty(authorName))
                     {
                         authorName = cmntAuthor.UserName;
-                        if (String.IsNullOrEmpty(authorName))
+                        if (string.IsNullOrEmpty(authorName))
                         {
                             authorName = cmnt.DisplayName;
                         }
@@ -232,7 +238,7 @@ namespace KinaUnaWeb.Controllers
             if (model.IsAdmin)
             {
                 model.ProgenyLocations = new List<Location>();
-                model.ProgenyLocations = await _progenyHttpClient.GetProgenyLocations(model.ProgenyId, userAccessLevel);
+                model.ProgenyLocations = await _locationsHttpClient.GetProgenyLocations(model.ProgenyId, userAccessLevel);
                 model.LocationsList = new List<SelectListItem>();
                 if (model.ProgenyLocations.Any())
                 {

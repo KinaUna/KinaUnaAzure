@@ -24,17 +24,24 @@ namespace KinaUnaWeb.Controllers
     {
         private int _progId = Constants.DefaultChildId;
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly ICalendarsHttpClient _calendarsHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
         private readonly IWebHostEnvironment _env;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
-        
-        public HomeController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IWebHostEnvironment env)
+
+        public HomeController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IWebHostEnvironment env, IUserInfosHttpClient userInfosHttpClient, ICalendarsHttpClient calendarsHttpClient,
+            IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
             _imageStore = imageStore;
             _env = env;
+            _userInfosHttpClient = userInfosHttpClient;
+            _calendarsHttpClient = calendarsHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
         }
 
         [AllowAnonymous]
@@ -47,8 +54,8 @@ namespace KinaUnaWeb.Controllers
             {
                 userTimeZone = Constants.DefaultTimezone;
             }
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            if (User.Identity.IsAuthenticated)
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 if (childId == 0 && userinfo.ViewChild > 0)
                 {
@@ -66,7 +73,7 @@ namespace KinaUnaWeb.Controllers
                 var returnUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
                 return RedirectToAction("CheckOut", "Account", new{returnUrl});
             }
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -110,7 +117,7 @@ namespace KinaUnaWeb.Controllers
             }
             
             BirthTime progBirthTime;
-            if (!String.IsNullOrEmpty(progeny.NickName) && progeny.BirthDay.HasValue && feedModel.UserAccessLevel < (int)AccessLevel.Public)
+            if (!string.IsNullOrEmpty(progeny.NickName) && progeny.BirthDay.HasValue && feedModel.UserAccessLevel < (int)AccessLevel.Public)
             {
                 progBirthTime = new BirthTime(progeny.BirthDay.Value,
                     TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
@@ -197,9 +204,8 @@ namespace KinaUnaWeb.Controllers
             feedModel.PicMinutes = picTime.CalcMinutes();
             feedModel.Progeny = progeny;
             feedModel.EventsList = new List<CalendarItem>();
-            feedModel.EventsList = await _progenyHttpClient.GetUpcomingEvents(_progId, userAccessLevel); // _context.CalendarDb.AsNoTracking().Where(e => e.ProgenyId == progeny.Id && e.EndTime > DateTime.UtcNow && e.AccessLevel >= userAccessLevel).ToListAsync();
-            // feedModel.EventsList = feedModel.EventsList.OrderBy(e => e.StartTime).ToList();
-            // feedModel.EventsList = feedModel.EventsList.Take(5).ToList();
+            feedModel.EventsList = await _calendarsHttpClient.GetUpcomingEvents(_progId, userAccessLevel);
+            
             foreach (CalendarItem eventItem in feedModel.EventsList)
             {
                 if (eventItem.StartTime.HasValue && eventItem.EndTime.HasValue)
@@ -211,7 +217,7 @@ namespace KinaUnaWeb.Controllers
 
             feedModel.LatestPosts = new TimeLineViewModel();
             feedModel.LatestPosts.TimeLineItems = new List<TimeLineItem>();
-            feedModel.LatestPosts.TimeLineItems = await _progenyHttpClient.GetProgenyLatestPosts(_progId, userAccessLevel); // _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == _progId && t.AccessLevel >= userAccessLevel && t.ProgenyTime < DateTime.UtcNow).ToListAsync();
+            feedModel.LatestPosts.TimeLineItems = await _progenyHttpClient.GetProgenyLatestPosts(_progId, userAccessLevel);
             if (feedModel.LatestPosts.TimeLineItems.Any())
             {
                 feedModel.LatestPosts.TimeLineItems = feedModel.LatestPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).Take(5).ToList();
@@ -266,11 +272,11 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetViewChild(int childId, string userId, string userEmail, string returnUrl)
         {
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+                UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
                 userinfo.ViewChild = childId;
-                await _progenyHttpClient.SetViewChild(userId, userinfo);
+                await _userInfosHttpClient.SetViewChild(userId, userinfo);
             }
 
             // return Redirect(returnUrl);

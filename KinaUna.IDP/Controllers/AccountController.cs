@@ -26,6 +26,7 @@ using KinaUna.Data.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace KinaUna.IDP.Controllers
 {
@@ -80,14 +81,14 @@ namespace KinaUna.IDP.Controllers
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl)
         {
-            var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
+            AuthorizationRequest context = await _interaction.GetAuthorizationContextAsync(returnUrl);
             if (context?.IdP != null)
             {
                 // if IdP is passed, then bypass showing the login screen
                 return ExternalLogin(context.IdP, returnUrl);
             }
 
-            var vm = BuildLoginViewModel(returnUrl, context);
+            LoginViewModel vm = BuildLoginViewModel(returnUrl, context);
 
             ViewData["ReturnUrl"] = returnUrl;
             if (context != null && context.Client.ClientId.ToLower().Contains("pivoq"))
@@ -112,7 +113,7 @@ namespace KinaUna.IDP.Controllers
             model.RememberMe = true;
             if (ModelState.IsValid)
             {
-                var user = await _loginService.FindByUsername(model.Email);
+                ApplicationUser user = await _loginService.FindByUsername(model.Email);
                 if (user != null)
                 {
                     if (await _loginService.ValidateCredentials(user, model.Password))
@@ -134,7 +135,7 @@ namespace KinaUna.IDP.Controllers
             }
 
             // something went wrong, show form with error
-            var vm = await BuildLoginViewModelAsync(model);
+            LoginViewModel vm = await BuildLoginViewModelAsync(model);
 
             ViewData["ReturnUrl"] = model.ReturnUrl;
 
@@ -152,8 +153,8 @@ namespace KinaUna.IDP.Controllers
 
         async Task<LoginViewModel> BuildLoginViewModelAsync(LoginViewModel model)
         {
-            var context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
-            var vm = BuildLoginViewModel(model.ReturnUrl, context);
+            AuthorizationRequest context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
+            LoginViewModel vm = BuildLoginViewModel(model.ReturnUrl, context);
             vm.Email = model.Email;
             vm.RememberMe = true;
             return vm;
@@ -165,8 +166,8 @@ namespace KinaUna.IDP.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout(string logoutId)
         {
-            var context = await _interaction.GetLogoutContextAsync(logoutId);
-            if (User.Identity.IsAuthenticated == false)
+            LogoutRequest context = await _interaction.GetLogoutContextAsync(logoutId);
+            if (User.Identity != null && User.Identity.IsAuthenticated == false)
             {
                 // if the user is not authenticated, then just show logged out page
                 //return await Logout(new LogoutViewModel { LogoutId = logoutId });
@@ -216,7 +217,7 @@ namespace KinaUna.IDP.Controllers
 
             // show the logout prompt. this prevents attacks where the user
             // is automatically signed out by another malicious web page.
-            var vm = new LogoutViewModel
+            LogoutViewModel vm = new LogoutViewModel
             {
                 LogoutId = logoutId
             };
@@ -239,7 +240,7 @@ namespace KinaUna.IDP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout(LogoutViewModel model)
         {
-            var idp = User?.FindFirst(JwtClaimTypes.IdentityProvider)?.Value;
+            string idp = User.FindFirst(JwtClaimTypes.IdentityProvider)?.Value;
 
             if (idp != null && idp != IdentityServerConstants.LocalIdentityProvider)
             {
@@ -275,7 +276,7 @@ namespace KinaUna.IDP.Controllers
             HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
 
             // get context information (client name, post logout redirect URI and iframe for federated signout)
-            var logout = await _interaction.GetLogoutContextAsync(model.LogoutId);
+            LogoutRequest logout = await _interaction.GetLogoutContextAsync(model.LogoutId);
             if (logout.PostLogoutRedirectUri == null)
             {
                 if (_env.IsDevelopment())
@@ -346,7 +347,7 @@ namespace KinaUna.IDP.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser
+                ApplicationUser user = new ApplicationUser
                 {
                     UserName = model.Email,
                     Email = model.Email,
@@ -360,7 +361,7 @@ namespace KinaUna.IDP.Controllers
                     user.TimeZone = (await _userManager.FindByEmailAsync(Constants.AdminEmail)).TimeZone;
                 }
                 
-                var result = await _userManager.CreateAsync(user, model.Password);
+                IdentityResult result = await _userManager.CreateAsync(user, model.Password);
                 if (result != null && result.Errors.Count() > 0)
                 {
                     AddErrors(result);
@@ -368,13 +369,13 @@ namespace KinaUna.IDP.Controllers
                     return View(model);
                 }
 
-                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 
                 if (returnUrl != null && returnUrl.ToLower().Contains("pivoq"))
                 {
                     clientId = "Pivoq";
                 }
-                var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, clientId, model.Language);
+                string callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, clientId, model.Language);
                 await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl, clientId, model.Language);
                 await _emailSender.SendEmailAsync(Constants.AdminEmail, "New User Registered",
                     "A user registered with this email address: " + model.Email, clientId);
@@ -416,7 +417,7 @@ namespace KinaUna.IDP.Controllers
 
         private void AddErrors(IdentityResult result)
         {
-            foreach (var error in result.Errors)
+            foreach (IdentityError error in result.Errors)
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
@@ -426,7 +427,7 @@ namespace KinaUna.IDP.Controllers
         public async Task<IActionResult> ChangeEmail(string NewEmail, string OldEmail, string Language = "en", string client="KinaUna")
         {
             
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 ApplicationUser user = await _context.Users.SingleOrDefaultAsync(u => u.Email.ToUpper() == OldEmail.ToUpper());
                 ApplicationUser test =
@@ -468,14 +469,14 @@ namespace KinaUna.IDP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendConfirmationMail(string UserId, string NewEmail, string OldEmail, string Language, string Client="KinaUna")
         {
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 string client = Client;
                 ApplicationUser user = await _context.Users.SingleOrDefaultAsync(u => u.Id == UserId);
                 ApplicationUser test =
                     await _context.Users.SingleOrDefaultAsync(u => u.Email.ToUpper() == NewEmail.ToUpper());
                 
-                if (user.Id == UserId)
+                if (user != null && user.Id == UserId)
                 {
                     if (test != null)
                     {
@@ -498,8 +499,8 @@ namespace KinaUna.IDP.Controllers
                         model.UserId = user.Id;
                         return View("ChangeEmail", model);
                     }
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, client, Language);
+                    string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    string callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, client, Language);
                     await _emailSender.SendEmailUpdateConfirmationAsync(NewEmail, callbackUrl + "&newEmail=" + NewEmail + "&oldEmail=" + OldEmail, client, Language);
 
                     UserInfo userinfo = await _progContext.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == user.Id);
@@ -528,7 +529,7 @@ namespace KinaUna.IDP.Controllers
             {
                 return RedirectToAction("Index", "Home");
             }
-            var user = await _userManager.FindByIdAsync(userId);
+            ApplicationUser user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
             {
@@ -548,7 +549,7 @@ namespace KinaUna.IDP.Controllers
             {
                 RedirectToAction("Login");
             }
-            var result = await _userManager.ConfirmEmailAsync(user, code);
+            IdentityResult result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
             {
                 user = await _userManager.FindByIdAsync(userId);
@@ -589,7 +590,7 @@ namespace KinaUna.IDP.Controllers
                 }
                 else
                 {
-                    string clientType = "";
+                    string clientType;
                     if (client.ToLower() == "pivoq")
                     {
                         clientType = "Pivoq";
@@ -617,8 +618,8 @@ namespace KinaUna.IDP.Controllers
             }
 
             
-            var code1 = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var callbackUrl = Url.EmailConfirmationLink(user.Id, code1, Request.Scheme, client, language);
+            string code1 = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            string callbackUrl = Url.EmailConfirmationLink(user.Id, code1, Request.Scheme, client, language);
             await _emailSender.SendEmailConfirmationAsync(user.Email, callbackUrl, client, language);
             return RedirectToAction("VerificationMailSent");
         }
@@ -643,7 +644,7 @@ namespace KinaUna.IDP.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByEmailAsync(model.Email);
+                ApplicationUser user = await _userManager.FindByEmailAsync(model.Email);
                 if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
                 {
                     // Don't reveal that the user does not exist or is not confirmed
@@ -652,8 +653,8 @@ namespace KinaUna.IDP.Controllers
 
                 // For more information on how to enable account confirmation and password reset please
                 // visit https://go.microsoft.com/fwlink/?LinkID=532713
-                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
+                string code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                string callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
                 string emailTitle = "Reset Kina Una Password";
                 string emailText = $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>";
 
@@ -691,7 +692,7 @@ namespace KinaUna.IDP.Controllers
             {
                 throw new ApplicationException("A code must be supplied for password reset.");
             }
-            var model = new ResetPasswordViewModel { Code = code };
+            ResetPasswordViewModel model = new ResetPasswordViewModel { Code = code };
             return View(model);
         }
 
@@ -704,13 +705,13 @@ namespace KinaUna.IDP.Controllers
             {
                 return View(model);
             }
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            ApplicationUser user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
                 // Don't reveal that the user does not exist
                 return RedirectToAction(nameof(ResetPasswordConfirmation));
             }
-            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
+            IdentityResult result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
             if (result.Succeeded)
             {
                 return RedirectToAction(nameof(ResetPasswordConfirmation));
@@ -729,13 +730,13 @@ namespace KinaUna.IDP.Controllers
         [HttpGet]
         public async Task<IActionResult> ChangePassword()
         {
-            var user = await _userManager.GetUserAsync(User);
+            ApplicationUser user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
             
-            var model = new ChangePasswordViewModel { StatusMessage = StatusMessage };
+            ChangePasswordViewModel model = new ChangePasswordViewModel { StatusMessage = StatusMessage };
             return View(model);
         }
 
@@ -748,13 +749,13 @@ namespace KinaUna.IDP.Controllers
                 return View(model);
             }
 
-            var user = await _userManager.GetUserAsync(User);
+            ApplicationUser user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-            var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+            IdentityResult changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
             if (!changePasswordResult.Succeeded)
             {
                 AddErrors(changePasswordResult);
@@ -789,14 +790,14 @@ namespace KinaUna.IDP.Controllers
         public async Task<IActionResult> LoginWith2Fa(bool rememberMe, string returnUrl = null)
         {
             // Ensure the user has gone through the username & password screen first
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+            ApplicationUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
 
             if (user == null)
             {
                 throw new ApplicationException($"Unable to load two-factor authentication user.");
             }
 
-            var model = new LoginWith2faViewModel { RememberMe = rememberMe };
+            LoginWith2faViewModel model = new LoginWith2faViewModel { RememberMe = rememberMe };
             ViewData["ReturnUrl"] = returnUrl;
 
             return View(model);
@@ -812,15 +813,15 @@ namespace KinaUna.IDP.Controllers
                 return View(model);
             }
 
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+            ApplicationUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-            var authenticatorCode = model.TwoFactorCode.Replace(" ", string.Empty).Replace("-", string.Empty);
+            string authenticatorCode = model.TwoFactorCode.Replace(" ", string.Empty).Replace("-", string.Empty);
 
-            var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, rememberMe, model.RememberMachine);
+            SignInResult result = await _signInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, rememberMe, model.RememberMachine);
 
             if (result.Succeeded)
             {
@@ -845,7 +846,7 @@ namespace KinaUna.IDP.Controllers
         public async Task<IActionResult> LoginWithRecoveryCode(string returnUrl = null)
         {
             // Ensure the user has gone through the username & password screen first
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+            ApplicationUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
                 throw new ApplicationException($"Unable to load two-factor authentication user.");
@@ -866,15 +867,15 @@ namespace KinaUna.IDP.Controllers
                 return View(model);
             }
 
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+            ApplicationUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
                 throw new ApplicationException($"Unable to load two-factor authentication user.");
             }
 
-            var recoveryCode = model.RecoveryCode.Replace(" ", string.Empty);
+            string recoveryCode = model.RecoveryCode.Replace(" ", string.Empty);
 
-            var result = await _signInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
+            SignInResult result = await _signInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);
 
             if (result.Succeeded)
             {
@@ -900,8 +901,8 @@ namespace KinaUna.IDP.Controllers
         public IActionResult ExternalLogin(string provider, string returnUrl = null)
         {
             // Request a redirect to the external login provider.
-            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            string redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
+            AuthenticationProperties properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Challenge(properties, provider);
         }
 
@@ -914,30 +915,30 @@ namespace KinaUna.IDP.Controllers
                 ErrorMessage = $"Error from external provider: {remoteError}";
                 return RedirectToAction(nameof(Login));
             }
-            var info = await _signInManager.GetExternalLoginInfoAsync();
+            ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
                 return RedirectToAction(nameof(Login));
             }
 
             // Sign in the user with this external login provider if the user already has a login.
-            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email.ToUpper() == email.ToUpper());
+            string email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            ApplicationUser user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email.ToUpper() == email.ToUpper());
             if (user != null)
             {
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 // return RedirectToLocal(returnUrl);
-                return Redirect(returnUrl);
+                return Redirect(returnUrl ?? Constants.WebAppUrl);
             }
             else
             {
                 // If user does not already exists, invite User to register.
-                var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
+                SignInResult result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation(5, "User logged in with {Name} provider.", info.LoginProvider);
                     // return RedirectToLocal(returnUrl);
-                    return Redirect(returnUrl);
+                    return Redirect(returnUrl ?? Constants.WebAppUrl);
                 }
 
                 //if (result.RequiresTwoFactor)
@@ -968,13 +969,13 @@ namespace KinaUna.IDP.Controllers
             if (ModelState.IsValid)
             {
                 // Get the information about the user from the external login provider
-                var info = await _signInManager.GetExternalLoginInfoAsync();
+                ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
                 if (info == null)
                 {
                     throw new ApplicationException("Error loading external login information during confirmation.");
                 }
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-                var result = await _userManager.CreateAsync(user);
+                ApplicationUser user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                IdentityResult result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
                     result = await _userManager.AddLoginAsync(user, info);
@@ -1066,8 +1067,8 @@ namespace KinaUna.IDP.Controllers
             if (user != null && user.Id != Constants.DefaultUserId)
             {
                 model.Email = user.Email;
-                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var callbackUrl = Url.EmailDeleteAccountLink(user.Id, code, Request.Scheme);
+                string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                string callbackUrl = Url.EmailDeleteAccountLink(user.Id, code, Request.Scheme);
                 await _emailSender.SendEmailDeleteAsync(model.Email, callbackUrl, model.LanguageId);
 
                 UserInfo userInfo = await _progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == user.Id);
@@ -1113,7 +1114,7 @@ namespace KinaUna.IDP.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            ApplicationUser user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
             {
@@ -1121,7 +1122,7 @@ namespace KinaUna.IDP.Controllers
 
             }
 
-            var result = await _userManager.ConfirmEmailAsync(user, code);
+            IdentityResult result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
             {
                 UserInfo userInfo = await _progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == user.Id);

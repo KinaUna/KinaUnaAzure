@@ -14,13 +14,19 @@ namespace KinaUnaWeb.Controllers
     public class VaccinationsController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly IVaccinationsHttpClient _vaccinationsHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public VaccinationsController(IProgenyHttpClient progenyHttpClient)
+        public VaccinationsController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IVaccinationsHttpClient vaccinationsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
+            _userInfosHttpClient = userInfosHttpClient;
+            _vaccinationsHttpClient = vaccinationsHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
         }
 
         [AllowAnonymous]
@@ -29,7 +35,7 @@ namespace KinaUnaWeb.Controllers
             _progId = childId;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
@@ -40,7 +46,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -61,7 +67,7 @@ namespace KinaUnaWeb.Controllers
 
             VaccinationViewModel model = new VaccinationViewModel();
             model.VaccinationList = new List<Vaccination>();
-            List<Vaccination> vaccinations = await _progenyHttpClient.GetVaccinationsList(_progId, userAccessLevel); // _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == _progId).ToList();
+            List<Vaccination> vaccinations = await _vaccinationsHttpClient.GetVaccinationsList(_progId, userAccessLevel);
 
             if (vaccinations.Count != 0)
             {

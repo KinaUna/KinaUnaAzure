@@ -16,17 +16,19 @@ namespace KinaUnaWeb.Controllers
     public class ProgenyController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly WebDbContext _context;
         private readonly ImageStore _imageStore;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public ProgenyController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, WebDbContext context, ImageStore imagestore)
+        public ProgenyController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, WebDbContext context, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
             _context = context; // Todo: Replace _context with httpClient
-            _imageStore = imagestore;
+            _imageStore = imageStore;
+            _userInfosHttpClient = userInfosHttpClient;
         }
         public IActionResult Index()
         {
@@ -38,7 +40,7 @@ namespace KinaUnaWeb.Controllers
         {
             ProgenyViewModel model = new ProgenyViewModel();
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo currentUser = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo currentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
             model.Admins = currentUser.UserEmail.ToUpper();
             
             return View(model);
@@ -103,7 +105,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditProgeny(ProgenyViewModel model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.IsInAdminList(userinfo.UserEmail))
             {
@@ -139,7 +141,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteProgeny(int progenyId)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             Progeny prog = await _progenyHttpClient.GetProgeny(progenyId);
             if (!prog.IsInAdminList(userinfo.UserEmail))
             {
@@ -155,7 +157,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteProgeny(Progeny model)
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             Progeny prog = await _progenyHttpClient.GetProgeny(model.Id);
             if (!prog.IsInAdminList(userinfo.UserEmail))
             {
@@ -319,7 +321,7 @@ namespace KinaUnaWeb.Controllers
                         _context.TimeLineDb.Remove(tItem);
                         await _context.SaveChangesAsync();
                     }
-                    // Todo: Delete content add from notes
+                    // Todo: Delete content added from notes
                     _context.NotesDb.Remove(note);
                     await _context.SaveChangesAsync();
                 }

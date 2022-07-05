@@ -25,10 +25,10 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<string> SaveImage(Stream imageStream, string containerName = "pictures")
         {
-            var imageId = Guid.NewGuid().ToString();
+            string imageId = Guid.NewGuid().ToString();
             BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
 
-            var blob = container.GetBlobClient(imageId);
+            BlobClient blob = container.GetBlobClient(imageId);
 
             await blob.UploadAsync(imageStream);
             return imageId;
@@ -36,12 +36,12 @@ namespace KinaUnaProgenyApi.Services
 
         public string UriFor(string imageId, string containerName = "pictures")
         {
-            BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
+            //BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
 
-            var blob = container.GetBlobClient(imageId);
+            //BlobClient blob = container.GetBlobClient(imageId);
             
-            var credential = new StorageSharedKeyCredential(Constants.CloudBlobUsername, _storageKey);
-            var sas = new BlobSasBuilder
+            StorageSharedKeyCredential credential = new StorageSharedKeyCredential(Constants.CloudBlobUsername, _storageKey);
+            BlobSasBuilder sas = new BlobSasBuilder
             {
                 BlobName = imageId,
                 BlobContainerName = containerName,
@@ -61,8 +61,8 @@ namespace KinaUnaProgenyApi.Services
         {
             BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
 
-            var blob = container.GetBlobClient(imageId);
-            var memoryStream = new MemoryStream();
+            BlobClient blob = container.GetBlobClient(imageId);
+            MemoryStream memoryStream = new MemoryStream();
             await blob.DownloadToAsync(memoryStream).ConfigureAwait(false);
             
             return memoryStream;
@@ -72,7 +72,7 @@ namespace KinaUnaProgenyApi.Services
         {
             BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
 
-            var blob = container.GetBlobClient(imageId);
+            BlobClient blob = container.GetBlobClient(imageId);
             await blob.DeleteIfExistsAsync();
 
             return imageId;

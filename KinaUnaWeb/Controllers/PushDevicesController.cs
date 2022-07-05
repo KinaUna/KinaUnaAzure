@@ -45,7 +45,7 @@ namespace KinaUnaWeb.Controllers
         {
             if (ModelState.IsValid)
             {
-                string userId = HttpContext.User.FindFirst("sub").Value;
+                string userId = HttpContext.User.FindFirst("sub")?.Value;
                 devices.Name = userId;
                 _context.Add(devices);
                 await _context.SaveChangesAsync();
@@ -61,7 +61,7 @@ namespace KinaUnaWeb.Controllers
         {
             if (ModelState.IsValid)
             {
-                string userId = HttpContext.User.FindFirst("sub").Value;
+                string userId = HttpContext.User.FindFirst("sub")?.Value;
                 PushDevices existingDevice = await _context.PushDevices.SingleOrDefaultAsync(p =>
                     p.Name == devices.Name && p.PushP256DH == devices.PushP256DH && p.PushAuth == devices.PushAuth &&
                     p.PushEndpoint == devices.PushEndpoint);

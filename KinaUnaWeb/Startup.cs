@@ -22,7 +22,6 @@ using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
-using Microsoft.AspNetCore.SignalR;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 using KinaUna.Data;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -53,7 +52,7 @@ namespace KinaUnaWeb
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 // Todo: Fix consent to work with my cookies and language selection
-                options.CheckConsentNeeded = context => false;
+                options.CheckConsentNeeded = _ => false;
                 options.MinimumSameSitePolicy = SameSiteMode.Lax;
             });
 
@@ -76,7 +75,7 @@ namespace KinaUnaWeb
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
-            var credentials = new StorageCredentials(Constants.CloudBlobUsername, Configuration["BlobStorageKey"]);
+            StorageCredentials credentials = new StorageCredentials(Constants.CloudBlobUsername, Configuration["BlobStorageKey"]);
             CloudBlobClient blobClient = new CloudBlobClient(new Uri(Constants.CloudBlobBase), credentials);
             CloudBlobContainer container = blobClient.GetContainerReference("dataprotection");
 
@@ -86,17 +85,17 @@ namespace KinaUnaWeb
                 .SetApplicationName("KinaUnaWebApp")
                 .PersistKeysToAzureBlobStorage(container, "kukeys.xml");
 
-            var authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
+            string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
             if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
             {
                 authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer" + Constants.DebugKinaUnaServer);
             }
-            var authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
+            string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
             if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
             {
                 authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer);
             }
-            var authenticationServerClientSecret = Configuration.GetValue<string>("AuthenticationServerClientSecret");
+            string authenticationServerClientSecret = Configuration.GetValue<string>("AuthenticationServerClientSecret");
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddHttpClient();
@@ -110,15 +109,28 @@ namespace KinaUnaWeb
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IPushMessageSender, PushMessageSender>();
             services.AddSingleton<ApiTokenInMemoryClient>();
+            services.AddHttpClient<IUserInfosHttpClient, UserInfosHttpClient>();
+            services.AddHttpClient<ITimelineHttpClient, TimelineHttpClient>();
+            services.AddHttpClient<IWordsHttpClient, WordsHttpClient>();
+            services.AddHttpClient<IVaccinationsHttpClient, VaccinationsHttpClient>();
+            services.AddHttpClient<ISkillsHttpClient, SkillsHttpClient>();
+            services.AddHttpClient<INotesHttpClient, NotesHttpClient>();
+            services.AddHttpClient<IMeasurementsHttpClient, MeasurementsHttpClient>();
+            services.AddHttpClient<ILocationsHttpClient, LocationsHttpClient>();
+            services.AddHttpClient<IFriendsHttpClient, FriendsHttpClient>();
+            services.AddHttpClient<IContactsHttpClient, ContactsHttpClient>();
+            services.AddHttpClient<ICalendarsHttpClient, CalendarsHttpClient>();
+            services.AddHttpClient<ISleepHttpClient, SleepHttpClient>();
+            services.AddHttpClient<IUserAccessHttpClient, UserAccessHttpClient>();
             services.AddHttpClient<IAuthHttpClient, AuthHttpClient>();
 
-            var progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer");
+            string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer");
             if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
             {
                 progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer);
             }
 
-            var mediaServerUrl = Configuration.GetValue<string>("MediaApiServer");
+            string mediaServerUrl = Configuration.GetValue<string>("MediaApiServer");
             if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
             {
                 mediaServerUrl = Configuration.GetValue<string>("MediaApiServer" + Constants.DebugKinaUnaServer);
@@ -164,7 +176,7 @@ namespace KinaUnaWeb
             
             services.AddControllersWithViews(options =>
             {
-                var policy = new AuthorizationPolicyBuilder()
+                AuthorizationPolicy policy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
@@ -240,7 +252,7 @@ namespace KinaUnaWeb
                 });
             services.AddAuthorization();
             services.AddSignalR().AddMessagePackProtocol().AddNewtonsoftJsonProtocol();
-            services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+            //services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             services.AddApplicationInsightsTelemetry();
         }
 
@@ -249,7 +261,7 @@ namespace KinaUnaWeb
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(Configuration["SyncfusionKey"]);
             
             app.UseCookiePolicy();
-            var supportedCultures = new[]
+            CultureInfo[] supportedCultures = new[]
             {
                 new CultureInfo("en-US"),
                 new CultureInfo("da-DK"),
@@ -263,7 +275,7 @@ namespace KinaUnaWeb
                 SupportedUICultures = supportedCultures
             };
 
-            var provider = new CookieRequestCultureProvider()
+            CookieRequestCultureProvider provider = new CookieRequestCultureProvider()
             {
                 CookieName = Constants.LanguageCookieName
             };

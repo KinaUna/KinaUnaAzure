@@ -48,108 +48,113 @@ namespace KinaUnaWeb.Services
             _authHttpClient = authHttpClient;
         }
 
-        private async Task<string> GetNewToken()
+        private async Task<string> GetNewToken(bool apiTokenOnly = false)
         {
-            var authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
+            if (!apiTokenOnly)
+            {
+                HttpContext currentContext = _httpContextAccessor.HttpContext;
+
+                if (currentContext != null)
+                {
+                    string contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+
+                    if (!string.IsNullOrWhiteSpace(contextAccessToken))
+                    {
+                        return contextAccessToken;
+                    }
+                }
+            }
+
+            string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
             if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
             {
                 authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer);
             }
 
-            var access_token = await _apiTokenClient.GetApiToken(
+            string accessToken = await _apiTokenClient.GetApiToken(
                 authenticationServerClientId,
                 Constants.ProgenyApiName + " " + Constants.MediaApiName,
                 _configuration.GetValue<string>("AuthenticationServerClientSecret"));
-            return access_token;
+            return accessToken;
         }
 
 
         public async Task<UserInfo> GetInfo(string userEmail)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            string userinfoApiPath = "/api/userinfo/byemail/" + userEmail;
-            UserInfo userinfo = new UserInfo();
+            string userInfoApiPath = "/api/UserInfo/ByEmail/" + userEmail;
+            UserInfo userInfo = new UserInfo();
             try
             {
-                var userinfoResponseString = await _httpClient.GetStringAsync(userinfoApiPath);
-                userinfo = JsonConvert.DeserializeObject<UserInfo>(userinfoResponseString);
-                if (userinfo != null && !userinfo.IsKinaUnaUser)
+                string userInfoResponseString = await _httpClient.GetStringAsync(userInfoApiPath);
+                userInfo = JsonConvert.DeserializeObject<UserInfo>(userInfoResponseString);
+                if (userInfo != null && !userInfo.IsKinaUnaUser)
                 {
-                    if (userinfo.UserEmail != "Unknown")
+                    if (userInfo.UserEmail != "Unknown")
                     {
-                        userinfo.IsKinaUnaUser = true;
-                        await UpdateUserInfo(userinfo);
+                        userInfo.IsKinaUnaUser = true;
+                        _ = await UpdateUserInfo(userInfo);
                     }
                 }
             }
             catch (Exception e)
             {
-                userinfo.UserId = "401";
-                userinfo.UserName = e.Message;
-                userinfo.UserEmail = Constants.DefaultUserEmail;
-                userinfo.CanUserAddItems = false;
-                userinfo.ViewChild = Constants.DefaultChildId;
-                return userinfo;
+                if (userInfo != null)
+                {
+                    userInfo.UserId = "401";
+                    userInfo.UserName = e.Message;
+                    userInfo.UserEmail = Constants.DefaultUserEmail;
+                    userInfo.CanUserAddItems = false;
+                    userInfo.ViewChild = Constants.DefaultChildId;
+                    return userInfo;
+                }
             }
 
-            if (userinfo.UserEmail == "Unknown")
+            if (userInfo != null && userInfo.UserEmail == "Unknown")
             {
-                ApplicationUser userId = _userManager.Parse(currentContext.User);
-                if (!string.IsNullOrWhiteSpace(accessToken))
-                {
-                    _httpClient.SetBearerToken(accessToken);
-                }
-                else
-                {
-                    accessToken = await GetNewToken();
-                    _httpClient.SetBearerToken(accessToken);
-                }
-            
-                UserInfo newUserinfo = new UserInfo();
-                newUserinfo.UserEmail = userId.Email;
-                newUserinfo.ViewChild = 0;
-                newUserinfo.UserId = userId.Id;
+                ApplicationUser applicationUser = _userManager.Parse(_httpContextAccessor.HttpContext?.User);
                 
-                newUserinfo.FirstName = userId.FirstName ?? "";
-                newUserinfo.MiddleName = userId.MiddleName ?? "";
-                newUserinfo.LastName = userId.LastName ?? "";
+                UserInfo newUserinfo = new UserInfo();
+                newUserinfo.UserEmail = applicationUser.Email;
+                newUserinfo.ViewChild = 0;
+                newUserinfo.UserId = applicationUser.Id;
+                
+                newUserinfo.FirstName = applicationUser.FirstName ?? "";
+                newUserinfo.MiddleName = applicationUser.MiddleName ?? "";
+                newUserinfo.LastName = applicationUser.LastName ?? "";
                 // Todo: ProfilePicture
-                newUserinfo.Timezone = userId.TimeZone;
-                newUserinfo.UserName = userId.UserName;
+                newUserinfo.Timezone = applicationUser.TimeZone;
+                newUserinfo.UserName = applicationUser.UserName;
                 newUserinfo.IsKinaUnaUser = true;
                 if (String.IsNullOrEmpty(newUserinfo.UserName))
                 {
                     newUserinfo.UserName = newUserinfo.UserEmail;
                 }
 
-                string newUserinfoApiPath = "/api/userinfo/";
-                var newUserResponseString = await _httpClient.PostAsync(newUserinfoApiPath, new StringContent(JsonConvert.SerializeObject(newUserinfo), System.Text.Encoding.UTF8, "application/json")).Result.Content.ReadAsStringAsync();
-                userinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
+                string newUserinfoApiPath = "/api/UserInfo/";
+                HttpResponseMessage newUserResponse = await _httpClient.PostAsync(newUserinfoApiPath, new StringContent(JsonConvert.SerializeObject(newUserinfo), System.Text.Encoding.UTF8, "application/json"));
+                if (newUserResponse.IsSuccessStatusCode)
+                {
+                    string newUserResponseString = await newUserResponse.Content.ReadAsStringAsync();
+                    userInfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
+                }
+                
             }
 
-            if (userinfo.ViewChild == 0)
+            if (userInfo != null && userInfo.ViewChild == 0)
             {
-                if (userinfo.ProgenyList.Any())
+                if (userInfo.ProgenyList.Any())
                 {
-                    await SetViewChild(userinfo.UserEmail, userinfo.ProgenyList[0].Id, userinfo.UserId);
+                    await SetViewChild(userInfo.UserEmail, userInfo.ProgenyList[0].Id, userInfo.UserId);
                 }
                 else
                 {
-                    userinfo.ViewChild = Constants.DefaultChildId;
+                    userInfo.ViewChild = Constants.DefaultChildId;
                 }
             }
-            return userinfo;
+            return userInfo;
 
         }
 
@@ -165,52 +170,38 @@ namespace KinaUnaWeb.Services
 
         public async Task<UserInfo> UpdateUserInfo(UserInfo userinfo)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
             // Todo: ProfilePicture
-            string newUserinfoApiPath = "/api/userinfo/" + userinfo.UserId;
-            var newUserResponseString = await _httpClient.PutAsync(newUserinfoApiPath, new StringContent(JsonConvert.SerializeObject(userinfo), System.Text.Encoding.UTF8, "application/json")).Result.Content.ReadAsStringAsync();
-            var updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
-            return updatedUserinfo;
+            string newUserinfoApiPath = "/api/UserInfo/" + userinfo.UserId;
+            HttpResponseMessage userInfoResponse = await _httpClient.PutAsync(newUserinfoApiPath, new StringContent(JsonConvert.SerializeObject(userinfo), System.Text.Encoding.UTF8, "application/json"));
+            if (userInfoResponse.IsSuccessStatusCode)
+            {
+                string userInfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
+                UserInfo updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(userInfoAsString);
+                return updatedUserinfo;
+            }
+
+            return new UserInfo();
         }
 
         public async Task<Progeny> CurrentChildAsync(int progenyId, string userId)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
-            
-            string progenyApiPath = "/api/progeny/" + progenyId;
-            var progenyResponseString = await _httpClient.GetStringAsync(progenyApiPath);
+            string progenyApiPath = "/api/Progeny/" + progenyId;
+            string progenyResponseString = await _httpClient.GetStringAsync(progenyApiPath);
             Progeny child = JsonConvert.DeserializeObject<Progeny>(progenyResponseString);
             bool hasAccess = false;
-            string accessApiPath = "/api/access/progeny/" + progenyId;
-            var accessResponseString = await _httpClient.GetStringAsync(accessApiPath);
+            string accessApiPath = "/api/Access/Progeny/" + progenyId;
+            string accessResponseString = await _httpClient.GetStringAsync(accessApiPath);
             List<UserAccess> accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessResponseString);
 
-            if (accessList.Any())
+            if (accessList != null && accessList.Any())
             {
-                foreach (var accessItem in accessList)
+                foreach (UserAccess accessItem in accessList)
                 {
                     if (accessItem.UserId.ToUpper() == userId.ToUpper())
                     {
@@ -240,54 +231,44 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> CanUserAddItems(string userId)
         {
-            HttpContext currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            string accessApiPath = "/api/access/accesslistbyuser/" + userId;
-            var accessResponseString = await _httpClient.GetStringAsync(accessApiPath);
-            List<UserAccess> accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessResponseString);
-
-            foreach(UserAccess ua in accessList)
+            string accessApiPath = "/api/Access/AccessListByUser/" + userId;
+            HttpResponseMessage accessResponse = await _httpClient.GetAsync(accessApiPath);
+            if (accessResponse.IsSuccessStatusCode)
             {
-                if (ua.AccessLevel == 0)
+                string accessAsString = await accessResponse.Content.ReadAsStringAsync();
+                List<UserAccess> accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessAsString);
+
+                if (accessList != null)
+                {
+                    foreach (UserAccess ua in accessList)
+                    {
+                        if (ua.AccessLevel == 0)
+                        {
+                            return true;
+                        }
+                    }
+
+                    if (accessList.Any())
+                    {
+                    }
+                }
+
+                if (userId == "Yes")
                 {
                     return true;
                 }
             }
-            if (accessList.Any())
-            {
-                
-            }
-
-            if (userId == "Yes")
-            {
-                return true;
-            }
+            
             return false;
         }
 
         public async Task SetViewChild(string userEmail, int childId, string userId)
         {
-            HttpContext currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
             UserInfo userinfo = new UserInfo();
             userinfo.UserEmail = userEmail;

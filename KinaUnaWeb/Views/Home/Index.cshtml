@@ -11,7 +11,7 @@
             <br />
             <div class="row">
                 <div style="margin-left: 10px;">
-                    @if (User.Identity.IsAuthenticated && ViewBag.OriginalProgeny != null)
+                    @if (User.Identity != null && User.Identity.IsAuthenticated && ViewBag.OriginalProgeny != null)
                     {
                         <div>You do not have access to @ViewBag.OriginalProgeny.NickName's information.<br />
                             

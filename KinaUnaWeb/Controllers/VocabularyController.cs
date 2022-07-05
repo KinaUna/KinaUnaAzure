@@ -15,13 +15,19 @@ namespace KinaUnaWeb.Controllers
     public class VocabularyController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly IWordsHttpClient _wordsHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public VocabularyController(IProgenyHttpClient progenyHttpClient)
+        public VocabularyController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IWordsHttpClient wordsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
+            _userInfosHttpClient = userInfosHttpClient;
+            _wordsHttpClient = wordsHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
         }
 
         [AllowAnonymous]
@@ -30,7 +36,7 @@ namespace KinaUnaWeb.Controllers
             _progId = childId;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
@@ -41,7 +47,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -61,7 +67,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<VocabularyItemViewModel> model = new List<VocabularyItemViewModel>();
-            List<VocabularyItem> wordList = await _progenyHttpClient.GetWordsList(_progId, userAccessLevel); // _context.VocabularyDb.Where(w => w.ProgenyId == _progId).ToList();
+            List<VocabularyItem> wordList = await _wordsHttpClient.GetWordsList(_progId, userAccessLevel);
             wordList = wordList.OrderBy(w => w.Date).ToList();
             if (wordList.Count != 0)
             {

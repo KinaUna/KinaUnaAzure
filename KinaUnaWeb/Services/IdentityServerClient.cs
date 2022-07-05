@@ -23,7 +23,7 @@ namespace KinaUnaWeb.Services
 		public async Task<string> RequestClientCredentialsTokenAsync()
 		{
 			// request the access token token
-			var tokenResponse = await _httpClient.RequestClientCredentialsTokenAsync(_tokenRequest);
+			TokenResponse tokenResponse = await _httpClient.RequestClientCredentialsTokenAsync(_tokenRequest);
 			if (tokenResponse.IsError)
 			{
 				_logger.LogError(tokenResponse.Error);

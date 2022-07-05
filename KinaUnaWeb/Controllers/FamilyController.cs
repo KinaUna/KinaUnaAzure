@@ -13,17 +13,21 @@ namespace KinaUnaWeb.Controllers
     {
         
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public FamilyController(IProgenyHttpClient progenyHttpClient)
+        public FamilyController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
+            _userInfosHttpClient = userInfosHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
         }
 
         public async Task<IActionResult> Index()
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             Family myFamily = new Family();
             myFamily.Children = await _progenyHttpClient.GetProgenyAdminList(userEmail);
             myFamily.FamilyMembers = new List<ApplicationUser>();
@@ -37,7 +41,7 @@ namespace KinaUnaWeb.Controllers
                     {
                         prog.BirthDay = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(prog.BirthDay.Value,prog.TimeZone,userinfo.Timezone);
                     }
-                    List<UserAccess> uaList = await _progenyHttpClient.GetProgenyAccessList(prog.Id);
+                    List<UserAccess> uaList = await _userAccessHttpClient.GetProgenyAccessList(prog.Id);
                     myFamily.AccessList.AddRange(uaList);
                 }
             }

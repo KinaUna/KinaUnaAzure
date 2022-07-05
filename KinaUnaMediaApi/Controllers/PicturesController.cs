@@ -107,7 +107,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
             
-            var itemsOnPage = allItems
+            List<Picture> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
@@ -392,7 +392,7 @@ namespace KinaUnaMediaApi.Controllers
                 return Unauthorized();
             }
 
-            var memoryStream = await _imageStore.GetStream(model.PictureLink);
+            MemoryStream memoryStream = await _imageStore.GetStream(model.PictureLink);
             memoryStream.Position = 0;
             
             using (MagickImage image = new MagickImage(memoryStream))
@@ -487,7 +487,7 @@ namespace KinaUnaMediaApi.Controllers
 
                     try
                     {
-                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation).Value);
+                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
                         switch (rotation)
                         {
                             case 1:
@@ -517,16 +517,19 @@ namespace KinaUnaMediaApi.Controllers
 
                     try
                     {
-                        var date = (string)profile.GetValue(ExifTag.DateTimeOriginal).Value;
-                        model.PictureTime = new DateTime(
-                            int.Parse(date.Substring(0, 4)), // year
-                            int.Parse(date.Substring(5, 2)), // month
-                            int.Parse(date.Substring(8, 2)), // day
-                            int.Parse(date.Substring(11, 2)), // hour
-                            int.Parse(date.Substring(14, 2)), // minute
-                            int.Parse(date.Substring(17, 2)) // second
-                        );
-                        // Todo: Check if timezone can be extracted and UTC time found?
+                        string date = profile.GetValue(ExifTag.DateTimeOriginal)?.Value;
+                        if (!string.IsNullOrEmpty(date))
+                        {
+                            model.PictureTime = new DateTime(
+                                int.Parse(date.Substring(0, 4)), // year
+                                int.Parse(date.Substring(5, 2)), // month
+                                int.Parse(date.Substring(8, 2)), // day
+                                int.Parse(date.Substring(11, 2)), // hour
+                                int.Parse(date.Substring(14, 2)), // minute
+                                int.Parse(date.Substring(17, 2)) // second
+                            );
+                            // Todo: Check if timezone can be extracted and UTC time found?
+                        }
                     }
                     catch (FormatException)
                     {
@@ -812,7 +815,7 @@ namespace KinaUnaMediaApi.Controllers
             if (picturesList.Any())
             {
                 Random r = new Random();
-                var pictureNumber = r.Next(0, picturesList.Count);
+                int pictureNumber = r.Next(0, picturesList.Count);
 
                 Picture picture = picturesList[pictureNumber];
 
@@ -855,7 +858,7 @@ namespace KinaUnaMediaApi.Controllers
             if (picturesList.Any())
             {
                 Random r = new Random();
-                var pictureNumber = r.Next(0, picturesList.Count);
+                int pictureNumber = r.Next(0, picturesList.Count);
 
                 Picture picture = picturesList[pictureNumber];
                 if (!picture.PictureLink.ToLower().StartsWith("http"))
@@ -999,7 +1002,7 @@ namespace KinaUnaMediaApi.Controllers
                 
             }
 
-            var itemsOnPage = allItems
+            List<Picture> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
@@ -1153,7 +1156,7 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> UploadPicture([FromForm]IFormFile file)
         {
             string pictureLink;
-            using (var stream = file.OpenReadStream())
+            using (Stream stream = file.OpenReadStream())
             {
                 pictureLink = await _imageStore.SaveImage(stream);
             }
@@ -1180,7 +1183,7 @@ namespace KinaUnaMediaApi.Controllers
                     int rotation;
                     try
                     {
-                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation).Value);
+                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
                         switch (rotation)
                         {
                             case 1:
@@ -1253,7 +1256,7 @@ namespace KinaUnaMediaApi.Controllers
                     int rotation;
                     try
                     {
-                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation).Value);
+                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
                         switch (rotation)
                         {
                             case 1:
@@ -1326,7 +1329,7 @@ namespace KinaUnaMediaApi.Controllers
                     int rotation;
                     try
                     {
-                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation).Value);
+                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
                         switch (rotation)
                         {
                             case 1:
@@ -1399,7 +1402,7 @@ namespace KinaUnaMediaApi.Controllers
                     int rotation;
                     try
                     {
-                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation).Value);
+                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
                         switch (rotation)
                         {
                             case 1:
@@ -1463,7 +1466,7 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> UploadNoteImage([FromForm] IFormFile file)
         {
             string pictureLink;
-            using (var stream = file.OpenReadStream())
+            using (Stream stream = file.OpenReadStream())
             {
                 pictureLink = await _imageStore.SaveImage(stream, BlobContainers.Notes);
                 pictureLink = _imageStore.UriFor(pictureLink, BlobContainers.Notes);

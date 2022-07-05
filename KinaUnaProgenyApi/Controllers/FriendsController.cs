@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
@@ -341,7 +342,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (userAccess != null && userAccess.AccessLevel > 0 && friend.PictureLink.ToLower().StartsWith("http"))
             {
-                using (Stream stream = GetStreamFromUrl(friend.PictureLink))
+                using (Stream stream = await GetStreamFromUrl(friend.PictureLink))
                 {
                     friend.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Friends);
                 }
@@ -356,14 +357,12 @@ namespace KinaUnaProgenyApi.Controllers
             
         }
 
-        private static Stream GetStreamFromUrl(string url)
+        private static async Task<Stream> GetStreamFromUrl(string url)
         {
-            byte[] imageData;
-
-            using (var wc = new System.Net.WebClient())
-                imageData = wc.DownloadData(url);
-
-            return new MemoryStream(imageData);
+            using HttpClient client = new HttpClient();
+            using HttpResponseMessage response = await client.GetAsync(url);
+            await using Stream streamToReadFrom = await response.Content.ReadAsStreamAsync();
+            return streamToReadFrom;
         }
     }
 }

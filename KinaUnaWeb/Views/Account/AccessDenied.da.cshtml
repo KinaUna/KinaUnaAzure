@@ -6,7 +6,7 @@
 <h2>Adgang nægtet</h2>
 
 @{
-    if (User.Identity.IsAuthenticated)
+    if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         <div> Du har ikke rettigheder til denne ressource.</div>
     }

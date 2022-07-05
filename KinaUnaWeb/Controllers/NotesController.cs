@@ -15,13 +15,19 @@ namespace KinaUnaWeb.Controllers
     public class NotesController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly INotesHttpClient _notesHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public NotesController(IProgenyHttpClient progenyHttpClient)
+        public NotesController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, INotesHttpClient notesHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
+            _userInfosHttpClient = userInfosHttpClient;
+            _notesHttpClient = notesHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
         }
 
         [AllowAnonymous]
@@ -30,7 +36,7 @@ namespace KinaUnaWeb.Controllers
             _progId = childId;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
@@ -42,7 +48,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -64,7 +70,7 @@ namespace KinaUnaWeb.Controllers
             List<NoteViewModel> model = new List<NoteViewModel>();
             
             // Todo: Replace _context with _progenyClient.GetNotes()
-            List<Note> notes = await _progenyHttpClient.GetNotesList(_progId, userAccessLevel); // _context.NotesDb.Where(n => n.ProgenyId == _progId).ToList();
+            List<Note> notes = await _notesHttpClient.GetNotesList(_progId, userAccessLevel);
             if (notes.Count != 0)
             {
                 foreach (Note note in notes)
@@ -78,7 +84,7 @@ namespace KinaUnaWeb.Controllers
                     notesViewModel.Title = note.Title;
                     notesViewModel.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(note.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
                     notesViewModel.IsAdmin = _userIsProgenyAdmin;
-                    UserInfo nUser = await _progenyHttpClient.GetUserInfoByUserId(note.Owner);
+                    UserInfo nUser = await _userInfosHttpClient.GetUserInfoByUserId(note.Owner);
                     notesViewModel.Owner = nUser.FirstName + " " + nUser.MiddleName + " " + nUser.LastName;
                     if (notesViewModel.AccessLevel >= userAccessLevel)
                     {

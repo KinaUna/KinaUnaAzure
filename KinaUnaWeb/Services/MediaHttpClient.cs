@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,203 +44,203 @@ namespace KinaUnaWeb.Services
             _httpClient = httpClient;
         }
 
-        private async Task<string> GetNewToken()
+        private async Task<string> GetNewToken(bool apiTokenOnly = false)
         {
-            var authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
+            if (!apiTokenOnly)
+            {
+                HttpContext currentContext = _httpContextAccessor.HttpContext;
+
+                if (currentContext != null)
+                {
+                    string contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+
+                    if (!string.IsNullOrWhiteSpace(contextAccessToken))
+                    {
+                        return contextAccessToken;
+                    }
+                }
+            }
+
+            string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
             if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
             {
                 authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer);
             }
 
-            var access_token = await _apiTokenClient.GetApiToken(
-                    authenticationServerClientId,
-                    Constants.ProgenyApiName + " " + Constants.MediaApiName,
-                    _configuration.GetValue<string>("AuthenticationServerClientSecret"));
-            return access_token;
+            string accessToken = await _apiTokenClient.GetApiToken(
+                authenticationServerClientId,
+                Constants.ProgenyApiName + " " + Constants.MediaApiName,
+                _configuration.GetValue<string>("AuthenticationServerClientSecret"));
+            return accessToken;
         }
 
         public async Task<Picture> GetPicture(int pictureId, string timeZone)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
+            
+            string pictureApiPath = "/api/Pictures/" + pictureId;
+            
+            HttpResponseMessage pictureResponse = await _httpClient.GetAsync(pictureApiPath);
+            if (pictureResponse.IsSuccessStatusCode)
+            {
+                string pictureAsString = await pictureResponse.Content.ReadAsStringAsync();
+                Picture picture = JsonConvert.DeserializeObject<Picture>(pictureAsString);
+                if (picture != null && picture.PictureTime.HasValue)
+                {
+                    picture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(picture.PictureTime.Value,
+                        TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                }
 
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
+                if (picture != null)
+                {
+                    return picture;
+                }
             }
             
-            string pictureApiPath = "/api/pictures/" + pictureId;
-            
-            var pictureResponseString = await _httpClient.GetStringAsync(pictureApiPath);
-
-            Picture picture = JsonConvert.DeserializeObject<Picture>(pictureResponseString);
-            if (picture.PictureTime.HasValue)
-            {
-                picture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(picture.PictureTime.Value,
-                    TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-            }
-            return picture;
+            return new Picture();
         }
 
         public async Task<Picture> GetRandomPicture(int progenyId, int accessLevel, string timeZone)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            string pictureApiPath = "api/pictures/random/" + progenyId + "/" + accessLevel;
-            var resp = await _httpClient.GetAsync(pictureApiPath).ConfigureAwait(false);
-            string pictureResponseString = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
-            
-            Picture resultPicture = JsonConvert.DeserializeObject<Picture>(pictureResponseString);
-            if (timeZone != "" && resultPicture != null)
+            string pictureApiPath = "api/Pictures/Random/" + progenyId + "/" + accessLevel;
+            HttpResponseMessage pictureResponse = await _httpClient.GetAsync(pictureApiPath);
+            if (pictureResponse.IsSuccessStatusCode)
             {
-                if (resultPicture.PictureTime.HasValue)
+                string pictureResponseString = await pictureResponse.Content.ReadAsStringAsync();
+                Picture resultPicture = JsonConvert.DeserializeObject<Picture>(pictureResponseString);
+                if (timeZone != "" && resultPicture != null)
                 {
-                    resultPicture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(resultPicture.PictureTime.Value,
-                        TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                    if (resultPicture.PictureTime.HasValue)
+                    {
+                        resultPicture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(resultPicture.PictureTime.Value,
+                            TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                    }
                 }
 
+                return resultPicture;
             }
-            return resultPicture;
+
+            return new Picture();
         }
 
         public async Task<List<Picture>> GetPictureList(int progenyId, int accessLevel, string timeZone)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            string pictureApiPath = "/api/pictures/progeny/" + progenyId + "/" + accessLevel;
-            var resp = await _httpClient.GetAsync(pictureApiPath);
-            string pictureResponseString = await resp.Content.ReadAsStringAsync();
-
-            List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(pictureResponseString);
-            if (timeZone != "")
+            string pictureApiPath = "/api/Pictures/Progeny/" + progenyId + "/" + accessLevel;
+            HttpResponseMessage picturesResponse = await _httpClient.GetAsync(pictureApiPath);
+            if (picturesResponse.IsSuccessStatusCode)
             {
-                foreach (Picture pic in resultPictureList)
+                string picturesListAsString = await picturesResponse.Content.ReadAsStringAsync();
+                List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(picturesListAsString);
+                if (timeZone != "" && resultPictureList != null)
                 {
-                    if (pic.PictureTime.HasValue)
+                    foreach (Picture pic in resultPictureList)
                     {
-                        pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
-                            TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                        if (pic.PictureTime.HasValue)
+                        {
+                            pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
+                                TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                        }
                     }
                 }
+
+                if (resultPictureList != null)
+                {
+                    return resultPictureList;
+                }
             }
-            return resultPictureList;
+
+            return new List<Picture>();
         }
 
         public async Task<List<Picture>> GetAllPictures()
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            if (!string.IsNullOrWhiteSpace(accessToken))
+            string pictureApiPath = "/api/Pictures";
+            HttpResponseMessage picturesResponse = await _httpClient.GetAsync(pictureApiPath);
+            if (picturesResponse.IsSuccessStatusCode)
             {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
-            
-            string pictureApiPath = "/api/pictures";
-            var resp = await _httpClient.GetAsync(pictureApiPath);
-            string pictureResponseString = await resp.Content.ReadAsStringAsync();
+                string pictureResponseString = await picturesResponse.Content.ReadAsStringAsync();
 
-            List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(pictureResponseString);
-            
-            return resultPictureList;
+                List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(pictureResponseString);
+
+                if (resultPictureList != null)
+                {
+                    return resultPictureList;
+                }
+            }
+
+            return new List<Picture>();
         }
 
         public async Task<Picture> AddPicture(Picture picture)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            if (!string.IsNullOrWhiteSpace(accessToken))
+            string newPictureApiPath = "/api/Pictures/";
+            
+            HttpResponseMessage pictureResponse = await _httpClient.PostAsync(newPictureApiPath, new StringContent(JsonConvert.SerializeObject(picture), Encoding.UTF8, "application/json"));
+            if (pictureResponse.IsSuccessStatusCode)
             {
-                _httpClient.SetBearerToken(accessToken);
+                string pictureAsString = await pictureResponse.Content.ReadAsStringAsync();
+                picture = JsonConvert.DeserializeObject<Picture>(pictureAsString);
+                if (picture != null)
+                {
+                    string newPictureUri = "/api/Pictures/ByLink/" + picture.PictureLink;
+                    HttpResponseMessage newPictureResponse = await _httpClient.GetAsync(newPictureUri);
+                    if (newPictureResponse.IsSuccessStatusCode)
+                    {
+                        string newPictureAsString = await newPictureResponse.Content.ReadAsStringAsync();
+                        Picture newPicture = JsonConvert.DeserializeObject<Picture>(newPictureAsString);
+                        if (newPicture != null)
+                        {
+                            return newPicture;
+                        }
+                    }
+                }
             }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
-            
-            string newPictureApiPath = "/api/pictures/";
-            
-            await _httpClient.PostAsync(newPictureApiPath, new StringContent(JsonConvert.SerializeObject(picture), Encoding.UTF8, "application/json")).Result.Content.ReadAsStringAsync();
-            var newPictureUri = "/api/pictures/bylink/" + picture.PictureLink;
-            var newPictureResponseString = await _httpClient.GetStringAsync(newPictureUri);
-            Picture newPicture = JsonConvert.DeserializeObject<Picture>(newPictureResponseString);
 
-            return newPicture;
+            return new Picture();
         }
 
         public async Task<Picture> UpdatePicture(Picture picture)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            if (!string.IsNullOrWhiteSpace(accessToken))
+            string updatePictureApiPath = "/api/Pictures/" + picture.PictureId;
+
+            HttpResponseMessage pictureResponse = await _httpClient.PutAsync(updatePictureApiPath, new StringContent(JsonConvert.SerializeObject(picture), Encoding.UTF8, "application/json"));
+            if (pictureResponse.IsSuccessStatusCode)
             {
-                _httpClient.SetBearerToken(accessToken);
+                string pictureAsString = await pictureResponse.Content.ReadAsStringAsync();
+                picture = JsonConvert.DeserializeObject<Picture>(pictureAsString);
+                if (picture != null)
+                {
+                    return picture;
+                }
             }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
-            
-            string updatePictureApiPath = "/api/pictures/" + picture.PictureId;
-            var updatePictureResponseString = await _httpClient.PutAsync(updatePictureApiPath, picture, new JsonMediaTypeFormatter());
-            string returnString = await updatePictureResponseString.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<Picture>(returnString);
+
+            return new Picture();
         }
 
         public async Task<bool> DeletePicture(int pictureId)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string deletePictureApiPath = "/api/Pictures/" + pictureId;
             
-            string deletePictureApiPath = "/api/pictures/" + pictureId;
-            
-            var deletePictureResponse = await _httpClient.DeleteAsync(deletePictureApiPath).ConfigureAwait(false);
+            HttpResponseMessage deletePictureResponse = await _httpClient.DeleteAsync(deletePictureApiPath);
             if (deletePictureResponse.IsSuccessStatusCode)
             {
                 return true;
@@ -251,22 +251,12 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> AddPictureComment(Comment comment)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string newCommentApiPath = "/api/Comments/";
             
-            string newCommentApiPath = "/api/comments/";
-            
-            var newCommentResponse = await _httpClient.PostAsync(newCommentApiPath, new StringContent(JsonConvert.SerializeObject(comment), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+            HttpResponseMessage newCommentResponse = await _httpClient.PostAsync(newCommentApiPath, new StringContent(JsonConvert.SerializeObject(comment), Encoding.UTF8, "application/json")).ConfigureAwait(false);
             if (newCommentResponse.IsSuccessStatusCode)
             {
                 return true;
@@ -277,21 +267,12 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> DeletePictureComment(int commentId)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            string deleteCommentApiPath = "/api/comments/" + commentId;
+            string deleteCommentApiPath = "/api/Comments/" + commentId;
             
-            var newCommentResponse = await _httpClient.DeleteAsync(deleteCommentApiPath).ConfigureAwait(false);
+            HttpResponseMessage newCommentResponse = await _httpClient.DeleteAsync(deleteCommentApiPath).ConfigureAwait(false);
             if (newCommentResponse.IsSuccessStatusCode)
             {
                 return true;
@@ -302,100 +283,87 @@ namespace KinaUnaWeb.Services
 
         public async Task<PicturePageViewModel> GetPicturePage(int pageSize, int id, int progenyId, int userAccessLevel, int sortBy, string tagFilter, string timeZone)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            string pageApiPath = "/api/pictures/page?pageSize=" + pageSize + "&pageIndex=" + id + "&progenyId=" + progenyId + "&accessLevel=" + userAccessLevel + "&sortBy=" + sortBy;
+            string pageApiPath = "/api/Pictures/Page?pageSize=" + pageSize + "&pageIndex=" + id + "&progenyId=" + progenyId + "&accessLevel=" + userAccessLevel + "&sortBy=" + sortBy;
             if (tagFilter != "")
             {
                 pageApiPath = pageApiPath + "&tagFilter=" + tagFilter;
             }
             
-            var resp = await _httpClient.GetAsync(pageApiPath);
-            string pageResponseString = await resp.Content.ReadAsStringAsync();
-
-            PicturePageViewModel model = JsonConvert.DeserializeObject<PicturePageViewModel>(pageResponseString);
-            if (timeZone != "")
+            HttpResponseMessage picturePageResponse = await _httpClient.GetAsync(pageApiPath);
+            if (picturePageResponse.IsSuccessStatusCode)
             {
-                foreach (Picture pic in model.PicturesList)
+                string pageResponseString = await picturePageResponse.Content.ReadAsStringAsync();
+
+                PicturePageViewModel model = JsonConvert.DeserializeObject<PicturePageViewModel>(pageResponseString);
+                if (timeZone != "" && model != null && model.PicturesList.Any())
                 {
-                    if (pic.PictureTime.HasValue)
+                    foreach (Picture pic in model.PicturesList)
                     {
-                        pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
-                            TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                        if (pic.PictureTime.HasValue)
+                        {
+                            pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
+                                TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                        }
                     }
                 }
+
+                if (model != null)
+                {
+                    return model;
+                }
             }
-            
-            return model;
+
+            return new PicturePageViewModel();
         }
 
         public async Task<PictureViewModel> GetPictureViewModel(int id, int userAccessLevel, int sortBy, string timeZone)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            string pageApiPath = "/api/pictures/pictureviewmodel/" + id + "/" + userAccessLevel + "?sortBy=" + sortBy;
-            var pictureResponseString = await _httpClient.GetStringAsync(pageApiPath);
-
-            PictureViewModel picture = JsonConvert.DeserializeObject<PictureViewModel>(pictureResponseString);
-            if (timeZone != "")
+            string pageApiPath = "/api/Pictures/PictureViewModel/" + id + "/" + userAccessLevel + "?sortBy=" + sortBy;
+            HttpResponseMessage picturesResponse = await _httpClient.GetAsync(pageApiPath);
+            if (picturesResponse.IsSuccessStatusCode)
             {
-                if (picture.PictureTime.HasValue)
+                string picturesViewModelAsString = await picturesResponse.Content.ReadAsStringAsync();
+                PictureViewModel pictureViewModel = JsonConvert.DeserializeObject<PictureViewModel>(picturesViewModelAsString);
+                if (timeZone != "" && pictureViewModel != null)
                 {
-                    picture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(picture.PictureTime.Value,
-                        TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                }
-
-                if (picture.CommentsList.Count > 0)
-                {
-                    foreach (Comment cmnt in picture.CommentsList)
+                    if (pictureViewModel.PictureTime.HasValue)
                     {
-                        cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created,
+                        pictureViewModel.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pictureViewModel.PictureTime.Value,
                             TimeZoneInfo.FindSystemTimeZoneById(timeZone));
                     }
+
+                    if (pictureViewModel.CommentsList.Count > 0)
+                    {
+                        foreach (Comment cmnt in pictureViewModel.CommentsList)
+                        {
+                            cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created,
+                                TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                        }
+                    }
+                }
+
+                if (pictureViewModel != null)
+                {
+                    return pictureViewModel;
                 }
             }
 
-            return picture;
+            return new PictureViewModel();
         }
 
         public async Task<VideoPageViewModel> GetVideoPage(int pageSize, int id, int progenyId, int userAccessLevel, int sortBy, string tagFilter, string timeZone)
         {
 
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-            //HttpClient _httpClient = new HttpClient();
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            string pageApiPath = "/api/videos/page?pageSize=" + pageSize + "&pageIndex=" + id + "&progenyId=" + progenyId + "&accessLevel=" + userAccessLevel + "&sortBy=" + sortBy;
+            string pageApiPath = "/api/Videos/Page?pageSize=" + pageSize + "&pageIndex=" + id + "&progenyId=" + progenyId + "&accessLevel=" + userAccessLevel + "&sortBy=" + sortBy;
             if (tagFilter != "")
             {
                 pageApiPath = pageApiPath + "&tagFilter=" + tagFilter;
@@ -403,213 +371,201 @@ namespace KinaUnaWeb.Services
 
             pageApiPath = pageApiPath + "&timeZone=" + timeZone;
 
-            var pageResponseString = await _httpClient.GetStringAsync(pageApiPath);
-            VideoPageViewModel model = JsonConvert.DeserializeObject<VideoPageViewModel>(pageResponseString);
-
-            if (timeZone != "")
+            HttpResponseMessage videoResponse = await _httpClient.GetAsync(pageApiPath);
+            if (videoResponse.IsSuccessStatusCode)
             {
-                foreach (Video vid in model.VideosList)
-                {
+                string videoPageAsString = await videoResponse.Content.ReadAsStringAsync();
+                VideoPageViewModel model = JsonConvert.DeserializeObject<VideoPageViewModel>(videoPageAsString);
 
-                    if (vid.VideoTime.HasValue)
+                if (timeZone != "" && model != null && model.VideosList.Any())
+                {
+                    foreach (Video vid in model.VideosList)
                     {
-                        vid.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(vid.VideoTime.Value,
-                            TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+
+                        if (vid.VideoTime.HasValue)
+                        {
+                            vid.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(vid.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                        }
                     }
                 }
+
+                if (model != null)
+                {
+                    return model;
+                }
             }
-            return model;
+
+            return new VideoPageViewModel();
         }
 
         public async Task<VideoViewModel> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            string pageApiPath = "/api/videos/videoviewmodel/" + id + "/" + userAccessLevel + "?sortBy=" + sortBy;
+            string pageApiPath = "/api/Videos/VideoViewModel/" + id + "/" + userAccessLevel + "?sortBy=" + sortBy;
             
-            var videoResponseString = await _httpClient.GetStringAsync(pageApiPath);
-
-            VideoViewModel video = JsonConvert.DeserializeObject<VideoViewModel>(videoResponseString);
-
-            if (timeZone != "")
+            HttpResponseMessage videoViewModelResponse = await _httpClient.GetAsync(pageApiPath);
+            if (videoViewModelResponse.IsSuccessStatusCode)
             {
-                if (video.VideoTime.HasValue)
-                {
-                   video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(video.VideoTime.Value,
-                        TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                }
+                string videoViewModelAsString = await videoViewModelResponse.Content.ReadAsStringAsync();
+                VideoViewModel videoViewModel = JsonConvert.DeserializeObject<VideoViewModel>(videoViewModelAsString);
 
-                if (video.CommentsList.Count > 0)
+                if (timeZone != "" && videoViewModel != null)
                 {
-                    foreach (Comment cmnt in video.CommentsList)
+                    if (videoViewModel.VideoTime.HasValue)
                     {
-                        cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created,
-                            TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                        videoViewModel.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(videoViewModel.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                    }
+
+                    if (videoViewModel.CommentsList.Count > 0)
+                    {
+                        foreach (Comment cmnt in videoViewModel.CommentsList)
+                        {
+                            cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                        }
                     }
                 }
+
+                if (videoViewModel != null)
+                {
+                    return videoViewModel;
+                }
             }
-            return video;
+
+            return new VideoViewModel();
         }
 
         public async Task<Video> GetVideo(int videoId, string timeZone)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
 
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
-            
-            string videoApiPath = "/api/videos/" + videoId;
-            var videoResponseString = await _httpClient.GetStringAsync(videoApiPath);
+            string videoApiPath = "/api/Videos/" + videoId;
 
-            Video video = JsonConvert.DeserializeObject<Video>(videoResponseString);
-            if (timeZone != "")
+            HttpResponseMessage videoResponse = await _httpClient.GetAsync(videoApiPath);
+            if (videoResponse.IsSuccessStatusCode)
             {
-                if (video.VideoTime.HasValue)
+                string videoAsString = await videoResponse.Content.ReadAsStringAsync();
+                Video resultVideo = JsonConvert.DeserializeObject<Video>(videoAsString);
+                if (resultVideo != null)
                 {
-                    video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(video.VideoTime.Value,
-                       TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                    if (timeZone != "")
+                    {
+                        if (resultVideo.VideoTime.HasValue)
+                        {
+                            resultVideo.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(resultVideo.VideoTime.Value,
+                                TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                        }
+                    }
+
+                    return resultVideo;
                 }
             }
-            return video;
+
+            return new Video();
         }
 
         public async Task<List<Video>> GetVideoList(int progenyId, int accessLevel, string timeZone)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            string videoApiPath = "/api/videos/progeny/" + progenyId + "/" + accessLevel;
-            var resp = await _httpClient.GetAsync(videoApiPath);
-            string videoResponseString = await resp.Content.ReadAsStringAsync();
-
-            List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoResponseString);
-            if (timeZone != "")
+            string videoApiPath = "/api/Videos/Progeny/" + progenyId + "/" + accessLevel;
+            HttpResponseMessage videosListReponse = await _httpClient.GetAsync(videoApiPath);
+            if (videosListReponse.IsSuccessStatusCode)
             {
-                foreach (Video vid in resultVideoList)
+                string videoListAsString = await videosListReponse.Content.ReadAsStringAsync();
+                List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoListAsString);
+                if (timeZone != "" && resultVideoList != null)
                 {
-                    if (vid.VideoTime.HasValue)
+                    foreach (Video vid in resultVideoList)
                     {
-                        vid.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(vid.VideoTime.Value,
-                            TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                        if (vid.VideoTime.HasValue)
+                        {
+                            vid.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(vid.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                        }
                     }
                 }
+
+                if (resultVideoList != null)
+                {
+                    return resultVideoList;
+                }
             }
-            return resultVideoList;
+
+            return new List<Video>();
         }
 
         public async Task<List<Video>> GetAllVideos()
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            string videoApiPath = "/api/videos";
-            var resp = await _httpClient.GetAsync(videoApiPath);
-            string videoResponseString = await resp.Content.ReadAsStringAsync();
+            string videoApiPath = "/api/Videos";
+            HttpResponseMessage videosResponse = await _httpClient.GetAsync(videoApiPath);
+            if (videosResponse.IsSuccessStatusCode)
+            {
+                string videoResponseString = await videosResponse.Content.ReadAsStringAsync();
 
-            List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoResponseString);
+                List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoResponseString);
+                if (resultVideoList != null)
+                {
+                    return resultVideoList;
+                }
+            }
 
-            return resultVideoList;
+            return new List<Video>();
         }
         public async Task<Video> AddVideo(Video video)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            string newVideoApiPath = "/api/videos/";
+            string newVideoApiPath = "/api/Videos/";
             
-            var newVideoResponse = await _httpClient.PostAsync(newVideoApiPath, new StringContent(JsonConvert.SerializeObject(video), Encoding.UTF8, "application/json"));
-            var newVideoResponseString = await newVideoResponse.Content.ReadAsStringAsync();
-            Video newVideo = JsonConvert.DeserializeObject<Video>(newVideoResponseString);
+            HttpResponseMessage newVideoResponse = await _httpClient.PostAsync(newVideoApiPath, new StringContent(JsonConvert.SerializeObject(video), Encoding.UTF8, "application/json"));
+            if (newVideoResponse.IsSuccessStatusCode)
+            {
+                string videoAsString = await newVideoResponse.Content.ReadAsStringAsync();
+                video = JsonConvert.DeserializeObject<Video>(videoAsString);
+                if (video != null)
+                {
+                    return video;
+                }
+            }
 
-            return newVideo;
+            return new Video();
         }
 
         public async Task<Video> UpdateVideo(Video video)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
-            string updateVideoApiPath = "/api/videos/" + video.VideoId;
-            var updateVideoResponseString = await _httpClient.PutAsync(updateVideoApiPath, video, new JsonMediaTypeFormatter());
-            string returnString = await updateVideoResponseString.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<Video>(returnString);
+            string updateVideoApiPath = "/api/Videos/" + video.VideoId;
+            HttpResponseMessage videoResponse = await _httpClient.PutAsync(updateVideoApiPath, new StringContent(JsonConvert.SerializeObject(video), Encoding.UTF8, "application/json"));
+            if (videoResponse.IsSuccessStatusCode)
+            {
+                string videoAsString = await videoResponse.Content.ReadAsStringAsync();
+                video = JsonConvert.DeserializeObject<Video>(videoAsString);
+                if (video != null)
+                {
+                    return video;
+                }
+            }
+
+            return new Video();
         }
 
         public async Task<bool> DeleteVideo(int videoId)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
             string deleteVideoApiPath = "/api/videos/" + videoId;
             
-            var deleteVideoResponse = await _httpClient.DeleteAsync(deleteVideoApiPath).ConfigureAwait(false);
+            HttpResponseMessage deleteVideoResponse = await _httpClient.DeleteAsync(deleteVideoApiPath).ConfigureAwait(false);
             if (deleteVideoResponse.IsSuccessStatusCode)
             {
                 return true;
@@ -620,20 +576,11 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> AddVideoComment(Comment comment)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
             string newCommentApiPath = "/api/comments/";
-            var newCommentResponse = await _httpClient.PostAsync(newCommentApiPath, new StringContent(JsonConvert.SerializeObject(comment), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+            HttpResponseMessage newCommentResponse = await _httpClient.PostAsync(newCommentApiPath, new StringContent(JsonConvert.SerializeObject(comment), Encoding.UTF8, "application/json")).ConfigureAwait(false);
             if (newCommentResponse.IsSuccessStatusCode)
             {
                 return true;
@@ -644,21 +591,11 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> DeleteVideoComment(int commentId)
         {
-            var currentContext = _httpContextAccessor.HttpContext;
-            string accessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken).ConfigureAwait(false);
-            
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                _httpClient.SetBearerToken(accessToken);
-            }
-            else
-            {
-                accessToken = await GetNewToken();
-                _httpClient.SetBearerToken(accessToken);
-            }
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
             
             string deleteCommentApiPath = "/api/comments/" + commentId;
-            var newCommentResponse = await _httpClient.DeleteAsync(deleteCommentApiPath).ConfigureAwait(false);
+            HttpResponseMessage newCommentResponse = await _httpClient.DeleteAsync(deleteCommentApiPath).ConfigureAwait(false);
             if (newCommentResponse.IsSuccessStatusCode)
             {
                 return true;

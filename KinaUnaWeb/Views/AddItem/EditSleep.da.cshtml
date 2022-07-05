@@ -11,9 +11,14 @@
         <label asp-for="SleepStart" class="col-3 control-label">Start</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
-                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text"
-                       class="form-control" data-zdp_readonly_element="false" asp-for="SleepStart"
-                       value="@Model.SleepStart.Value.ToString("dd-MMM-yyyy HH:mm")" />
+                @{
+                    string sleepStartValue = "";
+                    if (Model.SleepStart.HasValue)
+                    {
+                        sleepStartValue = Model.SleepStart.Value.ToString("dd-MMM-yyyy HH:mm");
+                    }
+                }
+                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepStart" value="@sleepStartValue"/>
             </div>
         </div>
     </div>
@@ -33,11 +38,14 @@
         <label asp-for="SleepEnd" class="col-3 control-label">Slut</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
-                <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text"
-                       class="form-control" data-zdp_readonly_element="false" asp-for="SleepEnd"
-                       value="@{
-                                  System.Diagnostics.Debug.Assert(Model.SleepEnd != null, "Model.SleepEnd != null");
-                              Model.SleepEnd.Value.ToString("dd-MMM-yyyy HH:mm");}" />
+                @{
+                    string sleepEndValue = "";
+                    if (Model.SleepEnd.HasValue)
+                    {
+                        sleepEndValue = Model.SleepEnd.Value.ToString("dd-MMM-yyyy HH:mm");
+                    }
+                }
+                <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepEnd" value="@sleepEndValue"/>
             </div>
         </div>
     </div>

@@ -9,7 +9,7 @@ namespace KinaUnaWeb.Services
     {
         public virtual string GetUserId(HubConnectionContext connection)
         {
-            return connection.User?.FindFirst("sub")?.Value;
+            return connection.User.FindFirst("sub")?.Value;
         }
     }
 }

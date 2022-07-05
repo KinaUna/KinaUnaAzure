@@ -16,11 +16,17 @@ namespace KinaUnaWeb.Controllers
     public class CalendarController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly ICalendarsHttpClient _calendarsHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public CalendarController(IProgenyHttpClient progenyHttpClient)
+        public CalendarController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, ICalendarsHttpClient calendarsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
+            _userInfosHttpClient = userInfosHttpClient;
+            _calendarsHttpClient = calendarsHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
         }
 
         [AllowAnonymous]
@@ -29,7 +35,7 @@ namespace KinaUnaWeb.Controllers
             int progId = childId;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
                 progId = userinfo.ViewChild;
@@ -41,7 +47,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -63,7 +69,7 @@ namespace KinaUnaWeb.Controllers
 
             ApplicationUser currentUser = new ApplicationUser();
             currentUser.TimeZone = userinfo.Timezone;
-            var eventsList = await _progenyHttpClient.GetCalendarList(progId, userAccessLevel); // _context.CalendarDb.AsNoTracking().Where(e => e.ProgenyId == _progId).ToList();
+            List<CalendarItem> eventsList = await _calendarsHttpClient.GetCalendarList(progId, userAccessLevel); // _context.CalendarDb.AsNoTracking().Where(e => e.ProgenyId == _progId).ToList();
             eventsList = eventsList.OrderBy(e => e.StartTime).ToList();
             CalendarItemViewModel events = new CalendarItemViewModel();
             events.ViewOptions.Add(new ScheduleView{Option = Syncfusion.EJ2.Schedule.View.Day, DateFormat = "dd/MMM/yyyy", FirstDayOfWeek = 1});
@@ -105,16 +111,16 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ViewEvent(int eventId)
         {
-            CalendarItem eventItem = await _progenyHttpClient.GetCalendarItem(eventId); // _context.CalendarDb.AsNoTracking().SingleAsync(e => e.EventId == eventId);
+            CalendarItem eventItem = await _calendarsHttpClient.GetCalendarItem(eventId); // _context.CalendarDb.AsNoTracking().SingleAsync(e => e.EventId == eventId);
 
             CalendarItemViewModel model = new CalendarItemViewModel();
 
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(eventItem.ProgenyId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(eventItem.ProgenyId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(eventItem.ProgenyId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 

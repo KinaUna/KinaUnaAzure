@@ -15,13 +15,19 @@ namespace KinaUnaWeb.Controllers
     public class MeasurementsController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly IMeasurementsHttpClient _measurementsHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public MeasurementsController(IProgenyHttpClient progenyHttpClient)
+        public MeasurementsController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IMeasurementsHttpClient measurementsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
+            _userInfosHttpClient = userInfosHttpClient;
+            _measurementsHttpClient = measurementsHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
         }
 
         [AllowAnonymous]
@@ -30,7 +36,7 @@ namespace KinaUnaWeb.Controllers
             _progId = childId;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
@@ -42,7 +48,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -63,7 +69,7 @@ namespace KinaUnaWeb.Controllers
             MeasurementViewModel model = new MeasurementViewModel();
             
             // ToDo: Implement _progenyClient.GetMeasurements()
-            List<Measurement> mList = await _progenyHttpClient.GetMeasurementsList(_progId, userAccessLevel); // _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == _progId).ToList();
+            List<Measurement> mList = await _measurementsHttpClient.GetMeasurementsList(_progId, userAccessLevel);
             List<Measurement> measurementsList = new List<Measurement>();
             foreach (Measurement m in mList)
             {

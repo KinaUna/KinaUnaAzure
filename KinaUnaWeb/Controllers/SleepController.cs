@@ -15,13 +15,19 @@ namespace KinaUnaWeb.Controllers
     public class SleepController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly ISleepHttpClient _sleepHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public SleepController(IProgenyHttpClient progenyHttpClient)
+        public SleepController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, ISleepHttpClient sleepHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
+            _userInfosHttpClient = userInfosHttpClient;
+            _sleepHttpClient = sleepHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
         }
 
         [AllowAnonymous]
@@ -30,7 +36,7 @@ namespace KinaUnaWeb.Controllers
             _progId = childId;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
@@ -41,7 +47,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -67,7 +73,7 @@ namespace KinaUnaWeb.Controllers
             model.SleepTotal = TimeSpan.Zero;
             model.SleepLastYear = TimeSpan.Zero;
             model.SleepLastMonth = TimeSpan.Zero;
-            List<Sleep> sList = await _progenyHttpClient.GetSleepList(_progId, userAccessLevel); // _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == _progId).ToList();
+            List<Sleep> sList = await _sleepHttpClient.GetSleepList(_progId, userAccessLevel);
             DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
             if (sList.Count != 0)
@@ -199,14 +205,14 @@ namespace KinaUnaWeb.Controllers
             _progId = childId;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -228,7 +234,7 @@ namespace KinaUnaWeb.Controllers
             SleepViewModel model = new SleepViewModel();
             model.ProgenyId = _progId;
 
-            List<Sleep> allSleepList = await _progenyHttpClient.GetSleepList(_progId, userAccessLevel); //_context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == _progId).ToList();
+            List<Sleep> allSleepList = await _sleepHttpClient.GetSleepList(_progId, userAccessLevel);
             List<Sleep> sleepList = new List<Sleep>();
 
             if (allSleepList.Count != 0)

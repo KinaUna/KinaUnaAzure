@@ -15,20 +15,20 @@ namespace KinaUnaWeb.Controllers
 {
     public class AdminController: Controller
     {
-        private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly WebDbContext _context;
         private readonly IHubContext<WebNotificationHub> _hubContext;
         private readonly IPushMessageSender _pushMessageSender;
         private readonly string _adminEmail = Constants.AdminEmail;
         private readonly IAuthHttpClient _authHttpClient;
-        public AdminController(IProgenyHttpClient progenyHttpClient, WebDbContext context, IBackgroundTaskQueue queue, IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender, IAuthHttpClient authHttpClient)
+        public AdminController(WebDbContext context, IBackgroundTaskQueue queue, IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient)
         {
-            _progenyHttpClient = progenyHttpClient;
             _context = context;
             Queue = queue;
             _hubContext = hubContext;
             _pushMessageSender = pushMessageSender;
             _authHttpClient = authHttpClient;
+            _userInfosHttpClient = userInfosHttpClient;
         }
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Local
@@ -44,7 +44,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            List<UserInfo> deletedUserInfosList = await _progenyHttpClient.GetDeletedUserInfos();
+            List<UserInfo> deletedUserInfosList = await _userInfosHttpClient.GetDeletedUserInfos();
             if (deletedUserInfosList.Any())
             {
                 foreach (UserInfo deletedUserInfo in deletedUserInfosList)
@@ -54,7 +54,7 @@ namespace KinaUnaWeb.Controllers
                         UserInfo authResponseUserInfo = await _authHttpClient.CheckDeleteUser(deletedUserInfo);
                         if (authResponseUserInfo != null && authResponseUserInfo.UserId == deletedUserInfo.UserId && deletedUserInfo.Deleted && deletedUserInfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30))
                         {
-                            await _progenyHttpClient.RemoveUserInfoForGood(deletedUserInfo);
+                            await _userInfosHttpClient.RemoveUserInfoForGood(deletedUserInfo);
                         }
                     }
                 }
@@ -98,12 +98,12 @@ namespace KinaUnaWeb.Controllers
                     UserInfo userinfo;
                     if (notification.To.Contains('@'))
                     {
-                        userinfo = await _progenyHttpClient.GetUserInfo(notification.To);
+                        userinfo = await _userInfosHttpClient.GetUserInfo(notification.To);
                         notification.To = userinfo.UserId;
                     }
                     else
                     {
-                        userinfo = await _progenyHttpClient.GetUserInfoByUserId(notification.To);
+                        userinfo = await _userInfosHttpClient.GetUserInfoByUserId(notification.To);
                     }
 
                     notification.DateTime = DateTime.UtcNow;
@@ -154,7 +154,7 @@ namespace KinaUnaWeb.Controllers
 
             if (notification.UserId.Contains('@'))
             {
-                UserInfo userinfo = await _progenyHttpClient.GetUserInfo(notification.UserId);
+                UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(notification.UserId);
                 notification.UserId = userinfo.UserId;
             }
 

@@ -43,7 +43,7 @@ namespace KinaUnaWeb.Services
         {
             if (_accessTokens.ContainsKey(api_name))
             {
-                var accessToken = _accessTokens.GetValueOrDefault(api_name);
+                AccessTokenItem accessToken = _accessTokens.GetValueOrDefault(api_name);
                 if (accessToken != null)
                 {
                     if (accessToken.ExpiresIn > DateTime.UtcNow)
@@ -61,7 +61,7 @@ namespace KinaUnaWeb.Services
             _logger.LogDebug($"GetApiToken new from STS for {api_name}");
 
             // add
-            var newAccessToken = await getApiToken(api_name, api_scope, secret);
+            AccessTokenItem newAccessToken = await getApiToken(api_name, api_scope, secret);
             _accessTokens.TryAdd(api_name, newAccessToken);
 
             return newAccessToken.AccessToken;
@@ -71,7 +71,7 @@ namespace KinaUnaWeb.Services
         {
             try
             {
-                var disco = await HttpClientDiscoveryExtensions.GetDiscoveryDocumentAsync(
+                DiscoveryDocumentResponse disco = await HttpClientDiscoveryExtensions.GetDiscoveryDocumentAsync(
                     _httpClient,
                     _authConfigurations.Value.StsServer);
 
@@ -81,7 +81,7 @@ namespace KinaUnaWeb.Services
                     throw new ApplicationException($"Status code: {disco.IsError}, Error: {disco.Error}");
                 }
 
-                var tokenResponse = await HttpClientTokenRequestExtensions.RequestClientCredentialsTokenAsync(_httpClient, new ClientCredentialsTokenRequest
+                TokenResponse tokenResponse = await HttpClientTokenRequestExtensions.RequestClientCredentialsTokenAsync(_httpClient, new ClientCredentialsTokenRequest
                 {
                     Scope = api_scope,
                     ClientSecret = secret,

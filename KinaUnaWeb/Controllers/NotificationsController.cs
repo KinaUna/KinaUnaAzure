@@ -50,7 +50,7 @@ namespace KinaUnaWeb.Controllers
             if (Id != 0)
             {
                 WebNotification notification = await _context.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == Id);
-                if (notification.To == userId)
+                if (notification != null && notification.To == userId)
                 {
                     notification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(notification.DateTime,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));

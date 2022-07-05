@@ -15,13 +15,19 @@ namespace KinaUnaWeb.Controllers
     public class SkillsController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly ISkillsHttpClient _skillsHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public SkillsController(IProgenyHttpClient progenyHttpClient)
+        public SkillsController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, ISkillsHttpClient skillsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
+            _userInfosHttpClient = userInfosHttpClient;
+            _skillsHttpClient = skillsHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
         }
 
         [AllowAnonymous]
@@ -30,7 +36,7 @@ namespace KinaUnaWeb.Controllers
             _progId = childId;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
@@ -41,7 +47,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -61,7 +67,7 @@ namespace KinaUnaWeb.Controllers
             }
             List<SkillViewModel> model = new List<SkillViewModel>();
 
-            List<Skill> skillsList = await _progenyHttpClient.GetSkillsList(_progId, userAccessLevel); // _context.SkillsDb.Where(w => w.ProgenyId == _progId).ToList();
+            List<Skill> skillsList = await _skillsHttpClient.GetSkillsList(_progId, userAccessLevel);
             skillsList = skillsList.OrderBy(s => s.SkillFirstObservation).ToList();
             if (skillsList.Count != 0)
             {

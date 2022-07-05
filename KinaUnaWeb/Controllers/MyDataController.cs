@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
@@ -14,12 +15,36 @@ namespace KinaUnaWeb.Controllers
     public class MyDataController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly IWordsHttpClient _wordsHttpClient;
+        private readonly IVaccinationsHttpClient _vaccinationsHttpClient;
+        private readonly ISkillsHttpClient _skillsHttpClient;
+        private readonly IMeasurementsHttpClient _measurementsHttpClient;
+        private readonly ILocationsHttpClient _locationsHttpClient;
+        private readonly IFriendsHttpClient _friendsHttpClient;
+        private readonly IContactsHttpClient _contactsHttpClient;
+        private readonly ICalendarsHttpClient _calendarsHttpClient;
+        private readonly ISleepHttpClient _sleepHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
 
-        public MyDataController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient)
+        public MyDataController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, IUserInfosHttpClient userInfosHttpClient, IWordsHttpClient wordsHttpClient, IVaccinationsHttpClient vaccinationsHttpClient,
+            ISkillsHttpClient skillsHttpClient, IMeasurementsHttpClient measurementsHttpClient, ILocationsHttpClient locationsHttpClient, IFriendsHttpClient friendsHttpClient, IContactsHttpClient contactsHttpClient,
+            ICalendarsHttpClient calendarsHttpClient, ISleepHttpClient sleepHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
+            _userInfosHttpClient = userInfosHttpClient;
+            _wordsHttpClient = wordsHttpClient;
+            _vaccinationsHttpClient = vaccinationsHttpClient;
+            _skillsHttpClient = skillsHttpClient;
+            _measurementsHttpClient = measurementsHttpClient;
+            _locationsHttpClient = locationsHttpClient;
+            _friendsHttpClient = friendsHttpClient;
+            _contactsHttpClient = contactsHttpClient;
+            _calendarsHttpClient = calendarsHttpClient;
+            _sleepHttpClient = sleepHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
         }
         public IActionResult Index()
         {
@@ -37,7 +62,7 @@ namespace KinaUnaWeb.Controllers
             Progeny prog = await _progenyHttpClient.GetProgeny(progenyId);
             Dictionary<string, string> userEmails = new Dictionary<string, string>();
 
-            var stream = new System.IO.MemoryStream();
+            MemoryStream stream = new System.IO.MemoryStream();
             using (ExcelPackage package = new ExcelPackage(stream))
             {
                 // Profile sheet
@@ -123,7 +148,7 @@ namespace KinaUnaWeb.Controllers
                 accessListWorksheet.Column(3).Width = 35;
                 accessListWorksheet.Column(4).Width = 20;
 
-                List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(progenyId);
+                List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(progenyId);
                 int acccessRowNumber = 3;
                 foreach (UserAccess access in accessList)
                 {
@@ -213,7 +238,7 @@ namespace KinaUnaWeb.Controllers
                         }
                         else
                         {
-                            UserInfo author = await _progenyHttpClient.GetUserInfoByUserId(pic.Author);
+                            UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(pic.Author);
                             photosWorksheet.Cells[photoRowNumber, 13].Value = author.UserEmail;
                             userEmails.Add(pic.Author, author.UserEmail);
                         }
@@ -299,7 +324,7 @@ namespace KinaUnaWeb.Controllers
                         }
                         else
                         {
-                            UserInfo author = await _progenyHttpClient.GetUserInfoByUserId(vid.Author);
+                            UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(vid.Author);
                             videosWorksheet.Cells[videoRowNumber, 13].Value = author.UserEmail;
                             userEmails.Add(vid.Author, author.UserEmail);
                         }
@@ -356,7 +381,7 @@ namespace KinaUnaWeb.Controllers
                 calendarWorksheet.Column(9).Width = 10;
                 calendarWorksheet.Column(10).Width = 30;
 
-                List<CalendarItem> calendarItems = await _progenyHttpClient.GetCalendarList(progenyId, 0);
+                List<CalendarItem> calendarItems = await _calendarsHttpClient.GetCalendarList(progenyId, 0);
                 int calendarRowNumber = 3;
                 foreach (CalendarItem evt in calendarItems)
                 {
@@ -387,7 +412,7 @@ namespace KinaUnaWeb.Controllers
                         }
                         else
                         {
-                            UserInfo author = await _progenyHttpClient.GetUserInfoByUserId(evt.Author);
+                            UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(evt.Author);
                             calendarWorksheet.Cells[calendarRowNumber, 10].Value = author.UserEmail;
                             userEmails.Add(evt.Author, author.UserEmail);
                         }
@@ -457,7 +482,7 @@ namespace KinaUnaWeb.Controllers
                 locationsWorksheet.Column(16).Width = 25;
                 locationsWorksheet.Column(17).Width = 30;
 
-                List<Location> locationItems = await _progenyHttpClient.GetLocationsList(progenyId, 0);
+                List<Location> locationItems = await _locationsHttpClient.GetLocationsList(progenyId, 0);
                 int locationsRowNumber = 3;
                 foreach (Location loc in locationItems)
                 {
@@ -488,7 +513,7 @@ namespace KinaUnaWeb.Controllers
                         }
                         else
                         {
-                            UserInfo author = await _progenyHttpClient.GetUserInfoByUserId(loc.Author);
+                            UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(loc.Author);
                             locationsWorksheet.Cells[locationsRowNumber, 17].Value = author.UserEmail;
                             userEmails.Add(loc.Author, author.UserEmail);
                         }
@@ -540,7 +565,7 @@ namespace KinaUnaWeb.Controllers
                 vocabularyWorksheet.Column(7).Width = 45;
                 vocabularyWorksheet.Column(8).Width = 40;
 
-                List<VocabularyItem> vocabularyItems = await _progenyHttpClient.GetWordsList(progenyId, 0);
+                List<VocabularyItem> vocabularyItems = await _wordsHttpClient.GetWordsList(progenyId, 0);
                 int vocabularyRowNumber = 3;
                 foreach (VocabularyItem voc in vocabularyItems)
                 {
@@ -562,7 +587,7 @@ namespace KinaUnaWeb.Controllers
                         }
                         else
                         {
-                            UserInfo author = await _progenyHttpClient.GetUserInfoByUserId(voc.Author);
+                            UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(voc.Author);
                             vocabularyWorksheet.Cells[vocabularyRowNumber, 8].Value = author.UserEmail;
                             userEmails.Add(voc.Author, author.UserEmail);
                         }
@@ -614,7 +639,7 @@ namespace KinaUnaWeb.Controllers
                 skillsWorksheet.Column(7).Width = 20;
                 skillsWorksheet.Column(8).Width = 45;
 
-                List<Skill> skillItems = await _progenyHttpClient.GetSkillsList(progenyId, 0);
+                List<Skill> skillItems = await _skillsHttpClient.GetSkillsList(progenyId, 0);
                 int skillsRowNumber = 3;
                 foreach (Skill skill in skillItems)
                 {
@@ -636,7 +661,7 @@ namespace KinaUnaWeb.Controllers
                         }
                         else
                         {
-                            UserInfo author = await _progenyHttpClient.GetUserInfoByUserId(skill.Author);
+                            UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(skill.Author);
                             skillsWorksheet.Cells[skillsRowNumber, 8].Value = author.UserEmail;
                             userEmails.Add(skill.Author, author.UserEmail);
                         }
@@ -694,7 +719,7 @@ namespace KinaUnaWeb.Controllers
                 friendsWorksheet.Column(10).Width = 20;
                 friendsWorksheet.Column(11).Width = 45;
 
-                List<Friend> friendsList = await _progenyHttpClient.GetFriendsList(progenyId, 0);
+                List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(progenyId, 0);
                 int friendsRowNumber = 3;
                 foreach (Friend friend in friendsList)
                 {
@@ -719,7 +744,7 @@ namespace KinaUnaWeb.Controllers
                         }
                         else
                         {
-                            UserInfo author = await _progenyHttpClient.GetUserInfoByUserId(friend.Author);
+                            UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(friend.Author);
                             friendsWorksheet.Cells[friendsRowNumber, 11].Value = author.UserEmail;
                             userEmails.Add(friend.Author, author.UserEmail);
                         }
@@ -775,7 +800,7 @@ namespace KinaUnaWeb.Controllers
                 measurementsWorksheet.Column(9).Width = 20;
                 measurementsWorksheet.Column(10).Width = 45;
 
-                List<Measurement> measurementsList = await _progenyHttpClient.GetMeasurementsList(progenyId, 0);
+                List<Measurement> measurementsList = await _measurementsHttpClient.GetMeasurementsList(progenyId, 0);
                 int measurementsRowNumber = 3;
                 foreach (Measurement measurement in measurementsList)
                 {
@@ -796,7 +821,7 @@ namespace KinaUnaWeb.Controllers
                         }
                         else
                         {
-                            UserInfo author = await _progenyHttpClient.GetUserInfoByUserId(measurement.Author);
+                            UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(measurement.Author);
                             measurementsWorksheet.Cells[measurementsRowNumber, 10].Value = author.UserEmail;
                             userEmails.Add(measurement.Author, author.UserEmail);
                         }
@@ -848,7 +873,7 @@ namespace KinaUnaWeb.Controllers
                 sleepWorksheet.Column(7).Width = 20;
                 sleepWorksheet.Column(8).Width = 45;
 
-                List<Sleep> sleepList = await _progenyHttpClient.GetSleepList(progenyId, 0);
+                List<Sleep> sleepList = await _sleepHttpClient.GetSleepList(progenyId, 0);
                 int sleepRowNumber = 3;
                 foreach (Sleep sleep in sleepList)
                 {
@@ -869,7 +894,7 @@ namespace KinaUnaWeb.Controllers
                         }
                         else
                         {
-                            UserInfo author = await _progenyHttpClient.GetUserInfoByUserId(sleep.Author);
+                            UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(sleep.Author);
                             sleepWorksheet.Cells[sleepRowNumber, 8].Value = author.UserEmail;
                             userEmails.Add(sleep.Author, author.UserEmail);
                         }
@@ -951,7 +976,7 @@ namespace KinaUnaWeb.Controllers
                 contactsWorksheet.Column(22).Width = 20;
                 contactsWorksheet.Column(23).Width = 45;
 
-                List<Contact> contactsList = await _progenyHttpClient.GetContactsList(progenyId, 0);
+                List<Contact> contactsList = await _contactsHttpClient.GetContactsList(progenyId, 0);
                 int contactsRowNumber = 3;
                 foreach (Contact contact in contactsList)
                 {
@@ -963,7 +988,7 @@ namespace KinaUnaWeb.Controllers
                     contactsWorksheet.Cells[contactsRowNumber, 6].Value = contact.DisplayName;
                     if (contact.AddressIdNumber.HasValue)
                     {
-                        Address addr = await _progenyHttpClient.GetAddress(contact.AddressIdNumber.Value);
+                        Address addr = await _locationsHttpClient.GetAddress(contact.AddressIdNumber.Value);
                         contactsWorksheet.Cells[contactsRowNumber, 7].Value = addr.AddressLine1;
                         contactsWorksheet.Cells[contactsRowNumber, 8].Value = addr.AddressLine2;
                         contactsWorksheet.Cells[contactsRowNumber, 9].Value = addr.City;
@@ -992,7 +1017,7 @@ namespace KinaUnaWeb.Controllers
                         }
                         else
                         {
-                            UserInfo author = await _progenyHttpClient.GetUserInfoByUserId(contact.Author);
+                            UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(contact.Author);
                             contactsWorksheet.Cells[contactsRowNumber, 23].Value = author.UserEmail;
                             userEmails.Add(contact.Author, author.UserEmail);
                         }
@@ -1042,7 +1067,7 @@ namespace KinaUnaWeb.Controllers
                 vaccinationsWorksheet.Column(6).Width = 50;
                 vaccinationsWorksheet.Column(7).Width = 45;
 
-                List<Vaccination> vaccinationsList = await _progenyHttpClient.GetVaccinationsList(progenyId, 0);
+                List<Vaccination> vaccinationsList = await _vaccinationsHttpClient.GetVaccinationsList(progenyId, 0);
                 int vaccinationsRowNumber = 3;
                 foreach (Vaccination vaccination in vaccinationsList)
                 {
@@ -1060,7 +1085,7 @@ namespace KinaUnaWeb.Controllers
                         }
                         else
                         {
-                            UserInfo author = await _progenyHttpClient.GetUserInfoByUserId(vaccination.Author);
+                            UserInfo author = await _userInfosHttpClient.GetUserInfoByUserId(vaccination.Author);
                             vaccinationsWorksheet.Cells[vaccinationsRowNumber, 7].Value = author.UserEmail;
                             userEmails.Add(vaccination.Author, author.UserEmail);
                         }

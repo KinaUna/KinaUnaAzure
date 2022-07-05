@@ -1,5 +1,4 @@
-﻿@using KinaUna.Data
-<div class="container">
+﻿<div class="container">
     <br />
     <div class="row">
         <br />
@@ -8,7 +7,7 @@
             <h3>
                 <img class="icon" src="~/icon.jpg">
                 Welcome to KinaUna + Pivoq Identity Server
-                @if (User.Identity.IsAuthenticated)
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
                     <span>@User.Identity.Name</span>
                 }

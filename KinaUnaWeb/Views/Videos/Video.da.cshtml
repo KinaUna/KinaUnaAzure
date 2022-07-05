@@ -84,12 +84,12 @@
     }
 </div>
 
-@if (User.Identity.IsAuthenticated && !String.IsNullOrEmpty(Model.Longtitude))
+@if (User.Identity != null && User.Identity.IsAuthenticated && !string.IsNullOrEmpty(Model.Longtitude))
 {
     <div style="font-size: 16px; line-height: 90%;">
         <p>Sted: @Model.Location</p>
 
-        @if (!String.IsNullOrEmpty(Model.Latitude))
+        @if (!string.IsNullOrEmpty(Model.Latitude))
         {
             <p>Breddegrad: @Model.Latitude Længdegrad: @Model.Longtitude Højde: @Model.Altitude</p>
             <div style="width: 100%; height: 300px" id="mapContainer"></div>
@@ -234,7 +234,7 @@
         </div>
     </div>
 }
-@if (User.Identity.IsAuthenticated)
+@if (User.Identity != null && User.Identity.IsAuthenticated)
 {
     <form asp-controller="AddItem" asp-action="AddVideoComment" role="form" method="post">
         <div class="form-group">

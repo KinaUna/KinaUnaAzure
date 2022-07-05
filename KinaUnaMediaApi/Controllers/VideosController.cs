@@ -305,17 +305,21 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> ByLink(string videoLink, int progenyId)
         {
             Video result = await _context.VideoDb.SingleOrDefaultAsync(v => v.VideoLink == videoLink && v.ProgenyId == progenyId);
-
-            // Check if user should be allowed access.
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-            if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
+            if (result != null)
             {
-                return Unauthorized();
+                // Check if user should be allowed access.
+                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+
+                if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
+                {
+                    return Unauthorized();
+                }
+
+                return Ok(result);
             }
 
-            return Ok(result);
+            return NotFound();
         }
 
         // POST api/videos

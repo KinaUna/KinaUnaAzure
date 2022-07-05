@@ -18,16 +18,16 @@ namespace KinaUnaWeb.Controllers
     [AllowAnonymous]
     public class AccountController : Controller
     {
-        private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IAuthHttpClient _authHttpClient;
         private readonly ImageStore _imageStore;
         private readonly IConfiguration _configuration;
-        public AccountController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore, IConfiguration configuration, IAuthHttpClient authHttpClient)
+        public AccountController(ImageStore imageStore, IConfiguration configuration, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient)
         {
-            _progenyHttpClient = progenyHttpClient;
             _imageStore = imageStore;
             _configuration = configuration;
             _authHttpClient = authHttpClient;
+            _userInfosHttpClient = userInfosHttpClient;
         }
 
         [Authorize]
@@ -120,10 +120,10 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<IActionResult> MyAccount()
         {
-            string userEmail = HttpContext.User.FindFirst("email").Value;
-            Boolean.TryParse(HttpContext.User.FindFirst("email_verified").Value, out var mailConfirmed);
-            DateTime.TryParse(HttpContext.User.FindFirst("joindate").Value, out var joinDate);
-            var userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            string userEmail = HttpContext.User.FindFirst("email")?.Value;
+            Boolean.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out var mailConfirmed);
+            DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out var joinDate);
+            var userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (userinfo == null)
             {
                 throw new ApplicationException($"Unable to load user with email '{userEmail}'.");
@@ -169,9 +169,9 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<IActionResult> MyAccount(UserInfoViewModel model)
         {
-            string userEmail = HttpContext.User.FindFirst("email").Value;
-            Boolean.TryParse(HttpContext.User.FindFirst("email_verified").Value, out var mailConfirmed);
-            var userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            string userEmail = HttpContext.User.FindFirst("email")?.Value;
+            Boolean.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out var mailConfirmed);
+            var userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             // userinfo.UserEmail = model.UserEmail;
             userinfo.FirstName = model.FirstName;
             userinfo.MiddleName = model.MiddleName;
@@ -209,7 +209,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            await _progenyHttpClient.UpdateUserInfo(userinfo);
+            await _userInfosHttpClient.UpdateUserInfo(userinfo);
 
             
             model.ProfilePicture = userinfo.ProfilePicture;
@@ -227,15 +227,15 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> ChangeEmail(string oldEmail, string newEmail = "")
         {
-            string userEmail = HttpContext.User.FindFirst("email").Value;
+            string userEmail = HttpContext.User.FindFirst("email")?.Value;
             if (String.IsNullOrEmpty(newEmail))
             {
                 newEmail = userEmail;
             }
 
-            Boolean.TryParse(HttpContext.User.FindFirst("email_verified").Value, out var mailConfirmed);
-            var userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
-            DateTime.TryParse(HttpContext.User.FindFirst("joindate").Value, out var joinDate);
+            Boolean.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out var mailConfirmed);
+            var userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
+            DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out var joinDate);
             var model = new UserInfoViewModel
             {
                 Id = userinfo.Id,
@@ -259,7 +259,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public IActionResult EnablePush()
         {
-            string userId = HttpContext.User.FindFirst("sub").Value;
+            string userId = HttpContext.User.FindFirst("sub")?.Value;
             ViewBag.UserId = userId;
             ViewBag.PublicKey = _configuration["VapidPublicKey"];
             return View();
@@ -268,7 +268,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public IActionResult DisablePush()
         {
-            string userId = HttpContext.User.FindFirst("sub").Value;
+            string userId = HttpContext.User.FindFirst("sub")?.Value;
             ViewBag.UserId = userId;
             ViewBag.PublicKey = _configuration["VapidPublicKey"];
             return View();
@@ -279,7 +279,7 @@ namespace KinaUnaWeb.Controllers
         {
             string userId = HttpContext.User.GetUserId();
             DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out var joinDate);
-            UserInfo userInfo = await _progenyHttpClient.GetUserInfoByUserId(userId);
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(userId);
             if (userInfo == null)
             {
                 throw new ApplicationException($"Unable to load user with ID '{userId}'.");
@@ -324,7 +324,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteAccount(UserInfoViewModel model)
         {
             string userId = HttpContext.User.GetUserId();
-            UserInfo userInfo = await _progenyHttpClient.GetUserInfoByUserId(userId);
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(userId);
             if (userInfo != null && userInfo.UserEmail.ToUpper() == User.GetEmail().ToUpper())
             {
                 model.UserId = userInfo.UserId;
@@ -334,7 +334,7 @@ namespace KinaUnaWeb.Controllers
                 model.LastName = userInfo.LastName;
                 model.UserName = userInfo.UserName;
 
-                _ = await _progenyHttpClient.DeleteUserInfo(userInfo);
+                _ = await _userInfosHttpClient.DeleteUserInfo(userInfo);
 
                 model.ChangeLink = _configuration["AuthenticationServer"] + "/Account/DeleteAccount";
             }
@@ -347,7 +347,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> UnDeleteAccount()
         {
             string userId = HttpContext.User.GetUserId();
-            UserInfo userInfo = await _progenyHttpClient.GetUserInfoByUserId(userId);
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(userId);
             if (userInfo == null)
             {
                 throw new ApplicationException($"Unable to load user with ID '{userId}'.");
@@ -356,7 +356,7 @@ namespace KinaUnaWeb.Controllers
             if (userInfo.UserId == userId)
             {
                 userInfo.Deleted = false;
-                _ = await _progenyHttpClient.UpdateUserInfo(userInfo);
+                _ = await _userInfosHttpClient.UpdateUserInfo(userInfo);
                 _ = await _authHttpClient.RemoveDeleteUser(userInfo);
             }
             

@@ -3,7 +3,7 @@
 }
 <h2>Zugriff verweigert</h2>
 @{
-    if (User.Identity.IsAuthenticated)
+    if (User.Identity != null && User.Identity.IsAuthenticated)
     {
 <div> Sie sind nicht berechtigt, auf diese Inhalte zuzugreifen.</div>
     }

@@ -43,7 +43,7 @@ namespace KinaUna.IDP
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 // Todo: Fix consent to work with my cookies and language selection
-                options.CheckConsentNeeded = context => false;
+                options.CheckConsentNeeded = _ => false;
                 options.MinimumSameSitePolicy = SameSiteMode.Lax;
                 options.Secure = CookieSecurePolicy.Always;
             });
@@ -304,138 +304,144 @@ namespace KinaUna.IDP
 
         private void InitializeDatabase(IApplicationBuilder app, bool resetDb)
         {
-            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>()?.CreateScope())
             {
-                serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
-
-                var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-                context.Database.Migrate();
-
-                var usersContext = serviceScope.ServiceProvider.GetRequiredService<ProgenyDbContext>();
-
-                usersContext.Database.Migrate();
-
-                if (resetDb)
+                if (serviceScope != null)
                 {
-                    var contextClients = context.Clients.ToList();
-                    foreach (var clientToDelete in contextClients)
+                    serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
+
+                    var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+                    context.Database.Migrate();
+
+                    var usersContext = serviceScope.ServiceProvider.GetRequiredService<ProgenyDbContext>();
+
+                    usersContext.Database.Migrate();
+
+                    if (resetDb)
                     {
-                        context.Clients.Remove(clientToDelete);
+                        var contextClients = context.Clients.ToList();
+                        foreach (var clientToDelete in contextClients)
+                        {
+                            context.Clients.Remove(clientToDelete);
+                        }
+
+                        var contextApis = context.ApiResources.ToList();
+                        foreach (var apiToDelete in contextApis)
+                        {
+                            context.ApiResources.Remove(apiToDelete);
+                        }
+
+                        var contextIdentities = context.IdentityResources.ToList();
+                        foreach (var identityToDelete in contextIdentities)
+                        {
+                            context.IdentityResources.Remove(identityToDelete);
+                        }
+
+                        var contextApiScopes = context.ApiScopes.ToList();
+                        foreach (var apiScopeToDelete in contextApiScopes)
+                        {
+                            context.ApiScopes.Remove(apiScopeToDelete);
+                        }
+
+                        context.SaveChanges();
                     }
 
-                    var contextApis = context.ApiResources.ToList();
-                    foreach (var apiToDelete in contextApis)
+                    if (!context.Clients.Any())
                     {
-                        context.ApiResources.Remove(apiToDelete);
+                        foreach (var client in Config.GetClients(Configuration))
+                        {
+                            context.Clients.Add(client.ToEntity());
+                        }
+
+                        context.SaveChanges();
                     }
 
-                    var contextIdentities = context.IdentityResources.ToList();
-                    foreach (var identityToDelete in contextIdentities)
+                    if (!context.IdentityResources.Any())
                     {
-                        context.IdentityResources.Remove(identityToDelete);
+                        foreach (var resource in Config.GetIdentityResources())
+                        {
+                            context.IdentityResources.Add(resource.ToEntity());
+                        }
+
+                        context.SaveChanges();
                     }
 
-                    var contextApiScopes = context.ApiScopes.ToList();
-                    foreach (var apiScopeToDelete in contextApiScopes)
+
+                    if (!context.ApiResources.Any())
                     {
-                        context.ApiScopes.Remove(apiScopeToDelete);
+                        foreach (var resource in Config.GetApiResources(Configuration))
+                        {
+                            context.ApiResources.Add(resource.ToEntity());
+                        }
+
+                        context.SaveChanges();
                     }
 
-                    context.SaveChanges();
-                }
-
-                if (!context.Clients.Any())
-                {
-                    foreach (var client in Config.GetClients(Configuration))
+                    if (!context.ApiScopes.Any())
                     {
-                        context.Clients.Add(client.ToEntity());
+                        foreach (var resource in Config.ApiScopes)
+                        {
+                            context.ApiScopes.Add(resource.ToEntity());
+                        }
+
+                        context.SaveChanges();
                     }
-                    context.SaveChanges();
-                }
-                
-                if (!context.IdentityResources.Any())
-                {
-                    foreach (var resource in Config.GetIdentityResources())
+
+                    if (usersContext.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == Constants.DefaultUserEmail.ToUpper()) == null)
                     {
-                        context.IdentityResources.Add(resource.ToEntity());
-                        
+                        UserInfo userInfo = new UserInfo();
+                        userInfo.UserEmail = Constants.DefaultUserEmail;
+                        userInfo.FirstName = "System";
+                        userInfo.LastName = "Default User";
+                        userInfo.Timezone = Constants.DefaultTimezone;
+                        userInfo.UserName = Constants.DefaultUserEmail;
+                        userInfo.ViewChild = Constants.DefaultChildId;
+
+                        usersContext.UserInfoDb.Add(userInfo);
+                        usersContext.SaveChanges();
                     }
-                    context.SaveChanges();
-                }
 
-
-                if (!context.ApiResources.Any())
-                {
-                    foreach (var resource in Config.GetApiResources(Configuration))
+                    if (usersContext.ProgenyDb.SingleOrDefault(p => p.Id == Constants.DefaultChildId) == null)
                     {
-                        context.ApiResources.Add(resource.ToEntity());
-                    }
-                    context.SaveChanges();
-                }
+                        Progeny progeny = new Progeny();
+                        progeny.Admins = Constants.AdminEmail;
+                        progeny.BirthDay = DateTime.UtcNow;
+                        progeny.Name = Constants.AppName;
+                        progeny.NickName = Constants.AppName;
+                        progeny.PictureLink = Constants.ProfilePictureUrl;
+                        progeny.TimeZone = Constants.DefaultTimezone;
 
-                if (!context.ApiScopes.Any())
-                {
-                    foreach (var resource in Config.ApiScopes)
+                        usersContext.ProgenyDb.Add(progeny);
+                        usersContext.SaveChanges();
+                    }
+
+                    if (usersContext.UserAccessDb.SingleOrDefault(u =>
+                            u.ProgenyId == Constants.DefaultChildId &&
+                            u.UserId.ToUpper() == Constants.DefaultUserEmail.ToUpper()) == null)
                     {
-                        context.ApiScopes.Add(resource.ToEntity());
+                        UserAccess userAccess = new UserAccess();
+                        userAccess.ProgenyId = Constants.DefaultChildId;
+                        userAccess.UserId = Constants.DefaultUserEmail.ToUpper();
+                        userAccess.AccessLevel = (int)AccessLevel.Users;
+                        userAccess.CanContribute = false;
+
+                        usersContext.UserAccessDb.Add(userAccess);
+                        usersContext.SaveChanges();
                     }
-                    context.SaveChanges();
-                }
 
-                if (usersContext.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == Constants.DefaultUserEmail.ToUpper()) == null)
-                {
-                    UserInfo userInfo = new UserInfo();
-                    userInfo.UserEmail = Constants.DefaultUserEmail;
-                    userInfo.FirstName = "System";
-                    userInfo.LastName = "Default User";
-                    userInfo.Timezone = Constants.DefaultTimezone;
-                    userInfo.UserName = Constants.DefaultUserEmail;
-                    userInfo.ViewChild = Constants.DefaultChildId;
+                    if (usersContext.UserAccessDb.SingleOrDefault(u =>
+                            u.ProgenyId == Constants.DefaultChildId &&
+                            u.UserId.ToUpper() == Constants.AdminEmail.ToUpper()) == null)
+                    {
+                        UserAccess userAccess = new UserAccess();
+                        userAccess.ProgenyId = Constants.DefaultChildId;
+                        userAccess.UserId = Constants.AdminEmail.ToUpper();
+                        userAccess.AccessLevel = (int)AccessLevel.Private;
+                        userAccess.CanContribute = true;
 
-                    usersContext.UserInfoDb.Add(userInfo);
-                    usersContext.SaveChanges();
-                }
-
-                if (usersContext.ProgenyDb.SingleOrDefault(p => p.Id == Constants.DefaultChildId) == null)
-                {
-                    Progeny progeny = new Progeny();
-                    progeny.Admins = Constants.AdminEmail;
-                    progeny.BirthDay = DateTime.UtcNow;
-                    progeny.Name = Constants.AppName;
-                    progeny.NickName = Constants.AppName;
-                    progeny.PictureLink = Constants.ProfilePictureUrl;
-                    progeny.TimeZone = Constants.DefaultTimezone;
-
-                    usersContext.ProgenyDb.Add(progeny);
-                    usersContext.SaveChanges();
-                }
-
-                if (usersContext.UserAccessDb.SingleOrDefault(u =>
-                        u.ProgenyId == Constants.DefaultChildId &&
-                        u.UserId.ToUpper() == Constants.DefaultUserEmail.ToUpper()) == null)
-                {
-                    UserAccess userAccess = new UserAccess();
-                    userAccess.ProgenyId = Constants.DefaultChildId;
-                    userAccess.UserId = Constants.DefaultUserEmail.ToUpper();
-                    userAccess.AccessLevel = (int)AccessLevel.Users;
-                    userAccess.CanContribute = false;
-
-                    usersContext.UserAccessDb.Add(userAccess);
-                    usersContext.SaveChanges();
-                }
-
-                if (usersContext.UserAccessDb.SingleOrDefault(u =>
-                        u.ProgenyId == Constants.DefaultChildId &&
-                        u.UserId.ToUpper() == Constants.AdminEmail.ToUpper()) == null)
-                {
-                    UserAccess userAccess = new UserAccess();
-                    userAccess.ProgenyId = Constants.DefaultChildId;
-                    userAccess.UserId = Constants.AdminEmail.ToUpper();
-                    userAccess.AccessLevel = (int)AccessLevel.Private;
-                    userAccess.CanContribute = true;
-
-                    usersContext.UserAccessDb.Add(userAccess);
-                    usersContext.SaveChanges();
+                        usersContext.UserAccessDb.Add(userAccess);
+                        usersContext.SaveChanges();
+                    }
                 }
             }
         }

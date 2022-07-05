@@ -17,12 +17,12 @@ namespace KinaUnaWeb.Hubs
     public class WebNotificationHub: Hub
     {
         private readonly WebDbContext _context;
-        private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
 
-        public WebNotificationHub(WebDbContext context, IProgenyHttpClient progenyHttpClient )
+        public WebNotificationHub(WebDbContext context, IUserInfosHttpClient userInfosHttpClient)
         {
             _context = context;
-            _progenyHttpClient = progenyHttpClient;
+            _userInfosHttpClient = userInfosHttpClient;
         }
 
         public override async Task OnConnectedAsync()
@@ -42,8 +42,8 @@ namespace KinaUnaWeb.Hubs
 
         public async Task GetUpdateForUser(int count = 10, int start = 1)
         {
-            string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
-            string userTimeZone = Context.GetHttpContext().User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
+            string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
+            string userTimeZone = Context.GetHttpContext()?.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
             if (userId != "NoUser")
             {
                 List<WebNotification> notifications = await
@@ -68,8 +68,8 @@ namespace KinaUnaWeb.Hubs
 
         public async Task SendUpdateToUser(WebNotification notification)
         {
-            string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
-            string userTimeZone = Context.GetHttpContext().User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
+            string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
+            string userTimeZone = Context.GetHttpContext()?.User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
             // Todo: Check if sender has access rights to send to receiver.
 
             if (userId != "NoUser")
@@ -77,12 +77,12 @@ namespace KinaUnaWeb.Hubs
                 UserInfo userinfo;
                 if (notification.To.Contains('@'))
                 {
-                    userinfo = await _progenyHttpClient.GetUserInfo(notification.To);
+                    userinfo = await _userInfosHttpClient.GetUserInfo(notification.To);
                     notification.To = userinfo.UserId;
                 }
                 else
                 {
-                    userinfo = await _progenyHttpClient.GetUserInfoByUserId(notification.To);
+                    userinfo = await _userInfosHttpClient.GetUserInfoByUserId(notification.To);
                 }
 
 
@@ -120,7 +120,7 @@ namespace KinaUnaWeb.Hubs
 
         public async Task SetRead(string notification)
         {
-            string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
+            string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
             int id;
             bool idParsed = Int32.TryParse(notification, out id);
             if (idParsed)
@@ -132,7 +132,7 @@ namespace KinaUnaWeb.Hubs
                 {
                     if (userId == updateNotification.To)
                     {
-                        if (String.IsNullOrEmpty(updateNotification.Link))
+                        if (string.IsNullOrEmpty(updateNotification.Link))
                         {
                             updateNotification.Link = "/Notifications?Id=" + updateNotification.Id;
                         }
@@ -147,7 +147,7 @@ namespace KinaUnaWeb.Hubs
 
         public async Task SetUnread(string notification)
         {
-            string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
+            string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
             int id;
             bool idParsed = Int32.TryParse(notification, out id);
             if (idParsed)
@@ -159,7 +159,7 @@ namespace KinaUnaWeb.Hubs
                 {
                     if (userId == updateNotification.To)
                     {
-                        if (String.IsNullOrEmpty(updateNotification.Link))
+                        if (string.IsNullOrEmpty(updateNotification.Link))
                         {
                             updateNotification.Link = "/Notifications?Id=" + updateNotification.Id;
                         }
@@ -174,7 +174,7 @@ namespace KinaUnaWeb.Hubs
 
         public async Task DeleteNotification(string notification)
         {
-            string userId = Context.GetHttpContext().User.FindFirst("sub")?.Value ?? "NoUser";
+            string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
             int id;
             bool idParsed = Int32.TryParse(notification, out id);
             if (idParsed)
@@ -196,8 +196,8 @@ namespace KinaUnaWeb.Hubs
 
         public async Task SendAdminUpdateToUser(WebNotification notification)
         {
-            string userEmail = Context.GetHttpContext().User.FindFirst("email")?.Value ?? "NoUser";
-            string userTimeZone = Context.GetHttpContext().User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
+            string userEmail = Context.GetHttpContext()?.User.FindFirst("email")?.Value ?? "NoUser";
+            string userTimeZone = Context.GetHttpContext()?.User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
             if (userEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
             {
                 if (notification.To == "OnlineUsers")

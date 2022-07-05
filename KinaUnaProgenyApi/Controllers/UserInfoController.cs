@@ -261,9 +261,9 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                if (User.Identity.IsAuthenticated && userEmail != Constants.DefaultUserEmail)
+                if (User.Identity != null && User.Identity.IsAuthenticated && userEmail != Constants.DefaultUserEmail)
                 {
-                    if (id.ToUpper() == userEmail.ToUpper())
+                    if (id != null && id.ToUpper() == userEmail.ToUpper())
                     {
                         UserInfo newUserinfo = new UserInfo();
                         newUserinfo.UserEmail = userEmail;
@@ -402,7 +402,7 @@ namespace KinaUnaProgenyApi.Controllers
                         {
                             foreach (UserAccess userAccess in accessList)
                             {
-                                if (userAccess.UserId.ToUpper() == result.UserEmail.ToUpper())
+                                if (result.UserEmail != null && userAccess.UserId.ToUpper() == result.UserEmail.ToUpper())
                                 {
                                     allowAccess = true;
                                 }
@@ -477,7 +477,7 @@ namespace KinaUnaProgenyApi.Controllers
                         {
                             foreach (UserAccess userAccess in accessList)
                             {
-                                if (userAccess.UserId.ToUpper() == result.UserEmail.ToUpper())
+                                if (result.UserEmail != null && userAccess.UserId.ToUpper() == result.UserEmail.ToUpper())
                                 {
                                     allowAccess = true;
                                 }
@@ -536,7 +536,7 @@ namespace KinaUnaProgenyApi.Controllers
                 result.AccessList = new List<UserAccess>();
                 result.ProgenyList = new List<Progeny>();
 
-                if (User.Identity.IsAuthenticated)
+                if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
                     string userId = User.GetUserId() ?? "dc72bb31-e26f-410c-922d-09f25bc4992e";
                     if (id == userId && userId != "dc72bb31-e26f-410c-922d-09f25bc4992e")
@@ -586,7 +586,7 @@ namespace KinaUnaProgenyApi.Controllers
                         {
                             foreach (UserAccess userAccess in accessList)
                             {
-                                if (userAccess.UserId.ToUpper() == result.UserEmail.ToUpper())
+                                if (result.UserEmail != null && userAccess.UserId.ToUpper() == result.UserEmail.ToUpper())
                                 {
                                     allowAccess = true;
                                 }
@@ -674,8 +674,8 @@ namespace KinaUnaProgenyApi.Controllers
             userinfo.PhoneNumber = value?.PhoneNumber ?? "";
             userinfo.ProfilePicture = value?.ProfilePicture ?? "";
             userinfo.UserName = value?.UserName ?? userinfo.UserEmail;
-            userinfo.IsKinaUnaUser = value.IsKinaUnaUser;
-            userinfo.IsPivoqUser = value.IsPivoqUser;
+            userinfo.IsKinaUnaUser = value?.IsKinaUnaUser ?? true;
+            userinfo.IsPivoqUser = value?.IsPivoqUser ?? false;
             userinfo.IsKinaUnaAdmin = false;
             userinfo.IsPivoqAdmin = false;
             userinfo.Deleted = false;

@@ -15,15 +15,21 @@ namespace KinaUnaWeb.Controllers
     public class FriendsController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly IFriendsHttpClient _friendsHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly ImageStore _imageStore;
         private int _progId = Constants.DefaultChildId;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public FriendsController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore)
+        public FriendsController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, IFriendsHttpClient friendsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _imageStore = imageStore;
+            _userInfosHttpClient = userInfosHttpClient;
+            _friendsHttpClient = friendsHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
         }
         // GET: /<controller>/
         [AllowAnonymous]
@@ -32,7 +38,7 @@ namespace KinaUnaWeb.Controllers
             _progId = childId;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
@@ -44,7 +50,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -66,11 +72,10 @@ namespace KinaUnaWeb.Controllers
             List<FriendViewModel> model = new List<FriendViewModel>();
             
             List<string> tagsList = new List<string>();
-            List<Friend> friendsList = await _progenyHttpClient.GetFriendsList(_progId, userAccessLevel); // _context.FriendsDb.AsNoTracking().Where(w => w.ProgenyId == _progId).ToList();
+            List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(_progId, userAccessLevel);
             if (!string.IsNullOrEmpty(tagFilter))
             {
                 friendsList = friendsList.Where(c => c.Tags != null && c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
-                // friendsList = _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == _progId && f.Tags.Contains(tagFilter)).ToList();
             }
 
             friendsList = friendsList.OrderBy(f => f.FriendSince).ToList();
@@ -148,9 +153,9 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
 
-            Friend friend = await _progenyHttpClient.GetFriend(friendId); // await _context.FriendsDb.AsNoTracking().SingleAsync(f => f.FriendId == friendId);
+            Friend friend = await _friendsHttpClient.GetFriend(friendId); 
             Progeny progeny = await _progenyHttpClient.GetProgeny(friend.ProgenyId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -192,7 +197,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<string> tagsList = new List<string>();
-            var friendsList = await _progenyHttpClient.GetFriendsList(model.ProgenyId, userAccessLevel); //_context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == model.ProgenyId).ToList();
+            var friendsList = await _friendsHttpClient.GetFriendsList(model.ProgenyId, userAccessLevel);
             foreach (Friend frn in friendsList)
             {
                 if (!String.IsNullOrEmpty(frn.Tags))

@@ -16,9 +16,14 @@
         <label asp-for="StartTime" class="col-lg-3 col-sm-3 control-label">Start</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
-                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control"
-                       data-zdp_readonly_element="false" asp-for="StartTime"
-                       value="@Model.StartTime.Value.ToString("dd-MMM-yyyy HH:mm")" />
+                @{
+                    string startTimeValue = "";
+                    if (Model.StartTime.HasValue)
+                    {
+                        startTimeValue = Model.StartTime.Value.ToString("dd-MMM-yyyy HH:mm");
+                    }
+                }
+                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="StartTime" value="@startTimeValue" />
             </div>
         </div>
     </div>
@@ -34,9 +39,14 @@
         <label asp-for="EndTime" class="col-lg-3 col-sm-3 control-label">End</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
-                <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control"
-                       data-zdp_readonly_element="false" asp-for="EndTime"
-                       value="@Model.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")" />
+                @{
+                    string endTimeValue = "";
+                    if (Model.EndTime.HasValue)
+                    {
+                        endTimeValue = Model.EndTime.Value.ToString("dd-MMM-yyyy HH:mm");
+                    }
+                }
+                <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="EndTime" value="@endTimeValue" />
             </div>
         </div>
     </div>

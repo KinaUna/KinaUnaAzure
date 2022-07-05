@@ -57,7 +57,7 @@ namespace KinaUnaWeb.Services
         public async Task<UserInfo> RemoveDeleteUser(UserInfo userInfo)
         {
             string accessToken = "";
-            var currentContext = _httpContextAccessor.HttpContext;
+            HttpContext currentContext = _httpContextAccessor.HttpContext;
 
             if (currentContext != null)
             {

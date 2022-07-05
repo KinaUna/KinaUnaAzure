@@ -2,7 +2,6 @@
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,14 +15,22 @@ namespace KinaUnaWeb.Controllers
     {
         private int _progId = Constants.DefaultChildId;
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly ILocationsHttpClient _locationsHttpClient;
+        private readonly IContactsHttpClient _contactsHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly ImageStore _imageStore;
         private bool _userIsProgenyAdmin;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public ContactsController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore)
+        public ContactsController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, ILocationsHttpClient locationsHttpClient, IContactsHttpClient contactsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _imageStore = imageStore;
+            _userInfosHttpClient = userInfosHttpClient;
+            _locationsHttpClient = locationsHttpClient;
+            _contactsHttpClient = contactsHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
         }
 
         [AllowAnonymous]
@@ -32,7 +39,7 @@ namespace KinaUnaWeb.Controllers
             _progId = childId;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
@@ -49,7 +56,7 @@ namespace KinaUnaWeb.Controllers
 
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -72,7 +79,7 @@ namespace KinaUnaWeb.Controllers
             
             List<string> tagsList = new List<string>();
 
-            List<Contact> contactList = await _progenyHttpClient.GetContactsList(_progId, userAccessLevel); // _context.ContactsDb.AsNoTracking().Where(w => w.ProgenyId == _progId).ToList();
+            List<Contact> contactList = await _contactsHttpClient.GetContactsList(_progId, userAccessLevel); // _context.ContactsDb.AsNoTracking().Where(w => w.ProgenyId == _progId).ToList();
             if (!string.IsNullOrEmpty(tagFilter))
             {
                 contactList = contactList.Where(c => c.Tags != null && c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
@@ -101,18 +108,22 @@ namespace KinaUnaWeb.Controllers
                     contactViewModel.ContactId = contact.ContactId;
                     contactViewModel.Context = contact.Context;
                     contactViewModel.Website = contact.Website;
-                    if (contact.AddressIdNumber != null)
+                    if (contact.AddressIdNumber != null && contact.AddressIdNumber > 0)
                     {
-                        Address address = await _progenyHttpClient.GetAddress(contact.AddressIdNumber.Value); // _context.AddressDb.AsNoTracking().SingleAsync(a => a.AddressId == contact.AddressIdNumber);
-                        contactViewModel.AddressLine1 = address.AddressLine1;
-                        contactViewModel.AddressLine2 = address.AddressLine2;
-                        contactViewModel.City = address.City;
-                        contactViewModel.State = address.State;
-                        contactViewModel.PostalCode = address.PostalCode;
-                        contactViewModel.Country = address.Country;
+                        Address address = await _locationsHttpClient.GetAddress(contact.AddressIdNumber.Value);
+                        if (address != null)
+                        {
+                            contactViewModel.AddressLine1 = address.AddressLine1;
+                            contactViewModel.AddressLine2 = address.AddressLine2;
+                            contactViewModel.City = address.City;
+                            contactViewModel.State = address.State;
+                            contactViewModel.PostalCode = address.PostalCode;
+                            contactViewModel.Country = address.Country;
+                        }
+                        
                     }
                     contactViewModel.Tags = contact.Tags;
-                    if (!String.IsNullOrEmpty(contactViewModel.Tags))
+                    if (!string.IsNullOrEmpty(contactViewModel.Tags))
                     {
                         List<string> cvmTags = contactViewModel.Tags.Split(',').ToList();
                         foreach (string tagstring in cvmTags)
@@ -164,9 +175,9 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
 
-            Contact contact = await _progenyHttpClient.GetContact(contactId); // _context.ContactsDb.AsNoTracking().SingleAsync(c => c.ContactId == contactId);
+            Contact contact = await _contactsHttpClient.GetContact(contactId); // _context.ContactsDb.AsNoTracking().SingleAsync(c => c.ContactId == contactId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(contact.ProgenyId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel =  (int)AccessLevel.Public;
 
@@ -210,15 +221,18 @@ namespace KinaUnaWeb.Controllers
             model.MobileNumber = contact.MobileNumber;
             model.Website = contact.Website;
             model.Tags = contact.Tags;
-            if (contact.AddressIdNumber != null)
+            if (contact.AddressIdNumber != null && contact.AddressIdNumber > 0)
             {
-                Address address = await _progenyHttpClient.GetAddress(contact.AddressIdNumber.Value); // _context.AddressDb.AsNoTracking().SingleAsync(a => a.AddressId == contact.AddressIdNumber);
-                model.AddressLine1 = address.AddressLine1;
-                model.AddressLine2 = address.AddressLine2;
-                model.City = address.City;
-                model.State = address.State;
-                model.PostalCode = address.PostalCode;
-                model.Country = address.Country;
+                Address address = await _locationsHttpClient.GetAddress(contact.AddressIdNumber.Value);
+                if (address != null)
+                {
+                    model.AddressLine1 = address.AddressLine1;
+                    model.AddressLine2 = address.AddressLine2;
+                    model.City = address.City;
+                    model.State = address.State;
+                    model.PostalCode = address.PostalCode;
+                    model.Country = address.Country;
+                }
             }
 
             model.Progeny = progeny;
@@ -229,10 +243,10 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<string> tagsList = new List<string>();
-            var contactsList1 = await _progenyHttpClient.GetContactsList(model.ProgenyId, userAccessLevel); // _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == model.ProgenyId).ToList();
+            var contactsList1 = await _contactsHttpClient.GetContactsList(model.ProgenyId, userAccessLevel); 
             foreach (Contact cont in contactsList1)
             {
-                if (!String.IsNullOrEmpty(cont.Tags))
+                if (!string.IsNullOrEmpty(cont.Tags))
                 {
                     List<string> cvmTags = cont.Tags.Split(',').ToList();
                     foreach (string tagstring in cvmTags)

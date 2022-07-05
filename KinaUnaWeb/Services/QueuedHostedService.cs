@@ -28,7 +28,7 @@ namespace KinaUnaWeb.Services
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                var workItem = await TaskQueue.DequeueAsync(cancellationToken);
+                Func<CancellationToken, Task> workItem = await TaskQueue.DequeueAsync(cancellationToken);
 
                 try
                 {

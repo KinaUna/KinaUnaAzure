@@ -1,10 +1,8 @@
 ﻿using System.Threading.Tasks;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -16,7 +14,7 @@ namespace KinaUnaProgenyApi.Controllers
     {
         // Todo: Security check, verify that users can view/change addresses.
         private readonly IDataService _dataService;
-        public AddressesController(ProgenyDbContext context, IDataService dataService)
+        public AddressesController(IDataService dataService)
         {
             _dataService = dataService;
         }

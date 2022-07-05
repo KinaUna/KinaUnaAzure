@@ -15,16 +15,44 @@ namespace KinaUnaWeb.Controllers
     public class TimelineController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly ITimelineHttpClient _timelineHttpClient;
+        private readonly IWordsHttpClient _wordsHttpClient;
+        private readonly IVaccinationsHttpClient _vaccinationsHttpClient;
+        private readonly ISkillsHttpClient _skillsHttpClient;
+        private readonly INotesHttpClient _notesHttpClient;
+        private readonly IMeasurementsHttpClient _measurementsHttpClient;
+        private readonly ILocationsHttpClient _locationsHttpClient;
+        private readonly IFriendsHttpClient _friendsHttpClient;
+        private readonly IContactsHttpClient _contactsHttpClient;
+        private readonly ICalendarsHttpClient _calendarsHttpClient;
+        private readonly ISleepHttpClient _sleepHttpClient;
+        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
         private int _progId = Constants.DefaultChildId;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public TimelineController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore)
+        public TimelineController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, ITimelineHttpClient timelineHttpClient, 
+            IWordsHttpClient wordsHttpClient, IVaccinationsHttpClient vaccinationsHttpClient, ISkillsHttpClient skillsHttpClient, INotesHttpClient notesHttpClient, IMeasurementsHttpClient measurementsHttpClient,
+            ILocationsHttpClient locationsHttpClient, IFriendsHttpClient friendsHttpClient, IContactsHttpClient contactsHttpClient, ICalendarsHttpClient calendarsHttpClient, ISleepHttpClient sleepHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
             _imageStore = imageStore;
+            _userInfosHttpClient = userInfosHttpClient;
+            _timelineHttpClient = timelineHttpClient;
+            _wordsHttpClient = wordsHttpClient;
+            _vaccinationsHttpClient = vaccinationsHttpClient;
+            _skillsHttpClient = skillsHttpClient;
+            _notesHttpClient = notesHttpClient;
+            _measurementsHttpClient = measurementsHttpClient;
+            _locationsHttpClient = locationsHttpClient;
+            _friendsHttpClient = friendsHttpClient;
+            _contactsHttpClient = contactsHttpClient;
+            _calendarsHttpClient = calendarsHttpClient;
+            _sleepHttpClient = sleepHttpClient;
+            _userAccessHttpClient = userAccessHttpClient;
         }
 
         [AllowAnonymous]
@@ -34,7 +62,7 @@ namespace KinaUnaWeb.Controllers
             ViewBag.SortBy = sortBy;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (childId == 0 && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
@@ -45,7 +73,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _progenyHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -65,7 +93,7 @@ namespace KinaUnaWeb.Controllers
 
             TimeLineViewModel model = new TimeLineViewModel();
             model.TimeLineItems = new List<TimeLineItem>();
-            model.TimeLineItems = await _progenyHttpClient.GetTimeline(_progId, userAccessLevel); // _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == _progId && t.AccessLevel >= userAccessLevel && t.ProgenyTime < DateTime.UtcNow).ToListAsync();
+            model.TimeLineItems = await _timelineHttpClient.GetTimeline(_progId, userAccessLevel);
             if (sortBy == 1)
             {
                 model.TimeLineItems = model.TimeLineItems.OrderByDescending(t => t.ProgenyTime).ToList();
@@ -193,7 +221,7 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
             
-            UserInfo userinfo = await _progenyHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             
             string id = model.ItemId.ToString();
             int type = model.TypeId;
@@ -233,7 +261,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    CalendarItem evt = await _progenyHttpClient.GetCalendarItem(itemId); // _context.CalendarDb.AsNoTracking().SingleOrDefault(e => e.EventId == itemId);
+                    CalendarItem evt = await _calendarsHttpClient.GetCalendarItem(itemId);
                     if (evt != null && evt.StartTime.HasValue && evt.EndTime.HasValue)
                     {
                         evt.StartTime = TimeZoneInfo.ConvertTimeFromUtc(evt.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
@@ -247,7 +275,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    VocabularyItem voc = await _progenyHttpClient.GetWord(itemId); // _context.VocabularyDb.AsNoTracking().SingleOrDefault(v => v.WordId == itemId);
+                    VocabularyItem voc = await _wordsHttpClient.GetWord(itemId);
                     if (voc != null)
                     {
                         if (voc.Date != null)
@@ -264,7 +292,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Skill skl = await _progenyHttpClient.GetSkill(itemId); // _context.SkillsDb.AsNoTracking().SingleOrDefault(s => s.SkillId == itemId);
+                    Skill skl = await _skillsHttpClient.GetSkill(itemId);
                     if (skl != null)
                     {
                         return PartialView("TimeLineSkillPartial", skl);
@@ -276,7 +304,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Friend frn = await _progenyHttpClient.GetFriend(itemId); // _context.FriendsDb.AsNoTracking().SingleOrDefault(f => f.FriendId == itemId);
+                    Friend frn = await _friendsHttpClient.GetFriend(itemId);
                     if (frn != null)
                     {
                         if (!frn.PictureLink.StartsWith("https://"))
@@ -292,7 +320,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Measurement mes = await _progenyHttpClient.GetMeasurement(itemId); // _context.MeasurementsDb.AsNoTracking().SingleOrDefault(m => m.MeasurementId == itemId);
+                    Measurement mes = await _measurementsHttpClient.GetMeasurement(itemId);
                     if (mes != null)
                     {
                         return PartialView("TimeLineMeasurementPartial", mes);
@@ -304,7 +332,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Sleep slp = await _progenyHttpClient.GetSleepItem(itemId); // _context.SleepDb.AsNoTracking().SingleOrDefault(s => s.SleepId == itemId);
+                    Sleep slp = await _sleepHttpClient.GetSleepItem(itemId);
                     if (slp != null)
                     {
                         slp.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
@@ -323,7 +351,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Note nte = await _progenyHttpClient.GetNote(itemId); // _context.NotesDb.AsNoTracking().SingleOrDefault(n => n.NoteId == itemId);
+                    Note nte = await _notesHttpClient.GetNote(itemId);
                     if (nte != null)
                     {
                         nte.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(nte.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
@@ -336,7 +364,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Contact cnt = await _progenyHttpClient.GetContact(itemId); // _context.ContactsDb.AsNoTracking().SingleOrDefault(c => c.ContactId == itemId);
+                    Contact cnt = await _contactsHttpClient.GetContact(itemId);
                     if (cnt != null)
                     {
                         if (!cnt.PictureLink.StartsWith("https://"))
@@ -356,7 +384,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Vaccination vac = await _progenyHttpClient.GetVaccination(itemId); // _context.VaccinationsDb.AsNoTracking().SingleOrDefault(v => v.VaccinationId == itemId);
+                    Vaccination vac = await _vaccinationsHttpClient.GetVaccination(itemId);
                     if (vac != null)
                     {
                         return PartialView("TimeLineVaccinationPartial", vac);
@@ -368,7 +396,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    Location loc = await _progenyHttpClient.GetLocation(itemId); // _context.LocationsDb.AsNoTracking().SingleOrDefault(l => l.LocationId == itemId);
+                    Location loc = await _locationsHttpClient.GetLocation(itemId);
                     if (loc != null)
                     {
                         return PartialView("TimeLineLocationPartial", loc);

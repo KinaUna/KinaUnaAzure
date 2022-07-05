@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -56,8 +55,8 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}")]
         public async Task<IActionResult> ProgenyInterval(int id, [FromQuery] string start, [FromQuery] string end, [FromQuery] int accessLevel = 5)
         {
-            bool startParsed = DateTime.TryParseExact(start, "dd-MM-yyyy", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime startDate);
-            bool endParsed = DateTime.TryParseExact(end, "dd-MM-yyyy", System.Globalization.CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime endDate);
+            bool startParsed = DateTime.TryParseExact(start, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime startDate);
+            bool endParsed = DateTime.TryParseExact(end, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime endDate);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId && startParsed && endParsed)
