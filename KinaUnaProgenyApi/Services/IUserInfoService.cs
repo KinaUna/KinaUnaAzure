@@ -16,5 +16,6 @@ namespace KinaUnaProgenyApi.Services
         Task<UserInfo> GetUserInfoById(int id);
         Task<UserInfo> GetUserInfoByUserId(string id);
         Task<List<UserInfo>> GetDeletedUserInfos();
+        Task<bool> IsAdminUserId(string userId);
     }
 }

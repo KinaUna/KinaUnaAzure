@@ -141,5 +141,18 @@ namespace KinaUnaProgenyApi.Services
             return deletedUserInfos;
         }
 
+        public async Task<bool> IsAdminUserId(string userId)
+        {
+            UserInfo userInfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == userId);
+            if (userInfo != null)
+            {
+                if (userInfo.IsKinaUnaAdmin)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

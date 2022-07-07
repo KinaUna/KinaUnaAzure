@@ -1,0 +1,63 @@
+﻿@using KinaUnaWeb.Models.HomeViewModels
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model TextTranslation
+@{
+    ViewData["Title"] = "KinaUna Translations - Delete Translation";
+}
+@inject ILocaleManager LocaleManager;
+@{
+    SetLanguageIdViewModel langModel = await LocaleManager.GetLanguageModel(Model.LanguageId);
+    KinaUnaLanguage language = langModel.LanguageList.SingleOrDefault(l => l.Id == Model.LanguageId);
+}
+<div class="space-20"></div>
+<div class="pivoq_section ">
+    <div class="container">
+        <div class="space-20"></div>
+        <h2>@ViewData["Title"]</h2>
+        <div class="space-20"></div>
+        <div>
+            <h4>Are you sure you want to delete this translation key and all translations?</h4>
+        </div>
+        <form asp-action="DeleteTranslation" role="form" method="post" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-3">
+                    Language:
+                </div>
+                <div class="col-6">
+                    @if (language != null)
+                    {
+                        @language.Name
+                    }
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-3">Key:</div>
+                <div class="col-6">@Model.Word</div>
+
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-3">Page:</div>
+                <div class="col-6"> @Model.Page</div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-3">Translation:</div>
+                <div class="col-6">@Model.Translation</div>
+            </div>
+            <div class="space-50"></div>
+            <div class="horizontal_bar_thin w-100"></div>
+            <div class="space-50"></div>
+            <div class="row">
+                <div class="col-12">
+                    <input hidden="hidden" type="number" value="@Model.Id" asp-for="Id" />
+                    <input hidden="hidden" type="number" value="@Model.LanguageId" asp-for="LanguageId" />
+                    <button id="submitButton" class="btn btn-info float-right leavePage" type="submit">Delete</button>
+                    <a class="btn btn-warning leavePage" asp-controller="Admin" asp-action="ManageTranslations">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

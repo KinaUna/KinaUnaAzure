@@ -1,0 +1,46 @@
+﻿@using KinaUnaWeb.Models.HomeViewModels
+@using KinaUnaWeb.Services
+@model TextTranslation
+@inject ILocaleManager LocaleManager
+@{
+    SetLanguageIdViewModel langModel = await LocaleManager.GetLanguageModel(Model.LanguageId);
+    KinaUnaLanguage language = langModel.LanguageList.SingleOrDefault(l => l.Id == Model.LanguageId);
+}
+
+<div>
+    <div class="row">
+        <div class="col-3">
+            Language:
+        </div>
+        <div class="col-6">@language?.Name</div>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="col-3">Key:</div>
+        <div class="col-6">@Model.Word</div>
+
+    </div>
+    <br/>
+    <div class="row">
+        <div class="col-3">Page:</div>
+        <div class="col-6"> @Model.Page</div>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="col-3">Translation:</div>
+        <div class="col-6"><textarea id="translationTranslationInput" class="e-input" type="text" rows="3" value="@Model.Translation">@Model.Translation</textarea></div>
+    </div>
+    <div class="space-50"></div>
+    <div class="horizontal_bar_thin w-100"></div>
+    <div class="space-20"></div>
+    <div class="row">
+        <div class="col-12">
+            <input id="translationPageInput" hidden="hidden" value="@Model.Page"/>
+            <input id="translationWordInput" hidden="hidden" value="@Model.Word"/>
+            <input id="translationIdInput" hidden="hidden" type="number" value="@Model.Id"/>
+            <input id="translationLanguageIdInput" hidden="hidden" type="number" value="@Model.LanguageId"/>
+            <a class="btn btn-info float-right" onclick="saveTranslation()">Save</a>
+            <a class="btn btn-warning" data-dismiss="modal">Cancel</a>
+        </div>
+    </div>
+</div>

@@ -27,5 +27,7 @@ namespace KinaUna.Data.Contexts
         public DbSet<Vaccination> VaccinationsDb { get; set; }
         public DbSet<MobileNotification> MobileNotificationsDb { get; set; }
         public DbSet<UserInfo> DeletedUsers { get; set; }
+        public DbSet<TextTranslation> TextTranslations { get; set; }
+        public DbSet<KinaUnaLanguage> Languages { get; set; }
     }
 }

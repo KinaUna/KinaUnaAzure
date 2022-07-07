@@ -7,8 +7,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
+using KinaUnaWeb.Models.AdminViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace KinaUnaWeb.Controllers
@@ -21,7 +24,10 @@ namespace KinaUnaWeb.Controllers
         private readonly IPushMessageSender _pushMessageSender;
         private readonly string _adminEmail = Constants.AdminEmail;
         private readonly IAuthHttpClient _authHttpClient;
-        public AdminController(WebDbContext context, IBackgroundTaskQueue queue, IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient)
+        private readonly ILanguagesHttpClient _languagesHttpClient;
+        private readonly ITranslationsHttpClient _translationsHttpClient;
+        public AdminController(WebDbContext context, IBackgroundTaskQueue queue, IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender, IAuthHttpClient authHttpClient,
+            IUserInfosHttpClient userInfosHttpClient, ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient)
         {
             _context = context;
             Queue = queue;
@@ -29,6 +35,8 @@ namespace KinaUnaWeb.Controllers
             _pushMessageSender = pushMessageSender;
             _authHttpClient = authHttpClient;
             _userInfosHttpClient = userInfosHttpClient;
+            _languagesHttpClient = languagesHttpClient;
+            _translationsHttpClient = translationsHttpClient;
         }
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Local
@@ -63,7 +71,299 @@ namespace KinaUnaWeb.Controllers
             return View();
         }
 
-        
+        [Authorize]
+        public async Task<IActionResult> ManageLanguages()
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            List<KinaUnaLanguage> model = await _languagesHttpClient.GetAllLanguages();
+            
+            return View(model);
+        }
+
+        [Authorize]
+        public async Task<ActionResult> AddLanguage()
+        {
+
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            KinaUnaLanguage model = new KinaUnaLanguage();
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> AddLanguage(KinaUnaLanguage model)
+        {
+
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            
+            KinaUnaLanguage newLanguage = await _languagesHttpClient.AddLanguage(model);
+            _ = await _languagesHttpClient.GetLanguage(newLanguage.Id, true);
+            _ = await _languagesHttpClient.GetAllLanguages(true);
+            
+            return RedirectToAction("ManageLanguages", "Admin");
+        }
+
+        [Authorize]
+        public async Task<ActionResult> EditLanguage(int languageId)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            KinaUnaLanguage model = await _languagesHttpClient.GetLanguage(languageId);
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> EditLanguage(KinaUnaLanguage model)
+        {
+
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            _ = await _languagesHttpClient.UpdateLanguage(model);
+            _ = await _languagesHttpClient.GetLanguage(model.Id, true);
+            _ = await _languagesHttpClient.GetAllLanguages(true);
+            return RedirectToAction("ManageLanguages", "Admin");
+        }
+
+        [Authorize]
+        public async Task<ActionResult> DeleteLanguage(int languageId)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            KinaUnaLanguage model = await _languagesHttpClient.GetLanguage(languageId);
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteLanguage(KinaUnaLanguage model)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            
+            _ = await _languagesHttpClient.DeleteLanguage(model); 
+            _ = await _languagesHttpClient.GetLanguage(model.Id, true);
+            _ = await _languagesHttpClient.GetAllLanguages(true);
+            return RedirectToAction("ManageLanguages", "Admin");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> ManageTranslations()
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            ManageTranslationsViewModel model = new ManageTranslationsViewModel();
+
+            model.Translations = await _translationsHttpClient.GetAllTranslations();
+            model.PagesList = new List<string>();
+            model.WordsList = new List<string>();
+            foreach (TextTranslation translationItem in model.Translations)
+            {
+                if (!model.PagesList.Contains(translationItem.Page))
+                {
+                    model.PagesList.Add(translationItem.Page);
+                }
+
+                if (!model.WordsList.Contains(translationItem.Word))
+                {
+                    model.WordsList.Add(translationItem.Word);
+                }
+            }
+
+            model.LanguagesList = await _languagesHttpClient.GetAllLanguages();
+            return View(model);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> GetPageTranslations(string pageName)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            ManageTranslationsViewModel model = new ManageTranslationsViewModel();
+
+            model.Translations = await _translationsHttpClient.GetAllTranslations();
+            model.PagesList = new List<string>();
+            model.WordsList = new List<string>();
+            foreach (TextTranslation translationItem in model.Translations)
+            {
+                if (translationItem.Page.Trim().ToUpper() == pageName.Trim().ToUpper())
+                {
+                    if (!model.PagesList.Contains(translationItem.Page))
+                    {
+                        model.PagesList.Add(translationItem.Page);
+                    }
+
+                    if (!model.WordsList.Contains(translationItem.Word))
+                    {
+                        model.WordsList.Add(translationItem.Word);
+                    }
+                }
+            }
+
+            model.LanguagesList = await _languagesHttpClient.GetAllLanguages();
+            return PartialView("TranslationPagePartial", model);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> EditTranslation(int translationId)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            TextTranslation model = await _translationsHttpClient.GetTranslationById(translationId);
+
+            return PartialView("EditTranslationPartial", model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> EditTranslation([FromBody] TextTranslation model)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            TextTranslation updateTranslation = await _translationsHttpClient.GetTranslationById(model.Id);
+            updateTranslation.Translation = model.Translation;
+            TextTranslation updatedTranslation = await _translationsHttpClient.UpdateTranslation(updateTranslation);
+
+            // Update caches
+            List<KinaUnaLanguage> languages = await _languagesHttpClient.GetAllLanguages();
+            foreach (KinaUnaLanguage lang in languages)
+            {
+                _ = await _translationsHttpClient.GetTranslationById(updatedTranslation.Id, true);
+                _ = await _translationsHttpClient.GetTranslation(updatedTranslation.Word, updateTranslation.Page, lang.Id, true);
+                _ = await _translationsHttpClient.GetAllTranslations(lang.Id, true);
+            }
+
+            return PartialView("EditTranslationPartial", updateTranslation);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> DeleteTranslationItem(int translationId)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            List<TextTranslation> translationsList = await _translationsHttpClient.GetAllTranslations();
+
+            TextTranslation model = translationsList.SingleOrDefault(t => t.Id == translationId);
+
+            return PartialView("DeleteTranslationItemPartial", model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> DeleteTranslationItem([FromBody] TextTranslation model)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            TextTranslation updateTranslation = await _translationsHttpClient.GetTranslationById(model.Id);
+            updateTranslation.Translation = model.Translation;
+            _ = await _translationsHttpClient.DeleteSingleItemTranslation(updateTranslation);
+
+            // Update caches
+            List<KinaUnaLanguage> languages = await _languagesHttpClient.GetAllLanguages();
+            foreach (KinaUnaLanguage lang in languages)
+            {
+                _ = await _translationsHttpClient.GetAllTranslations(lang.Id, true);
+            }
+
+            return PartialView("DeleteTranslationItemPartial", updateTranslation);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> DeleteTranslation(string word, string page)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            List<TextTranslation> translationsList = await _translationsHttpClient.GetAllTranslations();
+
+            TextTranslation model = translationsList.SingleOrDefault(t => t.Word == word && t.Page == page && t.LanguageId == 1);
+
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteTranslation(TextTranslation model)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            TextTranslation deleteTranslation = await _translationsHttpClient.GetTranslationById(model.Id);
+            await _translationsHttpClient.DeleteTranslation(deleteTranslation);
+
+            // Update caches
+            List<KinaUnaLanguage> languages = await _languagesHttpClient.GetAllLanguages();
+            foreach (KinaUnaLanguage lang in languages)
+            {
+                _ = await _translationsHttpClient.GetAllTranslations(lang.Id, true);
+            }
+
+            return RedirectToAction("ManageTranslations", "Admin");
+        }
+
         public IActionResult SendAdminMessage()
         {
             // Todo: Implement Admin as role instead

@@ -843,3 +843,12 @@ button.Zebra_DatePicker_Icon {
     height: 20px;
     display: block;
 }
+
+.horizontal_bar_thin {
+    display: block;
+    width: 44px;
+    height: 1px;
+    background-color: #dddddd;
+    border-radius: 2px;
+    /*margin-bottom: 45px;*/
+}

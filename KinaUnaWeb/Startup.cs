@@ -33,15 +33,13 @@ namespace KinaUnaWeb
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
-        public static string WebRootPath { get; private set; }
+        private IConfiguration Configuration { get; }
         private readonly IWebHostEnvironment _env;
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
             _env = env;
-            WebRootPath = env.WebRootPath;
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         }
         
@@ -98,6 +96,7 @@ namespace KinaUnaWeb
             string authenticationServerClientSecret = Configuration.GetValue<string>("AuthenticationServerClientSecret");
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddTransient<ILocaleManager, LocaleManager>();
             services.AddHttpClient();
             services.AddHttpClient<IProgenyManager, ProgenyManager>();
             services.AddHttpClient<IProgenyHttpClient, ProgenyHttpClient>();
@@ -123,6 +122,9 @@ namespace KinaUnaWeb
             services.AddHttpClient<ISleepHttpClient, SleepHttpClient>();
             services.AddHttpClient<IUserAccessHttpClient, UserAccessHttpClient>();
             services.AddHttpClient<IAuthHttpClient, AuthHttpClient>();
+            services.AddHttpClient<ILanguagesHttpClient, LanguagesHttpClient>();
+            services.AddHttpClient<ITranslationsHttpClient, TranslationsHttpClient>();
+            services.AddDistributedMemoryCache();
 
             string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer");
             if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
@@ -231,7 +233,7 @@ namespace KinaUnaWeb
                     options.Scope.Add("offline_access");
                     options.SaveTokens = true;
                     options.ClientSecret = authenticationServerClientSecret;
-                    options.GetClaimsFromUserInfoEndpoint = true;
+                    options.GetClaimsFromUserInfoEndpoint = false;
                     options.ClaimActions.Remove("amr");
                     options.ClaimActions.DeleteClaim("sid");
                     options.ClaimActions.DeleteClaim("idp");

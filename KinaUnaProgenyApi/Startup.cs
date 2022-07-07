@@ -66,6 +66,8 @@ namespace KinaUnaProgenyApi
             services.AddScoped<ISleepService, SleepService>();
             services.AddScoped<IVaccinationService, VaccinationService>();
             services.AddScoped<IVocabularyService, VocabularyService>();
+            services.AddScoped<ITextTranslationService, TextTranslationService>();
+            services.AddScoped<ILanguageService, LanguageService>();
 
             services.AddControllers().AddNewtonsoftJson();
             

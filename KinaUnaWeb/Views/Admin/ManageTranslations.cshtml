@@ -1,0 +1,228 @@
+﻿@model KinaUnaWeb.Models.AdminViewModels.ManageTranslationsViewModel
+@{
+    ViewData["Title"] = "Manage Translations";
+
+}
+<div class="space-20"></div>
+<div class="pivoq_section ">
+    <div class="container">
+        <div class="pivoq_space20"></div>
+        <h2>@ViewData["Title"]</h2>
+        <div class="space-20"></div>
+
+        @if (Model.Translations.Any())
+        {
+            if (Model.PagesList.Any())
+            {
+                <ul id="view-ul" class="select-view-ul" style="flex-wrap: wrap; justify-content: center;">
+                    @foreach (string pageItem in Model.PagesList)
+                    {
+                        <li class="select-view-item" data-viewid="@pageItem">@pageItem</li>
+                    }
+                </ul>
+
+            }
+        }
+        <div class="space-20"></div>
+        <div id="translationsList"></div>
+    </div>
+</div>
+<div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editTranslationModal">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let viewPage;
+
+    function run_waitMe() {
+        $('#translationsList').waitMe({
+            effect: 'bounce',
+            text: '',
+            bg: 'rgba(255,255,255,0.7)',
+            color: '#3a2051',
+            maxSize: '',
+            waitTime: -1,
+            source: '',
+            textPos: 'vertical',
+            fontSize: '',
+            onClose: function () { }
+        });
+    }
+
+    function save_run_waitMe() {
+        $('#editTranslationModal .modal-body').waitMe({
+            effect: 'bounce',
+            text: '',
+            bg: 'rgba(255,255,255,0.7)',
+            color: '#3a2051',
+            maxSize: '',
+            waitTime: -1,
+            source: '',
+            textPos: 'vertical',
+            fontSize: '',
+            onClose: function() {}
+        });
+    }
+
+    let viewUl = document.getElementById('view-ul');
+    viewUl.onclick = function (event) {
+        if (event.target.tagName !== "LI") return;
+        viewSelected(event.target);
+
+    }
+
+    // prevent unneeded selection of list elements on clicks
+    viewUl.onmousedown = function () {
+        return false;
+    };
+
+    function viewSelected(li) {
+        viewPage = li.dataset.viewid;
+        let selected = viewUl.querySelectorAll('.select-view-item-selected');
+        for (let elem of selected) {
+            elem.classList.remove('select-view-item-selected');
+        }
+        li.classList.add('select-view-item-selected');
+        getPageTranslations(viewPage);
+    }
+
+    function getPageTranslations(viewPage) {
+        run_waitMe();
+        let page = { pageName: viewPage }
+        return $.ajax({
+            type: "GET",
+            url: "/Admin/GetPageTranslations",
+            data: page,
+            datatype: "html",
+            async: true,
+            success: function (data) {
+                let activitiesDiv = document.getElementById('translationsList');
+                activitiesDiv.innerHTML = data;
+                $("#translationsList").waitMe("hide");
+            },
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log(textStatus, errorThrown);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        jQueryModalGet = (translationId, title) => {
+            try {
+                $.ajax({
+                    type: 'GET',
+                    url: "/Admin/EditTranslation?translationId=" + translationId,
+                    contentType: false,
+                    datatype: "html",
+                    async: true,
+                    success: function(res) {
+                        $('#editTranslationModal .modal-body').html(res);
+                        $('#editTranslationModal .modal-title').html(title);
+                        $('#editTranslationModal').modal('show');
+                    },
+                    error: function(err) {
+                        console.log(err);
+                    }
+                });
+                return false;
+            } catch (ex) {
+                console.log(ex);
+            }
+            return false;
+        };
+
+        jQueryModalDelete = (translationId, title) => {
+            try {
+                $.ajax({
+                    type: 'GET',
+                    url: "/Admin/DeleteTranslationItem?translationId=" + translationId,
+                    contentType: false,
+                    datatype: "html",
+                    async: true,
+                    success: function(res) {
+                        $('#editTranslationModal .modal-body').html(res);
+                        $('#editTranslationModal .modal-title').html(title);
+                        $('#editTranslationModal').modal('show');
+                    },
+                    error: function(err) {
+                        console.log(err);
+                    }
+                });
+                return false;
+            } catch (ex) {
+                console.log(ex);
+            }
+            return false;
+        };
+    });
+
+    function saveTranslation() {
+        save_run_waitMe();
+        let translationId = document.getElementById('translationIdInput').value;
+        let translationPage = document.getElementById('translationPageInput').value;
+        let translationWord = document.getElementById('translationWordInput').value;
+        let translationLanguageId = document.getElementById('translationLanguageIdInput').value;
+        let translationTranslation = document.getElementById('translationTranslationInput').value;
+        let translation = { Id: translationId, Page: translationPage, Word: translationWord, LanguageId: translationLanguageId, Translation: translationTranslation }
+        return $.ajax({
+            type: "POST",
+            url: "/Admin/EditTranslation",
+            contentType: 'application/json',
+            data: JSON.stringify(translation),
+            datatype: "html",
+            async: true,
+            success: function (data) {
+                $('#editTranslationModal .modal-body').html(data);
+                let spanId = "trId" + translationId + "trLang" + translationLanguageId;
+                let translationItemSpan = document.getElementById(spanId);
+                translationItemSpan.innerHTML = translationTranslation;
+                $("#editTranslationModal .modal-body").waitMe("hide");
+                $('#editTranslationModal').modal('hide');
+            },
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log(textStatus, errorThrown);
+                $("#editTranslationModal .modal-body").waitMe("hide");
+            }
+        });
+    }
+
+    function deleteTranslation() {
+        save_run_waitMe();
+        let translationId = document.getElementById('translationIdInput').value;
+        let translationPage = document.getElementById('translationPageInput').value;
+        let translationWord = document.getElementById('translationWordInput').value;
+        let translationLanguageId = document.getElementById('translationLanguageIdInput').value;
+        let translationTranslation = document.getElementById('translationTranslationInput').value;
+        let translation = { Id: translationId, Page: translationPage, Word: translationWord, LanguageId: translationLanguageId, Translation: translationTranslation }
+        return $.ajax({
+            type: "POST",
+            url: "/Admin/DeleteTranslationItem",
+            contentType: 'application/json',
+            data: JSON.stringify(translation),
+            datatype: "html",
+            async: true,
+            success: function(data) {
+                $('#editTranslationModal .modal-body').html(data);
+                let spanId = "trId" + translationId + "trLang" + translationLanguageId + "div";
+                let translationItemDiv = document.getElementById(spanId);
+                translationItemDiv.innerHTML = "";
+                $("#editTranslationModal .modal-body").waitMe("hide");
+                $('#editTranslationModal').modal('hide');
+            },
+            error: function(jqXhr, textStatus, errorThrown) {
+                console.log(textStatus, errorThrown);
+                $("#editTranslationModal .modal-body").waitMe("hide");
+            }
+        });
+    }
+</script>

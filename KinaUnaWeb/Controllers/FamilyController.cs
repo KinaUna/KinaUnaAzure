@@ -30,8 +30,8 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             Family myFamily = new Family();
             myFamily.Children = await _progenyHttpClient.GetProgenyAdminList(userEmail);
-            myFamily.FamilyMembers = new List<ApplicationUser>();
-            myFamily.OtherMembers = new List<ApplicationUser>();
+            myFamily.FamilyMembers = new List<UserInfo>();
+            myFamily.OtherMembers = new List<UserInfo>();
             myFamily.AccessList = new List<UserAccess>();
             if (myFamily.Children != null && myFamily.Children.Any())
             {
