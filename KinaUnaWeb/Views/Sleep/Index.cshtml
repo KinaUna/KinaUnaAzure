@@ -127,24 +127,85 @@ else
 
     <script type="text/javascript">
         $(document).ready(function() {
-                var ctx = document.getElementById("chartContainer");
-                var myChart = new Chart(ctx,
-                    {
+            const ctx = document.getElementById("chartContainer");
+            const myChart = new Chart(ctx,
+                {
+                    type: 'bar',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Sleep',
+                                data: [@foreach (var sleepItem in Model.ChartList)
+                                {
+                                    if (sleepItem.SleepDuration.TotalMinutes > 0.0)
+                                    {
+                                        string chartYear = sleepItem.SleepStart.Year.ToString();
+                                        string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
+                                        string chartDay = sleepItem.SleepStart.Day.ToString();
+                                        @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + sleepItem.SleepDuration.TotalMinutes / 60.0 + "},")
+                                    }
+                                }],
+                                borderColor: 'rgb(75, 192, 192)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            xAxes: [
+                                {
+                                    type: 'time',
+                                    time: {
+                                        tooltipFormat: 'dd DD MMM YYYY',
+                                        displayFormats: {
+                                            quarter: 'MMM YYYY'
+                                        }
+                                    }
+                                }
+                            ],
+                            yAxes: [
+                                {
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'Duration in hours'
+                                    },
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                });
+
+            myChart.update();
+            const slpSlider = document.getElementById('sliderSleep');
+            slpSlider.noUiSlider.on('update',
+                function() {
+                    const pos = $(document).scrollTop();
+                    $('#sliderStartVal')
+                        .text("Start: " + moment(slider.noUiSlider.get()[0], "x").format("dddd, DD-MMM-YYYY"));
+                    $('#sliderEndVal')
+                        .text("End: " + moment(slider.noUiSlider.get()[1], "x").format("dddd, DD-MMM-YYYY"));
+                    document.getElementById("chartDiv").innerHTML = '&nbsp;';
+                    document.getElementById("chartDiv").innerHTML = '<canvas id="chartContainer"></canvas>';
+                    const slpChart = document.getElementById("chartContainer").getContext("2d");
+                    const cfg = {
                         type: 'bar',
                         data: {
                             datasets: [
                                 {
                                     label: 'Sleep',
                                     data: [@foreach (var sleepItem in Model.ChartList)
-                                       {
-                                           if (sleepItem.SleepDuration.TotalMinutes > 0.0)
-                                           {
-                                               string chartYear = sleepItem.SleepStart.Year.ToString();
-                                               string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
-                                               string chartDay = sleepItem.SleepStart.Day.ToString();
-                                               @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + sleepItem.SleepDuration.TotalMinutes / 60.0 + "},")
-                                           }
-                                       }],
+                                        {
+                                            if (sleepItem.SleepDuration.TotalMinutes > 0.0)
+                                            {
+                                                string chartYear = sleepItem.SleepStart.Year.ToString();
+                                                string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
+                                                string chartDay = sleepItem.SleepStart.Day.ToString();
+                                                @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + sleepItem.SleepDuration.TotalMinutes / 60.0 + "},")
+                                            }
+                                        }],
                                     borderColor: 'rgb(75, 192, 192)',
                                     borderWidth: 1
                                 }
@@ -156,6 +217,8 @@ else
                                     {
                                         type: 'time',
                                         time: {
+                                            min: moment(slider.noUiSlider.get()[0], "x").toString(),
+                                            max: moment(slider.noUiSlider.get()[1], "x").toString(),
                                             tooltipFormat: 'dd DD MMM YYYY',
                                             displayFormats: {
                                                 quarter: 'MMM YYYY'
@@ -176,80 +239,18 @@ else
                                 ]
                             }
                         }
-                    });
-
-                var slpSlider = document.getElementById('sliderSleep');
-                slpSlider.noUiSlider.on('update',
-                    function() {
-                        var pos = $(document).scrollTop();
-                        $('#sliderStartVal')
-                            .text("Start: " + moment(slider.noUiSlider.get()[0], "x").format("dddd, DD-MMM-YYYY"));
-                        $('#sliderEndVal')
-                            .text("End: " + moment(slider.noUiSlider.get()[1], "x").format("dddd, DD-MMM-YYYY"));
-                        document.getElementById("chartDiv").innerHTML = '&nbsp;';
-                        document.getElementById("chartDiv").innerHTML = '<canvas id="chartContainer"></canvas>';
-                        var slpChart = document.getElementById("chartContainer").getContext("2d");
-                        var cfg = {
-                            type: 'bar',
-                            data: {
-                                datasets: [
-                                    {
-                                        label: 'Sleep',
-                                        data: [@foreach (var sleepItem in Model.ChartList)
-                                           {
-                                               if (sleepItem.SleepDuration.TotalMinutes > 0.0)
-                                               {
-                                                   string chartYear = sleepItem.SleepStart.Year.ToString();
-                                                   string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
-                                                   string chartDay = sleepItem.SleepStart.Day.ToString();
-                                                   @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + sleepItem.SleepDuration.TotalMinutes / 60.0 + "},")
-                                               }
-                                           }],
-                                        borderColor: 'rgb(75, 192, 192)',
-                                        borderWidth: 1
-                                    }
-                                ]
-                            },
-                            options: {
-                                scales: {
-                                    xAxes: [
-                                        {
-                                            type: 'time',
-                                            time: {
-                                                min: moment(slider.noUiSlider.get()[0], "x").toString(),
-                                                max: moment(slider.noUiSlider.get()[1], "x").toString(),
-                                                tooltipFormat: 'dd DD MMM YYYY',
-                                                displayFormats: {
-                                                    quarter: 'MMM YYYY'
-                                                }
-                                            }
-                                        }
-                                    ],
-                                    yAxes: [
-                                        {
-                                            scaleLabel: {
-                                                display: true,
-                                                labelString: 'Duration in hours'
-                                            },
-                                            ticks: {
-                                                beginAtZero: true
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        };
-                        var newChart = new Chart(slpChart, cfg);
-                        newChart.update();
-                        $(document).scrollTop(pos);
-                    });
+                    };
+                    const newChart = new Chart(slpChart, cfg);
+                    newChart.update();
+                    $(document).scrollTop(pos);
+                });
             }
         );
         function timestamp(str) {
             return new Date(str).getTime();
         }
 
-        var slider = document.getElementById('sliderSleep');
+        let slider = document.getElementById('sliderSleep');
 
         noUiSlider.create(slider,
             {
@@ -264,7 +265,5 @@ else
                     timestamp('@Model.ChartList.Last().SleepStart.ToString("yyyy-MM-dd")')
                 ]
             });
-
-
     </script>
 }

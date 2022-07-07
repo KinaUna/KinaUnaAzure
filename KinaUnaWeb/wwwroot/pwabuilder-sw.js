@@ -118,7 +118,7 @@ function cacheFirstFetch(event) {
                     .catch(function (error) {
                         // The following validates that the request was for a navigation to a new document
                         if (event.request.destination !== "document" || event.request.mode !== "navigate") {
-                            return;
+                            return null;
                         }
 
                         console.log("[PWA Builder - cacheFirstFetch] Network request failed and no cache." + error);
@@ -183,7 +183,7 @@ self.addEventListener('push', function (event) {
         return;
     }
     
-    var data = {};
+    let data = {};
     if (event.data) {
         data = event.data.text();
     }
@@ -193,14 +193,13 @@ self.addEventListener('push', function (event) {
     //console.log('Data.title: ' + data.title);
     //console.log('Data.message: ' + data.message);
     //console.log('Data.link: ' + data.link);
-    var notification = {};
-    notification = JSON.parse(data);
-    var title = notification.Title; // data.title
-    var message = notification.Message;
-    var link = notification.Link;
-    var icon = "https://web.kinauna.com/images/kinaunalogo192x192_rounded.png";
-    var badge = "https://web.kinauna.com/images/kinaunalogo_badge3.png";
-    var tag = notification.Tag;
+    const notification = JSON.parse(data);
+    const title = notification.Title; // data.title
+    const message = notification.Message;
+    const link = notification.Link;
+    const icon = "https://web.kinauna.com/images/kinaunalogo192x192_rounded.png";
+    const badge = "https://web.kinauna.com/images/kinaunalogo_badge3.png";
+    const tag = notification.Tag;
     event.waitUntil(self.registration.showNotification(title, {
         body: message,
         icon: icon,
@@ -213,9 +212,9 @@ self.addEventListener('push', function (event) {
 
 self.addEventListener('notificationclick',
     function (event) {
-        var notification = event.notification;
-        var action = event.action;
-        var link = notification.data; // '/notifications';
+        const notification = event.notification;
+        const action = event.action;
+        const link = notification.data; // '/notifications';
         // var notificationId = notification.data.notificationId;
         if (action === 'close') {
             notification.close();
@@ -233,7 +232,7 @@ self.addEventListener('notificationclick',
 function displayNotification() {
     if (Notification.permission === 'granted') {
         navigator.serviceWorker.getRegistration().then(function (reg) {
-            var options = {
+            const options = {
                 body: 'KinaUna Message',
                 icon: 'https://web.kinauna.com/images/kinaunalogo192x192.png',
                 badge: "https://web.kinauna.com/images/kinaunalogo_badge3.png",

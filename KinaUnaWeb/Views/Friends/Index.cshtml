@@ -18,7 +18,7 @@
             $('.button-checkbox').each(function() {
 
                 // Settings
-                var $widget = $(this),
+                let $widget = $(this),
                     $button = $widget.find('button'),
                     $checkbox = $widget.find('input:checkbox'),
                     color = $button.data('color'),
@@ -45,7 +45,7 @@
 
                 // Actions
                 function updateDisplay() {
-                    var isChecked = $checkbox.is(':checked');
+                    const isChecked = $checkbox.is(':checked');
 
                     // Set the button's state
                     $button.data('state', (isChecked) ? "on" : "off");
@@ -84,7 +84,7 @@
     </script>
     <script type="text/javascript">
         function ShowHideFiltersFunction() {
-            var x = document.getElementById("filtersDiv");
+            const x = document.getElementById("filtersDiv");
             if (x.style.display === "none") {
                 x.style.display = "block";
             } else {
@@ -150,7 +150,7 @@ else
                 @foreach (var friendViewModel in Model)
                 {
                     string chkClass = "friendClass" + friendViewModel.Type.ToString();
-                    <a class="@chkClass leavePage" style="margin-bottom: 15px;" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@friendViewModel.FriendId" name="@chkClass">
+                    <a class="@chkClass leavePage" style="margin-bottom: 15px;" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@friendViewModel.FriendId">
                         <div class="card text-white bg-primary" style="padding: 3px; float: left; clear: right; text-align: center; height: 100%; width: 305px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
                             <div class="card-header card-header-rose card-title h4">@friendViewModel.Name</div>
                             <img class="img-thumbnail mx-auto d-block" style="max-height: 300px; max-width: 280px; background: black; margin-bottom: 10px;" src="@friendViewModel.PictureLink" />
@@ -199,12 +199,12 @@ else
     //<![CDATA[
 
     $("input:checkbox:not(:checked)").each(function() {
-        var anchor = document.getElementsByClassName($(this).attr("name"));
+        const anchor = document.getElementsByClassName($(this).attr("name"));
         $(anchor).hide();
     });
 
     $("input:checkbox").change(function() {
-        var anchor = document.getElementsByClassName($(this).attr("name"));
+        const anchor = document.getElementsByClassName($(this).attr("name"));
         $(anchor).toggle();
     });
 //]]>

@@ -17,18 +17,46 @@ namespace KinaUnaProgenyApi.Controllers
     public class PublicAccessController : ControllerBase
     {
         private readonly ImageStore _imageStore;
-        private readonly IDataService _dataService;
+        private readonly IProgenyService _progenyService;
+        private readonly IUserInfoService _userInfoService;
+        private readonly IUserAccessService _userAccessService;
+        private readonly ICalendarService _calendarService;
+        private readonly IContactService _contactService;
+        private readonly IFriendService _friendService;
+        private readonly ILocationService _locationService;
+        private readonly ITimelineService _timelineService;
+        private readonly IMeasurementService _measurementService;
+        private readonly INoteService _noteService;
+        private readonly ISkillService _skillService;
+        private readonly ISleepService _sleepService;
+        private readonly IVaccinationService _vaccinationService;
+        private readonly IVocabularyService _vocabularyService;
 
-        public PublicAccessController(ImageStore imageStore, IDataService dataService)
+        public PublicAccessController(ImageStore imageStore, IProgenyService progenyService, IUserInfoService userInfoService, IUserAccessService userAccessService, ICalendarService calendarService,
+            IContactService contactService, IFriendService friendService, ILocationService locationService, ITimelineService timelineService, IMeasurementService measurementService, INoteService noteService,
+            ISkillService skillService, ISleepService sleepService, IVaccinationService vaccinationService, IVocabularyService vocabularyService)
         {
             _imageStore = imageStore;
-            _dataService = dataService;
+            _progenyService = progenyService;
+            _userInfoService = userInfoService;
+            _userAccessService = userAccessService;
+            _calendarService = calendarService;
+            _contactService = contactService;
+            _friendService = friendService;
+            _locationService = locationService;
+            _timelineService = timelineService;
+            _measurementService = measurementService;
+            _noteService = noteService;
+            _skillService = skillService;
+            _sleepService = sleepService;
+            _vaccinationService = vaccinationService;
+            _vocabularyService = vocabularyService;
         }
         // GET api/publicaccess
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            Progeny prog = await _dataService.GetProgeny(Constants.DefaultChildId);
+            Progeny prog = await _progenyService.GetProgeny(Constants.DefaultChildId);
             List<Progeny> resultList = new List<Progeny>(); 
             resultList.Add(prog);
 
@@ -38,7 +66,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProgeny(int id)
         {
-            Progeny result = await _dataService.GetProgeny(Constants.DefaultChildId);
+            Progeny result = await _progenyService.GetProgeny(Constants.DefaultChildId);
             if (!result.PictureLink.ToLower().StartsWith("http"))
             {
                 result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Progeny);
@@ -50,14 +78,14 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}")]
         public async Task<IActionResult> Access(int id)
         {
-            List<UserAccess> accessList = await _dataService.GetProgenyUserAccessList(Constants.DefaultChildId); 
+            List<UserAccess> accessList = await _userAccessService.GetProgenyUserAccessList(Constants.DefaultChildId); 
             if (accessList.Any())
             {
                 foreach (UserAccess ua in accessList)
                 {
-                    ua.Progeny = await _dataService.GetProgeny(ua.ProgenyId);
+                    ua.Progeny = await _progenyService.GetProgeny(ua.ProgenyId);
                     ua.User = new ApplicationUser();
-                    UserInfo userinfo = await _dataService.GetUserInfoByEmail(ua.UserId);
+                    UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(ua.UserId);
                     if (userinfo != null)
                     {
                         ua.User.FirstName = userinfo.FirstName;
@@ -82,7 +110,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> ProgenyListByUser(string id)
         {
             List<Progeny> result = new List<Progeny>();
-            Progeny prog = await _dataService.GetProgeny(Constants.DefaultChildId); 
+            Progeny prog = await _progenyService.GetProgeny(Constants.DefaultChildId); 
             result.Add(prog);
             return Ok(result);
 
@@ -92,7 +120,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{progenyId}/{accessLevel}")]
         public async Task<IActionResult> EventList(int progenyId, int accessLevel)
         {
-            var model = await _dataService.GetCalendarList(Constants.DefaultChildId);
+            var model = await _calendarService.GetCalendarList(Constants.DefaultChildId);
             model = model.Where(e => e.EndTime > DateTime.UtcNow && e.AccessLevel >= 5).OrderBy(e => e.StartTime).ToList();
             model = model.Take(5).ToList();
 
@@ -103,7 +131,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}/{accessLevel}/{count}/{start}")]
         public async Task<IActionResult> ProgenyLatest(int id, int accessLevel = 5, int count = 5, int start = 0)
         {
-            List<TimeLineItem> timeLineList = await _dataService.GetTimeLineList(Constants.DefaultChildId);
+            List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(Constants.DefaultChildId);
             timeLineList = timeLineList.Where(t => t.AccessLevel >= 5 && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime).ToList();
             if (timeLineList.Any())
             {
@@ -121,7 +149,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetCalendarItemMobile(int id)
         {
-            CalendarItem result = await _dataService.GetCalendarItem(id);
+            CalendarItem result = await _calendarService.GetCalendarItem(id);
             if (result.ProgenyId == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -130,7 +158,7 @@ namespace KinaUnaProgenyApi.Controllers
             calItem.ProgenyId = Constants.DefaultChildId;
             calItem.AccessLevel = 5;
             calItem.Title = "Launch of KinaUna.com";
-            UserInfo adminInfo = await _dataService.GetUserInfoByEmail(Constants.DefaultUserEmail);
+            UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
             calItem.Author = adminInfo?.UserId ?? "Unknown Author";
             calItem.StartTime = new DateTime(2018, 2, 18, 21, 02, 0);
             calItem.EndTime = new DateTime(2018, 2, 18, 22, 02, 0);
@@ -141,7 +169,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> ProgenyCalendarMobile(int id, int accessLevel = 5)
         {
-            List<CalendarItem> calendarList = await _dataService.GetCalendarList(Constants.DefaultChildId);
+            List<CalendarItem> calendarList = await _calendarService.GetCalendarList(Constants.DefaultChildId);
             calendarList = calendarList.Where(c => c.AccessLevel >= 5).ToList();
             if (calendarList.Any())
             {
@@ -157,14 +185,14 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetContactMobile(int id)
         {
-            Contact result = await _dataService.GetContact(id);
+            Contact result = await _contactService.GetContact(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Contact();
                 result.AccessLevel = 5;
                 result.ProgenyId = Constants.DefaultChildId;
                 result.Active = true;
-                UserInfo adminInfo = await _dataService.GetUserInfoByEmail(Constants.DefaultUserEmail);
+                UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
                 result.Author = adminInfo?.UserId ?? "Unknown Author";
                 result.DisplayName = adminInfo?.UserName ?? "Unknown";
                 result.FirstName = adminInfo?.FirstName ?? "Unknown";
@@ -184,7 +212,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> ProgenyContactsMobile(int id, int accessLevel = 5)
         {
-            List<Contact> contactsList = await _dataService.GetContactsList(Constants.DefaultChildId); 
+            List<Contact> contactsList = await _contactService.GetContactsList(Constants.DefaultChildId); 
             contactsList = contactsList.Where(c => c.AccessLevel >= 5).ToList();
             if (contactsList.Any())
             {
@@ -208,7 +236,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> ProgenyFriendsMobile(int id, int accessLevel = 5)
         {
-            List<Friend> friendsList = await _dataService.GetFriendsList(Constants.DefaultChildId);
+            List<Friend> friendsList = await _friendService.GetFriendsList(Constants.DefaultChildId);
             friendsList = friendsList.Where(c => c.AccessLevel >= 5).ToList();
             if (friendsList.Any())
             {
@@ -231,7 +259,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetLocationMobile(int id)
         {
-            Location result = await _dataService.GetLocation(id);
+            Location result = await _locationService.GetLocation(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Location();
@@ -247,7 +275,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetVocabularyItemMobile(int id)
         {
-            VocabularyItem result = await _dataService.GetVocabularyItem(id);
+            VocabularyItem result = await _vocabularyService.GetVocabularyItem(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new VocabularyItem();
@@ -263,7 +291,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetSkillMobile(int id)
         {
-            Skill result = await _dataService.GetSkill(id); 
+            Skill result = await _skillService.GetSkill(id); 
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Skill();
@@ -279,13 +307,13 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetFriendMobile(int id)
         {
-            Friend result = await _dataService.GetFriend(id);
+            Friend result = await _friendService.GetFriend(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Friend();
                 result.AccessLevel = 5;
                 result.ProgenyId = Constants.DefaultChildId;
-                UserInfo adminInfo = await _dataService.GetUserInfoByEmail(Constants.DefaultUserEmail); 
+                UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail); 
                 result.Author = adminInfo?.UserId ?? "Unknown Author";
                 result.Name = adminInfo?.UserName ?? "Unknown";
                 result.FriendAddedDate = DateTime.UtcNow;
@@ -303,14 +331,14 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetMeasurementMobile(int id)
         {
-            Measurement result = await _dataService.GetMeasurement(id);
+            Measurement result = await _measurementService.GetMeasurement(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Measurement();
                 result.AccessLevel = 5;
                 result.ProgenyId = Constants.DefaultChildId;
                 result.Circumference = 0;
-                UserInfo adminInfo = await _dataService.GetUserInfoByEmail(Constants.DefaultUserEmail);
+                UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
                 result.Author = adminInfo?.UserId ?? "Unknown Author";
                 result.CreatedDate = DateTime.UtcNow;
                 result.Height = 1;
@@ -323,13 +351,13 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetSleepMobile(int id)
         {
-            Sleep result = await _dataService.GetSleep(id);
+            Sleep result = await _sleepService.GetSleep(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Sleep();
                 result.AccessLevel = 5;
                 result.ProgenyId = Constants.DefaultChildId;
-                UserInfo adminInfo = await _dataService.GetUserInfoByEmail(Constants.DefaultUserEmail);
+                UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
                 result.Author = adminInfo?.UserId ?? "Unknown Author";
                 result.CreatedDate = DateTime.UtcNow;
                 result.SleepStart = DateTime.UtcNow - TimeSpan.FromHours(1);
@@ -343,7 +371,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{progenyId}/{accessLevel}/{start}")]
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
-            var model = await _dataService.GetSleepList(Constants.DefaultChildId); 
+            var model = await _sleepService.GetSleepList(Constants.DefaultChildId); 
             model = model.Where(s => s.AccessLevel >= 5).ToList();
             model = model.OrderByDescending(s => s.SleepStart).ToList();
             model = model.Skip(start).Take(25).ToList();
@@ -358,7 +386,7 @@ namespace KinaUnaProgenyApi.Controllers
             model.SleepTotal = TimeSpan.Zero;
             model.SleepLastYear = TimeSpan.Zero;
             model.SleepLastMonth = TimeSpan.Zero;
-            List<Sleep> sList = await _dataService.GetSleepList(Constants.DefaultChildId);
+            List<Sleep> sList = await _sleepService.GetSleepList(Constants.DefaultChildId);
             List<Sleep> sleepList = new List<Sleep>();
             DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
@@ -416,7 +444,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
         {
             string userTimeZone = Constants.DefaultTimezone;
-            List<Sleep> sList = await _dataService.GetSleepList(Constants.DefaultChildId);
+            List<Sleep> sList = await _sleepService.GetSleepList(Constants.DefaultChildId);
             List<Sleep> chartList = new List<Sleep>();
             foreach (Sleep chartItem in sList)
             {
@@ -490,7 +518,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetNoteMobile(int id)
         {
-            Note result = await _dataService.GetNote(id); 
+            Note result = await _noteService.GetNote(id); 
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Note();
@@ -506,7 +534,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetVaccinationMobile(int id)
         {
-            Vaccination result = await _dataService.GetVaccination(id);
+            Vaccination result = await _vaccinationService.GetVaccination(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Vaccination();
@@ -522,7 +550,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> ProgenyYearAgo(int id, int accessLevel = 5)
         {
-            List<TimeLineItem> timeLineList = await _dataService.GetTimeLineList(Constants.DefaultChildId); 
+            List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(Constants.DefaultChildId); 
             timeLineList = timeLineList
                 .Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day).OrderBy(t => t.ProgenyTime).ToList();
             if (timeLineList.Any())
@@ -545,7 +573,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Note> allItems = await _dataService.GetNotesList(Constants.DefaultChildId);
+            List<Note> allItems = await _noteService.GetNotesList(Constants.DefaultChildId);
             allItems = allItems.Where(n => n.AccessLevel == 5).OrderBy(v => v.CreatedDate).ToList();
 
             if (sortBy == 1)
@@ -592,7 +620,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Sleep> allItems = await _dataService.GetSleepList(Constants.DefaultChildId);
+            List<Sleep> allItems = await _sleepService.GetSleepList(Constants.DefaultChildId);
             allItems = allItems.Where(s => s.AccessLevel == 5).OrderBy(s => s.SleepStart).ToList();
 
             if (sortBy == 1)
@@ -634,11 +662,11 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepDetails(int sleepId, int accessLevel, int sortOrder)
         {
             
-            Sleep currentSleep = await _dataService.GetSleep(sleepId);
+            Sleep currentSleep = await _sleepService.GetSleep(sleepId);
             if (currentSleep != null && currentSleep.ProgenyId == Constants.DefaultChildId)
             {
                 string userTimeZone = Constants.DefaultTimezone;
-                List<Sleep> sList = await _dataService.GetSleepList(currentSleep.ProgenyId);
+                List<Sleep> sList = await _sleepService.GetSleepList(currentSleep.ProgenyId);
                 List<Sleep> sleepList = new List<Sleep>();
                 foreach (Sleep s in sList)
                 {
@@ -700,7 +728,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             if (id == Constants.DefaultChildId)
             {
-                List<Location> locationsList = await _dataService.GetLocationsList(id);
+                List<Location> locationsList = await _locationService.GetLocationsList(id);
                 locationsList = locationsList.Where(l => l.AccessLevel == 5).ToList();
                 if (locationsList.Any())
                 {
@@ -729,7 +757,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Location> allItems = await _dataService.GetLocationsList(progenyId);
+            List<Location> allItems = await _locationService.GetLocationsList(progenyId);
             allItems = allItems.OrderBy(v => v.Date).ToList();
 
             if (sortBy == 1)
@@ -780,7 +808,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Measurement> allItems = await _dataService.GetMeasurementsList(progenyId);
+            List<Measurement> allItems = await _measurementService.GetMeasurementsList(progenyId);
             allItems = allItems.OrderBy(m => m.Date).ToList();
 
             if (sortBy == 1)
@@ -824,7 +852,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             if (id == Constants.DefaultChildId)
             {
-                List<Measurement> measurementsList = await _dataService.GetMeasurementsList(id);
+                List<Measurement> measurementsList = await _measurementService.GetMeasurementsList(id);
                 measurementsList = measurementsList.Where(m => m.AccessLevel >= accessLevel).ToList();
                 if (measurementsList.Any())
                 {
@@ -849,7 +877,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Skill> allItems = await _dataService.GetSkillsList(progenyId);
+            List<Skill> allItems = await _skillService.GetSkillsList(progenyId);
             allItems = allItems.OrderBy(s => s.SkillFirstObservation).ToList();
 
             if (sortBy == 1)
@@ -900,7 +928,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<VocabularyItem> allItems = await _dataService.GetVocabularyList(progenyId);
+            List<VocabularyItem> allItems = await _vocabularyService.GetVocabularyList(progenyId);
             allItems = allItems.OrderBy(v => v.Date).ToList();
 
             if (sortBy == 1)
@@ -944,7 +972,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             if (id == Constants.DefaultChildId)
             {
-                List<VocabularyItem> wordList = await _dataService.GetVocabularyList(id);
+                List<VocabularyItem> wordList = await _vocabularyService.GetVocabularyList(id);
                 wordList = wordList.Where(w => w.AccessLevel >= accessLevel).ToList();
                 if (wordList.Any())
                 {
@@ -962,7 +990,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             if (id == Constants.DefaultChildId)
             {
-                List<Vaccination> vaccinationsList = await _dataService.GetVaccinationsList(id);
+                List<Vaccination> vaccinationsList = await _vaccinationService.GetVaccinationsList(id);
                 vaccinationsList = vaccinationsList.Where(v => v.AccessLevel >= accessLevel).ToList();
                 if (vaccinationsList.Any())
                 {

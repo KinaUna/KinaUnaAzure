@@ -1,5 +1,5 @@
 ﻿// Original Source: https://github.com/tpeczek/Demo.AspNetCore.PushNotifications/blob/master/Demo.AspNetCore.PushNotifications/wwwroot/scripts/push-notifications.js
-var PushNotifications = (function () {
+let PushNotifications = (function () {
     let applicationServerPublicKey;
     let pushServiceWorkerRegistration;
     let subscribeButton, unsubscribeButton;
@@ -108,6 +108,7 @@ var PushNotifications = (function () {
             });
     };
 
+// ReSharper disable once UnusedLocals
     function sendPushNotification() {
         let payload = { topic: topicInput.value, notification: notificationInput.value, urgency: urgencySelect.value };
 

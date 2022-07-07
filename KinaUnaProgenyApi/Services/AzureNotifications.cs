@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using Microsoft.Azure.NotificationHubs;
 using Microsoft.Extensions.Configuration;
@@ -12,15 +11,17 @@ namespace KinaUnaProgenyApi.Services
     public class AzureNotifications
     {
         private readonly IDataService _dataService;
-        private readonly ProgenyDbContext _context;
+        private readonly IUserInfoService _userInfoService;
+        private readonly IUserAccessService _userAccessService;
         public NotificationHubClient Hub { get; set; }
 
-        public AzureNotifications(ProgenyDbContext context, IConfiguration configuration, IDataService dataService)
+        public AzureNotifications(IConfiguration configuration, IDataService dataService, IUserInfoService userInfoService, IUserAccessService userAccessService)
         {
             Hub = NotificationHubClient.CreateClientFromConnectionString(configuration["NotificationHubConnection"],
                 "kinaunanotifications");
             _dataService = dataService;
-            _context = context;
+            _userInfoService = userInfoService;
+            _userAccessService = userAccessService;
         }
 
         public async Task ProgenyUpdateNotification(string title, string message, TimeLineItem timeLineItem, string iconLink = "")
@@ -32,12 +33,12 @@ namespace KinaUnaProgenyApi.Services
 
             var alert = "{\"aps\":{\"alert\":\"" + message + "\"},\"message\":\"" + message +"\",\"notData\":\"" + timeLineItem.TimeLineId + "\", \"content-available\":1}";
 
-            List<UserAccess> userList = await _dataService.GetProgenyUserAccessList(timeLineItem.ProgenyId);
+            List<UserAccess> userList = await _userAccessService.GetProgenyUserAccessList(timeLineItem.ProgenyId);
             foreach (UserAccess userAcces in userList)
             {
                 if (userAcces.AccessLevel <= timeLineItem.AccessLevel)
                 {
-                    UserInfo userInfo = await _dataService.GetUserInfoByEmail(userAcces.UserId);
+                    UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userAcces.UserId);
                     if (userInfo != null)
                     {
                         MobileNotification notification = new MobileNotification();
@@ -51,8 +52,8 @@ namespace KinaUnaProgenyApi.Services
                         notification.Title = title;
                         notification.Time = DateTime.UtcNow;
                         notification.Read = false;
-                        _context.MobileNotificationsDb.Add(notification);
-                        await _context.SaveChangesAsync();
+                        await _dataService.AddMobileNotification(notification);
+                        
 
                         string userTag = "userEmail:" + userAcces.UserId.ToUpper();
                         await Hub.SendFcmNativeNotificationAsync(payload.ToString(Newtonsoft.Json.Formatting.None), userTag);

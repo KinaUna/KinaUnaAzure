@@ -45,6 +45,9 @@ namespace KinaUnaMediaApi
             //services.AddDistributedRedisCache(option => option.Configuration = Configuration["RedisConnection"]);
             services.AddDistributedMemoryCache();
             services.AddScoped<IDataService, DataService>();
+            services.AddScoped<IPicturesService, PicturesService>();
+            services.AddScoped<IVideosService, VideosService>();
+            services.AddScoped<ICommentsService, CommentsService>();
 
             services.AddControllers().AddNewtonsoftJson();
             services.AddSingleton<ImageStore>();

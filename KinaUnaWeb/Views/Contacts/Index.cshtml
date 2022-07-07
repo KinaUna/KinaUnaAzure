@@ -130,7 +130,7 @@
                     @foreach (var contactViewModel in Model)
                     {
                         string chkClass = "contactClass" + contactViewModel.Active.ToString();
-                        <a class="@chkClass leavePage" style="margin-bottom: 15px;" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactId" name="@chkClass">
+                        <a class="@chkClass leavePage" style="margin-bottom: 15px;" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactId">
                             <div class="card text-white bg-info" style="padding: 3px; float: left; clear: right; text-align: center; height: 100%; width: 300px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
                                 <div class="card-header card-header-warning card-title">@contactViewModel.DisplayName</div>
                                 <div class="card-body">

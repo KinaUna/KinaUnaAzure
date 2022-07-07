@@ -16,10 +16,21 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class AutoSuggestsController : ControllerBase
     {
-        private readonly IDataService _dataService;
-        public AutoSuggestsController(IDataService dataService)
+        private readonly IUserAccessService _userAccessService;
+        private readonly ICalendarService _calendarService;
+        private readonly IContactService _contactService;
+        private readonly IFriendService _friendService;
+        private readonly INoteService _noteService;
+        private readonly ISkillService _skillService;
+
+        public AutoSuggestsController(IUserAccessService userAccessService, ICalendarService calendarService, IContactService contactService, IFriendService friendService, INoteService noteService, ISkillService skillService)
         {
-            _dataService = dataService;
+            _userAccessService = userAccessService;
+            _calendarService = calendarService;
+            _contactService = contactService;
+            _friendService = friendService;
+            _noteService = noteService;
+            _skillService = skillService;
         }
 
         [Route("[action]/{id}/{accessLevel}")]
@@ -28,7 +39,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
@@ -36,7 +47,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<string> autoSuggestList = new List<string>();
-            List<Note> allNotes = await _dataService.GetNotesList(id);
+            List<Note> allNotes = await _noteService.GetNotesList(id);
             allNotes = allNotes.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Note noteItem in allNotes)
             {
@@ -49,7 +60,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Skill> allSkills = await _dataService.GetSkillsList(id);
+            List<Skill> allSkills = await _skillService.GetSkillsList(id);
             allSkills = allSkills.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Skill skillItem in allSkills)
             {
@@ -72,7 +83,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
@@ -81,7 +92,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<string> autoSuggestList = new List<string>();
 
-            List<Friend> allFriends = await _dataService.GetFriendsList(id);
+            List<Friend> allFriends = await _friendService.GetFriendsList(id);
             allFriends = allFriends.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Friend friendItem in allFriends)
             {
@@ -94,7 +105,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<CalendarItem> allCalendarItems = await _dataService.GetCalendarList(id);
+            List<CalendarItem> allCalendarItems = await _calendarService.GetCalendarList(id);
             allCalendarItems = allCalendarItems.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (CalendarItem calendarItem in allCalendarItems)
             {
@@ -107,7 +118,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Contact> allContacts = await _dataService.GetContactsList(id);
+            List<Contact> allContacts = await _contactService.GetContactsList(id);
             allContacts = allContacts.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Contact contactItem in allContacts)
             {

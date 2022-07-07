@@ -17,10 +17,14 @@ namespace KinaUnaMediaApi.Controllers
     public class AutoSuggestsController : ControllerBase
     {
         private readonly IDataService _dataService;
-        
-        public AutoSuggestsController(IDataService dataService)
+        private readonly IPicturesService _picturesService;
+        private readonly IVideosService _videosService;
+
+        public AutoSuggestsController(IDataService dataService, IPicturesService picturesService, IVideosService videosService)
         {
             _dataService = dataService;
+            _picturesService = picturesService;
+            _videosService = videosService;
         }
 
         [Route("[action]/{id}/{accessLevel}")]
@@ -37,7 +41,7 @@ namespace KinaUnaMediaApi.Controllers
             }
 
 
-            List<Picture> allItems = await _dataService.GetPicturesList(id);
+            List<Picture> allItems = await _picturesService.GetPicturesList(id);
             allItems = allItems.Where(p => p.AccessLevel >= accessLevel).ToList();
             List<string> autoSuggestList = new List<string>();
             foreach (Picture picture in allItems)
@@ -51,7 +55,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
 
-            List<Video> allVideos = await _dataService.GetVideosList(id);
+            List<Video> allVideos = await _videosService.GetVideosList(id);
             allVideos = allVideos.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Video video in allVideos)
             {
@@ -109,7 +113,7 @@ namespace KinaUnaMediaApi.Controllers
             }
 
 
-            List<Picture> allItems = await _dataService.GetPicturesList(id);
+            List<Picture> allItems = await _picturesService.GetPicturesList(id);
             allItems = allItems.Where(p => p.AccessLevel >= accessLevel).ToList();
             List<string> autoSuggestList = new List<string>();
             foreach (Picture picture in allItems)
@@ -127,7 +131,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
 
-            List<Video> allVideos = await _dataService.GetVideosList(id);
+            List<Video> allVideos = await _videosService.GetVideosList(id);
             allVideos = allVideos.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Video video in allVideos)
             {

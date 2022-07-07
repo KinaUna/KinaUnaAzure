@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using Microsoft.Azure.NotificationHubs;
 using Microsoft.Extensions.Configuration;
@@ -12,15 +11,15 @@ namespace KinaUnaMediaApi.Services
     public class AzureNotifications
     {
         private readonly IDataService _dataService;
-        private readonly ProgenyDbContext _context;
+        
         public NotificationHubClient Hub { get; set; }
 
-        public AzureNotifications(ProgenyDbContext context, IConfiguration configuration, IDataService dataService)
+        public AzureNotifications(IConfiguration configuration, IDataService dataService)
         {
             Hub = NotificationHubClient.CreateClientFromConnectionString(configuration["NotificationHubConnection"],
                 "kinaunanotifications");
             _dataService = dataService;
-            _context = context;
+            
         }
 
         public async Task ProgenyUpdateNotification(string title, string message, TimeLineItem timeLineItem, string iconLink = "")
@@ -49,8 +48,7 @@ namespace KinaUnaMediaApi.Services
                         notification.Title = title;
                         notification.Time = DateTime.UtcNow;
                         notification.Read = false;
-                        _context.MobileNotificationsDb.Add(notification);
-                        await _context.SaveChangesAsync();
+                        await _dataService.AddMobileNotification(notification);
 
                         string userTag = "userEmail:" + userAcces.UserId.ToUpper();
                         await Hub.SendFcmNativeNotificationAsync(payload.ToString(Newtonsoft.Json.Formatting.None), userTag);

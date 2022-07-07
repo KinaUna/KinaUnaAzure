@@ -52,6 +52,20 @@ namespace KinaUnaProgenyApi
 
             services.AddDistributedMemoryCache();
             services.AddScoped<IDataService, DataService>();
+            services.AddScoped<IProgenyService, ProgenyService>();
+            services.AddScoped<IUserInfoService, UserInfoService>();
+            services.AddScoped<IUserAccessService, UserAccessService>();
+            services.AddScoped<ICalendarService, CalendarService>();
+            services.AddScoped<IContactService, ContactService>();
+            services.AddScoped<IFriendService, FriendService>();
+            services.AddScoped<ILocationService, LocationService>();
+            services.AddScoped<ITimelineService, TimelineService>();
+            services.AddScoped<IMeasurementService, MeasurementService>();
+            services.AddScoped<INoteService, NoteService>();
+            services.AddScoped<ISkillService, SkillService>();
+            services.AddScoped<ISleepService, SleepService>();
+            services.AddScoped<IVaccinationService, VaccinationService>();
+            services.AddScoped<IVocabularyService, VocabularyService>();
 
             services.AddControllers().AddNewtonsoftJson();
             

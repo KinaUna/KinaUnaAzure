@@ -459,7 +459,7 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value;
             UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             Comment cmnt = new Comment();
 
             cmnt.CommentThreadNumber = model.CommentThreadNumber;
@@ -469,11 +469,12 @@ namespace KinaUnaWeb.Controllers
             cmnt.Created = DateTime.UtcNow;
             cmnt.ItemType = (int) KinaUnaTypes.TimeLineType.Photo;
             cmnt.ItemId = model.ItemId.ToString();
+            cmnt.Progeny = progeny;
             bool commentAdded = await _mediaHttpClient.AddPictureComment(cmnt);
 
             if (commentAdded)
             {
-                Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+                
                 Picture pic = await _mediaHttpClient.GetPicture(model.ItemId, userinfo.Timezone);
                 if (progeny != null)
                 {
@@ -909,7 +910,7 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value;
             UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             Comment cmnt = new Comment();
 
             cmnt.CommentThreadNumber = model.CommentThreadNumber;
@@ -919,12 +920,11 @@ namespace KinaUnaWeb.Controllers
             cmnt.Created = DateTime.UtcNow;
             cmnt.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
             cmnt.ItemId = model.ItemId.ToString();
-
+            cmnt.Progeny = progeny;
             bool commentAdded = await _mediaHttpClient.AddVideoComment(cmnt);
 
             if (commentAdded)
             {
-                Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
                 if (progeny != null)
                 {
                     string imgLink = Constants.WebAppUrl + "/Videos/Video/" + model.ItemId + "?childId=" + model.ProgenyId;

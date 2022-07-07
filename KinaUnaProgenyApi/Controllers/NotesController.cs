@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -20,29 +18,36 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class NotesController : ControllerBase
     {
-        private readonly ProgenyDbContext _context;
-        private readonly IDataService _dataService;
+        private readonly IUserInfoService _userInfoService;
+        private readonly IUserAccessService _userAccessService;
+        private readonly ITimelineService _timelineService;
+        private readonly INoteService _noteService;
+        private readonly IProgenyService _progenyService;
         private readonly AzureNotifications _azureNotifications;
         private readonly ImageStore _imageStore;
 
-        public NotesController(ProgenyDbContext context, IDataService dataService, AzureNotifications azureNotifications, ImageStore imageStore)
+        public NotesController(AzureNotifications azureNotifications, ImageStore imageStore, IUserInfoService userInfoService, IUserAccessService userAccessService, ITimelineService timelineService,
+            INoteService noteService, IProgenyService progenyService)
         {
-            _context = context;
-            _dataService = dataService;
             _azureNotifications = azureNotifications;
             _imageStore = imageStore;
+            _userInfoService = userInfoService;
+            _userAccessService = userAccessService;
+            _timelineService = timelineService;
+            _noteService = noteService;
+            _progenyService = progenyService;
         }
-        
+
         // GET api/notes/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); 
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail); 
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Note> notesList = await _dataService.GetNotesList(id);
+                List<Note> notesList = await _noteService.GetNotesList(id);
                 notesList = notesList.Where(n => n.AccessLevel >= accessLevel).ToList();
                 if (notesList.Any())
                 {
@@ -62,10 +67,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetNoteItem(int id)
         {
-            Note result = await _dataService.GetNote(id);
+            Note result = await _noteService.GetNote(id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 result.Content = _imageStore.UpdateBlobLinks(result.Content);
@@ -80,7 +85,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Post([FromBody] Note value)
         {
             // Check if child exists.
-            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (prog != null)
             {
@@ -104,18 +109,16 @@ namespace KinaUnaProgenyApi.Controllers
             noteItem.ProgenyId = value.ProgenyId;
             noteItem.Title = value.Title;
             noteItem.CreatedDate = value.CreatedDate;
-            
-            _context.NotesDb.Add(noteItem);
-            await _context.SaveChangesAsync();
-            await _dataService.SetNote(noteItem.NoteId);
 
+            noteItem = await _noteService.AddNote(noteItem);
+            
             // Add to Timeline.
             TimeLineItem tItem = new TimeLineItem();
             tItem.ProgenyId = noteItem.ProgenyId;
             tItem.AccessLevel = noteItem.AccessLevel;
             tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Note;
             tItem.ItemId = noteItem.NoteId.ToString();
-            UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
+            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
             if (userinfo != null)
             {
                 tItem.CreatedBy = userinfo.UserId;
@@ -123,9 +126,7 @@ namespace KinaUnaProgenyApi.Controllers
             tItem.CreatedTime = noteItem.CreatedDate;
             tItem.ProgenyTime = noteItem.CreatedDate;
 
-            await _context.TimeLineDb.AddAsync(tItem);
-            await _context.SaveChangesAsync();
-            await _dataService.SetTimeLineItem(tItem.TimeLineId);
+            _ = await _timelineService.AddTimeLineItem(tItem);
 
             string title = "Note added for " + prog.NickName;
             if (userinfo != null)
@@ -144,7 +145,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Put(int id, [FromBody] Note value)
         {
             // Check if child exists.
-            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (prog != null)
             {
@@ -159,7 +160,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            Note noteItem = await _context.NotesDb.SingleOrDefaultAsync(n => n.NoteId == id);
+            Note noteItem = await _noteService.GetNote(id);
             if (noteItem == null)
             {
                 return NotFound();
@@ -173,23 +174,18 @@ namespace KinaUnaProgenyApi.Controllers
             noteItem.Title = value.Title;
             noteItem.CreatedDate = value.CreatedDate;
 
-            _context.NotesDb.Update(noteItem);
-            await _context.SaveChangesAsync();
-            await _dataService.SetNote(noteItem.NoteId);
-
+            noteItem = await _noteService.UpdateNote(noteItem);
+            
             // Update Timeline.
-            TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                t.ItemId == noteItem.NoteId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Note);
+            TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(noteItem.NoteId.ToString(), (int)KinaUnaTypes.TimeLineType.Note);
             if (tItem != null)
             {
                 tItem.ProgenyTime = noteItem.CreatedDate;
                 tItem.AccessLevel = noteItem.AccessLevel;
-                _context.TimeLineDb.Update(tItem);
-                await _context.SaveChangesAsync();
-                await _dataService.SetTimeLineItem(tItem.TimeLineId);
+                _ = await _timelineService.UpdateTimeLineItem(tItem);
             }
 
-            UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
+            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
             string title = "Note edited for " + prog.NickName;
             string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a note for " + prog.NickName;
             await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
@@ -200,11 +196,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Note noteItem = await _context.NotesDb.SingleOrDefaultAsync(n => n.NoteId == id);
+            Note noteItem = await _noteService.GetNote(id);
             if (noteItem != null)
             {
                 // Check if child exists.
-                Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == noteItem.ProgenyId);
+                Progeny prog = await _progenyService.GetProgeny(noteItem.ProgenyId);
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 if (prog != null)
                 {
@@ -219,20 +215,15 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                    t.ItemId == noteItem.NoteId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Note);
+                TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(noteItem.NoteId.ToString(), (int)KinaUnaTypes.TimeLineType.Note);
                 if (tItem != null)
                 {
-                    _context.TimeLineDb.Remove(tItem);
-                    await _context.SaveChangesAsync();
-                    await _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
+                    _ = await _timelineService.DeleteTimeLineItem(tItem);
                 }
 
-                _context.NotesDb.Remove(noteItem);
-                await _context.SaveChangesAsync();
-                await _dataService.RemoveNote(noteItem.NoteId, noteItem.ProgenyId);
+                _ = await _noteService.DeleteNote(noteItem);
 
-                UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
+                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
                 string title = "Note deleted for " + prog.NickName;
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a note for " + prog.NickName + ". Note: " + noteItem.Title;
                 if (tItem != null)
@@ -250,12 +241,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetNoteMobile(int id)
         {
-            Note result = await _dataService.GetNote(id);
+            Note result = await _noteService.GetNote(id);
 
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {
@@ -275,7 +266,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {
@@ -286,7 +277,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Note> allItems = await _dataService.GetNotesList(progenyId);
+            List<Note> allItems = await _noteService.GetNotesList(progenyId);
             allItems = allItems.OrderBy(v => v.CreatedDate).ToList();
 
             if (sortBy == 1)

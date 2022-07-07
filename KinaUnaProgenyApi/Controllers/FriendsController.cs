@@ -1,7 +1,6 @@
 ﻿using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +9,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 
 namespace KinaUnaProgenyApi.Controllers
@@ -21,29 +19,36 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class FriendsController : ControllerBase
     {
-        private readonly ProgenyDbContext _context;
         private readonly ImageStore _imageStore;
-        private readonly IDataService _dataService;
+        private readonly IUserInfoService _userInfoService;
+        private readonly IUserAccessService _userAccessService;
         private readonly AzureNotifications _azureNotifications;
+        private readonly IFriendService _friendService;
+        private readonly ITimelineService _timelineService;
+        private readonly IProgenyService _progenyService;
 
-        public FriendsController(ProgenyDbContext context, ImageStore imageStore, IDataService dataService, AzureNotifications azureNotifications)
+        public FriendsController(ImageStore imageStore, AzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService,
+            IFriendService friendService, ITimelineService timelineService, IProgenyService progenyService)
         {
-            _context = context;
             _imageStore = imageStore;
-            _dataService = dataService;
             _azureNotifications = azureNotifications;
+            _userInfoService = userInfoService;
+            _userAccessService = userAccessService;
+            _friendService = friendService;
+            _timelineService = timelineService;
+            _progenyService = progenyService;
         }
-        
+
         // GET api/friends/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Friend> friendsList = await _dataService.GetFriendsList(id);
+                List<Friend> friendsList = await _friendService.GetFriendsList(id);
                 friendsList = friendsList.Where(f => f.AccessLevel >= accessLevel).ToList();
                 if (friendsList.Any())
                 {
@@ -59,14 +64,14 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetFriendItem(int id)
         {
-            Friend result = await _dataService.GetFriend(id);
+            Friend result = await _friendService.GetFriend(id);
             if (result == null)
             {
                 return NotFound();
             }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -80,7 +85,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Post([FromBody] Friend value)
         {
             // Check if child exists.
-            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (prog != null)
             {
@@ -109,10 +114,9 @@ namespace KinaUnaProgenyApi.Controllers
             friendItem.Notes = value.Notes;
             friendItem.PictureLink = value.PictureLink;
             friendItem.Tags = value.Tags;
+
+            friendItem = await _friendService.AddFriend(friendItem);
             
-            _context.FriendsDb.Add(friendItem);
-            await _context.SaveChangesAsync();
-            await _dataService.SetFriend(friendItem.FriendId);
 
             // Add item to Timeline.
             TimeLineItem tItem = new TimeLineItem();
@@ -120,7 +124,7 @@ namespace KinaUnaProgenyApi.Controllers
             tItem.AccessLevel = friendItem.AccessLevel;
             tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Friend;
             tItem.ItemId = friendItem.FriendId.ToString();
-            UserInfo userinfo = _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
+            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
             tItem.CreatedBy = userinfo?.UserId ?? "User Not Found";
             tItem.CreatedTime = DateTime.UtcNow;
             if (friendItem.FriendSince != null)
@@ -132,9 +136,7 @@ namespace KinaUnaProgenyApi.Controllers
                 tItem.ProgenyTime = DateTime.UtcNow;
             }
 
-            await _context.TimeLineDb.AddAsync(tItem);
-            await _context.SaveChangesAsync();
-            await _dataService.SetTimeLineItem(tItem.TimeLineId);
+            await _timelineService.AddTimeLineItem(tItem);
 
             string title = "Friend added for " + prog.NickName;
             if (userinfo != null)
@@ -151,7 +153,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Put(int id, [FromBody] Friend value)
         {
             // Check if child exists.
-            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (prog != null)
             {
@@ -167,7 +169,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            Friend friendItem = await _context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == id);
+            Friend friendItem = await _friendService.GetFriend(id);
             if (friendItem == null)
             {
                 return NotFound();
@@ -189,23 +191,18 @@ namespace KinaUnaProgenyApi.Controllers
             }
             friendItem.Tags = value.Tags;
 
-            _context.FriendsDb.Update(friendItem);
-            await _context.SaveChangesAsync();
-            await _dataService.SetFriend(friendItem.FriendId);
-
+            friendItem = await _friendService.UpdateFriend(friendItem);
+            
             // Update timeline
-            TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                t.ItemId == friendItem.FriendId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Friend);
-            if (tItem != null)
+            TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(friendItem.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend);
+            if (tItem != null && friendItem.FriendSince.HasValue)
             {
                 tItem.ProgenyTime = friendItem.FriendSince.Value;
                 tItem.AccessLevel = friendItem.AccessLevel;
-                _context.TimeLineDb.Update(tItem);
-                await _context.SaveChangesAsync();
-                await _dataService.SetTimeLineItem(tItem.TimeLineId);
+                _ = await _timelineService.UpdateTimeLineItem(tItem);
             }
 
-            UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
+            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
             string title = "Friend edited for " + prog.NickName;
             string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a friend for " + prog.NickName;
             await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
@@ -217,12 +214,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Friend friendItem = await _context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == id);
+            Friend friendItem = await _friendService.GetFriend(id);
             if (friendItem != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 // Check if child exists.
-                Progeny prog = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == friendItem.ProgenyId);
+                Progeny prog = await _progenyService.GetProgeny(friendItem.ProgenyId);
                 if (prog != null)
                 {
                     // Check if user is allowed to delete contacts for this child.
@@ -237,26 +234,22 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 // Remove item from timeline.
-                TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                    t.ItemId == friendItem.FriendId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Friend);
+                TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(friendItem.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend);
                 if (tItem != null)
                 {
-                    _context.TimeLineDb.Remove(tItem);
-                    await _context.SaveChangesAsync();
-                    await _dataService.RemoveTimeLineItem(tItem.TimeLineId, tItem.ItemType, tItem.ProgenyId);
+                    _ = await _timelineService.DeleteTimeLineItem(tItem);
                 }
 
                 // Remove picture
                 if (!friendItem.PictureLink.ToLower().StartsWith("http"))
                 {
-                    await _imageStore.DeleteImage(friendItem.PictureLink, BlobContainers.Friends);
+                    _ = await _imageStore.DeleteImage(friendItem.PictureLink, BlobContainers.Friends);
                 }
 
-                _context.FriendsDb.Remove(friendItem);
-                await _context.SaveChangesAsync();
-                await _dataService.RemoveFriend(friendItem.FriendId, friendItem.ProgenyId);
+                _ = await _friendService.DeleteFriend(friendItem);
+                
 
-                UserInfo userinfo = await _dataService.GetUserInfoByEmail(userEmail);
+                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
                 string title = "Friend deleted for " + prog.NickName;
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a friend for " + prog.NickName + ". Friend: " + friendItem.Name;
 
@@ -277,12 +270,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetFriendMobile(int id)
         {
-            Friend result = await _dataService.GetFriend(id); 
+            Friend result = await _friendService.GetFriend(id); 
 
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); 
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); 
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {
@@ -302,10 +295,10 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); 
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail); 
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Friend> friendsList = await _dataService.GetFriendsList(id);
+                List<Friend> friendsList = await _friendService.GetFriendsList(id);
                 friendsList = friendsList.Where(f => f.AccessLevel >= accessLevel).ToList();
                 if (friendsList.Any())
                 {
@@ -328,7 +321,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{friendId}")]
         public async Task<IActionResult> DownloadPicture(int friendId)
         {
-            Friend friend = await _context.FriendsDb.SingleOrDefaultAsync(c => c.FriendId == friendId);
+            Friend friend = await _friendService.GetFriend(friendId);
 
             if (friend == null)
             {
@@ -336,8 +329,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = _context.UserAccessDb.AsNoTracking().SingleOrDefault(u =>
-                u.ProgenyId == friend.ProgenyId && u.UserId.ToUpper() == userEmail.ToUpper());
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(friend.ProgenyId, userEmail);
 
 
             if (userAccess != null && userAccess.AccessLevel > 0 && friend.PictureLink.ToLower().StartsWith("http"))
@@ -347,8 +339,8 @@ namespace KinaUnaProgenyApi.Controllers
                     friend.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Friends);
                 }
 
-                _context.FriendsDb.Update(friend);
-                await _context.SaveChangesAsync();
+                friend = await _friendService.UpdateFriend(friend);
+
                 return Ok(friend);
             }
 

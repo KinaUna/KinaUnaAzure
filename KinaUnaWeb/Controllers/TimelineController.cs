@@ -232,7 +232,7 @@ namespace KinaUnaWeb.Controllers
                 if (idParse)
                 {
                     PictureViewModel picture = await _mediaHttpClient.GetPictureViewModel(itemId, 0, 1, userinfo.Timezone);
-                    if (picture != null)
+                    if (picture != null && picture.PictureId > 0)
                     {
                         if (!picture.PictureLink.StartsWith("https://"))
                         {
@@ -249,7 +249,7 @@ namespace KinaUnaWeb.Controllers
                 if (idParse)
                 {
                     VideoViewModel video = await _mediaHttpClient.GetVideoViewModel(itemId, 0, 1, userinfo.Timezone);
-                    if (video != null)
+                    if (video != null && video.VideoId > 0)
                     {
                         video.CommentsCount = video.CommentsList.Count;
                         return PartialView("TimeLineVideoPartial", video);
@@ -262,7 +262,7 @@ namespace KinaUnaWeb.Controllers
                 if (idParse)
                 {
                     CalendarItem evt = await _calendarsHttpClient.GetCalendarItem(itemId);
-                    if (evt != null && evt.StartTime.HasValue && evt.EndTime.HasValue)
+                    if (evt != null && evt.EventId > 0 && evt.StartTime.HasValue && evt.EndTime.HasValue)
                     {
                         evt.StartTime = TimeZoneInfo.ConvertTimeFromUtc(evt.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
                         evt.EndTime = TimeZoneInfo.ConvertTimeFromUtc(evt.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
@@ -276,7 +276,7 @@ namespace KinaUnaWeb.Controllers
                 if (idParse)
                 {
                     VocabularyItem voc = await _wordsHttpClient.GetWord(itemId);
-                    if (voc != null)
+                    if (voc != null && voc.WordId > 0)
                     {
                         if (voc.Date != null)
                         {
@@ -293,7 +293,7 @@ namespace KinaUnaWeb.Controllers
                 if (idParse)
                 {
                     Skill skl = await _skillsHttpClient.GetSkill(itemId);
-                    if (skl != null)
+                    if (skl != null && skl.SkillId > 0)
                     {
                         return PartialView("TimeLineSkillPartial", skl);
                     }
@@ -305,7 +305,7 @@ namespace KinaUnaWeb.Controllers
                 if (idParse)
                 {
                     Friend frn = await _friendsHttpClient.GetFriend(itemId);
-                    if (frn != null)
+                    if (frn != null && frn.FriendId > 0)
                     {
                         if (!frn.PictureLink.StartsWith("https://"))
                         {
@@ -321,7 +321,7 @@ namespace KinaUnaWeb.Controllers
                 if (idParse)
                 {
                     Measurement mes = await _measurementsHttpClient.GetMeasurement(itemId);
-                    if (mes != null)
+                    if (mes != null && mes.MeasurementId > 0)
                     {
                         return PartialView("TimeLineMeasurementPartial", mes);
                     }
@@ -333,7 +333,7 @@ namespace KinaUnaWeb.Controllers
                 if (idParse)
                 {
                     Sleep slp = await _sleepHttpClient.GetSleepItem(itemId);
-                    if (slp != null)
+                    if (slp != null && slp.SleepId > 0)
                     {
                         slp.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
                         slp.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
@@ -352,7 +352,7 @@ namespace KinaUnaWeb.Controllers
                 if (idParse)
                 {
                     Note nte = await _notesHttpClient.GetNote(itemId);
-                    if (nte != null)
+                    if (nte != null && nte.NoteId > 0)
                     {
                         nte.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(nte.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
                         return PartialView("TimeLineNotePartial", nte);
@@ -365,7 +365,7 @@ namespace KinaUnaWeb.Controllers
                 if (idParse)
                 {
                     Contact cnt = await _contactsHttpClient.GetContact(itemId);
-                    if (cnt != null)
+                    if (cnt != null && cnt.ContactId > 0)
                     {
                         if (!cnt.PictureLink.StartsWith("https://"))
                         {
@@ -385,7 +385,7 @@ namespace KinaUnaWeb.Controllers
                 if (idParse)
                 {
                     Vaccination vac = await _vaccinationsHttpClient.GetVaccination(itemId);
-                    if (vac != null)
+                    if (vac != null && vac.VaccinationId > 0)
                     {
                         return PartialView("TimeLineVaccinationPartial", vac);
                     }
@@ -397,7 +397,7 @@ namespace KinaUnaWeb.Controllers
                 if (idParse)
                 {
                     Location loc = await _locationsHttpClient.GetLocation(itemId);
-                    if (loc != null)
+                    if (loc != null && loc.LocationId > 0)
                     {
                         return PartialView("TimeLineLocationPartial", loc);
                     }

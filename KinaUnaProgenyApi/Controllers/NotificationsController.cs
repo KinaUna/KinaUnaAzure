@@ -4,13 +4,11 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using Microsoft.AspNetCore.Mvc;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -21,13 +19,13 @@ namespace KinaUnaProgenyApi.Controllers
     public class NotificationsController : ControllerBase
     {
         private readonly AzureNotifications _azureNotifications;
-        private readonly ProgenyDbContext _context;
+        private readonly IDataService _dataService;
         private readonly ImageStore _imageStore;
 
-        public NotificationsController(AzureNotifications azureNotifications, ProgenyDbContext context, ImageStore imageStore)
+        public NotificationsController(AzureNotifications azureNotifications, ImageStore imageStore, IDataService dataService)
         {
             _azureNotifications = azureNotifications;
-            _context = context;
+            _dataService = dataService;
             _imageStore = imageStore;
         }
 
@@ -89,8 +87,8 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            List<MobileNotification> notifications = await _context.MobileNotificationsDb
-                .Where(n => n.UserId == userId && n.Language.ToUpper() == language.ToUpper()).ToListAsync();
+            List<MobileNotification> notifications = await _dataService.GetUsersMobileNotifications(userId, language);
+            
             if (notifications.Any())
             {
                 if (start > notifications.Count)
@@ -125,8 +123,9 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            List<MobileNotification> notifications = await _context.MobileNotificationsDb
-                .Where(n => n.UserId == userId && n.Read == false && n.Language.ToUpper() == language.ToUpper()).ToListAsync();
+            List<MobileNotification> notifications = await _dataService.GetUsersMobileNotifications(userId, language);
+            notifications = notifications.Where(n => n.Read == false).ToList();
+
             if (notifications.Any())
             {
                 if (start > notifications.Count)
@@ -160,13 +159,13 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            MobileNotification mobileNotification =
-                _context.MobileNotificationsDb.SingleOrDefault(m => m.NotificationId == id);
+            MobileNotification mobileNotification = await _dataService.GetMobileNotification(id);
+            
             if (mobileNotification != null && mobileNotification.UserId == userId)
             {
                 mobileNotification.Read = value.Read;
-                _context.MobileNotificationsDb.Update(mobileNotification);
-                await _context.SaveChangesAsync();
+                mobileNotification = await _dataService.UpdateMobileNotification(mobileNotification);
+                
                 return Ok(mobileNotification);
             }
 
@@ -177,13 +176,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            MobileNotification mobileNotification = await _context.MobileNotificationsDb.SingleOrDefaultAsync(m => m.NotificationId == id);
+            MobileNotification mobileNotification = await _dataService.GetMobileNotification(id);
             if (mobileNotification != null)
             {
                 if (mobileNotification.UserId == User.GetUserId())
                 {
-                    _context.MobileNotificationsDb.Remove(mobileNotification);
-                    await _context.SaveChangesAsync();
+                    _ = await _dataService.DeleteMobileNotification(mobileNotification);
                 }
                 
                 return NoContent();

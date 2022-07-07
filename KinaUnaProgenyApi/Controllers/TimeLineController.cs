@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -19,25 +17,27 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class TimeLineController : ControllerBase
     {
-        private readonly ProgenyDbContext _context;
-        private readonly IDataService _dataService;
+        private readonly IProgenyService _progenyService;
+        private readonly IUserAccessService _userAccessService;
+        private readonly ITimelineService _timelineService;
 
-        public TimeLineController(ProgenyDbContext context, IDataService dataService)
+        public TimeLineController(IProgenyService progenyService, IUserAccessService userAccessService, ITimelineService timelineService)
         {
-            _context = context;
-            _dataService = dataService;
+            _progenyService = progenyService;
+            _userAccessService = userAccessService;
+            _timelineService = timelineService;
         }
-        
+
         // GET api/timeline/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<TimeLineItem> timeLineList = await _dataService.GetTimeLineList(id); 
+                List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(id); 
                 timeLineList = timeLineList.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime < DateTime.UtcNow).ToList();
                 if (timeLineList.Any())
                 {
@@ -54,10 +54,10 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> ProgenyLatest(int id, int accessLevel = 5, int count = 5, int start =0)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); 
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail); 
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<TimeLineItem> timeLineList = await _dataService.GetTimeLineList(id);
+                List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(id);
                 timeLineList = timeLineList
                     .Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime).ToList();
                 if (timeLineList.Any())
@@ -80,10 +80,10 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> ProgenyYearAgo(int id, int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<TimeLineItem> timeLineList = await _dataService.GetTimeLineList(id);
+                List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(id);
                 
                 timeLineList = timeLineList
                     .Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day).OrderBy(t => t.ProgenyTime).ToList();
@@ -105,10 +105,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{itemId}/{itemType}")]
         public async Task<IActionResult> GetTimeLineItemByItemId(string itemId, int itemType)
         {
-            TimeLineItem result = await _dataService.GetTimeLineItemByItemId(itemId, itemType);
+            TimeLineItem result = await _timelineService.GetTimeLineItemByItemId(itemId, itemType);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -121,10 +121,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTimeLineItem(int id)
         {
-            TimeLineItem result = await _dataService.GetTimeLineItem(id);
+            TimeLineItem result = await _timelineService.GetTimeLineItem(id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -140,7 +140,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Post([FromBody] TimeLineItem value)
         {
             // Check if child exists.
-            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (prog != null)
             {
@@ -165,9 +165,7 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.ItemType = value.ItemType;
             timeLineItem.ProgenyTime = value.ProgenyTime;
 
-            _context.TimeLineDb.Add(timeLineItem);
-            await _context.SaveChangesAsync();
-            await _dataService.SetTimeLineItem(timeLineItem.TimeLineId);
+            _ = await _timelineService.AddTimeLineItem(timeLineItem);
 
             return Ok(timeLineItem);
         }
@@ -176,14 +174,14 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] TimeLineItem value)
         {
-            TimeLineItem timeLineItem = await _context.TimeLineDb.SingleOrDefaultAsync(t => t.TimeLineId == id);
+            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItem(id);
             if (timeLineItem == null)
             {
                 return NotFound();
             }
 
             // Check if child exists.
-            Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == value.ProgenyId);
+            Progeny prog = await _progenyService.GetProgeny(timeLineItem.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (prog != null)
             {
@@ -205,10 +203,9 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.ItemId = value.ItemId;
             timeLineItem.ItemType = value.ItemType;
             timeLineItem.ProgenyTime = value.ProgenyTime;
-            
-            _context.TimeLineDb.Update(timeLineItem);
-            await _context.SaveChangesAsync();
-            await _dataService.SetTimeLineItem(timeLineItem.TimeLineId);
+
+            _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
+
             return Ok(timeLineItem);
         }
 
@@ -216,11 +213,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            TimeLineItem timeLineItem = await _context.TimeLineDb.SingleOrDefaultAsync(t => t.TimeLineId == id);
+            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItem(id);
             if (timeLineItem != null)
             {
                 // Check if child exists.
-                Progeny prog = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == timeLineItem.ProgenyId);
+                Progeny prog = await _progenyService.GetProgeny(timeLineItem.ProgenyId);
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 if (prog != null)
                 {
@@ -235,10 +232,7 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                _context.TimeLineDb.Remove(timeLineItem);
-                await _context.SaveChangesAsync();
-
-                await _dataService.RemoveTimeLineItem(timeLineItem.TimeLineId, timeLineItem.ItemType, timeLineItem.ProgenyId);
+                _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
 
                 return NoContent();
             }
@@ -250,12 +244,12 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}/{accessLevel}/{count}/{start}/{year}/{month}/{day}")]
         public async Task<IActionResult> ProgenyLatestMobile(int id, int accessLevel = 5, int count = 5, int start = 0, int year = 0, int month = 0, int day = 0)
         {
-            Progeny prog = await _dataService.GetProgeny(id); // await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
+            Progeny prog = await _progenyService.GetProgeny(id);
             if (prog != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
 
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
                 if (userAccess != null)
                 {
                     // Check if the correct access level is used. If not use the one retrieved from database.
@@ -274,7 +268,7 @@ namespace KinaUnaProgenyApi.Controllers
                         startDate = DateTime.UtcNow;
                     }
 
-                    List<TimeLineItem> timeLineList = await _dataService.GetTimeLineList(id); // await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == id && t.AccessLevel >= accessLevel && t.ProgenyTime < startDate).OrderBy(t => t.ProgenyTime).ToListAsync();
+                    List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(id);
                     timeLineList = timeLineList.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime < startDate)
                         .OrderBy(t => t.ProgenyTime).ToList();
                     if (timeLineList.Any())
