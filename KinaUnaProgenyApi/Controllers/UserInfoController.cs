@@ -96,7 +96,7 @@ namespace KinaUnaProgenyApi.Controllers
                     newUserinfo.UserEmail = userEmail;
                     newUserinfo.ViewChild = 0;
                     newUserinfo.UserId = User.GetUserId();
-                    newUserinfo.Timezone = User.GetUserTimeZone();
+                    newUserinfo.Timezone = Constants.DefaultTimezone;
                     newUserinfo.UserName = User.GetUserUserName();
                     if (String.IsNullOrEmpty(newUserinfo.UserName))
                     {
@@ -197,7 +197,7 @@ namespace KinaUnaProgenyApi.Controllers
                     newUserinfo.UserEmail = userEmail;
                     newUserinfo.ViewChild = 0;
                     newUserinfo.UserId = User.GetUserId();
-                    newUserinfo.Timezone = User.GetUserTimeZone();
+                    newUserinfo.Timezone = Constants.DefaultTimezone;
                     newUserinfo.UserName = User.GetUserUserName();
                     if (String.IsNullOrEmpty(newUserinfo.UserName))
                     {

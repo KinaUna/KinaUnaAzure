@@ -1,0 +1,92 @@
+﻿@using KinaUnaWeb.Services
+@using Syncfusion.EJ2
+@using Syncfusion.EJ2.DropDowns
+@using Syncfusion.EJ2.RichTextEditor
+@using KinaUna.Data
+@model KinaUnaWeb.Models.AdminViewModels.ManageKinaUnaTextsViewModel 
+@inject ILocaleManager LocaleManager
+<div class="space-20"></div>
+<div class="container" style="min-height: 90vh;">
+        <div class="row">
+            <div class="col-12">
+                @if (Model.MessageId == 1)
+                {
+                    <div class="card bg-childinfo" style="margin-bottom: 50px;">
+                        <div class="text-center text-success pt-2">
+                            <h3 class="text-success">Text saved</h3>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="float-right">
+                    <div class="text-black-50 mb-2">@await LocaleManager.GetTranslation("Translation", PageNames.TextEditor, Model.LanguageId)</div>
+                    <div class="float-right" style="min-width: 300px;">
+                        <ejs-dropdownlist id="languageList" dataSource="Model.LanguagesList" change="editTextLanguageListChange" index="@Model.Language"
+                                          itemTemplate="@Html.Raw("<div><div class=\"e-avatar e-avatar-small e-avatar-circle\"><img class=\"image\" src=\"${IconLink}\" alt=\"Flag\"/></div><span class=\"ename\"> ${Name} </span></div>")"
+                                          valueTemplate="@Html.Raw("<div style=\"width:100%;height:100%;\"><div class=\"e-avatar e-avatar-small e-avatar-circle\"><img class=\"value\" src=\"${IconLink}\" height=\"26px\" width=\"26px\" alt=\"Flag\"/></div><span class=\"name\"> ${Name} </span></div>")">
+                            <e-dropdownlist-fields text="Name" value="Id"></e-dropdownlist-fields>
+                        </ejs-dropdownlist>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="pivoq_space20"></div>
+        <div class="row">
+            <div class="col-3">Title:</div>
+            @if (Model.KinaUnaText.Title.StartsWith("__"))
+            {
+                <div class="col-6">@Model.KinaUnaText.Title</div>
+            }
+            else
+            {
+                <div class="col-6">
+                    <input id="editTitleInput" type="text" value="@Model.KinaUnaText.Title" onchange="updateTitle()" />
+                </div>
+            }
+        </div>
+        <div class="space-20"></div>
+        <div class="row">
+            <div class="col-3">Page:</div>
+            <div class="col-6"> @Model.KinaUnaText.Page</div>
+        </div>
+        <div class="space-20"></div>
+        <div class="row">
+            <div class="col-3">Text:</div>
+            <div class="col-9">
+                @{
+                    var toolbarItems = new[]
+                    {
+                        "Bold", "Italic", "Underline", "StrikeThrough", "FontName", "FontSize", "FontColor", "BackgroundColor", "LowerCase", "UpperCase", "|", "Formats", "Alignments", "OrderedList", "UnorderedList",
+                        "Outdent", "Indent", "|", "CreateLink", "Image", "CreateTable", "|", "ClearFormat", "SourceCode", "FullScreen", "|", "Undo", "Redo"
+                    };
+                }
+                <div class="e-input-group">
+                    <ejs-richtexteditor id="textTextRTE" imageUploadSuccess="onImageUploadSuccess" focus="onrtefocus" created="onrtecreated" style="width: 100%; height: 550px;">
+                        <e-richtexteditor-toolbarsettings items="@toolbarItems" type="MultiRow"></e-richtexteditor-toolbarsettings>
+                        <e-richtexteditor-insertimagesettings saveUrl="/Admin/SaveRtfFile" path=""></e-richtexteditor-insertimagesettings>
+                        <e-content-template>
+                            @Model.KinaUnaText.Text
+                        </e-content-template>
+                    </ejs-richtexteditor>
+                </div>
+            </div>
+        </div>
+        <div class="space-50"></div>
+        <div class="horizontal_bar_thin w-100"></div>
+        <div class="space-50"></div>
+        <div class="row">
+            <div class="col-12">
+                <input id="textPageInput" hidden="hidden" value="@Model.KinaUnaText.Page" />
+                <input id="textTitleInput" hidden="hidden" value="@Model.KinaUnaText.Title" />
+                <input id="textIdInput" hidden="hidden" type="number" value="@Model.KinaUnaText.Id" />
+                <input id="textTextIdInput" hidden="hidden" type="number" value="@Model.KinaUnaText.TextId" />
+                <input id="textLanguageIdInput" hidden="hidden" type="number" value="@Model.LanguageId" />
+                <a class="btn btn-primary float-right" onclick="saveText()">Save</a>
+                <a class="btn btn-secondary" data-dismiss="modal">Cancel</a>
+            </div>
+        </div>
+    </div>
+<ejs-scripts></ejs-scripts>

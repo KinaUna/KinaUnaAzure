@@ -1,38 +1,132 @@
 ﻿@using KinaUna.Data
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Antiforgery
+@inject IAntiforgery AntiForgery
+@inject ILocaleManager LocaleManager
+@model KinaUnaWeb.Models.HomeViewModels.AboutViewModel
 @{
-    ViewData["Title"] = "Terms";
+    ViewData["Title"] = await LocaleManager.GetTranslation("Terms", PageNames.Layout, Model.LanguageId);
+    Model.KinaUnaText = await LocaleManager.GetPageTextByTitle("__Terms", "Terms", Model.LanguageId);
 }
 <h3 class="title">@ViewData["Title"]</h3>
-<div class="card">
-    <div class="card-body" style="background: lightyellow;">
-        <div class="card-title">Accounts</div>
-        <div class="card-text">
-            When you create an account with @Constants.AppName, you represent and warrant that you are above the age of 16, and that the information you provide us is accurate, complete, and current at all times.<br />
-            Inaccurate, incomplete, or obsolete information may result in the immediate termination of your account.<br />
-            You are responsible for maintaining the confidentiality of your account user name and password (collectively, “User Credentials”), including but not limited to the restriction of access to your computer and/or your account information.<br />
-            You agree to accept responsibility for any and all activities or actions that occur in connection with your User Credentials.<br />
-            You must notify us immediately upon becoming aware of any breach of the security or unauthorized use of your account or your User Credentials.<br />
-            <br />
+<div>
+    <H4>
+        <img src="~/images/KinaUnaLogo_246x80.png"/>
+    </H4>
+    <br/>
+    <div style="max-width: 600px;" id="impressumTextDiv">
+        @Html.Raw(Model.KinaUnaText.Text ?? "")
+    </div>
+</div>
+<br/>
 
+@if (Model.CurrentUser.IsKinaUnaAdmin && Model.KinaUnaText != null)
+{
+    <div class="space-20"></div>
+    <div><a class="btn btn-outline-info" onclick="editModal('@Model.KinaUnaText.Id', 'Edit About')">Edit</a></div>
+    <div class="space-20"></div>
+    <script>
+        function onImageUploadSuccess(args) {
+            if (args.e.currentTarget.getResponseHeader('name') != null) {
+                args.file.name = args.e.currentTarget.getResponseHeader('name');
+                var filename = document.querySelectorAll(".e-file-name")[0];
+                filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
+                filename.title = args.file.name;
+            }
+        }
+
+        let defaultRTE;
+
+        function onrtecreated() {
+            setTimeout(function() {
+                    let rteElement = document.getElementById('textTextRTE').ej2_instances[0];
+                    rteElement.refreshUI();
+                },
+                1000);
+            defaultRTE = this;
+        }
+
+        function onrtefocus() {
+            let rteElement = document.getElementById('textTextRTE').ej2_instances[0];
+            rteElement.refreshUI();
+        }
+
+        function updateTitle() {
+            let editTitleSource = document.getElementById('editTitleInput');
+            let editTitleTarget = document.getElementById('textTitleInput');
+            editTitleTarget.value = editTitleSource.value;
+        }
+
+        $(document).ready(function () {
+            editModal = (textId, title) => {
+                try {
+                    $.ajax({
+                        type: 'GET',
+                        url: "/Admin/EditText?Id=" + textId,
+                        contentType: false,
+                        datatype: "html",
+                        async: true,
+                        success: function (res) {
+                            $('#editImpressumModal .modal-body').html(res);
+                            $('#editImpressumModal .modal-title').html(title);
+                            $('#editImpressumModal').modal('show');
+                        },
+                        error: function (err) {
+                            console.log(err);
+                        }
+                    });
+                    return false;
+                } catch (ex) {
+                    console.log(ex);
+                }
+                return false;
+            }
+        });
+
+        function saveText() {
+            let textId = document.getElementById('textIdInput').value;
+            let textPage = document.getElementById('textPageInput').value;
+            let textTitle = document.getElementById('textTitleInput').value;
+            let textLanguageId = document.getElementById('textLanguageIdInput').value;
+            let textText = defaultRTE.value;
+            let textItem = { Id: textId, Page: textPage, Title: textTitle, LanguageId: textLanguageId, Text: textText }
+            return $.ajax({
+                type: "POST",
+                beforeSend: function(request) { request.setRequestHeader("RequestVerificationToken", "@AntiForgery.GetTokens(Context).RequestToken"); },
+                url: "/Admin/EditText",
+                contentType: 'application/json',
+                data: JSON.stringify(textItem),
+                datatype: "html",
+                async: true,
+                success: function (data) {
+                    $('#editImpressumModal .modal-body').html(data);
+                    let impressumDiv = document.getElementById('impressumTextDiv');
+                    impressumDiv.innerHTML = textText;
+                    $('#editImpressumModal').modal('hide');
+                },
+                error: function (jqXhr, textStatus, errorThrown) {
+                    console.log(textStatus, errorThrown);
+                }
+            });
+        }
+    </script>
+}
+<div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editImpressumModal">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
         </div>
     </div>
 </div>
-<br />
-<div class="card">
-    <div class="card-body" style="background: lightyellow;">
-        <div class="card-title">Content</div>
-        <div class="card-text">
-            You are responsible for any and all user content that you post on @Constants.AppName, including its legality, reliability, accuracy, and appropriateness.<br />
-            By posting content on or through @Constants.AppName, you represent and warrant that:<br />
-            (1) you own such user content and/or that you have the right to use it, and<br />
-            (2) the posting of such user content on KinaUna.com does not violate any intellectual property or proprietary rights of any person or entity, including any privacy rights, publicity rights, copyrights, or any other contract rights.<br />
-            We reserve the right to terminate the account of anyone found to be infringing a third party’s intellectual property or other proprietary right.<br />
-            You retain any and all rights to any User Content you submit/post on @Constants.AppName.<br />
-            We take no responsibility and assume no liability for user content you or any third party posts on @Constants.AppName, or that is posted publicly as a result of your use of @Constants.AppName.<br />
-            The extent to which your user content is available publicly is determined by the settings you choose as part of the submission of data. You are responsible for the ways in which your user content is published via @Constants.AppName.<br />
-            @Constants.AppName assumes no responsibility for how user content is shared by anyone not employed by @Constants.AppName.
-            @Constants.AppName has the right but not the obligation to monitor and edit all user content provided by you and any other user of @Constants.AppName.<br />
-            <br />
-        </div>
-    </div>
-</div>
+<style>
+    .e-rte-image-popup.e-rte-quick-popup {
+        z-index: 20001 !important;
+    }
+</style> 

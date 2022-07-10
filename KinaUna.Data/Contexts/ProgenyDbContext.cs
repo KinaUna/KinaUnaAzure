@@ -29,5 +29,7 @@ namespace KinaUna.Data.Contexts
         public DbSet<UserInfo> DeletedUsers { get; set; }
         public DbSet<TextTranslation> TextTranslations { get; set; }
         public DbSet<KinaUnaLanguage> Languages { get; set; }
+        public DbSet<KinaUnaText> KinaUnaTexts { get; set; }
+        public DbSet<KinaUnaTextNumber> KinaUnaTextNumbers { get; set; }
     }
 }

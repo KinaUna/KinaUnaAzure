@@ -24,7 +24,7 @@ using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 using KinaUna.Data;
-using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Azure.Storage.Auth;
 using Microsoft.Azure.Storage.Blob;
@@ -45,13 +45,14 @@ namespace KinaUnaWeb
         
         public void ConfigureServices(IServiceCollection services)
         {
-            
-            services.Configure<CookiePolicyOptions>(options =>
+
+            _ = services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 // Todo: Fix consent to work with my cookies and language selection
-                options.CheckConsentNeeded = _ => false;
+                options.CheckConsentNeeded = delegate { return true; };
                 options.MinimumSameSitePolicy = SameSiteMode.Lax;
+                options.Secure = CookieSecurePolicy.Always;
             });
 
             services.AddDbContext<WebDbContext>(options =>
@@ -124,6 +125,7 @@ namespace KinaUnaWeb
             services.AddHttpClient<IAuthHttpClient, AuthHttpClient>();
             services.AddHttpClient<ILanguagesHttpClient, LanguagesHttpClient>();
             services.AddHttpClient<ITranslationsHttpClient, TranslationsHttpClient>();
+            services.AddHttpClient<IPageTextsHttpClient, PageTextsHttpClient>();
             services.AddDistributedMemoryCache();
 
             string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer");
@@ -171,10 +173,10 @@ namespace KinaUnaWeb
                 });
             });
 
-            services.AddLocalization(o =>
-            {
-                o.ResourcesPath = "Resources";
-            });
+            //services.AddLocalization(o =>
+            //{
+            //    o.ResourcesPath = "Resources";
+            //});
             
             services.AddControllersWithViews(options =>
             {
@@ -183,7 +185,7 @@ namespace KinaUnaWeb
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
             }).AddNewtonsoftJson()
-            .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+            //.AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
             .AddRazorRuntimeCompilation();
 
             services.AddAuthentication(options =>
@@ -233,7 +235,7 @@ namespace KinaUnaWeb
                     options.Scope.Add("offline_access");
                     options.SaveTokens = true;
                     options.ClientSecret = authenticationServerClientSecret;
-                    options.GetClaimsFromUserInfoEndpoint = false;
+                    options.GetClaimsFromUserInfoEndpoint = true;
                     options.ClaimActions.Remove("amr");
                     options.ClaimActions.DeleteClaim("sid");
                     options.ClaimActions.DeleteClaim("idp");
@@ -254,7 +256,7 @@ namespace KinaUnaWeb
                 });
             services.AddAuthorization();
             services.AddSignalR().AddMessagePackProtocol().AddNewtonsoftJsonProtocol();
-            //services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+            services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             services.AddApplicationInsightsTelemetry();
         }
 

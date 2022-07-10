@@ -49,11 +49,6 @@ namespace KinaUnaWeb.Controllers
         {
             int childId = id;
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
-            if (string.IsNullOrEmpty(userTimeZone))
-            {
-                userTimeZone = Constants.DefaultTimezone;
-            }
             UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
@@ -66,6 +61,12 @@ namespace KinaUnaWeb.Controllers
             {
                 _progId = Constants.DefaultChildId;
             }
+            string userTimeZone = userinfo.Timezone;
+            if (string.IsNullOrEmpty(userTimeZone))
+            {
+                userTimeZone = Constants.DefaultTimezone;
+            }
+            
 
             Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
             if (progeny.Name == "401")
@@ -242,23 +243,61 @@ namespace KinaUnaWeb.Controllers
         }
 
         [AllowAnonymous]
-        public IActionResult About()
+        public async Task<IActionResult> About(int languageId = 0)
         {
-            return View();
+            AboutViewModel model = new AboutViewModel();
+            if (languageId == 0)
+            {
+                model.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+            else
+            {
+                model.LanguageId = languageId;
+                Response.SetLanguageCookie(languageId.ToString());
+            }
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            
+            return View(model);
         }
         
 
         [AllowAnonymous]
-        public IActionResult Privacy()
+        public async Task<IActionResult> Privacy(int languageId = 0)
         {
-            return View();
+            AboutViewModel model = new AboutViewModel();
+            if (languageId == 0)
+            {
+                model.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+            else
+            {
+                model.LanguageId = languageId;
+                Response.SetLanguageCookie(languageId.ToString());
+            }
+
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+
+            return View(model);
         }
 
         [AllowAnonymous]
-        public IActionResult Terms()
+        public async Task<IActionResult> Terms(int languageId = 0)
         {
 
-            return View();
+            AboutViewModel model = new AboutViewModel();
+            if (languageId == 0)
+            {
+                model.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+            else
+            {
+                model.LanguageId = languageId;
+                Response.SetLanguageCookie(languageId.ToString());
+            }
+
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+
+            return View(model);
         }
         
         [AllowAnonymous]
@@ -306,6 +345,15 @@ namespace KinaUnaWeb.Controllers
             }
             return Redirect(returnUrl);
         }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult SetLanguageId(string languageId, string returnUrl)
+        {
+            Response.SetLanguageCookie(languageId);
+            return Redirect(returnUrl);
+        }
+
 
         [AllowAnonymous]
         public IActionResult Start()

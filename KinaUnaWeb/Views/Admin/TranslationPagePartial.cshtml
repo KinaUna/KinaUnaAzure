@@ -7,7 +7,7 @@
         foreach (string pageItem in Model.PagesList)
         {
             <div class="card">
-                <div class="card-header">Page: <span class="font-weight-bold">@pageItem</span></div>
+                <div class="card-header-primary p-3">Page: <span class="font-weight-bold">@pageItem</span></div>
                 @if (Model.WordsList.Any())
                 {
                     foreach (string wordItem in Model.WordsList)
@@ -16,8 +16,8 @@
                         if (wordTranslations.Any())
                         {
                             <div class="card-body">
-                                <div class="card-title bg-accessinfo pl-3">
-                                    Translation Key: <span class="font-weight-bold">@wordItem</span><a class="btn_pivoq btn_pivoq-link ml-5" asp-controller="Admin" asp-action="DeleteTranslation" asp-route-word="@wordItem" asp-route-page="@pageItem">Delete word</a>
+                                <div class="card-title bg-accessinfo p-3">
+                                    Translation Key: <span class="font-weight-bold">@wordItem</span><a class="btn btn-link ml-5" asp-controller="Admin" asp-action="DeleteTranslation" asp-route-word="@wordItem" asp-route-page="@pageItem">Delete word</a>
                                 </div>
                                 <div class="card-text pl-3">
                                     @foreach (KinaUnaLanguage language in Model.LanguagesList)
@@ -32,10 +32,10 @@
                                                 <div class="ml-3" id="@translationIdDiv">
                                                     <span>@language.Name</span><span> : </span>
                                                     <span id="@translationId">@translation.Translation</span>
-                                                    <a class="btn btn-outline-info" onclick="jQueryModalGet('@translation.Id', 'Edit translation')">Edit</a>
+                                                    <a class="btn btn-sm btn-outline" onclick="jQueryModalGet('@translation.Id', 'Edit translation')">Edit</a>
                                                     @if (translations.Count > 1)
                                                     {
-                                                        <a class="btn btn-outline-info ml-5" onclick="jQueryModalDelete('@translation.Id', 'Delete translation')">Delete this translation</a>
+                                                        <a class="btn btn-sm btn-outline ml-5" onclick="jQueryModalDelete('@translation.Id', 'Delete translation')">Delete this translation</a>
                                                     }
                                                 </div>
 

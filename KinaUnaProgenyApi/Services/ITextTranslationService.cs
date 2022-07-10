@@ -14,5 +14,15 @@ namespace KinaUnaProgenyApi.Services
         Task<TextTranslation> UpdateTranslation(int id, TextTranslation translation);
         Task<TextTranslation> DeleteTranslation(int id);
         Task<TextTranslation> DeleteSingleTranslation(int id);
+        Task<KinaUnaText> TextByTitle(string title, string page, int languageId);
+        Task<KinaUnaText> TextById(int id);
+        Task<KinaUnaText> TextByTextId(int textId, int languageId);
+        Task<List<KinaUnaText>> PageTexts(string page, int languageId);
+        Task<List<KinaUnaText>> AllPageTexts(int languageId);
+        Task CheckLanguages();
+        Task<KinaUnaText> AddText(KinaUnaText text);
+        Task<KinaUnaText> UpdateText(int id, KinaUnaText text);
+        Task<KinaUnaText> DeleteText(int id);
+        Task<KinaUnaText> DeleteSingleText(int id);
     }
 }

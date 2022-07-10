@@ -9,5 +9,6 @@
         public const string Contacts = "contacts";
         public const string Notes = "notes";
         public const string Documents = "documents";
+        public const string KinaUnaTexts = "kinaunatexts";
     }
 }

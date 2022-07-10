@@ -1,30 +1,98 @@
 ﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
 <!DOCTYPE html>
-<html lang="en">
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
 @using Microsoft.AspNetCore.Http.Extensions
 @using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @using Syncfusion.EJ2
+@{
+    int languageId = 1;
+    string languageCode = "en";
+
+    if (Context.Request.Query.ContainsKey("languageId"))
+    {
+        if (int.TryParse(Context.Request.Query["languageId"], out int queryValue))
+        {
+            languageId = queryValue;
+        }
+    }
+    else
+    {
+        if (Context.Request.Cookies.TryGetValue("languageId", out string languageIdText))
+        {
+            if (!int.TryParse(languageIdText, out languageId))
+            {
+                languageId = 1;
+            }
+        }
+        else
+        {
+            try
+            {
+                string[] userLanguages = Context.Request.GetTypedHeaders().AcceptLanguage.OrderByDescending(x => x.Quality ?? 1).Select(x => x.Value.ToString()).ToArray();
+                string firstLang = userLanguages.FirstOrDefault();
+
+                if (firstLang != null && firstLang.StartsWith("de"))
+                {
+                    languageId = 2;
+                }
+                if (firstLang != null && firstLang.StartsWith("da"))
+                {
+                    languageId = 3;
+                }
+                if (firstLang != null && firstLang.StartsWith("tr"))
+                {
+                    languageId = 4;
+                }
+                if (firstLang != null && firstLang.StartsWith("sr"))
+                {
+                    languageId = 5;
+                }
+            }
+            catch (NullReferenceException)
+            {
+                languageId = 1;
+            }
+        }
+    }
+
+    if (languageId == 1)
+    {
+        languageCode = "en";
+    }
+
+    if (languageId == 2)
+    {
+        languageCode = "de";
+    }
+
+    if (languageId == 3)
+    {
+        languageCode = "da";
+    }
+}
+<html lang="@languageCode">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] : Kina Una Web</title>
-    @*<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />*@
+    <link rel="stylesheet" href="~/css/bootstrap.min.css" asp-append-version="true">
     <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/bootstrap5.css"/>
     <link href="~/lib/fa5_2_0/css/all.min.css" rel="stylesheet" />
     <link href="~/css/waitMe.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/css/bootstrap-select.min.css">
-    <link href="~/lib/material-kit-205/css/material-kit.min.css?v=2.0.5" rel="stylesheet" />
+    @*<link href="~/lib/material-kit-205/css/material-kit.min.css?v=2.0.5" rel="stylesheet" />*@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <script src="https://code.jquery.com/jquery-3.4.0.min.js"></script>
     <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
     <script src="~/lib/popper.min.js"></script>
-    <script src="~/lib/material-kit-205/js/core/bootstrap-material-design.min.js"></script>
+    <script src="~/js/bootstrap.min.js" asp-append-version="true"></script>
+    @*<script src="~/lib/material-kit-205/js/core/bootstrap-material-design.min.js"></script>*@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/js/bootstrap-select.min.js"></script>
-    <script src="~/lib/material-kit-205/js/material-kit.min.js"></script>
+    @*<script src="~/lib/material-kit-205/js/material-kit.min.js"></script>*@
     <script src="~/js/waitMe.min.js"></script>
     @RenderSection("Scripts", required: false)
     <meta name="theme-color" content="#3a2051" />
@@ -44,13 +112,14 @@
     
     @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
-@{ var returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl(); }
+@inject ILocaleManager LocaleManager;
+@{ string returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl(); }
 @inject IProgenyManager ChildManager
 @{
-    var childList = new List<Progeny>();
-    var child = new Progeny();
+    List<Progeny> childList = new List<Progeny>();
+    Progeny child = new Progeny();
     bool canUserAddItems = false;
-    var usrName = "";
+    string usrName = "";
     UserInfo userinfo = new UserInfo();
     bool showUndelete = false;
 }
@@ -100,14 +169,18 @@
 
 }
 <body>
-<script>
-    document.domain = document.domain;
-    var framed = window.frames.length + ':' + parent.frames.length;
-    if (framed === '0:1') {
-        window.parent.postMessage("closeKinaUnaFrame", '*');
-    }
-</script>
-<nav class="navbar navbar-expand-lg bg-primary fixed-top" id="navMain">
+<div id="topLanguageDiv" class="kinauna_purple_bg">
+	<div class="container">
+		<div class="row">
+			<div class="ml-3 mt-0 mb-1 mr-sm-1 mr-md-2 mr-lg-4 w-100">
+				@*<a href="#" class="small mr-3"><span class="icon-question-circle-o mr-2"></span> <span class="d-none d-lg-inline-block">@await _localeManager.GetTranslation("Help", PageNames.Layout, languageId)</span></a>*@
+
+				@await Html.PartialAsync("_LanguagePartial", await LocaleManager.GetLanguageModel(languageId))
+			</div>
+		</div>
+	</div>
+</div>
+<nav class="navbar navbar-expand-lg bg-primary sticky-top" id="navMain">
     <div class="container" style="max-height: 50px;">
         @if (User.Identity != null && User.Identity.IsAuthenticated)
         {
@@ -123,14 +196,14 @@
         }
         <div class="navbar-nav nav-item">
             <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" href="https://@Context.Request.Host@Context.Request.GetEncodedPathAndQuery()" aria-label="Refresh">
-                <i class="material-icons" aria-hidden="true">refresh</i>
+                <i class="material-icons icon_medium" aria-hidden="true">refresh</i>
             </a>
         </div>
         @if (canUserAddItems)
         {
             <div class="navbar-nav nav-item">
                 <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" asp-area="" asp-controller="AddItem" asp-action="Index" aria-label="Add item">
-                    <i class="material-icons" aria-hidden="true">add</i>
+                    <i class="material-icons icon_medium" aria-hidden="true">add</i>
                 </a>
             </div>
         }
@@ -190,13 +263,13 @@
                 }
                 <div class="navbar-nav nav-item dropdown">
                     <a class="dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                        <i class="material-icons">favorite</i><span class="d-sm-inline d-md-inline d-lg-inline"> Menu </span>
+                        <i class="material-icons icon_medium">favorite</i><span class="d-sm-inline d-md-inline d-lg-inline"> @await LocaleManager.GetTranslation("Menu", PageNames.Layout, languageId) </span>
                     </a>
                     <div class="dropdown-menu">
                         <div class="dropdown-item">
                             <form class="form-inline-fullwidth" asp-area="" asp-controller="TimeLine" asp-action="Index" method="get">
                                 <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">update</i> Timeline</button>
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">update</i> @await LocaleManager.GetTranslation("Timeline", PageNames.Layout, languageId)</button>
                             </form>
                         </div>
                         <div class="dropdown-item">
@@ -206,7 +279,7 @@
                                 <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                 <input type="number" name="sortBy" value="1" hidden="hidden" />
                                 <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
-                                    <i class="material-icons">photo_library</i><span> Photos</span>
+                                    <i class="material-icons">photo_library</i><span> @await LocaleManager.GetTranslation("Photos", PageNames.Layout, languageId)</span>
                                 </button>
                             </form>
                         </div>
@@ -217,68 +290,68 @@
                                 <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
                                 <input type="number" name="sortBy" value="1" hidden="hidden" />
                                 <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
-                                    <i class="material-icons">videocam</i><span> Videos</span>
+                                    <i class="material-icons">videocam</i><span> @await LocaleManager.GetTranslation("Videos", PageNames.Layout, languageId)</span>
                                 </button>
                             </form>
                         </div>
                         <div class="dropdown-item">
                             <form class="form-inline-fullwidth" asp-area="" asp-controller="Calendar" asp-action="Index" method="get">
                                 <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">event_note</i> Calendar</button>
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">event_note</i> @await LocaleManager.GetTranslation("Calendar", PageNames.Layout, languageId)</button>
                             </form>
                         </div>
                         <div class="dropdown-item">
                             <form class="form-inline-fullwidth" asp-area="" asp-controller="Notes" asp-action="Index" method="get">
                                 <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">note</i> Notes</button>
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">note</i> @await LocaleManager.GetTranslation("Notes", PageNames.Layout, languageId)</button>
                             </form>
                         </div>
                         <div class="dropdown-item">
                             <form class="form-inline-fullwidth" asp-area="" asp-controller="Sleep" asp-action="Index" method="get">
                                 <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">hotel</i> Sleep</button>
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">hotel</i> @await LocaleManager.GetTranslation("Sleep", PageNames.Layout, languageId)</button>
                             </form>
                         </div>
                         <div class="dropdown-item">
                             <form class="form-inline-fullwidth" asp-area="" asp-controller="Friends" asp-action="Index" method="get">
                                 <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">face</i> Friends</button>
+                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">face</i> @await LocaleManager.GetTranslation("Friends", PageNames.Layout, languageId)</button>
                             </form>
                         </div>
                         <div class="dropdown-item">
                             <form class="form-inline-fullwidth" asp-area="" asp-controller="Contacts" asp-action="Index" method="get">
                                 <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">contact_phone</i> Contacts</button>
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">contact_phone</i> @await LocaleManager.GetTranslation("Contacts", PageNames.Layout, languageId)</button>
                             </form>
                         </div>
                         <div class="dropdown-item">
                             <form class="form-inline-fullwidth" asp-area="" asp-controller="Locations" asp-action="Index" method="get">
                                 <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">person_pin</i> Locations</button>
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">person_pin</i> @await LocaleManager.GetTranslation("Locations", PageNames.Layout, languageId)</button>
                             </form>
                         </div>
                         <div class="dropdown-item">
                             <form class="form-inline-fullwidth" asp-area="" asp-controller="Measurements" asp-action="Index" method="get">
                                 <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">straighten</i> Measurements</button>
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">straighten</i> @await LocaleManager.GetTranslation("Measurements", PageNames.Layout, languageId)</button>
                             </form>
                         </div>
                         <div class="dropdown-item">
                             <form class="form-inline-fullwidth" asp-area="" asp-controller="Skills" asp-action="Index" method="get">
                                 <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">school</i> Skillz</button>
+                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">school</i> @await LocaleManager.GetTranslation("Skillz", PageNames.Layout, languageId)</button>
                             </form>
                         </div>
                         <div class="dropdown-item">
                             <form class="form-inline-fullwidth" asp-area="" asp-controller="Vocabulary" asp-action="Index" method="get">
                                 <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">forum</i> Vocabulary</button>
+                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">forum</i> @await LocaleManager.GetTranslation("Vocabulary", PageNames.Layout, languageId)</button>
                             </form>
                         </div>
                         <div class="dropdown-item">
                             <form class="form-inline-fullwidth" asp-area="" asp-controller="Vaccinations" asp-action="Index" method="get">
                                 <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">local_pharmacy</i> Vaccinations</button>
+                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">local_pharmacy</i> @await LocaleManager.GetTranslation("Vaccinations", PageNames.Layout, languageId)</button>
                             </form>
                         </div>
                     </div>
@@ -287,13 +360,13 @@
                 {
                     <div id="notificationsIcon" class="nav-item dropdown">
                         <a id="notificationsButton" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                            <i id="notificationBellIcon" class="material-icons">notifications</i> Notifications <span id="notificationsCounter" class="badge badge-pill badge-secondary"></span> <span class="caret"></span>
+                            <i id="notificationBellIcon" class="material-icons icon_medium">notifications</i> @await LocaleManager.GetTranslation("Notifications", PageNames.Layout, languageId) <span id="notificationsCounter" class="badge badge-pill badge-secondary"></span> <span class="caret"></span>
                         </a>
                         <div id="notificationsMenu" class="dropdown-menu">
                             <div id="notificationsList" class="notifications-List"></div>
                             <div class="dropdown-item w-100">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Notifications" asp-action="Index" method="get">
-                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">assignment</i> See All Notifications</button>
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">assignment</i> @await LocaleManager.GetTranslation("See all notifications", PageNames.Layout, languageId)</button>
                                 </form>
                             </div>
                         </div>
@@ -320,7 +393,7 @@
                             {
                                 <div class="dropdown-item">
                                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Family" asp-action="Index" method="get">
-                                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">people</i> My Family</button>
+                                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">people</i> @await LocaleManager.GetTranslation("My Family", PageNames.Layout, languageId)</button>
                                     </form>
                                 </div>
                             }
@@ -342,12 +415,12 @@
                             }
                             <div class="dropdown-item">
                                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="MyAccount" method="get">
-                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">tune</i> My Account</button>
+                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">tune</i> @await LocaleManager.GetTranslation("My Account", PageNames.Layout, languageId)</button>
                                 </form>
                             </div>
                             <div class="dropdown-item">
                                 <form id="logOutForm" class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Logout" method="post" target="loginFrame">
-                                    <button id="logOutButton" type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">power_settings_new</i> Log Out</button>
+                                    <button id="logOutButton" type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">power_settings_new</i> @await LocaleManager.GetTranslation("Log Out", PageNames.Layout, languageId)</button>
                                 </form>
                             </div>
                         </div>
@@ -359,7 +432,7 @@
                 <div class="navbar-nav">
                     <div class="nav-item">
                         <form id="loginForm" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post" >
-                            <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" ><i class="material-icons">exit_to_app</i> Login or Register</button>
+                            <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" ><i class="material-icons">exit_to_app</i> @await LocaleManager.GetTranslation("Log in or register", PageNames.Layout, languageId)</button>
                         </form>
                     </div>
                 </div>
@@ -369,6 +442,7 @@
 </nav>
 <div class="container body-content">
     <div class="main main-raised" style="margin-top: 10px; margin-left: 5px; margin-right: 5px; padding: 5px; padding-left: 10px; padding-top: 10px;">
+        <partial name="_CookieConsentPartial", model="@languageId"/>
         @if (showUndelete)
         {
             <div class="container">
@@ -381,11 +455,11 @@
                             </span>
                             <div class="space-20"></div>
                             <span>
-                                <a class="btn-link-yellow" asp-action="DeleteAccount" asp-controller="Account">Click here to complete the deletion.</a>
+                                <a class="btn-link-yellow" asp-action="DeleteAccount" asp-controller="Account">@await LocaleManager.GetTranslation("Click here to complete the deletion.", PageNames.Layout, languageId)</a>
                             </span>
                             <div class="space-20"></div>
                             <span>
-                                <a class="btn-link-yellow" asp-action="UnDeleteAccount" asp-controller="Account">Click here to undo the deletion.</a>
+                                <a class="btn-link-yellow" asp-action="UnDeleteAccount" asp-controller="Account">@await LocaleManager.GetTranslation("Click here to undo the deletion.", PageNames.Layout, languageId)</a>
                             </span>
                         </div>
                     </div>
@@ -404,7 +478,7 @@
     <script src="~/signalr/signalr-protocol-msgpack.min.js"></script>
     <script src="~/signalr/KinaUnaWebNotifications.js" asp-append-version="true"></script>
 }
-<partial name="_FooterPartial"/>
+@await Html.PartialAsync("_FooterPartial", languageId)
 <ejs-scripts></ejs-scripts>
 </body>
 </html>

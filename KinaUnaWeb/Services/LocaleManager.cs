@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using KinaUna.Data.Models;
 using KinaUnaWeb.Models.HomeViewModels;
 
 namespace KinaUnaWeb.Services
@@ -7,11 +8,12 @@ namespace KinaUnaWeb.Services
     {
         private readonly ILanguagesHttpClient _languagesHttpClient;
         private readonly ITranslationsHttpClient _translationsHttpClient;
-        
-        public LocaleManager(ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient)
+        private readonly IPageTextsHttpClient _pageTextsHttpClient;
+        public LocaleManager(ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient, IPageTextsHttpClient pageTextsHttpClient)
         {
             _languagesHttpClient = languagesHttpClient;
             _translationsHttpClient = translationsHttpClient;
+            _pageTextsHttpClient = pageTextsHttpClient;
         }
 
         public async Task<SetLanguageIdViewModel> GetLanguageModel(int currentLanguageId)
@@ -29,6 +31,12 @@ namespace KinaUnaWeb.Services
         {
             string translation = await _translationsHttpClient.GetTranslation(word, page, languageId);
             return translation;
+        }
+
+        public async Task<KinaUnaText> GetPageTextByTitle(string title, string page, int languageId)
+        {
+            KinaUnaText text = await _pageTextsHttpClient.GetPageTextByTitle(title, page, languageId);
+            return text;
         }
     }
 }

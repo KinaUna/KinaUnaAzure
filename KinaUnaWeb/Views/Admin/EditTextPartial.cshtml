@@ -1,0 +1,74 @@
+﻿@using KinaUnaWeb.Services
+@using Syncfusion.EJ2
+@using Syncfusion.EJ2.RichTextEditor
+@using KinaUnaWeb.Models.HomeViewModels
+@model KinaUnaText
+@inject ILocaleManager LocaleManager
+@{
+    SetLanguageIdViewModel langModel = await LocaleManager.GetLanguageModel(Model.LanguageId);
+    KinaUnaLanguage language = langModel.LanguageList.SingleOrDefault(l => l.Id == Model.LanguageId);
+}
+
+<div>
+    <div class="row">
+        <div class="col-3">
+            Language:
+        </div>
+        <div class="col-6">@language?.Name</div>
+    </div>
+    <div class="space-20"></div>
+    <div class="row">
+        <div class="col-3">Title:</div>
+        @if (Model.Title.StartsWith("__"))
+        {
+            <div class="col-6">@Model.Title</div>
+        }
+        else
+        {
+            <div class="col-6">
+                <input id="editTitleInput" type="text" value="@Model.Title" onchange="updateTitle()"/>
+            </div>
+        }
+    </div>
+    <div class="space-20"></div>
+    <div class="row">
+        <div class="col-3">Page:</div>
+        <div class="col-6"> @Model.Page</div>
+    </div>
+    <div class="space-20"></div>
+    <div class="row">
+        <div class="col-3">Text:</div>
+        <div class="col-9">
+            @{
+                var toolbarItems = new[]
+                {
+                    "Bold", "Italic", "Underline", "StrikeThrough", "FontName", "FontSize", "FontColor", "BackgroundColor", "LowerCase", "UpperCase", "|", "Formats", "Alignments", "OrderedList", "UnorderedList",
+                    "Outdent", "Indent", "|", "CreateLink", "Image", "CreateTable", "|", "ClearFormat", "SourceCode", "FullScreen", "|", "Undo", "Redo"
+                };
+            }
+            <div class="e-input-group">
+                <ejs-richtexteditor id="textTextRTE" imageUploadSuccess="onImageUploadSuccess" focus="onrtefocus" created="onrtecreated" style="width: 100%; height: 550px;">
+                    <e-richtexteditor-toolbarsettings items="@toolbarItems" type="MultiRow"></e-richtexteditor-toolbarsettings>
+                    <e-richtexteditor-insertimagesettings saveUrl="/Admin/SaveRtfFile" path=""></e-richtexteditor-insertimagesettings>
+                    <e-content-template>
+                        @Model.Text
+                    </e-content-template>
+                </ejs-richtexteditor>
+            </div>
+            <ejs-scripts></ejs-scripts>
+        </div>
+    </div>
+    <div class="space-50"></div>
+    <div class="horizontal_bar_thin w-100"></div>
+    <div class="space-50"></div>
+    <div class="row">
+        <div class="col-12">
+            <input id="textPageInput" hidden="hidden" value="@Model.Page"/>
+            <input id="textTitleInput" hidden="hidden" value="@Model.Title"/>
+            <input id="textIdInput" hidden="hidden" type="number" value="@Model.Id"/>
+            <input id="textLanguageIdInput" hidden="hidden" type="number" value="@Model.LanguageId"/>
+            <a class="btn btn-primary float-right" onclick="saveText()">Save</a>
+            <a class="btn btn-secondary" data-dismiss="modal">Cancel</a>
+        </div>
+    </div>
+</div>

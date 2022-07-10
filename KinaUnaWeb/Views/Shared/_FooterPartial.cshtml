@@ -1,37 +1,8 @@
 ﻿@using KinaUna.Data
-@using Microsoft.AspNetCore.Http.Extensions
-@using Microsoft.AspNetCore.Localization
-@{ var returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl(); }
-@{
-    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
-    List<SelectListItem> cultureItems = new List<SelectListItem>();
-    SelectListItem selectEnglish = new SelectListItem();
-    selectEnglish.Text = "English";
-    selectEnglish.Value = "en-US";
-    SelectListItem selectDanish = new SelectListItem();
-    selectDanish.Text = "Dansk";
-    selectDanish.Value = "da-DK";
-    SelectListItem selectGerman = new SelectListItem();
-    selectGerman.Text = "Deutsch";
-    selectGerman.Value = "de-DE";
-    cultureItems.Add(selectEnglish);
-    cultureItems.Add(selectDanish);
-    cultureItems.Add(selectGerman);
-}
-<div class="container footer-brand" style="background: gainsboro;">
-    <div class="container">
-        <form id="selectLanguage" asp-controller="Home" asp-action="SetLanguage" asp-route-returnUrl="@returnUrl" method="post" class="form-horizontal" role="form" >
-            <div class="form-row">
-                <div>
-                    <div class="btn btn-link disabled" style="color: black; padding-top: 11px; margin: 0; margin-right: 8px;"> Language/Sprache/Sprog: </div>
-                </div>
-                <div class="col-5 col-md-3 col-lg-2">
-                    <select title="Language/Sprache/Sprog" class="selectpicker" data-style="btn-kinaunaselect" data-size="3" name="culture" onchange="this.form.submit()" asp-for="@requestCulture.RequestCulture.UICulture.Name" asp-items="cultureItems"></select>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model int;
+@inject ILocaleManager LocaleManager;
 <footer>
     <div class="container">
         <br />
@@ -39,12 +10,12 @@
         <ul>
             <li>
                 <a class="leavePage" asp-area="" asp-controller="Home" asp-action="About">
-                    <i class="material-icons">info</i><span class="d-sm-inline d-md-inline d-lg-inline"> About</span>
+                    <i class="material-icons">info</i><span class="d-sm-inline d-md-inline d-lg-inline"> @await LocaleManager.GetTranslation("About", PageNames.Layout, Model)</span>
                 </a>
             </li>
-            <li> <a class="leavePage" asp-controller="Home" asp-action="Privacy">Cookies & Privacy Policy</a></li>
-            <li><a class="leavePage" asp-controller="Home" asp-action="Terms">Terms & Conditions</a></li>
-            <li><a href="https://support.kinauna.com" target="_blank">Support</a></li>
+            <li> <a class="leavePage" asp-controller="Home" asp-action="Privacy">@await LocaleManager.GetTranslation("Cookies & Privacy Policy", PageNames.Layout, Model)</a></li>
+            <li><a class="leavePage" asp-controller="Home" asp-action="Terms">@await LocaleManager.GetTranslation("Terms & Conditions", PageNames.Layout, Model)</a></li>
+            <li><a href="https://support.kinauna.com" target="_blank">@await LocaleManager.GetTranslation("Support", PageNames.Layout, Model)</a></li>
         </ul>
     </div><br />
 </footer>
@@ -66,12 +37,6 @@
 </footer>
 <br/>
 <footer>
-    <div class="container" style="margin-bottom: 25px;">&copy; 2018 - @Constants.AppName</div><br />
+    <div class="container" style="margin-bottom: 25px;">&copy; 2022 - @Constants.AppName</div><br />
 </footer>
-<br /><br />
-<environment include="Production">
-    <script src="~/js/gdpr.js"></script>
-</environment>
-<environment include="Development">
-    <script src="~/js/gdpr_dev.js"></script>
-</environment>
+<div class="space-50"></div>

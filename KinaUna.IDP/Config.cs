@@ -86,20 +86,6 @@ namespace KinaUna.IDP
                     {
                         Constants.ProgenyApiName
                     }
-                },
-                new ApiResource
-                {
-                    Name = Constants.PivoqCoreApiName,
-                    DisplayName = "Pivoq Core API",
-                    UserClaims = new List<string> { JwtClaimTypes.Role, JwtClaimTypes.Subject, JwtClaimTypes.Email },
-                    ApiSecrets = new List<Secret>
-                    {
-                        new Secret(secretString.Sha256())
-                    },
-                    Scopes = new List<string>
-                    {
-                        Constants.PivoqCoreApiName
-                    }
                 }
             };
         }
@@ -108,9 +94,7 @@ namespace KinaUna.IDP
             new List<ApiScope>
             {
                 new ApiScope(Constants.ProgenyApiName, "KinaUna Progeny API",new List<string> {"role" }),
-                new ApiScope(Constants.MediaApiName, "KinaUna Media API",new List<string> {"role" }),
-                new ApiScope(Constants.PivoqCoreApiName, "Pivoq Core API", new List<string> { "role" })
-
+                new ApiScope(Constants.MediaApiName, "KinaUna Media API",new List<string> {"role" })
             };
 
         public static IEnumerable<Client> GetClients(IConfiguration configuration)
@@ -119,8 +103,6 @@ namespace KinaUna.IDP
             var webServerAzureUrl = configuration.GetValue<string>("WebServerAzure");
             var supportServerUrl = configuration.GetValue<string>("SupportServer");
             var webServerLocal = configuration.GetValue<string>("WebServerLocal");
-            var pivoqCoreWebServerUrl = configuration.GetValue<string>("PivoqCoreWebServer");
-            var pivoqWebServerLocal = configuration.GetValue<string>("PivoqWebServerLocal");
             var secretString = configuration.GetValue<string>("SecretString");
             List<string> corsList = new List<string>();
             corsList.Add(Constants.WebAppUrl);
@@ -128,10 +110,7 @@ namespace KinaUna.IDP
             corsList.Add(Constants.ProgenyApiUrl);
             corsList.Add(Constants.MediaApiUrl);
             corsList.Add(Constants.SupportUrl);
-            corsList.Add(Constants.PivoqCoreUrl);
-            corsList.Add(Constants.PivoqCoreApiUrl);
             corsList.Add("https://" + Constants.AppRootDomain);
-            corsList.Add("https://pivoq.at");
             return new List<Client>()
             {
                 new Client
@@ -406,95 +385,7 @@ namespace KinaUna.IDP
                     {
                         new Secret(secretString.Sha256())
                     }
-                },
-                new Client
-                {
-                    ClientName = "pivoqcoreweb",
-                    ClientId = "pivoqcorewebclient",
-                    ClientUri = pivoqCoreWebServerUrl,
-                    RequirePkce = false,
-                    AllowPlainTextPkce = false,
-                    RequireConsent = false,
-                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
-                    AccessTokenType = AccessTokenType.Reference,
-                    IdentityTokenLifetime = 2592000,
-                    AuthorizationCodeLifetime = 2592000,
-                    AccessTokenLifetime = 2592000,
-                    AllowOfflineAccess = true,
-                    AlwaysIncludeUserClaimsInIdToken = false,
-                    RefreshTokenExpiration = TokenExpiration.Sliding,
-                    UpdateAccessTokenClaimsOnRefresh = true,
-                    AllowedCorsOrigins = corsList,
-                    RedirectUris = new List<string>()
-                    {
-                        pivoqCoreWebServerUrl + "/signin-oidc"
-
-                    },
-                    PostLogoutRedirectUris = new List<string>()
-                    {
-                        pivoqCoreWebServerUrl + "/signout-callback-oidc"
-                    },
-                    AllowedScopes =
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.OfflineAccess,
-                        IdentityServerConstants.StandardScopes.Email,
-                        "roles",
-                        "timezone",
-                        "viewchild",
-                        "joindate",
-                        Constants.ProgenyApiName,
-                        Constants.MediaApiName,
-                        Constants.PivoqCoreApiName
-                    },
-                    ClientSecrets =
-                    {
-                        new Secret(secretString.Sha256())
-                    }
-                },
-                new Client
-                {
-                    ClientName = "PivoqWebLocal",
-                    ClientId = "pivoqwebclientlocal",
-                    ClientUri = pivoqWebServerLocal,
-                    RequirePkce = false,
-                    AllowPlainTextPkce = false,
-                    RequireConsent = false,
-                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
-                    AccessTokenType = AccessTokenType.Reference,
-                    AccessTokenLifetime = 2592000,
-                    AllowOfflineAccess = true,
-                    AlwaysIncludeUserClaimsInIdToken = false,
-                    UpdateAccessTokenClaimsOnRefresh = true,
-                    RedirectUris = new List<string>()
-                    {
-                        pivoqWebServerLocal + "/signin-oidc"
-
-                    },
-                    PostLogoutRedirectUris = new List<string>()
-                    {
-                        pivoqWebServerLocal + "/signout-callback-oidc"
-                    },
-                    AllowedScopes =
-                    {
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.OfflineAccess,
-                        IdentityServerConstants.StandardScopes.Email,
-                        "roles",
-                        "timezone",
-                        "viewchild",
-                        "joindate",
-                        Constants.ProgenyApiName,
-                        Constants.MediaApiName,
-                        Constants.PivoqCoreApiName
-                    },
-                    ClientSecrets =
-                    {
-                        new Secret(secretString.Sha256())
-                    }
-                },
+                }
             };
 
         }

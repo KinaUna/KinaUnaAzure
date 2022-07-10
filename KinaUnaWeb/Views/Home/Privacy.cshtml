@@ -1,123 +1,132 @@
-﻿@using KinaUna.Data
+﻿@inject IAntiforgery AntiForgery
+@inject ILocaleManager LocaleManager
+@using Microsoft.AspNetCore.Antiforgery
+@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.HomeViewModels.AboutViewModel
 @{
-    ViewData["Title"] = "Privacy";
+    ViewData["Title"] = await LocaleManager.GetTranslation("Privacy", PageNames.Layout, Model.LanguageId);
+    Model.KinaUnaText = await LocaleManager.GetPageTextByTitle("__Privacy", "Privacy", Model.LanguageId);
 }
 <h3 class="title">@ViewData["Title"]</h3>
-<div class="card">
-    <div class="card-body" style="background: lightyellow;">
-        <div class="card-title">Data you provide</div>
-        <div class="card-text">
-            There are no third parties involved. Your account information and data you provide is not shared with any<br />
-            You own your data and only the people you give access to it can see it.<br />
-            The developers (currently just me, @Constants.OwnerName) can of course access the data, to ensure that no illegal content is hosted on this site, or for troubleshooting.<br />
-            <br />
-            You can delete your data at any time.<br /><br />
-            <strong>To review and remove specific data:</strong><br />
-            <div style="margin-left: 10px;">
-                Click your name in the menu, go to <a asp-controller="Account" asp-action="MyAccount">MY ACCOUNT</a>, then click on MY DATA. In the My Posts section click the REVIEW ALL MY POSTS button.<br />
+<div>
+    <H4>
+        <img src="~/images/KinaUnaLogo_246x80.png"/>
+    </H4>
+    <br/>
+    <div style="max-width: 600px;" id="impressumTextDiv">
+        @Html.Raw(Model.KinaUnaText.Text ?? "")
+    </div>
+</div>
+<br/>
+
+@if (Model.CurrentUser.IsKinaUnaAdmin && Model.KinaUnaText != null)
+{
+    <div class="space-20"></div>
+    <div><a class="btn btn-outline-info" onclick="editModal('@Model.KinaUnaText.Id', 'Edit About')">Edit</a></div>
+    <div class="space-20"></div>
+    <script>
+        function onImageUploadSuccess(args) {
+            if (args.e.currentTarget.getResponseHeader('name') != null) {
+                args.file.name = args.e.currentTarget.getResponseHeader('name');
+                var filename = document.querySelectorAll(".e-file-name")[0];
+                filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
+                filename.title = args.file.name;
+            }
+        }
+
+        let defaultRTE;
+
+        function onrtecreated() {
+            setTimeout(function() {
+                    let rteElement = document.getElementById('textTextRTE').ej2_instances[0];
+                    rteElement.refreshUI();
+                },
+                1000);
+            defaultRTE = this;
+        }
+
+        function onrtefocus() {
+            let rteElement = document.getElementById('textTextRTE').ej2_instances[0];
+            rteElement.refreshUI();
+        }
+
+        function updateTitle() {
+            let editTitleSource = document.getElementById('editTitleInput');
+            let editTitleTarget = document.getElementById('textTitleInput');
+            editTitleTarget.value = editTitleSource.value;
+        }
+
+        $(document).ready(function () {
+            editModal = (textId, title) => {
+                try {
+                    $.ajax({
+                        type: 'GET',
+                        url: "/Admin/EditText?Id=" + textId,
+                        contentType: false,
+                        datatype: "html",
+                        async: true,
+                        success: function (res) {
+                            $('#editImpressumModal .modal-body').html(res);
+                            $('#editImpressumModal .modal-title').html(title);
+                            $('#editImpressumModal').modal('show');
+                        },
+                        error: function (err) {
+                            console.log(err);
+                        }
+                    });
+                    return false;
+                } catch (ex) {
+                    console.log(ex);
+                }
+                return false;
+            }
+        });
+
+        function saveText() {
+            let textId = document.getElementById('textIdInput').value;
+            let textPage = document.getElementById('textPageInput').value;
+            let textTitle = document.getElementById('textTitleInput').value;
+            let textLanguageId = document.getElementById('textLanguageIdInput').value;
+            let textText = defaultRTE.value;
+            let textItem = { Id: textId, Page: textPage, Title: textTitle, LanguageId: textLanguageId, Text: textText }
+            return $.ajax({
+                type: "POST",
+                beforeSend: function(request) { request.setRequestHeader("RequestVerificationToken", "@AntiForgery.GetTokens(Context).RequestToken"); },
+                url: "/Admin/EditText",
+                contentType: 'application/json',
+                data: JSON.stringify(textItem),
+                datatype: "html",
+                async: true,
+                success: function (data) {
+                    $('#editImpressumModal .modal-body').html(data);
+                    let impressumDiv = document.getElementById('impressumTextDiv');
+                    impressumDiv.innerHTML = textText;
+                    $('#editImpressumModal').modal('hide');
+                },
+                error: function (jqXhr, textStatus, errorThrown) {
+                    console.log(textStatus, errorThrown);
+                }
+            });
+        }
+    </script>
+}
+<div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editImpressumModal">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
             </div>
-            <br />
-            <strong>To remove a child's complete data:</strong> <br />
-            <div style="margin-left: 10px;">
-                Click your name in the menu, go to <a asp-controller="Family" asp-action="Index">MY FAMILY</a>, then in the Children section, click the DELETE button for the child you want to remove. Confirm that you really want to delete the data.<br />
-                At the moment there is no functionality to handle deletion of child data where multiple administrators are involved. At some point it will be implemented in a way that other administrators will be informed of the action and allowed to choose if the data should be deleted completely or just removed from the requesters account, and only the data provided by the requester is removed.<br />
-                If you have any ideas or suggestions about how this should work, let us know.
+            <div class="modal-body">
             </div>
-            <br />
-            <strong>To remove your own account and data:</strong> <br />
-            <div style="margin-left: 10px;">
-                Click your name in the menu, go to <a asp-controller="Account" asp-action="MyAccount">MY ACCOUNT</a>, then click the MY DATA link.<br />
-                Under My Account Info click the DELETE MY ACCOUNT button. Confirm that you really want to delete the data.<br />
-                If you are the sole administrator of a child, all the data for that child will be deleted as well.<br />
-                If there are other administrators of children that you administer, they will remain.
-            </div>
-            <br />
-            <strong>To view or download your own data:</strong> <br />
-            <div style="margin-left: 10px;">
-                Click your name in the menu, go to <a asp-controller="Account" asp-action="MyAccount">MY ACCOUNT</a>, then click the MY DATA link.<br />
-                In the My Posts section click on the button for the type of data you want to view or download.<br />
-                A spreadsheet will be displayed that you can save as an Excel or PDF file.
-            </div>
-            <br />
-            <strong>To view or download a child's data:</strong> <br />
-            <div style="margin-left: 10px;">
-                Click your name in the menu, go to <a asp-controller="AccessManagement" asp-action="Index">MY FAMILY</a>, then in the Data section click on the VIEW SPREADSHEET button for the child.<br />
-                Or, click on your name in the menu, go to go to <a asp-controller="Account" asp-action="MyAccount">MY ACCOUNT</a>, then click the MY DATA link. In the My Children section click on the VIEW SPREADSHEET button for the child.<br />
-                A spreadsheet will be displayed that you can save as an Excel or PDF file.
-            </div>
-            <br />
         </div>
     </div>
 </div>
-<div class="card">
-    <div class="card-body" style="background: lightyellow;">
-        <div class="card-title">Facebook, Google, or Microsoft Log-in</div>
-        <div class="card-text">
-            If you use an external log-in you give this web application access to your account info.<br />
-            This is a minumum requirement by these services and is not used for anything. <br />
-        </div>
-    </div>
-</div>
-<div class="card">
-    <div class="card-body" style="background: lightyellow;">
-        <div class="card-title">Cookies</div>
-        <div class="card-text">
-            Cookies are used to store login state, language settings, and check if the cookie banner has been accepted, nothing else.<br /><br />
-            Cookies used by @Constants.AppName:<br />
-            <table class="table bg-light" style="margin-left: 25px; margin-top: 25px;">
-                <thead class="thead-dark bg-dark text-white">
-                    <tr>
-                        <td style="padding: 15px;">Cookie (domain)</td>
-                        <td style="padding: 15px;">What is it used for?</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding: 15px;">.AspNetCore.Antiforgery. (@Constants.AppRootDomain)</td>
-                        <td style="padding: 15px;">This is used to validate form submissions, so when you submit data it verifies if it was actually sent by you.</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px;">.AspNetCore.Culture (@Constants.AppRootDomain)</td>
-                        <td style="padding: 15px;">This is used to save your language settings.</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px;">.AspNetCore.Identity.Application (@Constants.AppRootDomain)</td>
-                        <td style="padding: 15px;">This is used for login and account verification. </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px;">kinaUnaCompliancev100 (@Constants.AppRootDomain)</td>
-                        <td style="padding: 15px;">This is used to determine if we should show or hide the Cookie Consent notifcation.<br />If it doesn't exist the Cookie Consent notification will be shown.</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px;">__cfduid (@Constants.AppRootDomain)</td>
-                        <td style="padding: 15px;">The __cfduid cookie is used to identify individual clients behind a shared IP address and apply settings on a per-client basis.<br />It does not correspond to any user ID in the application, and does not store any personally identifiable information. </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px;">CONSENT (.gstatic.com)</td>
-                        <td style="padding: 15px;">
-                            KinaUna.com uses Google fonts, this cookie is used by Google to optimize delivery of fonts.<br />It does not correspond to any user ID in the application, and does not store any personally identifiable information.<br />
-                            Read more here: <a href="https://developers.google.com/fonts/faq#what_does_using_the_google_fonts_api_mean_for_the_privacy_of_my_users">Google Fonts FAQ</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px;">NID (.gstatic.com)</td>
-                        <td style="padding: 15px;">
-                            As above, this cookie is used by Google to optimize delivery of fonts.<br />It does not correspond to any user ID in the application, and does not store any personally identifiable information.<br />
-                            Read more here: <a href="https://developers.google.com/fonts/faq#what_does_using_the_google_fonts_api_mean_for_the_privacy_of_my_users">Google Fonts FAQ</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-<div class="card">
-    <div class="card-body" style="background: lightyellow;">
-        <div class="card-title">Further Information</div>
-        <div class="card-text">
-            If you have questions or comments regarding the privacy policy, your data, or cookies used by @Constants.AppName, send an email to <a href="mailto://@Constants.SupportEmail">@Constants.SupportEmail</a>.<br />
-            <br />
-            You can find the terms of use here: <a asp-controller="Home" asp-action="Terms">Terms</a><br />
-        </div>
-    </div>
-</div>
+<style>
+    .e-rte-image-popup.e-rte-quick-popup {
+        z-index: 20001 !important;
+    }
+</style> 

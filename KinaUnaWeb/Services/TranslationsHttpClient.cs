@@ -113,11 +113,15 @@ namespace KinaUnaWeb.Services
                 languageId = 1;
             }
             string translation = "";
-            List<TextTranslation> translationsList = new List<TextTranslation>();
+            List<TextTranslation> translationsList;
             string cachedTranslationsList = await _cache.GetStringAsync("PageTranslations" + page + "&Lang" + languageId);
             if (!updateCache && !string.IsNullOrEmpty(cachedTranslationsList))
             {
                 translationsList = JsonConvert.DeserializeObject<List<TextTranslation>>(cachedTranslationsList);
+                if (translationsList != null)
+                {
+                    translation = translationsList.FirstOrDefault(t =>t.LanguageId == languageId && t.Word== word)?.Translation;
+                }
             }
             else
             {
@@ -125,57 +129,34 @@ namespace KinaUnaWeb.Services
                 _httpClient.SetBearerToken(accessToken);
 
                 string admininfoApiPath = "/api/Translations/PageTranslations/" + languageId + "/" + page;
-                HttpResponseMessage admininfoResponse = await _httpClient.GetAsync(admininfoApiPath);
+                HttpResponseMessage translationResponse = await _httpClient.GetAsync(admininfoApiPath);
 
-                if (admininfoResponse.IsSuccessStatusCode)
+                if (translationResponse.IsSuccessStatusCode)
                 {
-                    string translationsListAsString = await admininfoResponse.Content.ReadAsStringAsync();
+                    string translationsListAsString = await translationResponse.Content.ReadAsStringAsync();
                     translationsList = JsonConvert.DeserializeObject<List<TextTranslation>>(translationsListAsString);
-                    await _cache.SetStringAsync("PageTranslations" + page + "&Lang" + languageId, JsonConvert.SerializeObject(translationsList), _cacheExpirationLong);
-                }
-            }
-
-            if (translationsList != null && translationsList.Any())
-            {
-                List<TextTranslation> translations = translationsList.Where(t => t.Word == word && t.Page == page && t.LanguageId == languageId).ToList();
-                if (translations.Count > 1)
-                {
-                    int count = 0;
-                    foreach (TextTranslation translationItem in translations)
+                    
+                    if (translationsList != null && translationsList.Any())
                     {
-                        if (count == 0)
+                        await _cache.SetStringAsync("PageTranslations" + page + "&Lang" + languageId, JsonConvert.SerializeObject(translationsList), _cacheExpirationLong);
+                        TextTranslation textTranslation = translationsList.FirstOrDefault(t => t.Word == word && t.Page == page && t.LanguageId == languageId);
+                        if (textTranslation != null)
                         {
-                            translation = translationItem.Translation;
+                            translation = textTranslation.Translation;
                         }
-                        else
-                        {
-                            await DeleteSingleItemTranslation(translationItem);
-                        }
-                        count++;
-                    }
-                }
-                else
-                {
-                    TextTranslation singleTranslation = translations.SingleOrDefault(t => t.Word == word && t.Page == page && t.LanguageId == languageId);
-                    if (singleTranslation != null)
-                    {
-                        translation = singleTranslation.Translation;
                     }
                 }
             }
 
             if (string.IsNullOrEmpty(translation))
             {
-                TextTranslation textTranslation = new TextTranslation();
-                textTranslation.Word = word;
-                textTranslation.Page = page;
-                textTranslation.Translation = word;
-                textTranslation.LanguageId = languageId;
-
-                textTranslation = await AddTranslation(textTranslation);
-                translation = textTranslation.Translation;
+                TextTranslation translationItem = new TextTranslation();
+                translationItem.LanguageId = languageId;
+                translationItem.Translation = word;
+                translationItem.Page = page;
+                translationItem = await AddTranslation(translationItem);
+                translation = translationItem.Translation;
             }
-
             return translation;
 
         }
@@ -196,7 +177,7 @@ namespace KinaUnaWeb.Services
                 List<KinaUnaLanguage> languages = await GetAllLanguages();
                 foreach (KinaUnaLanguage language in languages)
                 {
-                    _cache.Remove("PageTranslations" + translation.Page + "&Lang" + language.Id);
+                    await _cache.RemoveAsync("PageTranslations" + translation.Page + "&Lang" + language.Id);
                     _ = await GetAllTranslations(language.Id, true);
                 }
             }

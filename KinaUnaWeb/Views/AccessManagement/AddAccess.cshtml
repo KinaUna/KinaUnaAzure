@@ -1,4 +1,6 @@
-﻿@model KinaUnaWeb.Models.FamilyViewModels.UserAccessViewModel
+﻿@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.FamilyViewModels.UserAccessViewModel
+@inject ILocaleManager LocaleManager
 <H3 class="title">Add user</H3>
 <form asp-action="AddAccess" role="form">
     @if (Model.ProgenyList.Count > 1)

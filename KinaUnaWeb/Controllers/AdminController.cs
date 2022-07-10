@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -12,6 +13,7 @@ using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
 using KinaUnaWeb.Models.AdminViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 
 namespace KinaUnaWeb.Controllers
@@ -26,8 +28,10 @@ namespace KinaUnaWeb.Controllers
         private readonly IAuthHttpClient _authHttpClient;
         private readonly ILanguagesHttpClient _languagesHttpClient;
         private readonly ITranslationsHttpClient _translationsHttpClient;
+        private readonly IPageTextsHttpClient _pageTextsHttpClient;
+        private readonly ImageStore _imageStore;
         public AdminController(WebDbContext context, IBackgroundTaskQueue queue, IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender, IAuthHttpClient authHttpClient,
-            IUserInfosHttpClient userInfosHttpClient, ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient)
+            IUserInfosHttpClient userInfosHttpClient, ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient, IPageTextsHttpClient pageTextsHttpClient, ImageStore imageStore)
         {
             _context = context;
             Queue = queue;
@@ -37,6 +41,8 @@ namespace KinaUnaWeb.Controllers
             _userInfosHttpClient = userInfosHttpClient;
             _languagesHttpClient = languagesHttpClient;
             _translationsHttpClient = translationsHttpClient;
+            _pageTextsHttpClient = pageTextsHttpClient;
+            _imageStore = imageStore;
         }
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Local
@@ -364,6 +370,184 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("ManageTranslations", "Admin");
         }
 
+        [Authorize]
+        public async Task<IActionResult> EditText(int Id)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo != null && userInfo.IsKinaUnaAdmin)
+            {
+                KinaUnaText model = await _pageTextsHttpClient.GetPageTextById(Id);
+
+                return PartialView("EditTextPartial", model);
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> EditText([FromBody] KinaUnaText model)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo != null && userInfo.IsKinaUnaAdmin)
+            {
+                KinaUnaText updateText = await _pageTextsHttpClient.GetPageTextById(model.Id);
+                updateText.Text = model.Text;
+                KinaUnaText updatedText = await _pageTextsHttpClient.UpdatePageText(updateText);
+
+                // Update caches
+                await _pageTextsHttpClient.GetPageTextById(updatedText.Id, true);
+                List<KinaUnaLanguage> languages = await _languagesHttpClient.GetAllLanguages();
+                foreach (KinaUnaLanguage lang in languages)
+                {
+                    _ = await _pageTextsHttpClient.GetPageTextByTitle(updatedText.Title, updatedText.Page, lang.Id, true);
+                    await _pageTextsHttpClient.GetAllPivoqTexts(lang.Id, true);
+                }
+
+                return PartialView("EditTextPartial", updateText);
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> EditTextTranslation(int textId, int languageId)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo != null && userInfo.IsKinaUnaAdmin)
+            {
+                ManageKinaUnaTextsViewModel model = new ManageKinaUnaTextsViewModel();
+                model.LanguageId = Request.GetLanguageIdFromCookie();
+                
+                List<KinaUnaText> allTexts = await _pageTextsHttpClient.GetAllPivoqTexts(languageId, true);
+                model.KinaUnaText = allTexts.SingleOrDefault(t => t.TextId == textId && t.LanguageId == languageId);
+
+                model.LanguagesList = await _languagesHttpClient.GetAllLanguages();
+                KinaUnaLanguage selectedLanguage = model.LanguagesList.SingleOrDefault(l => l.Id == languageId);
+                if (selectedLanguage != null)
+                {
+                    model.Language = model.LanguagesList.IndexOf(selectedLanguage);
+                }
+                else
+                {
+                    model.Language = 0;
+                }
+
+                return PartialView("EditTextTranslationPartial", model);
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> EditTextTranslation([FromBody] KinaUnaText model)
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo != null && userInfo.IsKinaUnaAdmin)
+            {
+                KinaUnaText updateText = await _pageTextsHttpClient.GetPageTextById(model.Id);
+                updateText.Text = model.Text;
+                KinaUnaText updatedText = await _pageTextsHttpClient.UpdatePageText(updateText);
+
+                // Update caches
+                await _pageTextsHttpClient.GetPageTextById(updatedText.Id, true);
+                List<KinaUnaLanguage> languages = await _languagesHttpClient.GetAllLanguages();
+                foreach (KinaUnaLanguage lang in languages)
+                {
+                    _ = await _pageTextsHttpClient.GetPageTextByTitle(updatedText.Title, updatedText.Page, lang.Id, true);
+                    await _pageTextsHttpClient.GetAllPivoqTexts(lang.Id, true);
+                }
+
+                ManageKinaUnaTextsViewModel editTranslationModel = new ManageKinaUnaTextsViewModel();
+                editTranslationModel.KinaUnaText = updatedText;
+                editTranslationModel.LanguageId = Request.GetLanguageIdFromCookie();
+                editTranslationModel.LanguagesList = languages;
+                KinaUnaLanguage selectedLanguage = editTranslationModel.LanguagesList.SingleOrDefault(l => l.Id == updatedText.LanguageId);
+                if (selectedLanguage != null)
+                {
+                    editTranslationModel.Language = editTranslationModel.LanguagesList.IndexOf(selectedLanguage);
+                }
+                else
+                {
+                    editTranslationModel.Language = 0;
+                }
+
+                editTranslationModel.MessageId = 1;
+                return PartialView("EditTextTranslationPartial", editTranslationModel);
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> SaveRtfFile(IList<IFormFile> UploadFiles)
+        {
+            try
+            {
+                if (UploadFiles.Any())
+                {
+                    foreach (IFormFile file in UploadFiles)
+                    {
+                        string filename;
+                        await using (Stream stream = file.OpenReadStream())
+                        {
+                            filename = await _imageStore.SaveImage(stream, BlobContainers.KinaUnaTexts);
+                        }
+
+                        string resultName = _imageStore.UriFor(filename, BlobContainers.KinaUnaTexts);
+                        Response.Clear();
+                        Response.ContentType = "application/json; charset=utf-8";
+                        Response.Headers.Add("name", resultName);
+                        Response.StatusCode = 204;
+
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Response.Clear();
+                Response.ContentType = "application/json; charset=utf-8";
+                Response.StatusCode = 204;
+                //Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = "No Content";
+                //Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = e.Message;
+            }
+
+            return Content("");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> ManageTexts()
+        {
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo != null && userInfo.IsKinaUnaAdmin)
+            {
+                ManageKinaUnaTextsViewModel model = new ManageKinaUnaTextsViewModel();
+                model.LanguageId = Request.GetLanguageIdFromCookie();
+                model.Texts = await _pageTextsHttpClient.GetAllPivoqTexts(1);
+                model.PagesList = new List<string>();
+                model.TitlesList = new List<string>();
+                foreach (KinaUnaText textItem in model.Texts)
+                {
+                    if (!model.PagesList.Contains(textItem.Page))
+                    {
+                        model.PagesList.Add(textItem.Page);
+                    }
+
+                    if (!model.TitlesList.Contains(textItem.Title))
+                    {
+                        model.TitlesList.Add(textItem.Title);
+                    }
+                }
+
+                model.LanguagesList = await _languagesHttpClient.GetAllLanguages();
+                return View(model);
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
         public IActionResult SendAdminMessage()
         {
             // Todo: Implement Admin as role instead

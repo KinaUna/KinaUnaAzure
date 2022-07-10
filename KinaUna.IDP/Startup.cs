@@ -39,11 +39,10 @@ namespace KinaUna.IDP
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<CookiePolicyOptions>(options =>
+            _ = services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                // Todo: Fix consent to work with my cookies and language selection
-                options.CheckConsentNeeded = _ => false;
+                options.CheckConsentNeeded = delegate { return true; };
                 options.MinimumSameSitePolicy = SameSiteMode.Lax;
                 options.Secure = CookieSecurePolicy.Always;
             });
@@ -117,11 +116,12 @@ namespace KinaUna.IDP
             services.AddTransient<ILoginService<ApplicationUser>, EfLoginService>();
             services.AddTransient<IRedirectService, RedirectService>();
             services.AddTransient<IEmailSender, EmailSender>();
+            services.AddTransient<ILocaleManager, LocaleManager>();
 
-            services.AddLocalization(o =>
-            {
-                o.ResourcesPath = "Resources";
-            });
+            //services.AddLocalization(o =>
+            //{
+            //    o.ResourcesPath = "Resources";
+            //});
             
             X509Certificate2 cert = null;
             using (X509Store certStore = new X509Store(StoreName.My, StoreLocation.CurrentUser))
@@ -187,7 +187,8 @@ namespace KinaUna.IDP
             services.AddDistributedMemoryCache();
 
             services.AddControllersWithViews()
-                .AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix).AddRazorRuntimeCompilation();
+                //.AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix)
+                .AddRazorRuntimeCompilation();
 
             services.AddIdentityServer(x =>
                 {

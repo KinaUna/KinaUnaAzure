@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 using KinaUna.Data;
+using KinaUna.Data.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
@@ -90,6 +91,14 @@ namespace KinaUna.IDP.Controllers
                     new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain }
                 );
             }
+            return Redirect(returnUrl);
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult SetLanguageId(string languageId, string returnUrl)
+        {
+            Response.SetLanguageCookie(languageId);
             return Redirect(returnUrl);
         }
     }

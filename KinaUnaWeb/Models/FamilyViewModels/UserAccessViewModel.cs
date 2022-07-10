@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.FamilyViewModels
 {
-    public class UserAccessViewModel
+    public class UserAccessViewModel: BaseViewModel
     {
         public int AccessId { get; set; }
         public int ProgenyId { get; set; }

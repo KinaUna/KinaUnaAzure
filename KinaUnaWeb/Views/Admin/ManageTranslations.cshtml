@@ -4,28 +4,26 @@
 
 }
 <div class="space-20"></div>
-<div class="pivoq_section ">
-    <div class="container">
-        <div class="pivoq_space20"></div>
-        <h2>@ViewData["Title"]</h2>
-        <div class="space-20"></div>
+<div class="container">
+    <div class="space-20"></div>
+    <h2>@ViewData["Title"]</h2>
+    <div class="space-20"></div>
 
-        @if (Model.Translations.Any())
+    @if (Model.Translations.Any())
+    {
+        if (Model.PagesList.Any())
         {
-            if (Model.PagesList.Any())
-            {
-                <ul id="view-ul" class="select-view-ul" style="flex-wrap: wrap; justify-content: center;">
-                    @foreach (string pageItem in Model.PagesList)
-                    {
-                        <li class="select-view-item" data-viewid="@pageItem">@pageItem</li>
-                    }
-                </ul>
+            <ul id="view-ul" class="select-view-ul" style="flex-wrap: wrap; justify-content: center;">
+                @foreach (string pageItem in Model.PagesList)
+                {
+                    <li class="select-view-item" data-viewid="@pageItem">@pageItem</li>
+                }
+            </ul>
 
-            }
         }
-        <div class="space-20"></div>
-        <div id="translationsList"></div>
-    </div>
+    }
+    <div class="space-20"></div>
+    <div id="translationsList"></div>
 </div>
 <div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editTranslationModal">
     <div class="modal-dialog modal-lg" role="document">

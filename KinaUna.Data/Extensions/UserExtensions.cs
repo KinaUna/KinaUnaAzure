@@ -15,7 +15,13 @@ namespace KinaUna.Data.Extensions
         /// <returns>string: The User's email address.</returns>
         public static string GetEmail(this ClaimsPrincipal principal)
         {
-            return principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.Email))?.Value;
+            string userEmailString = principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.Email))?.Value;
+            if (string.IsNullOrEmpty(userEmailString))
+            {
+                userEmailString = Constants.DefaultUserEmail;
+            }
+
+            return userEmailString;
         }
 
         /// <summary>
@@ -25,7 +31,13 @@ namespace KinaUna.Data.Extensions
         /// <returns>string: The User's User Id.</returns>
         public static string GetUserId(this ClaimsPrincipal principal)
         {
-            return principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.Subject))?.Value;
+            string userIdString = principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.Subject))?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                userIdString = Constants.DefaultUserId;
+            }
+
+            return userIdString;
         }
 
         public static string GetUserTimeZone(this ClaimsPrincipal principal)
@@ -35,7 +47,13 @@ namespace KinaUna.Data.Extensions
 
         public static string GetUserUserName(this ClaimsPrincipal principal)
         {
-            return principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.PreferredUserName ))?.Value;
+            string userNameString = principal?.FindFirst(x => x.Type.Equals(JwtClaimTypes.PreferredUserName))?.Value;
+            if (string.IsNullOrEmpty(userNameString))
+            {
+                userNameString = "Unknown user name";
+            }
+
+            return userNameString;
         }
     }
 }
