@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class UserInfoViewModel
+    public class UserInfoViewModel: BaseViewModel
     {
         public int Id { get; set; }
         public string UserId { get; set; }

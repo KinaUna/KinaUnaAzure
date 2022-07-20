@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class PictureViewModel
+    public class PictureViewModel: BaseViewModel
     {
         public int PictureId { get; set; }
 

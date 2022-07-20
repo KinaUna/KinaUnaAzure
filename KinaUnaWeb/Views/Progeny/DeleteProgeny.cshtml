@@ -1,16 +1,20 @@
-﻿@model KinaUna.Data.Models.Progeny
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUna.Data.Models.Progeny
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Delete child: " + Model.Name;
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Remove child", PageNames.Progeny, languageId) + Model.NickName;
 }
-<H3 class="title">Delete Profile for @Model.NickName</H3>
+<h2>@ViewData["Title"]</h2>
 <form asp-action="DeleteProgeny" role="form">
     <div class="modal-body form-horizontal">
-        Are you sure you want to delete @Model.Name?
+        @await LocaleManager.GetTranslation("Are you sure you want to remove this child?", PageNames.Progeny, languageId) @Model.Name?
     </div>
     <div>
-        Birthday: @Model.BirthDay
+        @await LocaleManager.GetTranslation("Birthday:", PageNames.Progeny, languageId) @Model.BirthDay
     </div>
-    <div>All data for this child will be deleted, including pictures, videos, calendar events, vocabulary, skills, friends, notes, measurements, sleep, notes, contacts, and vaccinations. </div>
+    <div>@await LocaleManager.GetTranslation("All data for this child will be deleted, including pictures, videos, calendar events, vocabulary, skills, friends, notes, measurements, sleep, notes, contacts, and vaccinations.", PageNames.Progeny, languageId) </div>
     <input asp-for="Id" class="form-control" value="@Model.Id" type="hidden" />
-    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">Cancel</a></div>
+    <div><Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - remove child", PageNames.Progeny, languageId)</Button><a class="btn btn-danger leavePage" asp-controller="Family" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, languageId)</a></div>
 </form>

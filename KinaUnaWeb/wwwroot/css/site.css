@@ -766,6 +766,105 @@ button.Zebra_DatePicker_Icon {
     font-size: 14px;
 }
 
+.btn {
+    position: relative;
+    padding: 12px 30px;
+    margin: .3125rem 1px;
+    font-size: .75rem;
+    font-weight: 400;
+    line-height: 1.428571;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    cursor: pointer;
+    background-color: transparent;
+    border: 0;
+    border-radius: .2rem;
+    outline: 0;
+    transition: box-shadow .2s cubic-bezier(.4, 0, 1, 1), background-color .2s cubic-bezier(.4, 0, .2, 1);
+    will-change: box-shadow, transform;
+}
+
+.btn, .btn.btn-default {
+    color: #fff;
+    background-color: #999;
+    border-color: #999;
+    box-shadow: 0 2px 2px 0 hsl(0deg 0% 60% / 14%), 0 3px 1px -2px hsl(0deg 0% 60% / 20%), 0 1px 5px 0 hsl(0deg 0% 60% / 12%);
+}
+
+.btn.btn-success {
+    color: #fff;
+    background-color: #4caf50;
+    border-color: #4caf50;
+    box-shadow: 0 2px 2px 0 rgb(76 175 80 / 14%), 0 3px 1px -2px rgb(76 175 80 / 20%), 0 1px 5px 0 rgb(76 175 80 / 12%);
+}
+
+.btn.btn-success:active, .btn.btn-success:focus, .btn.btn-success:hover {
+    box-shadow: 0 14px 26px -12px rgb(76 175 80 / 42%), 0 4px 23px 0 rgb(0 0 0 / 12%), 0 8px 10px -5px rgb(76 175 80 / 20%);
+}
+
+.btn.btn-primary {
+    color: #fff;
+    background-color: #9c27b0;
+    border-color: #9c27b0;
+    box-shadow: 0 2px 2px 0 rgb(156 39 176 / 14%), 0 3px 1px -2px rgb(156 39 176 / 20%), 0 1px 5px 0 rgb(156 39 176 / 12%);
+}
+
+.btn.btn-primary:active, .btn.btn-primary:focus, .btn.btn-primary:hover {
+    box-shadow: 0 14px 26px -12px rgb(156 39 176 / 42%), 0 4px 23px 0 rgb(0 0 0 / 12%), 0 8px 10px -5px rgb(156 39 176 / 20%);
+}
+
+.btn.btn-info {
+    color: #fff;
+    background-color: #00bcd4;
+    border-color: #00bcd4;
+    box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
+}
+
+.btn.btn-info:active, .btn.btn-info:focus, .btn.btn-info:hover {
+    box-shadow: 0 14px 26px -12px rgb(0 188 212 / 42%), 0 4px 23px 0 rgb(0 0 0 / 12%), 0 8px 10px -5px rgb(0 188 212 / 20%);
+}
+
+.btn.btn-danger {
+    color: #fff;
+    background-color: #f44336;
+    border-color: #f44336;
+    box-shadow: 0 2px 2px 0 rgb(244 67 54 / 14%), 0 3px 1px -2px rgb(244 67 54 / 20%), 0 1px 5px 0 rgb(244 67 54 / 12%);
+}
+
+.btn.btn-danger:active, .btn.btn-danger:focus, .btn.btn-danger:hover {
+    box-shadow: 0 14px 26px -12px rgb(244 67 54 / 42%), 0 4px 23px 0 rgb(0 0 0 / 12%), 0 8px 10px -5px rgb(244 67 54 / 20%);
+}
+
+.btn.btn-round {
+    border-radius: 30px;
+}
+
+.btn-group-vertical > .btn, .btn-group > .btn {
+    position: relative;
+    flex: 0 1 auto;
+}
+
+.btn-group, .btn-group-vertical {
+    position: relative;
+    margin: 10px 1px;
+}
+
+.btn-group-vertical .btn, .btn-group-vertical .btn + .btn, .btn-group-vertical .btn-group, .btn-group-vertical .btn:active, .btn-group-vertical > .btn-group, .btn-group .btn, .btn-group .btn + .btn, .btn-group .btn-group, .btn-group .btn:active, .btn-group > .btn-group {
+    margin: 0;
+}
+
+.btn-group > .btn:first-child {
+    margin-left: 0;
+}
+
+.btn-group-sm .btn, .btn-group-sm > .btn, .btn.btn-sm {
+    padding: .40625rem 1.25rem;
+    font-size: .6875rem;
+    line-height: 1.5;
+    border-radius: .2rem;
+}
+
 .btn-kinaunaselect {
     background: no-repeat bottom,50% calc(100% - 1px);
     transition: background 0 ease-out !important;
@@ -797,6 +896,18 @@ button.Zebra_DatePicker_Icon {
 
 .fileinput-exists .fileinput-new, .fileinput-new .fileinput-exists {
     display: none;
+}
+
+.form-group input[type=file] {
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
 }
 
 .fixed-bottom, .fixed-top {
@@ -1124,4 +1235,163 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     margin: -60px 30px 0;
     border-radius: 6px;
     box-shadow: 0 16px 24px 2px rgb(0 0 0 / 14%), 0 6px 30px 5px rgb(0 0 0 / 12%), 0 8px 10px -5px rgb(0 0 0 / 20%);
+}
+
+.badge {
+    padding: 5px 12px;
+    text-transform: uppercase;
+    font-size: 10px;
+    color: #fff;
+}
+
+    .badge.badge-rose {
+    background-color: #e91e63;
+    }
+
+.badge-pill {
+    padding-right: 0.6em;
+    padding-left: 0.6em;
+    border-radius: 10rem;
+}
+
+.slider {
+    background: #c8c8c8;
+}
+
+.noUi-target {
+    background: #c8c8c8;
+    border-radius: 4px;
+}
+
+.noUi-horizontal {
+    height: 2px;
+    margin: 15px 0;
+}
+
+.noUi-target {
+    position: relative;
+    direction: ltr;
+}
+
+.noUi-target, .noUi-target * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -ms-touch-action: none;
+    touch-action: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    box-sizing: border-box;
+}
+.noUi-base {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 1;
+}
+
+.noUi-base, .noUi-handle {
+    transform: translateZ(0);
+}
+
+.noUi-handle {
+    position: relative;
+    z-index: 1;
+}
+
+.noUi-origin {
+    position: absolute;
+    height: 0;
+    width: 0;
+    margin: 0;
+    border-radius: 0;
+    height: 2px;
+    background: #c8c8c8;
+}
+
+.slider.slider-info .noUi-connect {
+    background-color: #00bcd4;
+}
+
+.slider .noUi-connect {
+    background-color: #9c27b0;
+    border-radius: 4px;
+}
+
+.noUi-connect {
+    background: #3fb8af;
+    transition: background .45s;
+}
+
+.noUi-connect {
+    position: absolute;
+    right: 0;
+    top: 0;
+    left: 0;
+    bottom: 0;
+}
+
+.slider .noUi-handle {
+    border-color: #9c27b0;
+}
+
+.slider.slider-info .noUi-handle {
+    border-color: #00bcd4;
+}
+.card {
+    border: 0;
+    margin-bottom: 30px;
+    margin-top: 30px;
+    border-radius: 6px;
+    color: rgba(0, 0, 0, .87);
+    background: #fff;
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border-radius: .25rem;
+    font-size: .875rem;
+    box-shadow: 0 2px 2px 0 rgb(0 0 0 / 14%), 0 3px 1px -2px rgb(0 0 0 / 20%), 0 1px 5px 0 rgb(0 0 0 / 12%);
+}
+
+.card .card-header {
+    border-radius: 3px;
+    padding: 1rem 15px;
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-top: -5px;
+    margin-bottom: 15px;
+    border: 0;
+    /* background: linear-gradient(60deg, #aaaaaa, #666666); */
+}
+
+.card.bg-warning, .card .card-header-warning, .card.card-rotate.bg-warning .back, .card.card-rotate.bg-warning .front {
+    background: linear-gradient(60deg, #ffa726, #f57c00);
+}
+
+.card .card-header-warning {
+    box-shadow: 0 5px 20px 0 rgb(0 0 0 / 20%), 0 13px 24px -11px rgb(255 152 0 / 60%);
+}
+
+.card-plain {
+    background: transparent;
+    box-shadow: none;
+}
+
+.card-plain .card-header:not(.card-avatar) {
+    margin-left: 0;
+    margin-right: 0;
+}
+.card[class*=bg-], .card[class*=bg-] .card-title, .card[class*=bg-] .card-title a, .card[class*=bg-] .icon i, .card [class*=header-], .card [class*=header-] .card-title, .card [class*=header-] .card-title a, .card [class*=header-] .icon i {
+    color: #fff;
+}
+
+.h1, .h2, .h3, .h4, h1, h2, h3, h4, h5, h6 {
+    font-family: Roboto, Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    line-height: 1.5em;
 }

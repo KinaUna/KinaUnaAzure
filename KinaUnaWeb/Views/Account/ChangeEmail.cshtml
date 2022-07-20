@@ -1,18 +1,26 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.UserInfoViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.UserInfoViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Change Email";
+    ViewData["Title"] = await LocaleManager.GetTranslation("Change email", PageNames.Account, Model.LanguageId);
 }
-
-<h2>Change Email</h2>
-
+<h2>@ViewData["Title"]</h2>
 <div class="row">
     <div class="col-md-10">
-        In order to change your email address we need to confirm that you are the owner.<br/>
-        Until this confirmed you will not have access to all the content that you have access to now.<br />
-        Once the email address is confirmed, the access lists will be updated and you can access the same content as before.<br/>
-        Click the button below to proceed.<br/>
+        @await LocaleManager.GetTranslation("In order to change your email address we need to confirm that you are the owner.", PageNames.Account, Model.LanguageId)
+        <br/>
+        @await LocaleManager.GetTranslation("Until this confirmed you will not have access to all the content that you have access to now.", PageNames.Account, Model.LanguageId)
+        
+        <br />
+        @await LocaleManager.GetTranslation("Once the email address is confirmed, the access lists will be updated and you can access the same content as before.", PageNames.Account, Model.LanguageId)
+        
+        <br/>
+        @await LocaleManager.GetTranslation("Click the button below to proceed.", PageNames.Account, Model.LanguageId)
+        
+        <br/>
         <form id="loginForm" action="@Model.ChangeLink" method="post" target="loginFrame" style="float: right;">
-            <button id="verifyEmailButton" type="submit" class="btn btn-success" data-toggle="modal" data-target="#loginModal"><span class="fas fa-sign-in-alt"></span> Change Email</button>
+            <button id="verifyEmailButton" type="submit" class="btn btn-success" data-toggle="modal" data-target="#loginModal"><span class="fas fa-sign-in-alt"></span>@await LocaleManager.GetTranslation("Change my email", PageNames.Account, Model.LanguageId)</button>
         </form>
     </div>
 </div>

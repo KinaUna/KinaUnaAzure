@@ -1,4 +1,11 @@
-﻿@model Sleep
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model Sleep
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+}
 <a class="leavePage2" asp-controller="Sleep" asp-action="Index">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
 
@@ -8,7 +15,7 @@
                     @Model.SleepStart.ToString("dd-MMM-yyyy HH:mm") - @Model.SleepEnd.ToString("dd-MMM-yyyy HH:mm")
                 </strong>
             </div>
-            <div class="text-white" style="margin-left: 2px; font-size: 12px;">Sleep Duration: @Model.SleepDuration</div>
+            <div class="text-white" style="margin-left: 2px; font-size: 12px;">@await LocaleManager.GetTranslation("Duration:", PageNames.Sleep, languageId) @Model.SleepDuration</div>
         </div>
     </div>
 </a>

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class VaccinationViewModel
+    public class VaccinationViewModel: BaseViewModel
     {
         public int VaccinationId { get; set; }
         public string VaccinationName { get; set; }
@@ -22,6 +22,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> AccessLevelListDe { get; set; }
         public Progeny Progeny { get; set; }
         public bool IsAdmin { get; set; }
+
+        public Vaccination Vaccination { get; set; }
 
         public VaccinationViewModel()
         {

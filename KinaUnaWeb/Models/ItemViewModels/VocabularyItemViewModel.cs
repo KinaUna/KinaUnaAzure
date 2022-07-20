@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class VocabularyItemViewModel
+    public class VocabularyItemViewModel: BaseViewModel
     {
         public int WordId { get; set; }
         public string Word { get; set; }
@@ -20,6 +20,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> ProgenyList { get; set; }
         public bool IsAdmin { get; set; }
         public int AccessLevel { get; set; }
+        public VocabularyItem VocabularyItem { get; set; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }

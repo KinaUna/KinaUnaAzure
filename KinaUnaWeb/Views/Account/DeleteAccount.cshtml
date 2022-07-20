@@ -1,30 +1,34 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.UserInfoViewModel
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.UserInfoViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Delete Account";
+    ViewData["Title"] = await LocaleManager.GetTranslation("Delete account", PageNames.Account, Model.LanguageId);
 }
-<h4>@ViewData["Title"]</h4>
+<h2>@ViewData["Title"]</h2>
 <div class="row">
     <div class="col-md-10">
         <form method="post" enctype="multipart/form-data">
-            <h2>Are you sure you want to delete your account?</h2>
+            <h2>@await LocaleManager.GetTranslation("Are you sure you want to delete your account?", PageNames.Account, Model.LanguageId)</h2>
             <div class="form-group">
-                <label asp-for="UserName">User Name</label>
+                <label>@await LocaleManager.GetTranslation("Username", PageNames.Account, Model.LanguageId)</label>
                 <input asp-for="UserName" class="form-control" readonly="readonly" />
             </div>
             <div class="form-group">
-                <label asp-for="FirstName">First Name</label>
+                <label>@await LocaleManager.GetTranslation("First Name", PageNames.Account, Model.LanguageId)</label>
                 <input asp-for="FirstName" class="form-control" readonly="readonly" />
             </div>
             <div class="form-group">
-                <label asp-for="MiddleName">Middle Name</label>
+                <label>@await LocaleManager.GetTranslation("Middle Name", PageNames.Account, Model.LanguageId)</label>
                 <input asp-for="MiddleName" class="form-control" readonly="readonly" />
             </div>
             <div class="form-group">
-                <label asp-for="LastName">Last Name</label>
+                <label>@await LocaleManager.GetTranslation("Last Name", PageNames.Account, Model.LanguageId)</label>
                 <input asp-for="LastName" class="form-control" readonly />
             </div>
             <div class="form-group">
-                <label asp-for="UserEmail">Email</label>
+                <label>@await LocaleManager.GetTranslation("Email", PageNames.Account, Model.LanguageId)</label>
                 <div class="input-group">
                     <input asp-for="UserEmail" class="form-control" readonly="readonly"/>
                     <div class="input-group-append" aria-hidden="true">
@@ -34,7 +38,7 @@
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-success leavePage">Delete</button>
+            <button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Delete my account", PageNames.Account, Model.LanguageId)</button>
         </form>
     </div>
 </div>

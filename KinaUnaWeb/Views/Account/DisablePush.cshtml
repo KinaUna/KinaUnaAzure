@@ -1,18 +1,21 @@
-﻿@model PushDevices
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model PushDevices
 @section Scripts
     {
     <script src="@Url.Content("~/js/RemoveDevice.js")"></script>
 }
-
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Disable Push Notifications";
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Disable Push Notifications", PageNames.Account, languageId);
 }
-
 <h2>@ViewData["Title"]</h2>
 <hr />
 <div class="row">
     <div class="alert alert-danger" style="display: none;">
-        <strong>Error:</strong>
+        <strong>@await LocaleManager.GetTranslation("Error:", PageNames.Account, languageId) </strong>
         <ul id="errorMessage"></ul>
     </div>
 
@@ -20,12 +23,12 @@
         <form asp-controller="PushDevices" asp-action="RemovePushDevice" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group" style="width: 500px;">
-                <label asp-for="Name" class="control-label">User ID</label>
+                <label asp-for="Name" class="control-label">@await LocaleManager.GetTranslation("User ID", PageNames.Account, languageId)</label>
                 <input asp-for="Name" class="form-control" readonly="readonly" value="user"/>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="well" style="width: 500px;">
-                <h4>Web Push Details</h4>
+                <h4>@await LocaleManager.GetTranslation("Web Push details", PageNames.Account, languageId)</h4>
                 <span style="font-size: 12px;"></span>
                 <hr />
                 <div class="form-group">
@@ -45,14 +48,14 @@
                 </div>
             </div>
             <div class="form-group">
-                <input type="submit" value="Disable Push Notifications" class="btn btn-warning leavePage" onclick="unsubscribe()" />
+                <input type="submit" value="@await LocaleManager.GetTranslation("Disable Push Notifications", PageNames.Account, languageId)" class="btn btn-warning leavePage" onclick="unsubscribe()" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a class="leavePage" asp-action="MyAccount">Back to My Account</a>
+    <a class="leavePage" asp-action="MyAccount">@await LocaleManager.GetTranslation("Back to My Account", PageNames.Account, languageId)</a>
 </div>
 
 <script>

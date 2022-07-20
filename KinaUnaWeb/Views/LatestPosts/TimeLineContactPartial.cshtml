@@ -1,4 +1,10 @@
-﻿@model Contact
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model Contact
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+}
 <a class="leavePage" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@Model.ContactId">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
 
@@ -14,7 +20,7 @@
                 <img class="img-thumbnail" style="max-height: 200px; max-width: 200px; background: black; margin-bottom: 8px;" src="@Model.PictureLink" />
             </div>
             <br />
-            <div style="margin-left: 2px; font-size: 12px;" align="left">Context: @Model.Context</div>
+            <div style="margin-left: 2px; font-size: 12px;" align="left">@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, languageId) @Model.Context</div>
             <div style="margin-left: 2px;">
                 @{
                     if (!string.IsNullOrEmpty(Model.Tags))

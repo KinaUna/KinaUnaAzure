@@ -1,11 +1,14 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.SleepViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.SleepViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Sleep calendar", PageNames.Sleep, Model.LanguageId);
+}
 @section Scripts{
     <link href="/lib/fullcalendar/fullcalendar.min.css" rel="stylesheet" />
     <script src="/lib/moment.min.js"></script>
     <script src="/lib/fullcalendar/fullcalendar.min.js"></script>
-}
-@{
-    ViewData["Title"] = Model.Progeny.NickName + "'s Sleep Calendar";
 }
 <script>
 
@@ -33,12 +36,12 @@
                 agendaFourWeeks: {
                     type: 'agenda',
                     duration: { months: 1 },
-                    buttonText: '1 Month'
+                    buttonText: '@await LocaleManager.GetTranslation("1 month", PageNames.Sleep, Model.LanguageId)'
                 },
                 agendaTenWeeks: {
                     type: 'agenda',
                     duration: { months: 3 },
-                    buttonText: '3 Months'
+                    buttonText: '@await LocaleManager.GetTranslation("3 months", PageNames.Sleep, Model.LanguageId)'
                 }
             },
             allDayDefault: false,
@@ -92,11 +95,11 @@
                 return;
             }
 
-            var currentX = e.touches[0].clientX;
-            var currentY = e.touches[0].clientY;
+            let currentX = e.touches[0].clientX;
+            let currentY = e.touches[0].clientY;
 
-            var diffX = initialX - currentX;
-            var diffY = initialY - currentY;
+            let diffX = initialX - currentX;
+            let diffY = initialY - currentY;
 
             if (Math.abs(diffX) > Math.abs(diffY)) {
                 // sliding horizontally
@@ -131,22 +134,20 @@
 
 <div class="btn-group" style="float: right;">
     <a asp-controller="Sleep" asp-action="Index" asp-route-childId="@Model.ProgenyId" class="btn btn-primary leavePage">
-        <i class="fas fa-list"></i> Go to Sleep List
+        <i class="fas fa-list"></i> @await LocaleManager.GetTranslation("Go to sleep list", PageNames.Sleep, Model.LanguageId)
     </a>
 </div>
 @if (Model.IsAdmin)
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="AddItem" asp-action="AddSleep" class="btn btn-success btn-round leavePage">
-            <i class="fas fa-plus"></i> Add Sleep
+            <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add sleep", PageNames.Sleep, Model.LanguageId)
         </a>
     </div>
 }
-<h3 class="title">@ViewData["Title"]</h3>
+<h2>@ViewData["Title"]</h2>
 <br />
 <div style="clear: both;">
     <div class="fc fc-unthemed fc-ltr" id="calendar">
-
-
     </div>
 </div>

@@ -5,7 +5,7 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class SleepViewModel
+    public class SleepViewModel: BaseViewModel
     {
         public List<SelectListItem> ProgenyList { get; set; }
         public List<Sleep> SleepList { get; set; }
@@ -33,6 +33,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public TimeSpan LastMonthAverage { get; set; }
         public TimeSpan SleepLastYear { get; set; }
         public TimeSpan LastYearAverage { get; set; }
+
+        public Sleep Sleep { get; set; }
+
         public SleepViewModel()
         {
             ProgenyList = new List<SelectListItem>();

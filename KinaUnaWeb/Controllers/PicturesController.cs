@@ -16,16 +16,13 @@ namespace KinaUnaWeb.Controllers
 {
     public class PicturesController : Controller
     {
-        private int _progId = Constants.DefaultChildId;
-        private bool _userIsProgenyAdmin;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly ILocationsHttpClient _locationsHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public PicturesController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient,
             ILocationsHttpClient locationsHttpClient)
         {
@@ -40,35 +37,23 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int id = 1, int pageSize = 8, int childId = 0, int sortBy = 1, string tagFilter = "")
         {
-            _progId = childId;
-            if (id < 1)
-            {
-                id = 1;
-            }
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
-            if (string.IsNullOrEmpty(userTimeZone))
-            {
-                userTimeZone = Constants.DefaultTimezone;
-            }
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
-            {
-                _progId = userinfo.ViewChild;
-            }
-            else
-            {
-                _progId = childId;
-            }
-
-            if (_progId == 0)
-            {
-                _progId = Constants.DefaultChildId;
-            }
+            PicturePageViewModel model = new PicturePageViewModel();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
 
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
+            {
+                childId = model.CurrentUser.ViewChild;
+            }
+
+            if (childId == 0)
+            {
+                childId = Constants.DefaultChildId;
+            }
+            
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -81,16 +66,18 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
+            bool isAdmin = false;
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                isAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
 
 
-            PicturePageViewModel model = await _mediaHttpClient.GetPicturePage(pageSize, id, progeny.Id, userAccessLevel, sortBy, tagFilter, userTimeZone);
+            model = await _mediaHttpClient.GetPicturePage(pageSize, id, progeny.Id, userAccessLevel, sortBy, tagFilter, model.CurrentUser.Timezone);
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            model.IsAdmin = isAdmin;
             model.Progeny = progeny;
-            model.IsAdmin = _userIsProgenyAdmin;
             model.SortBy = sortBy;
             model.PageSize = pageSize;
             foreach (Picture pic in model.PicturesList)
@@ -107,21 +94,24 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Picture(int id, int childId = 0, string tagFilter = "", int sortBy = 1)
         {
-            _progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
-            if (string.IsNullOrEmpty(userTimeZone))
+            PictureViewModel model = new PictureViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                userTimeZone = Constants.DefaultTimezone;
-            }
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
-            {
-                _progId = userinfo.ViewChild;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            if (childId == 0)
+            {
+                childId = Constants.DefaultChildId;
+            }
+
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -136,17 +126,16 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
             
-            PictureViewModel picture = await _mediaHttpClient.GetPictureViewModel(id, userAccessLevel, sortBy, userTimeZone);
+            PictureViewModel picture = await _mediaHttpClient.GetPictureViewModel(id, userAccessLevel, sortBy, model.CurrentUser.Timezone);
             if (!picture.PictureLink.StartsWith("https://"))
             {
                 picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
             }
             
-            PictureViewModel model = new PictureViewModel();
             model.PictureId = picture.PictureId;
             model.PictureTime = picture.PictureTime;
             model.ProgenyId = picture.ProgenyId;
@@ -173,12 +162,11 @@ namespace KinaUnaWeb.Controllers
             model.CommentsCount = picture.CommentsList?.Count ?? 0;
             model.TagFilter = tagFilter;
             model.SortBy = sortBy;
-            model.UserId = HttpContext.User.FindFirst("sub")?.Value ?? _defaultUser;
-            model.IsAdmin = _userIsProgenyAdmin;
+            model.UserId = model.CurrentUser.UserId;
             if (model.PictureTime != null && progeny.BirthDay.HasValue)
             {
                 PictureTime picTime = new PictureTime(progeny.BirthDay.Value,
-                    TimeZoneInfo.ConvertTimeToUtc(model.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone)),
+                    TimeZoneInfo.ConvertTimeToUtc(model.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone)),
                     TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
                 model.PicTimeValid = true;
                 model.PicTime = model.PictureTime.Value.ToString("dd MMMM yyyy HH:mm"); // Todo: Replace format string with global constant or user defined value
@@ -255,6 +243,16 @@ namespace KinaUnaWeb.Controllers
                         selectListItem.Value = loc.LocationId.ToString();
                         model.LocationsList.Add(selectListItem);
                     }
+                }
+
+                if (model.LanguageId == 2)
+                {
+                    model.AccessLevelListEn = model.AccessLevelListDe;
+                }
+
+                if (model.LanguageId == 3)
+                {
+                    model.AccessLevelListEn = model.AccessLevelListDa;
                 }
             }
 

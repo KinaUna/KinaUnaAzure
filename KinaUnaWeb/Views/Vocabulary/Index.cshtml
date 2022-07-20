@@ -1,5 +1,11 @@
 ﻿@using KinaUnaWeb.Models.ItemViewModels
-@model List<KinaUnaWeb.Models.ItemViewModels.VocabularyItemViewModel>
+@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model VocabularyListViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Vocabulary", PageNames.Vocabulary, Model.LanguageId);
+}
 @section Scripts{
     <link href="/lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
     <script src="/lib/moment.min.js"></script>
@@ -7,46 +13,43 @@
     <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
     <script src="/lib/datatables/sorting/datetime-moment.js"></script>
 }
-@{
-    ViewData["Title"] = Model[0].Progeny.NickName + "'s Vocabulary";
-}
-@if (Model == null)
+@if (!Model.VocabularyList.Any())
 {
-    <h3>@ViewData["Title"]</h3>
+    <h2>@ViewData["Title"]</h2>
     <div>
-        No data.
+        @await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Vocabulary, Model.LanguageId)
     </div>
 }
 else
 {
     <div class="container">
-        @if (Model[0].IsAdmin)
+        @if (Model.IsAdmin)
         {
             <div class="btn-group" style="float: right;">
                 <a asp-controller="AddItem" asp-action="AddVocabulary" class="btn btn-success btn-round leavePage">
-                    <i class="fas fa-plus"></i> Add Word
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add word", PageNames.Vocabulary, Model.LanguageId)
                 </a>
             </div>
         }
-        <h3 class="title">@ViewData["Title"]</h3>
+        <h2>@ViewData["Title"]</h2>
     </div>
     <div class="table-responsive">
         <table id="wordList" class="table table-bordered table-striped" style="border-spacing: 0;">
             <thead>
                 <tr>
-                    <th style="font-weight: bold">Word</th>
-                    <th style="font-weight: bold">Sounds like</th>
-                    <th style="font-weight: bold">Description</th>
-                    <th style="font-weight: bold">Language</th>
-                    <th style="font-weight: bold">Date</th>
-                    @if (Model[0].IsAdmin)
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Word", PageNames.Vocabulary, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Sounds like", PageNames.Vocabulary, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Description", PageNames.Vocabulary, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Language", PageNames.Vocabulary, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Date", PageNames.Vocabulary, Model.LanguageId)</th>
+                    @if (Model.IsAdmin)
                     {
                         <th style="font-weight: bold">Action</th>
                     }
                 </tr>
             </thead>
             <tbody>
-                @foreach (var wordItem in Model)
+                @foreach (VocabularyItemViewModel wordItem in Model.VocabularyList)
                 {
                     <tr>
                         <td style="min-width: 135px">@wordItem.Word</td>
@@ -61,7 +64,7 @@ else
                         {
                             <td></td>
                         }
-                        @if (Model[0].IsAdmin)
+                        @if (Model.IsAdmin)
                         {
                             <td style="min-width: 135px">
                                 <div>
@@ -93,8 +96,8 @@ else
         })
     </script>
     <script type="text/javascript">
-        var ctx = document.getElementById("chartContainer");
-            var myChart = new Chart(ctx,
+        let ctx = document.getElementById("chartContainer");
+            let myChart = new Chart(ctx,
                 {
                     type: 'line',
                     data: {
@@ -133,7 +136,7 @@ else
                                 {
                                     scaleLabel: {
                                         display: true,
-                                        labelString: 'Number of Words'
+                                        labelString: '@await LocaleManager.GetTranslation("Number of words", PageNames.Vocabulary, Model.LanguageId)'
                                     },
                                     ticks: {
                                         beginAtZero: true

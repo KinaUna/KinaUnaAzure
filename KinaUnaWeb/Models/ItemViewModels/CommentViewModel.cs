@@ -2,7 +2,7 @@
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class CommentViewModel
+    public class CommentViewModel: BaseViewModel
     {
         public int CommentId { get; set; }
         public int CommentThreadNumber { get; set; }

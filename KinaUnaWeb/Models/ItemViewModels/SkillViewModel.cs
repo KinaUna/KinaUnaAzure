@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class SkillViewModel
+    public class SkillViewModel: BaseViewModel
     {
         public int SkillId { get; set; }
 
@@ -19,6 +19,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public Progeny Progeny { get; set; }
         public List<SelectListItem> ProgenyList { get; set; }
         public bool IsAdmin { get; set; }
+        public Skill Skill { get; set; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }

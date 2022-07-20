@@ -19,8 +19,7 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly ICalendarsHttpClient _calendarsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public CalendarController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, ICalendarsHttpClient calendarsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
@@ -32,22 +31,24 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int? id, int childId = 0)
         {
-            int progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            CalendarItemViewModel model = new CalendarItemViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
             
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                progId = userinfo.ViewChild;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            if (progId == 0)
+            if (childId == 0)
             {
-                progId = Constants.DefaultChildId;
+                childId = Constants.DefaultChildId;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(progId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -68,18 +69,18 @@ namespace KinaUnaWeb.Controllers
             }
 
             ApplicationUser currentUser = new ApplicationUser();
-            currentUser.TimeZone = userinfo.Timezone;
-            List<CalendarItem> eventsList = await _calendarsHttpClient.GetCalendarList(progId, userAccessLevel); // _context.CalendarDb.AsNoTracking().Where(e => e.ProgenyId == _progId).ToList();
+            currentUser.TimeZone = model.CurrentUser.Timezone;
+            List<CalendarItem> eventsList = await _calendarsHttpClient.GetCalendarList(childId, userAccessLevel); // _context.CalendarDb.AsNoTracking().Where(e => e.ProgenyId == _progId).ToList();
             eventsList = eventsList.OrderBy(e => e.StartTime).ToList();
-            CalendarItemViewModel events = new CalendarItemViewModel();
-            events.ViewOptions.Add(new ScheduleView{Option = Syncfusion.EJ2.Schedule.View.Day, DateFormat = "dd/MMM/yyyy", FirstDayOfWeek = 1});
-            events.ViewOptions.Add(new ScheduleView { Option = Syncfusion.EJ2.Schedule.View.Week, FirstDayOfWeek=1, ShowWeekNumber = true, DateFormat = "dd/MMM/yyyy" });
-            events.ViewOptions.Add(new ScheduleView { Option = Syncfusion.EJ2.Schedule.View.Month, FirstDayOfWeek = 1, ShowWeekNumber = true, DateFormat = "dd/MMM/yyyy" });
-            events.ViewOptions.Add(new ScheduleView { Option = Syncfusion.EJ2.Schedule.View.Agenda, FirstDayOfWeek = 1, DateFormat = "dd/MMM/yyyy" });
-            events.IsAdmin = userIsProgenyAdmin;
-            events.UserData = currentUser;
-            events.Progeny = progeny;
-            events.EventsList = new List<CalendarItem>();
+            
+            model.ViewOptions.Add(new ScheduleView{Option = Syncfusion.EJ2.Schedule.View.Day, DateFormat = "dd/MMM/yyyy", FirstDayOfWeek = 1});
+            model.ViewOptions.Add(new ScheduleView { Option = Syncfusion.EJ2.Schedule.View.Week, FirstDayOfWeek=1, ShowWeekNumber = true, DateFormat = "dd/MMM/yyyy" });
+            model.ViewOptions.Add(new ScheduleView { Option = Syncfusion.EJ2.Schedule.View.Month, FirstDayOfWeek = 1, ShowWeekNumber = true, DateFormat = "dd/MMM/yyyy" });
+            model.ViewOptions.Add(new ScheduleView { Option = Syncfusion.EJ2.Schedule.View.Agenda, FirstDayOfWeek = 1, DateFormat = "dd/MMM/yyyy" });
+            model.IsAdmin = userIsProgenyAdmin;
+            model.UserData = currentUser;
+            model.Progeny = progeny;
+            model.EventsList = new List<CalendarItem>();
             
             foreach (CalendarItem ev in eventsList)
             {
@@ -88,24 +89,24 @@ namespace KinaUnaWeb.Controllers
                     if (ev.StartTime.HasValue && ev.EndTime.HasValue)
                     {
                         ev.StartTime = TimeZoneInfo.ConvertTimeFromUtc(ev.StartTime.Value,
-                            TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                            TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                         ev.EndTime = TimeZoneInfo.ConvertTimeFromUtc(ev.EndTime.Value,
-                                TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                                TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                         
                         // ToDo: Replace format string with configuration or userdefined value
                         ev.StartString = ev.StartTime.Value.ToString("yyyy-MM-dd") + "T" + ev.StartTime.Value.ToString("HH:mm:ss");
                         ev.EndString = ev.EndTime.Value.ToString("yyyy-MM-dd") + "T" + ev.EndTime.Value.ToString("HH:mm:ss");
                         ev.Start = ev.StartTime.Value;
                         ev.End = ev.EndTime.Value;
-                        ev.IsReadonly = !events.IsAdmin;
+                        ev.IsReadonly = !model.IsAdmin;
                         // Todo: Add color property
-                        events.EventsList.Add(ev);
+                        model.EventsList.Add(ev);
                     }
                 }
             }
 
 
-            return View(events);
+            return View(model);
         }
 
         [AllowAnonymous]
@@ -114,11 +115,10 @@ namespace KinaUnaWeb.Controllers
             CalendarItem eventItem = await _calendarsHttpClient.GetCalendarItem(eventId); // _context.CalendarDb.AsNoTracking().SingleAsync(e => e.EventId == eventId);
 
             CalendarItemViewModel model = new CalendarItemViewModel();
-
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
             
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-
             Progeny progeny = await _progenyHttpClient.GetProgeny(eventItem.ProgenyId);
             List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(eventItem.ProgenyId);
 
@@ -155,8 +155,8 @@ namespace KinaUnaWeb.Controllers
             model.AllDay = eventItem.AllDay;
             if (eventItem.StartTime.HasValue && eventItem.EndTime.HasValue)
             {
-                model.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                model.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                model.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                model.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
             model.Notes = eventItem.Notes;
             model.Location = eventItem.Location;

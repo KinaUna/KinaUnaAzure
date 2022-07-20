@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class MeasurementViewModel
+    public class MeasurementViewModel: BaseViewModel
     {
         public List<SelectListItem> ProgenyList { get; set; }
         public List<Measurement> MeasurementsList { get; set; }
@@ -25,7 +25,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string Author { get; set; }
         public Progeny Progeny { get; set; }
         public bool IsAdmin { get; set; }
-
+        public Measurement Measurement { get; set; }
+        
         public MeasurementViewModel()
         {
             ProgenyList = new List<SelectListItem>();

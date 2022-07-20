@@ -6,9 +6,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class UploadVideoViewModel
+    public class UploadVideoViewModel: BaseViewModel
     {
-        public UserInfo Userinfo { get; set; }
         public IFormFile File { get; set; }
         public List<SelectListItem> ProgenyList { get; set; }
         public int ProgenyId { get; set; }

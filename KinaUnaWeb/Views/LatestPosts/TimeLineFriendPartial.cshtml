@@ -1,11 +1,23 @@
-﻿@model Friend
+﻿@using KinaUna.Data
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Friend
+@inject ILocaleManager LocaleManager
 @{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+}
+@{
+    string personalFriend = await LocaleManager.GetTranslation("Personal friend", PageNames.Friends, languageId);
+    string toyFriend = await LocaleManager.GetTranslation("Toy/animal friend", PageNames.Friends, languageId);
+    string parentFriend = await LocaleManager.GetTranslation("Parent", PageNames.Friends, languageId);
+    string familyFriend = await LocaleManager.GetTranslation("Family", PageNames.Friends, languageId);
+    string caretakerFriend = await LocaleManager.GetTranslation("Caretaker", PageNames.Friends, languageId);
     List<string> typeList = new List<string>();
-    typeList.Add("Personal Friend");
-    typeList.Add("Toy/Animal Friend");
-    typeList.Add("Parent");
-    typeList.Add("Family");
-    typeList.Add("Caretaker");
+    typeList.Add(personalFriend);
+    typeList.Add(toyFriend);
+    typeList.Add(parentFriend);
+    typeList.Add(familyFriend);
+    typeList.Add(caretakerFriend);
 }
 <a class="leavePage" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@Model.FriendId">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
@@ -21,9 +33,8 @@
             <div style="margin-left: 2px; margin-top: 8px; max-width: 60vw; overflow: hidden; font-size: 12px;">
                 <img class="img-thumbnail" style="max-height: 240px; max-width: 224px; background: black; margin-bottom: 8px;" src="@Model.PictureLink"/>
                 <br/>
-                Type: @typeList[Model.Type]<br/>
-                Context: @Model.Context<br/>
-                Notes: @Model.Notes
+                @await LocaleManager.GetTranslation("Type:", PageNames.Friends, languageId) @typeList[Model.Type]<br/>
+                @await LocaleManager.GetTranslation("Context:", PageNames.Friends, languageId) @Model.Context<br/>
             </div>
             <div style="margin-left: 2px;">
                 @{

@@ -1,14 +1,22 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.Name + " - " + Model.Progeny.NickName + "'s Friend";
+    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Friend:", PageNames.Friends, Model.LanguageId) + Model.Name;
 }
 @{
+    string personalFriend = await LocaleManager.GetTranslation("Personal friend", PageNames.Friends, Model.LanguageId);
+    string toyFriend = await LocaleManager.GetTranslation("Toy/animal friend", PageNames.Friends, Model.LanguageId);
+    string parentFriend = await LocaleManager.GetTranslation("Parent", PageNames.Friends, Model.LanguageId);
+    string familyFriend = await LocaleManager.GetTranslation("Family", PageNames.Friends, Model.LanguageId);
+    string caretakerFriend = await LocaleManager.GetTranslation("Caretaker", PageNames.Friends, Model.LanguageId);
     List<string> typeList = new List<string>();
-    typeList.Add("Personal Friend");
-    typeList.Add("Toy/Animal Friend");
-    typeList.Add("Parent");
-    typeList.Add("Family");
-    typeList.Add("Caretaker");
+    typeList.Add(personalFriend);
+    typeList.Add(toyFriend);
+    typeList.Add(parentFriend);
+    typeList.Add(familyFriend);
+    typeList.Add(caretakerFriend);
 }
 <h3 class="title">@ViewData["Title"]</h3>
 <div class="card" style="clear: both; margin-top: 25px; max-width: 610px;">
@@ -20,10 +28,10 @@
         <img class="img-thumbnail mx-auto d-block" style="max-height: 600px; max-width: 600px; background: black;" src="@Model.PictureLink" />
         <br />
         <div align="left" style="margin: 15px;">
-            <strong>Description:</strong> @Model.Description
+            <strong>@await LocaleManager.GetTranslation("Description:", PageNames.Friends, Model.LanguageId)</strong> @Model.Description
         </div>
         <div align="left" style="margin: 15px;">
-            <strong>Friends since: </strong>
+            <strong>@await LocaleManager.GetTranslation("Friends since:", PageNames.Friends, Model.LanguageId)</strong>
             <span align="left">
                 @if (Model.FriendSince != null)
                 {
@@ -31,18 +39,18 @@
                 }
                 else
                 {
-                    <span>N/A</span>
+                    <span>@await LocaleManager.GetTranslation("N/A", PageNames.Friends, Model.LanguageId)</span>
                 }
             </span>
         </div>
         <div align="left" style="margin: 15px;">
-            <strong>Type:</strong> @typeList[Model.Type]
+            <strong>@await LocaleManager.GetTranslation("Type:", PageNames.Friends, Model.LanguageId)</strong> @typeList[Model.Type]
         </div>
         <div align="left" style="margin: 15px;">
-            <strong>Context:</strong> @Model.Context
+            <strong>@await LocaleManager.GetTranslation("Context:", PageNames.Friends, Model.LanguageId)</strong> @Model.Context
         </div>
         <div align="left" style="margin: 15px;">
-            <strong>Notes:</strong> @Model.Notes
+            <strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Friends, Model.LanguageId)</strong> @Model.Notes
         </div>
         <div>
             @{
@@ -60,10 +68,10 @@
         {
             <div style="margin: 15px;">
                 <a asp-controller="AddItem" asp-action="EditFriend" asp-route-itemId="@Model.FriendId" class="btn btn-info leavePage">
-                    <i class="fas fa-pencil-alt"></i> Edit
+                    <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                 </a>
                 <a asp-controller="AddItem" asp-action="DeleteFriend" asp-route-itemId="@Model.FriendId" class="btn btn-danger leavePage">
-                    <i class="fas fa-trash-alt"></i> Delete
+                    <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         }

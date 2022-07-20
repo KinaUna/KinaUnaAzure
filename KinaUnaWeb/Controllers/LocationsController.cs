@@ -20,10 +20,7 @@ namespace KinaUnaWeb.Controllers
         private readonly ILocationsHttpClient _locationsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
-        private int _progId = Constants.DefaultChildId;
-        private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public LocationsController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, IUserInfosHttpClient userInfosHttpClient, ILocationsHttpClient locationsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
@@ -36,25 +33,24 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, string tagFilter = "")
         {
-            _progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            LocationViewModel model = new LocationViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            if (_progId == 0)
+            if (childId == 0)
             {
-                _progId = Constants.DefaultChildId;
+                childId = Constants.DefaultChildId;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
-
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
             int userAccessLevel = (int)AccessLevel.Public;
-
             if (accessList.Count != 0)
             {
                 UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
@@ -66,23 +62,20 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
 
             List<string> tagsList = new List<string>();
 
             // ToDo: Implement _progenyHttpClient.GetLocations() 
-            var locationsList = await _locationsHttpClient.GetLocationsList(_progId, userAccessLevel);
+            List<Location> locationsList = await _locationsHttpClient.GetLocationsList(childId, userAccessLevel);
             if (!string.IsNullOrEmpty(tagFilter))
             {
                 locationsList = locationsList.Where(l => l.Tags != null && l.Tags.Contains(tagFilter)).ToList();
             }
             locationsList = locationsList.OrderBy(l => l.Date).ToList();
-
-            LocationViewModel model = new LocationViewModel();
-
-            model.IsAdmin = _userIsProgenyAdmin;
+            
             model.Progeny = progeny;
 
             if (locationsList.Any())
@@ -128,20 +121,24 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> PhotoLocations(int childId = 0, string tagFilter = "")
         {
-            _progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            LocationViewModel model = new LocationViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
             
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            if (childId == 0)
+            {
+                childId = Constants.DefaultChildId;
+            }
 
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
             int userAccessLevel = (int)AccessLevel.Public;
-
             if (accessList.Count != 0)
             {
                 UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
@@ -153,16 +150,15 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
             
-            LocationViewModel model = new LocationViewModel();
             model.LocationsList = new List<Location>();
             List<string> tagsList = new List<string>();
-            model.ProgenyId = _progId;
+            model.ProgenyId = childId;
             model.Progeny = progeny;
-            List<Picture> pictures = await _mediaHttpClient.GetPictureList(progeny.Id, userAccessLevel, userinfo.Timezone);
+            List<Picture> pictures = await _mediaHttpClient.GetPictureList(progeny.Id, userAccessLevel, model.CurrentUser.Timezone);
             if (string.IsNullOrEmpty(tagFilter))
             {
                 pictures = pictures.FindAll(p => !string.IsNullOrEmpty(p.Longtitude));
@@ -178,8 +174,7 @@ namespace KinaUnaWeb.Controllers
             {
                 Location picLoc = new Location();
                 bool validCoords = true;
-                double lat;
-                if (double.TryParse(pic.Latitude, NumberStyles.AllowDecimalPoint, new CultureInfo("en-US"), out lat))
+                if (double.TryParse(pic.Latitude, NumberStyles.AllowDecimalPoint, new CultureInfo("en-US"), out double lat))
                 {
                     picLoc.Latitude = lat;
                 }
@@ -188,8 +183,7 @@ namespace KinaUnaWeb.Controllers
                     validCoords = false;
                 }
 
-                double lon;
-                if (double.TryParse(pic.Longtitude, NumberStyles.AllowDecimalPoint, new CultureInfo("en-US"), out lon))
+                if (double.TryParse(pic.Longtitude, NumberStyles.AllowDecimalPoint, new CultureInfo("en-US"), out double lon))
                 {
                     picLoc.Longitude = lon;
                 }

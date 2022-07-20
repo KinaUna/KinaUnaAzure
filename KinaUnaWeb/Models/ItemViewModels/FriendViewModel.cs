@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class FriendViewModel
+    public class FriendViewModel: BaseViewModel
     {
         public int FriendId { get; set; }
 
@@ -25,6 +25,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int AccessLevel { get; set; }
         public string Author { get; set; }
         public int Type { get; set; }
+        public Friend Friend { get; set; }
         public List<SelectListItem> FriendTypeListEn { get; set; }
         public List<SelectListItem> FriendTypeListDa { get; set; }
         public List<SelectListItem> FriendTypeListDe { get; set; }

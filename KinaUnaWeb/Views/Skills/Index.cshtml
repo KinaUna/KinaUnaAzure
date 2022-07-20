@@ -1,4 +1,11 @@
-﻿@model List<KinaUnaWeb.Models.ItemViewModels.SkillViewModel>
+﻿@using KinaUnaWeb.Models.ItemViewModels
+@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.SkillsListViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Skillz", PageNames.Skills, Model.LanguageId);
+}
 @section Scripts{
     <link href="/lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
     <script src="/lib/moment.min.js"></script>
@@ -6,43 +13,40 @@
     <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
     <script src="/lib/datatables/sorting/datetime-moment.js"></script>
 }
-@{
-    ViewData["Title"] = Model[0].Progeny.NickName + "'s Skillz";
-}
-@if (Model == null)
+@if (Model.SkillsList == null || !Model.SkillsList.Any())
 {
-    <h3>@ViewData["Title"]</h3>
-    <div>Nothing to see here yet.</div>
+    <h2>@ViewData["Title"]</h2>
+    <div>@await LocaleManager.GetTranslation("Nothing to see here yet", PageNames.Skills, Model.LanguageId)</div>
 }
 else
 {
     <div class="container">
-        @if (Model[0].IsAdmin)
+        @if (Model.IsAdmin)
         {
             <div class="btn-group" style="float: right;">
                 <a asp-controller="AddItem" asp-action="AddSkill" class="btn btn-success btn-round leavePage">
-                    <i class="fas fa-plus"></i> Add Skill
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add skill", PageNames.Skills, Model.LanguageId)
                 </a>
             </div>
         }
-        <h3 class="title">@ViewData["Title"]</h3>
+        <h2>@ViewData["Title"]</h2>
     </div>
     <div class="table-responsive">
         <table id="skillzList" class="table table-bordered table-striped" style="border-spacing: 0;">
             <thead>
                 <tr>
-                    <th style="font-weight: bold">Name</th>
-                    <th style="font-weight: bold">Description</th>
-                    <th style="font-weight: bold">Category</th>
-                    <th style="font-weight: bold">First observation</th>
-                    @if (Model[0].IsAdmin)
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Name", PageNames.Skills, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Description", PageNames.Skills, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Category", PageNames.Skills, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("First observation", PageNames.Skills, Model.LanguageId)</th>
+                    @if (Model.IsAdmin)
                     {
-                        <th style="font-weight: bold">Action</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Skills, Model.LanguageId)</th>
                     }
                 </tr>
             </thead>
             <tbody>
-                @foreach (var skillViewModel in Model)
+                @foreach (SkillViewModel skillViewModel in Model.SkillsList)
                 {
                     <tr>
                         <td style="min-width: 100px;">@skillViewModel.Name</td>
@@ -56,7 +60,7 @@ else
                         {
                             <td>N/A</td>
                         }
-                        @if (Model[0].IsAdmin)
+                        @if (Model.IsAdmin)
                         {
                             <td style="min-width: 135px;">
                                 <div>

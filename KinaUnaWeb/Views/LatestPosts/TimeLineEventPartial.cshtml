@@ -1,4 +1,10 @@
-﻿@model CalendarItem
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model CalendarItem
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+}
 <a class="leavePage" asp-controller="Calendar" asp-action="ViewEvent" asp-route-eventId="@Model.EventId">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
 
@@ -18,9 +24,9 @@
                 </strong>
             </div>
             <div style="margin-left: 2px; font-size: 12px;" class="text-white">@Model.Title</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">Location: @Model.Location</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">Context: @Model.Context</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">Notes: @Model.Notes</div>
+            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, languageId) @Model.Location</div>
+            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("Context:", PageNames.Calendar, languageId) @Model.Context</div>
+            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, languageId) @Model.Notes</div>
         </div>
     </div>
 </a>

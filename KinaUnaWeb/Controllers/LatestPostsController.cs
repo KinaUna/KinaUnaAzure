@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
-using KinaUna.Data;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Controllers
@@ -24,8 +24,7 @@ namespace KinaUnaWeb.Controllers
         private readonly ISleepHttpClient _sleepHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public LatestPostsController(IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, IWordsHttpClient wordsHttpClient, IVaccinationsHttpClient vaccinationsHttpClient,
             ISkillsHttpClient skillsHttpClient, INotesHttpClient notesHttpClient, IMeasurementsHttpClient measurementsHttpClient, ILocationsHttpClient locationsHttpClient, IFriendsHttpClient friendsHttpClient, IContactsHttpClient contactsHttpClient,
             ICalendarsHttpClient calendarsHttpClient, ISleepHttpClient sleepHttpClient)
@@ -144,13 +143,12 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> GetTimeLineItem(TimeLineItemViewModel model)
         {
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            string userEmail = User.GetEmail();
             UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             
             string id = model.ItemId.ToString();
             int type = model.TypeId;
-            int itemId;
-            bool idParse = int.TryParse(id, out itemId);
+            bool idParse = int.TryParse(id, out int itemId);
             if (type == (int)KinaUnaTypes.TimeLineType.Photo)
             {
                 if (idParse)

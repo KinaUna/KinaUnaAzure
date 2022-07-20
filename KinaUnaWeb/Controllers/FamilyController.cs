@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUnaWeb.Models.FamilyViewModels;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -15,8 +16,7 @@ namespace KinaUnaWeb.Controllers
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public FamilyController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
@@ -26,27 +26,42 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> Index()
         {
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            Family myFamily = new Family();
-            myFamily.Children = await _progenyHttpClient.GetProgenyAdminList(userEmail);
-            myFamily.FamilyMembers = new List<UserInfo>();
-            myFamily.OtherMembers = new List<UserInfo>();
-            myFamily.AccessList = new List<UserAccess>();
-            if (myFamily.Children != null && myFamily.Children.Any())
+            FamilyViewModel model = new FamilyViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+            
+            model.Family = new Family();
+            model.Family.Children = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+            model.Family.FamilyMembers = new List<UserInfo>();
+            model.Family.OtherMembers = new List<UserInfo>();
+            model.Family.AccessList = new List<UserAccess>();
+            if (model.Family.Children != null && model.Family.Children.Any())
             {
-                foreach (Progeny prog in myFamily.Children)
+                foreach (Progeny prog in model.Family.Children)
                 {
                     if (prog.BirthDay.HasValue)
                     {
-                        prog.BirthDay = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(prog.BirthDay.Value,prog.TimeZone,userinfo.Timezone);
+                        prog.BirthDay = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(prog.BirthDay.Value,prog.TimeZone,model.CurrentUser.Timezone);
                     }
                     List<UserAccess> uaList = await _userAccessHttpClient.GetProgenyAccessList(prog.Id);
-                    myFamily.AccessList.AddRange(uaList);
+                    model.Family.AccessList.AddRange(uaList);
                 }
             }
-            myFamily.AccessLevelList = new AccessLevelList();
-            return View(myFamily);
+
+            model.Family.AccessLevelList = new AccessLevelList();
+
+            if (model.LanguageId == 2)
+            {
+                model.Family.AccessLevelList.AccessLevelListEn = model.Family.AccessLevelList.AccessLevelListDe;
+            }
+
+            if (model.LanguageId == 3)
+            {
+                model.Family.AccessLevelList.AccessLevelListEn = model.Family.AccessLevelList.AccessLevelListDa;
+            }
+
+            return View(model);
         }
     }
 }

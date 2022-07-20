@@ -1,11 +1,14 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.VaccinationViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.VaccinationViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.Progeny.NickName + "'s Vaccinations";
+    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Vaccinations", PageNames.Vaccinations, Model.LanguageId);
 }
-@if (Model == null)
+@if (!Model.VaccinationList.Any())
 {
-    <h3 class="title">@ViewData["Title"]</h3>
-    <div>Nothing to see here yet.</div>
+    <h2>@ViewData["Title"]</h2>
+    <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Vaccinations, Model.LanguageId)</div>
 }
 else
 {
@@ -13,22 +16,22 @@ else
     {
         <div class="btn-group" style="float: right;">
             <a asp-controller="AddItem" asp-action="AddVaccination" class="btn btn-success btn-round leavePage">
-                <i class="fas fa-plus"></i> Add Vaccination
+                <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add vaccination", PageNames.Vaccinations, Model.LanguageId)
             </a>
         </div>
     }
-    <h3 class="title">@ViewData["Title"]</h3>
+    <h2>@ViewData["Title"]</h2>
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
-                    <th style="font-weight: bold">Date</th>
-                    <th style="font-weight: bold">Name</th>
-                    <th style="font-weight: bold">Description</th>
-                    <th style="font-weight: bold">Notes</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Date", PageNames.Vaccinations, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Name", PageNames.Vaccinations, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Description", PageNames.Vaccinations, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Notes", PageNames.Vaccinations, Model.LanguageId)</th>
                     @if (Model.IsAdmin)
                     {
-                        <th style="font-weight: bold">Action</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Vaccinations, Model.LanguageId)</th>
                     }
                 </tr>
             </thead>

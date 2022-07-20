@@ -1,8 +1,10 @@
-﻿@section Scripts{
-    
-}
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model KinaUnaWeb.Models.HomeViewModels.AboutViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Add Item";
+    ViewData["Title"] = await LocaleManager.GetTranslation("Add item", PageNames.AddItem, Model.LanguageId);
 }
 <div style="float: none; clear: both">
     <br />
@@ -10,70 +12,70 @@
         <div style="margin-top: 2px; margin-bottom: 3px;">
             <div class="btn-group">
                 <a asp-controller="AddItem" asp-action="AddNote" class="btn btn-primary leavePage">
-                    <i class="fas fa-plus"></i> Note
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Note", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         </div>
         <div style="margin-top: 2px; margin-bottom: 3px;">
             <div class="btn-group">
                 <a asp-controller="AddItem" asp-action="AddEvent" class="btn btn-info leavePage">
-                    <i class="fas fa-plus"></i> Calendar Item
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Calendar item", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         </div>
         <div style="margin-top: 2px; margin-bottom: 3px">
             <div class="btn-group">
                 <a asp-controller="AddItem" asp-action="AddPicture" class="btn btn-primary leavePage">
-                    <i class="fas fa-plus"></i> Picture
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Photo", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         </div>
         <div style="margin-top: 2px; margin-bottom: 3px">
             <div class="btn-group">
                 <a asp-controller="AddItem" asp-action="AddVideo" class="btn btn-primary leavePage">
-                    <i class="fas fa-plus"></i> Add Video
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Video", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         </div>
         <div style="margin-top: 2px; margin-bottom: 3px">
             <div class="btn-group">
                 <a asp-controller="AddItem" asp-action="AddVocabulary" class="btn btn-primary leavePage">
-                    <i class="fas fa-plus"></i> Word
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Word", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         </div>
         <div style="margin-top: 2px; margin-bottom: 3px">
             <div class="btn-group">
                 <a asp-controller="AddItem" asp-action="AddSkill" class="btn btn-primary leavePage">
-                    <i class="fas fa-plus"></i> Skill
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Skill", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         </div>
         <div style="margin-top: 2px; margin-bottom: 3px">
             <div class="btn-group">
                 <a asp-controller="AddItem" asp-action="AddFriend" class="btn btn-primary leavePage">
-                    <i class="fas fa-plus"></i> Friend
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Friend", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         </div>
         <div style="margin-top: 2px; margin-bottom: 3px">
             <div class="btn-group">
                 <a asp-controller="AddItem" asp-action="AddMeasurement" class="btn btn-primary leavePage">
-                    <i class="fas fa-plus"></i> Measurement
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Measurement", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         </div>
         <div style="margin-top: 2px; margin-bottom: 3px">
             <div class="btn-group">
                 <a asp-controller="AddItem" asp-action="AddContact" class="btn btn-primary leavePage">
-                    <i class="fas fa-plus"></i> Contact
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Contact", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         </div>
         <div style="margin-top: 2px; margin-bottom: 3px">
             <div class="btn-group">
                 <a asp-controller="AddItem" asp-action="AddVaccination" class="btn btn-primary leavePage">
-                    <i class="fas fa-plus"></i> Vaccination
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Vaccination", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         </div>
@@ -82,31 +84,24 @@
         <div style="margin-top: 2px; margin-bottom: 3px;">
             <div class="btn-group">
                 <a asp-controller="AddItem" asp-action="AddSleep" class="btn btn-success leavePage">
-                    <i class="fas fa-plus"></i> Sleep
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Sleep", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         </div>
         <div style="margin-top: 2px; margin-bottom: 3px;">
             <div class="btn-group">
                 <a asp-controller="AddItem" asp-action="AddLocation" class="btn btn-default leavePage">
-                    <i class="fas fa-plus"></i> Location
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Location", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         </div>
         <div style="margin-top: 2px; margin-bottom: 3px;">
             <div class="btn-group">
                 <a asp-controller="AccessManagement" asp-action="AddAccess" asp-route-progenyId="0" class="btn btn-warning leavePage">
-                    <i class="fas fa-plus"></i> User
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("User", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>
         </div>
-        @*<div style="margin-top: 2px; margin-bottom: 3px;">
-            <div class="btn-group">
-                <a asp-controller="AddItem" asp-action="Index" class="btn btn-success">
-                    <i class="glyphicon glyphicon-plus"></i> Add a Meal
-                </a>
-            </div>
-        </div>*@
     </div>
 </div>
 <div style="float: none; clear: both">

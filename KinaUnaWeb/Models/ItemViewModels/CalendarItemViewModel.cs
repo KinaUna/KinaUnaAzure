@@ -6,7 +6,7 @@ using Syncfusion.EJ2.Schedule;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class CalendarItemViewModel
+    public class CalendarItemViewModel: BaseViewModel
     {
         public int EventId { get; set; }
         public int ProgenyId { get; set; }
@@ -29,6 +29,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> AccessLevelListDe { get; set; }
         public string StartString { get; set; }
         public string EndString { get; set; }
+        public CalendarItem CalendarItem { get; set; }
 
         public List<ScheduleView> ViewOptions { get; set; }
 

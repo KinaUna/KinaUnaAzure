@@ -1,12 +1,17 @@
-﻿@model Contact
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model Contact
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    Model.DateAdded ??= DateTime.MinValue;
+}
 <a class="leavePage2" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@Model.ContactId">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
 
         <div class="card-body" style="background: #000000; background: rgba(0, 0, 0, 0.5)">
             <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 12px;" class="fa fa-address-book"></span><strong class="text-warning" style="font-size: 12px;">
-                @{
-                    System.Diagnostics.Debug.Assert(Model.DateAdded != null, "Model.DateAdded != null");
-                }
                 @Model.DateAdded.Value.ToString("dd-MMM-yyyy HH:mm") </strong></div>
             <div style="margin-left: 2px; font-size: 12px;" class="text-white">@Model.DisplayName</div>
             <div style="margin-left: 2px; font-size: 12px;" class="text-white">@Model.FirstName @Model.MiddleName @Model.LastName</div>
@@ -14,7 +19,7 @@
                 <img class="img-thumbnail" style="max-height: 200px; max-width: 200px; background: black; margin-bottom: 8px;" src="@Model.PictureLink" />
             </div>
             <br />
-            <div style="margin-left: 2px; font-size: 12px;" align="left">Context: @Model.Context</div>
+            <div style="margin-left: 2px; font-size: 12px;" align="left">@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, languageId) @Model.Context</div>
             <div style="margin-left: 2px;">
                 @{
                     if (!string.IsNullOrEmpty(Model.Tags))

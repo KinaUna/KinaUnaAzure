@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class ContactViewModel
+    public class ContactViewModel: BaseViewModel
     {
         public int ContactId { get; set; }
 
@@ -44,11 +44,15 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string FileName { get; set; }
         public IFormFile File { get; set; }
         public string Tags { get; set; }
+        public string TagsList { get; set; }
+        public string TagFilter { get; set; }
         public DateTime? DateAdded { get; set; }
+        
+        public Contact Contact { get; set; }
+        
         public ContactViewModel()
         {
             ProgenyList = new List<SelectListItem>();
-
             AccessLevelList accList = new AccessLevelList();
             AccessLevelListEn = accList.AccessLevelListEn;
             AccessLevelListDa = accList.AccessLevelListDa;

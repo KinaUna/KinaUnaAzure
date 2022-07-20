@@ -30,9 +30,7 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
-        private int _progId = Constants.DefaultChildId;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public TimelineController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, ITimelineHttpClient timelineHttpClient, 
             IWordsHttpClient wordsHttpClient, IVaccinationsHttpClient vaccinationsHttpClient, ISkillsHttpClient skillsHttpClient, INotesHttpClient notesHttpClient, IMeasurementsHttpClient measurementsHttpClient,
             ILocationsHttpClient locationsHttpClient, IFriendsHttpClient friendsHttpClient, IContactsHttpClient contactsHttpClient, ICalendarsHttpClient calendarsHttpClient, ISleepHttpClient sleepHttpClient, IUserAccessHttpClient userAccessHttpClient)
@@ -58,22 +56,26 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, int items = 0)
         {
-            _progId = childId;
-            ViewBag.SortBy = sortBy;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            TimeLineViewModel model = new TimeLineViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
-            }
-            if (_progId == 0)
-            {
-                _progId = Constants.DefaultChildId;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            if (childId == 0)
+            {
+                childId = Constants.DefaultChildId;
+            }
+
+            model.SortBy = sortBy;
+            
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -91,9 +93,9 @@ namespace KinaUnaWeb.Controllers
                 userAccessLevel = (int)AccessLevel.Private;
             }
 
-            TimeLineViewModel model = new TimeLineViewModel();
+            
             model.TimeLineItems = new List<TimeLineItem>();
-            model.TimeLineItems = await _timelineHttpClient.GetTimeline(_progId, userAccessLevel);
+            model.TimeLineItems = await _timelineHttpClient.GetTimeline(childId, userAccessLevel);
             if (sortBy == 1)
             {
                 model.TimeLineItems = model.TimeLineItems.OrderByDescending(t => t.ProgenyTime).ToList();
@@ -102,9 +104,9 @@ namespace KinaUnaWeb.Controllers
             {
                 model.TimeLineItems = model.TimeLineItems.OrderBy(t => t.ProgenyTime).ToList();
             }
-            
-            ViewBag.ProgenyName = progeny.NickName;
-            ViewBag.Items = items;
+
+            model.Progeny = progeny;
+            model.Items = items;
             return View(model);
         }
 
@@ -219,9 +221,9 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> GetTimeLineItem(TimeLineItemViewModel model)
         {
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
             
             string id = model.ItemId.ToString();
             int type = model.TypeId;
@@ -231,7 +233,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    PictureViewModel picture = await _mediaHttpClient.GetPictureViewModel(itemId, 0, 1, userinfo.Timezone);
+                    PictureViewModel picture = await _mediaHttpClient.GetPictureViewModel(itemId, 0, 1, model.CurrentUser.Timezone);
                     if (picture != null && picture.PictureId > 0)
                     {
                         if (!picture.PictureLink.StartsWith("https://"))
@@ -248,7 +250,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (idParse)
                 {
-                    VideoViewModel video = await _mediaHttpClient.GetVideoViewModel(itemId, 0, 1, userinfo.Timezone);
+                    VideoViewModel video = await _mediaHttpClient.GetVideoViewModel(itemId, 0, 1, model.CurrentUser.Timezone);
                     if (video != null && video.VideoId > 0)
                     {
                         video.CommentsCount = video.CommentsList.Count;
@@ -264,8 +266,8 @@ namespace KinaUnaWeb.Controllers
                     CalendarItem evt = await _calendarsHttpClient.GetCalendarItem(itemId);
                     if (evt != null && evt.EventId > 0 && evt.StartTime.HasValue && evt.EndTime.HasValue)
                     {
-                        evt.StartTime = TimeZoneInfo.ConvertTimeFromUtc(evt.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                        evt.EndTime = TimeZoneInfo.ConvertTimeFromUtc(evt.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                        evt.StartTime = TimeZoneInfo.ConvertTimeFromUtc(evt.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                        evt.EndTime = TimeZoneInfo.ConvertTimeFromUtc(evt.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                         return PartialView("TimeLineEventPartial", evt);
                     }
                 }
@@ -280,7 +282,7 @@ namespace KinaUnaWeb.Controllers
                     {
                         if (voc.Date != null)
                         {
-                            voc.Date = TimeZoneInfo.ConvertTimeFromUtc(voc.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                            voc.Date = TimeZoneInfo.ConvertTimeFromUtc(voc.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
                         }
                         return PartialView("TimeLineVocabularyPartial", voc);
@@ -335,12 +337,12 @@ namespace KinaUnaWeb.Controllers
                     Sleep slp = await _sleepHttpClient.GetSleepItem(itemId);
                     if (slp != null && slp.SleepId > 0)
                     {
-                        slp.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                        slp.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                        slp.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                        slp.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                         DateTimeOffset sOffset = new DateTimeOffset(slp.SleepStart,
-                            TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone).GetUtcOffset(slp.SleepStart));
+                            TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone).GetUtcOffset(slp.SleepStart));
                         DateTimeOffset eOffset = new DateTimeOffset(slp.SleepEnd,
-                            TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone).GetUtcOffset(slp.SleepEnd));
+                            TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone).GetUtcOffset(slp.SleepEnd));
                         slp.SleepDuration = eOffset - sOffset;
                         return PartialView("TimeLineSleepPartial", slp);
                     }
@@ -354,7 +356,7 @@ namespace KinaUnaWeb.Controllers
                     Note nte = await _notesHttpClient.GetNote(itemId);
                     if (nte != null && nte.NoteId > 0)
                     {
-                        nte.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(nte.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                        nte.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(nte.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                         return PartialView("TimeLineNotePartial", nte);
                     }
                 }

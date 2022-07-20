@@ -1,29 +1,38 @@
-﻿@model Friend
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model Friend
+@inject ILocaleManager LocaleManager
 @{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    Model.FriendSince ??= DateTime.MinValue;
+}
+@{
+    string personalFriend = await LocaleManager.GetTranslation("Personal friend", PageNames.Friends, languageId);
+    string toyFriend = await LocaleManager.GetTranslation("Toy/animal friend", PageNames.Friends, languageId);
+    string parentFriend = await LocaleManager.GetTranslation("Parent", PageNames.Friends, languageId);
+    string familyFriend = await LocaleManager.GetTranslation("Family", PageNames.Friends, languageId);
+    string caretakerFriend = await LocaleManager.GetTranslation("Caretaker", PageNames.Friends, languageId);
     List<string> typeList = new List<string>();
-    typeList.Add("Personal Friend");
-    typeList.Add("Toy/Animal Friend");
-    typeList.Add("Parent");
-    typeList.Add("Family");
-    typeList.Add("Caretaker");
+    typeList.Add(personalFriend);
+    typeList.Add(toyFriend);
+    typeList.Add(parentFriend);
+    typeList.Add(familyFriend);
+    typeList.Add(caretakerFriend);
 }
 <a class="leavePage2" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@Model.FriendId">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
         <div class="card-body" style="background: #6e6e6e; background: rgba(110, 110, 110, 0.5)">
             <div class="info-title">
                 <span style="font-size: 18px; color: white; margin-right: 12px;" class="fas fa-users"></span><strong style="font-size: 12px;" class="text-warning">
-                    @{
-                        System.Diagnostics.Debug.Assert(Model.FriendSince != null, "Model.FriendSince != null");
-                    }
                     @Model.FriendSince.Value.ToString("dd-MMM-yyyy HH:mm")</strong>
             </div>
             <div style="margin-left: 2px; font-size: 12px;" class="text-white">@Model.Name</div>
             <div style="margin-left: 2px; margin-top: 8px; max-width: 60vw; overflow: hidden; font-size: 12px;">
                 <img class="img-thumbnail" style="max-height: 240px; max-width: 224px; background: black; margin-bottom: 8px;" src="@Model.PictureLink"/>
                 <br/>
-                Type: @typeList[Model.Type]<br/>
-                Context: @Model.Context<br/>
-                Notes: @Model.Notes
+                @await LocaleManager.GetTranslation("Type:", PageNames.Friends, languageId) @typeList[Model.Type]<br/>
+                @await LocaleManager.GetTranslation("Context:", PageNames.Friends, languageId) @Model.Context<br/>
             </div>
             <div style="margin-left: 2px;">
                 @{

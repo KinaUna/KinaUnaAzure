@@ -16,8 +16,6 @@ namespace KinaUnaWeb.Controllers
 {
     public class VideosController : Controller
     {
-        private int _progId = Constants.DefaultChildId;
-        private bool _userIsProgenyAdmin;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
@@ -39,35 +37,28 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int id = 1, int pageSize = 8, int childId = 0, int sortBy = 1, string tagFilter = "")
         {
-            _progId = childId;
+            VideoPageViewModel model = new VideoPageViewModel();
+
             if (id < 1)
             {
                 id = 1;
             }
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
-            if (string.IsNullOrEmpty(userTimeZone))
+
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                userTimeZone = Constants.DefaultTimezone;
-            }
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
-            {
-                _progId = userinfo.ViewChild;
-            }
-            else
-            {
-                _progId = childId;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            if (_progId == 0)
+            if (childId == 0)
             {
-                _progId = Constants.DefaultChildId;
+                childId = Constants.DefaultChildId;
             }
-
-
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -80,16 +71,16 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
+            bool userIsProgenyAdmin = false;
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                userIsProgenyAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
-
-
-            VideoPageViewModel model = await _mediaHttpClient.GetVideoPage(pageSize, id, progeny.Id, userAccessLevel, sortBy, tagFilter, userTimeZone);
+            
+            model = await _mediaHttpClient.GetVideoPage(pageSize, id, progeny.Id, userAccessLevel, sortBy, tagFilter, model.CurrentUser.Timezone);
             model.Progeny = progeny;
-            model.IsAdmin = _userIsProgenyAdmin;
+            model.IsAdmin = userIsProgenyAdmin;
             model.SortBy = sortBy;
             
             return View(model);
@@ -98,21 +89,23 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Video(int id, int childId = 0, string tagFilter = "", int sortBy = 1)
         {
-            _progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
-            if (string.IsNullOrEmpty(userTimeZone))
+            VideoViewModel model = new VideoViewModel();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                userTimeZone = Constants.DefaultTimezone;
-            }
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
-            {
-                _progId = userinfo.ViewChild;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            if (childId == 0)
+            {
+                childId = Constants.DefaultChildId;
+            }
+            
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -127,13 +120,13 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
 
-            VideoViewModel video = await _mediaHttpClient.GetVideoViewModel(id, userAccessLevel, sortBy, userinfo.Timezone);
+            VideoViewModel video = await _mediaHttpClient.GetVideoViewModel(id, userAccessLevel, sortBy, model.CurrentUser.Timezone);
             
-            VideoViewModel model = new VideoViewModel();
+            
             model.VideoId = video.VideoId;
             model.VideoType = video.VideoType;
             model.VideoTime = video.VideoTime;
@@ -163,7 +156,6 @@ namespace KinaUnaWeb.Controllers
             model.TagFilter = tagFilter;
             model.SortBy = sortBy;
             model.UserId = HttpContext.User.FindFirst("sub")?.Value ?? _defaultUser;
-            model.IsAdmin = _userIsProgenyAdmin;
             if (video.Duration != null)
             {
                 model.DurationHours = video.Duration.Value.Hours.ToString();
@@ -173,7 +165,7 @@ namespace KinaUnaWeb.Controllers
             if (model.VideoTime != null && progeny.BirthDay.HasValue)
             {
                 PictureTime picTime = new PictureTime(progeny.BirthDay.Value,
-                    TimeZoneInfo.ConvertTimeToUtc(model.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone)),
+                    TimeZoneInfo.ConvertTimeToUtc(model.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone)),
                     TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
                 model.VidTimeValid = true;
                 model.VidTime = model.VideoTime.Value.ToString("dd MMMM yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
@@ -250,6 +242,16 @@ namespace KinaUnaWeb.Controllers
                         model.LocationsList.Add(selectListItem);
                     }
                 }
+            }
+
+            if (model.LanguageId == 2)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDe;
+            }
+
+            if (model.LanguageId == 3)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDa;
             }
 
             return View(model);

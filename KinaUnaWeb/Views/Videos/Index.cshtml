@@ -1,43 +1,55 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.VideoPageViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.VideoPageViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Video Gallery";
-
+    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Videos", PageNames.Videos, Model.LanguageId);
 }
 @if (Model.IsAdmin)
 {
     <div style="float: right;">
         <div class="btn-group">
             <a asp-controller="AddItem" asp-action="AddVideo" class="btn btn-success btn-round leavePage">
-                <i class="fas fa-plus"></i> Add Video
+                <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add video", PageNames.Videos, Model.LanguageId)
             </a>
         </div>
     </div>
 }
-<h3 class="title">@Model.Progeny.NickName's Video Gallery - Page @Model.PageNumber of @Model.TotalPages</h3>
+<h3 class="title">@Model.Progeny.NickName @await LocaleManager.GetTranslation("Video gallery", PageNames.Videos, Model.LanguageId) - @await LocaleManager.GetTranslation("Page", PageNames.Videos, Model.LanguageId) @Model.PageNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.TotalPages</h3>
 <br style="clear: both;" />
 <div id="photoListDiv">
     @{
-        string viewPrevText = "Older";
-        string viewNextText = "Newer";
+        string videosString = await LocaleManager.GetTranslation("videos", PageNames.Videos, Model.LanguageId);
+        string olderString = await LocaleManager.GetTranslation("Older", PageNames.Videos, Model.LanguageId);
+        string newerString = await LocaleManager.GetTranslation("Newer", PageNames.Videos, Model.LanguageId);
+        string newestString = await LocaleManager.GetTranslation("Newest", PageNames.Videos, Model.LanguageId);
+        string firstString = await LocaleManager.GetTranslation("First", PageNames.Videos, Model.LanguageId);
+        string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Videos, Model.LanguageId);
+        string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Videos, Model.LanguageId);
+        string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Videos, Model.LanguageId);
+        string go5PagesBackString = await LocaleManager.GetTranslation("Go 5 pages back", PageNames.Videos, Model.LanguageId);
+        string go5PagesForwardString = await LocaleManager.GetTranslation("Go 5 pages forward", PageNames.Videos, Model.LanguageId);
+        string viewPrevText = olderString;
+        string viewNextText = newerString;
         if (Model.PageNumber == 1)
         {
-            viewPrevText = "Newest";
+            viewPrevText = newestString;
         }
         if (Model.PageNumber == Model.TotalPages)
         {
-            viewNextText = "First";
+            viewNextText = firstString;
         }
         if (Model.SortBy == 1)
         {
-            viewPrevText = "Newer";
-            viewNextText = "Older";
+            viewPrevText = newerString;
+            viewNextText = olderString;
             if (Model.PageNumber == 1)
             {
-                viewPrevText = "First";
+                viewPrevText = firstString;
             }
             if (Model.PageNumber == Model.TotalPages)
             {
-                viewNextText = "Newest";
+                viewNextText = newestString;
             }
         }
         string sortOldest = "btn btn-primary btn-sm";
@@ -77,39 +89,44 @@
         sortOldest = "btn btn-info btn-sm leavePage";
         sortNewest = "btn btn-primary btn-sm";
         <div>
-            Sort: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Newest first</span>
-            <a class="@sortOldest" asp-controller="Videos" asp-action="Index" asp-route-id="@newPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">Oldest first</a>
+            @sortString <span class="@sortNewest"><i class="fas fa-check-circle"></i> @newestFirstString</span>
+            <a class="@sortOldest" asp-controller="Videos" asp-action="Index" asp-route-id="@newPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">@oldestFirstString</a>
         </div>
     }
     else
     {
         <div>
-            Sort: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Oldest first</span>
-            <a class="@sortNewest" asp-controller="Videos" asp-action="Index" asp-route-id="@newPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@Model.TagFilter">Newest first</a>
+            @sortString <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> @oldestFirstString</span>
+            <a class="@sortNewest" asp-controller="Videos" asp-action="Index" asp-route-id="@newPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@Model.TagFilter">@newestFirstString</a>
         </div>
     }
     @if (!String.IsNullOrEmpty(Model.TagFilter))
     {
         <br />
-        <div style="float: right;">Tag filter: <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-id="1" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Reset Filter</a></div>
+        <div style="float: right;">@await LocaleManager.GetTranslation("Tag filter:", PageNames.Videos, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage"
+            asp-action="Index" asp-route-id="1" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Videos, Model.LanguageId)</a></div>
     }
     <br />
     @if (Model.TotalPages > 1)
     {
         <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
             <div style="float:left">
-                <a id="previousPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@prevPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText Videos</a>
+                <a id="previousPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@prevPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"
+                asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @videosString</a>
                 @if (Model.TotalPages > 5)
                 {
-                    <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@prev5Page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> Go 5 pages back</a>
+                    <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@prev5Page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"
+                    asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> @go5PagesBackString</a>
                 }
             </div>
             <div style="float: right">
                 @if (Model.TotalPages > 5)
                 {
-                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@next5Page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">Go 5 pages forward <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@next5Page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"
+                    asp-route-tagFilter="@Model.TagFilter">@go5PagesForwardString <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
                 }
-                <a id="nextPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@nextPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText Videos <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                <a id="nextPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@nextPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"
+                asp-route-tagFilter="@Model.TagFilter">@viewNextText @videosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
             </div>
         </div>
     }
@@ -174,18 +191,22 @@
     {
         <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
             <div style="float:left">
-                <a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@prevPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText Videos</a>
+                <a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@prevPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"
+                asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @videosString</a>
                 @if (Model.TotalPages > 5)
                 {
-                    <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@prev5Page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> Go 5 pages back</a>
+                    <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@prev5Page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"
+                    asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> @go5PagesBackString</a>
                 }
             </div>
             <div style="float: right">
                 @if (Model.TotalPages > 5)
                 {
-                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@next5Page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">Go 5 pages forward <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@next5Page" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"
+                    asp-route-tagFilter="@Model.TagFilter">@go5PagesForwardString <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
                 }
-                <a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@nextPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText Videos <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                <a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@nextPage" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"
+                asp-route-tagFilter="@Model.TagFilter">@viewNextText @videosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
             </div>
         </div>
     }
@@ -208,30 +229,30 @@
 {
     <br /><br />
     <div>
-        Video access levels are displayed as the video number background color.
+        @await LocaleManager.GetTranslation("Video access levels are displayed as the video number background color.", PageNames.Videos, Model.LanguageId)
         <br /><br />
         <div class="nav-pills" style="height: 20px; width: 30px; font-size: 5px; background-color: #870000; display: inline-block;">
             <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">1</p>
         </div>
-        Admins Only
+        @await LocaleManager.GetTranslation("Admins Only", PageNames.Videos, Model.LanguageId)
         <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #247f00; display: inline-block; margin-left: 20px;">
             <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">2</p>
         </div>
-        Family
+        @await LocaleManager.GetTranslation("Family", PageNames.Videos, Model.LanguageId)
         <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #72007f; display: inline-block; margin-left: 20px;">
             <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">3</p>
         </div>
-        Caretakers/Special
+        @await LocaleManager.GetTranslation("Caretakers/Special", PageNames.Videos, Model.LanguageId)
         <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #007987; display: inline-block; margin-left: 20px;">
             <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">4</p>
         </div>
-        Friends
+        @await LocaleManager.GetTranslation("Friends", PageNames.Videos, Model.LanguageId)
         <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #181274; display: inline-block; margin-left: 20px;">
             <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">5</p>
         </div>
-        Registered Users or Public
+        @await LocaleManager.GetTranslation("Registered Users or Public", PageNames.Videos, Model.LanguageId)
         <br /><br />
-        Only administrators see this, others just see a dark blue color for all videos.
+        @await LocaleManager.GetTranslation("Only administrators see this, others just see a dark blue color for all videos.", PageNames.Videos, Model.LanguageId)
         <br />
     </div>
 }

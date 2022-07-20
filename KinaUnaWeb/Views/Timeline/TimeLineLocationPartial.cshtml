@@ -1,23 +1,27 @@
-﻿@model Location
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model Location
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    Model.Date ??= DateTime.MinValue;
+}
 <a class="leavePage2" asp-controller="Locations" asp-action="Index">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
 
         <div class="card-body" style="background: #507832; background: rgba(80, 120, 50, 0.8)">
             <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 20px;" class="fa fa-sticky-note"></span><strong style="font-size: 12px;" class="text-warning">
-                @{
-                    System.Diagnostics.Debug.Assert(Model.Date != null, "Model.Date != null");
-                }
                 @Model.Date.Value.ToString("dd-MMM-yyyy HH:mm") </strong></div>
             <div class="title text-white" style="font-size: 12px; margin-bottom: 12px; margin-left: 2px;">@Model.Name</div>
             <div style="margin-left: 2px; font-size: 12px;" class="rounded text-dark card-body bg-white" align="left">Latitude: @Model.Latitude, Longitude: @Model.Longitude</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">Street: @Model.StreetName</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">House Number: @Model.HouseNumber</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">District: @Model.District</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">City: @Model.City</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">Postal Code: @Model.PostalCode</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">County: @Model.County</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">State: @Model.State</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">Country: @Model.Country</div>
+            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("Street:", PageNames.Locations, languageId) @Model.StreetName</div>
+            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("House number:", PageNames.Locations, languageId) @Model.HouseNumber</div>
+            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("District:", PageNames.Locations, languageId) @Model.District</div>
+            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("City:", PageNames.Locations, languageId): @Model.City</div>
+            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("Postal code:", PageNames.Locations, languageId) @Model.PostalCode</div>
+            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("County:", PageNames.Locations, languageId) @Model.County</div>
+            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("State:", PageNames.Locations, languageId) @Model.State</div>
+            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("Country:", PageNames.Locations, languageId) @Model.Country</div>
         </div>
     </div>
 </a>

@@ -18,10 +18,7 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IMeasurementsHttpClient _measurementsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private int _progId = Constants.DefaultChildId;
-        private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public MeasurementsController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IMeasurementsHttpClient measurementsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
@@ -33,22 +30,24 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
-            _progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            MeasurementViewModel model = new MeasurementViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            if (_progId == 0)
+            if (childId == 0)
             {
-                _progId = Constants.DefaultChildId;
+                childId = Constants.DefaultChildId;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -63,13 +62,13 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
-            MeasurementViewModel model = new MeasurementViewModel();
+            
             
             // ToDo: Implement _progenyClient.GetMeasurements()
-            List<Measurement> mList = await _measurementsHttpClient.GetMeasurementsList(_progId, userAccessLevel);
+            List<Measurement> mList = await _measurementsHttpClient.GetMeasurementsList(childId, userAccessLevel);
             List<Measurement> measurementsList = new List<Measurement>();
             foreach (Measurement m in mList)
             {
@@ -87,14 +86,14 @@ namespace KinaUnaWeb.Controllers
             else
             {
                 Measurement m = new Measurement();
-                m.ProgenyId = _progId;
+                m.ProgenyId = childId;
                 m.Date = DateTime.UtcNow;
                 m.CreatedDate = DateTime.UtcNow;
                 model.MeasurementsList = new List<Measurement>();
                 model.MeasurementsList.Add(m);
             }
-            model.IsAdmin = _userIsProgenyAdmin;
             model.Progeny = progeny;
+            
             return View(model);
         }
     }

@@ -34,6 +34,9 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddAccess(string progenyId)
         {
+            UserAccessViewModel model = new UserAccessViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+
             string userEmail = User.GetEmail() ?? _defaultUser;
             var userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (userinfo == null)
@@ -44,7 +47,7 @@ namespace KinaUnaWeb.Controllers
             {
                 _progId = userinfo.ViewChild;
             }
-            UserAccessViewModel model = new UserAccessViewModel();
+            
             model.ProgenyId = int.Parse(progenyId);
             if (progenyId == "0")
             {
@@ -77,6 +80,9 @@ namespace KinaUnaWeb.Controllers
                     }
                 }
             }
+
+            // Todo: Access level list translations.
+
             return View(model);
         }
 
@@ -115,24 +121,25 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditAccess(string accessId)
         {
             UserAccessViewModel model = new UserAccessViewModel();
-            UserAccess uaModel = await _userAccessHttpClient.GetUserAccess(Int32.Parse(accessId));
-            model.ProgenyId = uaModel.ProgenyId;
-            model.UserId = uaModel.UserId;
-            model.AccessId = uaModel.AccessId;
-            model.AccessLevel = uaModel.AccessLevel;
-            model.Email = uaModel.UserId;
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            UserAccess userAccess = await _userAccessHttpClient.GetUserAccess(Int32.Parse(accessId));
+            model.ProgenyId = userAccess.ProgenyId;
+            model.UserId = userAccess.UserId;
+            model.AccessId = userAccess.AccessId;
+            model.AccessLevel = userAccess.AccessLevel;
+            model.Email = userAccess.UserId;
             model.UserName = "No user found";
             model.FirstName = "No user found";
             model.MiddleName = "No user found";
             model.LastName = "No user found";
-            UserInfo appUser = await _userInfosHttpClient.GetUserInfo(uaModel.UserId);
-            if (appUser != null)
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
+            if (userInfo != null)
             {
-                model.Email = appUser.UserEmail;
-                model.UserName = appUser.UserName;
-                model.FirstName = appUser.FirstName;
-                model.MiddleName = appUser.MiddleName;
-                model.LastName = appUser.LastName;
+                model.Email = userInfo.UserEmail;
+                model.UserName = userInfo.UserName;
+                model.FirstName = userInfo.FirstName;
+                model.MiddleName = userInfo.MiddleName;
+                model.LastName = userInfo.LastName;
             }
 
             model.Progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
@@ -145,12 +152,12 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditAccess(UserAccessViewModel model)
         {
-            UserAccess uaModel = new UserAccess();
-            uaModel.AccessId = model.AccessId;
-            uaModel.ProgenyId = model.ProgenyId;
-            uaModel.UserId = model.Email;
-            uaModel.AccessLevel = model.AccessLevel;
-            await _userAccessHttpClient.UpdateUserAccess(uaModel);
+            UserAccess userAccess = new UserAccess();
+            userAccess.AccessId = model.AccessId;
+            userAccess.ProgenyId = model.ProgenyId;
+            userAccess.UserId = model.Email;
+            userAccess.AccessLevel = model.AccessLevel;
+            await _userAccessHttpClient.UpdateUserAccess(userAccess);
             
             // To do: Notify user of update
             return RedirectToAction("Index");
@@ -160,17 +167,18 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteAccess(int accessId)
         {
             UserAccessViewModel model = new UserAccessViewModel();
-            UserAccess uaModel = await _userAccessHttpClient.GetUserAccess(accessId);
-            model.ProgenyId = uaModel.ProgenyId;
-            model.UserId = uaModel.UserId;
-            model.AccessId = uaModel.AccessId;
-            model.AccessLevel = uaModel.AccessLevel;
-            model.Email = uaModel.UserId;
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            UserAccess userAccess = await _userAccessHttpClient.GetUserAccess(accessId);
+            model.ProgenyId = userAccess.ProgenyId;
+            model.UserId = userAccess.UserId;
+            model.AccessId = userAccess.AccessId;
+            model.AccessLevel = userAccess.AccessLevel;
+            model.Email = userAccess.UserId;
             model.UserName = "No user found";
             model.FirstName = "No user found";
             model.MiddleName = "No user found";
             model.LastName = "No user found";
-            UserInfo appUser = await _userInfosHttpClient.GetUserInfo(uaModel.UserId);
+            UserInfo appUser = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
             if (appUser != null)
             {
                 model.Email = appUser.UserEmail;
@@ -179,7 +187,7 @@ namespace KinaUnaWeb.Controllers
                 model.MiddleName = appUser.MiddleName;
                 model.LastName = appUser.LastName;
             }
-            model.Progeny = await _progenyHttpClient.GetProgeny(uaModel.ProgenyId);
+            model.Progeny = await _progenyHttpClient.GetProgeny(userAccess.ProgenyId);
             model.ProgenyName = model.Progeny.Name;
 
             return View(model);

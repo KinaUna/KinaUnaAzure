@@ -1,14 +1,23 @@
-﻿@model KinaUna.Data.Models.Skill
-<H4>Delete Skill: @Model.Name</H4>
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.SkillViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Delete skill", PageNames.Skills, Model.LanguageId);
+}
+<h2>@ViewData["Title"] - @Model.Skill.Name</h2>
 <form asp-action="DeleteSkill" role="form" method="post">
     <div>
-        Are you sure you want to delete @Model.Name?
+        @await LocaleManager.GetTranslation("Are you sure you want to delete this skill?", PageNames.Skills, Model.LanguageId) @Model.Skill.Name?
     </div>
     <br/>
     <div>
-        Description: @Model.Description
+        @await LocaleManager.GetTranslation("Description:", PageNames.Skills, Model.LanguageId) @Model.Skill.Description
     </div>
     <br />
-    <input asp-for="SkillId" class="form-control" value="@Model.SkillId" type="hidden" />
-    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="Skills" asp-action="Index">Cancel</a></div>
+    <input asp-for="Skill.SkillId" class="form-control" value="@Model.Skill.SkillId" type="hidden" />
+    <div>
+        <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - delete this skill", PageNames.Skills, Model.LanguageId)</Button>
+        <a class="btn btn-danger leavePage" asp-controller="Skills" asp-action="Index">@await LocaleManager.GetTranslation("Cancel:", PageNames.AddItem, Model.LanguageId)</a>
+    </div>
 </form>

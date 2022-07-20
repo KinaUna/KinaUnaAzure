@@ -1,6 +1,22 @@
-﻿@model KinaUnaWeb.Models.HomeViewModels.HomeFeedViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.HomeViewModels.HomeFeedViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = await LocaleManager.GetTranslation("Home", PageNames.Home, Model.LanguageId);
+    string isNowString = await LocaleManager.GetTranslation("is now", PageNames.Home, Model.LanguageId);
+    string willBeString = await LocaleManager.GetTranslation("will be", PageNames.Home, Model.LanguageId);
+    string wasString = await LocaleManager.GetTranslation("was", PageNames.Home, Model.LanguageId);
+    string minutesOldString = await LocaleManager.GetTranslation("minutes old.", PageNames.Home, Model.LanguageId);
+    string hoursOldString = await LocaleManager.GetTranslation("hours old.", PageNames.Home, Model.LanguageId);
+    string daysOldString = await LocaleManager.GetTranslation("days old.", PageNames.Home, Model.LanguageId);
+    string monthsOldString = await LocaleManager.GetTranslation("months old.", PageNames.Home, Model.LanguageId);
+    string yearsOldString = await LocaleManager.GetTranslation("years old.", PageNames.Home, Model.LanguageId);
+    string daysString = await LocaleManager.GetTranslation("days", PageNames.Home, Model.LanguageId);
+    string weeksString = await LocaleManager.GetTranslation("weeks", PageNames.Home, Model.LanguageId);
+    string hoursString = await LocaleManager.GetTranslation("hours", PageNames.Home, Model.LanguageId);
+    string minutesString = await LocaleManager.GetTranslation("minutes", PageNames.Home, Model.LanguageId);
+    string weeksAndString = await LocaleManager.GetTranslation("weeks and", PageNames.Home, Model.LanguageId);
 }
 <div class="container">
     <div class="row">
@@ -13,30 +29,30 @@
                 <div style="margin-left: 10px;">
                     @if (User.Identity != null && User.Identity.IsAuthenticated && ViewBag.OriginalProgeny != null)
                     {
-                        <div>You do not have access to @ViewBag.OriginalProgeny.NickName's information.<br />
+                        <div>@await LocaleManager.GetTranslation("You don't have access to data for", PageNames.Home, Model.LanguageId) @ViewBag.OriginalProgeny.NickName<br />
                             
-                            To request access click here:  <a asp-controller="Home" asp-action="RequestAccess" asp-route-childId="@ViewBag.OriginalProgeny.Id" class="btn btn-success btn-round leavePage">
-                                <i class="fas fa-plus"></i> Request Access
+                            @await LocaleManager.GetTranslation("To request access click here:", PageNames.Home, Model.LanguageId)  <a asp-controller="Home" asp-action="RequestAccess" asp-route-childId="@ViewBag.OriginalProgeny.Id" class="btn btn-success btn-round leavePage">
+                                <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Request access", PageNames.Home, Model.LanguageId)
                             </a><br />
-                            Displaying KinaUna.com's information instead.<br/>
+                            @await LocaleManager.GetTranslation("Displaying data for KinaUna.com instead.", PageNames.Home, Model.LanguageId)<br/>
                         </div>
                     }
                     <div style="font-size: 16px;">
-                        <div>@Model.Progeny.NickName is now @Model.Years years old.</div>
-                        <div>@Model.Progeny.NickName is now @Model.Months months old.</div>
-                        <div>@Model.Progeny.NickName is now @Model.Weeks[0] weeks and @Model.Weeks[1] days old.</div>
-                        <div>@Model.Progeny.NickName is now @Model.Days days old.</div>
-                        <div>@Model.Progeny.NickName is now @Model.Hours hours old.</div>
-                        <div>@Model.Progeny.NickName is now @Model.Minutes minutes old.</div>
+                        <div>@Model.Progeny.NickName @isNowString @Model.Years @await LocaleManager.GetTranslation("years old.", PageNames.Home, Model.LanguageId)</div>
+                        <div>@Model.Progeny.NickName @isNowString @Model.Months @await LocaleManager.GetTranslation("months old.", PageNames.Home, Model.LanguageId)</div>
+                        <div>@Model.Progeny.NickName @isNowString @Model.Weeks[0] @weeksAndString @Model.Weeks[1] @daysOldString</div>
+                        <div>@Model.Progeny.NickName @isNowString @Model.Days @daysOldString</div>
+                        <div>@Model.Progeny.NickName @isNowString @Model.Hours @await LocaleManager.GetTranslation("hours old.", PageNames.Home, Model.LanguageId)</div>
+                        <div>@Model.Progeny.NickName @isNowString @Model.Minutes @await LocaleManager.GetTranslation("minutes old.", PageNames.Home, Model.LanguageId)</div>
                         <br/>
-                        <div>@Model.Progeny.NickName's next birthday is in @Model.NextBirthday days.</div>
+                        <div>@Model.Progeny.NickName @await LocaleManager.GetTranslation("will have the next birthday in", PageNames.Home, Model.LanguageId)@Model.NextBirthday @daysString.</div>
                     </div>
                     <br/>
                     <div style="font-size: 16px;">
-                        <div>@Model.Progeny.NickName will be @Model.WeeksMileStone[0] weeks: @Model.WeeksMileStone[1]</div>
-                        <div>@Model.Progeny.NickName will be @Model.DaysMileStone[0] days: @Model.DaysMileStone[1]</div>
-                        <div>@Model.Progeny.NickName will be @Model.HoursMileStone[0] hours: @Model.HoursMileStone[1]</div>
-                        <div>@Model.Progeny.NickName will be @Model.MinutesMileStone[0] minutes: @Model.MinutesMileStone[1]</div>
+                        <div>@Model.Progeny.NickName @willBeString @Model.WeeksMileStone[0] @weeksString: @Model.WeeksMileStone[1]</div>
+                        <div>@Model.Progeny.NickName @willBeString @Model.DaysMileStone[0] @daysString: @Model.DaysMileStone[1]</div>
+                        <div>@Model.Progeny.NickName @willBeString @Model.HoursMileStone[0] @hoursString: @Model.HoursMileStone[1]</div>
+                        <div>@Model.Progeny.NickName @willBeString @Model.MinutesMileStone[0] @minutesString: @Model.MinutesMileStone[1]</div>
                     </div>
                     <br/><br/>
                     <div>
@@ -60,19 +76,19 @@
                     }
                     @if (!string.IsNullOrEmpty(Model.Location))
                     {
-                        <br/><div>Photo Location: @Model.Location</div><br/>
+                        <br/><div>@await LocaleManager.GetTranslation("Photo location:", PageNames.Home, Model.LanguageId) @Model.Location</div><br/>
                     }
                     @if (Model.PicTimeValid)
                     {
                         <div style="font-size: 16px;">
 
-                            <div>Photo taken: @Model.PicTime</div>
-                            <div>@Model.Progeny.NickName was @Model.PicYears years old.</div>
-                            <div>@Model.Progeny.NickName was @Model.PicMonths months old.</div>
-                            <div>@Model.Progeny.NickName was @Model.PicWeeks[0] weeks and @Model.PicWeeks[1] days old.</div>
-                            <div>@Model.Progeny.NickName was @Model.PicDays days old.</div>
-                            <div>@Model.Progeny.NickName was @Model.PicHours hours old.</div>
-                            <div>@Model.Progeny.NickName was @Model.PicMinutes minutes old.</div>
+                            <div>@await LocaleManager.GetTranslation("Photo taken:", PageNames.Home, Model.LanguageId) @Model.PicTime</div>
+                            <div>@Model.Progeny.NickName @wasString @Model.PicYears @yearsOldString</div>
+                            <div>@Model.Progeny.NickName @wasString @Model.PicMonths @monthsOldString</div>
+                            <div>@Model.Progeny.NickName @wasString @Model.PicWeeks[0] @weeksAndString @Model.PicWeeks[1] @daysOldString</div>
+                            <div>@Model.Progeny.NickName @wasString @Model.PicDays @daysOldString</div>
+                            <div>@Model.Progeny.NickName @wasString @Model.PicHours @hoursOldString</div>
+                            <div>@Model.Progeny.NickName @wasString @Model.PicMinutes @minutesOldString</div>
                         </div>
 
                     }

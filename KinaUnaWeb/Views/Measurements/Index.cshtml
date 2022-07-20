@@ -1,4 +1,12 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.MeasurementViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.MeasurementViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = Model.Progeny.NickName  + " - " + await LocaleManager.GetTranslation("Measurements", PageNames.Measurements, Model.LanguageId);
+    string heightString = await LocaleManager.GetTranslation("Height", PageNames.Measurements, Model.LanguageId);
+    string weightString = await LocaleManager.GetTranslation("Weight", PageNames.Measurements, Model.LanguageId);
+}
 @section Scripts{
     <link href="/lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
     <script src="/lib/moment.min.js"></script>
@@ -6,14 +14,11 @@
     <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
     <script src="/lib/datatables/sorting/datetime-moment.js"></script>
 }
-@{
-    ViewData["Title"] = Model.Progeny.NickName + "'s Measurements";
-}
-@if (Model == null)
+@if (Model.MeasurementsList == null || !Model.MeasurementsList.Any())
 {
-    <h3>@ViewData["Title"]</h3>
+    <h2>@ViewData["Title"]</h2>
     <div>
-        No data found.
+        @await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Measurements, Model.LanguageId)
     </div>
 }
 else
@@ -22,24 +27,24 @@ else
     {
         <div class="btn-group" style="float: right;">
             <a asp-controller="AddItem" asp-action="AddMeasurement" class="btn btn-success btn-round leavePage">
-                <i class="fas fa-plus"></i> Add Measurement
+                <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add measurement", PageNames.Measurements, Model.LanguageId)
             </a>
         </div>
     }
-    <h3 class="title">@ViewData["Title"]</h3>
+    <h2>@ViewData["Title"]</h2>
     <div class="table-responsive">
         <table class="table table-bordered table-striped" style="margin-top: 15px;">
             <thead>
                 <tr>
-                    <th style="font-weight: bold">Date</th>
-                    <th style="font-weight: bold">Height</th>
-                    <th style="font-weight: bold">Weight</th>
-                    <th style="font-weight: bold">Head size</th>
-                    <th style="font-weight: bold">Eye Color</th>
-                    <th style="font-weight: bold">Hair Color</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Date", PageNames.Measurements, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@heightString</th>
+                    <th style="font-weight: bold">@weightString</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Head size", PageNames.Measurements, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Eye color", PageNames.Measurements, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Hair color", PageNames.Measurements, Model.LanguageId)</th>
                     @if (Model.IsAdmin)
                     {
-                        <th style="font-weight: bold">Action</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Measurements, Model.LanguageId)</th>
                     }
                 </tr>
             </thead>
@@ -76,12 +81,12 @@ else
     <canvas id="chartContainer2" style="clear: both; height: 380px;"></canvas>
     <script src="~/lib/chart.js/dist/Chart.js"></script>
     <script type="text/javascript">
-        var ctx = document.getElementById("chartContainer");
-        var myChart = new Chart(ctx, {
+        let ctx = document.getElementById("chartContainer");
+        let myChart = new Chart(ctx, {
             type: 'line',
             data: {
                 datasets: [{
-                    label: 'Height',
+                    label: '@heightString',
                     data: [@foreach (var heightItem in Model.MeasurementsList)
                                 {
                                     if (heightItem.Height > 0.0)
@@ -128,7 +133,7 @@ else
             data: {
 
                 datasets: [{
-                    label: 'Weight',
+                    label: '@weightString',
                     data: [@foreach (var weightItem in Model.MeasurementsList)
                                 {
                                     if (weightItem.Weight > 0.0)
@@ -162,6 +167,4 @@ else
             }
         });
     </script>
-
-
 }

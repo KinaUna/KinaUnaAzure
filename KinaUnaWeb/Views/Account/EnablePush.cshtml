@@ -1,13 +1,17 @@
-﻿@model PushDevices
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model PushDevices
 @section Scripts
     {
     <script src="@Url.Content("~/js/CreateDevice.js")"></script>
 }
 
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Enable Push Notifications";
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Enable Push Notifications", PageNames.Account, languageId);
 }
-
 <h2>@ViewData["Title"]</h2>
 <hr />
 <div class="row">
@@ -20,13 +24,13 @@
         <form asp-controller="PushDevices" asp-action="CreateUser">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group" style="width: 500px;">
-                <label asp-for="Name" class="control-label">User ID</label>
+                <label asp-for="Name" class="control-label">@await LocaleManager.GetTranslation("User ID", PageNames.Account, languageId)</label>
                 <input asp-for="Name" class="form-control" value="user" readonly="readonly" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="well" style="width: 500px;">
-                <h4>Web Push Details</h4>
-                <span style="font-size: 12px;">These values will automatically become populated once correct permissions are given by the browser.</span>
+                <h4>@await LocaleManager.GetTranslation("Web Push details", PageNames.Account, languageId)</h4>
+                <span style="font-size: 12px;">@await LocaleManager.GetTranslation("These values will automatically become populated once correct permissions are given by the browser.", PageNames.Account, languageId)</span>
                 <hr />
                 <div class="form-group">
                     <label asp-for="PushEndpoint" class="control-label"></label>
@@ -45,14 +49,14 @@
                 </div>
             </div>
             <div class="form-group">
-                <input type="submit" value="Enable Push Notifications" class="btn btn-success leavePage" />
+                <input type="submit" value="@await LocaleManager.GetTranslation("Enable Push Notifications", PageNames.Account, languageId)" class="btn btn-success leavePage" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a class="leavePage" asp-action="MyAccount">Back to My Account</a>
+    <a class="leavePage" asp-action="MyAccount">@await LocaleManager.GetTranslation("Back to My Account", PageNames.Account, languageId)</a>
 </div>
 
 <script>

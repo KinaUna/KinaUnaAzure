@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
 using Microsoft.Extensions.Configuration;
@@ -121,9 +122,9 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> MyAccount()
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value;
-            Boolean.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out var mailConfirmed);
-            DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out var joinDate);
-            var userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
+            Boolean.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out bool mailConfirmed);
+            DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out DateTime joinDate);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (userinfo == null)
             {
                 throw new ApplicationException($"Unable to load user with email '{userEmail}'.");
@@ -138,7 +139,7 @@ namespace KinaUnaWeb.Controllers
             {
                 userinfo.ProfilePicture = _imageStore.UriFor(userinfo.ProfilePicture, BlobContainers.Profiles);
             }
-            var model = new UserInfoViewModel
+            UserInfoViewModel model = new UserInfoViewModel
             {
                 Id = userinfo.Id,
                 UserId = userinfo.UserId,
@@ -153,6 +154,8 @@ namespace KinaUnaWeb.Controllers
                 PhoneNumber = HttpContext.User.FindFirst("phone_number")?.Value ?? "",
                 ProfilePicture = userinfo.ProfilePicture
             };
+
+            model.LanguageId = Request.GetLanguageIdFromCookie();
 
             if (String.IsNullOrEmpty(model.UserName))
             {
@@ -169,10 +172,11 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<IActionResult> MyAccount(UserInfoViewModel model)
         {
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+
             string userEmail = HttpContext.User.FindFirst("email")?.Value;
-            Boolean.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out var mailConfirmed);
-            var userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            // userinfo.UserEmail = model.UserEmail;
+            Boolean.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out bool mailConfirmed);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             userinfo.FirstName = model.FirstName;
             userinfo.MiddleName = model.MiddleName;
             userinfo.LastName = model.LastName;
@@ -203,7 +207,7 @@ namespace KinaUnaWeb.Controllers
 
             if (model.File != null && model.File.Name != String.Empty)
             {
-                using (var stream = model.File.OpenReadStream())
+                using (Stream stream = model.File.OpenReadStream())
                 {
                     userinfo.ProfilePicture = await _imageStore.SaveImage(stream, BlobContainers.Profiles);
                 }
@@ -233,10 +237,10 @@ namespace KinaUnaWeb.Controllers
                 newEmail = userEmail;
             }
 
-            Boolean.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out var mailConfirmed);
-            var userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out var joinDate);
-            var model = new UserInfoViewModel
+            Boolean.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out bool mailConfirmed);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
+            DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out DateTime joinDate);
+            UserInfoViewModel model = new UserInfoViewModel
             {
                 Id = userinfo.Id,
                 UserId = userinfo.UserId,
@@ -251,6 +255,9 @@ namespace KinaUnaWeb.Controllers
                 PhoneNumber = HttpContext.User.FindFirst("phone_number")?.Value ?? "",
                 ProfilePicture = userinfo.ProfilePicture
             };
+
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+
             model.ChangeLink = _configuration["AuthenticationServer"] + "/Account/ChangeEmail?NewEmail=" + newEmail + "&OldEmail=" + oldEmail;
 
             return View(model);
@@ -278,7 +285,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteAccount()
         {
             string userId = HttpContext.User.GetUserId();
-            DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out var joinDate);
+            DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out DateTime joinDate);
             UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(userId);
             if (userInfo == null)
             {
@@ -310,6 +317,7 @@ namespace KinaUnaWeb.Controllers
                 ProfilePicture = userInfo.ProfilePicture
             };
 
+            model.LanguageId = Request.GetLanguageIdFromCookie();
             if (string.IsNullOrEmpty(model.UserName))
             {
                 model.UserName = model.UserEmail;
@@ -323,6 +331,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteAccount(UserInfoViewModel model)
         {
+            model.LanguageId = Request.GetLanguageIdFromCookie();
             string userId = HttpContext.User.GetUserId();
             UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(userId);
             if (userInfo != null && userInfo.UserEmail.ToUpper() == User.GetEmail().ToUpper())

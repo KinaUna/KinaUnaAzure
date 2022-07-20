@@ -18,10 +18,7 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly INotesHttpClient _notesHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private int _progId = Constants.DefaultChildId;
-        private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public NotesController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, INotesHttpClient notesHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
@@ -33,22 +30,23 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
-            _progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            NotesListViewModel model = new NotesListViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
             
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            if (_progId == 0)
+            if (childId == 0)
             {
-                _progId = Constants.DefaultChildId;
+                childId = Constants.DefaultChildId;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -63,14 +61,11 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
 
-            List<NoteViewModel> model = new List<NoteViewModel>();
-            
-            // Todo: Replace _context with _progenyClient.GetNotes()
-            List<Note> notes = await _notesHttpClient.GetNotesList(_progId, userAccessLevel);
+            List<Note> notes = await _notesHttpClient.GetNotesList(childId, userAccessLevel);
             if (notes.Count != 0)
             {
                 foreach (Note note in notes)
@@ -82,30 +77,31 @@ namespace KinaUnaWeb.Controllers
                     notesViewModel.Content = note.Content;
                     notesViewModel.NoteId = note.NoteId;
                     notesViewModel.Title = note.Title;
-                    notesViewModel.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(note.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                    notesViewModel.IsAdmin = _userIsProgenyAdmin;
+                    notesViewModel.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(note.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                    notesViewModel.IsAdmin = model.IsAdmin;
                     UserInfo nUser = await _userInfosHttpClient.GetUserInfoByUserId(note.Owner);
                     notesViewModel.Owner = nUser.FirstName + " " + nUser.MiddleName + " " + nUser.LastName;
                     if (notesViewModel.AccessLevel >= userAccessLevel)
                     {
-                        model.Add(notesViewModel);
+                        model.NotesList.Add(notesViewModel);
                     }
 
                 }
-                model = model.OrderBy(n => n.CreatedDate).ToList();
-                model.Reverse();
+                model.NotesList = model.NotesList.OrderBy(n => n.CreatedDate).ToList();
+                model.NotesList.Reverse();
             }
             else
             {
                 NoteViewModel noteViewModel = new NoteViewModel();
-                noteViewModel.ProgenyId = _progId;
+                noteViewModel.ProgenyId = childId;
                 noteViewModel.Title = "No notes found.";
                 noteViewModel.Content = "The notes list is empty.";
-                noteViewModel.IsAdmin = _userIsProgenyAdmin;
-                model.Add(noteViewModel);
+                noteViewModel.IsAdmin = model.IsAdmin;
+                model.NotesList.Add(noteViewModel);
             }
 
-            model[0].Progeny = progeny;
+            model.Progeny = progeny;
+
             return View(model);
 
         }

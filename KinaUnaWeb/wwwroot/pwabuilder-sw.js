@@ -168,6 +168,7 @@ function fromCache(request) {
 }
 
 function updateCache(request, response) {
+    if (!(request.url.indexOf('http') === 0)) return;
     if (!comparePaths(request.url, avoidCachingPaths)) {
         return caches.open(CACHE).then(function (cache) {
             return cache.put(request, response);

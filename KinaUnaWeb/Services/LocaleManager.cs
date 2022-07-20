@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models.HomeViewModels;
+using Microsoft.AspNetCore.Http;
 
 namespace KinaUnaWeb.Services
 {
@@ -37,6 +39,11 @@ namespace KinaUnaWeb.Services
         {
             KinaUnaText text = await _pageTextsHttpClient.GetPageTextByTitle(title, page, languageId);
             return text;
+        }
+
+        public int GetLanguageId(HttpRequest request)
+        {
+            return request.GetLanguageIdFromCookie();
         }
     }
 }

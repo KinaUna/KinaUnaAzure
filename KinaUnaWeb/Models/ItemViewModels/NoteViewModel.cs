@@ -5,9 +5,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class NoteViewModel
+    public class NoteViewModel: BaseViewModel
     {
         public int NoteId { get; set; }
+        public Note Note { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
         public string Category { get; set; }

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.FamilyViewModels
 {
-    public class ProgenyViewModel
+    public class ProgenyViewModel: BaseViewModel
     {
         public int ProgenyId { get; set; }
         [Display(Name = "Full Name")]

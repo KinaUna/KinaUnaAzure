@@ -1,17 +1,18 @@
-﻿
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "AccessDenied";
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Access denied", PageNames.Account, languageId);
 }
-
-<h2>Access Denied</h2>
-
+<h2>@ViewData["Title"]</h2>
 @{
     if (User.Identity != null && User.Identity.IsAuthenticated)
     {
-        <div> You are not authorized to view this content.</div>
+        <div>@await LocaleManager.GetTranslation("You are not authorized to view this content.", PageNames.Account, languageId) </div>
     }
     else{
-        <div>Log in to get access to more content.</div>
+        <div>@await LocaleManager.GetTranslation("Log in to get access to more content.", PageNames.Account, languageId)</div>
     }
 }
 

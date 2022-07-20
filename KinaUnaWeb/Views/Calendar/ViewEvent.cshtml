@@ -1,34 +1,37 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.Title + " - " + Model.Progeny.NickName + "'s Event";
+    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Event:", PageNames.Calendar, Model.LanguageId) + Model.Title;
 }
-<h3>@ViewData["Title"]</h3>
+<h2>@ViewData["Title"]</h2>
 <br />
 <div class="card" style="clear: both; margin-top: 25px; max-width: 710px;">
     <div class="card-body">
         <div class="card-title"><h5>@Model.Title</h5></div>
         <div style="max-width: 705px;">
-            <div align="left" style="margin: 15px;"><strong>Start:</strong>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Start:", PageNames.Calendar, Model.LanguageId)</strong>
                 @{
                     System.Diagnostics.Debug.Assert(Model.StartTime != null, "Model.StartTime != null");
                 }
                 @Model.StartTime.Value.ToString("dd-MMM-yyyy HH:mm")</div>
-            <div align="left" style="margin: 15px;"><strong>End:</strong>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("End:", PageNames.Calendar, Model.LanguageId)</strong>
                 @{
                     System.Diagnostics.Debug.Assert(Model.EndTime != null, "Model.EndTime != null");
                 }
                 @Model.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")</div>
-            <div align="left" style="margin: 15px;"><strong>Location:</strong> @Model.Location</div>
-            <div align="left" style="margin: 15px;"><strong>Context:</strong> @Model.Context</div>
-            <div align="left" style="margin: 15px;"><strong>Notes:</strong> @Model.Notes</div>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, Model.LanguageId)</strong> @Model.Location</div>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Context:", PageNames.Calendar, Model.LanguageId)</strong> @Model.Context</div>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, Model.LanguageId)</strong> @Model.Notes</div>
             @if (Model.IsAdmin)
             {
                 <div style="margin: 15px;">
                     <a asp-controller="AddItem" asp-action="EditEvent" asp-route-itemId="@Model.EventId" class="btn btn-info leavePage">
-                        <i class="fas fa-pencil-alt"></i> Edit
+                        <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                     </a>
                     <a asp-controller="AddItem" asp-action="DeleteEvent" asp-route-itemId="@Model.EventId" class="btn btn-danger leavePage">
-                        <i class="fas fa-trash-alt"></i> Delete
+                        <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
                     </a>
                 </div>
             }

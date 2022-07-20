@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -39,9 +38,10 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddProgeny()
         {
             ProgenyViewModel model = new ProgenyViewModel();
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo currentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-            model.Admins = currentUser.UserEmail.ToUpper();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+            model.Admins = model.CurrentUser.UserEmail.ToUpper();
             
             return View(model);
         }
@@ -82,6 +82,10 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditProgeny(int progenyId)
         {
             ProgenyViewModel model = new ProgenyViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
             Progeny prog = await _progenyHttpClient.GetProgeny(progenyId);
 
             model.ProgenyId = prog.Id;
@@ -120,7 +124,7 @@ namespace KinaUnaWeb.Controllers
             prog.TimeZone = model.TimeZone;
             // Todo: check if fields are valid.
 
-            if (model.File != null && model.File.Name != String.Empty)
+            if (model.File != null && model.File.Name != string.Empty)
             {
                 string oldPictureLink = prog.PictureLink;
                 using (var stream = model.File.OpenReadStream())
@@ -128,7 +132,7 @@ namespace KinaUnaWeb.Controllers
                     prog.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Progeny);
                 }
 
-                if (!oldPictureLink.ToLower().StartsWith("http") && !String.IsNullOrEmpty(oldPictureLink))
+                if (!oldPictureLink.ToLower().StartsWith("http") && !string.IsNullOrEmpty(oldPictureLink))
                 {
                     await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Progeny);
                 }
@@ -140,7 +144,7 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteProgeny(int progenyId)
         {
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            string userEmail = User.GetEmail();
             UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             Progeny prog = await _progenyHttpClient.GetProgeny(progenyId);
             if (!prog.IsInAdminList(userinfo.UserEmail))
@@ -156,7 +160,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteProgeny(Progeny model)
         {
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            string userEmail = User.GetEmail();
             UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             Progeny prog = await _progenyHttpClient.GetProgeny(model.Id);
             if (!prog.IsInAdminList(userinfo.UserEmail))
@@ -165,6 +169,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
+            // Todo: Move operations to api.
             List<Picture> photoList = await _mediaHttpClient.GetPictureList(model.Id, (int)AccessLevel.Private, userinfo.Timezone);
             if (photoList.Any())
             {

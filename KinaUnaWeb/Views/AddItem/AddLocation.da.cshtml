@@ -169,17 +169,17 @@
         // Attach an event listener to map display
         // obtain the coordinates and display in an alert box.
         map.addEventListener('tap', function (evt) {
-            var zoomLevel = map.getZoom() + 1;
+            let zoomLevel = map.getZoom() + 1;
             if (zoomLevel > 20) {
                 zoomLevel = 20;
             }
             map.setZoom(zoomLevel, true);
-            var coord = map.screenToGeo(evt.currentPointer.viewportX,
+            let coord = map.screenToGeo(evt.currentPointer.viewportX,
                 evt.currentPointer.viewportY);
             map.setCenter(coord, true);
             
-            var geocoder = platform.getGeocodingService();
-            var reverseGeocodingParameters = {
+            let geocoder = platform.getGeocodingService();
+            let reverseGeocodingParameters = {
                 prox: coord.lat +', ' + coord.lng + ', 32',
                 mode: 'retrieveAddresses',
                 maxresults: 1
@@ -191,48 +191,43 @@
             );
             $("#latitudeText").val(coord.lat);
             $("#longitudeText").val(coord.lng);
-            //alert('Clicked at ' + Math.abs(coord.lat.toFixed(4)) +
-            //    ((coord.lat > 0) ? 'N' : 'S') +
-            //    ' ' + Math.abs(coord.lng.toFixed(4)) +
-            //    ((coord.lng > 0) ? 'E' : 'W'));
         });
     }
 
-    var platform = new H.service.Platform({
+    let platform = new H.service.Platform({
         'app_id': 'bJjORf0UVOc5U4LjADgX',
         'app_code': 'GNDm65qsmujcmIK9-2X_Uw',
         'useHTTPS': true
     });
-    var pixelRatio = window.devicePixelRatio || 1;
-    var maptypes = platform.createDefaultLayers({
+    let pixelRatio = window.devicePixelRatio || 1;
+    let maptypes = platform.createDefaultLayers({
         tileSize: pixelRatio === 1 ? 256 : 512,
         ppi: pixelRatio === 1 ? undefined : 320
     });
     
-    var map = new H.Map(document.getElementById('mapContainer'),
+    let map = new H.Map(document.getElementById('mapContainer'),
         maptypes.normal.map,
         {
             zoom: 3,
             center: { lng: @Model.Longitude, lat: @Model.Latitude },
             pixelRatio: pixelRatio
         });
-    @*map.addObject(new H.map.Marker({ lng: @Model.Longtitude, lat: @Model.Latitude}));*@
-    var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+    let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
 
     setUpClickListener(map);
 
-    var ui = H.ui.UI.createDefault(map, maptypes);
+    let ui = H.ui.UI.createDefault(map, maptypes);
     
     function onGeoSuccess(result) {
-        var location = result.Response.View[0].Result[0];
-        var contextText = "";
-        var streetName = "";
-        var houseNumber = "";
-        var districtName = "";
-        var cityName = "";
-        var postalCode = "";
-        var countyName = "";
-        var stateName = "";
+        let location = result.Response.View[0].Result[0];
+        let contextText = "";
+        let streetName = "";
+        let houseNumber = "";
+        let districtName = "";
+        let cityName = "";
+        let postalCode = "";
+        let countyName = "";
+        let stateName = "";
         if (location.Location.Address.Street !== undefined) {
             streetName = location.Location.Address.Street;
             contextText = contextText + location.Location.Address.Street;
@@ -248,7 +243,7 @@
             if (districtName !== streetName) {
                 contextText = contextText + " " + location.Location.Address.District;
             }
-            $("#disctrictText").val(districtName);
+            $("#districtText").val(districtName);
         }
         if (location.Location.Address.City !== undefined) {
             cityName = location.Location.Address.City;
@@ -296,14 +291,14 @@
         }
 
         function success(position) {
-            var latitude  = position.coords.latitude;
-            var longitude = position.coords.longitude;
+            let latitude  = position.coords.latitude;
+            let longitude = position.coords.longitude;
             output.innerHTML = '<p>Latitude: ' + latitude + '°, Longitude: ' + longitude + '° copied to the form below.</p>';
-            var zoomLevel = 14;
+            let zoomLevel = 14;
             map.setZoom(zoomLevel, true);
             map.setCenter({lat: latitude, lng: longitude}, true);
-            var geocoder = platform.getGeocodingService();
-            var reverseGeocodingParameters = {
+            let geocoder = platform.getGeocodingService();
+            let reverseGeocodingParameters = {
                 prox: latitude + ', ' + longitude + ', 32',
                 mode: 'retrieveAddresses',
                 maxresults: 1

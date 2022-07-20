@@ -1,4 +1,6 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.UploadVideoViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.UploadVideoViewModel
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
     <link href="/css/amsify.suggestags.css" rel="stylesheet" />
@@ -6,7 +8,13 @@
     <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
-<H3 class="title">Add Youtube Video</H3>
+
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Add YouTube video", PageNames.Videos, Model.LanguageId);
+    string addVideoForString = await LocaleManager.GetTranslation("Add YouTube video for:", PageNames.Videos, Model.LanguageId);
+}
+<h2>@ViewData["Title"]</h2>
 <div class="modal-body form-horizontal">
     <div class="row">
         <div class="col-lg-10">
@@ -14,7 +22,7 @@
                 @if (Model.ProgenyList.Count > 1)
                 {
                     <div class="form-group">
-                        <label class="control-label col">Add Video for: </label>
+                        <label class="control-label col">@addVideoForString </label>
                         <div class="col-lg-9">
                             <select class="selectpicker" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
                         </div>
@@ -23,7 +31,7 @@
                 else
                 {
                     <div class="form-group">
-                        <label class="control-label col-sm-3">Upload Video for: </label>
+                        <label class="control-label col-sm-3">@addVideoForString </label>
                         <div class="col-lg-9">
                             <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
                         </div>
@@ -33,43 +41,43 @@
                 }
 
                 <div class="form-group">
-                    <label class="col-lg-3 col-sm3 control-label">Paste the link or embed code here:</label>
+                    <label class="col-lg-3 col-sm3 control-label">@await LocaleManager.GetTranslation("Paste the link or embed code here:", PageNames.Videos, Model.LanguageId)</label>
                     <div class="col-lg-9">
                         <textarea class="form-control" asp-for="FileLink" rows="5" cols="40"></textarea>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="col-lg-3 col-sm-2 control-label">Duration</label>
+                    <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Duration", PageNames.Videos, Model.LanguageId)</label>
                     <div class="col-md-10">
                         @{
                             int hours = 0;
                             int minutes = 0;
                             int seconds = 0;
-                            if (Model.DurationHours + Model.DurationMinutes + Model.DurationSeconds != String.Empty)
+                            if (Model.DurationHours + Model.DurationMinutes + Model.DurationSeconds != string.Empty)
                             {
-                                Int32.TryParse(Model.DurationHours, out hours);
-                                Int32.TryParse(Model.DurationMinutes, out minutes);
-                                Int32.TryParse(Model.DurationSeconds, out seconds);
+                                int.TryParse(Model.DurationHours, out hours);
+                                int.TryParse(Model.DurationMinutes, out minutes);
+                                int.TryParse(Model.DurationSeconds, out seconds);
                             }
                         }
                         <div class="form-row">
                             <div class="col">
-                                <label class="col-lg-3 col-sm-2 control-label">H:</label>
+                                <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("H:", PageNames.Videos, Model.LanguageId)</label>
                                 <input type="number" id="DurationHours" asp-for="DurationHours" min="0" max="100" value="@hours" class="form-control" />
                             </div>
                             <div class="col">
-                                <label class="col-lg-3 col-sm-2 control-label">m:</label>
+                                <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("m:", PageNames.Videos, Model.LanguageId)</label>
                                 <input type="number" id="DurationMinutes" asp-for="DurationMinutes" min="0" max="59" value="@minutes" class="form-control" />
                             </div>
                             <div class="col">
-                                <label class="col-lg-3 col-sm-2 control-label">s:</label>
+                                <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("s:", PageNames.Videos, Model.LanguageId)</label>
                                 <input type="number" id="DurationSeconds" asp-for="DurationSeconds" min="0" max="59" value="@seconds" class="form-control" />
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label asp-for="VideoTime" class="col-lg-3 col-sm-3 control-label">Video Date and Time</label>
+                    <label asp-for="VideoTime" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Date and time", PageNames.Videos, Model.LanguageId)</label>
                     <div class="col-lg-3">
                         <div class="input-group date">
                             <input style="width: 300px;" id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text"
@@ -89,7 +97,7 @@
                     });
                 </script>
                 <div class="form-group">
-                    <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Access Level</label>
+                    <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
                     <div class="col-lg-9">
                         <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
                     </div>
@@ -98,8 +106,8 @@
                     <div class="col-lg-3 col-sm-3"></div>
                     <input asp-for="Owners" class="form-control" value="@Model.Owners" type="hidden" />
                     <div class="col-lg-9">
-                        <button class="btn btn-success leavePage" type="submit">Upload</button>
-                        <a class="btn btn-danger leavePage" asp-controller="Videos" asp-action="Index">Cancel</a>
+                        <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                        <a class="btn btn-danger leavePage" asp-controller="Videos" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                     </div>
                 </div>
             </form>

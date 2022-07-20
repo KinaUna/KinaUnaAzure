@@ -1,19 +1,21 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.ContactViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.ContactViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.DisplayName + " - " + Model.Progeny.NickName + "'s Contact";
+    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Contact:", PageNames.Contacts, Model.LanguageId) + Model.DisplayName;
 }
-<h3>@ViewData["Title"]</h3>
+<h2>@ViewData["Title"]</h2>
 <div class="card bg-light" style="clear: both; margin-top: 25px; max-width: 710px;">
     <div class="card-header card-header-warning"><h5>@Model.DisplayName</h5></div>
     <div class="card-body text-dark">
-
         <div class="card-text" style="max-width: 705px;">
             <img class="img-thumbnail mx-auto d-block" style="max-height: 600px; max-width: 100%; background: black;" src="@Model.PictureLink" />
-            <div align="left" style="margin: 15px;"><strong>First Name:</strong> @Model.FirstName</div>
-            <div align="left" style="margin: 15px;"><strong>Middle Name:</strong> @Model.MiddleName</div>
-            <div align="left" style="margin: 15px;"><strong>Last Name:</strong> @Model.LastName</div>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("First name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.FirstName</div>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Middle name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.MiddleName</div>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Last name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.LastName</div>
             <div align="left" style="margin: 15px;">
-                <strong>Address:</strong><br />
+                <strong>@await LocaleManager.GetTranslation("Address:", PageNames.Contacts, Model.LanguageId)</strong><br />
                 @Model.AddressLine1<br />
                 @Model.AddressLine2<br />
                 @Model.City<br />
@@ -21,12 +23,12 @@
                 @Model.PostalCode<br />
                 @Model.Country<br />
             </div>
-            <div align="left" style="margin: 15px;"><strong>Phone:</strong> @Model.PhoneNumber</div>
-            <div align="left" style="margin: 15px;"><strong>Mobile:</strong> @Model.MobileNumber</div>
-            <div align="left" style="margin: 15px;"><strong>Email:</strong> @Model.Email1 @Model.Email2</div>
-            <div align="left" style="margin: 15px;"><strong>Website:</strong> <a href="@Model.Website">@Model.Website</a></div>
-            <div align="left" style="margin: 15px;"><strong>Context:</strong> @Model.Context</div>
-            <div align="left" style="margin: 15px;"><strong>Notes:</strong> @Model.Notes</div>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Phone:", PageNames.Contacts, Model.LanguageId)</strong> @Model.PhoneNumber</div>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId)</strong> @Model.MobileNumber</div>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId)</strong> @Model.Email1 @Model.Email2</div>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)</strong> <a href="@Model.Website">@Model.Website</a></div>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, Model.LanguageId)</strong> @Model.Context</div>
+            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Contacts, Model.LanguageId)</strong> @Model.Notes</div>
             <div>
                 @{
                     if (!string.IsNullOrEmpty(Model.Tags))
@@ -43,10 +45,10 @@
             {
                 <div style="margin: 15px;">
                     <a asp-controller="AddItem" asp-action="EditContact" asp-route-itemId="@Model.ContactId" class="btn btn-info leavePage">
-                        <i class="fas fa-pencil-alt"></i> Edit
+                        <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                     </a>
                     <a asp-controller="AddItem" asp-action="DeleteContact" asp-route-itemId="@Model.ContactId" class="btn btn-danger leavePage">
-                        <i class="fas fa-trash-alt"></i> Delete
+                        <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
                     </a>
                 </div>
             }

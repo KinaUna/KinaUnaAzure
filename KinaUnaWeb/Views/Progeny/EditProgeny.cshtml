@@ -1,36 +1,43 @@
-﻿@model KinaUnaWeb.Models.FamilyViewModels.ProgenyViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.FamilyViewModels.ProgenyViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = @Model.Name + " - " + await LocaleManager.GetTranslation("Edit child", PageNames.Progeny, Model.LanguageId);
+}
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
     <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
 }
-<H3 class="title">Edit Profile for @Model.Name</H3>
-<br />
+<h2>@ViewData["Title"]</h2>
+<br/>
 <form asp-action="EditProgeny" role="form" method="post" enctype="multipart/form-data">
     <div class="form-group">
-        <label asp-for="Name" class="col-3"></label>
+        <label asp-for="Name" class="col-3">@await LocaleManager.GetTranslation("Name", PageNames.Progeny, Model.LanguageId)</label>
         <div class="col-9">
-            <input asp-for="Name" class="form-control" value="@Model.Name" />
+            <input asp-for="Name" class="form-control" value="@Model.Name"/>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="NickName" class="col-3">Display Name</label>
+        <label asp-for="NickName" class="col-3">@await LocaleManager.GetTranslation("Display name", PageNames.Progeny, Model.LanguageId)</label>
         <div class="col-9">
-            <input asp-for="NickName" class="form-control" value="@Model.NickName" />
+            <input asp-for="NickName" class="form-control" value="@Model.NickName"/>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="BirthDay" class="col-3 control-label">Birthday</label>
+        <label asp-for="BirthDay" class="col-3 control-label">@await LocaleManager.GetTranslation("Birthday", PageNames.Progeny, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
-                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="BirthDay" value="@{
-                                                                                                                                                                             System.Diagnostics.Debug.Assert(Model.BirthDay != null, "Model.BirthDay != null");
-                                                                                                                                                                         }@Model.BirthDay.Value.ToString("dd-MMM-yyyy HH:mm")" />
+                @{
+                    Model.BirthDay ??= DateTime.UtcNow;
+                }
+                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="BirthDay" value="@Model.BirthDay.Value.ToString("dd-MMM-yyyy HH:mm")"/>
             </div>
         </div>
     </div>
     <script type="text/javascript">
-        $(function () {
+        $(function() {
             $('#datetimepicker1').Zebra_DatePicker({
                 format: 'd-M-Y H:i',
                 open_icon_only: true
@@ -38,19 +45,19 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="TimeZone" class="col-lg-3 col-sm-3 control-label">Time Zone</label>
+        <label asp-for="TimeZone" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Time zone", PageNames.Progeny, Model.LanguageId)</label>
         <div class="col-9">
             <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="8" asp-for="TimeZone" asp-items="@Model.TimezoneList"></select>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Admins" class="col-3"></label>
+        <label asp-for="Admins" class="col-3">@await LocaleManager.GetTranslation("Administrators", PageNames.Progeny, Model.LanguageId)</label>
         <div class="col-9">
-            <input asp-for="Admins" class="form-control" value="@Model.Admins" />
+            <input asp-for="Admins" class="form-control" value="@Model.Admins"/>
         </div>
     </div>
     <div class="form-group">
-        <label class="col-lg-3 col-sm3 control-label">Profile Picture</label>
+        <label class="col-lg-3 col-sm3 control-label">@await LocaleManager.GetTranslation("Profile picture", PageNames.Progeny, Model.LanguageId)</label>
         <div class="col-lg-9">
             <div class="fileinput fileinput-new text-center" data-provides="fileinput">
                 <div class="fileinput-new thumbnail img-raised">
@@ -59,41 +66,41 @@
                 <div class="fileinput-preview fileinput-exists thumbnail img-raised"></div>
                 <div>
                     <div class="btn btn-primary btn-round btn-file ">
-                        <span data-trigger="fileinput" class="fileinput-new">New picture</span>
-                        <span class="fileinput-exists">Change</span>
-                        <input type="file" asp-for="File" accept="image/*" />
+                        <span data-trigger="fileinput" class="fileinput-new">@await LocaleManager.GetTranslation("New picture", PageNames.Progeny, Model.LanguageId)</span>
+                        <span class="fileinput-exists">@await LocaleManager.GetTranslation("Change picture", PageNames.Progeny, Model.LanguageId)</span>
+                        <input type="file" asp-for="File" accept="image/*"/>
                     </div>
-                    <br />
+                    <br/>
                     <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
-                        <i class="fa fa-times"></i> Remove
+                        <i class="fa fa-times"></i> @await LocaleManager.GetTranslation("Remove picture", PageNames.Progeny, Model.LanguageId)
                     </a>
                 </div>
             </div>
         </div>
     </div>
-    <input asp-for="ProgenyId" class="form-control" value="@Model.ProgenyId" type="hidden" />
+    <input asp-for="ProgenyId" class="form-control" value="@Model.ProgenyId" type="hidden"/>
     <div>
         <div class="form-group">
             <div class="col-3"></div>
             <div class="col-9">
-                <button class="btn btn-success leavePage" type="submit">Save</button>
-                <a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">Cancel</a>
+                <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                <a class="btn btn-danger leavePage" asp-controller="Family" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
             </div>
         </div>
     </div>
-</form>
-<br />
-<br />
-<div>
+    <br/>
+    <br/>
     <div>
-        Name: The full name of the child.
-        <br />
-        Display Name: The name that will appear on lists, pages, etc.
-        <br />
-        Birthday: The date and time of birth in the format day-month-year Hours(24h): Minutes.
-        <br />
-        Time Zone: The timezone for the birthday entered above.
-        <br />
-        Administrators: A comma separated list of email addresses.
+        <div>
+            <strong>@await LocaleManager.GetTranslation("Name:", PageNames.Progeny, Model.LanguageId)</strong> @await LocaleManager.GetTranslation("The full name of the child.", PageNames.Progeny, Model.LanguageId)
+            <br/>
+            <strong>@await LocaleManager.GetTranslation("Display name:", PageNames.Progeny, Model.LanguageId)</strong> @await LocaleManager.GetTranslation("The name that will appear on pages, lists, etc.", PageNames.Progeny, Model.LanguageId)
+            <br/>
+            <strong>@await LocaleManager.GetTranslation("Birthday:", PageNames.Progeny, Model.LanguageId)</strong> @await LocaleManager.GetTranslation("The date and time of birth in the format day-month-year Hours: Minutes.", PageNames.Progeny, Model.LanguageId)
+            <br/>
+            <strong>@await LocaleManager.GetTranslation("Time zone:", PageNames.Progeny, Model.LanguageId)</strong> @await LocaleManager.GetTranslation("The timezone for the birthday entered above.", PageNames.Progeny, Model.LanguageId)
+            <br/>
+            <strong>@await LocaleManager.GetTranslation("Administrators:", PageNames.Progeny, Model.LanguageId)</strong> @await LocaleManager.GetTranslation("A comma separated list of email addresses.", PageNames.Progeny, Model.LanguageId)
+        </div>
     </div>
-</div>
+</form>

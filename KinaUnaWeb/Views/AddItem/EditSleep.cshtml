@@ -1,13 +1,20 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.SleepViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.SleepViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Edit sleep", PageNames.Sleep, Model.LanguageId);
+}
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
     <script src="/lib/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
-<H3 class="title">Edit Sleep</H3>
+
+<h2>@ViewData["Title"]</h2>
 <form asp-action="EditSleep" role="form" method="post">
     <div class="form-group">
-        <label asp-for="SleepStart" class="col-3 control-label">Start</label>
+        <label asp-for="SleepStart" class="col-3 control-label">@await LocaleManager.GetTranslation("Start", PageNames.Sleep, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 @{
@@ -30,7 +37,7 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="SleepEnd" class="col-3 control-label">End</label>
+        <label asp-for="SleepEnd" class="col-3 control-label">@await LocaleManager.GetTranslation("End", PageNames.Sleep, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 @{
@@ -53,19 +60,19 @@
         });
     </script>
     <div class="form-group">
-        <label class="col-3 control-label" asp-for="SleepRating">Sleep Rating</label>
+        <label class="col-3 control-label" asp-for="SleepRating">@await LocaleManager.GetTranslation("Sleep rating", PageNames.Sleep, Model.LanguageId)</label>
         <div class="col-6 col-xs-5 col-sm-4 col-md-3">
             <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@ViewBag.RatingList.Count" asp-for="SleepRating" asp-items="@ViewBag.RatingList"></select>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="SleepNotes" class="col-3 control-label">Notes</label>
+        <label asp-for="SleepNotes" class="col-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Sleep, Model.LanguageId)</label>
         <div class="col-sm-9">
             <textarea asp-for="SleepNotes" class="form-control" rows="4" value="@Model.SleepNotes"></textarea>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="AccessLevel" class="col-3 control-label">Access Level</label>
+        <label asp-for="AccessLevel" class="col-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
         <div class="col-sm-9">
             <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
         </div>
@@ -78,8 +85,8 @@
         <div class="form-group">
             <div class="col-3 control-label"></div>
             <div class="col-sm-9">
-                <button id="submitBtn" class="btn btn-success leavePage" type="submit">Save</button>
-                <a class="btn btn-danger leavePage" asp-controller="Sleep" asp-action="Index">Cancel</a>
+                <button id="submitBtn" class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                <a class="btn btn-danger leavePage" asp-controller="Sleep" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
             </div>
         </div>
     </div>
@@ -98,8 +105,8 @@
     });
 
     function checkTimes() {
-        var sTime = moment($('#datetimepicker1').val(), 'DD-MMM-YYYY HH:mm');
-        var eTime = moment($('#datetimepicker2').val(), 'DD-MMM-YYYY HH:mm');
+        let sTime = moment($('#datetimepicker1').val(), 'DD-MMM-YYYY HH:mm');
+        let eTime = moment($('#datetimepicker2').val(), 'DD-MMM-YYYY HH:mm');
         if (sTime < eTime && sTime.isValid() && eTime.isValid()) {
             $('#notification').text('');
             $('#submitBtn').prop('disabled', false);

@@ -1,6 +1,11 @@
 ﻿@using System.Globalization
 @using KinaUna.Data
+@using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Photo locations", PageNames.Locations, Model.LanguageId);
+}
 @section Scripts{
     <script src="https://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
     <script src="https://js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
@@ -8,10 +13,6 @@
     <script type="text/javascript" src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
     <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
 }
-@{
-    ViewData["Title"] = Model.Progeny.NickName + "'s Photo Locations";
-}
-
 @if (!String.IsNullOrEmpty(Model.TagFilter))
 {
     <br />
@@ -27,17 +28,17 @@
 }
 @if (Model.LocationsList == null)
 {
-    <h3 class="title">@ViewData["Title"]</h3>
-    <div>Nothing to see here yet.</div>
+    <h2>@ViewData["Title"]</h2>
+    <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Locations, Model.LanguageId)</div>
 }
 else
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="Locations" asp-action="Index" class="btn btn-info leavePage">
-            <i class="fas fa-map-marked-alt"></i> Back to Locations
+            <i class="fas fa-map-marked-alt"></i> @await LocaleManager.GetTranslation("Back to locations", PageNames.Locations, Model.LanguageId)
         </a>
     </div>
-    <h3 class="title">@ViewData["Title"]</h3>
+    <h2>@ViewData["Title"]</h2>
     <div class="row" style="clear: both; margin-top: 25px;">
         <div style="width: 100%; height: 560px; max-height: 60vh; margin-left: 20px; margin-right: 20px;" id="mapContainer"></div>
         <script>
@@ -111,7 +112,7 @@ else
             function setUpClickListener(map) {
                 map.addEventListener('tap',
                     function (evt) {
-                        var coord = map.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
+                        let coord = map.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
                         map.setCenter(coord, true);
                         let target = evt.target;
                         if (target instanceof mapsjs.map.Marker) {
@@ -238,7 +239,7 @@ else
         <div id="pictureDiv" style="width:100%; min-height: 375px; margin-left: 20px; margin-right: 20px;">
             <div class="card bg-primary" style="margin-top: 0; margin-bottom: 10px;">
                 <div class="card-body" style="background: #326ebe; background: rgba(50, 110, 190, 0.8)">
-                    <div class="info-title"><span style="font-size: 24px; color: white; margin-right: 15px;" class="far fa-images"></span><strong class="text-warning"> Click a Marker on the Map</strong></div>
+                    <div class="info-title"><span style="font-size: 24px; color: white; margin-right: 15px;" class="far fa-images"></span><strong class="text-warning"> @await LocaleManager.GetTranslation("Click a marker on the map", PageNames.Locations, Model.LanguageId)</strong></div>
                     <div align="center" class="img-rounded" style="overflow: hidden; max-width: 60vw; margin: 2px; margin-left: 46px; padding: 1px; width: 270px; height: 270px; background-color: #000000; text-align: center; line-height: 271px; display: inline-block; position: relative;">
                         <img src="@Constants.WebAppUrl/images/kinaunalogo192x192.png" style="max-height: 260px; max-width: 260px;">
 
@@ -249,7 +250,7 @@ else
         <div id="nearbyDiv" style="width:100%; margin-left: 20px; margin-right: 20px;">
             <div id="innerNearbyDiv"></div>
         </div>
-        <div id="morePicturesButton" style="display: none; width:100%; margin-left: 20px; margin-right: 20px;"><button id="moreButton" type="button" class="btn btn-default" onclick="getMoreNearbyPictures()">Show next 5 nearby pictures</button></div>
+        <div id="morePicturesButton" style="display: none; width:100%; margin-left: 20px; margin-right: 20px;"><button id="moreButton" type="button" class="btn btn-default" onclick="getMoreNearbyPictures()">@await LocaleManager.GetTranslation("Show next 5 nearby photos", PageNames.Locations, Model.LanguageId)</button></div>
         <div style="margin-left: 20px; margin-right: 20px;">
             @{
                 if (!string.IsNullOrEmpty(Model.Tags))

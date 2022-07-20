@@ -5,10 +5,9 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class VideoViewModel
+    public class VideoViewModel : BaseViewModel
     {
         public int VideoId { get; set; }
-
         public string VideoLink { get; set; }
         public string ThumbLink { get; set; }
         public DateTime? VideoTime { get; set; }

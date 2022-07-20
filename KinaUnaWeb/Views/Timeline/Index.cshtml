@@ -1,32 +1,33 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.TimeLineViewModel
-
-@section Scripts{
-
-}
-
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.TimeLineViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = ViewBag.ProgenyName + "'s Timeline";
+    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Timeline", PageNames.Timeline, Model.LanguageId);
+    string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Timeline, Model.LanguageId);
+    string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Timeline, Model.LanguageId);
+    string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Timeline, Model.LanguageId);
 }
-<h3 class="title">@ViewData["Title"]</h3>
+<h2>@ViewData["Title"]</h2>
 <br style="clear: both;" />
 @{
     string sortOldest = "btn btn-primary btn-sm";
     string sortNewest = "btn btn-info btn-sm";
 }
-@if (ViewBag.SortBy == 1)
+@if (Model.SortBy == 1)
 {
     sortOldest = "btn btn-info btn-sm";
     sortNewest = "btn btn-primary btn-sm";
     <div>
-        Sort: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Newest first</span>
-        <a class="@sortOldest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="0">Oldest first</a>
+        @sortString <span class="@sortNewest"><i class="fas fa-check-circle"></i> @newestFirstString</span>
+        <a class="@sortOldest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="0">@oldestFirstString</a>
     </div>
 }
 else
 {
     <div>
-        Sort: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Oldest first</span>
-        <a class="@sortNewest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="1">Newest first</a>
+        @sortString <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> @oldestFirstString</span>
+        <a class="@sortNewest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="1">@newestFirstString</a>
     </div>
 }
 <br />
@@ -34,10 +35,10 @@ else
 
 </div>
 <div id="moreButtonDiv" style="clear: both;">
-    <button class="btn btn-success" id="moreTimeLineItems" style="float: left; margin-top: 20px;">Show more</button>
+    <button class="btn btn-success" id="moreTimeLineItems" style="float: left; margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
     <br />
     <div class="col-md-3 col-lg-2" style="float: right; font-size: small;">
-        Number of items to get:
+        @await LocaleManager.GetTranslation("Number of items to get:", PageNames.Timeline, Model.LanguageId)
         <select id="nextItemsCount" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
             <option value="5">5</option>
             <option value="10" selected="selected">10</option>
@@ -51,7 +52,7 @@ else
     <br style="clear: both;" />
 </div>
 <script type="text/javascript">
-    var current_effect = 'roundBounce';
+    let current_effect = 'roundBounce';
 
     function run_waitMe() {
         $('#moreButtonDiv').waitMe({
@@ -82,9 +83,9 @@ else
             onClose: function () { }
         });
     }
-    var currentItemNumber = 0;
-    var maxNumber = @Model.TimeLineItems.Count;
-    var sortBy = @ViewBag.SortBy;
+    let currentItemNumber = 0;
+    let maxNumber = @Model.TimeLineItems.Count;
+    let sortBy = @Model.SortBy;
     @{
         string[] idNumbers = new String[Model.TimeLineItems.Count];
         int[] itmType = new int[Model.TimeLineItems.Count];
@@ -96,15 +97,15 @@ else
             tiCount++;
         }
     }
-    var itemId = [@string.Join(",", idNumbers)];
-    var itemType = [@string.Join(",", itmType)];
-    var numItems = 10;
-    var scrollTo = '#';
+    let itemId = [@string.Join(",", idNumbers)];
+    let itemType = [@string.Join(",", itmType)];
+    let numItems = 10;
+    let scrollTo = '#';
     $(document).ready(function() {
         async function getItemsHist() {
             run_waitMeLoad();
             let g;
-            for (g = 0; g < @ViewBag.Items; g++) {
+            for (g = 0; g < @Model.Items; g++) {
                 await getHistItem();
                 $("#moreButtonDiv").waitMe("hide");
 
@@ -116,18 +117,18 @@ else
         };
 
         async function getHistItem() {
-            var timelineItemData = { typeId: itemType[currentItemNumber], itemId: itemId[currentItemNumber] };
+            let timelineItemData = { typeId: itemType[currentItemNumber], itemId: itemId[currentItemNumber] };
             currentItemNumber++;
             await getTimeLineItemLoad(timelineItemData);
         };
 
         async function getNextItem() {
-            var timelineItemData = { typeId: itemType[currentItemNumber], itemId: itemId[currentItemNumber] };
+            let timelineItemData = { typeId: itemType[currentItemNumber], itemId: itemId[currentItemNumber] };
             currentItemNumber++;
             await getTimeLineItem(timelineItemData);
         };
 
-        if (currentItemNumber < @ViewBag.Items) {
+        if (currentItemNumber < @Model.Items) {
             getItemsHist();
 
 
@@ -146,7 +147,7 @@ else
                 $("#moreButtonDiv").waitMe("hide");
                 if (currentItemNumber === maxNumber) {
                     $("#moreTimeLineItems").attr("disabled", "disabled");
-                    $('#tlineItems').append("<div>No more data. All items have been listed now.<br/></div>");
+                    $('#tlineItems').append("<div>@await LocaleManager.GetTranslation("No more data. All items have been listed now.", PageNames.Timeline, Model.LanguageId)<br/></div>");
                     return;
 
                 }

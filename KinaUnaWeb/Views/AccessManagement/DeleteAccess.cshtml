@@ -1,22 +1,31 @@
-﻿@model KinaUnaWeb.Models.FamilyViewModels.UserAccessViewModel
-<H3 class="title">Delete User's Access for @Model.ProgenyName</H3>
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.FamilyViewModels.UserAccessViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Delete user's access", PageNames.AccessManagement, Model.LanguageId);
+}
+<h2>@ViewData["Title"]</h2>
 <form asp-action="DeleteAccess" role="form">
     <div class="modal-body form-horizontal">
-        Are you want to delete @Model.UserName?
+        @await LocaleManager.GetTranslation("Are you sure you want to remove access for", PageNames.AccessManagement, Model.LanguageId) @Model.UserName ?
     </div>
     <div>
-        First name: @Model.FirstName
+        @await LocaleManager.GetTranslation("First name", PageNames.AccessManagement, Model.LanguageId): @Model.FirstName
     </div>
     <div>
-        Middle name: @Model.MiddleName
+        @await LocaleManager.GetTranslation("Middle name", PageNames.AccessManagement, Model.LanguageId): @Model.MiddleName
     </div>
     <div>
-        Last name: @Model.LastName
+        @await LocaleManager.GetTranslation("Last name", PageNames.AccessManagement, Model.LanguageId): @Model.LastName
     </div>
     <div>
-        Email: @Model.Email
+        @await LocaleManager.GetTranslation("Email", PageNames.AccessManagement, Model.LanguageId): @Model.Email
     </div>
 
     <input asp-for="AccessId" class="form-control" value="@Model.AccessId" type="hidden" />
-    <div><Button class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">Cancel</a></div>
+    <div>
+        <Button class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes", PageNames.AccessManagement, Model.LanguageId)</Button>
+        <a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AccessManagement, Model.LanguageId)</a>
+    </div>
 </form>

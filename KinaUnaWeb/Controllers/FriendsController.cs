@@ -19,10 +19,7 @@ namespace KinaUnaWeb.Controllers
         private readonly IFriendsHttpClient _friendsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly ImageStore _imageStore;
-        private int _progId = Constants.DefaultChildId;
-        private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public FriendsController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, IFriendsHttpClient friendsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
@@ -35,22 +32,23 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, string tagFilter = "")
         {
-            _progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            FriendsListViewModel model = new FriendsListViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            if (_progId == 0)
+            if (childId == 0)
             {
-                _progId = Constants.DefaultChildId;
+                childId = Constants.DefaultChildId;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -65,14 +63,12 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
 
-            List<FriendViewModel> model = new List<FriendViewModel>();
-            
             List<string> tagsList = new List<string>();
-            List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(_progId, userAccessLevel);
+            List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(childId, userAccessLevel);
             if (!string.IsNullOrEmpty(tagFilter))
             {
                 friendsList = friendsList.Where(c => c.Tags != null && c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
@@ -90,7 +86,7 @@ namespace KinaUnaWeb.Controllers
                     friendViewModel.FriendSince = friend.FriendSince;
                     friendViewModel.Name = friend.Name;
                     friendViewModel.Description = friend.Description;
-                    friendViewModel.IsAdmin = _userIsProgenyAdmin;
+                    friendViewModel.IsAdmin = model.IsAdmin;
                     friendViewModel.FriendId = friend.FriendId;
                     friendViewModel.PictureLink = friend.PictureLink;
                     friendViewModel.Type = friend.Type;
@@ -115,11 +111,8 @@ namespace KinaUnaWeb.Controllers
 
                     if (friendViewModel.AccessLevel >= userAccessLevel)
                     {
-                        model.Add(friendViewModel);
+                        model.FriendViewModelsList.Add(friendViewModel);
                     }
-
-
-
                 }
 
                 string tags = "";
@@ -127,23 +120,22 @@ namespace KinaUnaWeb.Controllers
                 {
                     tags = tags + tstr + ",";
                 }
-                ViewBag.Tags = tags.TrimEnd(',');
-
+                model.Tags = tags.TrimEnd(',');
             }
             else
             {
                 FriendViewModel friendViewModel = new FriendViewModel();
-                friendViewModel.ProgenyId = _progId;
+                friendViewModel.ProgenyId = childId;
                 friendViewModel.Name = "No friends found.";
                 friendViewModel.FriendAddedDate = DateTime.UtcNow;
                 friendViewModel.FriendSince = DateTime.UtcNow;
                 friendViewModel.Description = "The friends list is empty.";
-                friendViewModel.IsAdmin = _userIsProgenyAdmin;
-                model.Add(friendViewModel);
+                friendViewModel.IsAdmin = model.IsAdmin;
+                model.FriendViewModelsList.Add(friendViewModel);
             }
 
-            model[0].Progeny = progeny;
-            ViewBag.TagFilter = tagFilter;
+            model.Progeny = progeny;
+            model.TagFilter = tagFilter;
             return View(model);
 
         }
@@ -151,11 +143,14 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> FriendDetails(int friendId, string tagFilter)
         {
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            FriendViewModel model = new FriendViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
 
             Friend friend = await _friendsHttpClient.GetFriend(friendId); 
             Progeny progeny = await _progenyHttpClient.GetProgeny(friend.ProgenyId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(progeny.Id);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -170,12 +165,12 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
 
 
-            FriendViewModel model = new FriendViewModel();
+            
             
             model.ProgenyId = friend.ProgenyId;
             model.Context = friend.Context;
@@ -197,10 +192,10 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<string> tagsList = new List<string>();
-            var friendsList = await _friendsHttpClient.GetFriendsList(model.ProgenyId, userAccessLevel);
+            List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(model.ProgenyId, userAccessLevel);
             foreach (Friend frn in friendsList)
             {
-                if (!String.IsNullOrEmpty(frn.Tags))
+                if (!string.IsNullOrEmpty(frn.Tags))
                 {
                     List<string> fvmTags = frn.Tags.Split(',').ToList();
                     foreach (string tagstring in fvmTags)
@@ -231,7 +226,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return RedirectToAction("Index");
             }
-            model.IsAdmin = _userIsProgenyAdmin;
+            
             return View(model);
         }
     }

@@ -1,11 +1,17 @@
-﻿@model KinaUna.Data.Models.Video
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.UploadVideoViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Upload video", PageNames.Videos, Model.LanguageId);
+}
 <br />
 <div style="margin: 20px;">
-    <H4>The video has been added.</H4>
+    <H4>@await LocaleManager.GetTranslation("The video has been uploaded", PageNames.Videos, Model.LanguageId)</H4>
     <div><img width="100%" src="@Model.ThumbLink"/></div>
 </div>
 
 <br />
-<div><a class="leavePage" asp-controller="AddItem" asp-action="AddVideo">Return to Add Video</a></div>
+<div><a class="leavePage" asp-controller="AddItem" asp-action="AddVideo">@await LocaleManager.GetTranslation("Return to upload video", PageNames.Videos, Model.LanguageId)</a></div>
 <br />
-<div><a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-childId="@Model.ProgenyId">Return to Video Gallery</a></div>
+<div><a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-childId="@Model.ProgenyId">@await LocaleManager.GetTranslation("Return to video gallery", PageNames.Videos, Model.LanguageId)</a></div>

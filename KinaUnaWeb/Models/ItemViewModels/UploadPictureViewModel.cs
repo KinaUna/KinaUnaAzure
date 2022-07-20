@@ -6,11 +6,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class UploadPictureViewModel
+    public class UploadPictureViewModel: BaseViewModel
     {
         [Required]
         public List<IFormFile> Files { get; set; }
-        public UserInfo Userinfo { get; set; }
         public List<SelectListItem> ProgenyList { get; set; }
         [Required]
         public int ProgenyId { get; set; }

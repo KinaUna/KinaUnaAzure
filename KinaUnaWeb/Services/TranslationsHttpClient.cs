@@ -154,6 +154,7 @@ namespace KinaUnaWeb.Services
                 translationItem.LanguageId = languageId;
                 translationItem.Translation = word;
                 translationItem.Page = page;
+                translationItem.Word = word;
                 translationItem = await AddTranslation(translationItem);
                 translation = translationItem.Translation;
             }

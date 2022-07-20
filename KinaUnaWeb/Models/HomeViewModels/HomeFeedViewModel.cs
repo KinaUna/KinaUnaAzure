@@ -4,7 +4,7 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Models.HomeViewModels
 {
-    public class HomeFeedViewModel
+    public class HomeFeedViewModel: BaseViewModel
     {
         public Progeny Progeny { get; set; }
 

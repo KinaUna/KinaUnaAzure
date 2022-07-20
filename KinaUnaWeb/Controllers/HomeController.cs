@@ -22,7 +22,6 @@ namespace KinaUnaWeb.Controllers
     [AllowAnonymous]
     public class HomeController : Controller
     {
-        private int _progId = Constants.DefaultChildId;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly ICalendarsHttpClient _calendarsHttpClient;
@@ -30,8 +29,7 @@ namespace KinaUnaWeb.Controllers
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
         private readonly IWebHostEnvironment _env;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public HomeController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IWebHostEnvironment env, IUserInfosHttpClient userInfosHttpClient, ICalendarsHttpClient calendarsHttpClient,
             IUserAccessHttpClient userAccessHttpClient)
         {
@@ -47,34 +45,30 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int id = 0)
         {
-            int childId = id;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (User.Identity != null && User.Identity.IsAuthenticated)
+            HomeFeedViewModel model = new HomeFeedViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+
+            if (id == 0 && model.CurrentUser.ViewChild > 0)
             {
-                if (childId == 0 && userinfo.ViewChild > 0)
-                {
-                    _progId = userinfo.ViewChild;
-                }
+                id = model.CurrentUser.ViewChild;
             }
-            else
+
+            if (id == 0)
             {
-                _progId = Constants.DefaultChildId;
-            }
-            string userTimeZone = userinfo.Timezone;
-            if (string.IsNullOrEmpty(userTimeZone))
-            {
-                userTimeZone = Constants.DefaultTimezone;
+                id = Constants.DefaultChildId;
             }
             
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(id);
             if (progeny.Name == "401")
             {
                 var returnUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
                 return RedirectToAction("CheckOut", "Account", new{returnUrl});
             }
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(id);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -97,14 +91,14 @@ namespace KinaUnaWeb.Controllers
                 progeny.BirthDay = DateTime.SpecifyKind(progeny.BirthDay.Value, DateTimeKind.Unspecified);
             }
             
-            HomeFeedViewModel feedModel = new HomeFeedViewModel();
-            feedModel.UserAccessLevel = (int)AccessLevel.Public;
+            
+            model.UserAccessLevel = (int)AccessLevel.Public;
             if (accessList.Count != 0)
             {
                 UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
                 if (userAccess != null)
                 {
-                    feedModel.UserAccessLevel = userAccess.AccessLevel;
+                    model.UserAccessLevel = userAccess.AccessLevel;
                 }
                 else
                 {
@@ -114,11 +108,11 @@ namespace KinaUnaWeb.Controllers
             }
             if (progeny.IsInAdminList(userEmail))
             {
-                feedModel.UserAccessLevel = (int)AccessLevel.Private;
+                model.UserAccessLevel = (int)AccessLevel.Private;
             }
             
             BirthTime progBirthTime;
-            if (!string.IsNullOrEmpty(progeny.NickName) && progeny.BirthDay.HasValue && feedModel.UserAccessLevel < (int)AccessLevel.Public)
+            if (!string.IsNullOrEmpty(progeny.NickName) && progeny.BirthDay.HasValue && model.UserAccessLevel < (int)AccessLevel.Public)
             {
                 progBirthTime = new BirthTime(progeny.BirthDay.Value,
                     TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
@@ -128,18 +122,18 @@ namespace KinaUnaWeb.Controllers
                 progBirthTime = new BirthTime(new DateTime(2018, 02, 18, 18, 02, 00), TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
             }
 
-            feedModel.CurrentTime = progBirthTime.CurrentTime;
-            feedModel.Years = progBirthTime.CalcYears();
-            feedModel.Months = progBirthTime.CalcMonths();
-            feedModel.Weeks = progBirthTime.CalcWeeks();
-            feedModel.Days = progBirthTime.CalcDays();
-            feedModel.Hours = progBirthTime.CalcHours();
-            feedModel.Minutes = progBirthTime.CalcMinutes();
-            feedModel.NextBirthday = progBirthTime.CalcNextBirthday();
-            feedModel.MinutesMileStone = progBirthTime.CalcMileStoneMinutes();
-            feedModel.HoursMileStone = progBirthTime.CalcMileStoneHours();
-            feedModel.DaysMileStone = progBirthTime.CalcMileStoneDays();
-            feedModel.WeeksMileStone = progBirthTime.CalcMileStoneWeeks();
+            model.CurrentTime = progBirthTime.CurrentTime;
+            model.Years = progBirthTime.CalcYears();
+            model.Months = progBirthTime.CalcMonths();
+            model.Weeks = progBirthTime.CalcWeeks();
+            model.Days = progBirthTime.CalcDays();
+            model.Hours = progBirthTime.CalcHours();
+            model.Minutes = progBirthTime.CalcMinutes();
+            model.NextBirthday = progBirthTime.CalcNextBirthday();
+            model.MinutesMileStone = progBirthTime.CalcMileStoneMinutes();
+            model.HoursMileStone = progBirthTime.CalcMileStoneHours();
+            model.DaysMileStone = progBirthTime.CalcMileStoneDays();
+            model.WeeksMileStone = progBirthTime.CalcMileStoneWeeks();
 
             
             Picture tempPicture = new Picture();
@@ -152,14 +146,14 @@ namespace KinaUnaWeb.Controllers
 
             Picture displayPicture = tempPicture;
 
-            if (feedModel.UserAccessLevel < (int)AccessLevel.Public)
+            if (model.UserAccessLevel < (int)AccessLevel.Public)
             {
-                displayPicture = await _mediaHttpClient.GetRandomPicture(progeny.Id, feedModel.UserAccessLevel, userTimeZone);
+                displayPicture = await _mediaHttpClient.GetRandomPicture(progeny.Id, model.UserAccessLevel, model.CurrentUser.Timezone);
             }
             PictureTime picTime = new PictureTime(new DateTime(2018, 02, 18, 20, 18, 00), new DateTime(2018, 02, 18, 20, 18, 00), TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
-            if (feedModel.UserAccessLevel == (int)AccessLevel.Public || displayPicture == null)
+            if (model.UserAccessLevel == (int)AccessLevel.Public || displayPicture == null)
             {
-                displayPicture = await _mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, feedModel.UserAccessLevel, userTimeZone);
+                displayPicture = await _mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, model.UserAccessLevel, model.CurrentUser.Timezone);
                 if(displayPicture == null)
                 {
                     displayPicture = tempPicture;
@@ -169,12 +163,12 @@ namespace KinaUnaWeb.Controllers
                     displayPicture.PictureLink600 = _imageStore.UriFor(displayPicture.PictureLink600);
                 }
 
-                feedModel.ImageLink600 = displayPicture.PictureLink600;
-                feedModel.ImageId = displayPicture.PictureId;
+                model.ImageLink600 = displayPicture.PictureLink600;
+                model.ImageId = displayPicture.PictureId;
                 picTime = new PictureTime(new DateTime(2018, 02, 18, 20, 18, 00), displayPicture.PictureTime, TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
-                feedModel.Tags = displayPicture.Tags;
-                feedModel.Location = displayPicture.Location;
-                feedModel.PicTimeValid = false;
+                model.Tags = displayPicture.Tags;
+                model.Location = displayPicture.Location;
+                model.PicTimeValid = false;
             }
             else
             {
@@ -183,56 +177,58 @@ namespace KinaUnaWeb.Controllers
                     displayPicture.PictureLink600 = _imageStore.UriFor(displayPicture.PictureLink600);
                 }
 
-                feedModel.ImageLink600 = displayPicture.PictureLink600;
-                feedModel.ImageId = displayPicture.PictureId;
+                model.ImageLink600 = displayPicture.PictureLink600;
+                model.ImageId = displayPicture.PictureId;
                 if (displayPicture.PictureTime != null && progeny.BirthDay.HasValue)
                 {
                     picTime = new PictureTime(progeny.BirthDay.Value,
                         displayPicture.PictureTime,
                         TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
-                    feedModel.PicTimeValid = true;
+                    model.PicTimeValid = true;
                 }
 
-                feedModel.Tags = displayPicture.Tags;
-                feedModel.Location = displayPicture.Location;
+                model.Tags = displayPicture.Tags;
+                model.Location = displayPicture.Location;
             }
-            feedModel.PicTime = picTime.PictureDateTime;
-            feedModel.PicYears = picTime.CalcYears();
-            feedModel.PicMonths = picTime.CalcMonths();
-            feedModel.PicWeeks = picTime.CalcWeeks();
-            feedModel.PicDays = picTime.CalcDays();
-            feedModel.PicHours = picTime.CalcHours();
-            feedModel.PicMinutes = picTime.CalcMinutes();
-            feedModel.Progeny = progeny;
-            feedModel.EventsList = new List<CalendarItem>();
-            feedModel.EventsList = await _calendarsHttpClient.GetUpcomingEvents(_progId, userAccessLevel);
+            model.PicTime = picTime.PictureDateTime;
+            model.PicYears = picTime.CalcYears();
+            model.PicMonths = picTime.CalcMonths();
+            model.PicWeeks = picTime.CalcWeeks();
+            model.PicDays = picTime.CalcDays();
+            model.PicHours = picTime.CalcHours();
+            model.PicMinutes = picTime.CalcMinutes();
+            model.Progeny = progeny;
+            model.EventsList = new List<CalendarItem>();
+            model.EventsList = await _calendarsHttpClient.GetUpcomingEvents(id, userAccessLevel);
             
-            foreach (CalendarItem eventItem in feedModel.EventsList)
+            foreach (CalendarItem eventItem in model.EventsList)
             {
                 if (eventItem.StartTime.HasValue && eventItem.EndTime.HasValue)
                 {
-                    eventItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                    eventItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                    eventItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                    eventItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                 }
             }
 
-            feedModel.LatestPosts = new TimeLineViewModel();
-            feedModel.LatestPosts.TimeLineItems = new List<TimeLineItem>();
-            feedModel.LatestPosts.TimeLineItems = await _progenyHttpClient.GetProgenyLatestPosts(_progId, userAccessLevel);
-            if (feedModel.LatestPosts.TimeLineItems.Any())
+            model.LatestPosts = new TimeLineViewModel();
+            model.LatestPosts.LanguageId = model.LanguageId; 
+            model.LatestPosts.TimeLineItems = new List<TimeLineItem>();
+            model.LatestPosts.TimeLineItems = await _progenyHttpClient.GetProgenyLatestPosts(id, userAccessLevel);
+            if (model.LatestPosts.TimeLineItems.Any())
             {
-                feedModel.LatestPosts.TimeLineItems = feedModel.LatestPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).Take(5).ToList();
+                model.LatestPosts.TimeLineItems = model.LatestPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).Take(5).ToList();
             }
 
-            feedModel.YearAgoPosts = new TimeLineViewModel();
-            feedModel.YearAgoPosts.TimeLineItems = new List<TimeLineItem>();
-            feedModel.YearAgoPosts.TimeLineItems = await _progenyHttpClient.GetProgenyYearAgo(_progId, userAccessLevel);
-            if (feedModel.YearAgoPosts.TimeLineItems.Any())
+            model.YearAgoPosts = new TimeLineViewModel();
+            model.YearAgoPosts.LanguageId = model.LanguageId;
+            model.YearAgoPosts.TimeLineItems = new List<TimeLineItem>();
+            model.YearAgoPosts.TimeLineItems = await _progenyHttpClient.GetProgenyYearAgo(id, userAccessLevel);
+            if (model.YearAgoPosts.TimeLineItems.Any())
             {
-                feedModel.YearAgoPosts.TimeLineItems = feedModel.YearAgoPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).ToList();
+                model.YearAgoPosts.TimeLineItems = model.YearAgoPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).ToList();
             }
 
-            return View(feedModel);
+            return View(model);
         }
 
         [Authorize]

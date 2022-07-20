@@ -1,10 +1,13 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.TimeLineViewModel
-
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.TimeLineViewModel
+@inject ILocaleManager LocaleManager
 <div id="tlineItems" style="opacity: 0.85">
 
 </div>
 <div id="moreButtonDiv">
-    <a class="btn btn-success leavePage" id="moreTimeLineItems" style="margin-top: 20px;" asp-controller="TimeLine" asp-action="Index">Show more posts</a>
+    <a class="btn btn-success leavePage" id="moreTimeLineItems" style="margin-top: 20px;" asp-controller="TimeLine" asp-action="Index">@await LocaleManager.GetTranslation("Show more posts", PageNames.Timeline, Model.LanguageId)</a>
     <br />
 </div>
 <script type="text/javascript">
@@ -22,9 +25,9 @@
             tiCount++;
         }
     }
-    var itemId = [@string.Join(",", idNumbers)];
-    var itemType = [@string.Join(",", itmType)];
-    var numItems = 5;
+    let itemId = [@string.Join(",", idNumbers)];
+    let itemType = [@string.Join(",", itmType)];
+    let numItems = 5;
     $(document).ready(function() {
         async function getItemsHist() {
             let g;
@@ -34,7 +37,7 @@
         };
 
         async function getHistItem() {
-            var timelineItemData = { typeId: itemType[currentItemNumber], itemId: itemId[currentItemNumber] };
+            let timelineItemData = { typeId: itemType[currentItemNumber], itemId: itemId[currentItemNumber] };
             currentItemNumber++;
             await getTimeLineItemLoad(timelineItemData);
         };

@@ -18,10 +18,7 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly ISkillsHttpClient _skillsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private int _progId = Constants.DefaultChildId;
-        private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public SkillsController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, ISkillsHttpClient skillsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
@@ -33,21 +30,24 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
-            _progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            SkillsListViewModel model = new SkillsListViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
-            }
-            if (_progId == 0)
-            {
-                _progId = Constants.DefaultChildId;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            if (childId == 0)
+            {
+                childId = Constants.DefaultChildId;
+            }
+
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -62,12 +62,12 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
-            List<SkillViewModel> model = new List<SkillViewModel>();
+            
 
-            List<Skill> skillsList = await _skillsHttpClient.GetSkillsList(_progId, userAccessLevel);
+            List<Skill> skillsList = await _skillsHttpClient.GetSkillsList(childId, userAccessLevel);
             skillsList = skillsList.OrderBy(s => s.SkillFirstObservation).ToList();
             if (skillsList.Count != 0)
             {
@@ -81,10 +81,10 @@ namespace KinaUnaWeb.Controllers
                     skillViewModel.Name = skill.Name;
                     skillViewModel.SkillFirstObservation = skill.SkillFirstObservation;
                     skillViewModel.SkillId = skill.SkillId;
-                    skillViewModel.IsAdmin = _userIsProgenyAdmin;
+                    skillViewModel.IsAdmin = model.IsAdmin;
                     if (skillViewModel.AccessLevel >= userAccessLevel)
                     {
-                        model.Add(skillViewModel);
+                        model.SkillsList.Add(skillViewModel);
                     }
 
                 }
@@ -92,19 +92,20 @@ namespace KinaUnaWeb.Controllers
             else
             {
                 SkillViewModel skillViewModel = new SkillViewModel();
-                skillViewModel.ProgenyId = _progId;
+                skillViewModel.ProgenyId = childId;
                 skillViewModel.AccessLevel = (int)AccessLevel.Public;
                 skillViewModel.Description = "The skills list is empty.";
                 skillViewModel.Category = "";
                 skillViewModel.Name = "No items";
                 skillViewModel.SkillFirstObservation = DateTime.UtcNow;
 
-                skillViewModel.IsAdmin = _userIsProgenyAdmin;
+                skillViewModel.IsAdmin = model.IsAdmin;
 
-                model.Add(skillViewModel);
+                model.SkillsList.Add(skillViewModel);
             }
 
-            model[0].Progeny = progeny;
+            model.Progeny = progeny;
+
             return View(model);
 
         }

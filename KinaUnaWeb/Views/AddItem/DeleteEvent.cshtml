@@ -1,25 +1,32 @@
-﻿@model KinaUna.Data.Models.CalendarItem
-<H4>Delete Event @Model.Title</H4>
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Delete event", PageNames.Calendar, Model.LanguageId);
+}
+<h2>@ViewData["Title"] - @Model.CalendarItem.Title</h2>
 <form asp-action="DeleteEvent" role="form" method="post">
     <div>
-        Are you sure you want to delete @Model.Title ?
+        @await LocaleManager.GetTranslation("Are you sure you want to delete this event?", PageNames.Calendar, Model.LanguageId) @Model.CalendarItem.Title
     </div>
     <br/>
-    @if(Model.StartTime != null)
+    @if(Model.CalendarItem.StartTime != null)
     {
-        <div>Start: @Model.StartTime.Value</div>
+        <div>@await LocaleManager.GetTranslation("Start:", PageNames.Calendar, Model.LanguageId) @Model.CalendarItem.StartTime.Value</div>
     }
-    @if (Model.EndTime != null)
+    @if (Model.CalendarItem.EndTime != null)
     {
-        <div>End: @Model.EndTime.Value</div>
+        <div>@await LocaleManager.GetTranslation("End:", PageNames.Calendar, Model.LanguageId) @Model.CalendarItem.EndTime.Value</div>
     }
     <br/>
     <div>
-        Notes: @Model.Notes
+        @await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, Model.LanguageId) @Model.CalendarItem.Notes
     </div>
     <br/>
-    <div>Location: @Model.Location</div>
+    <div>@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, Model.LanguageId) @Model.CalendarItem.Location</div>
     <br />
-    <input asp-for="EventId" class="form-control" value="@Model.EventId" type="hidden" />
-    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="Calendar" asp-action="Index">Cancel</a></div>
+    <input asp-for="CalendarItem.EventId" class="form-control" value="@Model.CalendarItem.EventId" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes, delete event", PageNames.Calendar, Model.LanguageId)</Button>
+        <a class="btn btn-danger leavePage" asp-controller="Calendar" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a></div>
 </form>

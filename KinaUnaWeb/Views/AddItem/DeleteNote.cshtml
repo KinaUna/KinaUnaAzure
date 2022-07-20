@@ -1,14 +1,24 @@
-﻿@model KinaUna.Data.Models.Note
-<H4>Delete Note: @Model.Title</H4>
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.NoteViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Delete note", PageNames.Notes, Model.LanguageId);
+}
+<h2>@ViewData["Title"] - @Model.Note.Title</h2>
 <form asp-action="DeleteNote" role="form" method="post">
     <div>
-        Are you sure you want to delete @Model.Title?
+        @await LocaleManager.GetTranslation("Are you sure you want to delete this note?", PageNames.Notes, Model.LanguageId) @Model.Note.Title
     </div>
     <br/>
     <div>
-        Content: @Html.Raw(Model.Content)
+        @await LocaleManager.GetTranslation("Content:", PageNames.Notes, Model.LanguageId) @Html.Raw(Model.Note.Content)
     </div>
     <br />
-    <input asp-for="NoteId" class="form-control" value="@Model.NoteId" type="hidden" />
-    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="Notes" asp-action="Index">Cancel</a></div>
+    <input asp-for="Note.NoteId" class="form-control" value="@Model.Note.NoteId" type="hidden" />
+    <div>
+        <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - delete this note", PageNames.Notes, Model.LanguageId)</Button>
+        <a class="btn btn-danger leavePage" asp-controller="Notes" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+    </div>
 </form>

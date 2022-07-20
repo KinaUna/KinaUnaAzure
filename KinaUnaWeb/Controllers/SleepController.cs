@@ -18,9 +18,7 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly ISleepHttpClient _sleepHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private int _progId = Constants.DefaultChildId;
-        private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
+        
 
         public SleepController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, ISleepHttpClient sleepHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
@@ -33,21 +31,24 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
-            _progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            SleepViewModel model = new SleepViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
-            }
-            if (_progId == 0)
-            {
-                _progId = Constants.DefaultChildId;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            if (childId == 0)
+            {
+                childId = Constants.DefaultChildId;
+            }
+
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -62,18 +63,18 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
 
-            SleepViewModel model = new SleepViewModel();
+            
             model.SleepList = new List<Sleep>();
             model.ChartList = new List<Sleep>();
-            model.ProgenyId = _progId;
+            model.ProgenyId = childId;
             model.SleepTotal = TimeSpan.Zero;
             model.SleepLastYear = TimeSpan.Zero;
             model.SleepLastMonth = TimeSpan.Zero;
-            List<Sleep> sList = await _sleepHttpClient.GetSleepList(_progId, userAccessLevel);
+            List<Sleep> sList = await _sleepHttpClient.GetSleepList(childId, userAccessLevel);
             DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
             if (sList.Count != 0)
@@ -86,13 +87,13 @@ namespace KinaUnaWeb.Controllers
                         bool isLessThanYear = slp.SleepEnd > yearAgo;
                         bool isLessThanMonth = slp.SleepEnd > monthAgo;
                         slp.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepStart,
-                            TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                            TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                         slp.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepEnd,
-                            TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                            TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                         DateTimeOffset startOffset = new DateTimeOffset(slp.SleepStart,
-                            TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone).GetUtcOffset(slp.SleepStart));
+                            TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone).GetUtcOffset(slp.SleepStart));
                         DateTimeOffset endOffset = new DateTimeOffset(slp.SleepEnd,
-                            TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone).GetUtcOffset(slp.SleepEnd));
+                            TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone).GetUtcOffset(slp.SleepEnd));
                         slp.SleepDuration = endOffset - startOffset;
 
                         model.SleepTotal = model.SleepTotal + slp.SleepDuration;
@@ -127,14 +128,14 @@ namespace KinaUnaWeb.Controllers
                         else
                         {
                             DateTimeOffset sOffset = new DateTimeOffset(slp.SleepStart,
-                                TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone).GetUtcOffset(slp.SleepStart));
+                                TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone).GetUtcOffset(slp.SleepStart));
                             DateTimeOffset s2Offset = new DateTimeOffset(slp.SleepStart.Date + TimeSpan.FromDays(1),
-                                TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone)
+                                TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone)
                                     .GetUtcOffset(slp.SleepStart.Date + TimeSpan.FromDays(1)));
                             DateTimeOffset eOffset = new DateTimeOffset(slp.SleepEnd,
-                                TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone).GetUtcOffset(slp.SleepEnd));
+                                TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone).GetUtcOffset(slp.SleepEnd));
                             DateTimeOffset e2Offset = new DateTimeOffset(slp.SleepEnd.Date,
-                                TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone)
+                                TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone)
                                     .GetUtcOffset(slp.SleepEnd.Date));
                             TimeSpan sDateDuration = s2Offset - sOffset;
                             TimeSpan eDateDuration = eOffset - e2Offset;
@@ -178,22 +179,7 @@ namespace KinaUnaWeb.Controllers
                 model.LastMonthAverage = model.SleepLastMonth / 30;
 
             }
-            else
-            {
-                Sleep sleep = new Sleep();
-                sleep.ProgenyId = _progId;
-                sleep.SleepStart = DateTime.UtcNow;
-                sleep.SleepEnd = DateTime.UtcNow;
-                sleep.CreatedDate = DateTime.UtcNow;
-                sleep.SleepNotes = "No sleep data found.";
-                model.SleepList = new List<Sleep>();
-                model.SleepList.Add(sleep);
-                model.TotalAverage = TimeSpan.Zero;
-                model.LastYearAverage = TimeSpan.Zero;
-                model.LastMonthAverage = TimeSpan.Zero;
-            }
             
-            model.IsAdmin = _userIsProgenyAdmin;
             model.Progeny = progeny;
             
             return View(model);
@@ -202,17 +188,24 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> SleepCalendar(int childId = 0)
         {
-            _progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            SleepViewModel model = new SleepViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            if (childId == 0)
+            {
+                childId = Constants.DefaultChildId;
+            }
+
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -227,14 +220,13 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
+            
+            model.ProgenyId = childId;
 
-            SleepViewModel model = new SleepViewModel();
-            model.ProgenyId = _progId;
-
-            List<Sleep> allSleepList = await _sleepHttpClient.GetSleepList(_progId, userAccessLevel);
+            List<Sleep> allSleepList = await _sleepHttpClient.GetSleepList(childId, userAccessLevel);
             List<Sleep> sleepList = new List<Sleep>();
 
             if (allSleepList.Count != 0)
@@ -242,9 +234,9 @@ namespace KinaUnaWeb.Controllers
                 foreach (Sleep s in allSleepList)
                 {
                     s.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(s.SleepStart,
-                        TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                        TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                     s.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(s.SleepEnd,
-                        TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                        TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                     s.SleepDuration = s.SleepEnd - s.SleepStart;
                     s.StartString = s.SleepStart.ToString("yyyy-MM-dd") + "T" + s.SleepStart.ToString("HH:mm:ss");
                     s.EndString = s.SleepEnd.ToString("yyyy-MM-dd") + "T" + s.SleepEnd.ToString("HH:mm:ss");
@@ -257,18 +249,7 @@ namespace KinaUnaWeb.Controllers
                 model.SleepList = sleepList;
 
             }
-            else
-            {
-                Sleep sleep = new Sleep();
-                sleep.ProgenyId = _progId;
-                sleep.SleepStart = DateTime.UtcNow;
-                sleep.SleepEnd = DateTime.UtcNow;
-                sleep.CreatedDate = DateTime.UtcNow;
-                sleep.SleepNotes = "No sleep data found.";
-                model.SleepList = new List<Sleep>();
-                model.SleepList.Add(sleep);
-            }
-            model.IsAdmin = _userIsProgenyAdmin;
+            
             model.Progeny = progeny;
             return View(model);
         }

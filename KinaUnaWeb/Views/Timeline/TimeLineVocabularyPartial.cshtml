@@ -1,5 +1,11 @@
-﻿@model VocabularyItem
-
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model VocabularyItem
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+}
 <a class="leavePage2" asp-controller="Vocabulary" asp-action="Index">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
 
@@ -10,7 +16,7 @@
                 }
                 @Model.Date.Value.ToString("dd-MMM-yyyy HH:mm") </strong></div>
             <div style="margin-left: 2px;" class="text-white">@Model.Word</div>
-            <div style="margin-left: 2px;" class="text-white">Language: @Model.Language</div>
+            <div style="margin-left: 2px;" class="text-white">@await LocaleManager.GetTranslation("Language:", PageNames.Vocabulary, languageId) @Model.Language</div>
         </div>
     </div>
 </a>

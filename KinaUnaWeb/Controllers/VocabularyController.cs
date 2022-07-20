@@ -2,7 +2,6 @@
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,10 +17,7 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IWordsHttpClient _wordsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private int _progId = Constants.DefaultChildId;
-        private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public VocabularyController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IWordsHttpClient wordsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
@@ -33,21 +29,24 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
-            _progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            VocabularyListViewModel model = new VocabularyListViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
-            }
-            if (_progId == 0)
-            {
-                _progId = Constants.DefaultChildId;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            if (childId == 0)
+            {
+                childId = Constants.DefaultChildId;
+            }
+
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -62,12 +61,12 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
 
-            List<VocabularyItemViewModel> model = new List<VocabularyItemViewModel>();
-            List<VocabularyItem> wordList = await _wordsHttpClient.GetWordsList(_progId, userAccessLevel);
+            model.VocabularyList = new List<VocabularyItemViewModel>();
+            List<VocabularyItem> wordList = await _wordsHttpClient.GetWordsList(childId, userAccessLevel);
             wordList = wordList.OrderBy(w => w.Date).ToList();
             if (wordList.Count != 0)
             {
@@ -83,32 +82,19 @@ namespace KinaUnaWeb.Controllers
                         vocabularyItemViewModel.Language = vocabularyItem.Language;
                         vocabularyItemViewModel.SoundsLike = vocabularyItem.SoundsLike;
                         vocabularyItemViewModel.Word = vocabularyItem.Word;
-                        vocabularyItemViewModel.IsAdmin = _userIsProgenyAdmin;
+                        vocabularyItemViewModel.IsAdmin = model.IsAdmin;
                         vocabularyItemViewModel.WordId = vocabularyItem.WordId;
-                        model.Add(vocabularyItemViewModel);
+                        model.VocabularyList.Add(vocabularyItemViewModel);
                     }
                     
                 }
             }
-            else
-            {
-                VocabularyItemViewModel vocabularyItemViewModel = new VocabularyItemViewModel();
-                vocabularyItemViewModel.ProgenyId = _progId;
-                vocabularyItemViewModel.Date = DateTime.UtcNow;
-                vocabularyItemViewModel.DateAdded = DateTime.UtcNow;
-                vocabularyItemViewModel.Description = "The vocabulary list is empty.";
-                vocabularyItemViewModel.Language = "English";
-                vocabularyItemViewModel.SoundsLike = "";
-                vocabularyItemViewModel.Word = "No words found.";
-                vocabularyItemViewModel.IsAdmin = _userIsProgenyAdmin;
-                model.Add(vocabularyItemViewModel);
-            }
-
-            model[0].Progeny = progeny;
+            
+            model.Progeny = progeny;
 
             List<WordDateCount> dateTimesList = new List<WordDateCount>();
             int wordCount = 0;
-            foreach (VocabularyItemViewModel vocabularyItemViewModel in model)
+            foreach (VocabularyItemViewModel vocabularyItemViewModel in model.VocabularyList)
             {
                 wordCount++;
                 if (vocabularyItemViewModel.Date != null)

@@ -1,15 +1,24 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.SleepViewModel
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.SleepViewModel
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
     <script src="/lib/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
-<H4>Add Sleep</H4>
+
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Add sleep", PageNames.Sleep, Model.LanguageId);
+    string addSleepForString = await LocaleManager.GetTranslation("Add sleep for:", PageNames.Sleep, Model.LanguageId);
+}
+<h2>@ViewData["Title"]</h2>
 <form asp-action="AddSleep" role="form" method="post">
     @if (Model.ProgenyList.Count > 1)
     {
         <div class="form-group">
-            <label class="control-label col-sm-3">Add Sleep for: </label>
+            <label class="control-label col-sm-3">@addSleepForString </label>
             <div class="col-lg-9">
                 <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
             </div>
@@ -18,7 +27,7 @@
     else
     {
         <div class="form-group">
-            <label class="control-label col-sm-3">Add Sleep for</label>
+            <label class="control-label col-sm-3">@addSleepForString</label>
             <div class="col-lg-9">
                 <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
             </div>
@@ -26,7 +35,7 @@
         </div>
     }
     <div class="form-group">
-        <label asp-for="SleepStart" class="col-lg-3 col-sm-3 control-label">Start</label>
+        <label asp-for="SleepStart" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Start", PageNames.Sleep, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text"
@@ -43,7 +52,7 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="SleepEnd" class="col-lg-3 col-sm-3 control-label">End</label>
+        <label asp-for="SleepEnd" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("End", PageNames.Sleep, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text"
@@ -60,7 +69,7 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="SleepRating" class="col-lg-3 col-sm-3 control-label">Sleep Rating</label>
+        <label asp-for="SleepRating" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Sleep rating", PageNames.Sleep, Model.LanguageId)</label>
         <div class="col-lg-9">
             <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="5" asp-for="SleepRating">
                 <option>1</option>
@@ -72,13 +81,13 @@
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="SleepNotes" class="col-lg-3 col-sm-3 control-label">Notes</label>
+        <label asp-for="SleepNotes" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Sleep, Model.LanguageId)</label>
         <div class="col-lg-9">
             <textarea asp-for="SleepNotes" class="form-control" rows="4"></textarea>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Access Level</label>
+        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
         <div class="col-lg-9">
             <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
         </div>
@@ -87,8 +96,8 @@
         <div class="form-group">
             <div class="col-lg-3 col-sm-3 control-label"></div>
             <div class="col-lg-9">
-                <button id="submitBtn" class="btn btn-success leavePage" type="submit">Save</button>
-                <a class="btn btn-danger leavePage" asp-controller="Sleep" asp-action="Index">Cancel</a>
+                <button id="submitBtn" class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                <a class="btn btn-danger leavePage" asp-controller="Sleep" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
             </div>
         </div>
     </div>
@@ -116,7 +125,7 @@
 
         } else {
             $('#submitBtn').prop('disabled', true);
-            $('#notification').text('Warning: Start time is after End time.');
+            $('#notification').text('@await LocaleManager.GetTranslation("Warning: Start time is after End time.", PageNames.Sleep, Model.LanguageId)');
         };
     };
 </script>

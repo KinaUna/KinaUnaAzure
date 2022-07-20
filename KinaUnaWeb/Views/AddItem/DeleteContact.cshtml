@@ -1,12 +1,19 @@
-﻿@model KinaUna.Data.Models.Contact
-<H4>Delete Contact: @Model.DisplayName</H4>
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.ContactViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Delete contact", PageNames.Contacts, Model.LanguageId);
+}
+<h2>@ViewData["Title"] - @Model.Contact.DisplayName</h2>
 <form asp-action="DeleteContact" role="form" method="post">
-    <div>Are you sure you want to delete @Model.FirstName @Model.MiddleName @Model.LastName?</div>
+    <div>@await LocaleManager.GetTranslation("Are you sure you want to delete this contact?", PageNames.Contacts, Model.LanguageId) @Model.Contact.FirstName @Model.Contact.MiddleName @Model.Contact.LastName?</div>
     <br/>
     <div>
-        <img src="@Model.PictureLink" />
+        <img src="@Model.Contact.PictureLink" />
     </div>
     <br />
-    <input asp-for="ContactId" class="form-control" value="@Model.ContactId" type="hidden" />
-    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="Contacts" asp-action="Index">Cancel</a></div>
+    <input asp-for="Contact.ContactId" class="form-control" value="@Model.Contact.ContactId" type="hidden" />
+    <div><Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes, delete contact", PageNames.Contacts, Model.LanguageId)</Button>
+        <a class="btn btn-danger leavePage" asp-controller="Contacts" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a></div>
 </form>

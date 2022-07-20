@@ -1,15 +1,24 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
     <script src="/lib/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
-<H4>Add Event</H4>
+
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Add event", PageNames.Calendar, Model.LanguageId);
+    string addEventForString = await LocaleManager.GetTranslation("Add event for:", PageNames.Calendar, Model.LanguageId);
+}
+<h2>@ViewData["Title"]</h2>
 <form asp-action="AddEvent" role="form" method="post">
     @if (Model.ProgenyList.Count > 1)
     {
         <div class="form-group">
-            <label class="control-label col-sm-3">Add Event for: </label>
+            <label class="control-label col-sm-3">@addEventForString </label>
             <div class="col-lg-9">
                 <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
             </div>
@@ -18,7 +27,7 @@
     else
     {
         <div class="form-group">
-            <label class="control-label col-sm-3">Add Event for</label>
+            <label class="control-label col-sm-3">@addEventForString</label>
             <div class="col-lg-9">
                 <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
             </div>
@@ -26,13 +35,13 @@
         </div>
     }
     <div class="form-group">
-        <label asp-for="Title" class="col-lg-3 col-sm-3 control-label"></label>
+        <label asp-for="Title" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Title", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-lg-9">
             <input asp-for="Title" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="StartTime" class="col-lg-3 col-sm-3 control-label">Start</label>
+        <label asp-for="StartTime" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Start", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="StartTime" value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(@Model.Progeny.TimeZone)).ToString("dd-MMM-yyyy HH:mm")" />
@@ -48,7 +57,7 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="EndTime" class="col-lg-3 col-sm-3 control-label">End</label>
+        <label asp-for="EndTime" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("End", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="EndTime" value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow + TimeSpan.FromMinutes(10), TimeZoneInfo.FindSystemTimeZoneById(Model.Progeny.TimeZone)).ToString("dd-MMM-yyyy HH:mm")" />
@@ -64,31 +73,31 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="Notes" class="col-lg-3 col-sm-3 control-label"></label>
+        <label asp-for="Notes" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-lg-9">
             <textarea asp-for="Notes" class="form-control" rows="4"></textarea>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Location" class="col-lg-3 col-sm-3 control-label"></label>
+        <label asp-for="Location" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Location", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-lg-9">
             <input asp-for="Location" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Context" class="col-lg-3 col-sm-3 control-label"></label>
+        <label asp-for="Context" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Context", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-lg-9">
             <input asp-for="Context" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="AllDay" class="col-lg-3 col-sm-3 control-label">All Day</label>
+        <label asp-for="AllDay" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("All day", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-lg-1">
             <input type="checkbox" asp-for="AllDay" class="form-control" checked="@Model.AllDay" value="@Model.AllDay" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Access Level</label>
+        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)Access Level</label>
         <div class="col-lg-9">
             <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
         </div>
@@ -97,8 +106,8 @@
         <div class="form-group">
             <div class="col-lg-3 col-sm-3 control-label"></div>
             <div class="col-lg-9">
-                <button id="submitBtn" class="btn btn-success leavePage" type="submit">Save</button>
-                <a class="btn btn-danger leavePage" asp-controller="Calendar" asp-action="Index">Cancel</a>
+                <button id="submitBtn" class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                <a class="btn btn-danger leavePage" asp-controller="Calendar" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
             </div>
         </div>
     </div>
@@ -128,7 +137,7 @@
 
         } else {
             $('#submitBtn').prop('disabled', true);
-            $('#notification').text('Warning: Start time is after End time.');
+            $('#notification').text('@await LocaleManager.GetTranslation("Warning: Start time is after End time.", PageNames.Calendar, Model.LanguageId)');
         };
     };
 </script>

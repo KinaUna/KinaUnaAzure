@@ -17,10 +17,7 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IVaccinationsHttpClient _vaccinationsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private int _progId = Constants.DefaultChildId;
-        private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public VaccinationsController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IVaccinationsHttpClient vaccinationsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
@@ -32,21 +29,24 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
-            _progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            VaccinationViewModel model = new VaccinationViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
-            }
-            if (_progId == 0)
-            {
-                _progId = Constants.DefaultChildId;
+                childId = model.CurrentUser.ViewChild;
             }
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            if (childId == 0)
+            {
+                childId = Constants.DefaultChildId;
+            }
+
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
 
@@ -61,13 +61,12 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
 
-            VaccinationViewModel model = new VaccinationViewModel();
             model.VaccinationList = new List<Vaccination>();
-            List<Vaccination> vaccinations = await _vaccinationsHttpClient.GetVaccinationsList(_progId, userAccessLevel);
+            List<Vaccination> vaccinations = await _vaccinationsHttpClient.GetVaccinationsList(childId, userAccessLevel);
 
             if (vaccinations.Count != 0)
             {
@@ -81,19 +80,10 @@ namespace KinaUnaWeb.Controllers
                 }
                 model.VaccinationList = model.VaccinationList.OrderBy(v => v.VaccinationDate).ToList();
             }
-            else
-            {
-                Vaccination vaccination = new Vaccination();
-                vaccination.ProgenyId = _progId;
-                vaccination.VaccinationName = "No vaccinations found.";
-                vaccination.VaccinationDescription = "The vaccinations list is empty.";
 
-                model.VaccinationList.Add(vaccination);
-            }
-            model.IsAdmin = _userIsProgenyAdmin;
             model.Progeny = progeny;
+            
             return View(model);
-
         }
     }
 }

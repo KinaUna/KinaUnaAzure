@@ -3,7 +3,7 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class PicturePageViewModel
+    public class PicturePageViewModel: BaseViewModel
     {
         public int PageNumber { get; set; }
         public int PageSize { get; set; }

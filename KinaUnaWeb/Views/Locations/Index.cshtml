@@ -1,6 +1,11 @@
 ﻿@using System.Globalization
 @using KinaUna.Data
+@using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Locations", PageNames.Locations, Model.LanguageId);
+}
 @section Scripts{
     <script src="https://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
     <script src="https://js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
@@ -8,68 +13,66 @@
     <script type="text/javascript" src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
     <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
 }
-@{
-    ViewData["Title"] = Model.Progeny.NickName + "'s Locations";
-}
-@{
+    @{
     string sortOldest = "btn btn-primary btn-sm";
     string sortNewest = "btn btn-info btn-sm leavePage";
-
+    string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Locations, Model.LanguageId);
+    string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Locations, Model.LanguageId);
+    string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Locations, Model.LanguageId);
 }
 @if (Model.SortBy == 1)
 {
     sortOldest = "btn btn-info btn-sm leavePage";
     sortNewest = "btn btn-primary btn-sm";
     <div>
-        Sort: <span class="@sortNewest"><i class="fas fa-check-circle"></i> Newest first</span>
-        <a class="@sortOldest" asp-controller="Locations" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">Oldest first</a>
+        @sortString <span class="@sortNewest"><i class="fas fa-check-circle"></i> @newestFirstString</span>
+        <a class="@sortOldest" asp-controller="Locations" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">@oldestFirstString</a>
     </div>
 }
 else
 {
     <div>
-        Sort: <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> Oldest first</span>
-        <a class="@sortNewest" asp-controller="Locations" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@ViewBag.TagFilter">Newest first</a>
+        @sortString <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> @oldestFirstString</span>
+        <a class="@sortNewest" asp-controller="Locations" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@ViewBag.TagFilter">@newestFirstString</a>
     </div>
 }
-@if (!String.IsNullOrEmpty(Model.TagFilter))
+@if (!string.IsNullOrEmpty(Model.TagFilter))
 {
     <br />
-    <div style="float: right;">Tag filter: <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Reset Filter</a></div>
+    <div style="float: right;">@await LocaleManager.GetTranslation("Tag filter:", PageNames.Locations, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Locations, Model.LanguageId)</a></div>
 }
 @if (Model.IsAdmin)
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="AddItem" asp-action="AddLocation" class="btn btn-success btn-round leavePage">
-            <i class="fas fa-plus"></i> Add Location
+            <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add location", PageNames.Locations, Model.LanguageId)
         </a>
     </div>
 }
 @if (Model.LocationsList == null)
 {
     <h3 class="title">@ViewData["Title"]</h3>
-    <div>Nothing to see here yet.</div>
+    <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Locations, Model.LanguageId)</div>
 }
 else
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="Locations" asp-action="PhotoLocations" class="btn btn-info leavePage">
-            <i class="fas fa-map-marked-alt"></i> Photo Locations
+            <i class="fas fa-map-marked-alt"></i> @await LocaleManager.GetTranslation("Photo locations", PageNames.Locations, Model.LanguageId)
         </a>
     </div>
     <h3 class="title">@ViewData["Title"]</h3>
     <div class="row" style="clear: both; margin-top: 25px;">
         <div style="width: 100%; height: 480px; max-height: 60vh; margin-left: 20px; margin-right: 20px;" id="mapContainer"></div>
         <script>
-            var lastSelected;
+            let lastSelected;
             function setUpClickListener(map) {
                 // Attach an event listener to map display
                 // obtain the coordinates and display in an alert box.
-
                 map.addEventListener('tap',
                     function (evt) {
-                        var target = evt.target;
-                        var locDiv = '#loc' + target.getData();
+                        let target = evt.target;
+                        let locDiv = '#loc' + target.getData();
                         if (target instanceof mapsjs.map.Marker) {
                             $('html, body').animate({
                                 'scrollTop': $(locDiv).offset().top - 100
@@ -83,20 +86,20 @@ else
                         //    zoomLevel = 20;
                         //}
                         //map.setZoom(zoomLevel, true);
-                        var coord = map.screenToGeo(evt.currentPointer.viewportX,
+                        let coord = map.screenToGeo(evt.currentPointer.viewportX,
                             evt.currentPointer.viewportY);
                         map.setCenter(coord, true);
 
                     });
             }
 
-            var platform = new H.service.Platform({
+            let platform = new H.service.Platform({
                 'app_id': '@Constants.HereMapsId',
                 'app_code': '@Constants.HereMapsCode',
                 'useHTTPS': true
             });
-            var pixelRatio = window.devicePixelRatio || 1;
-            var maptypes = platform.createDefaultLayers({
+            let pixelRatio = window.devicePixelRatio || 1;
+            let maptypes = platform.createDefaultLayers({
                 tileSize: pixelRatio === 1 ? 256 : 512,
                 ppi: pixelRatio === 1 ? undefined : 320
             });
@@ -109,16 +112,16 @@ else
                     pixelRatio: pixelRatio
                 });
             @*map.addObject(new H.map.Marker({ lng: @Model.Longtitude, lat: @Model.Latitude}));*@
-            var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+            let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
 
             setUpClickListener(map);
 
-            var ui = H.ui.UI.createDefault(map, maptypes);
-            var iconWidth = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
-            var iconHeight = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
+            let ui = H.ui.UI.createDefault(map, maptypes);
+            let iconWidth = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
+            let iconHeight = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
 
-            var defaultIcon = new H.map.Icon("@Constants.WebAppUrl/images/purplemarker.svg", { size: { w: iconWidth, h: iconHeight } });
-            var group = new H.map.Group();
+            let defaultIcon = new H.map.Icon("@Constants.WebAppUrl/images/purplemarker.svg", { size: { w: iconWidth, h: iconHeight } });
+            let group = new H.map.Group();
             @{
                 string locGroup = "[";
                 string polyCode = "";
@@ -128,7 +131,7 @@ else
             @foreach (Location lineLoc in Model.LocationsList)
             {
                 string pPoint = "lineString.pushPoint({lat:" + lineLoc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng:" + lineLoc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "});";
-                string pMarker = "var marker" + lineLoc.LocationId + " = new H.map.Marker({lat:" + lineLoc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng:" + lineLoc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "}, {icon: defaultIcon});";
+                string pMarker = "let marker" + lineLoc.LocationId + " = new H.map.Marker({lat:" + lineLoc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng:" + lineLoc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "}, {icon: defaultIcon});";
                 string sMarker = "marker" + lineLoc.LocationId + ".setData(" + lineLoc.LocationId + ");";
                 locGroup = locGroup + "marker" + lineLoc.LocationId + ", ";
                 polyCode = polyCode + pPoint;
@@ -142,7 +145,7 @@ else
             group.addObjects(@locGroup);
             map.addObject(group);
             function addPolylineToMap(map) {
-                var lineString = new H.geo.LineString();
+                let lineString = new H.geo.LineString();
                 @Html.Raw(polyCode)
                 map.addObject(new H.map.Polyline(
                     lineString, { style: { lineWidth: 4 }}
@@ -152,9 +155,9 @@ else
             map.setViewBounds(group.getBounds());
         </script>
         <br /><br />
-        @foreach (var locationModel in Model.LocationsList)
+        @foreach (Location locationModel in Model.LocationsList)
         {
-            var locId = "loc" + locationModel.LocationId;
+            string locId = "loc" + locationModel.LocationId;
             <div id="@locId" class="card text-white bg-light" align="left" style="margin: 15px; margin-bottom: 25px; padding: 1px; float: left; min-width: 49%;">
                 <div class="card-text card-header-success rounded" style="padding-left: 15px; padding-right: 5px;">
                     @if (Model.IsAdmin)
@@ -175,36 +178,36 @@ else
                     <div class="card-text">
                         <div class="rounded text-dark card-body bg-white" align="left">
                             <div>
-                                Street: @locationModel.StreetName
+                                @await LocaleManager.GetTranslation("Street:", PageNames.Locations, Model.LanguageId) @locationModel.StreetName
                             </div>
                             <div>
-                                Number: @locationModel.HouseNumber
+                                @await LocaleManager.GetTranslation("House number:", PageNames.Locations, Model.LanguageId): @locationModel.HouseNumber
                             </div>
                             <div>
-                                District: @locationModel.District
+                                @await LocaleManager.GetTranslation("District:", PageNames.Locations, Model.LanguageId) @locationModel.District
                             </div>
                             <div>
-                                Postal Code: @locationModel.PostalCode
+                                @await LocaleManager.GetTranslation("Postal code:", PageNames.Locations, Model.LanguageId) @locationModel.PostalCode
                             </div>
                             <div>
-                                City: @locationModel.City
+                                @await LocaleManager.GetTranslation("City:", PageNames.Locations, Model.LanguageId) @locationModel.City
                             </div>
                             <div>
-                                County: @locationModel.County
+                                @await LocaleManager.GetTranslation("County:", PageNames.Locations, Model.LanguageId) @locationModel.County
                             </div>
                             <div>
-                                State: @locationModel.State
+                                @await LocaleManager.GetTranslation("State/region:", PageNames.Locations, Model.LanguageId) @locationModel.State
                             </div>
                             <div>
-                                Country: @locationModel.Country
+                                @await LocaleManager.GetTranslation("Country:", PageNames.Locations, Model.LanguageId) @locationModel.Country
                             </div>
                             <div>
-                                Notes: @locationModel.Notes
+                                @await LocaleManager.GetTranslation("Notes:", PageNames.Locations, Model.LanguageId) @locationModel.Notes
                             </div>
                             <div>
-                                Latitude: @locationModel.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')
+                                @await LocaleManager.GetTranslation("Latitude:", PageNames.Locations, Model.LanguageId) @locationModel.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')
                                 <br />
-                                Longitude: @locationModel.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.')
+                                @await LocaleManager.GetTranslation("Longitude:", PageNames.Locations, Model.LanguageId) @locationModel.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.')
                             </div>
                         </div>
                     </div>

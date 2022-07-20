@@ -3,7 +3,7 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class VideoPageViewModel
+    public class VideoPageViewModel: BaseViewModel
     {
         public int PageNumber { get; set; }
         public int TotalPages { get; set; }

@@ -1,18 +1,27 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.VideoViewModel
-<H4>Delete Video</H4>
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.VideoViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Delete video", PageNames.Videos, Model.LanguageId);
+}
+<h2>@ViewData["Title"]</h2>
 <form asp-action="DeleteVideo" role="form" method="post">
     <div>
-        Are you sure you want to delete this Picture?
+        @await LocaleManager.GetTranslation("Are you sure you want to delete this video?", PageNames.Videos, Model.LanguageId)
     </div>
     <div>
         <img src="@Model.ThumbLink" class="img-responsive" style="max-width: 600px;" />
         @if (Model.VideoTime.HasValue)
         {
-            <div>Date and time: @Model.VideoTime.Value.ToString("dd-MMM-yyyy HH:mm")"</div>
+            <div>@await LocaleManager.GetTranslation("Date and time:", PageNames.Videos, Model.LanguageId) @Model.VideoTime.Value.ToString("dd-MMM-yyyy HH:mm")"</div>
         }
     </div>
 
     <input asp-for="VideoId" class="form-control" value="@Model.VideoId" type="hidden" />
     <input asp-for="ProgenyId" class="form-control" value="@Model.ProgenyId" type="hidden" />
-    <div><Button type="submit" class="btn btn-success leavePage">Yes</Button><a class="btn btn-danger leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.VideoId" asp-route-childId="@Model.ProgenyId">Cancel</a></div>
+    <div>
+        <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - delete this video", PageNames.Videos, Model.LanguageId)</Button>
+        <a class="btn btn-danger leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.VideoId" asp-route-childId="@Model.ProgenyId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+    </div>
 </form>

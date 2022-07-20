@@ -13,16 +13,13 @@ namespace KinaUnaWeb.Controllers
 {
     public class ContactsController : Controller
     {
-        private int _progId = Constants.DefaultChildId;
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly ILocationsHttpClient _locationsHttpClient;
         private readonly IContactsHttpClient _contactsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly ImageStore _imageStore;
-        private bool _userIsProgenyAdmin;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        
         public ContactsController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, ILocationsHttpClient locationsHttpClient, IContactsHttpClient contactsHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
@@ -36,30 +33,26 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, string tagFilter = "")
         {
-            _progId = childId;
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            ContactListViewModel model = new ContactListViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
             
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (childId == 0 && userinfo.ViewChild > 0)
+            if (childId == 0 && model.CurrentUser.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
+                childId = model.CurrentUser.ViewChild;
             }
-            else
+            
+            if (childId == 0)
             {
-                _progId = childId;
-            }
-
-            if (_progId == 0)
-            {
-                _progId = Constants.DefaultChildId;
+                childId = Constants.DefaultChildId;
             }
 
 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(_progId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
 
             int userAccessLevel = (int)AccessLevel.Public;
-
             if (accessList.Count != 0)
             {
                 UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
@@ -69,17 +62,16 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
+            
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
-
-            List<ContactViewModel> model = new List<ContactViewModel>();
             
             List<string> tagsList = new List<string>();
 
-            List<Contact> contactList = await _contactsHttpClient.GetContactsList(_progId, userAccessLevel); // _context.ContactsDb.AsNoTracking().Where(w => w.ProgenyId == _progId).ToList();
+            List<Contact> contactList = await _contactsHttpClient.GetContactsList(childId, userAccessLevel);
             if (!string.IsNullOrEmpty(tagFilter))
             {
                 contactList = contactList.Where(c => c.Tags != null && c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
@@ -104,7 +96,7 @@ namespace KinaUnaWeb.Controllers
                     contactViewModel.Notes = contact.Notes;
                     contactViewModel.PictureLink = contact.PictureLink;
                     contactViewModel.Active = contact.Active;
-                    contactViewModel.IsAdmin = _userIsProgenyAdmin;
+                    contactViewModel.IsAdmin = model.IsAdmin;
                     contactViewModel.ContactId = contact.ContactId;
                     contactViewModel.Context = contact.Context;
                     contactViewModel.Website = contact.Website;
@@ -142,30 +134,30 @@ namespace KinaUnaWeb.Controllers
 
                     if (contactViewModel.AccessLevel >= userAccessLevel)
                     {
-                        model.Add(contactViewModel);
+                        model.ContactsList.Add(contactViewModel);
                     }
                 }
-                model = model.OrderBy(m => m.DisplayName).ToList();
+                model.ContactsList = model.ContactsList.OrderBy(m => m.DisplayName).ToList();
 
                 string tags = "";
                 foreach (string tstr in tagsList)
                 {
                     tags = tags + tstr + ",";
                 }
-                ViewBag.Tags = tags.TrimEnd(',');
+                model.Tags = tags.TrimEnd(',');
             }
             else
             {
                 ContactViewModel notfoundContactViewModel = new ContactViewModel();
-                notfoundContactViewModel.ProgenyId = _progId;
+                notfoundContactViewModel.ProgenyId = childId;
                 notfoundContactViewModel.DisplayName = "No friends found.";
                 notfoundContactViewModel.PictureLink = Constants.ProfilePictureUrl;
-                notfoundContactViewModel.IsAdmin = _userIsProgenyAdmin;
-                model.Add(notfoundContactViewModel);
+                notfoundContactViewModel.IsAdmin = model.IsAdmin;
+                model.ContactsList.Add(notfoundContactViewModel);
             }
 
-            model[0].Progeny = progeny;
-            ViewBag.TagFilter = tagFilter;
+            model.Progeny = progeny;
+            model.TagFilter = tagFilter;
             return View(model);
 
         }
@@ -173,14 +165,16 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ContactDetails(int contactId, string tagFilter)
         {
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            ContactViewModel model = new ContactViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
 
-            Contact contact = await _contactsHttpClient.GetContact(contactId); // _context.ContactsDb.AsNoTracking().SingleAsync(c => c.ContactId == contactId);
+            Contact contact = await _contactsHttpClient.GetContact(contactId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(contact.ProgenyId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(_progId);
+            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(contact.ProgenyId);
 
             int userAccessLevel =  (int)AccessLevel.Public;
-
             if (accessList.Count != 0)
             {
                 UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
@@ -192,17 +186,15 @@ namespace KinaUnaWeb.Controllers
 
             if (progeny.IsInAdminList(userEmail))
             {
-                _userIsProgenyAdmin = true;
+                model.IsAdmin = true;
                 userAccessLevel = (int)AccessLevel.Private;
             }
-
-
-            ContactViewModel model = new ContactViewModel();
             
             if (contact.AccessLevel < userAccessLevel)
             {
                 RedirectToAction("Index");
             }
+
             model.ProgenyId = contact.ProgenyId;
             model.Context = contact.Context;
             model.Notes = contact.Notes;
@@ -271,11 +263,9 @@ namespace KinaUnaWeb.Controllers
                 tagItems = tagItems + "]";
             }
 
-            ViewBag.TagsList = tagItems;
-            ViewBag.TagFilter = tagFilter;
-
-            model.IsAdmin = _userIsProgenyAdmin;
-
+            model.TagsList = tagItems;
+            model.TagFilter = tagFilter;
+            
             return View(model);
         }
     }

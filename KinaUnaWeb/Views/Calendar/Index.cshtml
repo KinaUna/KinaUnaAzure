@@ -1,17 +1,19 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.Progeny.NickName + "'s Calendar";
+    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Calendar", PageNames.Calendar, Model.LanguageId);
 }
-
 @if (Model.IsAdmin)
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="AddItem" asp-action="AddEvent" class="btn btn-success btn-round">
-            <i class="fas fa-plus"></i> Add Calendar Item
+            <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add calendar item", PageNames.Calendar, Model.LanguageId)
         </a>
     </div>
 }
-<h3 class="title">@ViewData["Title"]</h3>
+<h2>@ViewData["Title"]</h2>
 <br />
 <br />
 <div style="clear: both; height: 90vh; min-height: 600px; max-height: 1180px;">
@@ -30,13 +32,13 @@
     @if (Model.IsAdmin)
     {
         <script>
-            var selectedEventId = 0;
+            let selectedEventId = 0;
             loadCultureFiles('en-DK');
             function loadCultureFiles(name) {
-                var files = ['ca-gregorian.json', 'numberingSystems.json', 'numbers.json', 'timeZoneNames.json', 'ca-islamic.json'];
-                var loader = ej.base.loadCldr;
-                var loadCulture = function (prop) {
-                    var val, ajax;
+                let files = ['ca-gregorian.json', 'numberingSystems.json', 'numbers.json', 'timeZoneNames.json', 'ca-islamic.json'];
+                let loader = ej.base.loadCldr;
+                let loadCulture = function (prop) {
+                    let val, ajax;
                     if (files[prop] === 'numberingSystems.json') {
                         ajax = new ej.base.Ajax(location.origin + '/../cldr-data/supplemental/' + files[prop], 'GET', false);
                     } else {
@@ -48,7 +50,7 @@
                     ajax.send();
                     loader(JSON.parse(val));
                 };
-                for (var prop = 0; prop < files.length; prop++) {
+                for (let prop = 0; prop < files.length; prop++) {
                     loadCulture(prop);
                 }
             }
@@ -70,8 +72,8 @@
             }
 
             function onEventClick(args) {
-                var scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
-                var event = scheduleObj.getEventDetails(args.element);
+                let scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
+                let event = scheduleObj.getEventDetails(args.element);
                 selectedEventId = event.EventId;
             }
 
@@ -91,9 +93,9 @@
             var selectedEventId = 0;
             loadCultureFiles('en-DK');
             function loadCultureFiles(name) {
-                var files = ['ca-gregorian.json', 'numberingSystems.json', 'numbers.json', 'timeZoneNames.json', 'ca-islamic.json'];
-                var loader = ej.base.loadCldr;
-                var loadCulture = function (prop) {
+                let files = ['ca-gregorian.json', 'numberingSystems.json', 'numbers.json', 'timeZoneNames.json', 'ca-islamic.json'];
+                let loader = ej.base.loadCldr;
+                let loadCulture = function (prop) {
                     var val, ajax;
                     if (files[prop] === 'numberingSystems.json') {
                         ajax = new ej.base.Ajax(location.origin + '/../cldr-data/supplemental/' + files[prop], 'GET', false);
@@ -122,8 +124,8 @@
             }
 
             function onEventClick(args) {
-                var scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
-                var event = scheduleObj.getEventDetails(args.element);
+                let scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
+                let event = scheduleObj.getEventDetails(args.element);
                 selectedEventId = event.EventId;
             }
 
@@ -137,5 +139,4 @@
             }
         </script>
     }
-
 </div>

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class LocationViewModel
+    public class LocationViewModel: BaseViewModel
     {
         public int LocationId { get; set; }
         public int ProgenyId { get; set; }
@@ -38,6 +38,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public string TagFilter { get; set; }
         public int? SortBy { get; set; }
+
+        public Location Location { get; set; }
 
         public LocationViewModel()
         {

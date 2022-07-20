@@ -1,4 +1,10 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Edit friend", PageNames.Friends, Model.LanguageId);
+}
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
     <link href="/css/amsify.suggestags.css" rel="stylesheet" />
@@ -7,22 +13,23 @@
     <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
-<H3 class="title">Edit Friend</H3>
+
+<h2>@ViewData["Title"] - @Model.Name</h2>
 <form asp-action="EditFriend" role="form" method="post" enctype="multipart/form-data">
     <div class="form-group">
-        <label asp-for="Name" class="col-lg-3 col-sm-3 control-label"></label>
+        <label asp-for="Name" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Name", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-lg-9">
             <input asp-for="Name" class="form-control" value="@Model.Name" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Description" class="col-lg-3 col-sm-3 control-label"></label>
+        <label asp-for="Description" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Description", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-lg-9">
             <textarea asp-for="Description" class="form-control" rows="4" value="@Model.Description"></textarea>
         </div>
     </div>
     <div class="form-group">
-        <label class="col-lg-3 col-sm3 control-label">Picture</label>
+        <label class="col-lg-3 col-sm3 control-label">@await LocaleManager.GetTranslation("Picture", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-lg-9">
             <div class="fileinput fileinput-new text-center" data-provides="fileinput">
                 <div class="fileinput-new thumbnail img-raised">
@@ -31,20 +38,20 @@
                 <div class="fileinput-preview fileinput-exists thumbnail img-raised"></div>
                 <div>
                     <div class="btn btn-primary btn-round btn-file ">
-                        <span data-trigger="fileinput" class="fileinput-new">New picture</span>
-                        <span class="fileinput-exists">Change</span>
+                        <span data-trigger="fileinput" class="fileinput-new">@await LocaleManager.GetTranslation("New picture", PageNames.Friends, Model.LanguageId)</span>
+                        <span class="fileinput-exists">@await LocaleManager.GetTranslation("Change picture", PageNames.Friends, Model.LanguageId)</span>
                         <input type="file" name="File" accept="image/*" />
                     </div>
                     <br />
                     <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
-                        <i class="fa fa-times"></i> Remove
+                        <i class="fa fa-times"></i> @await LocaleManager.GetTranslation("Remove picture", PageNames.Friends, Model.LanguageId)
                     </a>
                 </div>
             </div>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="FriendSince" class="col-lg-3 col-sm-3 control-label">Friends Since</label>
+        <label asp-for="FriendSince" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Friends since", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             @{ DateTime fs = new DateTime(); }
             @if (Model.FriendSince.HasValue)
@@ -66,25 +73,25 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="Type" class="col-lg-3 col-sm-3 control-label">Type of Friend</label>
+        <label asp-for="Type" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Type of friend", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-lg-9">
             <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FriendTypeListEn.Count" asp-for="Type" asp-items="@Model.FriendTypeListEn"></select>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Context" class="col-lg-3 col-sm-3 control-label"></label>
+        <label asp-for="Context" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Context", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-lg-9">
             <input asp-for="Context" class="form-control" value="@Model.Context" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Notes" class="col-lg-3 col-sm-3 control-label"></label>
+        <label asp-for="Notes" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-lg-9">
             <textarea asp-for="Notes" class="form-control" rows="4" value="@Model.Notes"></textarea>
         </div>
     </div>
     <div class="form-group">
-        <label class="col-lg-3 col-sm-2 control-label">Tags</label>
+        <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-lg-9 col-md-9 col-sm-9">
             <input id="tagList" type="text" asp-for="Tags" value="@Model.Tags" placeholder="Add tag..." class="form-control" />
         </div>
@@ -95,7 +102,7 @@
         </script>
     </div>
     <div class="form-group">
-        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">Access Level</label>
+        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
         <div class="col-lg-9">
             <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
         </div>
@@ -109,8 +116,8 @@
         <div class="form-group">
             <div class="col-lg-3 col-sm-3 control-label"></div>
             <div class="col-lg-9">
-                <button class="btn btn-success leavePage" type="submit">Save</button>
-                <a class="btn btn-danger leavePage" asp-controller="Friends" asp-action="Index">Cancel</a>
+                <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                <a class="btn btn-danger leavePage" asp-controller="Friends" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
             </div>
         </div>
     </div>
