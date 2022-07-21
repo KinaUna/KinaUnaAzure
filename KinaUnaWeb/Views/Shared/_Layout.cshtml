@@ -196,14 +196,14 @@
         }
         <div class="navbar-nav nav-item">
             <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" href="https://@Context.Request.Host@Context.Request.GetEncodedPathAndQuery()" aria-label="Refresh">
-                <i class="material-icons icon_medium" aria-hidden="true">refresh</i>
+                <i class="material-icons icon_medium" style="top: 3px;" aria-hidden="true">refresh</i>
             </a>
         </div>
         @if (canUserAddItems)
         {
             <div class="navbar-nav nav-item">
                 <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" asp-area="" asp-controller="AddItem" asp-action="Index" aria-label="Add item">
-                    <i class="material-icons icon_medium" aria-hidden="true">add</i>
+                    <i class="material-icons icon_medium" style="top: 3px;" aria-hidden="true">add</i>
                 </a>
             </div>
         }
@@ -451,7 +451,7 @@
                         <div class="bg-danger text-white p-3">
                             <div class="space-20"></div>
                             <span>
-                                Deletion of your account was initiated, but not completed by clicking the link sent to you.
+                                @await LocaleManager.GetTranslation("Deletion of your account was initiated, but not completed by clicking the link sent to you.", PageNames.Layout, languageId)
                             </span>
                             <div class="space-20"></div>
                             <span>

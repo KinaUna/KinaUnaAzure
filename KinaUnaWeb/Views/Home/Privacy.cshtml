@@ -8,7 +8,7 @@
     ViewData["Title"] = await LocaleManager.GetTranslation("Privacy", PageNames.Layout, Model.LanguageId);
     Model.KinaUnaText = await LocaleManager.GetPageTextByTitle("__Privacy", "Privacy", Model.LanguageId);
 }
-<h3 class="title">@ViewData["Title"]</h3>
+<h2 class="title">@ViewData["Title"]</h2>
 <div>
     <H4>
         <img src="~/images/KinaUnaLogo_246x80.png"/>

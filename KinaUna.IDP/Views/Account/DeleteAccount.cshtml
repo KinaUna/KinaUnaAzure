@@ -1,18 +1,22 @@
-﻿@model KinaUna.IDP.Models.AccountViewModels.RegisterViewModel
+﻿@using KinaUna.Data
+@using KinaUna.IDP.Services
+@model KinaUna.IDP.Models.AccountViewModels.RegisterViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Confirm delete account";
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Confirm delete account", PageNames.Account, languageId);
 }
-<h4>@ViewData["Title"]</h4>
+<h2>@ViewData["Title"]</h2>
 <div class="row">
     <div class="col-md-10">
         <div class="row">
             <div class="col-12 col-md-6 col-lg-5">
-                A confirmation email has been sent to your email address: @Model.Email
+                @await LocaleManager.GetTranslation("A confirmation email has been sent to your email address:", PageNames.Account, languageId) @Model.Email
             </div>
         </div>
         <div class="row">
             <div class="col-12 col-md-6 col-lg-5">
-                Use the link in the email to confirm that you want to delete this account.
+                @await LocaleManager.GetTranslation("Use the link in the email to confirm that you want to delete this account.", PageNames.Account, languageId)
             </div>
         </div>
     </div>

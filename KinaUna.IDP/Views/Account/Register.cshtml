@@ -1,27 +1,34 @@
-﻿@model KinaUna.IDP.Models.AccountViewModels.RegisterViewModel
+﻿@using KinaUna.Data
+@using KinaUna.Data.Models
+@using KinaUna.IDP.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model KinaUna.IDP.Models.AccountViewModels.RegisterViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Register";
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Register", PageNames.Account, languageId);
+    KinaUnaText termsText = await LocaleManager.GetPageTextByTitle("__RegisterTerms", "Register", languageId);
 }
 <div class="container">
     <div class="row">
         <div class="col-md-10">
             <form asp-controller="Account" asp-action="Register" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
-                <a class="btn btn-info leavePage" style="float: right;" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]">&nbsp;Back to Login&nbsp;</a>
-                <h4>CREATE A NEW ACCOUNT</h4>
+                <a class="btn btn-info leavePage" style="float: right;" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]">&nbsp;@await LocaleManager.GetTranslation("Back to log in", PageNames.Account, languageId)&nbsp;</a>
+                <h4>@await LocaleManager.GetTranslation("Create a new account", PageNames.Account, languageId)</h4>
                 <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="form-group">
-                    <label>Email</label>
+                    <label>@await LocaleManager.GetTranslation("Email", PageNames.Account, languageId)</label>
                     <input asp-for="Email" class="form-control" />
                     <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
                 <div class="form-group col-sm-offset-6"></div>
                 <div class="form-group">
-                    <label>Password</label>
+                    <label>@await LocaleManager.GetTranslation("Password", PageNames.Account, languageId)</label>
                     <input asp-for="Password" class="form-control" />
                     <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label>Confirm pasword</label>
+                    <label>@await LocaleManager.GetTranslation("Confirm password", PageNames.Account, languageId)</label>
                     <input asp-for="ConfirmPassword" class="form-control" />
                     <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                 </div>
@@ -29,7 +36,7 @@
                 <div class="form-check">
                     <label class="form-check-label">
                         <input id="agreeCheck" name="agreeCheck" class="form-check-input form-control" type="checkbox" value="">
-                        I agree to the terms listed below.
+                        @await LocaleManager.GetTranslation("I agree to the terms listed below.", PageNames.Account, languageId)
                         <span class="form-check-sign">
                             <span class="check"></span>
                         </span>
@@ -37,35 +44,18 @@
                 </div>
                 <div class="form-group">
                     <input asp-for="Language" value="en" hidden="hidden" class="form-control" />
-                    <button id="registerBtn" type="submit" class="btn btn-success leavePage" disabled="disabled">&nbsp;Register&nbsp;</button>
+                    <button id="registerBtn" type="submit" class="btn btn-success leavePage" disabled="disabled">&nbsp;@ViewData["Title"]&nbsp;</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-Learn how we collect, process, and use data and cookies in our <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a>.
+@await LocaleManager.GetTranslation("Learn how we collect, process, and use data and cookies here:", PageNames.Account, languageId) <a asp-controller="Home" asp-action="Privacy">@await LocaleManager.GetTranslation("Privacy Policy", PageNames.Account, languageId)</a>.
 <div class="card">
     <div class="card-body" style="background: lightyellow;">
-        <div class="card-title">Terms</div>
+        <div class="card-title">@await LocaleManager.GetTranslation("Terms and conditions", PageNames.Account, languageId)</div>
         <div class="card-text">
-            <strong>Accounts</strong><br /><br />
-            When you create an account with KinaUna, you represent and warrant that you are above the age of 13, and that the information you provide us is accurate, complete, and current at all times.<br />
-            Inaccurate, incomplete, or obsolete information may result in the immediate termination of your account.<br />
-            You are responsible for maintaining the confidentiality of your account user name and password (collectively, “User Credentials”), including but not limited to the restriction of access to your computer and/or your account information.<br />
-            You agree to accept responsibility for any and all activities or actions that occur in connection with your User Credentials.<br />
-            You must notify us immediately upon becoming aware of any breach of the security or unauthorized use of your account or your User Credentials.<br />
-            <br /><br />
-            <strong>Content</strong><br /><br />
-            You are responsible for any and all user content that you post on KinaUna, including its legality, reliability, accuracy, and appropriateness.<br />
-            By posting content on or through KinaUna, you represent and warrant that:<br />
-            (1) you own such user content and/or that you have the right to use it, and<br />
-            (2) the posting of such user content on KinaUna does not violate any intellectual property or proprietary rights of any person or entity, including any privacy rights, publicity rights, copyrights, or any other contract rights.<br />
-            We reserve the right to terminate the account of anyone found to be infringing a third party’s intellectual property or other proprietary right.<br />
-            You retain any and all rights to any User Content you submit/post on KinaUna.<br />
-            We take no responsibility and assume no liability for user content you or any third party posts on KinaUna, or that is posted publicly as a result of your use of KinaUna.<br />
-            The extent to which your user content is available publicly is determined by the settings you choose as part of the submission of data. You are responsible for the ways in which your user content is published via KinaUna.<br />
-            KinaUna assumes no responsibility for how user content is shared by anyone not employed by KinaUna.
-            KinaUna has the right but not the obligation to monitor and edit all user content provided by you and any other user of KinaUna.<br />
+            @Html.Raw(@termsText.Text ?? "")
         </div>
     </div>
 </div>

@@ -1,13 +1,24 @@
-﻿<footer>
+﻿@using KinaUna.Data
+@using KinaUna.IDP.Services
+@model int
+@inject ILocaleManager LocaleManager
+<footer>
     <div class="container">
-        <br />
-        <br />
+        <br/>
+        <br/>
         <ul>
-            <li> <a class="leavePage" asp-controller="Home" asp-action="Privacy">Cookies & Privacy Policy</a></li>
-            <li><a class="leavePage" asp-controller="Home" asp-action="Terms">Terms & Conditions</a></li>
+            <li>
+                <a class="leavePage" href="https://web.kinauna.com/Home/About/">
+                    <i class="material-icons">info</i><span class="d-sm-inline d-md-inline d-lg-inline"> @await LocaleManager.GetTranslation("About", PageNames.Layout, Model)</span>
+                </a>
+            </li>
+            <li> <a class="leavePage" href="https://web.kinauna.com/Home/Privacy">@await LocaleManager.GetTranslation("Cookies & Privacy Policy", PageNames.Layout, Model)</a></li>
+            <li><a class="leavePage" href="https://web.kinauna.com/Home/Terms">@await LocaleManager.GetTranslation("Terms & Conditions", PageNames.Layout, Model)</a></li>
+            <li><a href="https://support.kinauna.com" target="_blank">@await LocaleManager.GetTranslation("Support", PageNames.Layout, Model)</a></li>
         </ul>
-    </div><br />
-</footer><br />
+    </div><br/>
+</footer>
+<br/>
 <footer>
     <div class="container" style="margin-bottom: 25px;">&copy; 2022 - KinaUna</div><br />
 </footer>

@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
-@inject ILocaleManager LocaleManager;
+@inject ILocaleManager LocaleManager
 <!DOCTYPE html>
 @{
     int languageId = 1;
@@ -116,7 +116,7 @@
             </div>
         </div>
         <br />
-<partial name="_FooterPartial" />
+@await Html.PartialAsync("_FooterPartial", languageId)
     <script src="~/js/site.js"></script>
 </body>
 </html>

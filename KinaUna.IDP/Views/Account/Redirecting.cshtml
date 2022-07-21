@@ -1,4 +1,11 @@
-﻿<br />
+﻿@using KinaUna.Data
+@using KinaUna.IDP.Services
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Change email", PageNames.Account, languageId);
+}
+<br />
 <br />
 <p style="width:80%;">
-    <div style="text-align: center;" ><span>Redirecting...</span></div></p>
+    <div style="text-align: center;" ><span>@await LocaleManager.GetTranslation("Redirecting...", PageNames.Account, languageId)</span></div></p>

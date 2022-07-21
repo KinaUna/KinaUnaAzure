@@ -1,37 +1,19 @@
-﻿@{
-    ViewData["Title"] = "Terms";
+﻿@using KinaUna.Data
+@using KinaUna.Data.Models
+@using KinaUna.IDP.Services
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Privacy", PageNames.Account, languageId);
+    KinaUnaText privacyText = await LocaleManager.GetPageTextByTitle("__Terms", "Terms", Model.LanguageId);
 }
-<h3 class="title">@ViewData["Title"]</h3>
-<div class="card">
-    <div class="card-body" style="background: lightyellow;">
-        <div class="card-title">Accounts</div>
-        <div class="card-text">
-            When you create an account with KinaUna and/or Pivoq, you represent and warrant that you are above the age of 16, and that the information you provide us is accurate, complete, and current at all times.<br />
-            Inaccurate, incomplete, or obsolete information may result in the immediate termination of your account.<br />
-            You are responsible for maintaining the confidentiality of your account user name and password (collectively, “User Credentials”), including but not limited to the restriction of access to your computer and/or your account information.<br />
-            You agree to accept responsibility for any and all activities or actions that occur in connection with your User Credentials.<br />
-            You must notify us immediately upon becoming aware of any breach of the security or unauthorized use of your account or your User Credentials.<br />
-            <br />
-
-        </div>
-    </div>
-</div>
-<br />
-<div class="card">
-    <div class="card-body" style="background: lightyellow;">
-        <div class="card-title">Content</div>
-        <div class="card-text">
-            You are responsible for any and all user content that you post on KinaUna and/or Pivoq, including its legality, reliability, accuracy, and appropriateness.<br />
-            By posting content on or through KinaUna and/or Pivoq, you represent and warrant that:<br />
-            (1) you own such user content and/or that you have the right to use it, and<br />
-            (2) the posting of such user content on KinaUna and/or Pivoq does not violate any intellectual property or proprietary rights of any person or entity, including any privacy rights, publicity rights, copyrights, or any other contract rights.<br />
-            We reserve the right to terminate the account of anyone found to be infringing a third party’s intellectual property or other proprietary right.<br />
-            You retain any and all rights to any User Content you submit/post on KinaUna and/or Pivoq.<br />
-            We take no responsibility and assume no liability for user content you or any third party posts on KinaUna and/or Pivoq, or that is posted publicly as a result of your use of KinaUna and/or Pivoq.<br />
-            The extent to which your user content is available publicly is determined by the settings you choose as part of the submission of data. You are responsible for the ways in which your user content is published via KinaUna.com.<br />
-            KinaUna and Pivoq assumes no responsibility for how user content is shared by anyone not employed by KinaUna or Pivoq.
-            KinaUna and Pivoq has the right, but not the obligation, to monitor and edit all user content provided by you and any other user of KinaUna and Pivoq.<br />
-            <br />
-        </div>
+<h2 class="title">@ViewData["Title"]</h2>
+<div>
+    <H4>
+        <img src="https://web.kinauna.com/images/KinaUnaLogo_246x80.png"/>
+    </H4>
+    <br/>
+    <div style="max-width: 600px;" id="impressumTextDiv">
+        @Html.Raw(privacyText.Text ?? "")
     </div>
 </div>

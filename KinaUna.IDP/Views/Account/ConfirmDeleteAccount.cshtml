@@ -1,18 +1,22 @@
-﻿@model KinaUna.IDP.Models.AccountViewModels.RegisterViewModel
+﻿@using KinaUna.Data
+@using KinaUna.IDP.Services
+@model KinaUna.IDP.Models.AccountViewModels.RegisterViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Confirm Delete Account";
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Confirm Delete Account", PageNames.Account, languageId);
 }
-<h4>@ViewData["Title"]</h4>
+<h2>@ViewData["Title"]</h2>
 <div class="row">
     <div class="col-md-10">
         <div class="row">
             <div class="col-12 col-md-6 col-lg-5">
-                Thank you for your confirmation.
+                @await LocaleManager.GetTranslation("Thank you for your confirmation.", PageNames.Account, languageId)
             </div>
         </div>
         <div class="row">
             <div class="col-12 col-md-6 col-lg-5">
-                Your account has now been removed and all your data will be completely removed in 30 days.
+                @await LocaleManager.GetTranslation("Your account has now been removed and all your data will be completely removed in 30 days.", PageNames.Account, languageId)
             </div>
         </div>
     </div>

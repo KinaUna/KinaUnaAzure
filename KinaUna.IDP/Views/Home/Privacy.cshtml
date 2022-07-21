@@ -1,89 +1,19 @@
 ﻿@using KinaUna.Data
+@using KinaUna.Data.Models
+@using KinaUna.IDP.Services
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Privacy";
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Privacy", PageNames.Account, languageId);
+    KinaUnaText privacyText = await LocaleManager.GetPageTextByTitle("__Privacy", "Privacy", Model.LanguageId);
 }
-<h3 class="title">@ViewData["Title"]</h3>
-<div class="card">
-    <div class="card-body" style="background: lightyellow;">
-        <div class="card-title">Data you provide</div>
-        <div class="card-text">
-            There are no third parties involved. Your account information and data you provide is not shared with any<br />
-            You own your data and only the people you give access to it can see it.<br />
-            The developers (currently just me, @Constants.OwnerName) can of course access the data, to ensure that no illegal content is hosted on this site, or for troubleshooting.<br />
-            <br />
-            You can delete your data at any time.<br /><br />
-        </div>
-    </div>
-</div>
-<div class="card">
-    <div class="card-body" style="background: lightyellow;">
-        <div class="card-title">Facebook, Google, or Microsoft Log-in</div>
-        <div class="card-text">
-            If you use an external log-in you give this web application access to your account info.<br />
-            This is a minumum requirement by these services and is not used for anything. <br />
-        </div>
-    </div>
-</div>
-<div class="card">
-    <div class="card-body" style="background: lightyellow;">
-        <div class="card-title">Cookies</div>
-        <div class="card-text">
-            Cookies are used to store login state, language settings, and check if the cookie banner has been accepted, nothing else.<br /><br />
-            Cookies used by KinaUna and Pivoq<br />
-            <table class="table bg-light" style="margin-left: 25px; margin-top: 25px;">
-                <thead class="thead-dark bg-dark text-white">
-                    <tr>
-                        <td style="padding: 15px;">Cookie (domain)</td>
-                        <td style="padding: 15px;">What is it used for?</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding: 15px;">.AspNetCore.Antiforgery. (@Constants.AppRootDomain)</td>
-                        <td style="padding: 15px;">This is used to validate form submissions, so when you submit data it verifies if it was actually sent by you.</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px;">.AspNetCore.Culture (@Constants.AppRootDomain)</td>
-                        <td style="padding: 15px;">This is used to save your language settings.</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px;">.AspNetCore.Identity.Application (@Constants.AppRootDomain)</td>
-                        <td style="padding: 15px;">This is used for login and account verification. </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px;">kinaUnaCompliancev100 (@Constants.AppRootDomain)</td>
-                        <td style="padding: 15px;">This is used to determine if we should show or hide the Cookie Consent notifcation.<br />If it doesn't exist the Cookie Consent notification will be shown.</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px;">__cfduid (@Constants.AppRootDomain)</td>
-                        <td style="padding: 15px;">The __cfduid cookie is used to identify individual clients behind a shared IP address and apply settings on a per-client basis.<br />It does not correspond to any user ID in the application, and does not store any personally identifiable information. </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px;">CONSENT (.gstatic.com)</td>
-                        <td style="padding: 15px;">
-                            @Constants.AppName uses Google fonts, this cookie is used by Google to optimize delivery of fonts.<br />It does not correspond to any user ID in the application, and does not store any personally identifiable information.<br />
-                            Read more here: <a href="https://developers.google.com/fonts/faq#what_does_using_the_google_fonts_api_mean_for_the_privacy_of_my_users">Google Fonts FAQ</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px;">NID (.gstatic.com)</td>
-                        <td style="padding: 15px;">
-                            As above, this cookie is used by Google to optimize delivery of fonts.<br />It does not correspond to any user ID in the application, and does not store any personally identifiable information.<br />
-                            Read more here: <a href="https://developers.google.com/fonts/faq#what_does_using_the_google_fonts_api_mean_for_the_privacy_of_my_users">Google Fonts FAQ</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-<div class="card">
-    <div class="card-body" style="background: lightyellow;">
-        <div class="card-title">Further Information</div>
-        <div class="card-text">
-            If you have questions or comments regarding the privacy policy, your data, or cookies used by KinaUna.com, send an email to <a href="mailto://@Constants.SupportEmail">@Constants.SupportEmail</a>.<br />
-            <br />
-            You can find the terms of use here: <a asp-controller="Home" asp-action="Terms">Terms</a><br />
-        </div>
+<h2 class="title">@ViewData["Title"]</h2>
+<div>
+    <H4>
+        <img src="https://web.kinauna.com/images/KinaUnaLogo_246x80.png"/>
+    </H4>
+    <br/>
+    <div style="max-width: 600px;" id="impressumTextDiv">
+        @Html.Raw(privacyText.Text ?? "")
     </div>
 </div>

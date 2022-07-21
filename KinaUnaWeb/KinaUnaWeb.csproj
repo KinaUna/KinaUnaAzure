@@ -84,377 +84,29 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Views\AccessManagement\AddAccess.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\AccessManagement\AddAccess.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\AccessManagement\DeleteAccess.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\AccessManagement\DeleteAccess.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\AccessManagement\EditAccess.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\AccessManagement\EditAccess.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Account\AccessDenied.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Account\AccessDenied.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Account\ChangeEmail.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Account\ChangeEmail.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Account\DisablePush.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Account\DisablePush.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Account\EnablePush.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Account\EnablePush.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Account\MyAccount.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Account\MyAccount.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\AddItem\AddLocation.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\AddItem\AddPicture.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\AddItem\AddVideo.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\AddItem\DeleteLocation.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\AddItem\DeletePicture.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\AddItem\EditLocation.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\AddItem\UploadPictures.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\AddItem\UploadVideo.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Calendar\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Calendar\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Calendar\ViewEvent.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Calendar\ViewEvent.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Contacts\ContactDetails.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Contacts\ContactDetails.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Contacts\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Contacts\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Family\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Family\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Friends\FriendDetails.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Friends\FriendDetails.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Friends\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Friends\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Home\About.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Home\About.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Home\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Home\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Home\LatestPostsPartial.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Home\LatestPostsPartial.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineContactPartial.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineContactPartial.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineEventPartial.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineEventPartial.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineFriendPartial.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineFriendPartial.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineLocationPartial.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineLocationPartial.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineMeasurementPartial.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineMeasurementPartial.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineNotePartial.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineNotePartial.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineSleepPartial.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineSleepPartial.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineVideoPartial.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineVideoPartial.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineVocabularyPartial.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\LatestPosts\TimeLineVocabularyPartial.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Locations\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Locations\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Locations\PhotoLocations.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Locations\PhotoLocations.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Measurements\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Measurements\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Notes\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Notes\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Notifications\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Notifications\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Notifications\ShowNotification.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Notifications\ShowNotification.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Notifications\ShowUpdatedNotification.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Notifications\ShowUpdatedNotification.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Pictures\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Pictures\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Pictures\Picture.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Pictures\Picture.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Progeny\AddProgeny.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Progeny\AddProgeny.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Progeny\DeleteProgeny.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Progeny\DeleteProgeny.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Progeny\EditProgeny.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Progeny\EditProgeny.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Shared\Error.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Shared\Error.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Shared\_FooterPartial.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Shared\_FooterPartial.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Shared\_Layout.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Shared\_Layout.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Skills\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Skills\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Sleep\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Sleep\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Sleep\SleepCalendar.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Sleep\SleepCalendar.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Timeline\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Timeline\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\Timeline\TimeLineContactPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Views\Timeline\TimeLineContactPartial.da.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Timeline\TimeLineContactPartial.de.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Timeline\TimeLineEventPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineEventPartial.da.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Timeline\TimeLineEventPartial.de.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\Timeline\TimeLineFriendPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Views\Timeline\TimeLineFriendPartial.da.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Timeline\TimeLineFriendPartial.de.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Timeline\TimeLineLocationPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineLocationPartial.da.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Timeline\TimeLineLocationPartial.de.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\Timeline\TimeLineMeasurementPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineMeasurementPartial.da.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Timeline\TimeLineMeasurementPartial.de.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\Timeline\TimeLineNotePartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Views\Timeline\TimeLineNotePartial.da.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Timeline\TimeLineNotePartial.de.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Timeline\TimeLinePhotoPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
@@ -468,14 +120,6 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineSleepPartial.da.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Timeline\TimeLineSleepPartial.de.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\Timeline\TimeLineVaccinationPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -484,49 +128,9 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineVideoPartial.da.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Timeline\TimeLineVideoPartial.de.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
     <Content Update="Views\Timeline\TimeLineVocabularyPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Views\Timeline\TimeLineVocabularyPartial.da.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Timeline\TimeLineVocabularyPartial.de.cshtml">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Vaccinations\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Vaccinations\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Videos\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Videos\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Videos\Video.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Videos\Video.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Vocabulary\Index.de.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Vocabulary\Index.da.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="wwwroot\css\amsify.suggestags.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

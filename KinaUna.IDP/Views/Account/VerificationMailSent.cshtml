@@ -1,20 +1,20 @@
-﻿@{
-    ViewData["Title"] = "Email verification required";
+﻿@using KinaUna.Data
+@using KinaUna.IDP.Services
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Email verification required", PageNames.Account, languageId);
 }
-
 <header>
-    <h4 class="title text-danger">@ViewData["Title"]</h4>
-    <p class="text-danger">Your email address has not been confirmed yet.</p>
+    <h2 class="title text-danger">@ViewData["Title"]</h2>
+    <p class="text-danger">@await LocaleManager.GetTranslation("Your email address has not been confirmed yet.", PageNames.Account, languageId)</p>
 </header>
 <div>
 
 </div>
 <div>
-    A new verification email has been sent. Check your inbox.<br />If it does not appear in the inbox within a couple of minutes, check your spam folder too.
+    @await LocaleManager.GetTranslation("A new verification email has been sent. Check your inbox.<br />If it does not appear in the inbox within a couple of minutes, check your spam folder too.", PageNames.Account, languageId)
 </div>
 <div>
-    Click the link in the email and try to log in again.
+    @await LocaleManager.GetTranslation("Click the link in the email and try to log in again.", PageNames.Account, languageId)
 </div>
-<script>
-    window.parent.postMessage("logOutKinaUna", '*');
-</script>

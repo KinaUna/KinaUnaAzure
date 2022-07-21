@@ -1,38 +1,41 @@
-﻿@model KinaUna.IDP.Models.AccountViewModels.LoginWith2faViewModel
+﻿@using KinaUna.Data
+@using KinaUna.IDP.Services
+@model KinaUna.IDP.Models.AccountViewModels.LoginWith2faViewModel
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Two-factor authentication";
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Two-factor authentication", PageNames.Account, languageId);
 }
-
 <h2>@ViewData["Title"]</h2>
 <hr/>
-<p>Your login is protected with an authenticator app. Enter your authenticator code below.</p>
+<p>@await LocaleManager.GetTranslation("Your login is protected with an authenticator app. Enter your authenticator code below.", PageNames.Account, languageId)</p>
 <div class="row">
     <div class="col-md-4">
         <form method="post" asp-route-returnUrl="@ViewData["ReturnUrl"]">
             <input asp-for="RememberMe" type="hidden"/>
             <div asp-validation-summary="All" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="TwoFactorCode"></label>
+                <label asp-for="TwoFactorCode">@await LocaleManager.GetTranslation("Two-factor code", PageNames.Account, languageId)</label>
                 <input asp-for="TwoFactorCode" class="form-control" autocomplete="off"/>
                 <span asp-validation-for="TwoFactorCode" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <div class="checkbox">
-                    <label asp-for="RememberMachine">
+                    <label asp-for="RememberMachine">@await LocaleManager.GetTranslation("Remember me", PageNames.Account, languageId)
                         <input asp-for="RememberMachine"/>
                         @Html.DisplayNameFor(m => m.RememberMachine)
                     </label>
                 </div>
             </div>
             <div class="form-group">
-                <button type="submit" class="btn btn-default">Log in</button>
+                <button type="submit" class="btn btn-default">@await LocaleManager.GetTranslation("Log in", PageNames.Account, languageId)</button>
             </div>
         </form>
     </div>
 </div>
 <p>
-    Don't have access to your authenticator device? You can
-    <a asp-action="LoginWithRecoveryCode" asp-route-returnUrl="@ViewData["ReturnUrl"]">log in with a recovery code</a>.
+    @await LocaleManager.GetTranslation("Don't have access to your authenticator device?", PageNames.Account, languageId)
+    <a asp-action="LoginWithRecoveryCode" asp-route-returnUrl="@ViewData["ReturnUrl"]">@await LocaleManager.GetTranslation("Log in with a recovery code", PageNames.Account, languageId)</a>.
 </p>
 
 @section Scripts {

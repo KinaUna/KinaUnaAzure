@@ -12,10 +12,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using IdentityServer4.EntityFramework.Entities;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
@@ -47,7 +49,7 @@ namespace KinaUna.IDP
                 options.Secure = CookieSecurePolicy.Always;
             });
 
-            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+            string migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
             services.AddDbContext<ProgenyDbContext>(options =>
                 options.UseSqlServer(Configuration["ProgenyDefaultConnection"],
@@ -86,7 +88,7 @@ namespace KinaUna.IDP
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
-            var credentials = new StorageCredentials(Constants.CloudBlobUsername, Configuration["BlobStorageKey"]);
+            StorageCredentials credentials = new StorageCredentials(Constants.CloudBlobUsername, Configuration["BlobStorageKey"]);
             CloudBlobClient blobClient = new CloudBlobClient(new Uri(Constants.CloudBlobBase), credentials);
             CloudBlobContainer container = blobClient.GetContainerReference("dataprotection");
 
@@ -117,11 +119,6 @@ namespace KinaUna.IDP
             services.AddTransient<IRedirectService, RedirectService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<ILocaleManager, LocaleManager>();
-
-            //services.AddLocalization(o =>
-            //{
-            //    o.ResourcesPath = "Resources";
-            //});
             
             X509Certificate2 cert = null;
             using (X509Store certStore = new X509Store(StoreName.My, StoreLocation.CurrentUser))
@@ -187,7 +184,6 @@ namespace KinaUna.IDP
             services.AddDistributedMemoryCache();
 
             services.AddControllersWithViews()
-                //.AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix)
                 .AddRazorRuntimeCompilation();
 
             services.AddIdentityServer(x =>
@@ -272,7 +268,7 @@ namespace KinaUna.IDP
                 app.UseDeveloperExceptionPage();
             }
             
-            var supportedCultures = new[]
+            CultureInfo[] supportedCultures = new[]
             {
                 new CultureInfo("en-US"),
                 new CultureInfo("da-DK"),
@@ -285,7 +281,7 @@ namespace KinaUna.IDP
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures
             };
-            var provider = new CookieRequestCultureProvider()
+            CookieRequestCultureProvider provider = new CookieRequestCultureProvider()
             {
                 CookieName = Constants.LanguageCookieName
             };
@@ -305,41 +301,41 @@ namespace KinaUna.IDP
 
         private void InitializeDatabase(IApplicationBuilder app, bool resetDb)
         {
-            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>()?.CreateScope())
+            using (IServiceScope serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>()?.CreateScope())
             {
                 if (serviceScope != null)
                 {
                     serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
 
-                    var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+                    ConfigurationDbContext context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
                     context.Database.Migrate();
 
-                    var usersContext = serviceScope.ServiceProvider.GetRequiredService<ProgenyDbContext>();
+                    ProgenyDbContext usersContext = serviceScope.ServiceProvider.GetRequiredService<ProgenyDbContext>();
 
                     usersContext.Database.Migrate();
 
                     if (resetDb)
                     {
-                        var contextClients = context.Clients.ToList();
-                        foreach (var clientToDelete in contextClients)
+                        List<Client> contextClients = context.Clients.ToList();
+                        foreach (Client clientToDelete in contextClients)
                         {
                             context.Clients.Remove(clientToDelete);
                         }
 
-                        var contextApis = context.ApiResources.ToList();
-                        foreach (var apiToDelete in contextApis)
+                        List<ApiResource> contextApis = context.ApiResources.ToList();
+                        foreach (ApiResource apiToDelete in contextApis)
                         {
                             context.ApiResources.Remove(apiToDelete);
                         }
 
-                        var contextIdentities = context.IdentityResources.ToList();
-                        foreach (var identityToDelete in contextIdentities)
+                        List<IdentityResource> contextIdentities = context.IdentityResources.ToList();
+                        foreach (IdentityResource identityToDelete in contextIdentities)
                         {
                             context.IdentityResources.Remove(identityToDelete);
                         }
 
-                        var contextApiScopes = context.ApiScopes.ToList();
-                        foreach (var apiScopeToDelete in contextApiScopes)
+                        List<ApiScope> contextApiScopes = context.ApiScopes.ToList();
+                        foreach (ApiScope apiScopeToDelete in contextApiScopes)
                         {
                             context.ApiScopes.Remove(apiScopeToDelete);
                         }
@@ -349,7 +345,7 @@ namespace KinaUna.IDP
 
                     if (!context.Clients.Any())
                     {
-                        foreach (var client in Config.GetClients(Configuration))
+                        foreach (IdentityServer4.Models.Client client in Config.GetClients(Configuration))
                         {
                             context.Clients.Add(client.ToEntity());
                         }
@@ -359,7 +355,7 @@ namespace KinaUna.IDP
 
                     if (!context.IdentityResources.Any())
                     {
-                        foreach (var resource in Config.GetIdentityResources())
+                        foreach (IdentityServer4.Models.IdentityResource resource in Config.GetIdentityResources())
                         {
                             context.IdentityResources.Add(resource.ToEntity());
                         }
@@ -370,7 +366,7 @@ namespace KinaUna.IDP
 
                     if (!context.ApiResources.Any())
                     {
-                        foreach (var resource in Config.GetApiResources(Configuration))
+                        foreach (IdentityServer4.Models.ApiResource resource in Config.GetApiResources(Configuration))
                         {
                             context.ApiResources.Add(resource.ToEntity());
                         }
@@ -380,7 +376,7 @@ namespace KinaUna.IDP
 
                     if (!context.ApiScopes.Any())
                     {
-                        foreach (var resource in Config.ApiScopes)
+                        foreach (IdentityServer4.Models.ApiScope resource in Config.ApiScopes)
                         {
                             context.ApiScopes.Add(resource.ToEntity());
                         }

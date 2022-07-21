@@ -5,8 +5,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using KinaUna.Data;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.IDP.Models.HomeViewModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -96,6 +98,7 @@ namespace KinaUna.IDP.Services
                 translationItem.LanguageId = languageId;
                 translationItem.Translation = word;
                 translationItem.Page = page;
+                translationItem.Word = word;
                 translationItem = await AddTranslation(translationItem);
                 translation = translationItem.Translation;
             }
@@ -146,9 +149,28 @@ namespace KinaUna.IDP.Services
                     await _cache.RemoveAsync("PageTranslations" + translation.Page + "&Lang" + language.Id);
                 }
             }
-
-
+            
             return addedTranslation;
+        }
+
+        public async Task<KinaUnaText> GetPageTextByTitle(string title, string page, int languageId)
+        {
+            KinaUnaText text = new KinaUnaText();
+            string pageTextsApiPath = "/api/PageTexts/ByTitle/" + title + "/" + page + "/" + languageId;
+            HttpResponseMessage pageTextsResponse = await _httpClient.GetAsync(pageTextsApiPath);
+
+            if (pageTextsResponse.IsSuccessStatusCode)
+            {
+                string pivoqTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
+                text = JsonConvert.DeserializeObject<KinaUnaText>(pivoqTextAsString);
+            }
+
+            return text;
+        }
+
+        public int GetLanguageId(HttpRequest request)
+        {
+            return request.GetLanguageIdFromCookie();
         }
     }
 }

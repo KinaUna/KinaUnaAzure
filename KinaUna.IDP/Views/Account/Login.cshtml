@@ -1,36 +1,42 @@
-﻿@using Microsoft.AspNetCore.Identity
+﻿@using KinaUna.Data
+@using Microsoft.AspNetCore.Identity
 @using KinaUna.Data.Models
+@using KinaUna.IDP.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model KinaUna.IDP.Models.AccountViewModels.LoginViewModel
 @inject SignInManager<ApplicationUser> SignInManager
+@inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = "Log in";
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Log in", PageNames.Account, languageId);
+    string signInWithString = await LocaleManager.GetTranslation("Sign in with", PageNames.Account, languageId);
 }
 <div class="row">
     <div class="col-md-10">
         <section>
             <form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
                 <input type="hidden" asp-for="ReturnUrl" />
-                <h4>Log in with a @ViewData["AccountType"] account.</h4>
+                <h4>@await LocaleManager.GetTranslation("Log in with a KinaUna account", PageNames.Account, languageId)</h4>
                 <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="form-group">
-                    <label asp-for="Email" class="control-label form-label"></label>
+                    <label asp-for="Email" class="control-label form-label">@await LocaleManager.GetTranslation("Email", PageNames.Account, languageId)</label>
                     <input asp-for="Email" class="form-control form-input form-input-center" />
                     <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="Password" class="control-label form-label"></label>
+                    <label asp-for="Password" class="control-label form-label">@await LocaleManager.GetTranslation("Password", PageNames.Account, languageId)</label>
                     <input asp-for="Password" class="form-control form-input form-input-center" />
                     <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <button type="submit" class="btn btn-success leavePage closeModal">&nbsp;LOG IN&nbsp;</button>
+                    <button type="submit" class="btn btn-success leavePage closeModal">&nbsp;@await LocaleManager.GetTranslation("Log in", PageNames.Account, languageId)&nbsp;</button>
                 </div>
                 <br /><br />
                 <p>
-                    <a class="leavePage" asp-action="ForgotPassword">Forgot your password?</a>
+                    <a class="leavePage" asp-action="ForgotPassword">@await LocaleManager.GetTranslation("Forgot your password?", PageNames.Account, languageId)</a>
                 </p>
                 <p>
-                    <a asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]" class="text leavePage">Register as a new user?</a>
+                    <a asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]" class="text leavePage">@await LocaleManager.GetTranslation("Register as a new user?", PageNames.Account, languageId)</a>
                 </p>
             </form>
         </section>
@@ -38,7 +44,7 @@
 </div>
 <div class="col-md-6 col-md-offset-2">
     <section>
-        <h4>Use another service to log in.</h4>
+        <h4>@await LocaleManager.GetTranslation("Use another service to log in.", PageNames.Account, languageId)</h4>
         <hr />
         @{
             var loginProviders = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -61,8 +67,8 @@
                                 if (provider.Name.ToLower().Contains("apple"))
                                 {
                                     <button type="submit" class="btn btn-social btn-fill btn-linkedin leavePage" style="background-color: #000000;"
-                                            name="provider" value="@provider.Name" title="Sign in with @provider.DisplayName">
-                                        <i class="fab fa-apple" style="font-size: 1.3rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Sign in with @provider.Name</span>
+                                            name="provider" value="@provider.Name" title="@signInWithString @provider.DisplayName">
+                                        <i class="fab fa-apple" style="font-size: 1.3rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">@signInWithString @provider.Name</span>
                                     </button>
                                 }
                                 else
@@ -70,8 +76,8 @@
                                     if (provider.Name.ToLower().Contains("facebook"))
                                     {
                                         <button type="submit" class="btn btn-social btn-fill btn-facebook leavePage" style="background-color: #4267B2;"
-                                                name="provider" value="@provider.Name" title="Sign in with @provider.DisplayName">
-                                            <i class="fab fa-facebook-square" style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Sign in with @provider.Name</span>
+                                                name="provider" value="@provider.Name" title="@signInWithString @provider.DisplayName">
+                                            <i class="fab fa-facebook-square" style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">@signInWithString @provider.Name</span>
                                         </button>
                                     }
                                     else
@@ -79,8 +85,8 @@
                                         if (provider.Name.ToLower().Contains("google"))
                                         {
                                             <button type="submit" class="btn btn-social btn-fill btn-google leavePage" style="background-color: #DB4437;"
-                                                    name="provider" value="@provider.Name" title="Sign in with @provider.DisplayName">
-                                                <i class="fab fa-google" style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Sign in with @provider.Name</span>
+                                                    name="provider" value="@provider.Name" title="@signInWithString @provider.DisplayName">
+                                                <i class="fab fa-google" style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">@signInWithString @provider.Name</span>
                                             </button>
                                         }
                                         else
@@ -88,15 +94,15 @@
                                             if (provider.Name.ToLower().Contains("microsoft"))
                                             {
                                                 <button type="submit" class="btn btn-social btn-fill btn-linkedin leavePage" style="background-color: #00A4EF;"
-                                                        name="provider" value="@provider.Name" title="Sign in with @provider.DisplayName">
-                                                    <i class="fab fa-microsoft" style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Sign in with @provider.Name</span>
+                                                        name="provider" value="@provider.Name" title="@signInWithString @provider.DisplayName">
+                                                    <i class="fab fa-microsoft" style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">@signInWithString @provider.Name</span>
                                                 </button>
                                             }
                                             else
                                             {
                                                 <button type="submit" class="btn btn-social btn-fill leavePage"
-                                                        name="provider" value="@provider.Name" title="Sign in with @provider.DisplayName">
-                                                    <i style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">Sign in with @provider.Name</span>
+                                                        name="provider" value="@provider.Name" title="@signInWithString @provider.DisplayName">
+                                                    <i style="font-size: 1.2rem;"></i><span style="margin: 10px; text-transform: none; font-size: 1.0rem;">@signInWithString @provider.Name</span>
                                                 </button>
                                             }
                                         }
@@ -110,6 +116,3 @@
         }
     </section>
 </div>
-<script>
-    window.parent.postMessage("openModal", '*'); // If the login failed, reopen the modal.
-</script>
