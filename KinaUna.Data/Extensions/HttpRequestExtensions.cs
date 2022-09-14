@@ -35,6 +35,8 @@ namespace KinaUna.Data.Extensions
             option.Expires = DateTime.Now.AddYears(1);
             option.Domain = ".kinauna.com";
             option.IsEssential = true;
+            option.Secure = true;
+            option.SameSite = SameSiteMode.Lax;
             #if DEBUG
             option.Domain = "";
             #endif
@@ -111,6 +113,8 @@ namespace KinaUna.Data.Extensions
             option.Expires = DateTime.Now.AddYears(1);
             option.Domain = ".kinauna.com";
             option.IsEssential = true;
+            option.Secure = true;
+            option.SameSite = SameSiteMode.Lax;
 #if DEBUG
             option.Domain = "";
 #endif

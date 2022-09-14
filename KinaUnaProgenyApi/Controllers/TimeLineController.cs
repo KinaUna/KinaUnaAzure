@@ -38,7 +38,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(id); 
-                timeLineList = timeLineList.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime < DateTime.UtcNow).ToList();
+                timeLineList = timeLineList.Where(t => userAccess != null && t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime < DateTime.UtcNow).ToList();
                 if (timeLineList.Any())
                 {
                     return Ok(timeLineList);
@@ -59,7 +59,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(id);
                 timeLineList = timeLineList
-                    .Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime).ToList();
+                    .Where(t => userAccess != null && t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime).ToList();
                 if (timeLineList.Any())
                 {
                     timeLineList.Reverse();
@@ -86,7 +86,7 @@ namespace KinaUnaProgenyApi.Controllers
                 List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(id);
                 
                 timeLineList = timeLineList
-                    .Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day).OrderBy(t => t.ProgenyTime).ToList();
+                    .Where(t => userAccess != null && t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day).OrderBy(t => t.ProgenyTime).ToList();
                 if (timeLineList.Any())
                 {
                     timeLineList.Reverse();
@@ -109,7 +109,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
+            if ((userAccess != null && userAccess.AccessLevel <= result.AccessLevel) || result.ProgenyId == Constants.DefaultChildId)
             {
                 return Ok(result);
             }
@@ -125,7 +125,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
+            if ((userAccess != null && userAccess.AccessLevel <= result.AccessLevel) || id == Constants.DefaultChildId)
             {
                 return Ok(result);
             }
@@ -253,10 +253,8 @@ namespace KinaUnaProgenyApi.Controllers
                 if (userAccess != null)
                 {
                     // Check if the correct access level is used. If not use the one retrieved from database.
-                    if (accessLevel < userAccess.AccessLevel)
-                    {
-                        accessLevel = userAccess.AccessLevel;
-                    }
+                    accessLevel = userAccess.AccessLevel;
+                    
                     DateTime startDate;
                     if (year != 0 && month != 0 && day != 0)
                     {

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -53,6 +54,7 @@ namespace KinaUnaMediaApi.Services
 
         public async Task<Picture> AddPicture(Picture picture)
         {
+            picture.RemoveNullStrings();
             await _mediaContext.PicturesDb.AddAsync(picture);
             await _mediaContext.SaveChangesAsync();
 
@@ -78,6 +80,7 @@ namespace KinaUnaMediaApi.Services
 
         public async Task<Picture> UpdatePicture(Picture picture)
         {
+            picture.RemoveNullStrings();
             _mediaContext.PicturesDb.Update(picture);
             await _mediaContext.SaveChangesAsync();
             return picture;
@@ -120,6 +123,16 @@ namespace KinaUnaMediaApi.Services
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId, JsonConvert.SerializeObject(picturesList), _cacheOptionsSliding);
             
             return picturesList;
+        }
+
+        public async Task UpdateAllPictures()
+        {
+            List<Picture> allPicturesList = await _mediaContext.PicturesDb.ToListAsync();
+            foreach (Picture picture in allPicturesList)
+            {
+                picture.RemoveNullStrings();
+                await UpdatePicture(picture);
+            }
         }
     }
 }

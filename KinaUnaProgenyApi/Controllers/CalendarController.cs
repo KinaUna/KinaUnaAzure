@@ -67,7 +67,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (userAccess != null || id == Constants.DefaultChildId && startParsed && endParsed)
             {
                 List<CalendarItem> calendarList = await _calendarService.GetCalendarList(id);
-                calendarList = calendarList.Where(c => c.AccessLevel >= accessLevel && c.EndTime > startDate && c.StartTime < endDate ).ToList();
+                calendarList = calendarList.Where(c => userAccess != null && c.AccessLevel >= userAccess.AccessLevel && c.EndTime > startDate && c.StartTime < endDate ).ToList();
                 if (calendarList.Any())
                 {
                     return Ok(calendarList);
@@ -86,7 +86,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-                if (userAccess != null || id == Constants.DefaultChildId)
+                if ((userAccess != null && userAccess.AccessLevel <= result.AccessLevel) || id == Constants.DefaultChildId)
                 {
                     return Ok(result);
                 }
@@ -279,9 +279,9 @@ namespace KinaUnaProgenyApi.Controllers
             if (userAccess != null || progenyId == Constants.DefaultChildId)
             {
                 List<CalendarItem> model = await _calendarService.GetCalendarList(progenyId);
-                model = model.Where(c => c.EndTime > DateTime.UtcNow && c.AccessLevel >= accessLevel).ToList();
+                model = model.Where(c => userAccess != null && c.EndTime > DateTime.UtcNow && c.AccessLevel >= userAccess.AccessLevel).ToList();
                 model = model.OrderBy(e => e.StartTime).ToList();
-                model = model.Take(5).ToList();
+                model = model.Take(8).ToList();
 
                 return Ok(model);
             }
@@ -296,7 +296,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if (userAccess != null)
+            if (userAccess != null && userAccess.AccessLevel <= result.AccessLevel)
             {
                 return Ok(result);
             }
@@ -313,7 +313,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (userAccess != null)
             {
                 List<CalendarItem> calendarList = await _calendarService.GetCalendarList(id);
-                calendarList = calendarList.Where(c => c.AccessLevel >= accessLevel).ToList();
+                calendarList = calendarList.Where(c => c.AccessLevel >= userAccess.AccessLevel).ToList();
                 if (calendarList.Any())
                 {
                     return Ok(calendarList);

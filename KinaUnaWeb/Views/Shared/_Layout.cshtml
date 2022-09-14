@@ -94,7 +94,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/js/bootstrap-select.min.js"></script>
     @*<script src="~/lib/material-kit-205/js/material-kit.min.js"></script>*@
     <script src="~/js/waitMe.min.js"></script>
-    @RenderSection("Scripts", required: false)
+    @await RenderSectionAsync("Scripts", required: false)
     <meta name="theme-color" content="#3a2051" />
     <link rel="manifest" href="~/manifest.json">
     <script>
@@ -172,69 +172,58 @@
 <div id="topLanguageDiv" class="kinauna_purple_bg">
 	<div class="container">
 		<div class="row">
-			<div class="ml-3 mt-0 mb-1 mr-sm-1 mr-md-2 mr-lg-4 w-100">
-				@*<a href="#" class="small mr-3"><span class="icon-question-circle-o mr-2"></span> <span class="d-none d-lg-inline-block">@await _localeManager.GetTranslation("Help", PageNames.Layout, languageId)</span></a>*@
-
+			<div class="col ml-3 mt-0 mb-1 w-100">
 				@await Html.PartialAsync("_LanguagePartial", await LocaleManager.GetLanguageModel(languageId))
 			</div>
 		</div>
 	</div>
 </div>
-<nav class="navbar navbar-expand-lg bg-primary sticky-top" id="navMain">
-    <div class="container" style="max-height: 50px;">
-        @if (User.Identity != null && User.Identity.IsAuthenticated)
-        {
-            <a asp-area="" asp-controller="Home" asp-action="Index" asp-route-childId="@userinfo.ViewChild" class="navbar-brand leavePage" aria-label="Home">
-                <img src="/images/Square44x44Logo.scale-100.png" style="max-height: 44px; margin-top: -6px; background: white; border-radius: 20px; padding: 3px;" />
-            </a>
-        }
-        else
-        {
-            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage" aria-label="Home">
-                <img src="/images/Square44x44Logo.scale-100_bw.png" style="max-height: 44px; margin-top: -6px; background: white; border-radius: 20px; padding: 3px;" />
-            </a>
-        }
-        <div class="navbar-nav nav-item">
-            <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" href="https://@Context.Request.Host@Context.Request.GetEncodedPathAndQuery()" aria-label="Refresh">
-                <i class="material-icons icon_medium" style="top: 3px;" aria-hidden="true">refresh</i>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top" id="navMain">
+<div id="topMainMenuContainer" class="container">
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <a asp-area="" asp-controller="Home" asp-action="Index" asp-route-childId="@userinfo.ViewChild" class="navbar-brand leavePage" aria-label="Home">
+            <img src="/images/Square44x44Logo.scale-100.png" class="kinauna-logo"/>
+        </a>
+    }
+    else
+    {
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage" aria-label="Home">
+            <img src="/images/Square44x44Logo.scale-100_bw.png" class="kinauna-logo"/>
+        </a>
+    }
+
+	@if (canUserAddItems)
+    {
+        <div class="navbar-nav nav-item ml-3 ml-lg-1">
+            <a class="nav-link kinauna_yellow_text leavePage" style="margin-left: 60px; margin-right: 12px; margin-top: 4px" asp-area="" asp-controller="AddItem" asp-action="Index" aria-label="Add item">
+                <i class="material-icons kinauna_yellow_text" aria-hidden="true">add</i>
             </a>
         </div>
-        @if (canUserAddItems)
+    }
+    @{
+        if (child != null)
         {
-            <div class="navbar-nav nav-item">
-                <a class="nav-link leavePage" style="margin-left: 12px; margin-right: 12px;" asp-area="" asp-controller="AddItem" asp-action="Index" aria-label="Add item">
-                    <i class="material-icons icon_medium" style="top: 3px;" aria-hidden="true">add</i>
-                </a>
-            </div>
-        }
-        @{
-            if (child != null)
+            string childprofilePic = "<i class=\"material-icons kinauna_yellow_text\" style=\"color: #8bda8b;\">child_care</i>";
+            if (!string.IsNullOrWhiteSpace(child.PictureLink))
             {
-                string childprofilePic = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
-                if (!String.IsNullOrWhiteSpace(child.PictureLink))
-                {
-                    string picLink = ChildManager.GetImageUrl(child.PictureLink, "progeny");
-                    childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 40px; margin-top: -3px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px;\" /img> ";
-                }
-                @Html.Raw(childprofilePic)
+                string picLink = ChildManager.GetImageUrl(child.PictureLink, "progeny");
+                childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 40px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 40px;\" /img> ";
             }
+                @Html.Raw(childprofilePic)
         }
-
-        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarNavSegments" aria-controls="navbarNavSegments" aria-expanded="false" aria-label="Toggle navigation">
-            <div id="navbarTogglerButton">
-                <span class="navbar-toggler-icon"></span>
-                <span class="navbar-toggler-icon"></span>
-                <span class="navbar-toggler-icon"></span>
-                <span id="togglerNotificationsCounter" class="badge badge-danger" style="position: absolute; display: none; font-size: 9px; right: 22px; top: 10px;">0</span>
-            </div>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavSegments">
-            <div class="navbar-nav mr-auto mt-2 mt-lg-0">
-                @if (childList.Count > 1 && child != null)
+    }
+    <span id="togglerNotificationsCounter" class="badge badge-danger ml-auto mr-2 d-block d-lg-none" style="position: relative; display: none; font-size: 12px;">0</span>
+    <button id="navMainMenuButton" class="navbar-toggler d-block d-lg-none" style="height: 52px; border-color: transparent; outline: none" type="button" data-toggle="collapse" data-target="#navbarMainContent" aria-controls="navbarMainContent" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon kinauna_yellow_text"></span>
+	</button>
+        <div class="collapse navbar-collapse mt-5 mt-lg-1" id="navbarMainContent" style="min-height: 52px;">
+			<ul class="navbar-nav ml-1 ml-lg-2 w-100">
+				@if (childList.Count > 1 && child != null)
                 {
-                    <div class="navbar-nav nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" style="color: #8bda8b;">
-                            @child.NickName <span class="caret"></span>
+                    <li class="nav-item dropdown mb-2 mb-lg-0">
+                        <a class="nav-link dropdown-toggle kinauna_yellow_text" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                            <i class="material-icons icon_medium ml-2 mr-1">face</i><span class="d-sm-inline d-md-inline d-lg-inline"> @child.NickName </span>
                         </a>
                         <div class="dropdown-menu">
                             @foreach (Progeny prog in childList)
@@ -243,13 +232,13 @@
                                 {
                                     <div class="dropdown-item">
                                         <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-userId="@userinfo.UserId" asp-route-userEmail="@userinfo.UserEmail" asp-route-returnUrl="@returnUrl" method="post">
-                                            <button type="submit" class="btn btn-link text-white text-left btn-block leavePage">
+                                            <button type="submit" class="btn btn-link btn-block text-white text-left leavePage">
                                                 @{
                                                     string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
-                                                    if (!String.IsNullOrWhiteSpace(prog.PictureLink))
+                                                    if (!string.IsNullOrWhiteSpace(prog.PictureLink))
                                                     {
                                                         string picLink2 = ChildManager.GetImageUrl(prog.PictureLink, "progeny");
-                                                        profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px;\" /img> ";
+                                                        profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px;\" /img> ";
                                                     }
                                                 }
                                                 @Html.Raw(profilePic2) @prog.NickName
@@ -259,11 +248,11 @@
                                 }
                             }
                         </div>
-                    </div>
+                    </li>
                 }
-                <div class="navbar-nav nav-item dropdown">
+				<li class="nav-item dropdown mb-2 mb-lg-0">
                     <a class="dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                        <i class="material-icons icon_medium">favorite</i><span class="d-sm-inline d-md-inline d-lg-inline"> @await LocaleManager.GetTranslation("Menu", PageNames.Layout, languageId) </span>
+                        <i class="material-icons icon_medium ml-2 mr-1">favorite</i><span class="d-sm-inline d-md-inline d-lg-inline"> @await LocaleManager.GetTranslation("Menu", PageNames.Layout, languageId) </span>
                     </a>
                     <div class="dropdown-menu">
                         <div class="dropdown-item">
@@ -355,12 +344,12 @@
                             </form>
                         </div>
                     </div>
-                </div>
+                </li>
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <div id="notificationsIcon" class="nav-item dropdown">
+                    <li id="notificationsIcon" class="nav-item dropdown mb-2 mb-lg-0">
                         <a id="notificationsButton" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                            <i id="notificationBellIcon" class="material-icons icon_medium">notifications</i> @await LocaleManager.GetTranslation("Notifications", PageNames.Layout, languageId) <span id="notificationsCounter" class="badge badge-pill badge-secondary"></span> <span class="caret"></span>
+                            <i id="notificationBellIcon" class="material-icons icon_medium ml-2 mr-1">notifications</i> @await LocaleManager.GetTranslation("Notifications", PageNames.Layout, languageId) <span id="notificationsCounter" class="badge badge-pill badge-secondary"></span> <span class="caret"></span>
                         </a>
                         <div id="notificationsMenu" class="dropdown-menu">
                             <div id="notificationsList" class="notifications-List"></div>
@@ -370,24 +359,22 @@
                                 </form>
                             </div>
                         </div>
-                    </div>
+                    </li>
                 }
-            </div>
             @if (User.Identity.IsAuthenticated)
             {
-                <div class="navbar-nav">
-                    <div class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                <li class="nav-item dropdown ml-lg-auto">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                             @{
-                                string userprofilePic = "<i class=\"material-icons\" >person</i>";
+                                string userprofilePic = "<i class=\"material-icons ml-2 mr-1\" >person</i>";
                                 if (!String.IsNullOrWhiteSpace(userinfo.ProfilePicture))
                                 {
                                     string picLink = ChildManager.GetImageUrl(userinfo.ProfilePicture, "profiles");
-                                    userprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 28px; margin-top: -2px; margin-right: 4px; border-radius: 10px;\" /img> ";
+                                    userprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 32px; margin-top: -2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;\" /img> ";
                                 }
                             }
                             @Html.Raw(userprofilePic) @usrName
-                        </a>
+                    </a>
                         <div class="dropdown-menu">
                             @if (User.Identity.IsAuthenticated)
                             {
@@ -424,21 +411,19 @@
                                 </form>
                             </div>
                         </div>
-                    </div>
-                </div>
+                </li>
             }
             else
             {
-                <div class="navbar-nav">
-                    <div class="nav-item">
-                        <form id="loginForm" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post" >
-                            <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block" ><i class="material-icons">exit_to_app</i> @await LocaleManager.GetTranslation("Log in or register", PageNames.Layout, languageId)</button>
-                        </form>
-                    </div>
-                </div>
+                <li class="nav-item ml-lg-auto">
+                    <form id="loginForm" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post">
+                        <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block"><i class="material-icons ml-2 mr-1">exit_to_app</i> @await LocaleManager.GetTranslation("Log in or register", PageNames.Layout, languageId)</button>
+                    </form>
+                </li>
             }
-        </div>
-    </div>
+			</ul>
+		</div>
+	</div>
 </nav>
 <div class="container body-content">
     <div class="main main-raised" style="margin-top: 10px; margin-left: 5px; margin-right: 5px; padding: 5px; padding-left: 10px; padding-top: 10px;">

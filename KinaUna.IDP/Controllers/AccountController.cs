@@ -97,6 +97,10 @@ namespace KinaUna.IDP.Controllers
             }
             else
             {
+                if (context != null && context.Client.ClientId.ToLower().Contains("maui"))
+                {
+                    ViewData["AccountType"] = "KinaUna MAUI";
+                }
                 ViewData["AccountType"] = "KinaUna + Pivoq";
             }
 
@@ -110,6 +114,13 @@ namespace KinaUna.IDP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                // delete authentication cookie
+                await HttpContext.SignOutAsync();
+                await _signInManager.SignOutAsync();
+            }
+
             model.RememberMe = true;
             if (ModelState.IsValid)
             {
@@ -167,6 +178,7 @@ namespace KinaUna.IDP.Controllers
         public async Task<IActionResult> Logout(string logoutId)
         {
             LogoutRequest context = await _interaction.GetLogoutContextAsync(logoutId);
+            
             if (User.Identity != null && User.Identity.IsAuthenticated == false)
             {
                 // if the user is not authenticated, then just show logged out page
@@ -200,14 +212,25 @@ namespace KinaUna.IDP.Controllers
                     }
                     else
                     {
-                        logoutRedirectUri = _configuration.GetValue<string>("WebServer");
+                        if (context != null && context.ClientId.ToLower().Contains("maui"))
+                        {
+                            logoutRedirectUri = "kinaunamaui://callback";
+                        }
+                        else
+                        { 
+                            logoutRedirectUri = _configuration.GetValue<string>("WebServer");
+                        }
+                        
                     }
                    
                 }
                 return Redirect(logoutRedirectUri);
             }
 
-            //Test for Xamarin. 
+            if (context != null && context.ClientId != null && context.ClientId.ToLower().Contains("kinaunamaui"))
+            {
+                return await Logout(new LogoutViewModel { LogoutId = logoutId });
+            }
             
             if (context?.ShowSignoutPrompt == false)
             {
@@ -228,8 +251,16 @@ namespace KinaUna.IDP.Controllers
             }
             else
             {
-                ViewData["AccountType"] = "KinaUna";
+                if (context != null && context.ClientId != null && context.ClientId.ToLower().Contains("kinaunaweb"))
+                {
+                    ViewData["AccountType"] = "KinaUna";
+                }
+                else
+                {
+                    ViewData["AccountType"] = "KinaUna MAUI";
+                }
             }
+            
             return View(vm);
         }
 
@@ -299,7 +330,14 @@ namespace KinaUna.IDP.Controllers
                     }
                     else
                     {
-                        logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServer");
+                        if (logout.ClientId != null && logout.ClientId.ToLower().Contains("maui"))
+                        {
+                            logout.PostLogoutRedirectUri = "kinaunamaui://callback";
+                        }
+                        else
+                        {
+                            logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServer");
+                        }
                     }
                    
                 }

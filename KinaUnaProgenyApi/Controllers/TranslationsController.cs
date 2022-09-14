@@ -42,6 +42,33 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("[action]/{word}/{page}/{languageId}")]
+        public async Task<IActionResult> GetTranslationByWord(string word, string page, int languageId)
+        {
+            TextTranslation translation = await _textTranslationService.GetTranslationByWord(word, page, languageId);
+            if (translation == null)
+            {
+                TextTranslation translationItem = new TextTranslation();
+                translationItem.LanguageId = languageId;
+                translationItem.Word = word;
+                translationItem.Page = page;
+                translationItem.Translation = word;
+
+                string userId = User.GetUserId();
+
+                if (await _userInfoService.IsAdminUserId(userId))
+                {
+                    translation = await _textTranslationService.AddTranslation(translationItem);
+                }
+                else
+                {
+                    translation = translationItem;
+                }
+            }
+            return Ok(translation);
+        }
+
+        [AllowAnonymous]
         [HttpGet]
         [Route("[action]/{languageId}/{page}")]
         public async Task<IActionResult> PageTranslations(int languageId, string page)

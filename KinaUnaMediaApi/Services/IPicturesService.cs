@@ -15,5 +15,6 @@ namespace KinaUnaMediaApi.Services
         Task RemovePicture(int pictureId, int progenyId);
         Task<List<Picture>> GetPicturesList(int progenyId);
         Task<List<Picture>> SetPicturesList(int progenyId);
+        Task UpdateAllPictures();
     }
 }

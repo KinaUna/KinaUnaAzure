@@ -4,7 +4,7 @@ let notificationsMenuDiv = document.getElementById('notificationsMenu');
 let notificationsList = document.getElementById('notificationsList');
 let notifationsCounter = document.getElementById('notificationsCounter');
 let notificationsIcon = document.getElementById('notificationBellIcon');
-let menuToggler = document.getElementById('navbarTogglerButton');
+let menuToggler = document.getElementById('navMainMenuButton');
 let togglerCounter = document.getElementById('togglerNotificationsCounter');
 let navMain = document.getElementById('navMain');
 

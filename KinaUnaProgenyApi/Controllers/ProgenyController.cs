@@ -143,7 +143,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Progeny value)
         {
-            Progeny progeny = await _progenyService.GetProgeny(id); // _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == id);
+            Progeny progeny = await _progenyService.GetProgeny(id);
 
             if (progeny == null)
             {

@@ -344,6 +344,30 @@ namespace KinaUna.IDP
                 },
                 new Client
                 {
+                    ClientName = "KinaUnaMaui",
+                    ClientId = "kinaunamaui",
+                    AllowedGrantTypes = GrantTypes.Code,
+                    RedirectUris = { "kinaunamaui://callback" },
+                    PostLogoutRedirectUris = { "kinaunamaui://callback" },
+                    RequireClientSecret = false,
+                    RequireConsent = false,
+                    RequirePkce = true,
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Email,
+                        Constants.ProgenyApiName,
+                        Constants.MediaApiName
+                    },
+                    AccessTokenLifetime = 2592000,
+                    AllowOfflineAccess = true,
+                    AlwaysIncludeUserClaimsInIdToken = false,
+                    RefreshTokenExpiration = TokenExpiration.Sliding,
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    RefreshTokenUsage = TokenUsage.ReUse
+                },
+                new Client
+                {
                     ClientName = "KinaUnaSupport",
                     ClientId = "kinaunasupport",
                     ClientUri = supportServerUrl,
@@ -361,6 +385,7 @@ namespace KinaUna.IDP
                     //AbsoluteRefreshTokenLifetime = ...
                     UpdateAccessTokenClaimsOnRefresh = true,
                     AllowedCorsOrigins = corsList,
+                    AlwaysSendClientClaims = true,
                     RedirectUris = new List<string>()
                     {
                         supportServerUrl + "/signin-oidc"

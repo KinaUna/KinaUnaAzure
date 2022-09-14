@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Storage.Auth;
 using Microsoft.Azure.Storage.Blob;
+using System.Threading.Tasks;
 
 namespace KinaUna.IDP
 {
@@ -226,25 +227,49 @@ namespace KinaUna.IDP
             services.AddLocalApiAuthentication();
 
             services.AddAuthentication(o => { o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme; })
-                .AddCookie()
+                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+                {
+                    options.Cookie.Name = "KinaUnaCookie";
+                    options.SlidingExpiration = true;
+                    options.Events.OnSigningIn = (context) =>
+                    {
+                        context.CookieOptions.Expires = DateTimeOffset.UtcNow.AddDays(30);
+                        return Task.CompletedTask;
+                    };
+
+                    if (!_env.IsDevelopment())
+                    {
+                        options.Cookie.Domain = "web." + Constants.AppRootDomain;
+
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
+                        {
+                            options.Cookie.Domain = ".kinauna.io";
+                        }
+                    }
+                })
                 .AddApple(options =>
-            {
-                options.ClientId = Configuration["AppleClientId"];
-                options.KeyId = Configuration["AppleKeyId"];
-                options.TeamId = Configuration["AppleTeamId"];
-                options.UsePrivateKey((keyId) => _env.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
-                options.SaveTokens = true;
-            }).AddGoogle("Google", "Google", options =>
-            {
-                options.ClientId = Configuration["GoogleClientId"];
-                options.ClientSecret = Configuration["GoogleClientSecret"];
-                options.SaveTokens = true;
-            }).AddMicrosoftAccount("Microsoft", "Microsoft", microsoftOptions =>
-            {
-                microsoftOptions.ClientId = Configuration["MicrosoftClientId"];
-                microsoftOptions.ClientSecret = Configuration["MicrosoftClientSecret"];
-                microsoftOptions.SaveTokens = true;
-            });
+                {
+                    options.ClientId = Configuration["AppleClientId"]; 
+                    options.KeyId = Configuration["AppleKeyId"];
+                    options.TeamId = Configuration["AppleTeamId"];
+                    options.UsePrivateKey((keyId) => _env.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
+                    options.SaveTokens = true;
+                })
+                .AddGoogle("Google", "Google", options =>
+                {
+                    options.ClientId = Configuration["GoogleClientId"];
+                    options.ClientSecret = Configuration["GoogleClientSecret"];
+                    options.SaveTokens = true;
+                })
+                .AddMicrosoftAccount("Microsoft", "Microsoft", microsoftOptions =>
+                {
+                    microsoftOptions.ClientId = Configuration["MicrosoftClientId"];
+                    microsoftOptions.ClientSecret = Configuration["MicrosoftClientSecret"];
+                    microsoftOptions.SaveTokens = true;
+                });
 
             //    .AddFacebook("Facebook", "Facebook", options =>
             //{

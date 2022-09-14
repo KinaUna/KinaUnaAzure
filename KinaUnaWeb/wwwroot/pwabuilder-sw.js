@@ -136,7 +136,6 @@ function networkFirstFetch(event) {
     event.respondWith(
         fetch(event.request)
             .then(function (response) {
-                // If request was success, add or update it in the cache
                 event.waitUntil(updateCache(event.request, response.clone()));
                 return response;
             })
@@ -148,13 +147,9 @@ function networkFirstFetch(event) {
 }
 
 function fromCache(request) {
-	// Check to see if you have it in the cache
-	// Return response
-	// If not in the cache, then return the offline page
 	return caches.open(CACHE).then(function (cache) {
 		return cache.match(request).then(function (matching) {
 			if (!matching || matching.status === 404) {
-				// The following validates that the request was for a navigation to a new document
 				if (request.destination !== "document" || request.mode !== "navigate") {
 					return Promise.reject("no-match");
 				}
@@ -168,7 +163,7 @@ function fromCache(request) {
 }
 
 function updateCache(request, response) {
-    if (!(request.url.indexOf('http') === 0)) return;
+    if (!(request.url.indexOf('http') === 0)) return null;
     if (!comparePaths(request.url, avoidCachingPaths)) {
         return caches.open(CACHE).then(function (cache) {
             return cache.put(request, response);
@@ -188,14 +183,9 @@ self.addEventListener('push', function (event) {
     if (event.data) {
         data = event.data.text();
     }
-
-    console.log('Notification Recieved:');
-    console.log('Data: ' + data);
-    //console.log('Data.title: ' + data.title);
-    //console.log('Data.message: ' + data.message);
-    //console.log('Data.link: ' + data.link);
+    
     const notification = JSON.parse(data);
-    const title = notification.Title; // data.title
+    const title = notification.Title;
     const message = notification.Message;
     const link = notification.Link;
     const icon = "https://web.kinauna.com/images/kinaunalogo192x192_rounded.png";

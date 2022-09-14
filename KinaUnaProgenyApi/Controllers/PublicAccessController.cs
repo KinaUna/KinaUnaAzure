@@ -552,7 +552,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(Constants.DefaultChildId); 
             timeLineList = timeLineList
-                .Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day).OrderBy(t => t.ProgenyTime).ToList();
+                .Where(t => t.AccessLevel >= 5 && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day).OrderBy(t => t.ProgenyTime).ToList();
             if (timeLineList.Any())
             {
                 timeLineList.Reverse();

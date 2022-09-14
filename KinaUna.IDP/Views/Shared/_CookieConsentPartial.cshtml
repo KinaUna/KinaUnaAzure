@@ -24,7 +24,7 @@
 			<div class="col-12">
 				<div id="cookieConsent" class="alert alert-info alert-dismissible fade show" role="alert">
 					<div class="row">
-						<div class="col-8">
+						<div class="col-8 col-sm-12 col-md-12">
 							<div class="space-20"></div>
 							@await LocaleManager.GetTranslation("Cookies are used to store login state, language settings, and check if the cookie policy has been accepted, nothing else.", PageNames.Layout, Model)
 							<div class="space-20"></div>
@@ -32,7 +32,7 @@
 							<span class="ml-3 mr-3">-</span>
 							<a asp-page="/Home/Privacy">@await LocaleManager.GetTranslation("Privacy", PageNames.Layout, Model)</a>
 						</div>
-						<div class="col-4">
+						<div class="col-4 col-sm-12 col-md-12">
 							<div class="row">
 								<div class="col">
 									<button type="button" class="btn btn-success" data-dismiss="alert" aria-label="Close" id="acceptEssentialCookies">

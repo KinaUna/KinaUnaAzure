@@ -16,6 +16,7 @@ namespace KinaUnaProgenyApi.Controllers
     {
         private readonly ILanguageService _languagesService;
         private readonly IUserInfoService _userInfoService;
+
         public LanguagesController(ILanguageService languagesService, IUserInfoService userInfoService)
         {
             _languagesService = languagesService;
