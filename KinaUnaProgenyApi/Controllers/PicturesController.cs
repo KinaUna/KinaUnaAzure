@@ -1,21 +1,21 @@
-﻿using ImageMagick;
-using KinaUnaMediaApi.Models.ViewModels;
-using KinaUnaMediaApi.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ImageMagick;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUnaProgenyApi.Models.ViewModels;
+using KinaUnaProgenyApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
-namespace KinaUnaMediaApi.Controllers
+namespace KinaUnaProgenyApi.Controllers
 {
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]

@@ -29,9 +29,9 @@ namespace KinaUnaWeb.Controllers
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
         private readonly IWebHostEnvironment _env;
-        
+        private readonly ILanguagesHttpClient _languagesHttpClient;
         public HomeController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IWebHostEnvironment env, IUserInfosHttpClient userInfosHttpClient, ICalendarsHttpClient calendarsHttpClient,
-            IUserAccessHttpClient userAccessHttpClient)
+            IUserAccessHttpClient userAccessHttpClient, ILanguagesHttpClient languagesHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
@@ -40,6 +40,7 @@ namespace KinaUnaWeb.Controllers
             _userInfosHttpClient = userInfosHttpClient;
             _calendarsHttpClient = calendarsHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
+            _languagesHttpClient = languagesHttpClient;
         }
 
         [AllowAnonymous]
@@ -344,8 +345,32 @@ namespace KinaUnaWeb.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult SetLanguageId(string languageId, string returnUrl)
+        public async Task<IActionResult> SetLanguageId(string languageId, string returnUrl)
         {
+            bool languageIdParsed = int.TryParse(languageId, out int languageIdAsInt);
+            if (languageIdParsed)
+            {
+                KinaUnaLanguage language = await _languagesHttpClient.GetLanguage(languageIdAsInt);
+                
+                string cultureString = CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(language.CodeToLongFormat()));
+                if (_env.IsDevelopment())
+                {
+                    Response.Cookies.Append(
+                    Constants.LanguageCookieName,
+                        cultureString,
+                        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "", IsEssential = true}
+                    );
+                }
+                else
+                {
+                    Response.Cookies.Append(
+                    Constants.LanguageCookieName,
+                        cultureString,
+                        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), Domain = "." + Constants.AppRootDomain, IsEssential = true }
+                    );
+                }
+            }
+            
             Response.SetLanguageCookie(languageId);
             return Redirect(returnUrl);
         }

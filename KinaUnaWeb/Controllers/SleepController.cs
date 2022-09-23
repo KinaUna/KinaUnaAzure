@@ -18,7 +18,6 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly ISleepHttpClient _sleepHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-        
 
         public SleepController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, ISleepHttpClient sleepHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
@@ -33,6 +32,7 @@ namespace KinaUnaWeb.Controllers
         {
             SleepViewModel model = new SleepViewModel();
             model.LanguageId = Request.GetLanguageIdFromCookie();
+            
             string userEmail = User.GetEmail();
             model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
 

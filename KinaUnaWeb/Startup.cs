@@ -184,7 +184,7 @@ namespace KinaUnaWeb
                     .RequireAuthenticatedUser()
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
-            }).AddNewtonsoftJson()
+            }).AddNewtonsoftJson().AddViewLocalization()
             //.AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
             .AddRazorRuntimeCompilation();
 

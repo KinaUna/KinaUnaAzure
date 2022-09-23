@@ -40,6 +40,9 @@ namespace KinaUnaProgenyApi
 
             services.AddDbContext<ProgenyDbContext>(options =>
                 options.UseSqlServer(Configuration["ProgenyDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
+            
+            services.AddDbContext<MediaDbContext>(options =>
+                options.UseSqlServer(Configuration["MediaDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration["DataProtectionConnection"],
@@ -68,6 +71,9 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IVocabularyService, VocabularyService>();
             services.AddScoped<ITextTranslationService, TextTranslationService>();
             services.AddScoped<ILanguageService, LanguageService>();
+            services.AddScoped<IPicturesService, PicturesService>();
+            services.AddScoped<IVideosService, VideosService>();
+            services.AddScoped<ICommentsService, CommentsService>();
 
             services.AddControllers().AddNewtonsoftJson();
             

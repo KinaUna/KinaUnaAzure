@@ -1,5 +1,6 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using System.Globalization
 @model KinaUnaWeb.Models.ItemViewModels.SleepViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -147,7 +148,8 @@ else
                                         string chartYear = sleepItem.SleepStart.Year.ToString();
                                         string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
                                         string chartDay = sleepItem.SleepStart.Day.ToString();
-                                        @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + sleepItem.SleepDuration.TotalMinutes / 60.0 + "},")
+                                        double yValue = sleepItem.SleepDuration.TotalMinutes / 60.0;
+                                        @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + yValue.ToString("##.000000", CultureInfo.InvariantCulture) + "},\n")
                                     }
                                 }],
                                 borderColor: 'rgb(75, 192, 192)',
@@ -208,7 +210,8 @@ else
                                                 string chartYear = sleepItem.SleepStart.Year.ToString();
                                                 string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
                                                 string chartDay = sleepItem.SleepStart.Day.ToString();
-                                                @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + sleepItem.SleepDuration.TotalMinutes / 60.0 + "},")
+                                                double yValue = sleepItem.SleepDuration.TotalMinutes / 60.0;
+                                                @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + yValue.ToString("##.000000", CultureInfo.InvariantCulture) + "},\n")
                                             }
                                         }],
                                     borderColor: 'rgb(75, 192, 192)',
