@@ -1,0 +1,79 @@
+﻿@using KinaUnaWebBlazor.Models.ItemViewModels
+@using KinaUnaWebBlazor.Services
+@using KinaUna.Data.Models
+@using KinaUna.Data
+@using KinaUnaWebBlazor.Models.HomeViewModels
+@inject UserStateService UserStateService
+@inject ImageStore ImageStore
+@if(PictureViewModel != null){
+    <Div>
+        <img src="@_pictureUrl" style="width: auto; height: auto; max-width: 100%; max-height: 90vh;"/>
+        <Div Margin="Margin.Is2">
+            @if (_tagsList.Any())
+            {
+                foreach (string tagString in _tagsList)
+                {
+                    <Badge Margin="Margin.Is1" Style="background-color: #e91e63;">@tagString</Badge>
+                }
+            }
+        </Div>
+        <PictureAgeData CurrentPictureTime="@PictureViewModel.PictureTime" Progeny="Progeny"></PictureAgeData>
+        <PictureLocationData LocationDataViewModel="@LocationDataViewModel"></PictureLocationData>
+    </Div>
+}
+
+@code {
+    [Parameter]
+    public PictureViewModel? PictureViewModel { get; set; }
+
+    private string _pictureUrl = "";
+    private List<string> _tagsList = new List<string>();
+    Progeny? Progeny { get; set; }
+    UserInfo? UserInfo { get; set; }
+    LocationDataViewModel? LocationDataViewModel { get; set; }
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        if (PictureViewModel != null)
+        {
+            Progeny = PictureViewModel?.Progeny;
+            await UpdateImage();
+        }
+    }
+
+    private async Task UpdateImage()
+    {
+        UserInfo = UserStateService.CurrentUser;
+        if (Progeny != null && UserInfo != null && !string.IsNullOrEmpty(PictureViewModel?.PictureLink))
+        {
+
+            if (!string.IsNullOrEmpty(PictureViewModel?.PictureLink))
+            {
+                _pictureUrl = ImageStore.UriFor(PictureViewModel.PictureLink);
+                if (!string.IsNullOrEmpty(PictureViewModel.Tags))
+                {
+                    _tagsList = PictureViewModel.Tags.Trim(',').Split(',').ToList();
+                }
+
+                if (!string.IsNullOrEmpty(PictureViewModel.Location))
+                {
+                    LocationDataViewModel = new LocationDataViewModel();
+                    LocationDataViewModel.Location = await UserStateService.GetTranslation("Photo location:", PageNames.Home) + " " + PictureViewModel.Location;
+                    if(!string.IsNullOrEmpty(PictureViewModel.Latitude)){
+                        LocationDataViewModel.Latitude = await UserStateService.GetTranslation("Latitude:", PageNames.Pictures) + " " + PictureViewModel.Latitude;
+                    }
+                    if(!string.IsNullOrEmpty(PictureViewModel.Longitude)){
+                        LocationDataViewModel.Longitude = await UserStateService.GetTranslation("Longitude:", PageNames.Pictures) + " " + PictureViewModel.Longitude;
+                    }
+                    if(!string.IsNullOrEmpty(PictureViewModel.Altitude)){
+                        LocationDataViewModel.Altitude = await UserStateService.GetTranslation("Altitude:", PageNames.Pictures) + " " + PictureViewModel.Altitude;
+                    }
+                    
+                }
+                
+                StateHasChanged();
+            }
+        }
+    }
+
+}

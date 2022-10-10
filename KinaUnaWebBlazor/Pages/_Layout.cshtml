@@ -1,0 +1,150 @@
+﻿@using KinaUna.Data
+@using KinaUnaWebBlazor.Services
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@namespace KinaUnaWebBlazor.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject UserStateService UserStateService
+
+<!DOCTYPE html>
+@{
+    int languageId = 1;
+    string languageCode = "en";
+
+    if (Context.Request.Query.ContainsKey("languageId"))
+    {
+        if (int.TryParse(Context.Request.Query["languageId"], out int queryValue))
+        {
+            languageId = queryValue;
+        }
+    }
+    else
+    {
+        if (Context.Request.Cookies.TryGetValue("languageId", out string? languageIdText))
+        {
+            if (!int.TryParse(languageIdText, out languageId))
+            {
+                languageId = 1;
+            }
+        }
+        else
+        {
+            try
+            {
+                string[] userLanguages = Context.Request.GetTypedHeaders().AcceptLanguage.OrderByDescending(x => x.Quality ?? 1).Select(x => x.Value.ToString()).ToArray();
+                string? firstLang = userLanguages.FirstOrDefault();
+
+                if (firstLang != null && firstLang.StartsWith("de"))
+                {
+                    languageId = 2;
+                }
+                if (firstLang != null && firstLang.StartsWith("da"))
+                {
+                    languageId = 3;
+                }
+            }
+            catch (NullReferenceException)
+            {
+                languageId = 1;
+            }
+        }
+    }
+
+    if (languageId == 1)
+    {
+        languageCode = "en";
+    }
+
+    if (languageId == 2)
+    {
+        languageCode = "de";
+    }
+
+    if (languageId == 3)
+    {
+        languageCode = "da";
+    }
+
+    UserStateService.CurrentLanguageId = languageId;
+    if(User.Identity != null && User.Identity.IsAuthenticated){
+        string userEmail = User.FindFirst("email")?.Value ?? Constants.DefaultUserEmail;
+        UserStateService.SetUser(userEmail).GetAwaiter().GetResult();
+    }
+}
+<html lang="@languageCode">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+
+    <link href="_content/Blazorise/blazorise.css" rel="stylesheet"/>
+    <link href="_content/Blazorise.Bootstrap5/blazorise.bootstrap5.css" rel="stylesheet"/>
+    <link href="_content/Blazorise.Icons.Material/blazorise.icons.material.css" rel="stylesheet"/>
+
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="KinaUnaWebBlazor.styles.css" rel="stylesheet" />
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body>
+    <div id="app">
+        @RenderBody()
+    </div>
+    @*<div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>*@
+    <script src="_framework/blazor.server.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
+    <script>
+        function loadJs(sourceUrl) {
+            if (sourceUrl.Length == 0) {
+                console.error("Invalid source URL");
+                return;
+            }
+
+            var tag = document.createElement('script');
+            tag.src = sourceUrl;
+            tag.type = "text/javascript";
+
+            tag.onload = function () {
+                console.log("Script loaded successfully");
+            }
+
+            tag.onerror = function () {
+                console.error("Failed to load script");
+            }
+
+            document.body.appendChild(tag);
+        }
+
+        function loadCss(sourceUrl) {
+            if (sourceUrl.Length == 0) {
+                console.error("Invalid source URL");
+                return;
+            }
+
+            var tag = document.createElement('link');
+            tag.href = sourceUrl;
+            tag.type = "text/css";
+            tag.rel = "stylesheet";
+            tag.onload = function () {
+                console.log("CSS loaded successfully");
+            }
+
+            tag.onerror = function () {
+                console.error("Failed to load CSS");
+            }
+
+            document.body.appendChild(tag);
+        }
+    </script>
+</body>
+</html>

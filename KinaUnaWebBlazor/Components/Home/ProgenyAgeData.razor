@@ -1,0 +1,117 @@
+﻿@using KinaUnaWebBlazor.Models.HomeViewModels
+@using KinaUna.Data
+@using KinaUna.Data.Models
+@using KinaUnaWebBlazor.Models
+@using KinaUnaWebBlazor.Services
+@inject UserStateService UserStateService
+@implements IDisposable
+<div style="font-size: 16px;">
+    <div>@Progeny?.NickName @_isNowString @_viewModel.Years @_yearsOldString</div>
+    <div>@Progeny?.NickName @_isNowString @_viewModel.Months @_monthsOldString</div>
+    <div>@Progeny?.NickName @_isNowString @_viewModel.Weeks[0] @_weeksAndString @_viewModel.Weeks[1] @_daysOldString</div>
+    <div>@Progeny?.NickName @_isNowString @_viewModel.Days @_daysOldString</div>
+    <div>@Progeny?.NickName @_isNowString @_viewModel.Hours @_hoursOldString</div>
+    <div>@Progeny?.NickName @_isNowString @_viewModel.Minutes @_minutesOldString</div>
+    <br/>
+    <div>@Progeny?.NickName @_willHaveTheNextBirthdayInString @_viewModel.NextBirthday @_daysString.</div>
+</div>
+<br/>
+<div style="font-size: 16px;">
+    <div>@Progeny?.NickName @_willBeString @_viewModel.WeeksMileStone[0] @_weeksString: @_viewModel.WeeksMileStone[1]</div>
+    <div>@Progeny?.NickName @_willBeString @_viewModel.DaysMileStone[0] @_daysString: @_viewModel.DaysMileStone[1]</div>
+    <div>@Progeny?.NickName @_willBeString @_viewModel.HoursMileStone[0] @_hoursString: @_viewModel.HoursMileStone[1]</div>
+    <div>@Progeny?.NickName @_willBeString @_viewModel.MinutesMileStone[0] @_minutesString: @_viewModel.MinutesMileStone[1]</div>
+</div>
+
+@code {
+
+    private Progeny? Progeny { get; set; }
+
+    readonly ProgenyAgeDataViewModel _viewModel = new ProgenyAgeDataViewModel();
+
+    private string _isNowString = "is now";
+    private string _willBeString = "will be";
+    private string _yearsOldString = "years old.";
+    private string _monthsOldString = "months old.";
+    private string _hoursOldString = "hours old.";
+    private string _minutesOldString = "minutes old.";
+    private string _weeksAndString = "weeks and";
+    private string _daysOldString = "days old";
+    private string _weeksString = "weeks";
+    private string _daysString = "days";
+    private string _hoursString = "hours";
+    private string _minutesString = "minutes";
+    private string _willHaveTheNextBirthdayInString = "will have the next birthday in";
+
+    protected override void OnInitialized()
+    {
+        UserStateService.CurrentProgenyChanged += UserStateServiceOnCurrentProgenyChanged;
+        Progeny = UserStateService.CurrentProgeny;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _isNowString = await UserStateService.GetTranslation("is now", PageNames.Home);
+        _willBeString = await UserStateService.GetTranslation("will be", PageNames.Home);
+        _minutesOldString = await UserStateService.GetTranslation("minutes old.", PageNames.Home);
+        _hoursOldString = await UserStateService.GetTranslation("hours old.", PageNames.Home);
+        _daysOldString = await UserStateService.GetTranslation("days old.", PageNames.Home);
+        _monthsOldString = await UserStateService.GetTranslation("months old.", PageNames.Home);
+        _yearsOldString = await UserStateService.GetTranslation("years old.", PageNames.Home);
+        _daysString = await UserStateService.GetTranslation("days", PageNames.Home);
+        _weeksString = await UserStateService.GetTranslation("weeks", PageNames.Home);
+        _hoursString = await UserStateService.GetTranslation("hours", PageNames.Home);
+        _minutesString = await UserStateService.GetTranslation("minutes", PageNames.Home);
+        _weeksAndString = await UserStateService.GetTranslation("weeks and", PageNames.Home);
+        _monthsOldString = await UserStateService.GetTranslation("months old.", PageNames.Home);
+        _hoursOldString = await UserStateService.GetTranslation("hours old.", PageNames.Home);
+        _minutesOldString = await UserStateService.GetTranslation("minutes old.", PageNames.Home);
+        _willHaveTheNextBirthdayInString = await UserStateService.GetTranslation("will have the next birthday in", PageNames.Home);
+
+        UpdateTimeData();
+    }
+
+    private void UpdateTimeData(){
+        if (Progeny != null && !string.IsNullOrEmpty(Progeny.TimeZone))
+        {
+            BirthTime progBirthTime;
+            if (!string.IsNullOrEmpty(Progeny.NickName) && Progeny.BirthDay.HasValue)
+            {
+                progBirthTime = new BirthTime(Progeny.BirthDay.Value,
+                    TimeZoneInfo.FindSystemTimeZoneById(Progeny.TimeZone));
+            }
+            else
+            {
+                progBirthTime = new BirthTime(new DateTime(2018, 02, 18, 18, 02, 00), TimeZoneInfo.FindSystemTimeZoneById(Progeny.TimeZone));
+            }
+
+            _viewModel.Years = progBirthTime.CalcYears();
+            _viewModel.Months = progBirthTime.CalcMonths();
+            _viewModel.Weeks = progBirthTime.CalcWeeks();
+            _viewModel.Days = progBirthTime.CalcDays();
+            _viewModel.Hours = progBirthTime.CalcHours();
+            _viewModel.Minutes = progBirthTime.CalcMinutes();
+            _viewModel.NextBirthday = progBirthTime.CalcNextBirthday();
+            _viewModel.MinutesMileStone = progBirthTime.CalcMileStoneMinutes();
+            _viewModel.HoursMileStone = progBirthTime.CalcMileStoneHours();
+            _viewModel.DaysMileStone = progBirthTime.CalcMileStoneDays();
+            _viewModel.WeeksMileStone = progBirthTime.CalcMileStoneWeeks();
+        }
+    }
+
+    private void UserStateServiceOnCurrentProgenyChanged(object? sender, Progeny e)
+    {
+        if (e.Id > 0)
+        {
+            Progeny = e;
+            UpdateTimeData();
+            StateHasChanged();
+
+        }
+    }
+
+    public void Dispose()
+    {
+        UserStateService.CurrentProgenyChanged -= UserStateServiceOnCurrentProgenyChanged;
+    }
+}

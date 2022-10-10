@@ -1,0 +1,21 @@
+﻿@inherits LayoutComponentBase
+<PageTitle>Kina Una</PageTitle>
+
+<Layout Sider>
+    <LayoutSider>
+        <LayoutSiderContent>
+            <NavMenu></NavMenu>
+        </LayoutSiderContent>
+    </LayoutSider>
+    <Layout>
+        <LanguageBar></LanguageBar>
+        <LayoutHeader Fixed>
+            <TopMenuBar></TopMenuBar>
+        </LayoutHeader>
+        <Container>
+            <LayoutContent Padding="Padding.Is4.FromStart.Is4.FromEnd">
+                @Body
+            </LayoutContent>
+        </Container>
+    </Layout>
+</Layout>

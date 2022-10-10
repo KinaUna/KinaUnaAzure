@@ -58,7 +58,7 @@ namespace KinaUna.IDP
         // API related resources (Scopes)
         public static IEnumerable<ApiResource> GetApiResources(IConfiguration configuration)
         {
-            var secretString = configuration.GetValue<string>("SecretString");
+            string secretString = configuration.GetValue<string>("SecretString");
             return new List<ApiResource>
             {
                 new ApiResource{
@@ -99,10 +99,12 @@ namespace KinaUna.IDP
 
         public static IEnumerable<Client> GetClients(IConfiguration configuration)
         {
-            var webServerUrl = configuration.GetValue<string>("WebServer");
-            var webServerAzureUrl = configuration.GetValue<string>("WebServerAzure");
-            var webServerLocal = configuration.GetValue<string>("WebServerLocal");
-            var secretString = configuration.GetValue<string>("SecretString");
+            string webServerUrl = configuration.GetValue<string>("WebServer");
+            string webBlazorServerUrl = configuration.GetValue<string>("WebBlazorServer");
+            string webServerAzureUrl = configuration.GetValue<string>("WebServerAzure");
+            string webServerLocal = configuration.GetValue<string>("WebServerLocal");
+            string webBlazorServerLocal = configuration.GetValue<string>("WebBlazorServerLocal");
+            string secretString = configuration.GetValue<string>("SecretString");
             List<string> corsList = new List<string>();
             corsList.Add(Constants.WebAppUrl);
             corsList.Add(Constants.AuthAppUrl);
@@ -111,6 +113,43 @@ namespace KinaUna.IDP
             corsList.Add("https://" + Constants.AppRootDomain);
             return new List<Client>()
             {
+                new Client
+                {
+                    ClientName = "KinaUnaWebBlazor",
+                    ClientId = "kinaunawebblazorclient",
+                    ClientUri = webBlazorServerUrl,
+                    RequirePkce = false,
+                    AllowPlainTextPkce = false,
+                    RequireConsent = false,
+                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
+                    AccessTokenType = AccessTokenType.Reference,
+                    AccessTokenLifetime = 2592000,
+                    AllowOfflineAccess = true,
+                    AlwaysIncludeUserClaimsInIdToken = false,
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    RedirectUris = new List<string>()
+                    {
+                        webServerUrl + "/signin-oidc"
+
+                    },
+                    PostLogoutRedirectUris = new List<string>()
+                    {
+                        webServerUrl + "/signout-callback-oidc"
+                    },
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.OfflineAccess,
+                        IdentityServerConstants.StandardScopes.Email,
+                        Constants.ProgenyApiName,
+                        Constants.MediaApiName
+                    },
+                    ClientSecrets =
+                    {
+                        new Secret(secretString.Sha256())
+                    }
+                },
                 new Client
                 {
                     ClientName = "KinaUnaWeb",
@@ -148,6 +187,43 @@ namespace KinaUna.IDP
                         "timezone",
                         "viewchild",
                         "joindate",
+                        Constants.ProgenyApiName,
+                        Constants.MediaApiName
+                    },
+                    ClientSecrets =
+                    {
+                        new Secret(secretString.Sha256())
+                    }
+                },
+                new Client
+                {
+                    ClientName = "KinaUnaWebBlazorLocal",
+                    ClientId = "kinaunawebblazorclientlocal",
+                    ClientUri = webBlazorServerLocal,
+                    RequirePkce = false,
+                    AllowPlainTextPkce = false,
+                    RequireConsent = false,
+                    AllowedGrantTypes = GrantTypes.HybridAndClientCredentials,
+                    AccessTokenType = AccessTokenType.Reference,
+                    AccessTokenLifetime = 2592000,
+                    AllowOfflineAccess = true,
+                    AlwaysIncludeUserClaimsInIdToken = false,
+                    UpdateAccessTokenClaimsOnRefresh = true,
+                    RedirectUris = new List<string>()
+                    {
+                        webBlazorServerLocal + "/signin-oidc"
+
+                    },
+                    PostLogoutRedirectUris = new List<string>()
+                    {
+                        webBlazorServerLocal + "/signout-callback-oidc"
+                    },
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.OfflineAccess,
+                        IdentityServerConstants.StandardScopes.Email,
                         Constants.ProgenyApiName,
                         Constants.MediaApiName
                     },

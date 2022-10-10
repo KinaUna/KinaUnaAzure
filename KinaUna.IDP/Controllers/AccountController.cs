@@ -318,7 +318,15 @@ namespace KinaUna.IDP.Controllers
                     }
                     else
                     {
-                        logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServerLocal");
+                        if (logout.ClientId != null && logout.ClientId.ToLower().Contains("blazor"))
+                        {
+                            logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebBlazorServerLocal");
+                        }
+                        else
+                        {
+                            logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServerLocal");
+                        }
+                        
                     }
                     
                 }
@@ -336,7 +344,14 @@ namespace KinaUna.IDP.Controllers
                         }
                         else
                         {
-                            logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServer");
+                            if (logout.ClientId != null && logout.ClientId.ToLower().Contains("blazor"))
+                            {
+                                logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebBlazorServer");
+                            }
+                            else
+                            {
+                                logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServer");
+                            }
                         }
                     }
                    

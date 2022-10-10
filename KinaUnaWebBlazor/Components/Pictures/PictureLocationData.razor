@@ -1,0 +1,29 @@
+﻿@using KinaUnaWebBlazor.Models.HomeViewModels
+@if(LocationDataViewModel != null){
+    <Div Margin="Margin.Is2.FromTop" Style="font-size: 16px;">
+        @LocationDataViewModel.Location
+    </Div>
+    @if(!string.IsNullOrEmpty(LocationDataViewModel.Latitude)){
+        <Div>
+            @LocationDataViewModel.Latitude @LocationDataViewModel.Longitude @LocationDataViewModel.Altitude
+        </Div>
+        @if(ShowMap.HasValue && ShowMap.Value){
+            <Div>
+                Map
+            </Div>
+        }
+    }
+}
+
+@code {
+    [Parameter]
+    public LocationDataViewModel? LocationDataViewModel { get; set; }
+
+    [Parameter]
+    public bool? ShowMap { get; set; }
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+    }
+
+}

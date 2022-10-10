@@ -41,6 +41,11 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}")]
         public async Task<IActionResult> ByEmail(string id)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                id = User.GetEmail();
+            }
+
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             bool allowAccess = false;
             if (userEmail.ToUpper() == id.ToUpper())

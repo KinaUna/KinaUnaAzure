@@ -1,0 +1,123 @@
+﻿@page "/"
+@using KinaUna.Data.Models
+@using KinaUnaWebBlazor.Services
+@inject UserStateService UserStateService
+@implements IDisposable
+
+<PageTitle>@_pageTitle</PageTitle>
+<Div Margin="Margin.Is3.FromTop.Is2.FromBottom">
+    <img src="/images/KinaUnaLogo_246x80.png"/>
+</Div>
+<Row>
+    <Column ColumnSize="ColumnSize.Is12.Is8.OnFullHD">
+        <Row>
+            <ProgenyAgeData></ProgenyAgeData>
+        </Row>
+        <Row Margin="Margin.Is3.FromTop">
+            <RandomPicture></RandomPicture>
+        </Row>
+    </Column>
+    <Column ColumnSize="ColumnSize.Is12.Is4.OnFullHD">
+        <div style="height: 300px;"></div>
+        <div>
+            Nivi is now 6.144279 years old.
+            Nivi is now 73 months old.
+            Nivi is now 320 weeks and 2 days old.
+            Nivi is now 2242.66 days old.
+            Nivi is now 53823.8809 hours old.
+            Nivi is now 3229432.85 minutes old.
+
+            Nivi will have the next birthday in313 days.
+
+            Nivi will be 1000 weeks: Friday, 05 October 2035
+            Nivi will be 10000 days: Tuesday, 22 December 2043
+            Nivi will be 100000 hours: Sunday, 02 January 2028 12:21
+            Nivi will be 10000000 minutes: Saturday, 11 August 2035 07:01
+        </div>
+    </Column>
+</Row>
+
+<div style="height: 300px;"></div>
+<div>
+    Nivi is now 6.144279 years old.
+    Nivi is now 73 months old.
+    Nivi is now 320 weeks and 2 days old.
+    Nivi is now 2242.66 days old.
+    Nivi is now 53823.8809 hours old.
+    Nivi is now 3229432.85 minutes old.
+
+    Nivi will have the next birthday in313 days.
+
+    Nivi will be 1000 weeks: Friday, 05 October 2035
+    Nivi will be 10000 days: Tuesday, 22 December 2043
+    Nivi will be 100000 hours: Sunday, 02 January 2028 12:21
+    Nivi will be 10000000 minutes: Saturday, 11 August 2035 07:01
+</div>
+<div style="height: 300px;"></div>
+<div>
+    Nivi is now 6.144279 years old.
+    Nivi is now 73 months old.
+    Nivi is now 320 weeks and 2 days old.
+    Nivi is now 2242.66 days old.
+    Nivi is now 53823.8809 hours old.
+    Nivi is now 3229432.85 minutes old.
+
+    Nivi will have the next birthday in313 days.
+
+    Nivi will be 1000 weeks: Friday, 05 October 2035
+    Nivi will be 10000 days: Tuesday, 22 December 2043
+    Nivi will be 100000 hours: Sunday, 02 January 2028 12:21
+    Nivi will be 10000000 minutes: Saturday, 11 August 2035 07:01
+</div>
+<div style="height: 300px;"></div>
+<div>
+    Nivi is now 6.144279 years old.
+    Nivi is now 73 months old.
+    Nivi is now 320 weeks and 2 days old.
+    Nivi is now 2242.66 days old.
+    Nivi is now 53823.8809 hours old.
+    Nivi is now 3229432.85 minutes old.
+
+    Nivi will have the next birthday in313 days.
+
+    Nivi will be 1000 weeks: Friday, 05 October 2035
+    Nivi will be 10000 days: Tuesday, 22 December 2043
+    Nivi will be 100000 hours: Sunday, 02 January 2028 12:21
+    Nivi will be 10000000 minutes: Saturday, 11 August 2035 07:01
+</div>
+
+@code
+{
+    readonly string _pageTitle = "Home";
+    Progeny? Progeny { get; set; }
+    UserInfo? UserInfo { get; set; }
+
+    protected override void OnInitialized()
+    {
+        UserStateService.CurrentUserChanged += UserStateServiceOnCurrentUserChanged;
+        UserStateService.CurrentProgenyChanged += UserStateServiceOnCurrentProgenyChanged;
+        Progeny = UserStateService.CurrentProgeny;
+        UserInfo = UserStateService.CurrentUser;
+    }
+
+    private void UserStateServiceOnCurrentProgenyChanged(object? sender, Progeny e)
+    {
+        if (Progeny?.Id != e.Id) { 
+            Progeny = e;
+            StateHasChanged();
+        }
+    }
+
+    private void UserStateServiceOnCurrentUserChanged(object? sender, UserInfo e)
+    {
+        if (UserInfo?.Id != e.Id)
+        {
+            UserInfo = e;
+        }
+    }
+
+    public void Dispose(){
+        UserStateService.CurrentUserChanged -= UserStateServiceOnCurrentUserChanged;
+        UserStateService.CurrentProgenyChanged -= UserStateServiceOnCurrentProgenyChanged;
+    }
+}

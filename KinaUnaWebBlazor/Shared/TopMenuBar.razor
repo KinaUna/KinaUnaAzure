@@ -1,0 +1,81 @@
+﻿@using KinaUnaWebBlazor.Services
+@using KinaUna.Data
+@inject ILocaleManager LocaleManager
+@inject NavigationManager NavigationManager
+<Bar Breakpoint="Breakpoint.Desktop"
+     Background="Background.Light"
+     ThemeContrast="ThemeContrast.Light" Class="kinauna_navbar_bg">    
+    <Container>
+        <BarBrand Margin="Margin.Is5.FromStart.FromEnd">
+            <img src="/images/Square44x44Logo.scale-100.png" class="kinauna-logo"/>
+        </BarBrand>
+        <BarToggler Style="background: #fbd10d; border-radius: 20px;" />
+        <BarMenu>
+            <Div Margin="Margin.Is5.FromStart" Display="Display.None.InlineBlock.OnDesktop"></Div>
+            <Div Margin="Margin.Is4.FromTop" Display="Display.Block.OnMobile.None.OnDesktop"></Div>
+            <BarStart>
+                <BarItem>
+                    <BarLink To="/"><Span Class="kinauna_yellow_text">Home</Span></BarLink>
+                </BarItem>
+                <BarItem>
+                    <BarLink To="/timeline"><Span Class="kinauna_yellow_text">@_timeLineText</Span></BarLink>
+                </BarItem>
+            </BarStart>
+            <BarEnd>
+                <AuthorizeView>
+                        <Authorized>
+                            <BarItem>
+                            <BarDropdown>
+                                    <BarDropdownToggle Class="kinauna_yellow_text">@_userName</BarDropdownToggle>
+                                    <BarDropdownMenu>
+                                        <BarDropdownItem>My Account</BarDropdownItem>
+                                        <BarDropdownDivider/>
+                                        <BarDropdownItem Clicked="GoToLogOut">@_logOutText</BarDropdownItem>
+                                    </BarDropdownMenu>
+                                </BarDropdown>
+                            </BarItem>
+                        </Authorized>
+                        <NotAuthorized>
+                            <BarItem>
+                                <Button Color="Color.Secondary" @onclick="GoToLogIn">@_logInText</Button>
+                            </BarItem>
+                        </NotAuthorized>
+                    </AuthorizeView>
+            </BarEnd>
+        </BarMenu>
+    </Container>
+</Bar>
+@code
+{
+    [CascadingParameter]
+    KinaUnaStateComponent CurrentState { get; set; }
+
+    [CascadingParameter]
+    UserState UserState { get; set; }
+
+    private string _userName = "";
+    private string _timeLineText = "Timeline";
+    private string _logInText = "Log in";
+    private string _logOutText = "Log out";
+
+    private void GoToLogIn(){
+        string returnUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+
+        NavigationManager.NavigateTo($"LogIn?redirectUri={returnUrl}", forceLoad: true);
+    }
+
+    private void GoToLogOut()
+    {
+        NavigationManager.NavigateTo("LogOut", forceLoad: true);
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        if(UserState.CurrentUser.Id != 0 && CurrentState.LanguageId != 0){
+            _timeLineText = await LocaleManager.GetTranslation("Timeline", PageNames.Layout, CurrentState.LanguageId);
+            _logInText = await LocaleManager.GetTranslation("Log in or register", PageNames.Layout, CurrentState.LanguageId);
+            _logOutText = await LocaleManager.GetTranslation("Log out", PageNames.Layout, CurrentState.LanguageId);
+            _userName = UserState.CurrentUser.UserName;
+        }
+
+    }
+}

@@ -1,0 +1,113 @@
+﻿@page "/Pictures/{PictureId:int}"
+@using KinaUna.Data.Models
+@using KinaUnaWebBlazor.Models.ItemViewModels
+@using KinaUnaWebBlazor.Services
+@using KinaUna.Data
+@inject UserStateService UserStateService
+@inject IMediaHttpClient MediaHttpClient
+@inject IProgenyHttpClient ProgenyHttpClient
+@implements IDisposable
+<Div>
+    @if(PictureViewModel != null){
+        <PictureDetails PictureViewModel="PictureViewModel"></PictureDetails>
+    }
+    @if(PicturePageViewModel != null){
+
+    }
+</Div>
+@code {
+    [Parameter]
+    public int? PictureId { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? SortBy { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? TagFilter { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? Page { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int? PageSize { get; set; }
+
+    private int _sortBy;
+    private string _tagFilter = "";
+    private int _page = 1;
+    private int _pageSize = 8;
+    private int _progenyId = Constants.DefaultChildId;
+
+    private Progeny? Progeny { get; set; }
+
+    private Progeny? PictureProgeny { get; set; }
+
+    private Picture? CurrentPicture { get; set; }
+
+    PictureViewModel? PictureViewModel { get; set; }
+    PicturePageViewModel? PicturePageViewModel { get; set; }
+    string _userTimeZone = Constants.DefaultTimezone;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        UserStateService.CurrentProgenyChanged += UserStateServiceOnCurrentProgenyChanged;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        Progeny = UserStateService.CurrentProgeny;
+        _userTimeZone = UserStateService.CurrentUser?.Timezone ?? Constants.DefaultTimezone;
+        if(SortBy.HasValue){
+            _sortBy = SortBy.Value;
+        }
+        if(!string.IsNullOrEmpty(TagFilter)){
+            _tagFilter = TagFilter;
+        }
+        if(Page.HasValue && Page.Value > 1){
+            _page = Page.Value;
+        }
+        if (PageSize.HasValue && PageSize.Value > 1)
+        {
+            _pageSize = PageSize.Value;
+        }
+
+        if(Progeny != null && PictureId != null && PictureId > 0){
+            PictureViewModel = await MediaHttpClient.GetPictureViewModel(PictureId.Value, _sortBy, _userTimeZone);
+            if(PictureViewModel.ProgenyId != 0 && PictureViewModel.ProgenyId != Progeny.Id){
+                PictureViewModel.Progeny = await ProgenyHttpClient.GetProgeny(PictureViewModel.ProgenyId);
+            }
+            else{
+                PictureViewModel.Progeny = Progeny;
+            }
+            
+            PictureProgeny = PictureViewModel.Progeny;
+        }
+        else{
+            PictureProgeny = Progeny;
+        }
+
+        _progenyId = PictureProgeny?.Id ?? Constants.DefaultChildId;
+
+        PicturePageViewModel = await MediaHttpClient.GetPicturePage(_pageSize, _page, _progenyId, _sortBy, _tagFilter, _userTimeZone);
+    }
+
+    private void UserStateServiceOnCurrentProgenyChanged(object? sender, Progeny e)
+    {
+        if (e.Id > 0)
+        {
+            Progeny = e;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        UserStateService.CurrentProgenyChanged -= UserStateServiceOnCurrentProgenyChanged;
+    }
+
+}

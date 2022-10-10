@@ -1,0 +1,91 @@
+﻿@using KinaUnaWebBlazor.Services
+@using KinaUna.Data.Models
+@using KinaUna.Data
+@using KinaUnaWebBlazor.Models
+@using KinaUnaWebBlazor.Models.HomeViewModels
+@inject UserStateService UserStateService
+@implements IDisposable
+<Div Margin="Margin.Is2.FromTop" Style="font-size: 16px;">
+
+    <div>@_pictureTakenString @_viewModel.PictureDateTime</div>
+    <div>@Progeny?.NickName @_wasString @_viewModel.Years @_yearsOldString</div>
+    <div>@Progeny?.NickName @_wasString @_viewModel.Months @_monthsOldString</div>
+    <div>@Progeny?.NickName @_wasString @_viewModel.Weeks[0] @_weeksAndString @_viewModel.Weeks[1] @_daysOldString</div>
+    <div>@Progeny?.NickName @_wasString @_viewModel.Days @_daysOldString</div>
+    <div>@Progeny?.NickName @_wasString @_viewModel.Hours @_hoursOldString</div>
+    <div>@Progeny?.NickName @_wasString @_viewModel.Minutes @_minutesOldString</div>
+</Div>
+@code {
+
+    [Parameter]
+    public DateTime? CurrentPictureTime { get; set; }
+
+    [Parameter]
+    public Progeny? Progeny { get; set; }
+    readonly ProgenyAgeDataViewModel _viewModel = new ProgenyAgeDataViewModel();
+
+    private string _wasString = "was";
+    private string _pictureTakenString = "Photo taken:";
+    private string _yearsOldString = "years old.";
+    private string _monthsOldString = "months old.";
+    private string _weeksAndString = "weeks and";
+    private string _daysOldString = "days old.";
+    private string _hoursOldString = "hours old.";
+    private string _minutesOldString = "minutes old";
+
+    protected override void OnInitialized()
+    {
+        UserStateService.CurrentProgenyChanged += UserStateServiceOnCurrentProgenyChanged;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _wasString = await UserStateService.GetTranslation("was", PageNames.Home);
+        _pictureTakenString = await UserStateService.GetTranslation("Photo taken:", PageNames.Home);
+
+        _yearsOldString = await UserStateService.GetTranslation("years old.", PageNames.Home);
+        _monthsOldString = await UserStateService.GetTranslation("months old.", PageNames.Home);
+        _weeksAndString = await UserStateService.GetTranslation("weeks and", PageNames.Home);
+        _daysOldString = await UserStateService.GetTranslation("days old.", PageNames.Home);
+        _hoursOldString = await UserStateService.GetTranslation("hours old.", PageNames.Home);
+
+        _minutesOldString = "minutes old";
+        if(Progeny == null){
+            Progeny = UserStateService.CurrentProgeny;
+        }
+
+        if (Progeny != null && !string.IsNullOrEmpty(Progeny.TimeZone))
+        {
+            PictureTime pictureTime;
+            if (!string.IsNullOrEmpty(Progeny.NickName) && Progeny.BirthDay.HasValue && CurrentPictureTime.HasValue)
+            {
+                pictureTime = new PictureTime(Progeny.BirthDay.Value, CurrentPictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(Progeny.TimeZone));
+            }
+            else
+            {
+                pictureTime = new PictureTime(new DateTime(2018, 02, 18, 18, 02, 00), DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(Progeny.TimeZone));
+            }
+
+            _viewModel.Years = pictureTime.CalcYears();
+            _viewModel.Months = pictureTime.CalcMonths();
+            _viewModel.Weeks = pictureTime.CalcWeeks();
+            _viewModel.Days = pictureTime.CalcDays();
+            _viewModel.Hours = pictureTime.CalcHours();
+            _viewModel.Minutes = pictureTime.CalcMinutes();
+            _viewModel.PictureDateTime = pictureTime.PictureDateTime;
+        }
+    }
+    private void UserStateServiceOnCurrentProgenyChanged(object? sender, Progeny e)
+    {
+        if (e.Id > 0)
+        {
+            Progeny = e;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        UserStateService.CurrentProgenyChanged -= UserStateServiceOnCurrentProgenyChanged;
+    }
+}

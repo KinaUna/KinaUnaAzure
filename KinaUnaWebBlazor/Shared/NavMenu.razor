@@ -1,0 +1,59 @@
+﻿@using KinaUna.Data
+@using KinaUnaWebBlazor.Services
+@inject UserStateService UserStateService
+<Bar Mode="BarMode.VerticalInline"
+     CollapseMode="BarCollapseMode.Small"
+     Breakpoint="Breakpoint.Desktop"
+     NavigationBreakpoint="Breakpoint.Tablet"
+     ThemeContrast="ThemeContrast.Dark"
+     @bind-Visible="CurrentState.ExpandSideBar">
+    <BarToggler Class="kinauna_yellow_text"/>
+    <BarBrand>
+        <BarItem>
+            <BarLink To="#">
+                Kina Una
+            </BarLink>
+        </BarItem>
+    </BarBrand>
+    <BarMenu>
+        <BarStart>
+            <BarItem>
+                <BarLink To="/">
+                    <i class="material-icons icon_medium kinauna_yellow_text">home</i>
+                    <Span Class="kinauna_yellow_text">Home</Span>
+                </BarLink>
+            </BarItem>
+            <BarItem>
+                <BarLink To="/timeline">
+                    <i class="material-icons icon_medium kinauna_yellow_text">update</i>
+                    <Span Class="kinauna_yellow_text">@_timeLineText</Span></BarLink>
+            </BarItem>
+            <BarItem>
+                <BarDropdown>
+                    <BarDropdownToggle>
+                        <BarIcon IconName="IconName.Edit"/>
+                        Dropdown
+                    </BarDropdownToggle>
+                    <BarDropdownMenu>
+                        <BarDropdownItem>Action</BarDropdownItem>
+                        <BarDropdownItem>Another action</BarDropdownItem>
+                    </BarDropdownMenu>
+                </BarDropdown>
+            </BarItem>
+        </BarStart>
+    </BarMenu>
+</Bar>
+
+@code
+{
+    [CascadingParameter]
+    KinaUnaStateComponent CurrentState { get; set; }
+
+    private string _timeLineText = "Timeline";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _timeLineText = await UserStateService.GetTranslation("Timeline", PageNames.Layout);
+        await base.OnParametersSetAsync();
+    }
+}

@@ -1,0 +1,31 @@
+﻿@using Blazorise.Components
+@using KinaUna.Data.Models
+@using KinaUnaWebBlazor.Models.HomeViewModels
+@using KinaUnaWebBlazor.Models.StateManagement
+@using KinaUnaWebBlazor.Services
+@using Microsoft.AspNetCore.Http.Extensions
+<Div Class="kinauna_purple_bg">
+    <Container>
+        <Div Flex="Flex.JustifyContent.End" Margin="Margin.Is2.FromTop.FromBottom">
+            <Icon Shadow="Shadow.Large" IconSize="IconSize.Large" Class="kinauna_yellow_text" Flex="Flex.AlignItems.Center" Name="IconName.Language"></Icon>
+            <DropdownList TItem="KinaUnaLanguage" TValue="int"
+                          Data="CurrentState?.LanguageList"
+                          TextField="@((item) => item.Name)"
+                          ValueField="@((item) => item.Id)"
+                          @bind-SelectedValue="CurrentState.LanguageId"
+                          Class="d-inline languagebar-dropdown kinauna_yellow_text font-weight-bold"
+                          Style="z-index: 1099;">
+                          @CurrentState.LanguageName
+            </DropdownList>
+        </Div>
+        
+    </Container>
+    
+</Div>
+
+
+@code {
+    [CascadingParameter] 
+    KinaUnaStateComponent? CurrentState { get; set; }
+}
+

@@ -234,6 +234,7 @@ namespace KinaUna.IDP
                     options.Events.OnSigningIn = (context) =>
                     {
                         context.CookieOptions.Expires = DateTimeOffset.UtcNow.AddDays(30);
+                        context.CookieOptions.IsEssential = true;
                         return Task.CompletedTask;
                     };
 

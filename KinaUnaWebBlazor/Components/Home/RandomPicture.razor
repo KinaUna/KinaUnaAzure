@@ -1,0 +1,123 @@
+﻿@using KinaUnaWebBlazor.Services
+@using KinaUna.Data.Models
+@using KinaUna.Data
+@using KinaUnaWebBlazor.Models.HomeViewModels
+@inject IMediaHttpClient MediaHttpClient
+@inject ImageStore ImageStore
+@inject UserStateService UserStateService
+@implements IDisposable
+<Div>
+    <Link To="@_pictureLink">
+        <img src="@_imageUrl" style="width: 100%; max-width: 100%" />
+    </Link>
+    
+    <Div Margin="Margin.Is2">
+        @if (_tagsList.Any())
+        {
+            foreach (string tagString in _tagsList)
+            {
+                <Badge Margin="Margin.Is1" Style="background-color: #e91e63;">@tagString</Badge>
+            }
+        }
+    </Div>
+    @if(PictureTime.HasValue){
+        <PictureAgeData CurrentPictureTime="@PictureTime"></PictureAgeData>
+    }
+    @if(LocationDataViewModel != null){
+        <PictureLocationData LocationDataViewModel="@LocationDataViewModel"></PictureLocationData>
+    }
+</Div>
+
+@code
+{
+    private Progeny? Progeny { get; set; }
+    private UserInfo? UserInfo { get; set; }
+
+    private DateTime? PictureTime { get; set; }
+    private LocationDataViewModel? LocationDataViewModel { get; set; }
+    string _imageUrl = "";
+    List<string> _tagsList = new List<string>();
+    string _location = "";
+    private string _pictureLink = "/Pictures/";
+    private async Task UpdateImage()
+    {
+        Progeny = UserStateService.CurrentProgeny;
+        UserInfo = UserStateService.CurrentUser;
+        if (Progeny != null && UserInfo != null && string.IsNullOrEmpty(_imageUrl))
+        {
+
+            Picture displayPicture = await MediaHttpClient.GetRandomPicture(Progeny.Id, 0, UserInfo.Timezone);
+            if (!string.IsNullOrEmpty(displayPicture.PictureLink600))
+            {
+                    _imageUrl = ImageStore.UriFor(displayPicture.PictureLink600);
+                    _pictureLink = "/Pictures/" + displayPicture.PictureId;
+
+                if (!string.IsNullOrEmpty(displayPicture.Tags))
+                {
+                    _tagsList = displayPicture.Tags.Trim(',').Split(',').ToList();
+                }
+
+                if (!string.IsNullOrEmpty(displayPicture.Location))
+                {
+                    _location = await UserStateService.GetTranslation("Photo location:", PageNames.Home) + " " + displayPicture.Location;
+                }
+        
+                if(displayPicture.PictureTime.HasValue){
+                    PictureTime = displayPicture.PictureTime;
+                }
+                if (!string.IsNullOrEmpty(displayPicture.Location))
+                {
+                    LocationDataViewModel = new LocationDataViewModel();
+                    LocationDataViewModel.Location = await UserStateService.GetTranslation("Photo location:", PageNames.Home) + " " + displayPicture.Location;
+                    if (!string.IsNullOrEmpty(displayPicture.Latitude))
+                    {
+                        LocationDataViewModel.Latitude = await UserStateService.GetTranslation("Latitude:", PageNames.Pictures) + " " + displayPicture.Latitude;
+                    }
+                    if (!string.IsNullOrEmpty(displayPicture.Longtitude))
+                    {
+                        LocationDataViewModel.Longitude = await UserStateService.GetTranslation("Longitude:", PageNames.Pictures) + " " + displayPicture.Longtitude;
+                    }
+                    if (!string.IsNullOrEmpty(displayPicture.Altitude))
+                    {
+                        LocationDataViewModel.Altitude = await UserStateService.GetTranslation("Altitude:", PageNames.Pictures) + " " + displayPicture.Altitude;
+                    }
+
+                }
+                StateHasChanged();
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        UserStateService.CurrentUserChanged += UserStateServiceOnCurrentUserChanged;
+        UserStateService.CurrentProgenyChanged += UserStateServiceOnCurrentProgenyChanged;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await UpdateImage();
+    }
+
+    private async void UserStateServiceOnCurrentProgenyChanged(object? sender, Progeny e)
+    {
+        if (e.Id != 0 && e.Id != Progeny?.Id)
+        {
+            await UpdateImage();
+        }
+    }
+
+    private async void UserStateServiceOnCurrentUserChanged(object? sender, UserInfo e)
+    {
+        if (e.Id != 0 && e.Id != UserInfo?.Id)
+        {
+            await UpdateImage();
+        }
+    }
+
+    public void Dispose()
+    {
+        UserStateService.CurrentUserChanged -= UserStateServiceOnCurrentUserChanged;
+        UserStateService.CurrentProgenyChanged -= UserStateServiceOnCurrentProgenyChanged;
+    }
+}

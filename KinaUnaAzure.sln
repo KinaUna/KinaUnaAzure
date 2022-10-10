@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30011.22
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KinaUnaWeb", "KinaUnaWeb\KinaUnaWeb.csproj", "{CDD3BC14-3362-4A44-AB40-E722E6828037}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KinaUnaMediaApi", "KinaUnaMediaApi\KinaUnaMediaApi.csproj", "{2804ADAB-4BD7-492B-A337-D89BA2EB9F13}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KinaUna.Data", "KinaUna.Data\KinaUna.Data.csproj", "{4207213D-24C3-4966-9471-FA1E4B00EDE4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KinaUnaWebBlazor", "KinaUnaWebBlazor\KinaUnaWebBlazor.csproj", "{CFF04167-DD6A-4E8B-B91E-7BBBE666FDAE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +63,14 @@ Global
 		{4207213D-24C3-4966-9471-FA1E4B00EDE4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4207213D-24C3-4966-9471-FA1E4B00EDE4}.Release|x64.ActiveCfg = Release|x64
 		{4207213D-24C3-4966-9471-FA1E4B00EDE4}.Release|x64.Build.0 = Release|x64
+		{CFF04167-DD6A-4E8B-B91E-7BBBE666FDAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFF04167-DD6A-4E8B-B91E-7BBBE666FDAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFF04167-DD6A-4E8B-B91E-7BBBE666FDAE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CFF04167-DD6A-4E8B-B91E-7BBBE666FDAE}.Debug|x64.Build.0 = Debug|Any CPU
+		{CFF04167-DD6A-4E8B-B91E-7BBBE666FDAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFF04167-DD6A-4E8B-B91E-7BBBE666FDAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFF04167-DD6A-4E8B-B91E-7BBBE666FDAE}.Release|x64.ActiveCfg = Release|Any CPU
+		{CFF04167-DD6A-4E8B-B91E-7BBBE666FDAE}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

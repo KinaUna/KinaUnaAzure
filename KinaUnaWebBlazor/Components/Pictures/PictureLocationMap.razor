@@ -1,0 +1,23 @@
+﻿@inject IJSRuntime Js
+<Div ElementId="mapContainer" Style="width: 100%; height: 300px">
+
+</Div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        List<string> scriptsToLoad = new List<string>();
+        scriptsToLoad.Add("https://js.api.here.com/v3/3.0/mapsjs-core.js");
+        scriptsToLoad.Add("https://js.api.here.com/v3/3.0/mapsjs-service.js");
+        scriptsToLoad.Add("https://js.api.here.com/v3/3.0/mapsjs-ui.js");
+        scriptsToLoad.Add("https://js.api.here.com/v3/3.0/mapsjs-mapevents.js");
+        foreach (string targetUrl in scriptsToLoad) { 
+            await Js.InvokeVoidAsync("loadJs", targetUrl);
+        }
+        List<string> styleSheetsToLoad = new List<string>();
+        styleSheetsToLoad.Add("https://js.api.here.com/v3/3.0/mapsjs-ui.css");
+        foreach (string targetUrl in styleSheetsToLoad){
+            await Js.InvokeVoidAsync("loadCss", targetUrl);
+        }
+    }
+}

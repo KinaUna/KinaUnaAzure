@@ -55,6 +55,11 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
+            if (accessLevel < userAccess?.AccessLevel)
+            {
+                accessLevel = userAccess.AccessLevel;
+            }
+
             if (pageIndex < 1)
             {
                 pageIndex = 1;
@@ -146,6 +151,11 @@ namespace KinaUnaProgenyApi.Controllers
                 if (userAccess == null && picture.ProgenyId != Constants.DefaultChildId)
                 {
                     return Unauthorized();
+                }
+
+                if (accessLevel < userAccess?.AccessLevel)
+                {
+                    accessLevel = userAccess.AccessLevel;
                 }
 
                 PictureViewModel model = new PictureViewModel();

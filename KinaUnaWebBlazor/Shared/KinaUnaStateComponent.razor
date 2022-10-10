@@ -1,0 +1,82 @@
+﻿@using KinaUnaWebBlazor.Models.HomeViewModels
+@using KinaUna.Data.Models
+@using KinaUnaWebBlazor.Services
+@using KinaUna.Data
+@using System.Security.Claims
+@inject ILocaleManager LocaleManager
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
+
+<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    private bool _initializing = true;
+    
+    private int _languageId = 0;
+
+    public int LanguageId {
+        get => _languageId;
+        set{
+            if (_languageId != value)
+            {
+                _languageId = value;
+                if(LanguageList.Any()){
+                    KinaUnaLanguage? selectedLanguage = LanguageList.FirstOrDefault(l => l.Id == _languageId);
+                    if(selectedLanguage != null){
+                        LanguageName = selectedLanguage.Name;
+                    }
+                }
+
+                if(!_initializing){
+                    NavigationManager.NavigateTo($"SetLanguage?languageId={_languageId}&returnUrl={NavigationManager.Uri}", forceLoad: true);
+                }
+
+                StateHasChanged();
+            }
+        }
+    }
+
+    public string LanguageName { get; private set; } = "";
+
+    public List<KinaUnaLanguage> LanguageList { get; set; } = new List<KinaUnaLanguage>();
+
+    public bool ExpandSideBar { get; set; } = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _initializing = true;
+        LanguageList = await LocaleManager.GetAllLanguages();
+        int languageId = 0;
+        if (HttpContextAccessor.HttpContext != null && HttpContextAccessor.HttpContext.Request.Query.ContainsKey("languageId"))
+        {
+            if (int.TryParse(HttpContextAccessor.HttpContext.Request.Query["languageId"], out int queryValue))
+            {
+                languageId = queryValue;
+            }
+        }
+        else
+        {
+            if (HttpContextAccessor.HttpContext != null && HttpContextAccessor.HttpContext.Request.Cookies.TryGetValue("languageId", out string? languageIdText))
+            {
+                if (!int.TryParse(languageIdText, out languageId))
+                {
+                    languageId = 1;
+                }
+            }
+        }
+        if (languageId < 1 || languageId > 3)
+        {
+            languageId = 1;
+        }
+        
+        LanguageId = languageId;
+        
+        _initializing = false;
+    }
+
+}
