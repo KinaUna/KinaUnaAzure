@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.Tokens;
+using Syncfusion.Blazor;
 
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -115,6 +116,7 @@ builder.Services
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddSyncfusionBlazor();
 builder.Services.AddAuthorization();
 //builder.Services.AddAuthorizationCore();
 
@@ -194,6 +196,7 @@ builder.Services.AddAuthentication(sharedOptions =>
 
 WebApplication app = builder.Build();
 
+Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(app.Configuration["SyncfusionKey"]);
 app.UseCookiePolicy();
 
 // Configure the HTTP request pipeline.

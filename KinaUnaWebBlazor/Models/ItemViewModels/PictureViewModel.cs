@@ -24,6 +24,7 @@ namespace KinaUnaWebBlazor.Models.ItemViewModels
         public string TagsList { get; set; } = "";
         public string Location { get; set; } = "";
         public string Longitude { get; set; } = "";
+        public string Longtitude { get; set; } = "";
         public string Latitude { get; set; } = "";
         public string Altitude { get; set; } = "";
         public List<Location> ProgenyLocations { get; set; } = new List<Location>();

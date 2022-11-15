@@ -6,7 +6,7 @@
      Breakpoint="Breakpoint.Desktop"
      NavigationBreakpoint="Breakpoint.Tablet"
      ThemeContrast="ThemeContrast.Dark"
-     @bind-Visible="CurrentState.ExpandSideBar">
+     @bind-Visible="CurrentState!.ExpandSideBar">
     <BarToggler Class="kinauna_yellow_text"/>
     <BarBrand>
         <BarItem>
@@ -47,7 +47,7 @@
 @code
 {
     [CascadingParameter]
-    KinaUnaStateComponent CurrentState { get; set; }
+    KinaUnaStateComponent? CurrentState { get; set; }
 
     private string _timeLineText = "Timeline";
 

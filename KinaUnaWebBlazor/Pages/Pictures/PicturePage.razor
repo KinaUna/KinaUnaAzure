@@ -35,13 +35,17 @@
     [SupplyParameterFromQuery]
     public int? PageSize { get; set; }
 
-    private int _sortBy;
+    [CascadingParameter]
+    public UserState? UserState { get; set; }
+
+    private int _sortBy = 1;
     private string _tagFilter = "";
     private int _page = 1;
     private int _pageSize = 8;
     private int _progenyId = Constants.DefaultChildId;
 
     private Progeny? Progeny { get; set; }
+    UserInfo? UserInfo { get; set; }
 
     private Progeny? PictureProgeny { get; set; }
 
@@ -51,16 +55,20 @@
     PicturePageViewModel? PicturePageViewModel { get; set; }
     string _userTimeZone = Constants.DefaultTimezone;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        await base.OnInitializedAsync();
         UserStateService.CurrentProgenyChanged += UserStateServiceOnCurrentProgenyChanged;
+        UserStateService.CurrentUserChanged += UserStateServiceOnCurrentUserChanged;
+        Progeny = UserStateService.CurrentProgeny;
+        UserInfo = UserStateService.CurrentUser;
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        await base.OnParametersSetAsync();
         Progeny = UserStateService.CurrentProgeny;
+        if(Progeny == null && UserState != null){
+            await UserState.GetUserEmail();
+        }
         _userTimeZone = UserStateService.CurrentUser?.Timezone ?? Constants.DefaultTimezone;
         if(SortBy.HasValue){
             _sortBy = SortBy.Value;
@@ -76,8 +84,10 @@
             _pageSize = PageSize.Value;
         }
 
-        if(Progeny != null && PictureId != null && PictureId > 0){
+        if(Progeny != null && PictureId != null && PictureId > 0)
+        {
             PictureViewModel = await MediaHttpClient.GetPictureViewModel(PictureId.Value, _sortBy, _userTimeZone);
+            
             if(PictureViewModel.ProgenyId != 0 && PictureViewModel.ProgenyId != Progeny.Id){
                 PictureViewModel.Progeny = await ProgenyHttpClient.GetProgeny(PictureViewModel.ProgenyId);
             }
@@ -94,6 +104,7 @@
         _progenyId = PictureProgeny?.Id ?? Constants.DefaultChildId;
 
         PicturePageViewModel = await MediaHttpClient.GetPicturePage(_pageSize, _page, _progenyId, _sortBy, _tagFilter, _userTimeZone);
+        StateHasChanged();
     }
 
     private void UserStateServiceOnCurrentProgenyChanged(object? sender, Progeny e)
@@ -105,9 +116,19 @@
         }
     }
 
+    private void UserStateServiceOnCurrentUserChanged(object? sender, UserInfo e)
+    {
+        if (UserInfo?.Id != e.Id)
+        {
+            UserInfo = e;
+            StateHasChanged();
+        }
+    }
+
     public void Dispose()
     {
         UserStateService.CurrentProgenyChanged -= UserStateServiceOnCurrentProgenyChanged;
+        UserStateService.CurrentUserChanged -= UserStateServiceOnCurrentUserChanged;
     }
 
 }

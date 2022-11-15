@@ -15,46 +15,33 @@
     public RenderFragment? ChildContent { get; set; }
 
     [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
 
     private string _userEmail = Constants.DefaultUserEmail;
 
-    private UserInfo _currentUser = new UserInfo();
 
     public string UserEmail { 
         get => _userEmail;
-        set
-        {
-            if(value != _userEmail){
-                _userEmail = value;
-                StateHasChanged();
-            }
-        }
-    }
-    public UserInfo CurrentUser
-    {
-        get => _currentUser;
-        private set
-        {
-            if (value.Id != _currentUser.Id)
-            {
-                _currentUser = value;
-                //StateHasChanged();
-            }
-        }
+        set => _userEmail = value;
     }
 
     public async Task<string> GetUserEmail()
     {
-        ClaimsPrincipal user = (await AuthenticationStateTask).User;
-        string userEmail = user.FindFirst("email")?.Value ?? Constants.DefaultUserEmail;
+        string userEmail = Constants.DefaultUserEmail;
+        if(AuthenticationStateTask != null){
+            ClaimsPrincipal user = (await AuthenticationStateTask).User;
+            userEmail = user.FindFirst("email")?.Value ?? Constants.DefaultUserEmail;
+
+        }
+
         if (userEmail.ToUpper() != _userEmail.ToUpper())
         {
-            CurrentUser = await ProgenyManager.GetInfo(userEmail);
             await UserStateService.SetUser(userEmail);
-            UserEmail = userEmail;
-            
+            StateHasChanged();
+
         }
+
+        UserEmail = userEmail;
         return userEmail;
     }
     

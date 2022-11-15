@@ -2,6 +2,7 @@
 @using KinaUna.Data
 @inject ILocaleManager LocaleManager
 @inject NavigationManager NavigationManager
+@inject UserStateService UserStateService
 <Bar Breakpoint="Breakpoint.Desktop"
      Background="Background.Light"
      ThemeContrast="ThemeContrast.Light" Class="kinauna_navbar_bg">    
@@ -47,12 +48,6 @@
 </Bar>
 @code
 {
-    [CascadingParameter]
-    KinaUnaStateComponent CurrentState { get; set; }
-
-    [CascadingParameter]
-    UserState UserState { get; set; }
-
     private string _userName = "";
     private string _timeLineText = "Timeline";
     private string _logInText = "Log in";
@@ -70,11 +65,13 @@
     }
     protected override async Task OnParametersSetAsync()
     {
-        if(UserState.CurrentUser.Id != 0 && CurrentState.LanguageId != 0){
-            _timeLineText = await LocaleManager.GetTranslation("Timeline", PageNames.Layout, CurrentState.LanguageId);
-            _logInText = await LocaleManager.GetTranslation("Log in or register", PageNames.Layout, CurrentState.LanguageId);
-            _logOutText = await LocaleManager.GetTranslation("Log out", PageNames.Layout, CurrentState.LanguageId);
-            _userName = UserState.CurrentUser.UserName;
+        _timeLineText = await UserStateService.GetTranslation("Timeline", PageNames.Layout);
+        _logInText = await UserStateService.GetTranslation("Log in or register", PageNames.Layout);
+        _logOutText = await UserStateService.GetTranslation("Log out", PageNames.Layout);
+
+        if(UserStateService.CurrentUser != null){
+            
+            _userName = UserStateService.CurrentUser.UserName;
         }
 
     }

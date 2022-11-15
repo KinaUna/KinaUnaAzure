@@ -68,18 +68,34 @@
                 if (!string.IsNullOrEmpty(displayPicture.Location))
                 {
                     LocationDataViewModel = new LocationDataViewModel();
-                    LocationDataViewModel.Location = await UserStateService.GetTranslation("Photo location:", PageNames.Home) + " " + displayPicture.Location;
+                    LocationDataViewModel.Location = displayPicture.Location;
                     if (!string.IsNullOrEmpty(displayPicture.Latitude))
                     {
-                        LocationDataViewModel.Latitude = await UserStateService.GetTranslation("Latitude:", PageNames.Pictures) + " " + displayPicture.Latitude;
+                        LocationDataViewModel.Latitude = displayPicture.Latitude;
+                        bool latitudeParsed = double.TryParse(LocationDataViewModel.Latitude, out double latitude);
+                        if (latitudeParsed)
+                        {
+                            LocationDataViewModel.LatitudeDouble = latitude;
+                        }
                     }
                     if (!string.IsNullOrEmpty(displayPicture.Longtitude))
                     {
-                        LocationDataViewModel.Longitude = await UserStateService.GetTranslation("Longitude:", PageNames.Pictures) + " " + displayPicture.Longtitude;
+                        LocationDataViewModel.Longitude = displayPicture.Longtitude;
+                        bool longitudeParsed = double.TryParse(LocationDataViewModel.Longitude, out double longitude);
+                        if (longitudeParsed)
+                        {
+                            LocationDataViewModel.LongitudeDouble = longitude;
+                        }
                     }
+
                     if (!string.IsNullOrEmpty(displayPicture.Altitude))
                     {
-                        LocationDataViewModel.Altitude = await UserStateService.GetTranslation("Altitude:", PageNames.Pictures) + " " + displayPicture.Altitude;
+                        LocationDataViewModel.Altitude = displayPicture.Altitude;
+                        bool altitudeParsed = double.TryParse(LocationDataViewModel.Altitude, out double altitude);
+                        if (altitudeParsed)
+                        {
+                            LocationDataViewModel.AltitudeDouble = altitude;
+                        }
                     }
 
                 }

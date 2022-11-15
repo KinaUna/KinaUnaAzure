@@ -1,15 +1,19 @@
 ﻿@using KinaUnaWebBlazor.Models.HomeViewModels
+@using KinaUnaWebBlazor.Models.ItemViewModels
+@using KinaUnaWebBlazor.Services
+@using KinaUna.Data
+@inject UserStateService UserStateService
 @if(LocationDataViewModel != null){
     <Div Margin="Margin.Is2.FromTop" Style="font-size: 16px;">
         @LocationDataViewModel.Location
     </Div>
     @if(!string.IsNullOrEmpty(LocationDataViewModel.Latitude)){
         <Div>
-            @LocationDataViewModel.Latitude @LocationDataViewModel.Longitude @LocationDataViewModel.Altitude
+            @_latitudeString @_longitudeString @_altitudeString
         </Div>
         @if(ShowMap.HasValue && ShowMap.Value){
             <Div>
-                Map
+                <PictureLocationMap Latitude="@LocationDataViewModel.LatitudeDouble" Longitude="@LocationDataViewModel.LongitudeDouble" LocationName="@LocationDataViewModel.Location"></PictureLocationMap>
             </Div>
         }
     }
@@ -21,9 +25,23 @@
 
     [Parameter]
     public bool? ShowMap { get; set; }
+
+    private string _longitudeString = "";
+    private string _latitudeString = "";
+    private string _altitudeString = "";
+    private string _locationNameString = "";
     protected override async Task OnParametersSetAsync()
     {
-        await base.OnParametersSetAsync();
+        if(!string.IsNullOrEmpty(LocationDataViewModel?.Longitude) && !string.IsNullOrEmpty(LocationDataViewModel?.Latitude)){
+            ShowMap = true;
+            _longitudeString = await UserStateService.GetTranslation("Longitude:", PageNames.Pictures) + " " + LocationDataViewModel.Longitude;
+            _latitudeString = await UserStateService.GetTranslation("Latitude:", PageNames.Pictures) + " " + LocationDataViewModel.Latitude;
+            _altitudeString = await UserStateService.GetTranslation("Altitude:", PageNames.Pictures) + " " + LocationDataViewModel.Altitude;
+            if(!string.IsNullOrEmpty(LocationDataViewModel.Altitude)){
+                _locationNameString = await UserStateService.GetTranslation("Photo location:", PageNames.Home) + " " + LocationDataViewModel.Location;
+            }
+            StateHasChanged();
+        }
     }
 
 }

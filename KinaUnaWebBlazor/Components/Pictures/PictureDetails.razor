@@ -5,6 +5,7 @@
 @using KinaUnaWebBlazor.Models.HomeViewModels
 @inject UserStateService UserStateService
 @inject ImageStore ImageStore
+@implements IDisposable
 @if(PictureViewModel != null){
     <Div>
         <img src="@_pictureUrl" style="width: auto; height: auto; max-width: 100%; max-height: 90vh;"/>
@@ -31,9 +32,18 @@
     Progeny? Progeny { get; set; }
     UserInfo? UserInfo { get; set; }
     LocationDataViewModel? LocationDataViewModel { get; set; }
+
+    protected override void OnInitialized()
+    {
+        UserStateService.CurrentProgenyChanged += UserStateServiceOnCurrentProgenyChanged;
+        UserStateService.CurrentUserChanged += UserStateServiceOnCurrentUserChanged;
+        Progeny = UserStateService.CurrentProgeny;
+        UserInfo = UserStateService.CurrentUser;
+    }
+
     protected override async Task OnParametersSetAsync()
     {
-        await base.OnParametersSetAsync();
+
         if (PictureViewModel != null)
         {
             Progeny = PictureViewModel?.Progeny;
@@ -58,17 +68,33 @@
                 if (!string.IsNullOrEmpty(PictureViewModel.Location))
                 {
                     LocationDataViewModel = new LocationDataViewModel();
-                    LocationDataViewModel.Location = await UserStateService.GetTranslation("Photo location:", PageNames.Home) + " " + PictureViewModel.Location;
+                    LocationDataViewModel.Location = PictureViewModel.Location;
                     if(!string.IsNullOrEmpty(PictureViewModel.Latitude)){
-                        LocationDataViewModel.Latitude = await UserStateService.GetTranslation("Latitude:", PageNames.Pictures) + " " + PictureViewModel.Latitude;
+                        LocationDataViewModel.Latitude = PictureViewModel.Latitude;
+                        bool latitudeParsed = double.TryParse(LocationDataViewModel.Latitude, out double latitude);
+                        if (latitudeParsed)
+                        {
+                            LocationDataViewModel.LatitudeDouble = latitude;
+                        }
                     }
                     if(!string.IsNullOrEmpty(PictureViewModel.Longitude)){
-                        LocationDataViewModel.Longitude = await UserStateService.GetTranslation("Longitude:", PageNames.Pictures) + " " + PictureViewModel.Longitude;
+                        LocationDataViewModel.Longitude = PictureViewModel.Longitude;
+                        bool longitudeParsed = double.TryParse(LocationDataViewModel.Longitude, out double longitude);
+                        if (longitudeParsed)
+                        {
+                            LocationDataViewModel.LongitudeDouble = longitude;
+                        }
                     }
-                    if(!string.IsNullOrEmpty(PictureViewModel.Altitude)){
-                        LocationDataViewModel.Altitude = await UserStateService.GetTranslation("Altitude:", PageNames.Pictures) + " " + PictureViewModel.Altitude;
+
+                    if (!string.IsNullOrEmpty(PictureViewModel.Altitude))
+                    {
+                        LocationDataViewModel.Altitude = PictureViewModel.Altitude;
+                        bool altitudeParsed = double.TryParse(LocationDataViewModel.Altitude, out double altitude);
+                        if (altitudeParsed)
+                        {
+                            LocationDataViewModel.AltitudeDouble = altitude;
+                        }
                     }
-                    
                 }
                 
                 StateHasChanged();
@@ -76,4 +102,27 @@
         }
     }
 
+    private void UserStateServiceOnCurrentProgenyChanged(object? sender, Progeny e)
+    {
+        if (e.Id > 0)
+        {
+            Progeny = e;
+            StateHasChanged();
+        }
+    }
+
+    private void UserStateServiceOnCurrentUserChanged(object? sender, UserInfo e)
+    {
+        if (UserInfo?.Id != e.Id)
+        {
+            UserInfo = e;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        UserStateService.CurrentProgenyChanged -= UserStateServiceOnCurrentProgenyChanged;
+        UserStateService.CurrentUserChanged -= UserStateServiceOnCurrentUserChanged;
+    }
 }

@@ -1,23 +1,62 @@
-﻿@inject IJSRuntime Js
-<Div ElementId="mapContainer" Style="width: 100%; height: 300px">
-
-</Div>
-
+﻿@using KinaUna.Data.Models
+<SfMaps>
+    <MapsCenterPosition Latitude="_latitude" Longitude="_longitude"></MapsCenterPosition>
+    <MapsZoomSettings Enable="true" ZoomFactor="12" MaxZoom="18">
+        <MapsZoomToolbarSettings>
+            <MapsZoomToolbarButton ToolbarItems="new List<ToolbarItem>() { ToolbarItem.Zoom, ToolbarItem.ZoomIn, ToolbarItem.ZoomOut, ToolbarItem.Pan, ToolbarItem.Reset }"></MapsZoomToolbarButton>
+        </MapsZoomToolbarSettings>
+    </MapsZoomSettings>
+    <MapsLayers>
+        <MapsLayer UrlTemplate="https://tile.openstreetmap.org/level/tileX/tileY.png" TValue="string">
+            <MapsMarkerSettings>
+                <MapsMarker Visible="true" Height="25" Width="25" DataSource="_locationsList" TValue="Location">
+                    <MapsMarkerTooltipSettings Visible="true" ValuePath="Name"></MapsMarkerTooltipSettings>
+                </MapsMarker>
+            </MapsMarkerSettings>
+        </MapsLayer>
+    </MapsLayers>
+</SfMaps>
 @code {
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+
+    [Parameter]
+    public double? Latitude { get; set; }
+
+    [Parameter]
+    public double? Longitude { get; set; }
+
+    [Parameter]
+    public string? LocationName { get; set; }
+
+    private double _latitude = 0;
+    private double _longitude = 0;
+
+    private Location _location = new Location();
+    List<Location> _locationsList = new List<Location>();
+    protected override async Task OnParametersSetAsync()
     {
-        List<string> scriptsToLoad = new List<string>();
-        scriptsToLoad.Add("https://js.api.here.com/v3/3.0/mapsjs-core.js");
-        scriptsToLoad.Add("https://js.api.here.com/v3/3.0/mapsjs-service.js");
-        scriptsToLoad.Add("https://js.api.here.com/v3/3.0/mapsjs-ui.js");
-        scriptsToLoad.Add("https://js.api.here.com/v3/3.0/mapsjs-mapevents.js");
-        foreach (string targetUrl in scriptsToLoad) { 
-            await Js.InvokeVoidAsync("loadJs", targetUrl);
+        if(Latitude != null){
+            _latitude = Latitude.Value;
+            _location.Latitude = _latitude;
+            
         }
-        List<string> styleSheetsToLoad = new List<string>();
-        styleSheetsToLoad.Add("https://js.api.here.com/v3/3.0/mapsjs-ui.css");
-        foreach (string targetUrl in styleSheetsToLoad){
-            await Js.InvokeVoidAsync("loadCss", targetUrl);
+
+        if(Longitude != null){
+            _longitude = Longitude.Value;
+            _location.Longitude = _longitude;
+        
         }
+
+        if(!string.IsNullOrEmpty(LocationName)){
+            _location.Name = LocationName;
+        }
+
+        if(_locationsList.Any()){
+            _locationsList.Clear();
+        }
+
+        _locationsList.Add(_location);
+        StateHasChanged();
+        
     }
+
 }

@@ -301,6 +301,7 @@ namespace KinaUnaWebBlazor.Services
             {
                 string picturesViewModelAsString = await picturesResponse.Content.ReadAsStringAsync();
                 PictureViewModel pictureViewModel = JsonConvert.DeserializeObject<PictureViewModel>(picturesViewModelAsString);
+                pictureViewModel.Longitude = pictureViewModel.Longtitude;
                 if (timeZone != "")
                 {
                     if (pictureViewModel.PictureTime.HasValue)

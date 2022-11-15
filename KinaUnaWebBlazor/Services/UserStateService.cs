@@ -1,4 +1,5 @@
-﻿using KinaUna.Data.Models;
+﻿using KinaUna.Data;
+using KinaUna.Data.Models;
 
 namespace KinaUnaWebBlazor.Services
 {
@@ -38,7 +39,7 @@ namespace KinaUnaWebBlazor.Services
         }
         public UserInfo? CurrentUser { 
             get => _currentUser;
-            set
+            private set
             {
                 if (value != null && value.Id != _currentUser?.Id)
                 {
@@ -50,7 +51,7 @@ namespace KinaUnaWebBlazor.Services
         public Progeny? CurrentProgeny
         {
             get => _currentProgeny;
-            set
+            private set
             {
                 if (value != null && value.Id != _currentProgeny?.Id)
                 {
@@ -66,11 +67,19 @@ namespace KinaUnaWebBlazor.Services
             await SetProgeny(CurrentUser.ViewChild);
         }
 
-        public async Task SetProgeny(int progenyId)
+        private async Task SetProgeny(int progenyId)
         {
             if (CurrentUser != null)
             {
-                CurrentProgeny = await _progenyHttpClient.GetProgeny(progenyId);
+                if (progenyId > 0)
+                {
+                    CurrentProgeny = await _progenyHttpClient.GetProgeny(progenyId);
+                }
+                else
+                {
+                    CurrentProgeny = await _progenyHttpClient.GetProgeny(Constants.DefaultChildId);
+                }
+                
             }
         }
 

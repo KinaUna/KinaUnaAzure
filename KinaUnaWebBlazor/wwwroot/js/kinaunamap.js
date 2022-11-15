@@ -13,73 +13,31 @@ let maptypes = platform.createDefaultLayers({
     ppi: pixelRatio === 1 ? undefined : 320
 });
 
-let map = new H.Map(document.getElementById('mapContainer'),
-    maptypes.normal.map,
-    {
-        zoom: 14,
-        center: { lng: @Model.Longtitude, lat: @Model.Latitude },
-pixelRatio: pixelRatio
-                    });
-let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-let ui = H.ui.UI.createDefault(map, maptypes);
+let kinaUnaLatitude = 0;
+let kinaUnaLongitude = 0;
+let map;
+let behavior;
+let ui;
+let marker;
+let reverseGeocodingParameters;
 
-let marker = new H.map.Marker({ lat: @Model.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.'), lng: @Model.Longtitude.ToString(new CultureInfo("en-US")).Replace(',', '.') }, { icon: defaultIcon });
-map.addObject(marker);
+function initializeKinaUnaMap(latitude, longitude)
+{
+    kinaUnaLatitude = latitude;
+    kinaUnaLongitude = longitude;
 
-let reverseGeocodingParameters = {
-    prox: '@Model.Latitude,  @Model.Longtitude, 32',
-    mode: 'retrieveAddresses',
-    maxresults: 1
-};
+    map = new H.Map(document.getElementById('mapContainer'),
+        maptypes.normal.map,
+        {
+            zoom: 14,
+            center: { lng: kinaUnaLongitude, lat: kinaUnaLatitude },
+            pixelRatio: pixelRatio
+        });
 
-function onGeoSuccess(result) {
-    let location = result.Response.View[0].Result[0];
-    let contextText = "";
-    let streetName = "";
-    let districtName = "";
-    let cityName = "";
-    let countyName = "";
-    let stateName = "";
-    if (location.Location.Address.Street !== undefined) {
-        streetName = location.Location.Address.Street;
-        contextText = contextText + location.Location.Address.Street;
-    }
-    if (location.Location.Address.District !== undefined) {
-        districtName = location.Location.Address.District;
-        if (districtName !== streetName) {
-            contextText = contextText + " " + location.Location.Address.District;
-        }
-    }
-    if (location.Location.Address.City !== undefined) {
-        cityName = location.Location.Address.City;
-        if (cityName !== districtName && districtName.indexOf(cityName) < 0) {
-            contextText = contextText + ", " + location.Location.Address.City;
-        }
-    }
-    if (location.Location.Address.County !== undefined) {
-        countyName = location.Location.Address.County;
-        if (countyName !== cityName && cityName.indexOf(countyName) < 0 && countyName.indexOf(cityName) < 0) {
-            contextText = contextText + ", " + location.Location.Address.County;
-        }
-    }
-    if (location.Location.Address.State !== undefined) {
-        stateName = location.Location.Address.State;
-        if (stateName !== cityName && stateName !== countyName) {
-            contextText = contextText + ", " + location.Location.Address.State;
-        }
-    }
-    if (location.Location.Address.AdditionalData[0].value !== undefined) {
-        contextText = contextText + ", " + location.Location.Address.AdditionalData[0].value;
-    }
-    contextText = contextText.replace(/(^,)|(,$)/g, "").trim();
-    ui.addBubble(new H.ui.InfoBubble({
-        lat: location.Location.DisplayPosition.Latitude,
-        lng: location.Location.DisplayPosition.Longitude
-    }, { content: contextText }));
-};
+    behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+    ui = H.ui.UI.createDefault(map, maptypes);
 
-let geocoder = platform.getGeocodingService();
-geocoder.reverseGeocode(
-    reverseGeocodingParameters,
-    onGeoSuccess,
-    function (e) { console.log('Error in Reverse Geocode: ' + e); });
+    marker = new H.map.Marker({ lat: kinaUnaLatitude, lng: kinaUnaLongitude }, { icon: defaultIcon });
+    map.addObject(marker);
+}
+
