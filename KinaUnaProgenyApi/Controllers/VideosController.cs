@@ -18,17 +18,22 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class VideosController : ControllerBase
     {
-        private readonly IDataService _dataService;
         private readonly IVideosService _videosService;
         private readonly ICommentsService _commentsService;
+        private readonly IProgenyService _progenyService;
+        private readonly IUserInfoService _userInfoService;
+        private readonly IUserAccessService _userAccessService;
         private readonly AzureNotifications _azureNotifications;
 
-        public VideosController(IDataService dataService, AzureNotifications azureNotifications, IVideosService videosService, ICommentsService commentsService)
+        public VideosController(AzureNotifications azureNotifications, IVideosService videosService, ICommentsService commentsService, IProgenyService progenyService,
+            IUserInfoService userInfoService, IUserAccessService userAccessService)
         {
-            _dataService = dataService;
             _azureNotifications = azureNotifications;
             _videosService = videosService;
             _commentsService = commentsService;
+            _progenyService = progenyService;
+            _userInfoService = userInfoService;
+            _userAccessService = userAccessService;
         }
 
         // GET api/videos/page[?pageSize=3&pageIndex=10&progenyId=2&accessLevel=1&tagFilter=funny]
@@ -38,7 +43,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {
@@ -146,7 +151,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail); 
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail); 
                 if (userAccess == null && video.ProgenyId != Constants.DefaultChildId)
                 {
                     return Unauthorized();
@@ -257,7 +262,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail); 
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail); 
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
@@ -286,7 +291,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
                 if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
                 {
@@ -307,7 +312,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
                 if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
                 {
@@ -326,7 +331,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(model.ProgenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(model.ProgenyId, userEmail);
 
             if (userAccess == null || userAccess.AccessLevel > 0)
             {
@@ -343,8 +348,8 @@ namespace KinaUnaProgenyApi.Controllers
                 await _videosService.SetVideo(model.VideoId);
                 await _commentsService.SetCommentsList(model.CommentThreadNumber);
 
-                Progeny prog = await _dataService.GetProgeny(model.ProgenyId);
-                UserInfo userinfo = await _dataService.GetUserInfoByEmail(User.GetEmail());
+                Progeny prog = await _progenyService.GetProgeny(model.ProgenyId);
+                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
                 string title = "New Video added for " + prog.NickName;
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new video for " + prog.NickName;
                 TimeLineItem tItem = new TimeLineItem();
@@ -376,7 +381,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(value.ProgenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(value.ProgenyId, userEmail);
 
             if (userAccess == null || userAccess.AccessLevel > 0)
             {
@@ -397,8 +402,8 @@ namespace KinaUnaProgenyApi.Controllers
             await _videosService.SetVideo(video.VideoId);
             await _commentsService.SetCommentsList(video.CommentThreadNumber);
 
-            Progeny prog = await _dataService.GetProgeny(video.ProgenyId);
-            UserInfo userinfo = await _dataService.GetUserInfoByEmail(User.GetEmail());
+            Progeny prog = await _progenyService.GetProgeny(video.ProgenyId);
+            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
             string title = "Video Edited for " + prog.NickName;
             string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a video for " + prog.NickName;
             TimeLineItem tItem = new TimeLineItem();
@@ -420,7 +425,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail);
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail);
 
                 if (userAccess == null || userAccess.AccessLevel > 0)
                 {
@@ -447,8 +452,8 @@ namespace KinaUnaProgenyApi.Controllers
                 _ = await _videosService.DeleteVideo(video);
                 await _videosService.RemoveVideo(video.VideoId, video.ProgenyId);
 
-                Progeny prog = await _dataService.GetProgeny(video.ProgenyId);
-                UserInfo userinfo = await _dataService.GetUserInfoByEmail(User.GetEmail());
+                Progeny prog = await _progenyService.GetProgeny(video.ProgenyId);
+                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
                 string title = "Video deleted for " + prog.NickName;
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a video for " + prog.NickName;
                 TimeLineItem tItem = new TimeLineItem();
@@ -474,7 +479,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
             if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
             {
@@ -490,7 +495,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {

@@ -16,17 +16,19 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class CommentsController : ControllerBase
     {
-        private readonly IDataService _dataService;
         private readonly ICommentsService _commentsService;
+        private readonly IProgenyService _progenyService;
+        private readonly IUserInfoService _userInfoService;
         private readonly ImageStore _imageStore;
         private readonly AzureNotifications _azureNotifications;
 
-        public CommentsController(IDataService dataService, ImageStore imageStore, AzureNotifications azureNotifications, ICommentsService commentsService)
+        public CommentsController(ImageStore imageStore, AzureNotifications azureNotifications, ICommentsService commentsService, IProgenyService progenyService, IUserInfoService userInfoService)
         {
-            _dataService = dataService;
             _imageStore = imageStore;
             _azureNotifications = azureNotifications;
             _commentsService = commentsService;
+            _progenyService = progenyService;
+            _userInfoService = userInfoService;
         }
 
         // GET api/comments/5
@@ -53,7 +55,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 foreach (Comment comment in result)
                 {
-                    UserInfo cmntAuthor = await _dataService.GetUserInfoByUserId(comment.Author);
+                    UserInfo cmntAuthor = await _userInfoService.GetUserInfoByUserId(comment.Author);
                     if (cmntAuthor != null)
                     {
                         string authorImg = cmntAuthor.ProfilePicture ?? "";
@@ -118,7 +120,7 @@ namespace KinaUnaProgenyApi.Controllers
             newComment = await _commentsService.AddComment(newComment);
             await _commentsService.SetComment(newComment.CommentId);
 
-            model.Progeny = await _dataService.GetProgeny(model.Progeny.Id);
+            model.Progeny = await _progenyService.GetProgeny(model.Progeny.Id);
             string title = "New comment for " + model.Progeny.NickName;
             string message = model.DisplayName + " added a new comment for " + model.Progeny.NickName;
             TimeLineItem tItem = new TimeLineItem();
@@ -126,7 +128,7 @@ namespace KinaUnaProgenyApi.Controllers
             tItem.ItemId = model.ItemId;
             tItem.ItemType = model.ItemType;
             tItem.AccessLevel = model.AccessLevel;
-            UserInfo userinfo = await _dataService.GetUserInfoByUserId(model.Author);
+            UserInfo userinfo = await _userInfoService.GetUserInfoByUserId(model.Author);
             await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
 
             return Ok(newComment);
@@ -164,7 +166,7 @@ namespace KinaUnaProgenyApi.Controllers
             Comment comment = await _commentsService.GetComment(id);
             if (comment != null)
             {
-                UserInfo userInfo = await _dataService.GetUserInfoByEmail(User.GetEmail());
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
                 if (userInfo.UserId != comment.Author)
                 {
                     return Unauthorized();

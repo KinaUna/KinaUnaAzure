@@ -24,10 +24,10 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly ISkillService _skillService;
         private readonly IPicturesService _picturesService;
         private readonly IVideosService _videosService;
-        private readonly IDataService _dataService;
+        private readonly ILocationService _locationService;
 
         public AutoSuggestsController(IUserAccessService userAccessService, ICalendarService calendarService, IContactService contactService, IFriendService friendService, INoteService noteService,
-            ISkillService skillService, IDataService dataService, IPicturesService picturesService, IVideosService videosService)
+            ISkillService skillService, IPicturesService picturesService, IVideosService videosService, ILocationService locationService)
         {
             _userAccessService = userAccessService;
             _calendarService = calendarService;
@@ -35,9 +35,9 @@ namespace KinaUnaProgenyApi.Controllers
             _friendService = friendService;
             _noteService = noteService;
             _skillService = skillService;
-            _dataService = dataService;
             _picturesService = picturesService;
             _videosService = videosService;
+            _locationService = locationService;
         }
 
         [Route("[action]/{id}/{accessLevel}")]
@@ -147,7 +147,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
@@ -182,7 +182,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<CalendarItem> allCalendarItems = await _dataService.GetCalendarList(id);
+            List<CalendarItem> allCalendarItems = await _calendarService.GetCalendarList(id);
             allCalendarItems = allCalendarItems.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (CalendarItem calendarItem in allCalendarItems)
             {
@@ -195,7 +195,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Location> allLocations = await _dataService.GetLocationsList(id);
+            List<Location> allLocations = await _locationService.GetLocationsList(id);
             allLocations = allLocations.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Location locationItem in allLocations)
             {
@@ -219,7 +219,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
@@ -262,7 +262,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Location> allLocations = await _dataService.GetLocationsList(id);
+            List<Location> allLocations = await _locationService.GetLocationsList(id);
             allLocations = allLocations.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Location location in allLocations)
             {
@@ -279,7 +279,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Friend> allFriends = await _dataService.GetFriendsList(id);
+            List<Friend> allFriends = await _friendService.GetFriendsList(id);
             allFriends = allFriends.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Friend friend in allFriends)
             {
@@ -296,7 +296,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Contact> allContacts = await _dataService.GetContactsList(id);
+            List<Contact> allContacts = await _contactService.GetContactsList(id);
             allContacts = allContacts.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Contact contact in allContacts)
             {

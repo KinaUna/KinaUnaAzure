@@ -24,21 +24,25 @@ namespace KinaUnaProgenyApi.Controllers
     public class PicturesController : ControllerBase
     {
         private readonly ImageStore _imageStore;
-        private readonly IDataService _dataService;
         private readonly IPicturesService _picturesService;
         private readonly IVideosService _videosService;
         private readonly ICommentsService _commentsService;
+        private readonly IProgenyService _progenyService;
+        private readonly IUserInfoService _userInfoService;
+        private readonly IUserAccessService _userAccessService;
         private readonly AzureNotifications _azureNotifications;
 
-        public PicturesController(ImageStore imageStore, IDataService dataService, AzureNotifications azureNotifications, IPicturesService picturesService,
-            IVideosService videosService, ICommentsService commentsService)
+        public PicturesController(ImageStore imageStore, AzureNotifications azureNotifications, IPicturesService picturesService,
+            IVideosService videosService, ICommentsService commentsService, IProgenyService progenyService, IUserInfoService userInfoService, IUserAccessService userAccessService)
         {
             _imageStore = imageStore;
-            _dataService = dataService;
             _azureNotifications = azureNotifications;
             _picturesService = picturesService;
             _videosService = videosService;
             _commentsService = commentsService;
+            _progenyService = progenyService;
+            _userInfoService = userInfoService;
+            _userAccessService = userAccessService;
         }
 
         // GET api/pictures/page[?pageSize=3&pageIndex=10&progenyId=2&accessLevel=1&tagFilter=funny]
@@ -48,7 +52,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {
@@ -146,7 +150,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail); 
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail); 
 
                 if (userAccess == null && picture.ProgenyId != Constants.DefaultChildId)
                 {
@@ -259,7 +263,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
@@ -319,7 +323,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
 
                 if (userAccess == null && picture.ProgenyId != Constants.DefaultChildId)
                 {
@@ -359,7 +363,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); 
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); 
 
                 if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
                 {
@@ -393,7 +397,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(model.ProgenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(model.ProgenyId, userEmail);
             
             if (userAccess == null || userAccess.AccessLevel > 0)
             {
@@ -669,8 +673,8 @@ namespace KinaUnaProgenyApi.Controllers
             await _picturesService.SetPicture(model.PictureId);
             await _commentsService.SetCommentsList(model.CommentThreadNumber);
 
-            Progeny prog = await _dataService.GetProgeny(model.ProgenyId);
-            UserInfo userinfo = await _dataService.GetUserInfoByEmail(User.GetEmail());
+            Progeny prog = await _progenyService.GetProgeny(model.ProgenyId);
+            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
             string title = "New Photo added for " + prog.NickName;
             string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new photo for " + prog.NickName;
             TimeLineItem tItem = new TimeLineItem();
@@ -697,7 +701,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
 
             if (userAccess == null || userAccess.AccessLevel > 0)
             {
@@ -721,8 +725,8 @@ namespace KinaUnaProgenyApi.Controllers
             await _picturesService.SetPicture(picture.PictureId);
             await _commentsService.SetCommentsList(picture.CommentThreadNumber);
 
-            Progeny prog = await _dataService.GetProgeny(picture.ProgenyId);
-            UserInfo userinfo = await _dataService.GetUserInfoByEmail(User.GetEmail());
+            Progeny prog = await _progenyService.GetProgeny(picture.ProgenyId);
+            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
             string title = "Photo Edited for " + prog.NickName;
             string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a photo for " + prog.NickName;
             TimeLineItem tItem = new TimeLineItem();
@@ -744,7 +748,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
 
                 if (userAccess == null || userAccess.AccessLevel > 0)
                 {
@@ -776,8 +780,8 @@ namespace KinaUnaProgenyApi.Controllers
                 await _picturesService.DeletePicture(picture);
                 await _picturesService.RemovePicture(picture.PictureId, picture.ProgenyId);
 
-                Progeny prog = await _dataService.GetProgeny(picture.ProgenyId);
-                UserInfo userinfo = await _dataService.GetUserInfoByEmail(User.GetEmail());
+                Progeny prog = await _progenyService.GetProgeny(picture.ProgenyId);
+                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
                 string title = "Photo deleted for " + prog.NickName;
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a photo for " + prog.NickName;
                 TimeLineItem tItem = new TimeLineItem();
@@ -803,7 +807,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); 
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail); 
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {
@@ -846,7 +850,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {
@@ -899,7 +903,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
                 if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
                 {
@@ -942,7 +946,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(progenyId, userEmail); 
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail); 
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {
@@ -1051,7 +1055,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
 
                 if (userAccess == null)
                 {
@@ -1163,7 +1167,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
 
                 if (userAccess == null)
                 {
@@ -1617,7 +1621,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
@@ -1661,7 +1665,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
@@ -1719,7 +1723,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
 
                 if (userAccess == null || userAccess.AccessLevel > 0)
                 {
