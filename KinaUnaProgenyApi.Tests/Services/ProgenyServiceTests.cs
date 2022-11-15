@@ -22,7 +22,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
             context.Add(progenyToAdd);
             await context.SaveChangesAsync();
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             ProgenyService progenyService = new ProgenyService(context, memoryCache);
 
@@ -56,7 +56,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
             context.Add(new Progeny { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone });
             await context.SaveChangesAsync();
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             ProgenyService progenyService = new ProgenyService(context, memoryCache);
 
@@ -71,7 +71,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddProgenyShouldSaveProgeny").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             ProgenyService progenyService = new ProgenyService(context, memoryCache);
 
@@ -120,7 +120,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(originalProgeny);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             ProgenyService progenyService = new ProgenyService(context, memoryCache);
 
@@ -165,7 +165,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(originalProgeny);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             ProgenyService progenyService = new ProgenyService(context, memoryCache);
 

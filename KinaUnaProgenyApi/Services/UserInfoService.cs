@@ -35,16 +35,11 @@ namespace KinaUnaProgenyApi.Services
         public async Task<UserInfo> GetUserInfoByEmail(string userEmail)
         {
             userEmail = userEmail.Trim();
-            UserInfo userinfo;
-            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper());
-            if (!string.IsNullOrEmpty(cachedUserInfo))
+
+            UserInfo userinfo = await GetUserInfoFromCache(userEmail);
+            if (userinfo == null || userinfo.Id == 0)
             {
-                userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
-            }
-            else
-            {
-                userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper(), JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+                userinfo = await SetUserInfoByEmail(userEmail);
             }
 
             return userinfo;
@@ -58,6 +53,19 @@ namespace KinaUnaProgenyApi.Services
 
             return userInfo;
         }
+
+        private async Task<UserInfo> GetUserInfoFromCache(string userEmail)
+        {
+            UserInfo userinfo = new UserInfo();
+            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper());
+            if (!string.IsNullOrEmpty(cachedUserInfo))
+            {
+                userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
+            }
+
+            return userinfo;
+        }
+        
         public async Task<UserInfo> SetUserInfoByEmail(string userEmail)
         {
             UserInfo userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
