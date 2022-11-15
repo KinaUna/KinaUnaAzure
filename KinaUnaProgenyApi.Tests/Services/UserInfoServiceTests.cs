@@ -264,8 +264,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             UserInfo userInfoToDelete = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
 
-            UserInfo resultUserInfo = await userInfoService.DeleteUserInfo(userInfoToDelete);
-            UserInfo? dbUSerInfo = await context.UserInfoDb.AsNoTracking().FirstOrDefaultAsync(ui => ui.Id == userInfoToDelete.Id);
+            _ = await userInfoService.DeleteUserInfo(userInfoToDelete);
+            UserInfo? dbUSerInfo = await context.UserInfoDb.AsNoTracking().FirstOrDefaultAsync(ui => ui.Id == 1);
             UserInfo savedUserInfo = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
 
             Assert.Null(dbUSerInfo);

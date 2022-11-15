@@ -22,8 +22,8 @@ namespace KinaUnaProgenyApi.Services
         {
             _context = context;
             _cache = cache;
-            _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
-            _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
+            _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
+            _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
         public async Task<List<UserInfo>> GetAllUserInfos()
@@ -37,7 +37,7 @@ namespace KinaUnaProgenyApi.Services
         {
             userEmail = userEmail.Trim();
 
-            UserInfo userinfo = await GetUserInfoFromCache(userEmail);
+            UserInfo userinfo = await GetUserInfoByEmailFromCache(userEmail);
             if (userinfo == null || userinfo.Id == 0)
             {
                 userinfo = await SetUserInfoByEmail(userEmail);
@@ -55,7 +55,7 @@ namespace KinaUnaProgenyApi.Services
             return userInfo;
         }
 
-        private async Task<UserInfo> GetUserInfoFromCache(string userEmail)
+        private async Task<UserInfo> GetUserInfoByEmailFromCache(string userEmail)
         {
             UserInfo userinfo = new UserInfo();
             string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper());
@@ -66,10 +66,34 @@ namespace KinaUnaProgenyApi.Services
 
             return userinfo;
         }
-        
+
+        private async Task<UserInfo> GetUserInfoByIdFromCache(int id)
+        {
+            UserInfo userinfo = new UserInfo();
+            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + id);
+            if (!string.IsNullOrEmpty(cachedUserInfo))
+            {
+                userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
+            }
+
+            return userinfo;
+        }
+
+        private async Task<UserInfo> GetUserInfoByUserIdFromCache(string userId)
+        {
+            UserInfo userinfo = new UserInfo();
+            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userId);
+            if (!string.IsNullOrEmpty(cachedUserInfo))
+            {
+                userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
+            }
+
+            return userinfo;
+        }
+
         public async Task<UserInfo> SetUserInfoByEmail(string userEmail)
         {
-            UserInfo userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
+            UserInfo userinfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
             if (userinfo != null)
             {
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper(), JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
@@ -78,6 +102,28 @@ namespace KinaUnaProgenyApi.Services
             }
             
             
+            return userinfo;
+        }
+
+        private async Task<UserInfo> SetUserInfoById(int id)
+        {
+            UserInfo userinfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
+            if (userinfo != null)
+            {
+                _ = await SetUserInfoByEmail(userinfo.UserEmail);
+            }
+
+            return userinfo;
+        }
+
+        private async Task<UserInfo> SetUserInfoByUserId(string userId)
+        {
+            UserInfo userinfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == userId.ToUpper());
+            if (userinfo != null)
+            {
+                _ = await SetUserInfoByEmail(userinfo.UserEmail);
+            }
+
             return userinfo;
         }
 
@@ -121,7 +167,7 @@ namespace KinaUnaProgenyApi.Services
             UserInfo userInfoToDelete = await _context.UserInfoDb.SingleOrDefaultAsync(ui => ui.Id == userInfo.Id);
             if (userInfoToDelete != null)
             {
-                _context.UserInfoDb.Remove(userInfo);
+                _context.UserInfoDb.Remove(userInfoToDelete);
                 await _context.SaveChangesAsync();
             }
             
@@ -139,16 +185,10 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<UserInfo> GetUserInfoById(int id)
         {
-            UserInfo userinfo;
-            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + id);
-            if (!string.IsNullOrEmpty(cachedUserInfo))
+            UserInfo userinfo = await GetUserInfoByIdFromCache(id);
+            if(userinfo == null || userinfo.Id == 0)
             {
-                userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
-            }
-            else
-            {
-                userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.Id == id);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+                userinfo = await SetUserInfoById(id);
             }
 
             return userinfo;
@@ -156,19 +196,10 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<UserInfo> GetUserInfoByUserId(string id)
         {
-            UserInfo userinfo;
-            string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + id);
-            if (!string.IsNullOrEmpty(cachedUserInfo))
+            UserInfo userinfo = await GetUserInfoByUserIdFromCache(id);
+            if(userinfo == null || userinfo.Id == 0)
             {
-                userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
-            }
-            else
-            {
-                userinfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserId.ToUpper() == id.ToUpper());
-                if (userinfo != null)
-                {
-                    await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
-                }
+                userinfo = await SetUserInfoByUserId(id);
             }
 
             return userinfo;
@@ -182,7 +213,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<bool> IsAdminUserId(string userId)
         {
-            UserInfo userInfo = await _context.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == userId);
+            UserInfo userInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == userId);
             if (userInfo != null)
             {
                 if (userInfo.IsKinaUnaAdmin)

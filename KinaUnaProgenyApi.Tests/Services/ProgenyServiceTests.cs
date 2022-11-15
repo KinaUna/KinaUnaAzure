@@ -171,9 +171,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Progeny progenyToDelete = await progenyService.GetProgeny(1);
 
-            Progeny resultProgeny = await progenyService.DeleteProgeny(progenyToDelete);
-            Progeny? dbProgeny = await context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == progenyToDelete.Id);
-            Progeny savedProgeny = await progenyService.GetProgeny(resultProgeny.Id);
+            _ = await progenyService.DeleteProgeny(progenyToDelete);
+            Progeny? dbProgeny = await context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == 1);
+            Progeny savedProgeny = await progenyService.GetProgeny(1);
 
             Assert.Null(savedProgeny);
             Assert.Null(dbProgeny);
