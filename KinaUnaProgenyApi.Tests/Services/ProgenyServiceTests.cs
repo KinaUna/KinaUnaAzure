@@ -53,5 +53,31 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Assert.Null(progeny);
         }
+
+        [Fact]
+        public async Task AddProgenyShouldSaveProgeny()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddProgenyShouldSaveProgeny").Options;
+            using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
+            ProgenyService progenyService = new ProgenyService(context, memoryCache);
+
+            Progeny progenyToAdd = new Progeny
+                { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
+
+            Progeny addedProgeny = await progenyService.AddProgeny(progenyToAdd);
+            Progeny savedProgeny = await progenyService.GetProgeny(addedProgeny.Id);
+
+            Assert.NotNull(savedProgeny);
+            Assert.IsType<Progeny>(savedProgeny);
+            Assert.Equal(savedProgeny.BirthDay, progenyToAdd.BirthDay);
+            Assert.Equal(savedProgeny.Admins, progenyToAdd.Admins);
+            Assert.Equal(savedProgeny.Name, progenyToAdd.Name);
+            Assert.Equal(savedProgeny.NickName, progenyToAdd.NickName);
+            Assert.Equal(savedProgeny.PictureLink, progenyToAdd.PictureLink);
+            Assert.Equal(savedProgeny.TimeZone, progenyToAdd.TimeZone);
+        }
     }
 }
