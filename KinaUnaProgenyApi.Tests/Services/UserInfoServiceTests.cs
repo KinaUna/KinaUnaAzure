@@ -238,5 +238,38 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Assert.Equal(dbUserInfo.Timezone, userInfoToUpdate.Timezone);
             }
         }
+
+        [Fact]
+        public async Task DeleteUserInfoShouldRemoveUserInfo()
+        {
+            UserInfo userInfo1 = new UserInfo
+            {
+                UserEmail = "test1@test.com",
+                UserId = "UserId1",
+                UserName = "Test1",
+                FirstName = "FirstName1",
+                MiddleName = "MiddleName1",
+                LastName = "LastName1",
+                ViewChild = 1,
+                ProfilePicture = Constants.ProfilePictureUrl,
+                Timezone = Constants.DefaultTimezone
+            };
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteUserInfoShouldRemoveUserInfo").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            context.Add(userInfo1);
+            await context.SaveChangesAsync();
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
+            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+
+            UserInfo userInfoToDelete = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
+
+            UserInfo resultUserInfo = await userInfoService.DeleteUserInfo(userInfoToDelete);
+            UserInfo? dbUSerInfo = await context.UserInfoDb.AsNoTracking().FirstOrDefaultAsync(ui => ui.Id == userInfoToDelete.Id);
+            UserInfo savedUserInfo = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
+
+            Assert.Null(dbUSerInfo);
+            Assert.Null(savedUserInfo);
+        }
     }
 }
