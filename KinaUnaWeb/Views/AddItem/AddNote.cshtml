@@ -50,7 +50,7 @@
         <label asp-for="Content" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Content", PageNames.Notes, Model.LanguageId)</label>
         <div class="col-lg-9">
             @{
-                var toolbarItems = new[] {"Bold", "Italic", "Underline", "StrikeThrough",
+                string[] toolbarItems = new[] {"Bold", "Italic", "Underline", "StrikeThrough",
                     "FontName", "FontSize", "FontColor", "BackgroundColor",
                     "LowerCase", "UpperCase", "|",
                     "Formats", "Alignments", "OrderedList", "UnorderedList",

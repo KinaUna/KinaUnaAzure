@@ -27,13 +27,13 @@ namespace KinaUnaProgenyApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
+            string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
             if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
             {
                 authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer" + Constants.DebugKinaUnaServer);
             }
-            var authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
-            var authenticationServerClientSecret = Configuration["AuthenticationServerClientSecret"];
+            string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
+            string authenticationServerClientSecret = Configuration["AuthenticationServerClientSecret"];
 
             services.AddSingleton<ImageStore>();
             services.AddScoped<AzureNotifications>();

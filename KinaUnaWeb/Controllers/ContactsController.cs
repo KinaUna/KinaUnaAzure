@@ -235,7 +235,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<string> tagsList = new List<string>();
-            var contactsList1 = await _contactsHttpClient.GetContactsList(model.ProgenyId, userAccessLevel); 
+            List<Contact> contactsList1 = await _contactsHttpClient.GetContactsList(model.ProgenyId, userAccessLevel); 
             foreach (Contact cont in contactsList1)
             {
                 if (!string.IsNullOrEmpty(cont.Tags))

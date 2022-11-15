@@ -23,16 +23,16 @@ namespace KinaUna.IDP.Services
 
         public async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
-            var subject = context.Subject ?? throw new ArgumentNullException(nameof(context.Subject));
-            var subjectIdClaim = subject.Claims.FirstOrDefault(x => x.Type == "sub");
+            ClaimsPrincipal subject = context.Subject ?? throw new ArgumentNullException(nameof(context.Subject));
+            Claim subjectIdClaim = subject.Claims.FirstOrDefault(x => x.Type == "sub");
             if (subjectIdClaim != null)
             {
-                var subjectId = subjectIdClaim.Value;
-                var user = await _userManager.FindByIdAsync(subjectId);
+                string subjectId = subjectIdClaim.Value;
+                ApplicationUser user = await _userManager.FindByIdAsync(subjectId);
                 if (user == null)
                     throw new ArgumentException("Invalid subject identifier");
 
-                var claims = GetClaimsFromUser(user);
+                IEnumerable<Claim> claims = GetClaimsFromUser(user);
                 context.IssuedClaims = claims.ToList();
             }
 
@@ -40,13 +40,13 @@ namespace KinaUna.IDP.Services
 
         public async Task IsActiveAsync(IsActiveContext context)
         {
-            var subject = context.Subject ?? throw new ArgumentNullException(nameof(context.Subject));
+            ClaimsPrincipal subject = context.Subject ?? throw new ArgumentNullException(nameof(context.Subject));
 
-            var subjectIdClaim = subject.Claims.FirstOrDefault(x => x.Type == "sub");
+            Claim subjectIdClaim = subject.Claims.FirstOrDefault(x => x.Type == "sub");
             if (subjectIdClaim != null)
             {
-                var subjectId = subjectIdClaim.Value;
-                var user = await _userManager.FindByIdAsync(subjectId);
+                string subjectId = subjectIdClaim.Value;
+                ApplicationUser user = await _userManager.FindByIdAsync(subjectId);
 
                 context.IsActive = false;
 
@@ -54,10 +54,10 @@ namespace KinaUna.IDP.Services
                 {
                     if (_userManager.SupportsUserSecurityStamp)
                     {
-                        var securityStamp = subject.Claims.Where(c => c.Type == "security_stamp").Select(c => c.Value).SingleOrDefault();
+                        string securityStamp = subject.Claims.Where(c => c.Type == "security_stamp").Select(c => c.Value).SingleOrDefault();
                         if (securityStamp != null)
                         {
-                            var dbSecurityStamp = await _userManager.GetSecurityStampAsync(user);
+                            string dbSecurityStamp = await _userManager.GetSecurityStampAsync(user);
                             if (dbSecurityStamp != securityStamp)
                                 return;
                         }
@@ -74,7 +74,7 @@ namespace KinaUna.IDP.Services
 
         private IEnumerable<Claim> GetClaimsFromUser(ApplicationUser user)
         {
-            var claims = new List<Claim>
+            List<Claim> claims = new List<Claim>
             {
                 new Claim(JwtClaimTypes.Subject, user.Id),
                 new Claim(JwtClaimTypes.PreferredUserName, user.UserName),

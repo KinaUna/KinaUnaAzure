@@ -6,6 +6,9 @@ using IdentityServer4.EntityFramework.Entities;
 using IdentityServer4.EntityFramework.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using ApiScope = IdentityServer4.Models.ApiScope;
+using Client = IdentityServer4.Models.Client;
+using IdentityResource = IdentityServer4.Models.IdentityResource;
 
 namespace KinaUna.IDP.Data
 {
@@ -17,7 +20,7 @@ namespace KinaUna.IDP.Data
             
             if (!context.Clients.Any())
             {
-                foreach (var client in Config.GetClients(configuration))
+                foreach (Client client in Config.GetClients(configuration))
                 {
                     await context.Clients.AddAsync(client.ToEntity());
                 }
@@ -36,7 +39,7 @@ namespace KinaUna.IDP.Data
 
                 if (oldRedirects.Any())
                 {
-                    foreach (var ru in oldRedirects)
+                    foreach (ClientRedirectUri ru in oldRedirects)
                     {
                         ru.RedirectUri = ru.RedirectUri.Replace("/o2c.html", "/oauth2-redirect.html");
                         context.Update(ru.Client);
@@ -47,7 +50,7 @@ namespace KinaUna.IDP.Data
 
             if (!context.IdentityResources.Any())
             {
-                foreach (var resource in Config.GetIdentityResources())
+                foreach (IdentityResource resource in Config.GetIdentityResources())
                 {
                     await context.IdentityResources.AddAsync(resource.ToEntity());
                 }
@@ -66,7 +69,7 @@ namespace KinaUna.IDP.Data
 
             if (!context.ApiScopes.Any())
             {
-                foreach (var resource in Config.ApiScopes)
+                foreach (ApiScope resource in Config.ApiScopes)
                 {
                     await context.ApiScopes.AddAsync(resource.ToEntity());
                 }

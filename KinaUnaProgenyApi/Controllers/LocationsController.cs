@@ -339,7 +339,7 @@ namespace KinaUnaProgenyApi.Controllers
                 locationCounter++;
             }
 
-            var itemsOnPage = allItems
+            List<Location> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();

@@ -85,7 +85,7 @@ namespace KinaUnaWeb.Controllers
                 return NotFound();
             }
 
-            var devices = await _context.PushDevices
+            PushDevices devices = await _context.PushDevices
                 .SingleOrDefaultAsync(m => m.Id == id);
             if (devices == null)
             {
@@ -100,7 +100,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var devices = await _context.PushDevices.SingleOrDefaultAsync(m => m.Id == id);
+            PushDevices devices = await _context.PushDevices.SingleOrDefaultAsync(m => m.Id == id);
             if (devices != null)
             {
                 _context.PushDevices.Remove(devices);

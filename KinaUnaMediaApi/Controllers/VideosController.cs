@@ -113,7 +113,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
             
-            var itemsOnPage = allItems
+            List<Video> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
@@ -569,7 +569,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
 
-            var itemsOnPage = allItems.Skip(pageSize * (pageIndex - 1)).Take(pageSize).ToList();
+            List<Video> itemsOnPage = allItems.Skip(pageSize * (pageIndex - 1)).Take(pageSize).ToList();
 
             foreach (Video vid in itemsOnPage)
             {

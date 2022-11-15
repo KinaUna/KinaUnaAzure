@@ -32,7 +32,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<HttpResponseMessage> Post(string pns, [FromBody] string message, string to_tag)
         {
-            var user = User.GetEmail();
+            string user = User.GetEmail();
             if (user == null)
             {
                 return new HttpResponseMessage(HttpStatusCode.Unauthorized);
@@ -49,18 +49,18 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 case "wns":
                     // Windows 8.1 / Windows Phone 8.1
-                    var toast = @"<toast><visual><binding template=""ToastText01""><text id=""1"">" +
-                                "From " + user + ": " + message + "</text></binding></visual></toast>";
+                    string toast = @"<toast><visual><binding template=""ToastText01""><text id=""1"">" +
+                                   "From " + user + ": " + message + "</text></binding></visual></toast>";
                     outcome = await _azureNotifications.Hub.SendWindowsNativeNotificationAsync(toast, userTag);
                     break;
                 case "apns":
                     // iOS
-                    var alert = "{\"aps\":{\"alert\":\"" + "From " + user + ": " + message + "\"}}";
+                    string alert = "{\"aps\":{\"alert\":\"" + "From " + user + ": " + message + "\"}}";
                     outcome = await _azureNotifications.Hub.SendAppleNativeNotificationAsync(alert, userTag);
                     break;
                 case "fcm":
                     // Android
-                    var notif = "{ \"data\" : {\"message\":\"" + "From " + user + ": " + message + "\"}}";
+                    string notif = "{ \"data\" : {\"message\":\"" + "From " + user + ": " + message + "\"}}";
                     outcome = await _azureNotifications.Hub.SendFcmNativeNotificationAsync(notif, userTag);
                     break;
             }

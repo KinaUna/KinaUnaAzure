@@ -42,7 +42,7 @@ namespace KinaUnaProgenyApi.Controllers
             // make sure there are no existing registrations for this push handle (used for iOS and Android)
             if (handle != null)
             {
-                var registrations = await _hub.GetRegistrationsByChannelAsync(handle, 100);
+                CollectionQueryResult<RegistrationDescription> registrations = await _hub.GetRegistrationsByChannelAsync(handle, 100);
 
                 foreach (RegistrationDescription registration in registrations)
                 {
@@ -89,7 +89,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             registration.RegistrationId = id;
              
-            var username = User.GetEmail();
+            string username = User.GetEmail();
             //var userId = User.GetUserId();
             if (string.IsNullOrEmpty(username))
             {
@@ -122,12 +122,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         private static void ReturnGoneIfHubResponseIsGone(MessagingException e)
         {
-            var webex = e.InnerException as WebException;
+            WebException webex = e.InnerException as WebException;
             if (webex != null)
             {
                 if (webex.Status == WebExceptionStatus.ProtocolError)
                 {
-                    var response = (HttpWebResponse)webex.Response;
+                    HttpWebResponse response = (HttpWebResponse)webex.Response;
                     if (response != null && response.StatusCode == HttpStatusCode.Gone)
                         throw new HttpRequestException(HttpStatusCode.Gone.ToString());
                 }
@@ -137,11 +137,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{handle}")]
         public async Task<string> GetRegistrationId(string handle)
         {
-            var regList = await _hub.GetRegistrationsByChannelAsync(handle, 1);
+            CollectionQueryResult<RegistrationDescription> regList = await _hub.GetRegistrationsByChannelAsync(handle, 1);
 
             if (regList.Any())
             {
-                foreach (var regItem in regList)
+                foreach (RegistrationDescription regItem in regList)
                 {
                     if (regItem.PnsHandle == handle)
                     {

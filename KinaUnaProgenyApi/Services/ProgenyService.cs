@@ -26,18 +26,12 @@ namespace KinaUnaProgenyApi.Services
         
         public async Task<Progeny> GetProgeny(int id)
         {
-            Progeny progeny;
-            string cachedProgeny = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id);
-            if (!string.IsNullOrEmpty(cachedProgeny))
+            Progeny progeny = await GetProgenyFromCache(id);
+            if (progeny == null || progeny.Id == 0)
             {
-                progeny = JsonConvert.DeserializeObject<Progeny>(cachedProgeny);
+                progeny = await SetProgenyInCache(id);
             }
-            else
-            {
-                progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
-            }
-
+            
             return progeny;
         }
         public async Task<Progeny> AddProgeny(Progeny progeny)
@@ -45,7 +39,7 @@ namespace KinaUnaProgenyApi.Services
             await _context.ProgenyDb.AddAsync(progeny);
             await _context.SaveChangesAsync();
             
-            await SetProgenyCache(progeny.Id);
+            await SetProgenyInCache(progeny.Id);
 
             return progeny;
         }
@@ -55,21 +49,33 @@ namespace KinaUnaProgenyApi.Services
             _context.ProgenyDb.Update(progeny);
             await _context.SaveChangesAsync();
             
-            await SetProgenyCache(progeny.Id);
+            await SetProgenyInCache(progeny.Id);
 
             return progeny;
         }
 
         public async Task<Progeny> DeleteProgeny(Progeny progeny)
         {
-            await RemoveProgenyCache(progeny.Id);
+            await RemoveProgenyFromCache(progeny.Id);
             _context.ProgenyDb.Remove(progeny);
             await _context.SaveChangesAsync();
 
             return progeny;
         }
 
-        public async Task<Progeny> SetProgenyCache(int id)
+        private async Task<Progeny> GetProgenyFromCache(int id)
+        {
+            Progeny progeny = new Progeny();
+            string cachedProgeny = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id);
+            if (!string.IsNullOrEmpty(cachedProgeny))
+            {
+                progeny = JsonConvert.DeserializeObject<Progeny>(cachedProgeny);
+            }
+
+            return progeny;
+        }
+
+        private async Task<Progeny> SetProgenyInCache(int id)
         {
             Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
             if (progeny != null)
@@ -84,7 +90,7 @@ namespace KinaUnaProgenyApi.Services
             return progeny;
         }
 
-        public async Task RemoveProgenyCache(int id)
+        private async Task RemoveProgenyFromCache(int id)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id);
         }

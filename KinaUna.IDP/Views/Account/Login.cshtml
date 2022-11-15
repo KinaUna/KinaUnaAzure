@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Identity
 @using KinaUna.Data.Models
 @using KinaUna.IDP.Services
+@using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @model KinaUna.IDP.Models.AccountViewModels.LoginViewModel
 @inject SignInManager<ApplicationUser> SignInManager
@@ -47,7 +48,7 @@
         <h4>@await LocaleManager.GetTranslation("Use another service to log in.", PageNames.Account, languageId)</h4>
         <hr />
         @{
-            var loginProviders = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            List<AuthenticationScheme> loginProviders = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (!loginProviders.Any())
             {
                 <div>
@@ -62,7 +63,7 @@
                 <form asp-action="ExternalLogin" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
                     <div>
                         <p>
-                            @foreach (var provider in loginProviders)
+                            @foreach (AuthenticationScheme provider in loginProviders)
                             {
                                 if (provider.Name.ToLower().Contains("apple"))
                                 {

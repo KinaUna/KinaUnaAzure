@@ -9,7 +9,5 @@ namespace KinaUnaProgenyApi.Services
         Task<Progeny> AddProgeny(Progeny progeny);
         Task<Progeny> UpdateProgeny(Progeny progeny);
         Task<Progeny> DeleteProgeny(Progeny progeny);
-        Task<Progeny> SetProgenyCache(int id);
-        Task RemoveProgenyCache(int id);
     }
 }

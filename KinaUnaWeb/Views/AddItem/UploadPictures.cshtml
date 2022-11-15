@@ -7,7 +7,7 @@
 }
 <br />
 @{ int fileCounter = 0;}
-@foreach (var file in Model.FileNames)
+@foreach (string file in Model.FileNames)
 {
     <div style="margin: 20px;">
         <H4>@await LocaleManager.GetTranslation("The photo has been uploaded", PageNames.Pictures, Model.LanguageId)</H4>

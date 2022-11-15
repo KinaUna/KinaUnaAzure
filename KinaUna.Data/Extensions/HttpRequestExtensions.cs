@@ -52,7 +52,7 @@ namespace KinaUna.Data.Extensions
                 string[] userLanguages = request.GetTypedHeaders().AcceptLanguage.OrderByDescending(x => x.Quality ?? 1).Select(x => x.Value.ToString()).ToArray();
                 if (userLanguages.Any())
                 {
-                    var firstLang = userLanguages.FirstOrDefault();
+                    string firstLang = userLanguages.FirstOrDefault();
 
                     if (firstLang != null && firstLang.StartsWith("de"))
                     {

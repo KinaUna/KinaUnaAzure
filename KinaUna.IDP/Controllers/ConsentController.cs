@@ -37,7 +37,7 @@ namespace KinaUna.IDP.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(string returnUrl)
         {
-            var vm = await BuildViewModelAsync(returnUrl);
+            ConsentViewModel vm = await BuildViewModelAsync(returnUrl);
             ViewData["ReturnUrl"] = returnUrl;
             if (vm != null)
             {
@@ -55,7 +55,7 @@ namespace KinaUna.IDP.Controllers
         public async Task<IActionResult> Index(ConsentInputModel model)
         {
             // parse the return URL back to an AuthorizeRequest object
-            var request = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
+            AuthorizationRequest request = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
             ConsentResponse response = null;
 
             // user clicked 'no' - send back the standard 'access_denied' response
@@ -94,7 +94,7 @@ namespace KinaUna.IDP.Controllers
                 return Redirect(model.ReturnUrl);
             }
 
-            var vm = await BuildViewModelAsync(model.ReturnUrl, model);
+            ConsentViewModel vm = await BuildViewModelAsync(model.ReturnUrl, model);
             if (vm != null)
             {
                 return View("Index", vm);
@@ -105,7 +105,7 @@ namespace KinaUna.IDP.Controllers
 
         async Task<ConsentViewModel> BuildViewModelAsync(string returnUrl, ConsentInputModel model = null)
         {
-            var request = await _interaction.GetAuthorizationContextAsync(returnUrl);
+            AuthorizationRequest request = await _interaction.GetAuthorizationContextAsync(returnUrl);
             if (request != null)
             {
                 return CreateConsentViewModel(model, returnUrl, request);
@@ -122,7 +122,7 @@ namespace KinaUna.IDP.Controllers
             ConsentInputModel model, string returnUrl,
             AuthorizationRequest request)
         {
-            var vm = new ConsentViewModel
+            ConsentViewModel vm = new ConsentViewModel
             {
                 RememberConsent = model?.RememberConsent ?? true,
                 ScopesConsented = model?.ScopesConsented ?? Enumerable.Empty<string>(),
@@ -137,13 +137,13 @@ namespace KinaUna.IDP.Controllers
 
             vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources.Select(x => CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null)).ToArray();
 
-            var apiScopes = new List<ScopeViewModel>();
-            foreach (var parsedScope in request.ValidatedResources.ParsedScopes)
+            List<ScopeViewModel> apiScopes = new List<ScopeViewModel>();
+            foreach (ParsedScopeValue parsedScope in request.ValidatedResources.ParsedScopes)
             {
-                var apiScope = request.ValidatedResources.Resources.FindApiScope(parsedScope.ParsedName);
+                ApiScope apiScope = request.ValidatedResources.Resources.FindApiScope(parsedScope.ParsedName);
                 if (apiScope != null)
                 {
-                    var scopeVm = CreateScopeViewModel(parsedScope, apiScope, vm.ScopesConsented.Contains(parsedScope.RawValue) || model == null);
+                    ScopeViewModel scopeVm = CreateScopeViewModel(parsedScope, apiScope, vm.ScopesConsented.Contains(parsedScope.RawValue) || model == null);
                     apiScopes.Add(scopeVm);
                 }
             }
@@ -171,7 +171,7 @@ namespace KinaUna.IDP.Controllers
 
         public ScopeViewModel CreateScopeViewModel(ParsedScopeValue parsedScopeValue, ApiScope apiScope, bool check)
         {
-            var displayName = apiScope.DisplayName ?? apiScope.Name;
+            string displayName = apiScope.DisplayName ?? apiScope.Name;
             if (!String.IsNullOrWhiteSpace(parsedScopeValue.ParsedParameter))
             {
                 displayName += ":" + parsedScopeValue.ParsedParameter;

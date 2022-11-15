@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using KinaUna.Data.Models;
@@ -39,7 +40,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string ChangeLink { get; set; }
         public UserInfoViewModel()
         {
-            var tzs = TimeZoneInfo.GetSystemTimeZones();
+            ReadOnlyCollection<TimeZoneInfo> tzs = TimeZoneInfo.GetSystemTimeZones();
             TimezoneList = tzs.Select(tz => new SelectListItem()
             {
                 Text = tz.DisplayName,

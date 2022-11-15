@@ -36,7 +36,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var vaccinationViewModel in Model.VaccinationList)
+                @foreach (Vaccination vaccinationViewModel in Model.VaccinationList)
                 {
                     <tr>
                         <td style="min-width: 100px;">@vaccinationViewModel.VaccinationDate.ToString("dd-MMM-yyyy")</td>

@@ -117,8 +117,8 @@ namespace KinaUnaProgenyApi.Controllers
             userAccess.CanContribute = value.CanContribute;
 
             // If a UserAccess entry with the same user and progeny exists, replace it.
-            var progenyAccessList = await _userAccessService.GetUsersUserAccessList(userAccess.UserId);// _context.UserAccessDb.Where(u => u.UserId.ToUpper() == userAccess.UserId.ToUpper()).ToListAsync();
-            var oldUserAccess = progenyAccessList.SingleOrDefault(u => u.ProgenyId == userAccess.ProgenyId);
+            List<UserAccess> progenyAccessList = await _userAccessService.GetUsersUserAccessList(userAccess.UserId);// _context.UserAccessDb.Where(u => u.UserId.ToUpper() == userAccess.UserId.ToUpper()).ToListAsync();
+            UserAccess oldUserAccess = progenyAccessList.SingleOrDefault(u => u.ProgenyId == userAccess.ProgenyId);
             if (oldUserAccess != null)
             {
                 await _userAccessService.RemoveUserAccess(oldUserAccess.AccessId, oldUserAccess.ProgenyId, oldUserAccess.UserId);

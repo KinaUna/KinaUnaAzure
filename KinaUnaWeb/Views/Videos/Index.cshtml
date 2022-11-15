@@ -133,7 +133,7 @@
 
     <br style="clear: both;" />
     <div align="center" style="width: 100%; clear: both;">
-        @foreach (var item in Model.VideosList)
+        @foreach (Video item in Model.VideosList)
         {
             string bgColor = "#181274";
             if (Model.IsAdmin && item.AccessLevel == 0)

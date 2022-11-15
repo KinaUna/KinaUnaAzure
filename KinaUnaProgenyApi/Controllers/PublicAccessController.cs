@@ -127,7 +127,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{progenyId}/{accessLevel}")]
         public async Task<IActionResult> EventList(int progenyId, int accessLevel)
         {
-            var model = await _calendarService.GetCalendarList(Constants.DefaultChildId);
+            List<CalendarItem> model = await _calendarService.GetCalendarList(Constants.DefaultChildId);
             model = model.Where(e => e.EndTime > DateTime.UtcNow && e.AccessLevel >= 5).OrderBy(e => e.StartTime).ToList();
             model = model.Take(5).ToList();
 
@@ -378,7 +378,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{progenyId}/{accessLevel}/{start}")]
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
-            var model = await _sleepService.GetSleepList(Constants.DefaultChildId); 
+            List<Sleep> model = await _sleepService.GetSleepList(Constants.DefaultChildId); 
             model = model.Where(s => s.AccessLevel >= 5).ToList();
             model = model.OrderByDescending(s => s.SleepStart).ToList();
             model = model.Skip(start).Take(25).ToList();
@@ -488,7 +488,7 @@ namespace KinaUnaProgenyApi.Controllers
                     TimeSpan sDateDuration = s2Offset - sOffset;
                     TimeSpan eDateDuration = eOffset - e2Offset;
                     durationStartDate = chartItem.SleepDuration.TotalMinutes - (eDateDuration.TotalMinutes);
-                    var durationEndDate = chartItem.SleepDuration.TotalMinutes - sDateDuration.TotalMinutes;
+                    double durationEndDate = chartItem.SleepDuration.TotalMinutes - sDateDuration.TotalMinutes;
                     Sleep slpItem = chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date);
                     if (slpItem != null)
                     {
@@ -604,7 +604,7 @@ namespace KinaUnaProgenyApi.Controllers
                 noteCounter++;
             }
 
-            var itemsOnPage = allItems
+            List<Note> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
@@ -651,7 +651,7 @@ namespace KinaUnaProgenyApi.Controllers
                 sleepCounter++;
             }
 
-            var itemsOnPage = allItems
+            List<Sleep> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
@@ -788,7 +788,7 @@ namespace KinaUnaProgenyApi.Controllers
                 locationCounter++;
             }
 
-            var itemsOnPage = allItems
+            List<Location> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
@@ -839,7 +839,7 @@ namespace KinaUnaProgenyApi.Controllers
                 measurementsCounter++;
             }
 
-            var itemsOnPage = allItems
+            List<Measurement> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
@@ -908,7 +908,7 @@ namespace KinaUnaProgenyApi.Controllers
                 skillsCounter++;
             }
 
-            var itemsOnPage = allItems
+            List<Skill> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
@@ -959,7 +959,7 @@ namespace KinaUnaProgenyApi.Controllers
                 vocabularyCounter++;
             }
 
-            var itemsOnPage = allItems
+            List<VocabularyItem> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
@@ -1019,7 +1019,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (picturesList.Any())
             {
                 Random r = new Random();
-                var pictureNumber = r.Next(0, picturesList.Count);
+                int pictureNumber = r.Next(0, picturesList.Count);
 
                 Picture picture = picturesList[pictureNumber];
                 if (!picture.PictureLink.ToLower().StartsWith("http"))
@@ -1144,7 +1144,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            var itemsOnPage = allItems
+            List<Picture> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
@@ -1378,7 +1378,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            var itemsOnPage = allItems
+            List<Video> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();

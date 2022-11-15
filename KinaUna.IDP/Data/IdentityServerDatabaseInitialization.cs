@@ -2,6 +2,7 @@
 using System.Linq;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
+using IdentityServer4.Models;
 using KinaUna.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -33,11 +34,11 @@ namespace KinaUna.IDP.Data
 
         private static void SeedData(IServiceProvider services, IConfiguration configuration)
         {
-            var context = services.GetRequiredService<ConfigurationDbContext>();
+            ConfigurationDbContext context = services.GetRequiredService<ConfigurationDbContext>();
 
             if (!context.Clients.Any())
             {
-                foreach (var client in Config.GetClients(configuration))
+                foreach (Client client in Config.GetClients(configuration))
                 {
                     context.Clients.Add(client.ToEntity());
                 }
@@ -46,7 +47,7 @@ namespace KinaUna.IDP.Data
 
             if (!context.IdentityResources.Any())
             {
-                foreach (var resource in Config.GetIdentityResources())
+                foreach (IdentityResource resource in Config.GetIdentityResources())
                 {
                     context.IdentityResources.Add(resource.ToEntity());
                 }
@@ -64,7 +65,7 @@ namespace KinaUna.IDP.Data
 
             if (!context.ApiScopes.Any())
             {
-                foreach (var resource in Config.ApiScopes)
+                foreach (ApiScope resource in Config.ApiScopes)
                 {
                     context.ApiScopes.Add(resource.ToEntity());
                 }

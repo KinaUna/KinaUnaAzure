@@ -19,9 +19,9 @@
             @{
                 if (Model.Duration != null)
                 {
-                    var durationHours = Model.Duration.Value.Hours.ToString();
-                    var durationMinutes = Model.Duration.Value.Minutes.ToString();
-                    var durationSeconds = Model.Duration.Value.Seconds.ToString();
+                    string durationHours = Model.Duration.Value.Hours.ToString();
+                    string durationMinutes = Model.Duration.Value.Minutes.ToString();
+                    string durationSeconds = Model.Duration.Value.Seconds.ToString();
                     if (durationSeconds.Length == 1)
                     {
                         durationSeconds = "0" + durationSeconds;

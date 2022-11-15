@@ -66,7 +66,7 @@ namespace KinaUnaWeb.Controllers
             Progeny progeny = await _progenyHttpClient.GetProgeny(id);
             if (progeny.Name == "401")
             {
-                var returnUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+                string returnUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
                 return RedirectToAction("CheckOut", "Account", new{returnUrl});
             }
             List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(id);

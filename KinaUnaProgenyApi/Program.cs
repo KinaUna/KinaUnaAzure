@@ -22,13 +22,13 @@ namespace KinaUnaProgenyApi
                 {
                     if (context.HostingEnvironment.IsProduction())
                     {
-                        var keyVaultEndpoint = Constants.KeyVaultEndPoint;
+                        string keyVaultEndpoint = Constants.KeyVaultEndPoint;
                         if (!string.IsNullOrEmpty(keyVaultEndpoint))
                         {
                             config.Build();
 
-                            var azureServiceTokenProvider = new AzureServiceTokenProvider();
-                            var keyVaultClient = new KeyVaultClient(
+                            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
+                            KeyVaultClient keyVaultClient = new KeyVaultClient(
                                 new KeyVaultClient.AuthenticationCallback(
                                     azureServiceTokenProvider.KeyVaultTokenCallback));
 

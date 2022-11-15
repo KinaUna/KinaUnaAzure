@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +25,7 @@ namespace KinaUnaWeb.Models.FamilyViewModels
 
         public ProgenyViewModel()
         {
-            var tzs = TimeZoneInfo.GetSystemTimeZones();
+            ReadOnlyCollection<TimeZoneInfo> tzs = TimeZoneInfo.GetSystemTimeZones();
             TimezoneList = tzs.Select(tz => new SelectListItem()
             {
                 Text = tz.DisplayName,

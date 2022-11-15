@@ -297,7 +297,7 @@ namespace KinaUnaProgenyApi.Controllers
                 measurementsCounter++;
             }
 
-            var itemsOnPage = allItems
+            List<Measurement> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();

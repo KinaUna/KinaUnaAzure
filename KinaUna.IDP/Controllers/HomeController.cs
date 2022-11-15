@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using IdentityServer4.Models;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using Microsoft.AspNetCore.Hosting;
@@ -46,10 +47,10 @@ namespace KinaUna.IDP.Controllers
         /// </summary>
         public async Task<IActionResult> Error(string errorId)
         {
-            var vm = new ErrorViewModel();
+            ErrorViewModel vm = new ErrorViewModel();
 
             // retrieve error details from identityserver
-            var message = await _interaction.GetErrorContextAsync(errorId);
+            ErrorMessage message = await _interaction.GetErrorContextAsync(errorId);
             if (message != null)
             {
                 vm.Error = message;

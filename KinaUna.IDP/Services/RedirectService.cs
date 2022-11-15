@@ -6,12 +6,12 @@ namespace KinaUna.IDP.Services
     {
         public string ExtractRedirectUriFromReturnUrl(string url)
         {
-            var decodedUrl = System.Net.WebUtility.HtmlDecode(url);
-            var results = Regex.Split(decodedUrl, "redirect_uri=");
+            string decodedUrl = System.Net.WebUtility.HtmlDecode(url);
+            string[] results = Regex.Split(decodedUrl, "redirect_uri=");
             if (results.Length < 2)
                 return "";
 
-            var result = results[1];
+            string result = results[1];
 
             string splitKey;
             if (result.Contains("signin-oidc"))

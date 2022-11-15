@@ -26,7 +26,7 @@ namespace KinaUna.IDP.Services
 
         public void StoreElement(XElement element, string friendlyName)
         {
-            var entity = _context.DataProtectionKeys.SingleOrDefault(k => k.FriendlyName == friendlyName);
+            DataProtectionKey entity = _context.DataProtectionKeys.SingleOrDefault(k => k.FriendlyName == friendlyName);
             if (null != entity)
             {
                 entity.XmlData = element.ToString();

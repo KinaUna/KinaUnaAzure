@@ -301,7 +301,7 @@ namespace KinaUnaProgenyApi.Controllers
                 skillsCounter++;
             }
 
-            var itemsOnPage = allItems
+            List<Skill> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();

@@ -306,7 +306,7 @@ namespace KinaUnaProgenyApi.Controllers
                 vocabularyCounter++;
             }
 
-            var itemsOnPage = allItems
+            List<VocabularyItem> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();

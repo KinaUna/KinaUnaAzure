@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using KinaUna.Data.Models;
@@ -30,7 +31,7 @@ namespace KinaUna.IDP.Models.AccountViewModels
         public int LanguageId { get; set; }
         public RegisterViewModel()
         {
-            var tzs = TimeZoneInfo.GetSystemTimeZones();
+            ReadOnlyCollection<TimeZoneInfo> tzs = TimeZoneInfo.GetSystemTimeZones();
             TimezoneList = tzs.Select(tz => new SelectListItem()
             {
                 Text = tz.DisplayName,

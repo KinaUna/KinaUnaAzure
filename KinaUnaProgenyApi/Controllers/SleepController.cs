@@ -298,7 +298,7 @@ namespace KinaUnaProgenyApi.Controllers
                 sleepCounter++;
             }
 
-            var itemsOnPage = allItems
+            List<Sleep> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
@@ -466,7 +466,7 @@ namespace KinaUnaProgenyApi.Controllers
                         TimeSpan sDateDuration = s2Offset - sOffset;
                         TimeSpan eDateDuration = eOffset - e2Offset;
                         durationStartDate = chartItem.SleepDuration.TotalMinutes - (eDateDuration.TotalMinutes);
-                        var durationEndDate = chartItem.SleepDuration.TotalMinutes - sDateDuration.TotalMinutes;
+                        double durationEndDate = chartItem.SleepDuration.TotalMinutes - sDateDuration.TotalMinutes;
                         Sleep slpItem = chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date);
                         if (slpItem != null)
                         {

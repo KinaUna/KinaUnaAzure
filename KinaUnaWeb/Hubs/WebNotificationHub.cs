@@ -27,7 +27,7 @@ namespace KinaUnaWeb.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            var connectionId = Context.ConnectionId;
+            string connectionId = Context.ConnectionId;
             await Groups.AddToGroupAsync(connectionId, "Online");
             await base.OnConnectedAsync();
             await GetUpdateForUser();
@@ -35,7 +35,7 @@ namespace KinaUnaWeb.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var connectionId = Context.ConnectionId;
+            string connectionId = Context.ConnectionId;
             await Groups.RemoveFromGroupAsync(connectionId, "Online");
             await base.OnDisconnectedAsync(exception);
         }

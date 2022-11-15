@@ -36,7 +36,7 @@ namespace KinaUnaMediaApi.Controllers
             if (picturesList.Any())
             {
                 Random r = new Random();
-                var pictureNumber = r.Next(0, picturesList.Count);
+                int pictureNumber = r.Next(0, picturesList.Count);
 
                 Picture picture = picturesList[pictureNumber];
                 if (!picture.PictureLink.ToLower().StartsWith("http"))
@@ -161,7 +161,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
 
-            var itemsOnPage = allItems
+            List<Picture> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
@@ -395,7 +395,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
 
-            var itemsOnPage = allItems
+            List<Video> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();

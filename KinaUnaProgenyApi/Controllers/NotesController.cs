@@ -301,7 +301,7 @@ namespace KinaUnaProgenyApi.Controllers
                 noteCounter++;
             }
 
-            var itemsOnPage = allItems
+            List<Note> itemsOnPage = allItems
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();

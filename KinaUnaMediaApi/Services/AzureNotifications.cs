@@ -25,7 +25,7 @@ namespace KinaUnaMediaApi.Services
         public async Task ProgenyUpdateNotification(string title, string message, TimeLineItem timeLineItem, string iconLink = "")
         {
 
-            var payload = new JObject(
+            JObject payload = new JObject(
                 new JProperty("data", new JObject(new JProperty("title", title), new JProperty("message", message))),
                 new JProperty("notData", timeLineItem.TimeLineId));
 

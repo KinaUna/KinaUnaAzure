@@ -38,7 +38,7 @@ namespace KinaUnaWeb.Controllers
             model.LanguageId = Request.GetLanguageIdFromCookie();
 
             string userEmail = User.GetEmail() ?? _defaultUser;
-            var userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (userinfo == null)
             {
                 return RedirectToAction("Index");
@@ -61,7 +61,7 @@ namespace KinaUnaWeb.Controllers
             model.ProgenyList = new List<SelectListItem>();
             if (User.Identity != null && (User.Identity.IsAuthenticated && userEmail != null && userinfo.UserId != null))
             {
-                var accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
                 if (accessList.Any())
                 {
                     foreach (Progeny prog in accessList)
@@ -91,7 +91,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddAccess(UserAccessViewModel model)
         {
             string userEmail = User.GetEmail() ?? _defaultUser;
-            var userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (userinfo != null && userinfo.ViewChild > 0)
             {
                 _progId = userinfo.ViewChild;
@@ -101,8 +101,8 @@ namespace KinaUnaWeb.Controllers
             accessModel.ProgenyId = model.ProgenyId;
             accessModel.UserId = model.Email.ToUpper();
             accessModel.AccessLevel = model.AccessLevel;
-            var progenyAccessList = await _userAccessHttpClient.GetUserAccessList(model.Email.ToUpper());
-            var oldUserAccess = progenyAccessList.SingleOrDefault(u => u.ProgenyId == model.ProgenyId);
+            List<UserAccess> progenyAccessList = await _userAccessHttpClient.GetUserAccessList(model.Email.ToUpper());
+            UserAccess oldUserAccess = progenyAccessList.SingleOrDefault(u => u.ProgenyId == model.ProgenyId);
             if (oldUserAccess == null)
             {
                 await _userAccessHttpClient.AddUserAccess(accessModel);

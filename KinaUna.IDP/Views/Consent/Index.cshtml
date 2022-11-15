@@ -1,4 +1,5 @@
-﻿@model KinaUna.IDP.Models.AccountViewModels.ConsentViewModel
+﻿@using KinaUna.IDP.Models.AccountViewModels
+@model KinaUna.IDP.Models.AccountViewModels.ConsentViewModel
 
 <div class="container page-consent">
     <div class="row page-header">
@@ -31,7 +32,7 @@
                             Personal Information
                         </div>
                         <ul class="list-group">
-                            @foreach (var scope in Model.IdentityScopes)
+                            @foreach (ScopeViewModel scope in Model.IdentityScopes)
                             {
                                 @await Html.PartialAsync("_ScopeListItem", scope)
                             }
@@ -64,7 +65,7 @@
                                 Application Access
                             </div>
                             <ul class="list-group list-group-flush">
-                                @foreach (var scope in Model.ApiScopes)
+                                @foreach (ScopeViewModel scope in Model.ApiScopes)
                                 {
                                     <partial name="_ScopeListItem" model="scope" />
                                 }

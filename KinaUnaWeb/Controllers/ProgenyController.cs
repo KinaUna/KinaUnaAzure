@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -62,7 +63,7 @@ namespace KinaUnaWeb.Controllers
 
             if (model.File != null)
             {
-                using (var stream = model.File.OpenReadStream())
+                using (Stream stream = model.File.OpenReadStream())
                 {
                     prog.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Progeny);
 
@@ -127,7 +128,7 @@ namespace KinaUnaWeb.Controllers
             if (model.File != null && model.File.Name != string.Empty)
             {
                 string oldPictureLink = prog.PictureLink;
-                using (var stream = model.File.OpenReadStream())
+                using (Stream stream = model.File.OpenReadStream())
                 {
                     prog.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Progeny);
                 }

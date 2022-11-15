@@ -140,7 +140,7 @@ namespace KinaUnaWeb.Controllers
                             TimeSpan sDateDuration = s2Offset - sOffset;
                             TimeSpan eDateDuration = eOffset - e2Offset;
                             durationStartDate = slp.SleepDuration.TotalMinutes - (eDateDuration.TotalMinutes);
-                            var durationEndDate = slp.SleepDuration.TotalMinutes - sDateDuration.TotalMinutes;
+                            double durationEndDate = slp.SleepDuration.TotalMinutes - sDateDuration.TotalMinutes;
                             Sleep slpItem = model.ChartList.SingleOrDefault(s => s.SleepStart.Date == slp.SleepStart.Date);
                             if (slpItem != null)
                             {

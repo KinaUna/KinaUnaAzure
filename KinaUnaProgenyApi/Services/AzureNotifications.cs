@@ -27,11 +27,11 @@ namespace KinaUnaProgenyApi.Services
         public async Task ProgenyUpdateNotification(string title, string message, TimeLineItem timeLineItem, string iconLink = "")
         {
 
-            var payload = new JObject(
+            JObject payload = new JObject(
                 new JProperty("data", new JObject(new JProperty("title", title), new JProperty("message", message))),
                 new JProperty("notData", timeLineItem.TimeLineId));
 
-            var alert = "{\"aps\":{\"alert\":\"" + message + "\"},\"message\":\"" + message +"\",\"notData\":\"" + timeLineItem.TimeLineId + "\", \"content-available\":1}";
+            string alert = "{\"aps\":{\"alert\":\"" + message + "\"},\"message\":\"" + message +"\",\"notData\":\"" + timeLineItem.TimeLineId + "\", \"content-available\":1}";
 
             List<UserAccess> userList = await _userAccessService.GetProgenyUserAccessList(timeLineItem.ProgenyId);
             foreach (UserAccess userAcces in userList)
