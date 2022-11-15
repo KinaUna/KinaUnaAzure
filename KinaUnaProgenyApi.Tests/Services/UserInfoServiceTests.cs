@@ -340,5 +340,74 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(resultUserInfo);
             Assert.Null(resultUserInfo2);
         }
+
+        [Fact]
+        public async Task GetUserInfoByUserId_Should_Return_UserInfo_Object_When_UserId_Is_Valid()
+        {
+            UserInfo userInfo1 = new UserInfo
+            {
+                UserEmail = "test1@test.com",
+                UserId = "UserId1",
+                UserName = "Test1",
+                FirstName = "FirstName1",
+                MiddleName = "MiddleName1",
+                LastName = "LastName1",
+                ViewChild = 1,
+                ProfilePicture = Constants.ProfilePictureUrl,
+                Timezone = Constants.DefaultTimezone
+            };
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoByUserId_Should_Return_UserInfo_Object_When_UserId_Is_Valid").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            context.Add(userInfo1);
+            await context.SaveChangesAsync();
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
+            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+
+            UserInfo resultUserInfo = await userInfoService.GetUserInfoByUserId(userInfo1.UserId);
+            UserInfo resultUserInfoCached = await userInfoService.GetUserInfoByUserId(userInfo1.UserId);
+
+            Assert.NotNull(resultUserInfo);
+            Assert.IsType<UserInfo>(resultUserInfo);
+            Assert.Equal(userInfo1.UserEmail, resultUserInfo.UserEmail);
+            Assert.Equal(userInfo1.UserId, resultUserInfo.UserId);
+            Assert.Equal(userInfo1.UserName, resultUserInfo.UserName);
+            Assert.Equal(userInfo1.FirstName, resultUserInfo.FirstName);
+            Assert.Equal(userInfo1.MiddleName, resultUserInfo.MiddleName);
+            Assert.Equal(userInfo1.LastName, resultUserInfo.LastName);
+            Assert.Equal(userInfo1.ViewChild, resultUserInfo.ViewChild);
+
+            Assert.NotNull(resultUserInfoCached);
+            Assert.IsType<UserInfo>(resultUserInfoCached);
+        }
+
+        [Fact]
+        public async Task GetUserInfoByUserId_Should_Return_Null_When_UserId_Is_Invalid()
+        {
+            UserInfo userInfo1 = new UserInfo
+            {
+                UserEmail = "test1@test.com",
+                UserId = "UserId1",
+                UserName = "Test1",
+                FirstName = "FirstName1",
+                MiddleName = "MiddleName1",
+                LastName = "LastName1",
+                ViewChild = 1,
+                ProfilePicture = Constants.ProfilePictureUrl,
+                Timezone = Constants.DefaultTimezone
+            };
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoByUserId_Should_Return_Null_When_UserId_Is_Invalid").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            context.Add(userInfo1);
+            await context.SaveChangesAsync();
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
+            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+
+            UserInfo resultUserInfo = await userInfoService.GetUserInfoByUserId("");
+            UserInfo resultUserInfo2 = await userInfoService.GetUserInfoByUserId("UserId2");
+            Assert.Null(resultUserInfo);
+            Assert.Null(resultUserInfo2);
+        }
     }
 }
