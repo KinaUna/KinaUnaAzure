@@ -46,21 +46,38 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Progeny> UpdateProgeny(Progeny progeny)
         {
-            _context.ProgenyDb.Update(progeny);
-            await _context.SaveChangesAsync();
-            
-            await SetProgenyInCache(progeny.Id);
+            Progeny progenyToUpdate = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progeny.Id);
+            if (progenyToUpdate != null)
+            {
+                progenyToUpdate.Admins = progeny.Admins;
+                progenyToUpdate.BirthDay = progeny.BirthDay;
+                progenyToUpdate.Name = progeny.Name;
+                progenyToUpdate.NickName = progeny.NickName;
+                progenyToUpdate.PictureLink = progeny.PictureLink;
+                progenyToUpdate.TimeZone = progeny.TimeZone;
 
-            return progeny;
+                _context.ProgenyDb.Update(progenyToUpdate);
+                await _context.SaveChangesAsync();
+
+                await SetProgenyInCache(progeny.Id);
+            }
+            
+            return progenyToUpdate;
         }
 
         public async Task<Progeny> DeleteProgeny(Progeny progeny)
         {
             await RemoveProgenyFromCache(progeny.Id);
-            _context.ProgenyDb.Remove(progeny);
-            await _context.SaveChangesAsync();
 
-            return progeny;
+            Progeny progenyToDelete = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progeny.Id);
+            if (progenyToDelete != null)
+            {
+                _context.ProgenyDb.Remove(progenyToDelete);
+                await _context.SaveChangesAsync();
+
+            }
+
+            return progenyToDelete;
         }
 
         private async Task<Progeny> GetProgenyFromCache(int id)

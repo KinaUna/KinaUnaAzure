@@ -19,7 +19,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetProgeny_Should_Return_Progeny_Object_When_Id_Is_Valid").Options;
-            using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
             context.Add(progenyToAdd);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
@@ -53,7 +53,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetProgeny_Should_Return_Null_Object_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetProgeny_Should_Return_Null_Object_When_Id_Is_Invalid").Options;
-            using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
             context.Add(new Progeny { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone });
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
@@ -69,7 +69,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddProgenyShouldSaveProgeny()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddProgenyShouldSaveProgeny").Options;
-            using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -79,7 +79,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
 
             Progeny addedProgeny = await progenyService.AddProgeny(progenyToAdd);
-            Progeny? dbProgeny = await context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == addedProgeny.Id);
+            Progeny? dbProgeny = await context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == addedProgeny.Id);
             Progeny savedProgeny = await progenyService.GetProgeny(addedProgeny.Id);
 
             Assert.NotNull(addedProgeny);
@@ -113,8 +113,8 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task UpdateProgenyShouldSaveProgeny()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddProgenyShouldSaveProgeny").Options;
-            using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateProgenyShouldSaveProgeny").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
             Progeny originalProgeny = new Progeny
                 { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
             context.Add(originalProgeny);
@@ -128,7 +128,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             progenyToUpdate.Name = "B";
 
             Progeny resultProgeny = await progenyService.UpdateProgeny(progenyToUpdate);
-            Progeny? dbProgeny = await context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == resultProgeny.Id);
+            Progeny? dbProgeny = await context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == resultProgeny.Id);
             Progeny savedProgeny = await progenyService.GetProgeny(resultProgeny.Id);
 
             Assert.NotNull(savedProgeny);
@@ -153,6 +153,30 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Assert.Equal(dbProgeny.PictureLink, progenyToUpdate.PictureLink);
                 Assert.Equal(dbProgeny.TimeZone, progenyToUpdate.TimeZone);
             }
+        }
+
+        [Fact]
+        public async Task DeleteProgenyShouldRemoveProgeny()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteProgenyShouldRemoveProgeny").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            Progeny originalProgeny = new Progeny
+            { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
+            context.Add(originalProgeny);
+            await context.SaveChangesAsync();
+
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
+            ProgenyService progenyService = new ProgenyService(context, memoryCache);
+
+            Progeny progenyToDelete = await progenyService.GetProgeny(1);
+
+            Progeny resultProgeny = await progenyService.DeleteProgeny(progenyToDelete);
+            Progeny? dbProgeny = await context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == progenyToDelete.Id);
+            Progeny savedProgeny = await progenyService.GetProgeny(resultProgeny.Id);
+
+            Assert.Null(savedProgeny);
+            Assert.Null(dbProgeny);
         }
     }
 }
