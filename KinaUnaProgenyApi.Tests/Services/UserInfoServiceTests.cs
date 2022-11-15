@@ -162,5 +162,81 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Assert.Equal(dbUserInfo.Timezone, userInfoToAdd.Timezone);
             }
         }
+
+        [Fact]
+        public async Task UpdateUserInfo_Should_Save_UserInfo()
+        {
+            UserInfo userInfo1 = new UserInfo
+            {
+                UserEmail = "test1@test.com",
+                UserId = "UserId1",
+                UserName = "Test1",
+                FirstName = "FirstName1",
+                MiddleName = "MiddleName1",
+                LastName = "LastName1",
+                ViewChild = 1,
+                ProfilePicture = Constants.ProfilePictureUrl,
+                Timezone = Constants.DefaultTimezone
+            };
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateUserInfo_Should_Save_UserInfo").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            context.Add(userInfo1);
+            await context.SaveChangesAsync();
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
+            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+
+            UserInfo userInfoToUpdate = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
+            userInfoToUpdate.UserName = userInfo1.UserName + "_Changed";
+            userInfoToUpdate.FirstName = userInfo1.FirstName + "_Changed";
+            userInfoToUpdate.MiddleName = userInfo1.MiddleName + "_Changed";
+            userInfoToUpdate.LastName = userInfo1.LastName + "_Changed";
+            userInfoToUpdate.ViewChild = 2;
+            userInfoToUpdate.ProfilePicture = Constants.WebAppUrl;
+            userInfoToUpdate.Timezone = Constants.ProfilePictureUrl;
+
+            UserInfo resultUserInfo = await userInfoService.UpdateUserInfo(userInfoToUpdate);
+            UserInfo? dbUserInfo = await context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.Id == userInfoToUpdate.Id);
+            UserInfo savedUserInfo = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
+
+            Assert.NotNull(resultUserInfo);
+            Assert.NotNull(savedUserInfo);
+            Assert.IsType<UserInfo>(resultUserInfo);
+            Assert.IsType<UserInfo>(savedUserInfo);
+
+            Assert.Equal(resultUserInfo.Id, userInfoToUpdate.Id);
+            Assert.Equal(resultUserInfo.UserId, userInfoToUpdate.UserId);
+            Assert.Equal(resultUserInfo.UserName, userInfoToUpdate.UserName);
+            Assert.Equal(resultUserInfo.FirstName, userInfoToUpdate.FirstName);
+            Assert.Equal(resultUserInfo.MiddleName, userInfoToUpdate.MiddleName);
+            Assert.Equal(resultUserInfo.LastName, userInfoToUpdate.LastName);
+            Assert.Equal(resultUserInfo.ViewChild, userInfoToUpdate.ViewChild);
+            Assert.Equal(resultUserInfo.ProfilePicture, userInfoToUpdate.ProfilePicture);
+            Assert.Equal(resultUserInfo.Timezone, userInfoToUpdate.Timezone);
+
+
+            Assert.Equal(savedUserInfo.Id, userInfoToUpdate.Id);
+            Assert.Equal(savedUserInfo.UserId, userInfoToUpdate.UserId);
+            Assert.Equal(savedUserInfo.UserName, userInfoToUpdate.UserName);
+            Assert.Equal(savedUserInfo.FirstName, userInfoToUpdate.FirstName);
+            Assert.Equal(savedUserInfo.MiddleName, userInfoToUpdate.MiddleName);
+            Assert.Equal(savedUserInfo.LastName, userInfoToUpdate.LastName);
+            Assert.Equal(savedUserInfo.ViewChild, userInfoToUpdate.ViewChild);
+            Assert.Equal(savedUserInfo.ProfilePicture, userInfoToUpdate.ProfilePicture);
+            Assert.Equal(savedUserInfo.Timezone, userInfoToUpdate.Timezone);
+
+            if (dbUserInfo != null)
+            {
+                Assert.Equal(dbUserInfo.Id, userInfoToUpdate.Id);
+                Assert.Equal(dbUserInfo.UserId, userInfoToUpdate.UserId);
+                Assert.Equal(dbUserInfo.UserName, userInfoToUpdate.UserName);
+                Assert.Equal(dbUserInfo.FirstName, userInfoToUpdate.FirstName);
+                Assert.Equal(dbUserInfo.MiddleName, userInfoToUpdate.MiddleName);
+                Assert.Equal(dbUserInfo.LastName, userInfoToUpdate.LastName);
+                Assert.Equal(dbUserInfo.ViewChild, userInfoToUpdate.ViewChild);
+                Assert.Equal(dbUserInfo.ProfilePicture, userInfoToUpdate.ProfilePicture);
+                Assert.Equal(dbUserInfo.Timezone, userInfoToUpdate.Timezone);
+            }
+        }
     }
 }

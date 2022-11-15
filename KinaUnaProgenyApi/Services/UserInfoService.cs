@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -82,18 +83,48 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<UserInfo> UpdateUserInfo(UserInfo userInfo)
         {
-            _ = _context.UserInfoDb.Update(userInfo);
-            _ = await _context.SaveChangesAsync();
+            UserInfo userInfoToUpdate = await _context.UserInfoDb.SingleOrDefaultAsync(ui => ui.Id == userInfo.Id);
+            if (userInfoToUpdate != null)
+            {
+                userInfoToUpdate.UserEmail = userInfo.UserEmail;
+                userInfoToUpdate.UserId = userInfo.UserId;
+                userInfoToUpdate.UserName = userInfo.UserName;
+                userInfoToUpdate.ViewChild = userInfo.ViewChild;
+                userInfoToUpdate.FirstName = userInfo.FirstName;
+                userInfoToUpdate.MiddleName = userInfo.MiddleName;
+                userInfoToUpdate.LastName = userInfo.LastName;
+                userInfoToUpdate.ProfilePicture = userInfo.ProfilePicture;
+                userInfoToUpdate.Timezone = userInfo.Timezone;
+                userInfoToUpdate.PhoneNumber = userInfo.PhoneNumber;
+                userInfoToUpdate.CanUserAddItems = userInfo.CanUserAddItems;
+                userInfoToUpdate.Deleted = userInfo.Deleted;
+                userInfoToUpdate.DeletedTime = userInfo.DeletedTime;
+                userInfoToUpdate.IsKinaUnaAdmin = userInfo.IsKinaUnaAdmin;
+                userInfoToUpdate.IsPivoqAdmin = userInfo.IsPivoqAdmin;
+                userInfoToUpdate.IsKinaUnaUser = userInfo.IsKinaUnaUser;
+                userInfoToUpdate.IsPivoqUser = userInfo.IsPivoqUser;
+                userInfoToUpdate.UpdateIsAdmin = userInfo.UpdateIsAdmin;
+                userInfoToUpdate.ProgenyList = userInfo.ProgenyList;
+                userInfoToUpdate.AccessList = userInfo.AccessList;
+                userInfoToUpdate.UpdatedTime = DateTime.UtcNow;
 
+                _ = _context.UserInfoDb.Update(userInfoToUpdate);
+                _ = await _context.SaveChangesAsync();
+            }
             _ = await SetUserInfoByEmail(userInfo.UserEmail);
 
-            return userInfo;
+            return userInfoToUpdate;
         }
 
         public async Task<UserInfo> DeleteUserInfo(UserInfo userInfo)
         {
-            _context.UserInfoDb.Remove(userInfo);
-            await _context.SaveChangesAsync();
+            UserInfo userInfoToDelete = await _context.UserInfoDb.SingleOrDefaultAsync(ui => ui.Id == userInfo.Id);
+            if (userInfoToDelete != null)
+            {
+                _context.UserInfoDb.Remove(userInfo);
+                await _context.SaveChangesAsync();
+            }
+            
             await RemoveUserInfoByEmail(userInfo.UserEmail, userInfo.UserId, userInfo.Id);
 
             return userInfo;
