@@ -47,11 +47,11 @@
         if (PictureViewModel != null)
         {
             Progeny = PictureViewModel?.Progeny;
-            await UpdateImage();
+            UpdateImage();
         }
     }
 
-    private async Task UpdateImage()
+    private void UpdateImage()
     {
         UserInfo = UserStateService.CurrentUser;
         if (Progeny != null && UserInfo != null && !string.IsNullOrEmpty(PictureViewModel?.PictureLink))
