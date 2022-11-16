@@ -184,12 +184,13 @@ namespace KinaUnaProgenyApi.Services
 
                 _context.UserAccessDb.Update(userAccessToUpdate);
                 await _context.SaveChangesAsync();
+
+                await SetUserAccessInCache(userAccessToUpdate.AccessId);
+                await SetUsersUserAccessListInCache(userAccessToUpdate.UserId);
+                await SetProgenyUserAccessListInCache(userAccessToUpdate.ProgenyId);
+                await SetProgenyUserIsAdminInCache(userAccessToUpdate.UserId);
             }
 
-            await SetUserAccessInCache(userAccessToUpdate.AccessId);
-            await SetUsersUserAccessListInCache(userAccessToUpdate.UserId);
-            await SetProgenyUserAccessListInCache(userAccessToUpdate.ProgenyId);
-            await SetProgenyUserIsAdminInCache(userAccessToUpdate.UserId);
             return userAccessToUpdate;
         }
 
