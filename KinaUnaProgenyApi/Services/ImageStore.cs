@@ -13,9 +13,9 @@ namespace KinaUnaProgenyApi.Services
 {
     public class ImageStore
     {
-        private BlobServiceClient _blobServiceClient;
-        private string _storageKey;
-        string baseUri = Constants.CloudBlobBase;
+        private readonly BlobServiceClient _blobServiceClient;
+        private readonly string _storageKey;
+        readonly string baseUri = Constants.CloudBlobBase;
         
         public ImageStore(IConfiguration configuration)
         {
