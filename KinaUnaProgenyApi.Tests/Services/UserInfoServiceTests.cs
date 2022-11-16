@@ -471,5 +471,92 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.IsType<List<UserInfo>>(resultUserInfos);
             Assert.Equal(resultUserInfos.Count, dbUserInfos.Count);
         }
+
+        [Fact]
+        public async Task IsAdminUser_Returns_True_For_Admin_User()
+        {
+            UserInfo userInfo1 = new UserInfo
+            {
+                UserEmail = "test1@test.com",
+                UserId = "UserId1",
+                UserName = "Test1",
+                FirstName = "FirstName1",
+                MiddleName = "MiddleName1",
+                LastName = "LastName1",
+                ViewChild = 1,
+                ProfilePicture = Constants.ProfilePictureUrl,
+                Timezone = Constants.DefaultTimezone,
+                IsKinaUnaAdmin = true
+            };
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("IsAdminUser_Returns_True_For_Admin_User").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            context.Add(userInfo1);
+            await context.SaveChangesAsync();
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
+            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+
+            var result = await userInfoService.IsAdminUserId(userInfo1.UserId);
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task IsAdminUserId_Returns_False_For_Non_Admin_User()
+        {
+            UserInfo userInfo1 = new UserInfo
+            {
+                UserEmail = "test1@test.com",
+                UserId = "UserId1",
+                UserName = "Test1",
+                FirstName = "FirstName1",
+                MiddleName = "MiddleName1",
+                LastName = "LastName1",
+                ViewChild = 1,
+                ProfilePicture = Constants.ProfilePictureUrl,
+                Timezone = Constants.DefaultTimezone,
+                IsKinaUnaAdmin = false
+            };
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("IsAdminUserId_Returns_False_For_Non_Admin_User").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            context.Add(userInfo1);
+            await context.SaveChangesAsync();
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
+            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+
+            var result = await userInfoService.IsAdminUserId(userInfo1.UserId);
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task IsAdminUserId_Returns_False_For_Non_Existing_User()
+        {
+            UserInfo userInfo1 = new UserInfo
+            {
+                UserEmail = "test1@test.com",
+                UserId = "UserId1",
+                UserName = "Test1",
+                FirstName = "FirstName1",
+                MiddleName = "MiddleName1",
+                LastName = "LastName1",
+                ViewChild = 1,
+                ProfilePicture = Constants.ProfilePictureUrl,
+                Timezone = Constants.DefaultTimezone,
+                IsKinaUnaAdmin = false
+            };
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("IsAdminUserId_Returns_False_For_Non_Existing_User").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            context.Add(userInfo1);
+            await context.SaveChangesAsync();
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
+            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+
+            var result = await userInfoService.IsAdminUserId("NoUser");
+
+            Assert.False(result);
+        }
     }
 }
