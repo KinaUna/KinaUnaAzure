@@ -137,12 +137,12 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (userAccess.AccessLevel == (int) AccessLevel.Private)
             {
-                await _userAccessService.SetProgenyUserIsAdmin(userAccess.UserId);
+                await _userAccessService.SetProgenyUserIsAdminInCache(userAccess.UserId);
             }
 
-            await _userAccessService.SetProgenyUserAccessList(userAccess.ProgenyId);
-            await _userAccessService.SetUsersUserAccessList(userAccess.UserId);
-            await _userAccessService.SetUserAccess(userAccess.AccessId);
+            await _userAccessService.SetProgenyUserAccessListInCache(userAccess.ProgenyId);
+            await _userAccessService.SetUsersUserAccessListInCache(userAccess.UserId);
+            await _userAccessService.SetUserAccessInCache(userAccess.AccessId);
 
             string title = "User added for " + prog.NickName;
             UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail()); // _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == User.GetEmail().ToUpper());
@@ -202,12 +202,12 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (userAccess.AccessLevel == (int)AccessLevel.Private)
             {
-                await _userAccessService.SetProgenyUserIsAdmin(userAccess.UserId);
+                await _userAccessService.SetProgenyUserIsAdminInCache(userAccess.UserId);
             }
 
-            await _userAccessService.SetProgenyUserAccessList(userAccess.ProgenyId);
-            await _userAccessService.SetUsersUserAccessList(userAccess.UserId);
-            await _userAccessService.SetUserAccess(userAccess.AccessId);
+            await _userAccessService.SetProgenyUserAccessListInCache(userAccess.ProgenyId);
+            await _userAccessService.SetUsersUserAccessListInCache(userAccess.UserId);
+            await _userAccessService.SetUserAccessInCache(userAccess.AccessId);
 
             string title = "User access modified for " + prog.NickName;
             UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail()); // _context.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == User.GetEmail().ToUpper());
