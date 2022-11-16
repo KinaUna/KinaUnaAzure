@@ -40,8 +40,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             UserInfoService userInfoService = new UserInfoService(context, memoryCache);
 
-            var resultUserInfos = await userInfoService.GetAllUserInfos();
-            var dbUserInfos = await context.UserInfoDb.ToListAsync();
+            List<UserInfo>? resultUserInfos = await userInfoService.GetAllUserInfos();
+            List<UserInfo> dbUserInfos = await context.UserInfoDb.ToListAsync();
 
             Assert.NotNull(resultUserInfos);
             Assert.IsType<List<UserInfo>>(resultUserInfos);
@@ -408,6 +408,68 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo resultUserInfo2 = await userInfoService.GetUserInfoByUserId("UserId2");
             Assert.Null(resultUserInfo);
             Assert.Null(resultUserInfo2);
+        }
+
+        [Fact]
+        public async Task GetDeletedUserInfos_Should_Return_List_Of_UserInfo()
+        {
+            UserInfo userInfo1 = new UserInfo
+            {
+                UserEmail = "test1@test.com",
+                UserId = "UserId1",
+                UserName = "Test1",
+                FirstName = "FirstName1",
+                MiddleName = "MiddleName1",
+                LastName = "LastName1",
+                ViewChild = 1,
+                ProfilePicture = Constants.ProfilePictureUrl,
+                Timezone = Constants.DefaultTimezone
+            };
+            UserInfo userInfo2 = new UserInfo
+            {
+                UserEmail = "test2@test.com",
+                UserId = "UserId2",
+                UserName = "Test2",
+                FirstName = "FirstName2",
+                MiddleName = "MiddleName2",
+                LastName = "LastName2",
+                ViewChild = 1,
+                ProfilePicture = Constants.ProfilePictureUrl,
+                Timezone = Constants.DefaultTimezone,
+                Deleted = true,
+                DeletedTime = DateTime.UtcNow
+            };
+            UserInfo userInfo3 = new UserInfo
+            {
+                UserEmail = "test3@test.com",
+                UserId = "UserId3",
+                UserName = "Test3",
+                FirstName = "FirstName3",
+                MiddleName = "MiddleName3",
+                LastName = "LastName3",
+                ViewChild = 1,
+                ProfilePicture = Constants.ProfilePictureUrl,
+                Timezone = Constants.DefaultTimezone,
+                Deleted = true,
+                DeletedTime = DateTime.UtcNow
+            };
+
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetDeletedUserInfos_Should_Return_List_Of_UserInfo").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            context.Add(userInfo1);
+            context.Add(userInfo2);
+            context.Add(userInfo3);
+            await context.SaveChangesAsync();
+            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
+            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+
+            List<UserInfo>? resultUserInfos = await userInfoService.GetDeletedUserInfos();
+            List<UserInfo> dbUserInfos = await context.UserInfoDb.AsNoTracking().Where(ui => ui.Deleted).ToListAsync();
+
+            Assert.NotNull(resultUserInfos);
+            Assert.IsType<List<UserInfo>>(resultUserInfos);
+            Assert.Equal(resultUserInfos.Count, dbUserInfos.Count);
         }
     }
 }
