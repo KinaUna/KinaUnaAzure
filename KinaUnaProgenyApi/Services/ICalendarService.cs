@@ -8,10 +8,8 @@ namespace KinaUnaProgenyApi.Services
     {
         Task<CalendarItem> GetCalendarItem(int id);
         Task<CalendarItem> AddCalendarItem(CalendarItem item);
-        Task<CalendarItem> SetCalendarItem(int id);
         Task<CalendarItem> UpdateCalendarItem(CalendarItem item);
         Task<CalendarItem> DeleteCalendarItem(CalendarItem item);
-        Task RemoveCalendarItem(int id, int progenyId);
         Task<List<CalendarItem>> GetCalendarList(int progenyId);
     }
 }

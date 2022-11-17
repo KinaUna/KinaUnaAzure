@@ -22,21 +22,15 @@ namespace KinaUnaProgenyApi.Services
             _context = context;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
-            _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
+            _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(1, 0, 0, 0)); // Expire after a week.
         }
 
         public async Task<CalendarItem> GetCalendarItem(int id)
         {
-            CalendarItem calendarItem;
-            string cachedCalendarItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id);
-            if (!string.IsNullOrEmpty(cachedCalendarItem))
+            CalendarItem calendarItem = await GetCalendarItemFromCache(id);
+            if (calendarItem == null)
             {
-                calendarItem = JsonConvert.DeserializeObject<CalendarItem>(cachedCalendarItem);
-            }
-            else
-            {
-                calendarItem = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == id);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id, JsonConvert.SerializeObject(calendarItem), _cacheOptionsSliding);
+                calendarItem = await SetCalendarItemInCache(id);
             }
 
             return calendarItem;
@@ -47,12 +41,24 @@ namespace KinaUnaProgenyApi.Services
             _context.CalendarDb.Add(item);
             await _context.SaveChangesAsync();
 
-            await SetCalendarItem(item.EventId);
+            await SetCalendarItemInCache(item.EventId);
 
             return item;
         }
 
-        public async Task<CalendarItem> SetCalendarItem(int id)
+        private async Task<CalendarItem> GetCalendarItemFromCache(int id)
+        {
+            CalendarItem calendarItem = new CalendarItem();
+            string cachedCalendarItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id);
+            if (!string.IsNullOrEmpty(cachedCalendarItem))
+            {
+                calendarItem = JsonConvert.DeserializeObject<CalendarItem>(cachedCalendarItem);
+            }
+
+            return calendarItem;
+        }
+
+        private async Task<CalendarItem> SetCalendarItemInCache(int id)
         {
             CalendarItem calendarItem = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == id);
             if (calendarItem != null)
@@ -66,23 +72,7 @@ namespace KinaUnaProgenyApi.Services
             return calendarItem;
         }
 
-        public async Task<CalendarItem> UpdateCalendarItem(CalendarItem item)
-        {
-            _context.CalendarDb.Update(item);
-            await _context.SaveChangesAsync();
-            await SetCalendarItem(item.EventId);
-            return item;
-        }
-
-        public async Task<CalendarItem> DeleteCalendarItem(CalendarItem item)
-        {
-            await RemoveCalendarItem(item.EventId, item.ProgenyId);
-            _context.CalendarDb.Remove(item);
-            await _context.SaveChangesAsync();
-            
-            return item;
-        }
-        public async Task RemoveCalendarItem(int id, int progenyId)
+        public async Task RemoveCalendarItemFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id);
 
@@ -90,19 +80,50 @@ namespace KinaUnaProgenyApi.Services
             _cache.SetString(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
         }
 
+        public async Task<CalendarItem> UpdateCalendarItem(CalendarItem item)
+        {
+            _context.CalendarDb.Update(item);
+            await _context.SaveChangesAsync();
+            await SetCalendarItemInCache(item.EventId);
+            return item;
+        }
+
+        public async Task<CalendarItem> DeleteCalendarItem(CalendarItem item)
+        {
+            await RemoveCalendarItemFromCache(item.EventId, item.ProgenyId);
+            _context.CalendarDb.Remove(item);
+            await _context.SaveChangesAsync();
+            
+            return item;
+        }
+        
         public async Task<List<CalendarItem>> GetCalendarList(int progenyId)
         {
-            List<CalendarItem> calendarList;
+            List<CalendarItem> calendarList = await GetCalendarListFromCache(progenyId);
+            if (calendarList == null)
+            {
+                calendarList = await SetCalendarListInCache(progenyId);
+            }
+            
+            return calendarList;
+        }
+
+        private async Task<List<CalendarItem>> GetCalendarListFromCache(int progenyId)
+        {
+            List<CalendarItem> calendarList = new List<CalendarItem>();
             string cachedCalendar = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId);
             if (!string.IsNullOrEmpty(cachedCalendar))
             {
                 calendarList = JsonConvert.DeserializeObject<List<CalendarItem>>(cachedCalendar);
             }
-            else
-            {
-                calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
-            }
+
+            return calendarList;
+        }
+
+        private async Task<List<CalendarItem>> SetCalendarListInCache(int progenyId)
+        {
+            List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
 
             return calendarList;
         }
