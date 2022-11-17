@@ -61,7 +61,7 @@ namespace KinaUnaProgenyApi.Services
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
                 _ = await SetCommentsListInCache(comment.CommentThreadNumber);
                 
-                Picture picture = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.CommentThreadNumber == comment.CommentThreadNumber);
+                Picture picture = await _mediaContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.CommentThreadNumber == comment.CommentThreadNumber);
                 if (picture != null) 
                 {
                     _ = await _picturesService.SetPicture(picture.PictureId);
@@ -69,7 +69,7 @@ namespace KinaUnaProgenyApi.Services
                 }
                 else
                 {
-                    Video video = await _mediaContext.VideoDb.SingleOrDefaultAsync(p => p.CommentThreadNumber == comment.CommentThreadNumber);
+                    Video video = await _mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(p => p.CommentThreadNumber == comment.CommentThreadNumber);
                     if (video != null)
                     {
                         _ = await _videosService.SetVideo(video.VideoId);
@@ -86,7 +86,7 @@ namespace KinaUnaProgenyApi.Services
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId);
             _ = await SetCommentsListInCache(commentThreadId);
 
-            Picture picture = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.CommentThreadNumber == commentThreadId);
+            Picture picture = await _mediaContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.CommentThreadNumber == commentThreadId);
             if (picture != null)
             {
                 _ = await _picturesService.SetPicture(picture.PictureId);
@@ -94,7 +94,7 @@ namespace KinaUnaProgenyApi.Services
             }
             else
             {
-                Video video = await _mediaContext.VideoDb.SingleOrDefaultAsync(p => p.CommentThreadNumber == commentThreadId);
+                Video video = await _mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(p => p.CommentThreadNumber == commentThreadId);
                 if (video != null)
                 {
                     _ = await _videosService.SetVideo(video.VideoId);
@@ -129,7 +129,14 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Comment>> SetCommentsListInCache(int commentThreadId)
         {
             List<Comment> commentsList = await _mediaContext.CommentsDb.AsNoTracking().Where(c => c.CommentThreadNumber == commentThreadId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId, JsonConvert.SerializeObject(commentsList), _cacheOptionsSliding);
+            if (commentsList.Any())
+            {
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId, JsonConvert.SerializeObject(commentsList), _cacheOptionsSliding);
+            }
+            else
+            {
+                await RemoveCommentsListFromCache(commentThreadId);
+            }
             
             return commentsList;
         }
@@ -147,8 +154,9 @@ namespace KinaUnaProgenyApi.Services
             CommentThread cmntThread = await _mediaContext.CommentThreadsDb.SingleOrDefaultAsync(c => c.Id == comment.CommentThreadNumber);
             if (cmntThread != null)
             {
-                cmntThread.CommentsCount += 1;
+                cmntThread.CommentsCount = _mediaContext.CommentsDb.AsNoTracking().Count(c => c.CommentThreadNumber == cmntThread.Id);
                 _ = _mediaContext.CommentThreadsDb.Update(cmntThread);
+                _ = await _mediaContext.SaveChangesAsync();
                 _ = await SetCommentsListInCache(cmntThread.Id);
             }
 
@@ -173,6 +181,7 @@ namespace KinaUnaProgenyApi.Services
 
                 _ = _mediaContext.CommentsDb.Update(commentToUpdate);
                 _ = await _mediaContext.SaveChangesAsync();
+                _ = await SetCommentInCache(commentToUpdate.CommentId);
             }
             
             return commentToUpdate;
@@ -180,17 +189,18 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Comment> DeleteComment(Comment comment)
         {
-            CommentThread cmntThread = await _mediaContext.CommentThreadsDb.SingleOrDefaultAsync(c => c.Id == comment.CommentThreadNumber);
-
+            await RemoveCommentFromCache(comment.CommentId, comment.CommentThreadNumber);
+            
             Comment commentToRemove = await _mediaContext.CommentsDb.SingleOrDefaultAsync(c => c.CommentId == comment.CommentId);
             if (commentToRemove != null)
             {
-                _ = _mediaContext.CommentsDb.Remove(comment);
+                _ = _mediaContext.CommentsDb.Remove(commentToRemove);
                 _ = await _mediaContext.SaveChangesAsync();
 
+                CommentThread cmntThread = await _mediaContext.CommentThreadsDb.SingleOrDefaultAsync(c => c.Id == comment.CommentThreadNumber);
                 if (cmntThread != null && cmntThread.CommentsCount > 0)
                 {
-                    cmntThread.CommentsCount -= 1;
+                    cmntThread.CommentsCount = _mediaContext.CommentsDb.AsNoTracking().Count(c => c.CommentThreadNumber == cmntThread.Id);
                     _ = _mediaContext.CommentThreadsDb.Update(cmntThread);
                     _ = await _mediaContext.SaveChangesAsync();
                     _ = await SetCommentsListInCache(cmntThread.Id);
