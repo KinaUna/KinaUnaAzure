@@ -89,8 +89,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             List<Progeny> progenyList2 = await userAccessService.GetProgenyUserIsAdmin("test3@test.com"); // Test cached result.
 
             Assert.NotNull(progenyList);
+            Assert.IsType<List<Progeny>>(progenyList);
             Assert.Empty(progenyList);
             Assert.NotNull(progenyList2);
+            Assert.IsType<List<Progeny>>(progenyList2);
             Assert.Empty(progenyList2);
 
         }
@@ -302,7 +304,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         }
 
         [Fact]
-        public async Task GetUserAccess_Returns_Null_When_Id_Is_Invalid()
+        public async Task GetUserAccess_Should_Return_Null_When_Id_Is_Invalid()
         {
             UserAccess userAccessToAdd1 = new UserAccess
             {
@@ -330,7 +332,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         }
 
         [Fact]
-        public async Task AddUserAccess_Should_Save_UserAcess()
+        public async Task AddUserAccess_Should_Save_UserAccess()
         {
             UserAccess userAccessToAdd1 = new UserAccess
             {

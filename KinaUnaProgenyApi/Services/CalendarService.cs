@@ -28,7 +28,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<CalendarItem> GetCalendarItem(int id)
         {
             CalendarItem calendarItem = await GetCalendarItemFromCache(id);
-            if (calendarItem == null)
+            if (calendarItem == null || calendarItem.EventId == 0)
             {
                 calendarItem = await SetCalendarItemInCache(id);
             }
@@ -82,17 +82,44 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<CalendarItem> UpdateCalendarItem(CalendarItem item)
         {
-            _context.CalendarDb.Update(item);
-            await _context.SaveChangesAsync();
-            await SetCalendarItemInCache(item.EventId);
-            return item;
+            CalendarItem calendarItemToUpdate = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
+            if (calendarItemToUpdate != null)
+            {
+                calendarItemToUpdate.Author = item.Author;
+                calendarItemToUpdate.AccessLevel = item.AccessLevel;
+                calendarItemToUpdate.AllDay = item.AllDay;
+                calendarItemToUpdate.Context = item.Context;
+                calendarItemToUpdate.End = item.End;
+                calendarItemToUpdate.EndString = item.EndString;
+                calendarItemToUpdate.EndTime = item.EndTime;
+                calendarItemToUpdate.StartTime = item.StartTime;
+                calendarItemToUpdate.IsReadonly = item.IsReadonly;
+                calendarItemToUpdate.Location = item.Location;
+                calendarItemToUpdate.Notes = item.Notes;
+                calendarItemToUpdate.ProgenyId = item.ProgenyId;
+                calendarItemToUpdate.Start = item.Start;
+                calendarItemToUpdate.StartString = item.StartString;
+                calendarItemToUpdate.Title = item.Title;
+                calendarItemToUpdate.Progeny = item.Progeny;
+
+                _context.CalendarDb.Update(calendarItemToUpdate);
+                await _context.SaveChangesAsync();
+                await SetCalendarItemInCache(calendarItemToUpdate.EventId);
+            }
+            
+            return calendarItemToUpdate;
         }
 
         public async Task<CalendarItem> DeleteCalendarItem(CalendarItem item)
         {
             await RemoveCalendarItemFromCache(item.EventId, item.ProgenyId);
-            _context.CalendarDb.Remove(item);
-            await _context.SaveChangesAsync();
+            CalendarItem calendarItemToDelete = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
+            if (calendarItemToDelete != null)
+            {
+                _context.CalendarDb.Remove(calendarItemToDelete);
+                await _context.SaveChangesAsync();
+            }
+            
             
             return item;
         }
@@ -100,7 +127,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<CalendarItem>> GetCalendarList(int progenyId)
         {
             List<CalendarItem> calendarList = await GetCalendarListFromCache(progenyId);
-            if (calendarList == null)
+            if (calendarList == null || calendarList.Count == 0)
             {
                 calendarList = await SetCalendarListInCache(progenyId);
             }
