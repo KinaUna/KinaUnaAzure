@@ -671,7 +671,7 @@ namespace KinaUnaProgenyApi.Controllers
             model = await _picturesService.AddPicture(model);
            
             await _picturesService.SetPicture(model.PictureId);
-            await _commentsService.SetCommentsList(model.CommentThreadNumber);
+            await _commentsService.SetCommentsListInCache(model.CommentThreadNumber);
 
             Progeny prog = await _progenyService.GetProgeny(model.ProgenyId);
             UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
@@ -723,7 +723,7 @@ namespace KinaUnaProgenyApi.Controllers
             picture = await _picturesService.UpdatePicture(picture);
             
             await _picturesService.SetPicture(picture.PictureId);
-            await _commentsService.SetCommentsList(picture.CommentThreadNumber);
+            await _commentsService.SetCommentsListInCache(picture.CommentThreadNumber);
 
             Progeny prog = await _progenyService.GetProgeny(picture.ProgenyId);
             UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
@@ -761,14 +761,14 @@ namespace KinaUnaProgenyApi.Controllers
                     foreach (Comment deletedComment in comments)
                     {
                         await _commentsService.DeleteComment(deletedComment);
-                        await _commentsService.RemoveComment(deletedComment.CommentId, deletedComment.CommentThreadNumber);
+                        await _commentsService.RemoveCommentFromCache(deletedComment.CommentId, deletedComment.CommentThreadNumber);
                     }
                 }
 
                 CommentThread cmntThread = await _commentsService.GetCommentThread(picture.CommentThreadNumber);
                 if (cmntThread != null)
                 {
-                    await _commentsService.RemoveCommentsList(picture.CommentThreadNumber);
+                    await _commentsService.RemoveCommentsListFromCache(picture.CommentThreadNumber);
                 }
                 if (!picture.PictureLink.ToLower().StartsWith("http"))
                 {

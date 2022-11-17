@@ -7,11 +7,11 @@ namespace KinaUnaProgenyApi.Services
     public interface ICommentsService
     {
         Task<Comment> GetComment(int commentId);
-        Task<Comment> SetComment(int commentId);
-        Task RemoveComment(int commentId, int commentThreadId);
+        Task<Comment> SetCommentInCache(int commentId);
+        Task RemoveCommentFromCache(int commentId, int commentThreadId);
         Task<List<Comment>> GetCommentsList(int commentThreadId);
-        Task<List<Comment>> SetCommentsList(int commentThreadId);
-        Task RemoveCommentsList(int commentThreadId);
+        Task<List<Comment>> SetCommentsListInCache(int commentThreadId);
+        Task RemoveCommentsListFromCache(int commentThreadId);
         Task<Comment> AddComment(Comment comment);
         Task<Comment> UpdateComment(Comment comment);
         Task<Comment> DeleteComment(Comment comment);

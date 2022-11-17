@@ -346,7 +346,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                 model = await _videosService.AddVideo(model);
                 await _videosService.SetVideo(model.VideoId);
-                await _commentsService.SetCommentsList(model.CommentThreadNumber);
+                await _commentsService.SetCommentsListInCache(model.CommentThreadNumber);
 
                 Progeny prog = await _progenyService.GetProgeny(model.ProgenyId);
                 UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
@@ -400,7 +400,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             video = await _videosService.UpdateVideo(video);
             await _videosService.SetVideo(video.VideoId);
-            await _commentsService.SetCommentsList(video.CommentThreadNumber);
+            await _commentsService.SetCommentsListInCache(video.CommentThreadNumber);
 
             Progeny prog = await _progenyService.GetProgeny(video.ProgenyId);
             UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
@@ -438,7 +438,7 @@ namespace KinaUnaProgenyApi.Controllers
                     foreach (Comment deletedComment in comments)
                     {
                         _ = await _commentsService.DeleteComment(deletedComment);
-                        await _commentsService.RemoveComment(deletedComment.CommentId, deletedComment.CommentThreadNumber);
+                        await _commentsService.RemoveCommentFromCache(deletedComment.CommentId, deletedComment.CommentThreadNumber);
                     }
                 }
 
@@ -446,7 +446,7 @@ namespace KinaUnaProgenyApi.Controllers
                 if (cmntThread != null)
                 {
                     _ = await _commentsService.DeleteCommentThread(cmntThread);
-                    await _commentsService.RemoveCommentsList(video.CommentThreadNumber);
+                    await _commentsService.RemoveCommentsListFromCache(video.CommentThreadNumber);
                 }
 
                 _ = await _videosService.DeleteVideo(video);

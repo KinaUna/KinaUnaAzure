@@ -31,42 +31,49 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Comment> GetComment(int commentId)
         {
-            Comment comment;
-            string cachedComment = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId);
-            if (!string.IsNullOrEmpty(cachedComment))
+            Comment comment = await GetCommentFromCache(commentId);
+            if (comment == null || comment.CommentId == 0)
             {
-                comment = JsonConvert.DeserializeObject<Comment>(cachedComment);
-            }
-            else
-            {
-                comment = await _mediaContext.CommentsDb.AsNoTracking().SingleOrDefaultAsync(c => c.CommentId == commentId);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
+                comment = await SetCommentInCache(commentId);
             }
 
             return comment;
         }
 
-        public async Task<Comment> SetComment(int commentId)
+        private async Task<Comment> GetCommentFromCache(int commentId)
+        {
+            Comment comment = new Comment();
+            string cachedComment = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId);
+            if (!string.IsNullOrEmpty(cachedComment))
+            {
+                comment = JsonConvert.DeserializeObject<Comment>(cachedComment);
+            }
+
+            return comment;
+        }
+
+        public async Task<Comment> SetCommentInCache(int commentId)
         {
             Comment comment = await _mediaContext.CommentsDb.AsNoTracking().SingleOrDefaultAsync(c => c.CommentId == commentId);
-            _cache.SetString(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
+            
             if (comment != null)
             {
-                await SetCommentsList(comment.CommentThreadNumber);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
+                _ = await SetCommentsListInCache(comment.CommentThreadNumber);
                 
                 Picture picture = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.CommentThreadNumber == comment.CommentThreadNumber);
                 if (picture != null) 
                 {
-                    await _picturesService.SetPicture(picture.PictureId);
-                    await _picturesService.SetPicturesList(picture.ProgenyId);
+                    _ = await _picturesService.SetPicture(picture.PictureId);
+                    _ = await _picturesService.SetPicturesList(picture.ProgenyId);
                 }
                 else
                 {
                     Video video = await _mediaContext.VideoDb.SingleOrDefaultAsync(p => p.CommentThreadNumber == comment.CommentThreadNumber);
                     if (video != null)
                     {
-                        await _videosService.SetVideo(video.VideoId);
-                        await _videosService.SetVideosList(video.ProgenyId);
+                        _ = await _videosService.SetVideo(video.VideoId);
+                        _ = await _videosService.SetVideosList(video.ProgenyId);
                     }
                 }
             }
@@ -74,46 +81,52 @@ namespace KinaUnaProgenyApi.Services
             return comment;
         }
 
-        public async Task RemoveComment(int commentId, int commentThreadId)
+        public async Task RemoveCommentFromCache(int commentId, int commentThreadId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId);
-            await SetCommentsList(commentThreadId);
+            _ = await SetCommentsListInCache(commentThreadId);
 
             Picture picture = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.CommentThreadNumber == commentThreadId);
             if (picture != null)
             {
-                await _picturesService.SetPicture(picture.PictureId);
-                await _picturesService.SetPicturesList(picture.ProgenyId);
+                _ = await _picturesService.SetPicture(picture.PictureId);
+                _ = await _picturesService.SetPicturesList(picture.ProgenyId);
             }
             else
             {
                 Video video = await _mediaContext.VideoDb.SingleOrDefaultAsync(p => p.CommentThreadNumber == commentThreadId);
                 if (video != null)
                 {
-                    await _videosService.SetVideo(video.VideoId);
-                    await _videosService.SetVideosList(video.ProgenyId);
+                    _ = await _videosService.SetVideo(video.VideoId);
+                    _ = await _videosService.SetVideosList(video.ProgenyId);
                 }
             }
         }
 
         public async Task<List<Comment>> GetCommentsList(int commentThreadId)
         {
-            List<Comment> commentsList;
-            string cachedCommentsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId);
-            if (!string.IsNullOrEmpty(cachedCommentsList))
+            List<Comment> commentsList = await GetCommentListFromCache(commentThreadId);
+            if (commentsList == null || commentsList.Count == 0)
             {
-                commentsList = JsonConvert.DeserializeObject<List<Comment>>(cachedCommentsList);
-            }
-            else
-            {
-                commentsList = await _mediaContext.CommentsDb.AsNoTracking().Where(c => c.CommentThreadNumber == commentThreadId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId, JsonConvert.SerializeObject(commentsList), _cacheOptionsSliding);
+                commentsList = await SetCommentsListInCache(commentThreadId);
             }
 
             return commentsList;
         }
 
-        public async Task<List<Comment>> SetCommentsList(int commentThreadId)
+        private async Task<List<Comment>> GetCommentListFromCache(int commentThreadId)
+        {
+            List<Comment> commentsList = new List<Comment>();
+            string cachedCommentsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId);
+            if (!string.IsNullOrEmpty(cachedCommentsList))
+            {
+                commentsList = JsonConvert.DeserializeObject<List<Comment>>(cachedCommentsList);
+            }
+
+            return commentsList;
+        }
+
+        public async Task<List<Comment>> SetCommentsListInCache(int commentThreadId)
         {
             List<Comment> commentsList = await _mediaContext.CommentsDb.AsNoTracking().Where(c => c.CommentThreadNumber == commentThreadId).ToListAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId, JsonConvert.SerializeObject(commentsList), _cacheOptionsSliding);
@@ -121,22 +134,22 @@ namespace KinaUnaProgenyApi.Services
             return commentsList;
         }
 
-        public async Task RemoveCommentsList(int commentThreadId)
+        public async Task RemoveCommentsListFromCache(int commentThreadId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId);
         }
 
         public async Task<Comment> AddComment(Comment comment)
         {
-            await _mediaContext.CommentsDb.AddAsync(comment);
-            await _mediaContext.SaveChangesAsync();
+            _ = await _mediaContext.CommentsDb.AddAsync(comment);
+            _ = await _mediaContext.SaveChangesAsync();
 
             CommentThread cmntThread = await _mediaContext.CommentThreadsDb.SingleOrDefaultAsync(c => c.Id == comment.CommentThreadNumber);
             if (cmntThread != null)
             {
                 cmntThread.CommentsCount += 1;
-                _mediaContext.CommentThreadsDb.Update(cmntThread);
-                await SetCommentsList(cmntThread.Id);
+                _ = _mediaContext.CommentThreadsDb.Update(cmntThread);
+                _ = await SetCommentsListInCache(cmntThread.Id);
             }
 
             return comment;
@@ -144,27 +157,48 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Comment> UpdateComment(Comment comment)
         {
-            _mediaContext.CommentsDb.Update(comment);
-            await _mediaContext.SaveChangesAsync();
-            return comment;
+            Comment commentToUpdate = await _mediaContext.CommentsDb.SingleOrDefaultAsync(c => c.CommentId == comment.CommentId);
+            if (commentToUpdate != null)
+            {
+                commentToUpdate.Author = comment.Author;
+                commentToUpdate.AccessLevel = comment.AccessLevel;
+                commentToUpdate.Progeny = comment.Progeny;
+                commentToUpdate.AuthorImage = comment.AuthorImage;
+                commentToUpdate.CommentText = comment.CommentText;
+                commentToUpdate.CommentThreadNumber = comment.CommentThreadNumber;
+                commentToUpdate.Created = comment.Created;
+                commentToUpdate.DisplayName = comment.DisplayName;
+                commentToUpdate.ItemId = comment.ItemId;
+                commentToUpdate.ItemType = comment.ItemType;
+
+                _ = _mediaContext.CommentsDb.Update(commentToUpdate);
+                _ = await _mediaContext.SaveChangesAsync();
+            }
+            
+            return commentToUpdate;
         }
 
         public async Task<Comment> DeleteComment(Comment comment)
         {
             CommentThread cmntThread = await _mediaContext.CommentThreadsDb.SingleOrDefaultAsync(c => c.Id == comment.CommentThreadNumber);
 
-            _mediaContext.CommentsDb.Remove(comment);
-            await _mediaContext.SaveChangesAsync();
-
-            if (cmntThread != null && cmntThread.CommentsCount > 0)
+            Comment commentToRemove = await _mediaContext.CommentsDb.SingleOrDefaultAsync(c => c.CommentId == comment.CommentId);
+            if (commentToRemove != null)
             {
-                cmntThread.CommentsCount -= 1;
-                _mediaContext.CommentThreadsDb.Update(cmntThread);
-                await _mediaContext.SaveChangesAsync();
-                await SetCommentsList(cmntThread.Id);
+                _ = _mediaContext.CommentsDb.Remove(comment);
+                _ = await _mediaContext.SaveChangesAsync();
+
+                if (cmntThread != null && cmntThread.CommentsCount > 0)
+                {
+                    cmntThread.CommentsCount -= 1;
+                    _ = _mediaContext.CommentThreadsDb.Update(cmntThread);
+                    _ = await _mediaContext.SaveChangesAsync();
+                    _ = await SetCommentsListInCache(cmntThread.Id);
+                }
             }
             
-            return comment;
+            
+            return commentToRemove;
         }
 
         public async Task<CommentThread> GetCommentThread(int commentThreadId)
@@ -176,16 +210,16 @@ namespace KinaUnaProgenyApi.Services
         public async Task<CommentThread> AddCommentThread()
         {
             CommentThread commentThread = new CommentThread();
-            await _mediaContext.CommentThreadsDb.AddAsync(commentThread);
-            await _mediaContext.SaveChangesAsync();
+            _ = await _mediaContext.CommentThreadsDb.AddAsync(commentThread);
+            _ = await _mediaContext.SaveChangesAsync();
 
             return commentThread;
         }
 
         public async Task<CommentThread> DeleteCommentThread(CommentThread commentThread)
         {
-            _mediaContext.CommentThreadsDb.Remove(commentThread);
-            await _mediaContext.SaveChangesAsync();
+            _ = _mediaContext.CommentThreadsDb.Remove(commentThread);
+            _ = await _mediaContext.SaveChangesAsync();
 
             return commentThread;
         }

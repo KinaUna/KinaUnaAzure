@@ -118,7 +118,7 @@ namespace KinaUnaProgenyApi.Controllers
             newComment.DisplayName = model.DisplayName;
 
             newComment = await _commentsService.AddComment(newComment);
-            await _commentsService.SetComment(newComment.CommentId);
+            await _commentsService.SetCommentInCache(newComment.CommentId);
 
             model.Progeny = await _progenyService.GetProgeny(model.Progeny.Id);
             string title = "New comment for " + model.Progeny.NickName;
@@ -153,7 +153,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             comment = await _commentsService.UpdateComment(comment);
             
-            await _commentsService.SetComment(comment.CommentId);
+            await _commentsService.SetCommentInCache(comment.CommentId);
 
             return Ok(comment);
         }
@@ -173,7 +173,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 _ = await _commentsService.DeleteComment(comment);
-                await _commentsService.RemoveComment(comment.CommentId, comment.CommentThreadNumber);
+                await _commentsService.RemoveCommentFromCache(comment.CommentId, comment.CommentThreadNumber);
                 return NoContent();
             }
             else
