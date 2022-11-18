@@ -1,5 +1,4 @@
-﻿using KinaUna.Data;
-using KinaUna.Data.Contexts;
+﻿using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.EntityFrameworkCore;
