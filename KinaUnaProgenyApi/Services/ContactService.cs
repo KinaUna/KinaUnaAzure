@@ -27,38 +27,44 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Contact> GetContact(int id)
         {
-            Contact contact;
-            string cachedContact = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id);
-            if (!string.IsNullOrEmpty(cachedContact))
+            Contact contact = await GetContactFromCache(id);
+            if (contact == null || contact.ContactId == 0)
             {
-                contact = JsonConvert.DeserializeObject<Contact>(cachedContact);
+                contact = await SetContactInCache(id);
             }
-            else
-            {
-                contact = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id, JsonConvert.SerializeObject(contact), _cacheOptionsSliding);
-            }
-
+            
             return contact;
         }
 
         public async Task<Contact> AddContact(Contact contact)
         {
             _context.ContactsDb.Add(contact);
-            await _context.SaveChangesAsync();
-            await SetContact(contact.ContactId);
+            _ = await _context.SaveChangesAsync();
+            _ = await SetContactInCache(contact.ContactId);
 
             return contact;
         }
-        public async Task<Contact> SetContact(int id)
+
+        private async Task<Contact> GetContactFromCache(int id)
+        {
+            Contact contact = new Contact();
+            string cachedContact = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id);
+            if (!string.IsNullOrEmpty(cachedContact))
+            {
+                contact = JsonConvert.DeserializeObject<Contact>(cachedContact);
+            }
+
+            return contact;
+        }
+
+        public async Task<Contact> SetContactInCache(int id)
         {
             Contact contact = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
             if (contact != null)
             {
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id, JsonConvert.SerializeObject(contact), _cacheOptionsSliding);
 
-                List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == contact.ProgenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + contact.ProgenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
+                _ = await SetContactsListInCache(contact.ProgenyId);
             }
             
             return contact;
@@ -66,42 +72,88 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Contact> UpdateContact(Contact contact)
         {
-            _context.ContactsDb.Update(contact);
-            await _context.SaveChangesAsync();
-            await SetContact(contact.ContactId);
+            Contact contactToUpdate = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contact.ContactId);
+            if (contactToUpdate != null)
+            {
+                contactToUpdate.AccessLevel = contact.AccessLevel;
+                contactToUpdate.Active = contact.Active;
+                contactToUpdate.AddressIdNumber = contact.AddressIdNumber;
+                contactToUpdate.Address = contact.Address;
+                contactToUpdate.ProgenyId = contact.ProgenyId;
+                contactToUpdate.AddressString = contact.AddressString;
+                contactToUpdate.Author = contact.Author;
+                contactToUpdate.Context = contact.Context;
+                contactToUpdate.DateAdded = contact.DateAdded;
+                contactToUpdate.DisplayName = contact.DisplayName;
+                contactToUpdate.FirstName = contact.FirstName;
+                contactToUpdate.MiddleName = contact.MiddleName;
+                contactToUpdate.LastName = contact.LastName;
+                contactToUpdate.PictureLink = contact.PictureLink;
+                contactToUpdate.Email1 = contact.Email1;
+                contactToUpdate.Email2 = contact.Email2;
+                contactToUpdate.PhoneNumber = contact.PhoneNumber;
+                contactToUpdate.MobileNumber = contact.MobileNumber;
+                contactToUpdate.Notes = contact.Notes;
+                contactToUpdate.Progeny = contact.Progeny;
+                contactToUpdate.Tags = contact.Tags;
+                contactToUpdate.Website = contact.Website;
+                
+                _context.ContactsDb.Update(contactToUpdate);
+                _ = await _context.SaveChangesAsync();
+
+                _ = await SetContactInCache(contactToUpdate.ContactId);
+            }
+            
 
             return contact;
         }
 
         public async Task<Contact> DeleteContact(Contact contact)
         {
-            _context.ContactsDb.Remove(contact);
-            await _context.SaveChangesAsync();
-            await RemoveContact(contact.ContactId, contact.ProgenyId);
-
+            Contact contactToDelete = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contact.ContactId);
+            if (contactToDelete != null)
+            {
+                _context.ContactsDb.Remove(contactToDelete);
+                _ = await _context.SaveChangesAsync();
+                await RemoveContactFromCache(contact.ContactId, contact.ProgenyId);
+            }
+            
             return contact;
         }
-        public async Task RemoveContact(int id, int progenyId)
+        public async Task RemoveContactFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "contact" + id);
 
-            List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
+            _ = await SetContactsListInCache(progenyId);
         }
 
         public async Task<List<Contact>> GetContactsList(int progenyId)
         {
-            List<Contact> contactsList;
+            List<Contact> contactsList = await GetContactsListFromCache(progenyId);
+            if (!contactsList.Any())
+            {
+                contactsList = await SetContactsListInCache(progenyId);
+            }
+            
+            return contactsList;
+        }
+
+        private async Task<List<Contact>> GetContactsListFromCache(int progenyId)
+        {
+            List<Contact> contactsList = new List<Contact>();
             string cachedContactsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedContactsList))
             {
                 contactsList = JsonConvert.DeserializeObject<List<Contact>>(cachedContactsList);
             }
-            else
-            {
-                contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
-            }
+
+            return contactsList;
+        }
+
+        private async Task<List<Contact>> SetContactsListInCache(int progenyId)
+        {
+            List<Contact> contactsList = await _context.ContactsDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId, JsonConvert.SerializeObject(contactsList), _cacheOptionsSliding);
 
             return contactsList;
         }
