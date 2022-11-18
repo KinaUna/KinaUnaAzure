@@ -21,24 +21,46 @@ namespace KinaUnaProgenyApi.Services
             MobileNotification notification = await _context.MobileNotificationsDb.SingleOrDefaultAsync(m => m.NotificationId == id);
             return notification;
         }
-        public async Task AddMobileNotification(MobileNotification notification)
+
+        public async Task<MobileNotification> AddMobileNotification(MobileNotification notification)
         {
             _ = _context.MobileNotificationsDb.Add(notification);
             _ = await _context.SaveChangesAsync();
+
+            return notification;
         }
 
         public async Task<MobileNotification> UpdateMobileNotification(MobileNotification notification)
         {
-            _ = _context.MobileNotificationsDb.Update(notification);
-            _ = await _context.SaveChangesAsync();
+            MobileNotification updatedNotification = await _context.MobileNotificationsDb.SingleOrDefaultAsync(mn => mn.NotificationId == notification.NotificationId);
+            if (updatedNotification != null)
+            {
+                updatedNotification.IconLink = notification.IconLink;
+                updatedNotification.Title = notification.Title;
+                updatedNotification.ItemId = notification.ItemId;
+                updatedNotification.ItemType = notification.ItemType;
+                updatedNotification.Language = notification.Language;
+                updatedNotification.Message = notification.Message;
+                updatedNotification.Read = notification.Read;
+                updatedNotification.Time = notification.Time;
+                updatedNotification.UserId = notification.UserId;
+                
+                _ = _context.MobileNotificationsDb.Update(updatedNotification);
+                _ = await _context.SaveChangesAsync();
+            }
+            
             return notification;
         }
 
         public async Task<MobileNotification> DeleteMobileNotification(MobileNotification notification)
         {
-            _ = _context.MobileNotificationsDb.Remove(notification);
-            _ = await _context.SaveChangesAsync();
-
+            MobileNotification notificationToDelete = await _context.MobileNotificationsDb.SingleOrDefaultAsync(mn => mn.NotificationId == notification.NotificationId);
+            if (notificationToDelete != null)
+            {
+                _ = _context.MobileNotificationsDb.Remove(notificationToDelete);
+                _ = await _context.SaveChangesAsync();
+            }
+            
             return notification;
         }
         public async Task<List<MobileNotification>> GetUsersMobileNotifications(string userId, string language)
@@ -48,6 +70,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 notifications = await _context.MobileNotificationsDb.Where(n => n.UserId == userId).ToListAsync();
             }
+
             return notifications;
         }
     }

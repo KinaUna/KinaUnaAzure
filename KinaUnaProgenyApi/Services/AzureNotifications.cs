@@ -52,17 +52,16 @@ namespace KinaUnaProgenyApi.Services
                         notification.Title = title;
                         notification.Time = DateTime.UtcNow;
                         notification.Read = false;
-                        await _dataService.AddMobileNotification(notification);
+                        _ = await _dataService.AddMobileNotification(notification);
                         
 
                         string userTag = "userEmail:" + userAcces.UserId.ToUpper();
-                        await Hub.SendFcmNativeNotificationAsync(payload.ToString(Newtonsoft.Json.Formatting.None), userTag);
-                        await Hub.SendAppleNativeNotificationAsync(alert, userTag);
+                        _ = await Hub.SendFcmNativeNotificationAsync(payload.ToString(Newtonsoft.Json.Formatting.None), userTag);
+                        _ = await Hub.SendAppleNativeNotificationAsync(alert, userTag);
                         
                     }
                 }
             }
-            // Android
             
         }
     }
