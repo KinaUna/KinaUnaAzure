@@ -64,8 +64,8 @@ namespace KinaUnaProgenyApi.Services
                 Picture picture = await _mediaContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.CommentThreadNumber == comment.CommentThreadNumber);
                 if (picture != null) 
                 {
-                    _ = await _picturesService.SetPicture(picture.PictureId);
-                    _ = await _picturesService.SetPicturesList(picture.ProgenyId);
+                    _ = await _picturesService.SetPictureInCache(picture.PictureId);
+                    _ = await _picturesService.SetPicturesListInCache(picture.ProgenyId);
                 }
                 else
                 {
@@ -89,8 +89,8 @@ namespace KinaUnaProgenyApi.Services
             Picture picture = await _mediaContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.CommentThreadNumber == commentThreadId);
             if (picture != null)
             {
-                _ = await _picturesService.SetPicture(picture.PictureId);
-                _ = await _picturesService.SetPicturesList(picture.ProgenyId);
+                _ = await _picturesService.SetPictureInCache(picture.PictureId);
+                _ = await _picturesService.SetPicturesListInCache(picture.ProgenyId);
             }
             else
             {

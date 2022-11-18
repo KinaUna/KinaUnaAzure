@@ -670,7 +670,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             model = await _picturesService.AddPicture(model);
            
-            await _picturesService.SetPicture(model.PictureId);
+            await _picturesService.SetPictureInCache(model.PictureId);
             await _commentsService.SetCommentsListInCache(model.CommentThreadNumber);
 
             Progeny prog = await _progenyService.GetProgeny(model.ProgenyId);
@@ -722,7 +722,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             picture = await _picturesService.UpdatePicture(picture);
             
-            await _picturesService.SetPicture(picture.PictureId);
+            await _picturesService.SetPictureInCache(picture.PictureId);
             await _commentsService.SetCommentsListInCache(picture.CommentThreadNumber);
 
             Progeny prog = await _progenyService.GetProgeny(picture.ProgenyId);
@@ -778,7 +778,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 await _picturesService.DeletePicture(picture);
-                await _picturesService.RemovePicture(picture.PictureId, picture.ProgenyId);
+                await _picturesService.RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
 
                 Progeny prog = await _progenyService.GetProgeny(picture.ProgenyId);
                 UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
