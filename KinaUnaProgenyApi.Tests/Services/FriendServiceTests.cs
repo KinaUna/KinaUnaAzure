@@ -54,7 +54,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(resultFriend1);
             Assert.IsType<Friend>(resultFriend1);
             Assert.Equal(friend1.Author, resultFriend1.Author);
-            Assert.Equal(friend1.Name, friend1.Name);
+            Assert.Equal(friend1.Name, resultFriend1.Name);
             Assert.Equal(friend1.AccessLevel, resultFriend1.AccessLevel);
             Assert.Equal(friend1.ProgenyId, resultFriend1.ProgenyId);
 

@@ -108,7 +108,7 @@ namespace KinaUnaProgenyApi.Services
             Location locationToDelete = await _context.LocationsDb.SingleOrDefaultAsync(l => l.LocationId == location.LocationId);
             if (locationToDelete != null)
             {
-                _context.LocationsDb.Remove(location);
+                _context.LocationsDb.Remove(locationToDelete);
                 await _context.SaveChangesAsync();
                 await RemoveLocationFromCache(location.LocationId, location.ProgenyId);
             }
