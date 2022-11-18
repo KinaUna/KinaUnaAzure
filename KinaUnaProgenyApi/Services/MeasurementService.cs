@@ -27,16 +27,35 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Measurement> GetMeasurement(int id)
         {
-            Measurement measurement;
+            Measurement measurement = await GetMeasurementFromCache(id);
+            if (measurement == null || measurement.MeasurementId == 0)
+            {
+                measurement = await SetMeasurementInCache(id);
+            }
+
+            return measurement;
+        }
+
+        private async Task<Measurement> GetMeasurementFromCache(int id)
+        {
+            Measurement measurement = new Measurement();
             string cachedMeasurement = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "measurement" + id);
             if (!string.IsNullOrEmpty(cachedMeasurement))
             {
                 measurement = JsonConvert.DeserializeObject<Measurement>(cachedMeasurement);
             }
-            else
+
+            return measurement;
+        }
+
+        private async Task<Measurement> SetMeasurementInCache(int id)
+        {
+            Measurement measurement = await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
+            if (measurement != null)
             {
-                measurement = await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurement" + id, JsonConvert.SerializeObject(measurement), _cacheOptionsSliding);
+
+                _ = await SetMeasurementsListInCache(measurement.ProgenyId);
             }
 
             return measurement;
@@ -46,64 +65,84 @@ namespace KinaUnaProgenyApi.Services
         {
             _ = _context.MeasurementsDb.Add(measurement);
             _ = await _context.SaveChangesAsync();
-            _ = await SetMeasurement(measurement.MeasurementId);
+            _ = await SetMeasurementInCache(measurement.MeasurementId);
 
             return measurement;
         }
-        public async Task<Measurement> SetMeasurement(int id)
-        {
-            Measurement measurement = await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
-            if (measurement != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurement" + id, JsonConvert.SerializeObject(measurement), _cacheOptionsSliding);
-
-                List<Measurement> measurementsList = await _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == measurement.ProgenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + measurement.ProgenyId, JsonConvert.SerializeObject(measurementsList), _cacheOptionsSliding);
-            }
-           
-            return measurement;
-        }
+        
 
         public async Task<Measurement> UpdateMeasurement(Measurement measurement)
         {
-            _ = _context.MeasurementsDb.Update(measurement);
-            _ = await _context.SaveChangesAsync();
-            _ = await SetMeasurement(measurement.MeasurementId);
-            return measurement;
+            Measurement measurementToUpdate = await _context.MeasurementsDb.SingleOrDefaultAsync(m => m.MeasurementId == measurement.MeasurementId);
+            if (measurementToUpdate != null)
+            {
+                measurementToUpdate.AccessLevel = measurement.AccessLevel;
+                measurementToUpdate.Author = measurement.Author;
+                measurementToUpdate.Circumference = measurement.Circumference;
+                measurementToUpdate.CreatedDate = measurement.CreatedDate;
+                measurementToUpdate.Date = measurement.Date;
+                measurementToUpdate.EyeColor = measurement.EyeColor;
+                measurementToUpdate.HairColor = measurement.HairColor;
+                measurementToUpdate.Height = measurement.Height;
+                measurementToUpdate.MeasurementNumber = measurement.MeasurementNumber;
+                measurementToUpdate.Weight = measurement.Weight;
+                measurementToUpdate.Progeny = measurement.Progeny;
+                _ = _context.MeasurementsDb.Update(measurementToUpdate);
+                _ = await _context.SaveChangesAsync();
+                _ = await SetMeasurementInCache(measurement.MeasurementId);
+            }
+            
+            return measurementToUpdate;
         }
 
         public async Task<Measurement> DeleteMeasurement(Measurement measurement)
         {
-            await RemoveMeasurement(measurement.MeasurementId, measurement.ProgenyId);
+            Measurement measurementToDelete = await _context.MeasurementsDb.SingleOrDefaultAsync(m => m.MeasurementId == measurement.MeasurementId);
+            if (measurementToDelete != null)
+            {
+                _ = _context.MeasurementsDb.Remove(measurementToDelete);
+                _ = await _context.SaveChangesAsync();
 
-            _ = _context.MeasurementsDb.Remove(measurement);
-            _ = await _context.SaveChangesAsync();
-           
+                await RemoveMeasurementFromCache(measurement.MeasurementId, measurement.ProgenyId);
+            }
+            
 
             return measurement;
         }
-        public async Task RemoveMeasurement(int id, int progenyId)
+        private async Task RemoveMeasurementFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "measurement" + id);
 
-            List<Measurement> measurementsList = await _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + progenyId, JsonConvert.SerializeObject(measurementsList), _cacheOptionsSliding);
+            _ = await SetMeasurementsListInCache(progenyId);
         }
 
         public async Task<List<Measurement>> GetMeasurementsList(int progenyId)
         {
-            List<Measurement> measurementsList;
+            List<Measurement> measurementsList = await GetMeasurementsListFromCache(progenyId);
+            if (!measurementsList.Any())
+            {
+                measurementsList = await SetMeasurementsListInCache(progenyId);
+            }
+
+            return measurementsList;
+        }
+
+        private async Task<List<Measurement>> GetMeasurementsListFromCache(int progenyId)
+        {
+            List<Measurement> measurementsList = new List<Measurement>();
             string cachedMeasurementsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedMeasurementsList))
             {
                 measurementsList = JsonConvert.DeserializeObject<List<Measurement>>(cachedMeasurementsList);
             }
-            else
-            {
-                measurementsList = await _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + progenyId, JsonConvert.SerializeObject(measurementsList), _cacheOptionsSliding);
-            }
 
+            return measurementsList;
+        }
+
+        private async Task<List<Measurement>> SetMeasurementsListInCache(int progenyId)
+        {
+            List<Measurement> measurementsList = await _context.MeasurementsDb.AsNoTracking().Where(m => m.ProgenyId == progenyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + progenyId, JsonConvert.SerializeObject(measurementsList), _cacheOptionsSliding);
             return measurementsList;
         }
     }

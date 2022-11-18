@@ -8,10 +8,8 @@ namespace KinaUnaProgenyApi.Services
     {
         Task<Measurement> GetMeasurement(int id);
         Task<Measurement> AddMeasurement(Measurement measurement);
-        Task<Measurement> SetMeasurement(int id);
         Task<Measurement> UpdateMeasurement(Measurement measurement);
         Task<Measurement> DeleteMeasurement(Measurement measurement);
-        Task RemoveMeasurement(int id, int progenyId);
         Task<List<Measurement>> GetMeasurementsList(int progenyId);
     }
 }
