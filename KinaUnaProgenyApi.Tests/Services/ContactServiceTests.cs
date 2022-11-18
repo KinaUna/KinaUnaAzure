@@ -14,7 +14,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetContact_Returns_Contact_Object_When_Id_Is_Valid()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GeContact_Returns_Contact_Object_When_Id_Is_Valid").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetContact_Returns_Contact_Object_When_Id_Is_Valid").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             Contact contact1 = new Contact
@@ -405,10 +405,10 @@ namespace KinaUnaProgenyApi.Tests.Services
         }
 
         [Fact]
-        public async Task GetCalendarList_Should_Return_Empty_List_Of_CalendarItems_When_Progeny_Has_No_Stored_Events()
+        public async Task GetContactsList_Should_Return_Empty_List_Of_Contact_When_Progeny_Has_No_Saved_Contacts()
         {
             
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetCalendarList_Should_Return_Empty_List_Of_CalendarItems_When_Progeny_Has_No_Stored_Events").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetContactsList_Should_Return_Empty_List_Of_Contact_When_Progeny_Has_No_Saved_Contacts").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             Contact contact1 = new Contact
