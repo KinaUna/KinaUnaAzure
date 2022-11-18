@@ -27,16 +27,34 @@ namespace KinaUnaProgenyApi.Services
         
         public async Task<Friend> GetFriend(int id)
         {
-            Friend friend;
+            Friend friend = await GetFriendFromCache(id);
+            if (friend == null || friend.FriendId == 0)
+            {
+                friend = await SetFriendInCache(id);
+            }
+            return friend;
+        }
+
+        private async Task<Friend> GetFriendFromCache(int id)
+        {
+            Friend friend = new Friend();
             string cachedFriend = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "friend" + id);
             if (!string.IsNullOrEmpty(cachedFriend))
             {
                 friend = JsonConvert.DeserializeObject<Friend>(cachedFriend);
             }
-            else
+
+            return friend;
+        }
+
+        public async Task<Friend> SetFriendInCache(int id)
+        {
+            Friend friend = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
+            if (friend != null)
             {
-                friend = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friend" + id, JsonConvert.SerializeObject(friend), _cacheOptionsSliding);
+
+                _ = await SetFriendsListInCache(friend.ProgenyId);
             }
 
             return friend;
@@ -44,65 +62,88 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Friend> AddFriend(Friend friend)
         {
-            _context.FriendsDb.Add(friend);
-            await _context.SaveChangesAsync();
-            await SetFriend(friend.FriendId);
+            _ = _context.FriendsDb.Add(friend);
+            _ = await _context.SaveChangesAsync();
+            _ = await SetFriendInCache(friend.FriendId);
             return friend;
         }
-
-        public async Task<Friend> SetFriend(int id)
-        {
-            Friend friend = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
-            if (friend != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friend" + id, JsonConvert.SerializeObject(friend), _cacheOptionsSliding);
-
-                List<Friend> friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == friend.ProgenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + friend.ProgenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
-            }
-
-            return friend;
-        }
+        
 
         public async Task<Friend> UpdateFriend(Friend friend)
         {
-            _context.FriendsDb.Update(friend);
-            await _context.SaveChangesAsync();
-            await SetFriend(friend.FriendId);
+            Friend friendToUpdate = await _context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == friend.FriendId);
+            if (friendToUpdate != null)
+            {
+                friendToUpdate.ProgenyId = friend.ProgenyId;
+                friendToUpdate.PictureLink = friend.PictureLink;
+                friendToUpdate.Author = friend.Author;
+                friendToUpdate.Name = friend.Name;
+                friendToUpdate.Description = friend.Description;
+                friendToUpdate.Context = friend.Context;
+                friendToUpdate.FriendAddedDate = friend.FriendAddedDate;
+                friendToUpdate.FriendSince = friend.FriendSince;
+                friendToUpdate.Notes = friend.Notes;
+                friendToUpdate.AccessLevel = friend.AccessLevel;
+                friendToUpdate.Tags = friend.Tags;
+                friendToUpdate.Type = friend.Type;
+                friendToUpdate.Progeny = friend.Progeny;
+
+                _ = _context.FriendsDb.Update(friendToUpdate);
+                _ = await _context.SaveChangesAsync();
+                _ = await SetFriendInCache(friend.FriendId);
+            }
+            
 
             return friend;
         }
 
         public async Task<Friend> DeleteFriend(Friend friend)
         {
-            await RemoveFriend(friend.FriendId, friend.ProgenyId);
-
-            _context.FriendsDb.Remove(friend);
-            await _context.SaveChangesAsync();
+            Friend friendToDelete = await _context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == friend.FriendId);
+            if (friendToDelete != null)
+            {
+                _ = _context.FriendsDb.Remove(friendToDelete);
+                _ = await _context.SaveChangesAsync();
+                await RemoveFriendFromCache(friend.FriendId, friend.ProgenyId);
+            }
             
             return friend;
         }
-        public async Task RemoveFriend(int id, int progenyId)
+        public async Task RemoveFriendFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "friend" + id);
 
-            List<Friend> friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
+            _ = await SetFriendsListInCache(progenyId);
         }
 
         public async Task<List<Friend>> GetFriendsList(int progenyId)
         {
-            List<Friend> friendsList;
+            List<Friend> friendsList = await GetFriendsListFromCache(progenyId);
+
+            if (friendsList == null || !friendsList.Any())
+            {
+                friendsList = await SetFriendsListInCache(progenyId);
+            }
+
+            return friendsList;
+        }
+
+        private async Task<List<Friend>> GetFriendsListFromCache(int progenyId)
+        {
+            List<Friend> friendsList = new List<Friend>();
             string cachedFriendsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedFriendsList))
             {
                 friendsList = JsonConvert.DeserializeObject<List<Friend>>(cachedFriendsList);
             }
-            else
-            {
-                friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
-            }
+
+            return friendsList;
+        }
+
+        private async Task<List<Friend>> SetFriendsListInCache(int progenyId)
+        {
+            List<Friend> friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == progenyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId, JsonConvert.SerializeObject(friendsList), _cacheOptionsSliding);
 
             return friendsList;
         }

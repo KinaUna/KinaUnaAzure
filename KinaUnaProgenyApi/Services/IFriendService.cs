@@ -8,10 +8,10 @@ namespace KinaUnaProgenyApi.Services
     {
         Task<Friend> GetFriend(int id);
         Task<Friend> AddFriend(Friend friend);
-        Task<Friend> SetFriend(int id);
+        Task<Friend> SetFriendInCache(int id);
         Task<Friend> UpdateFriend(Friend friend);
         Task<Friend> DeleteFriend(Friend friend);
-        Task RemoveFriend(int id, int progenyId);
+        Task RemoveFriendFromCache(int id, int progenyId);
         Task<List<Friend>> GetFriendsList(int progenyId);
     }
 }
