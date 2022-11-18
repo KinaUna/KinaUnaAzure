@@ -42,8 +42,18 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<KinaUnaLanguage> UpdateLanguage(KinaUnaLanguage language)
         {
-            _context.Languages.Update(language);
-            await _context.SaveChangesAsync();
+            KinaUnaLanguage languageToUpdate = await _context.Languages.SingleOrDefaultAsync(l => l.Id == language.Id);
+            if (languageToUpdate != null)
+            {
+                languageToUpdate.Name = language.Name;
+                languageToUpdate.Code = language.Code;
+                languageToUpdate.Icon = language.Icon;
+                languageToUpdate.IconLink = language.IconLink;
+
+                _context.Languages.Update(languageToUpdate);
+                await _context.SaveChangesAsync();
+            }
+            
             return language;
         }
 
