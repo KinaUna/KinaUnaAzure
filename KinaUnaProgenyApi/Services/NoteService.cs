@@ -27,16 +27,35 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Note> GetNote(int id)
         {
-            Note note;
+            Note note = await GetNoteFromCache(id);
+            if (note == null || note.NoteId == 0)
+            {
+                note = await SetNoteInCache(id);
+            }
+
+            return note;
+        }
+
+        private async Task<Note> GetNoteFromCache(int id)
+        {
+            Note note = new Note();
             string cachedNote = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "note" + id);
             if (!string.IsNullOrEmpty(cachedNote))
             {
                 note = JsonConvert.DeserializeObject<Note>(cachedNote);
             }
-            else
+
+            return note;
+        }
+
+        private async Task<Note> SetNoteInCache(int id)
+        {
+            Note note = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
+            if (note != null)
             {
-                note = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "note" + id, JsonConvert.SerializeObject(note), _cacheOptionsSliding);
+
+                _ = await SetNotesListInCache(note.ProgenyId);
             }
 
             return note;
@@ -46,62 +65,82 @@ namespace KinaUnaProgenyApi.Services
         {
             _ = _context.NotesDb.Add(note);
             _ = await _context.SaveChangesAsync();
-            _ = await SetNote(note.NoteId);
+            _ = await SetNoteInCache(note.NoteId);
             return note;
         }
 
-        public async Task<Note> SetNote(int id)
-        {
-            Note note = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
-            if (note != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "note" + id, JsonConvert.SerializeObject(note), _cacheOptionsSliding);
-
-                List<Note> notesList = await _context.NotesDb.AsNoTracking().Where(c => c.ProgenyId == note.ProgenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + note.ProgenyId, JsonConvert.SerializeObject(notesList), _cacheOptionsSliding);
-            }
-
-            return note;
-        }
+        
 
         public async Task<Note> UpdateNote(Note note)
         {
-            _ = _context.NotesDb.Update(note);
-            _ = await _context.SaveChangesAsync();
-            _ = await SetNote(note.NoteId);
-            return note;
+            Note noteToUpdate = await _context.NotesDb.SingleOrDefaultAsync(n => n.NoteId == note.NoteId);
+            if (noteToUpdate != null)
+            {
+                noteToUpdate.AccessLevel = note.AccessLevel;
+                noteToUpdate.ProgenyId = note.ProgenyId;
+                noteToUpdate.Category = note.Category;
+                noteToUpdate.Content = note.Content;
+                noteToUpdate.CreatedDate = note.CreatedDate;
+                noteToUpdate.NoteNumber = note.NoteNumber;
+                noteToUpdate.Owner = note.Owner;
+                noteToUpdate.Title = note.Title;
+                noteToUpdate.Progeny = note.Progeny;
+                _ = _context.NotesDb.Update(noteToUpdate);
+                _ = await _context.SaveChangesAsync();
+                _ = await SetNoteInCache(noteToUpdate.NoteId);
+            }
+            
+            return noteToUpdate;
         }
 
         public async Task<Note> DeleteNote(Note note)
         {
-            await RemoveNote(note.NoteId, note.ProgenyId);
-            _ = _context.NotesDb.Remove(note);
-            _ = await _context.SaveChangesAsync();
+            Note noteToDelete = await _context.NotesDb.SingleOrDefaultAsync(n => n.NoteId == note.NoteId);
+            if (noteToDelete != null)
+            {
+                _ = _context.NotesDb.Remove(noteToDelete);
+                _ = await _context.SaveChangesAsync();
+            }
+            
+            await RemoveNoteFromCache(note.NoteId, note.ProgenyId);
 
             return note;
         }
 
-        public async Task RemoveNote(int id, int progenyId)
+        private async Task RemoveNoteFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "note" + id);
 
-            List<Note> notesList = await _context.NotesDb.AsNoTracking().Where(n => n.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId, JsonConvert.SerializeObject(notesList), _cacheOptionsSliding);
+            _ = await SetNotesListInCache(progenyId);
         }
 
         public async Task<List<Note>> GetNotesList(int progenyId)
         {
-            List<Note> notesList;
+            List<Note> notesList = await GetNotesListFromCache(progenyId);
+            if (!notesList.Any())
+            {
+                notesList = await SetNotesListInCache(progenyId);
+            }
+
+            return notesList;
+        }
+
+        private async Task<List<Note>> GetNotesListFromCache(int progenyId)
+        {
+            List<Note> notesList = new List<Note>();
             string cachedNotesList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedNotesList))
             {
                 notesList = JsonConvert.DeserializeObject<List<Note>>(cachedNotesList);
             }
-            else
-            {
-                notesList = await _context.NotesDb.AsNoTracking().Where(n => n.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId, JsonConvert.SerializeObject(notesList), _cacheOptionsSliding);
-            }
+
+            return notesList;
+        }
+
+        private async Task<List<Note>> SetNotesListInCache(int progenyId)
+        {
+            List<Note> notesList = await _context.NotesDb.AsNoTracking().Where(n => n.ProgenyId == progenyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId, JsonConvert.SerializeObject(notesList), _cacheOptionsSliding);
 
             return notesList;
         }
