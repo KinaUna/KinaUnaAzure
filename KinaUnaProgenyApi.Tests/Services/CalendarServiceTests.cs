@@ -102,9 +102,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         }
 
         [Fact]
-        public async Task AddCalendarItem_Should_Save_UserAccess()
+        public async Task AddCalendarItem_Should_Save_CalendarItem()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddCalendarItem_Should_Save_UserAccess").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddCalendarItem_Should_Save_CalendarItem").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             CalendarItem calendarItem1 = new CalendarItem
@@ -168,9 +168,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         }
 
         [Fact]
-        public async Task UpdateCalendarItem_Should_Save_UserAccess()
+        public async Task UpdateCalendarItem_Should_Save_CalendarItem()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateCalendarItem_Should_Save_UserAccess").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateCalendarItem_Should_Save_CalendarItem").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             CalendarItem calendarItem1 = new CalendarItem
