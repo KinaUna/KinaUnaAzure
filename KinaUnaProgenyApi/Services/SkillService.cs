@@ -98,7 +98,7 @@ namespace KinaUnaProgenyApi.Services
             Skill skillToDelete = await _context.SkillsDb.SingleOrDefaultAsync(s => s.SkillId == skill.SkillId);
             if (skillToDelete != null)
             {
-                _ = _context.SkillsDb.Remove(skill);
+                _ = _context.SkillsDb.Remove(skillToDelete);
                 _ = await _context.SaveChangesAsync();
                 await RemoveSkillFromCache(skill.SkillId, skill.ProgenyId);
             }
