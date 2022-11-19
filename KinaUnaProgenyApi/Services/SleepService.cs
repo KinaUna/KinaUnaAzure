@@ -27,16 +27,10 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Sleep> GetSleep(int id)
         {
-            Sleep sleep;
-            string cachedSleep = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id);
-            if (!string.IsNullOrEmpty(cachedSleep))
+            Sleep sleep = await GetSleepFromCache(id);
+            if (sleep == null || sleep.SleepId == 0)
             {
-                sleep = JsonConvert.DeserializeObject<Sleep>(cachedSleep);
-            }
-            else
-            {
-                sleep = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == id);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id, JsonConvert.SerializeObject(sleep), _cacheOptionsSliding);
+                sleep = await SetSleepInCache(id);
             }
 
             return sleep;
@@ -46,18 +40,31 @@ namespace KinaUnaProgenyApi.Services
         {
             _ = _context.SleepDb.Add(sleep);
             _ = await _context.SaveChangesAsync();
-            _ = await SetSleep(sleep.SleepId);
+            _ = await SetSleepInCache(sleep.SleepId);
+
             return sleep;
         }
-        public async Task<Sleep> SetSleep(int id)
+
+        private async Task<Sleep> GetSleepFromCache(int id)
+        {
+            Sleep sleep = new Sleep();
+            string cachedSleep = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id);
+            if (!string.IsNullOrEmpty(cachedSleep))
+            {
+                sleep = JsonConvert.DeserializeObject<Sleep>(cachedSleep);
+            }
+
+            return sleep;
+        }
+
+        private async Task<Sleep> SetSleepInCache(int id)
         {
             Sleep sleep = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == id);
             if (sleep != null)
             {
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id, JsonConvert.SerializeObject(sleep), _cacheOptionsSliding);
 
-                List<Sleep> sleepList = await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == sleep.ProgenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + sleep.ProgenyId, JsonConvert.SerializeObject(sleepList), _cacheOptionsSliding);
+                _ = await SetSleepListInCache(sleep.ProgenyId);
             }
             
             return sleep;
@@ -65,18 +72,41 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Sleep> UpdateSleep(Sleep sleep)
         {
-            _ = _context.SleepDb.Update(sleep);
-            _ = await _context.SaveChangesAsync();
-            _ = await SetSleep(sleep.SleepId);
-            return sleep;
+            Sleep sleepToUpdate = await _context.SleepDb.SingleOrDefaultAsync(s => s.SleepId == sleep.SleepId);
+            if (sleepToUpdate != null)
+            {
+                sleepToUpdate.AccessLevel = sleep.AccessLevel;
+                sleepToUpdate.Author = sleep.Author;
+                sleepToUpdate.CreatedDate = sleep.CreatedDate;
+                sleepToUpdate.ProgenyId = sleep.ProgenyId;
+                sleepToUpdate.SleepDuration = sleep.SleepDuration;
+                sleepToUpdate.SleepEnd = sleep.SleepEnd;
+                sleepToUpdate.SleepNotes = sleep.SleepNotes;
+                sleepToUpdate.SleepStart = sleep.SleepStart;
+                sleepToUpdate.SleepRating = sleep.SleepRating;
+                sleepToUpdate.SleepNumber = sleep.SleepNumber;
+                sleepToUpdate.StartString = sleep.StartString;
+                sleepToUpdate.EndString = sleep.EndString;
+                sleepToUpdate.Progeny = sleep.Progeny;
+
+                _ = _context.SleepDb.Update(sleepToUpdate);
+                _ = await _context.SaveChangesAsync();
+                _ = await SetSleepInCache(sleep.SleepId);
+            }
+            
+            return sleepToUpdate;
         }
 
         public async Task<Sleep> DeleteSleep(Sleep sleep)
         {
-            _ = _context.SleepDb.Remove(sleep);
-            _ = await _context.SaveChangesAsync();
-            await RemoveSleep(sleep.SleepId, sleep.ProgenyId);
-
+            Sleep sleepToDelete = await _context.SleepDb.SingleOrDefaultAsync(s => s.SleepId == sleep.SleepId);
+            if (sleepToDelete != null)
+            {
+                _ = _context.SleepDb.Remove(sleepToDelete);
+                _ = await _context.SaveChangesAsync();
+                await RemoveSleep(sleep.SleepId, sleep.ProgenyId);
+            }
+            
             return sleep;
         }
 
@@ -84,24 +114,37 @@ namespace KinaUnaProgenyApi.Services
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id);
 
-            List<Sleep> sleepList = await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId, JsonConvert.SerializeObject(sleepList), _cacheOptionsSliding);
+            _ = await SetSleepListInCache(progenyId);
         }
 
         public async Task<List<Sleep>> GetSleepList(int progenyId)
         {
-            List<Sleep> sleepList;
+            List<Sleep> sleepList = await GetSleepListFromCache(progenyId);
+            if (!sleepList.Any())
+            {
+                sleepList = await SetSleepListInCache(progenyId);
+            }
+
+            return sleepList;
+        }
+
+        private async Task<List<Sleep>> GetSleepListFromCache(int progenyId)
+        {
+            List<Sleep> sleepList = new List<Sleep>();
             string cachedSleepList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId);
             if (!string.IsNullOrEmpty(cachedSleepList))
             {
                 sleepList = JsonConvert.DeserializeObject<List<Sleep>>(cachedSleepList);
             }
-            else
-            {
-                sleepList = await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId, JsonConvert.SerializeObject(sleepList), _cacheOptionsSliding);
-            }
 
+            return sleepList;
+        }
+
+        private async Task<List<Sleep>> SetSleepListInCache(int progenyId)
+        {
+            List<Sleep> sleepList = await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId, JsonConvert.SerializeObject(sleepList), _cacheOptionsSliding);
+            
             return sleepList;
         }
     }

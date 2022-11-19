@@ -1,5 +1,4 @@
-﻿using KinaUna.Data;
-using KinaUna.Data.Contexts;
+﻿using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.EntityFrameworkCore;
@@ -80,8 +79,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SkillFirstObservation = DateTime.UtcNow,
                 SkillNumber = 1
             };
-
-
+            
             context.Add(skill1);
             await context.SaveChangesAsync();
 
@@ -182,7 +180,6 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SkillNumber = 1
             };
 
-
             Skill skill2 = new Skill
             {
                 ProgenyId = 1,
@@ -252,7 +249,6 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SkillNumber = 1
             };
 
-
             Skill skill2 = new Skill
             {
                 ProgenyId = 1,
@@ -265,6 +261,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SkillFirstObservation = DateTime.UtcNow,
                 SkillNumber = 1
             };
+
             context.Add(skill1);
             context.Add(skill2);
             await context.SaveChangesAsync();
@@ -303,8 +300,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SkillFirstObservation = DateTime.UtcNow,
                 SkillNumber = 1
             };
-
-
+            
             Skill skill2 = new Skill
             {
                 ProgenyId = 1,
@@ -359,8 +355,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SkillFirstObservation = DateTime.UtcNow,
                 SkillNumber = 1
             };
-
-
+            
             Skill skill2 = new Skill
             {
                 ProgenyId = 1,
