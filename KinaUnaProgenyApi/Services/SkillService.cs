@@ -27,18 +27,11 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Skill> GetSkill(int id)
         {
-            Skill skill;
-            string cachedSkill = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + id);
-            if (!string.IsNullOrEmpty(cachedSkill))
+            Skill skill = await GetSkillFromCache(id);
+            if (skill == null || skill.SkillId == 0)
             {
-                skill = JsonConvert.DeserializeObject<Skill>(cachedSkill);
+                skill = await SetSkillInCache(id);
             }
-            else
-            {
-                skill = await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == id);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + id, JsonConvert.SerializeObject(skill), _cacheOptionsSliding);
-            }
-
             return skill;
         }
 
@@ -46,20 +39,31 @@ namespace KinaUnaProgenyApi.Services
         {
             _ = _context.SkillsDb.Add(skill);
             _ = await _context.SaveChangesAsync();
-            _ = await SetSkill(skill.SkillId);
+            _ = await SetSkillInCache(skill.SkillId);
 
             return skill;
         }
 
-        public async Task<Skill> SetSkill(int id)
+        private async Task<Skill> GetSkillFromCache(int id)
+        {
+            Skill skill = new Skill();
+            string cachedSkill = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + id);
+            if (!string.IsNullOrEmpty(cachedSkill))
+            {
+                skill = JsonConvert.DeserializeObject<Skill>(cachedSkill);
+            }
+
+            return skill;
+        }
+
+        public async Task<Skill> SetSkillInCache(int id)
         {
             Skill skill = await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == id);
             if (skill != null)
             {
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + id, JsonConvert.SerializeObject(skill), _cacheOptionsSliding);
 
-                List<Skill> skillsList = await _context.SkillsDb.AsNoTracking().Where(s => s.ProgenyId == skill.ProgenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + skill.ProgenyId, JsonConvert.SerializeObject(skillsList), _cacheOptionsSliding);
+                _ = await SetSkillsListInCache(skill.ProgenyId);
             }
             
             return skill;
@@ -67,41 +71,74 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Skill> UpdateSkill(Skill skill)
         {
-            _ = _context.SkillsDb.Update(skill);
-            _ = await _context.SaveChangesAsync();
-            _ = await SetSkill(skill.SkillId);
-
-            return skill;
+            Skill skillToUpdate = await _context.SkillsDb.SingleOrDefaultAsync(s => s.SkillId == skill.SkillId);
+            if (skillToUpdate != null)
+            {
+                skillToUpdate.ProgenyId = skill.ProgenyId;
+                skillToUpdate.AccessLevel = skill.AccessLevel;
+                skillToUpdate.Author = skill.Author;
+                skillToUpdate.Description = skill.Description;
+                skillToUpdate.Category = skill.Category;
+                skillToUpdate.Name = skill.Name;
+                skillToUpdate.SkillAddedDate = skill.SkillAddedDate;
+                skillToUpdate.Progeny = skill.Progeny;
+                skillToUpdate.SkillFirstObservation = skill.SkillFirstObservation;
+                skillToUpdate.SkillNumber = skill.SkillNumber;
+                
+                _ = _context.SkillsDb.Update(skillToUpdate);
+                _ = await _context.SaveChangesAsync();
+                _ = await SetSkillInCache(skill.SkillId);
+            }
+            
+            return skillToUpdate;
         }
 
         public async Task<Skill> DeleteSkill(Skill skill)
         {
-            _ = _context.SkillsDb.Remove(skill);
-            _ = await _context.SaveChangesAsync();
-            await RemoveSkill(skill.SkillId, skill.ProgenyId);
-            return skill;
+            Skill skillToDelete = await _context.SkillsDb.SingleOrDefaultAsync(s => s.SkillId == skill.SkillId);
+            if (skillToDelete != null)
+            {
+                _ = _context.SkillsDb.Remove(skill);
+                _ = await _context.SaveChangesAsync();
+                await RemoveSkillFromCache(skill.SkillId, skill.ProgenyId);
+            }
+            
+            return skillToDelete;
         }
-        public async Task RemoveSkill(int id, int progenyId)
+        public async Task RemoveSkillFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "skill" + id);
 
-            List<Skill> skillsList = await _context.SkillsDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + progenyId, JsonConvert.SerializeObject(skillsList), _cacheOptionsSliding);
+            _ = await SetSkillsListInCache(progenyId);
         }
 
         public async Task<List<Skill>> GetSkillsList(int progenyId)
         {
-            List<Skill> skillsList;
+            List<Skill> skillsList = await GetSkillsListFromCache(progenyId);
+            if (!skillsList.Any())
+            {
+                skillsList = await SetSkillsListInCache(progenyId);
+            }
+            
+            return skillsList;
+        }
+
+        private async Task<List<Skill>> GetSkillsListFromCache(int progenyId)
+        {
+            List<Skill> skillsList = new List<Skill>();
             string cachedSkillsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedSkillsList))
             {
                 skillsList = JsonConvert.DeserializeObject<List<Skill>>(cachedSkillsList);
             }
-            else
-            {
-                skillsList = await _context.SkillsDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + progenyId, JsonConvert.SerializeObject(skillsList), _cacheOptionsSliding);
-            }
+
+            return skillsList;
+        }
+
+        private async Task<List<Skill>> SetSkillsListInCache(int progenyId)
+        {
+            List<Skill> skillsList = await _context.SkillsDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + progenyId, JsonConvert.SerializeObject(skillsList), _cacheOptionsSliding);
 
             return skillsList;
         }
