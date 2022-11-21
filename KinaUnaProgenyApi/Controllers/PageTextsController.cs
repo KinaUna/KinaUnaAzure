@@ -17,6 +17,7 @@ namespace KinaUnaProgenyApi.Controllers
     {
         private readonly IUserInfoService _userInfoService;
         private readonly ITextTranslationService _textTranslationsService;
+        
         public PageTextsController(IUserInfoService userInfoService, ITextTranslationService textTranslationsService)
         {
             _userInfoService = userInfoService;
@@ -27,7 +28,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{title}/{page}/{languageId}")]
         public async Task<IActionResult> ByTitle(string title, string page, int languageId)
         {
-            KinaUnaText textItem = await _textTranslationsService.TextByTitle(title, page, languageId);
+            KinaUnaText textItem = await _textTranslationsService.GetTextByTitle(title, page, languageId);
             return Ok(textItem);
         }
 
@@ -35,7 +36,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetTextById(int id)
         {
-            KinaUnaText textItem = await _textTranslationsService.TextById(id);
+            KinaUnaText textItem = await _textTranslationsService.GetTextById(id);
             
             return Ok(textItem);
         }
@@ -44,7 +45,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{textId}/{languageId}")]
         public async Task<IActionResult> GetTextByTextId(int textId, int languageId)
         {
-            KinaUnaText textItem = await _textTranslationsService.TextByTextId(textId, languageId); 
+            KinaUnaText textItem = await _textTranslationsService.GetTextByTextId(textId, languageId); 
             
             return Ok(textItem);
         }
@@ -55,7 +56,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> PageTexts(string page, int languageId)
         {
 
-            List<KinaUnaText> texts = await _textTranslationsService.PageTexts(page, languageId);
+            List<KinaUnaText> texts = await _textTranslationsService.GetPageTextsList(page, languageId);
             
             return Ok(texts);
         }
@@ -65,11 +66,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{languageId}")]
         public async Task<IActionResult> GetAllTexts(int languageId)
         {
-            if (languageId == 0)
-            {
-                languageId = 1;
-            }
-            List<KinaUnaText> texts = await _textTranslationsService.AllPageTexts(languageId);
+            List<KinaUnaText> texts = await _textTranslationsService.GetAllPageTextsList(languageId);
 
             return Ok(texts);
         }
@@ -88,9 +85,6 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] KinaUnaText value)
         {
-            value.Title = value.Title.Trim();
-            value.Page = value.Page.Trim();
-
             string userId = User.GetUserId();
 
             if (await _userInfoService.IsAdminUserId(userId))
