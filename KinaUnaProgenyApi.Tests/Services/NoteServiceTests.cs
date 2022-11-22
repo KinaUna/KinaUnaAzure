@@ -11,9 +11,9 @@ namespace KinaUnaProgenyApi.Tests.Services
     public class NoteServiceTests
     {
         [Fact]
-        public async Task GetNote_Returns_Note_Object_When_Id_Is_Valid()
+        public async Task GetNote_Should_Return_Note_Object_When_Id_Is_Valid()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetNote_Returns_Note_Object_When_Id_Is_Valid").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetNote_Should_Return_Note_Object_When_Id_Is_Valid").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             Note note1 = new Note

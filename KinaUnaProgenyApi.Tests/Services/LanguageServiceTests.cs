@@ -58,9 +58,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         }
 
         [Fact]
-        public async Task GetLanguage_Returns_KinaUnaLanguage_Object_When_Id_Is_Valid()
+        public async Task GetLanguage_Should_Return_KinaUnaLanguage_Object_When_Id_Is_Valid()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLanguage_Returns_KinaUnaLanguage_Object_When_Id_Is_Valid").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLanguage_Should_Return_KinaUnaLanguage_Object_When_Id_Is_Valid").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             KinaUnaLanguage language1 = new KinaUnaLanguage

@@ -11,9 +11,9 @@ namespace KinaUnaProgenyApi.Tests.Services
     public class MeasurementServiceTests
     {
         [Fact]
-        public async Task GetMeasurement_Returns_Measurement_Object_When_Id_Is_Valid()
+        public async Task GetMeasurement_Should_Return_Measurement_Object_When_Id_Is_Valid()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMeasurement_Returns_Measurement_Object_When_Id_Is_Valid").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMeasurement_Should_Return_Measurement_Object_When_Id_Is_Valid").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             Measurement measurement1 = new Measurement

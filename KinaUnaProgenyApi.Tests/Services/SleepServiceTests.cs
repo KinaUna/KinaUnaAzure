@@ -11,9 +11,9 @@ namespace KinaUnaProgenyApi.Tests.Services
     public class SleepServiceTests
     {
         [Fact]
-        public async Task GetSleep_Returns_Sleep_Object_When_Id_Is_Valid()
+        public async Task GetSleep_Should_Return_Sleep_Object_When_Id_Is_Valid()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSleep_Returns_Sleep_Object_When_Id_Is_Valid").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSleep_Should_Return_Sleep_Object_When_Id_Is_Valid").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             Sleep sleep1 = new Sleep

@@ -14,24 +14,46 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetAllUserInfos_Should_Return_List_Of_UserInfo()
         {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetAllUserInfos_Should_Return_List_Of_UserInfo").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
             UserInfo userInfo1 = new UserInfo
             {
-                UserEmail = "test1@test.com", UserId = "UserId1", UserName = "Test1", FirstName = "FirstName1", MiddleName = "MiddleName1", LastName = "LastName1",
-                ViewChild = 1, ProfilePicture = Constants.ProfilePictureUrl, Timezone = Constants.DefaultTimezone
+                UserEmail = "test1@test.com",
+                UserId = "UserId1",
+                UserName = "Test1",
+                FirstName = "FirstName1",
+                MiddleName = "MiddleName1",
+                LastName = "LastName1",
+                ViewChild = 1,
+                ProfilePicture = Constants.ProfilePictureUrl,
+                Timezone = Constants.DefaultTimezone
             };
-            UserInfo userInfo2 = new UserInfo 
+            UserInfo userInfo2 = new UserInfo
             {
-                UserEmail = "test2@test.com", UserId = "UserId2", UserName = "Test2", FirstName = "FirstName2", MiddleName = "MiddleName2", LastName = "LastName2",
-                ViewChild = 1, ProfilePicture = Constants.ProfilePictureUrl, Timezone = Constants.DefaultTimezone
+                UserEmail = "test2@test.com",
+                UserId = "UserId2",
+                UserName = "Test2",
+                FirstName = "FirstName2",
+                MiddleName = "MiddleName2",
+                LastName = "LastName2",
+                ViewChild = 1,
+                ProfilePicture = Constants.ProfilePictureUrl,
+                Timezone = Constants.DefaultTimezone
             };
             UserInfo userInfo3 = new UserInfo
             {
-                UserEmail = "test3@test.com", UserId = "UserId3", UserName = "Test3", FirstName = "FirstName3", MiddleName = "MiddleName3", LastName = "LastName3" ,
-                ViewChild = 1, ProfilePicture = Constants.ProfilePictureUrl, Timezone = Constants.DefaultTimezone
+                UserEmail = "test3@test.com",
+                UserId = "UserId3",
+                UserName = "Test3",
+                FirstName = "FirstName3",
+                MiddleName = "MiddleName3",
+                LastName = "LastName3",
+                ViewChild = 1,
+                ProfilePicture = Constants.ProfilePictureUrl,
+                Timezone = Constants.DefaultTimezone
             };
 
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetAllUserInfos_Should_Return_List_Of_UserInfo").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
             context.Add(userInfo1);
             context.Add(userInfo2);
             context.Add(userInfo3);

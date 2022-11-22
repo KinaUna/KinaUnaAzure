@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -19,40 +20,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<KinaUnaText> GetTextByTitle(string title, string page, int languageId)
         {
+            title = title.Trim();
+            page = page.Trim();
             KinaUnaText textItem = await _context.KinaUnaTexts.AsNoTracking().FirstOrDefaultAsync(t => t.Title.ToUpper() == title.Trim().ToUpper() && t.Page.ToUpper() == page.Trim().ToUpper() && t.LanguageId == languageId);
-            if (textItem == null)
-            {
-                textItem = await AddTextLanguageVersion(title, page, languageId);
-            }
-
+            
             return textItem;
         }
-
-        private async Task<KinaUnaText> AddTextLanguageVersion(string title, string page, int languageId)
-        {
-            KinaUnaText textItem = await _context.KinaUnaTexts.AsNoTracking().FirstOrDefaultAsync(t => t.Title.ToUpper() == title.Trim().ToUpper() && t.Page.ToUpper() == page.Trim().ToUpper() && t.LanguageId == 1);
-            if (textItem != null)
-            {
-                KinaUnaText textNewLanguageVersion = new KinaUnaText
-                {
-                    LanguageId = languageId,
-                    Title = textItem.Title,
-                    Text = textItem.Text,
-                    Page = textItem.Page,
-                    TextId = textItem.TextId,
-                    Created = DateTime.UtcNow,
-                    Updated = DateTime.UtcNow
-                };
-
-                _ = await _context.KinaUnaTexts.AddAsync(textNewLanguageVersion);
-                _ = await _context.SaveChangesAsync();
-
-                textItem = textNewLanguageVersion;
-            }
-
-            return textItem;
-        }
-
+        
         public async Task<KinaUnaText> GetTextById(int id)
         {
             KinaUnaText pivoqText = await _context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
@@ -67,7 +41,14 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<List<KinaUnaText>> GetPageTextsList(string page, int languageId)
         {
-            List<KinaUnaText> texts = await _context.KinaUnaTexts.AsNoTracking().Where(t => t.LanguageId == languageId && t.Page.ToUpper() == page.Trim().ToUpper()).ToListAsync();
+            page = page.Trim();
+
+            if (languageId == 0)
+            {
+                languageId = 1;
+            }
+
+            List<KinaUnaText> texts = await _context.KinaUnaTexts.AsNoTracking().Where(t => t.LanguageId == languageId && t.Page.ToUpper() == page.ToUpper()).ToListAsync();
             return texts;
         }
 
@@ -221,7 +202,7 @@ namespace KinaUnaProgenyApi.Services
             KinaUnaText textItem = await _context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
             if (textItem != null)
             {
-                List<KinaUnaText> textsList = await _context.KinaUnaTexts.Where(t => t.Title == textItem.Title && t.Page == textItem.Page).ToListAsync();
+                List<KinaUnaText> textsList = await _context.KinaUnaTexts.Where(t => t.TextId == textItem.TextId).ToListAsync();
                 if (textsList.Any())
                 {
                     foreach (KinaUnaText textEntity in textsList)

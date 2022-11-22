@@ -11,9 +11,9 @@ namespace KinaUnaProgenyApi.Tests.Services
     public class CalendarServiceTests
     {
         [Fact]
-        public async Task GetCalendarItem_Returns_CalendarItem_Object_When_Id_Is_Valid()
+        public async Task GetCalendarItem_Should_Return_CalendarItem_Object_When_Id_Is_Valid()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetCalendarItem_Returns_CalendarItem_Object_When_Id_Is_Valid").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetCalendarItem_Should_Return_CalendarItem_Object_When_Id_Is_Valid").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             CalendarItem calendarItem1 = new CalendarItem

@@ -66,9 +66,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         }
 
         [Fact]
-        public async Task AddProgenyShouldSaveProgeny()
+        public async Task AddProgeny_Should_Save_Progeny()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddProgenyShouldSaveProgeny").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddProgeny_Should_Save_Progeny").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
@@ -111,9 +111,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         }
 
         [Fact]
-        public async Task UpdateProgenyShouldSaveProgeny()
+        public async Task UpdateProgeny_Should_Save_Progeny()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateProgenyShouldSaveProgeny").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateProgeny_Should_Save_Progeny").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
             Progeny originalProgeny = new Progeny
                 { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
@@ -156,9 +156,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         }
 
         [Fact]
-        public async Task DeleteProgenyShouldRemoveProgeny()
+        public async Task DeleteProgeny_Should_Remove_Progeny()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteProgenyShouldRemoveProgeny").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteProgeny_Should_Remove_Progeny").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
             Progeny originalProgeny = new Progeny
             { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };

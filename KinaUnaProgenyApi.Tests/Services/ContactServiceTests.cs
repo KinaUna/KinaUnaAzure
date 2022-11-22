@@ -12,9 +12,9 @@ namespace KinaUnaProgenyApi.Tests.Services
     public class ContactServiceTests
     {
         [Fact]
-        public async Task GetContact_Returns_Contact_Object_When_Id_Is_Valid()
+        public async Task GetContact_Should_Return_Contact_Object_When_Id_Is_Valid()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetContact_Returns_Contact_Object_When_Id_Is_Valid").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetContact_Should_Return_Contact_Object_When_Id_Is_Valid").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             Contact contact1 = new Contact

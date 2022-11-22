@@ -11,9 +11,9 @@ namespace KinaUnaProgenyApi.Tests.Services
     public class LocationServiceTests
     {
         [Fact]
-        public async Task GetLocation_Returns_Location_Object_When_Id_Is_Valid()
+        public async Task GetLocation_Should_Return_Location_Object_When_Id_Is_Valid()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLocation_Returns_Location_Object_When_Id_Is_Valid").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLocation_Should_Return_Location_Object_When_Id_Is_Valid").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             Location location1 = new Location

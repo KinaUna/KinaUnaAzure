@@ -12,9 +12,9 @@ namespace KinaUnaProgenyApi.Tests.Services
     public class FriendServiceTests
     {
         [Fact]
-        public async Task GetFriend_Returns_Friend_Object_When_Id_Is_Valid()
+        public async Task GetFriend_Should_Return_Friend_Object_When_Id_Is_Valid()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetFriend_Returns_Friend_Object_When_Id_Is_Valid").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetFriend_Should_Return_Friend_Object_When_Id_Is_Valid").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             Friend friend1 = new Friend

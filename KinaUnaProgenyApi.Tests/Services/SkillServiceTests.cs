@@ -11,9 +11,9 @@ namespace KinaUnaProgenyApi.Tests.Services
     public class SkillServiceTests
     {
         [Fact]
-        public async Task GetSkill_Returns_Skill_Object_When_Id_Is_Valid()
+        public async Task GetSkill_Should_Return_Skill_Object_When_Id_Is_Valid()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSkill_Returns_Skill_Object_When_Id_Is_Valid").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSkill_Should_Return_Skill_Object_When_Id_Is_Valid").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             Skill skill1 = new Skill

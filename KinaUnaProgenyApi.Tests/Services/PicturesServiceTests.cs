@@ -12,9 +12,9 @@ namespace KinaUnaProgenyApi.Tests.Services
     public class PicturesServiceTests
     {
         [Fact]
-        public async Task GetPicture_Returns_Picture_Object_When_Id_Is_Valid()
+        public async Task GetPicture_Should_Return_Picture_Object_When_Id_Is_Valid()
         {
-            DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetPicture_Returns_Picture_Object_When_Id_Is_Valid").Options;
+            DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetPicture_Should_Return_Picture_Object_When_Id_Is_Valid").Options;
             await using MediaDbContext context = new MediaDbContext(dbOptions);
 
             Picture picture1 = new Picture

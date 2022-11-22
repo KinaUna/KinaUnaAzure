@@ -14,9 +14,17 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetProgenyUserIsAdmin_Should_Return_List_Of_Progeny_When_Email_Is_Valid()
         {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetProgenyUserIsAdmin_Should_Return_List_Of_Progeny_When_Email_Is_Valid").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
             Progeny progenyToAdd1 = new Progeny
             {
-                BirthDay = DateTime.Now, Admins = "test@test.com, test1@abc.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone
+                BirthDay = DateTime.Now,
+                Admins = "test@test.com, test1@abc.com",
+                Name = "Test Child A",
+                NickName = "A",
+                PictureLink = Constants.ProfilePictureUrl,
+                TimeZone = Constants.DefaultTimezone
             };
 
             Progeny progenyToAdd2 = new Progeny
@@ -29,8 +37,6 @@ namespace KinaUnaProgenyApi.Tests.Services
                 TimeZone = Constants.DefaultTimezone
             };
 
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetProgenyUserIsAdmin_Should_Return_List_Of_Progeny_When_Email_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
             context.Add(progenyToAdd1);
             context.Add(progenyToAdd2);
             await context.SaveChangesAsync();

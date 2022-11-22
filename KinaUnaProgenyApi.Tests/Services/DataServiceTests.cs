@@ -9,9 +9,9 @@ namespace KinaUnaProgenyApi.Tests.Services
     public class DataServiceTests
     {
         [Fact]
-        public async Task GetMobileNotification_Returns_MobileNotification_Object_When_Id_Is_Valid()
+        public async Task GetMobileNotification_Should_Return_MobileNotification_Object_When_Id_Is_Valid()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMobileNotification_Returns_MobileNotification_Object_When_Id_Is_Valid").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMobileNotification_Should_Return_MobileNotification_Object_When_Id_Is_Valid").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             MobileNotification notification1 = new MobileNotification { Title = "Test1", UserId = "User1", IconLink = Constants.ProfilePictureUrl, ItemId = "1", ItemType = 1,

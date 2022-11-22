@@ -48,9 +48,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         }
 
         [Fact]
-        public async Task GetTranslationById_Returns_TextTranslation_Object_When_Id_Is_Valid()
+        public async Task GetTranslationById_Should_Return_TextTranslation_Object_When_Id_Is_Valid()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSleep_Returns_Sleep_Object_When_Id_Is_Valid").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTranslationById_Should_Return_TextTranslation_Object_When_Id_Is_Valid").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
             KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
