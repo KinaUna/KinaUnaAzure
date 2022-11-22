@@ -48,6 +48,11 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<TextTranslation> GetTranslationByWord(string word, string page, int languageId)
         {
+            if (languageId == 0)
+            {
+                languageId = 1;
+            }
+
             TextTranslation textTranslation = await _context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(t => t.Word == word && t.Page == page && t.LanguageId == languageId);
             return textTranslation;
         }
