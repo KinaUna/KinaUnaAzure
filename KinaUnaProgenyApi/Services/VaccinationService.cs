@@ -96,7 +96,7 @@ namespace KinaUnaProgenyApi.Services
             Vaccination vaccinationToDelete = await _context.VaccinationsDb.SingleOrDefaultAsync(v => v.VaccinationId == vaccination.VaccinationId);
             if (vaccinationToDelete != null)
             {
-                _ = _context.VaccinationsDb.Remove(vaccination);
+                _ = _context.VaccinationsDb.Remove(vaccinationToDelete);
                 _ = await _context.SaveChangesAsync();
                 await RemoveVaccinationFromCache(vaccination.VaccinationId, vaccination.ProgenyId);
             }
