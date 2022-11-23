@@ -38,7 +38,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Video> GetVideoByLink(string link, int progenyId)
         {
-            Video result = await _mediaContext.VideoDb.SingleOrDefaultAsync(v => v.VideoLink == link && v.ProgenyId == progenyId);
+            Video result = await _mediaContext.VideoDb.FirstOrDefaultAsync(v => v.VideoLink == link && v.ProgenyId == progenyId);
             return result;
         }
 
