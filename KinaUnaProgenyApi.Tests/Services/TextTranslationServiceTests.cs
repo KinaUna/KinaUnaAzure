@@ -2,9 +2,6 @@
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 
 namespace KinaUnaProgenyApi.Tests.Services
 {
@@ -309,7 +306,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             TextTranslation textTranslationToAdd = new TextTranslation { LanguageId = 1, Page = "Page2", Word = "Word2", Translation = "Translation2.1" };
 
-            TextTranslation addedTextTranslation = await textTranslationService.AddTranslation(textTranslationToAdd);
+            await textTranslationService.AddTranslation(textTranslationToAdd);
             List<TextTranslation> allLanguageVersionsOfAddedTextTranslation = await context.TextTranslations.Where(tt => tt.Page == textTranslationToAdd.Page && tt.Word == textTranslationToAdd.Word).ToListAsync();
 
             Assert.NotEmpty(allLanguageVersionsOfAddedTextTranslation);

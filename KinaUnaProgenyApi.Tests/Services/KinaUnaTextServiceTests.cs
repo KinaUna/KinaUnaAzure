@@ -794,7 +794,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             KinaUnaText kinaUnaTextToAdd = new KinaUnaText { LanguageId = 1, Title = "Title2", Page = "Page2", Text = "Text2.1", Created = DateTime.UtcNow, Updated = DateTime.UtcNow };
 
-            KinaUnaText addedTextTranslation = await kinaUnaTextService.AddText(kinaUnaTextToAdd);
+            await kinaUnaTextService.AddText(kinaUnaTextToAdd);
             List<KinaUnaText> allLanguageVersionsOfAddedKinaUnaText = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToAdd.Page && kt.Title == kinaUnaTextToAdd.Title).ToListAsync();
 
             Assert.NotEmpty(allLanguageVersionsOfAddedKinaUnaText);

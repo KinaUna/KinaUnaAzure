@@ -27,16 +27,10 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<TimeLineItem> GetTimeLineItem(int id)
         {
-            TimeLineItem timeLineItem;
-            string cachedTimeLineItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id);
-            if (!string.IsNullOrEmpty(cachedTimeLineItem))
+            TimeLineItem timeLineItem = await GetTimeLineItemFromCache(id);
+            if (timeLineItem == null || timeLineItem.TimeLineId == 0)
             {
-                timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(cachedTimeLineItem);
-            }
-            else
-            {
-                timeLineItem = await _context.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(t => t.TimeLineId == id);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
+                timeLineItem = await SetTimeLineItemInCache(id);
             }
 
             return timeLineItem;
@@ -46,21 +40,31 @@ namespace KinaUnaProgenyApi.Services
         {
             _ = await _context.TimeLineDb.AddAsync(timeLineItem);
             _ = await _context.SaveChangesAsync();
-            _ = await SetTimeLineItem(timeLineItem.TimeLineId);
+            _ = await SetTimeLineItemInCache(timeLineItem.TimeLineId);
 
             return timeLineItem;
         }
 
-        public async Task<TimeLineItem> SetTimeLineItem(int id)
+        private async Task<TimeLineItem> GetTimeLineItemFromCache(int id)
+        {
+            TimeLineItem timeLineItem = new TimeLineItem();
+            string cachedTimeLineItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id);
+            if (!string.IsNullOrEmpty(cachedTimeLineItem))
+            {
+                timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(cachedTimeLineItem);
+            }
+
+            return timeLineItem;
+        }
+
+        public async Task<TimeLineItem> SetTimeLineItemInCache(int id)
         {
             TimeLineItem timeLineItem = await _context.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(t => t.TimeLineId == id);
             if (timeLineItem != null)
             {
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + timeLineItem.ItemId + "type" + timeLineItem.ItemType, JsonConvert.SerializeObject(timeLineItem),
-                    _cacheOptionsSliding);
-                List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == timeLineItem.ProgenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + timeLineItem.ProgenyId, JsonConvert.SerializeObject(timeLineList), _cacheOptionsSliding);
+                _ = await SetTimeLineItemByItemIdInCache(timeLineItem.ItemId, timeLineItem.ItemType);
+                _ = await SetTimeLineListInCache(timeLineItem.ProgenyId);
             }
             
             return timeLineItem;
@@ -68,60 +72,105 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<TimeLineItem> UpdateTimeLineItem(TimeLineItem item)
         {
-            _ = _context.TimeLineDb.Update(item);
-            _ = await _context.SaveChangesAsync();
-            _ = await SetTimeLineItem(item.TimeLineId);
+            TimeLineItem timeLineItemToUpdate = await _context.TimeLineDb.SingleOrDefaultAsync(ti => ti.TimeLineId == item.TimeLineId);
+            if (timeLineItemToUpdate != null)
+            {
+                timeLineItemToUpdate.AccessLevel = item.AccessLevel;
+                timeLineItemToUpdate.ItemId = item.ItemId;
+                timeLineItemToUpdate.ItemType = item.ItemType;
+                timeLineItemToUpdate.CreatedBy = item.CreatedBy;
+                timeLineItemToUpdate.CreatedTime = item.CreatedTime;
+                timeLineItemToUpdate.ProgenyId = item.ProgenyId;
+                timeLineItemToUpdate.ProgenyTime = item.ProgenyTime;
+                _ = _context.TimeLineDb.Update(timeLineItemToUpdate);
+                _ = await _context.SaveChangesAsync();
+                _ = await SetTimeLineItemInCache(item.TimeLineId);
+            }
+            
             return item;
         }
 
         public async Task<TimeLineItem> DeleteTimeLineItem(TimeLineItem item)
         {
-            await RemoveTimeLineItem(item.TimeLineId, item.ItemType, item.ProgenyId);
-            _ = _context.TimeLineDb.Remove(item);
-            _ = await _context.SaveChangesAsync();
+            TimeLineItem timeLineItemToDelete = await _context.TimeLineDb.SingleOrDefaultAsync(ti => ti.TimeLineId == item.TimeLineId);
+            if (timeLineItemToDelete != null)
+            {
+                _ = _context.TimeLineDb.Remove(timeLineItemToDelete);
+                _ = await _context.SaveChangesAsync();
+            }
             
+            await RemoveTimeLineItemFromCache(item.TimeLineId, item.ItemType, item.ProgenyId);
+
             return item;
         }
-        public async Task RemoveTimeLineItem(int timeLineItemId, int timeLineType, int progenyId)
+        public async Task RemoveTimeLineItemFromCache(int timeLineItemId, int timeLineType, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + timeLineItemId);
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + timeLineItemId + "type" + timeLineType);
-            List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId, JsonConvert.SerializeObject(timeLineList), _cacheOptionsSliding);
+            _ = await SetTimeLineListInCache(progenyId);
         }
 
         public async Task<TimeLineItem> GetTimeLineItemByItemId(string itemId, int itemType)
         {
-            TimeLineItem timeLineItem;
+            TimeLineItem timeLineItem = await GetTimeLineItemByItemIdFromCache(itemId, itemType);
+            if (timeLineItem == null || timeLineItem.TimeLineId == 0)
+            {
+                timeLineItem = await SetTimeLineItemByItemIdInCache(itemId, itemType);
+            }
+
+            return timeLineItem;
+        }
+
+        private async Task<TimeLineItem> GetTimeLineItemByItemIdFromCache(string itemId, int itemType)
+        {
+            TimeLineItem timeLineItem = new TimeLineItem();
             string cachedTimeLineItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + itemId + itemType);
             if (!string.IsNullOrEmpty(cachedTimeLineItem))
             {
                 timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(cachedTimeLineItem);
             }
-            else
-            {
-                timeLineItem = await _context.TimeLineDb.SingleOrDefaultAsync(t => t.ItemId == itemId && t.ItemType == itemType);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + itemId + "type" + itemType, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
-            }
+
+            return timeLineItem;
+        }
+
+        private async Task<TimeLineItem> SetTimeLineItemByItemIdInCache(string itemId, int itemType)
+        {
+            TimeLineItem timeLineItem = await _context.TimeLineDb.SingleOrDefaultAsync(t => t.ItemId == itemId && t.ItemType == itemType);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + itemId + "type" + itemType, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
 
             return timeLineItem;
         }
 
         public async Task<List<TimeLineItem>> GetTimeLineList(int progenyId)
         {
-            List<TimeLineItem> timeLineList;
+            List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(progenyId);
+            if (!timeLineList.Any())
+            {
+                timeLineList = await SetTimeLineListInCache(progenyId);
+            }
+            
+            return timeLineList;
+        }
+
+        private async Task<List<TimeLineItem>> GetTimeLineListFromCache(int progenyId)
+        {
+            List<TimeLineItem> timeLineList = new List<TimeLineItem>();
             string cachedTimeLineList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId);
             if (!string.IsNullOrEmpty(cachedTimeLineList))
             {
                 timeLineList = JsonConvert.DeserializeObject<List<TimeLineItem>>(cachedTimeLineList);
             }
-            else
-            {
-                timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId, JsonConvert.SerializeObject(timeLineList), _cacheOptionsSliding);
-            }
 
             return timeLineList;
         }
+
+        private async Task<List<TimeLineItem>> SetTimeLineListInCache(int progenyId)
+        {
+            List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == progenyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId, JsonConvert.SerializeObject(timeLineList), _cacheOptionsSliding);
+
+            return timeLineList;
+        }
+
     }
 }
