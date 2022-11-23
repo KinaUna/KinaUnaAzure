@@ -8,10 +8,8 @@ namespace KinaUnaProgenyApi.Services
     {
         Task<VocabularyItem> GetVocabularyItem(int id);
         Task<VocabularyItem> AddVocabularyItem(VocabularyItem vocabularyItem);
-        Task<VocabularyItem> SetVocabularyItem(int id);
         Task<VocabularyItem> UpdateVocabularyItem(VocabularyItem vocabularyItem);
         Task<VocabularyItem> DeleteVocabularyItem(VocabularyItem vocabularyItem);
-        Task RemoveVocabularyItem(int id, int progenyId);
         Task<List<VocabularyItem>> GetVocabularyList(int progenyId);
     }
 }

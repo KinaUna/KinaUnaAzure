@@ -27,16 +27,10 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<VocabularyItem> GetVocabularyItem(int id)
         {
-            VocabularyItem vocabularyItem;
-            string cachedVocabularyItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id);
-            if (!string.IsNullOrEmpty(cachedVocabularyItem))
+            VocabularyItem vocabularyItem = await GetVocabularyItemFromCache(id);
+            if (vocabularyItem == null || vocabularyItem.WordId == 0)
             {
-                vocabularyItem = JsonConvert.DeserializeObject<VocabularyItem>(cachedVocabularyItem);
-            }
-            else
-            {
-                vocabularyItem = await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(v => v.WordId == id);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id, JsonConvert.SerializeObject(vocabularyItem), _cacheOptionsSliding);
+                vocabularyItem = await SetVocabularyItemInCache(id);
             }
 
             return vocabularyItem;
@@ -46,64 +40,109 @@ namespace KinaUnaProgenyApi.Services
         {
             _ = _context.VocabularyDb.Add(vocabularyItem);
             _ = await _context.SaveChangesAsync();
-            _ = await SetVocabularyItem(vocabularyItem.WordId);
+            _ = await SetVocabularyItemInCache(vocabularyItem.WordId);
 
             return vocabularyItem;
         }
-        public async Task<VocabularyItem> SetVocabularyItem(int id)
-        {
-            VocabularyItem word = await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == id);
-            if (word != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id, JsonConvert.SerializeObject(word), _cacheOptions);
 
-                List<VocabularyItem> wordList = await _context.VocabularyDb.AsNoTracking().Where(w => w.ProgenyId == word.ProgenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularylist" + word.ProgenyId, JsonConvert.SerializeObject(wordList), _cacheOptionsSliding);
+        private async Task<VocabularyItem> GetVocabularyItemFromCache(int id)
+        {
+            VocabularyItem vocabularyItem = new VocabularyItem();
+            string cachedVocabularyItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id);
+            if (!string.IsNullOrEmpty(cachedVocabularyItem))
+            {
+                vocabularyItem = JsonConvert.DeserializeObject<VocabularyItem>(cachedVocabularyItem);
             }
 
-            return word;
+            return vocabularyItem;
+        }
+
+        private async Task<VocabularyItem> SetVocabularyItemInCache(int id)
+        {
+            VocabularyItem vocabularyItem = await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == id);
+            if (vocabularyItem != null)
+            {
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id, JsonConvert.SerializeObject(vocabularyItem), _cacheOptions);
+
+                _ = await SetVocabularyListInCache(vocabularyItem.ProgenyId);
+            }
+
+            return vocabularyItem;
         }
 
         public async Task<VocabularyItem> UpdateVocabularyItem(VocabularyItem vocabularyItem)
         {
-            _ = _context.VocabularyDb.Update(vocabularyItem);
-            _ = await _context.SaveChangesAsync();
-            _ = await SetVocabularyItem(vocabularyItem.WordId);
+            VocabularyItem vocabularyItemToUpdate = await _context.VocabularyDb.SingleOrDefaultAsync(v => v.WordId == vocabularyItem.WordId);
+            if (vocabularyItemToUpdate != null)
+            {
+                vocabularyItemToUpdate.AccessLevel = vocabularyItem.AccessLevel;
+                vocabularyItemToUpdate.ProgenyId = vocabularyItem.ProgenyId;
+                vocabularyItemToUpdate.Author = vocabularyItem.Author;
+                vocabularyItemToUpdate.Description = vocabularyItem.Description;
+                vocabularyItemToUpdate.Date = vocabularyItem.Date;
+                vocabularyItemToUpdate.Language = vocabularyItem.Language;
+                vocabularyItemToUpdate.DateAdded = vocabularyItem.DateAdded;
+                vocabularyItemToUpdate.SoundsLike = vocabularyItem.SoundsLike;
+                vocabularyItemToUpdate.Word = vocabularyItem.Word;
+                vocabularyItemToUpdate.VocabularyItemNumber = vocabularyItem.VocabularyItemNumber;
+                vocabularyItemToUpdate.Progeny = vocabularyItem.Progeny;
+
+                _ = _context.VocabularyDb.Update(vocabularyItemToUpdate);
+                _ = await _context.SaveChangesAsync();
+                _ = await SetVocabularyItemInCache(vocabularyItemToUpdate.WordId);
+            }
+            
 
             return vocabularyItem;
         }
 
         public async Task<VocabularyItem> DeleteVocabularyItem(VocabularyItem vocabularyItem)
         {
-            await RemoveVocabularyItem(vocabularyItem.WordId, vocabularyItem.ProgenyId);
-            _ = _context.VocabularyDb.Remove(vocabularyItem);
-            _ = await _context.SaveChangesAsync();
+            VocabularyItem vocabularyItemToDelete = await _context.VocabularyDb.SingleOrDefaultAsync(v => v.WordId == vocabularyItem.WordId);
+            if (vocabularyItemToDelete != null)
+            {
+                _ = _context.VocabularyDb.Remove(vocabularyItemToDelete);
+                _ = await _context.SaveChangesAsync();
+                await RemoveVocabularyItemFromCache(vocabularyItem.WordId, vocabularyItem.ProgenyId);
+            }
             
-
             return vocabularyItem;
         }
 
-        public async Task RemoveVocabularyItem(int id, int progenyId)
+        public async Task RemoveVocabularyItemFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id);
 
-            List<VocabularyItem> wordList = await _context.VocabularyDb.AsNoTracking().Where(w => w.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularylist" + progenyId, JsonConvert.SerializeObject(wordList), _cacheOptionsSliding);
+            _ = await SetVocabularyListInCache(progenyId);
         }
 
         public async Task<List<VocabularyItem>> GetVocabularyList(int progenyId)
         {
-            List<VocabularyItem> vocabularyList;
+            List<VocabularyItem> vocabularyList = await GetVocabularyListFromCache(progenyId);
+            if (!vocabularyList.Any())
+            {
+                vocabularyList = await SetVocabularyListInCache(progenyId);
+            }
+
+            return vocabularyList;
+        }
+
+        private async Task<List<VocabularyItem>> GetVocabularyListFromCache(int progenyId)
+        {
+            List<VocabularyItem> vocabularyList = new List<VocabularyItem>();
             string cachedVocabularyList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularylist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVocabularyList))
             {
                 vocabularyList = JsonConvert.DeserializeObject<List<VocabularyItem>>(cachedVocabularyList);
             }
-            else
-            {
-                vocabularyList = await _context.VocabularyDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularylist" + progenyId, JsonConvert.SerializeObject(vocabularyList), _cacheOptionsSliding);
-            }
+
+            return vocabularyList;
+        }
+
+        private async Task<List<VocabularyItem>> SetVocabularyListInCache(int progenyId)
+        {
+            List<VocabularyItem> vocabularyList = await _context.VocabularyDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularylist" + progenyId, JsonConvert.SerializeObject(vocabularyList), _cacheOptionsSliding);
 
             return vocabularyList;
         }
