@@ -27,16 +27,10 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Vaccination> GetVaccination(int id)
         {
-            Vaccination vaccination;
-            string cachedVaccination = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id);
-            if (!string.IsNullOrEmpty(cachedVaccination))
+            Vaccination vaccination = await GetVaccinationFromCache(id);
+            if (vaccination == null || vaccination.VaccinationId == 0)
             {
-                vaccination = JsonConvert.DeserializeObject<Vaccination>(cachedVaccination);
-            }
-            else
-            {
-                vaccination = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id, JsonConvert.SerializeObject(vaccination), _cacheOptionsSliding);
+                vaccination = await SetVaccinationInCache(id);
             }
 
             return vaccination;
@@ -46,19 +40,30 @@ namespace KinaUnaProgenyApi.Services
         {
             _ = _context.VaccinationsDb.Add(vaccination);
             _ = await _context.SaveChangesAsync();
-            _ = await SetVaccination(vaccination.VaccinationId);
+            _ = await SetVaccinationInCache(vaccination.VaccinationId);
             return vaccination;
         }
 
-        public async Task<Vaccination> SetVaccination(int id)
+        private async Task<Vaccination> GetVaccinationFromCache(int id)
+        {
+            Vaccination vaccination = new Vaccination();
+            string cachedVaccination = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id);
+            if (!string.IsNullOrEmpty(cachedVaccination))
+            {
+                vaccination = JsonConvert.DeserializeObject<Vaccination>(cachedVaccination);
+            }
+
+            return vaccination;
+        }
+
+        public async Task<Vaccination> SetVaccinationInCache(int id)
         {
             Vaccination vaccination = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
             if (vaccination != null)
             {
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id, JsonConvert.SerializeObject(vaccination), _cacheOptionsSliding);
 
-                List<Vaccination> vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == vaccination.ProgenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + vaccination.ProgenyId, JsonConvert.SerializeObject(vaccinationsList), _cacheOptionsSliding);
+                _ = await SetVaccinationListInCache(vaccination.ProgenyId);
             }
 
             return vaccination;
@@ -66,41 +71,73 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Vaccination> UpdateVaccination(Vaccination vaccination)
         {
-            _ = _context.VaccinationsDb.Update(vaccination);
-            _ = await _context.SaveChangesAsync();
-            _ = await SetVaccination(vaccination.VaccinationId);
-            return vaccination;
+            Vaccination vaccinationToUpdate = await _context.VaccinationsDb.SingleOrDefaultAsync(v => v.VaccinationId == vaccination.VaccinationId);
+            if (vaccinationToUpdate != null)
+            {
+                vaccinationToUpdate.AccessLevel = vaccination.AccessLevel;
+                vaccinationToUpdate.ProgenyId = vaccination.ProgenyId;
+                vaccinationToUpdate.Author = vaccination.Author;
+                vaccinationToUpdate.Notes = vaccination.Notes;
+                vaccinationToUpdate.VaccinationDate = vaccination.VaccinationDate;
+                vaccinationToUpdate.VaccinationDescription = vaccination.VaccinationDescription;
+                vaccinationToUpdate.VaccinationName = vaccination.VaccinationName;
+                vaccinationToUpdate.Progeny = vaccination.Progeny;
+
+                _ = _context.VaccinationsDb.Update(vaccinationToUpdate);
+                _ = await _context.SaveChangesAsync();
+                _ = await SetVaccinationInCache(vaccination.VaccinationId);
+            }
+            
+            return vaccinationToUpdate;
         }
 
         public async Task<Vaccination> DeleteVaccination(Vaccination vaccination)
         {
-            _ = _context.VaccinationsDb.Remove(vaccination);
-            _ = await _context.SaveChangesAsync();
-            await RemoveVaccination(vaccination.VaccinationId, vaccination.ProgenyId);
+            Vaccination vaccinationToDelete = await _context.VaccinationsDb.SingleOrDefaultAsync(v => v.VaccinationId == vaccination.VaccinationId);
+            if (vaccinationToDelete != null)
+            {
+                _ = _context.VaccinationsDb.Remove(vaccination);
+                _ = await _context.SaveChangesAsync();
+                await RemoveVaccinationFromCache(vaccination.VaccinationId, vaccination.ProgenyId);
+            }
 
-            return vaccination;
+            return vaccinationToDelete;
         }
-        public async Task RemoveVaccination(int id, int progenyId)
+
+        public async Task RemoveVaccinationFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id);
 
-            List<Vaccination> vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId, JsonConvert.SerializeObject(vaccinationsList), _cacheOptionsSliding);
+            _ = await SetVaccinationListInCache(progenyId);
         }
 
         public async Task<List<Vaccination>> GetVaccinationsList(int progenyId)
         {
-            List<Vaccination> vaccinationsList;
+            List<Vaccination> vaccinationsList = await GetVaccinationListFromCache(progenyId);
+            if (!vaccinationsList.Any())
+            {
+                vaccinationsList = await SetVaccinationListInCache(progenyId);
+            }
+
+            return vaccinationsList;
+        }
+
+        private async Task<List<Vaccination>> GetVaccinationListFromCache(int progenyId)
+        {
+            List<Vaccination> vaccinationsList = new List<Vaccination>();
             string cachedVaccinationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVaccinationsList))
             {
                 vaccinationsList = JsonConvert.DeserializeObject<List<Vaccination>>(cachedVaccinationsList);
             }
-            else
-            {
-                vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId, JsonConvert.SerializeObject(vaccinationsList), _cacheOptionsSliding);
-            }
+
+            return vaccinationsList;
+        }
+
+        private async Task<List<Vaccination>> SetVaccinationListInCache(int progenyId)
+        {
+            List<Vaccination> vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId, JsonConvert.SerializeObject(vaccinationsList), _cacheOptionsSliding);
 
             return vaccinationsList;
         }
