@@ -345,7 +345,7 @@ namespace KinaUnaProgenyApi.Controllers
                 model.CommentThreadNumber = commentThread.Id;
 
                 model = await _videosService.AddVideo(model);
-                await _videosService.SetVideo(model.VideoId);
+                await _videosService.SetVideoInCache(model.VideoId);
                 await _commentsService.SetCommentsListInCache(model.CommentThreadNumber);
 
                 Progeny prog = await _progenyService.GetProgeny(model.ProgenyId);
@@ -399,7 +399,7 @@ namespace KinaUnaProgenyApi.Controllers
             video.Altitude = value.Altitude;
 
             video = await _videosService.UpdateVideo(video);
-            await _videosService.SetVideo(video.VideoId);
+            await _videosService.SetVideoInCache(video.VideoId);
             await _commentsService.SetCommentsListInCache(video.CommentThreadNumber);
 
             Progeny prog = await _progenyService.GetProgeny(video.ProgenyId);
@@ -450,7 +450,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 _ = await _videosService.DeleteVideo(video);
-                await _videosService.RemoveVideo(video.VideoId, video.ProgenyId);
+                await _videosService.RemoveVideoFromCache(video.VideoId, video.ProgenyId);
 
                 Progeny prog = await _progenyService.GetProgeny(video.ProgenyId);
                 UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());

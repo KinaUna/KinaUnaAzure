@@ -27,18 +27,12 @@ namespace KinaUnaProgenyApi.Services
         
         public async Task<Video> GetVideo(int id)
         {
-            Video video;
-            string cachedVideo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id);
-            if (!string.IsNullOrEmpty(cachedVideo))
+            Video video = await GetVideoFromCache(id);
+            if (video == null || video.VideoId == 0)
             {
-                video = JsonConvert.DeserializeObject<Video>(cachedVideo);
+                video = await SetVideoInCache(id);
             }
-            else
-            {
-                video = await _mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(v => v.VideoId == id);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
-            }
-
+            
             return video;
         }
 
@@ -48,13 +42,25 @@ namespace KinaUnaProgenyApi.Services
             return result;
         }
 
-        public async Task<Video> SetVideo(int id)
+        private async Task<Video> GetVideoFromCache(int id)
+        {
+            Video video = new Video();
+            string cachedVideo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id);
+            if (!string.IsNullOrEmpty(cachedVideo))
+            {
+                video = JsonConvert.DeserializeObject<Video>(cachedVideo);
+            }
+
+            return video;
+        }
+
+        public async Task<Video> SetVideoInCache(int id)
         {
             Video video = await _mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(v => v.VideoId == id);
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
             if (video != null)
             {
-                await SetVideosList(video.ProgenyId);
+                await SetVideosListInCache(video.ProgenyId);
             }
 
             return video;
@@ -62,50 +68,93 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Video> AddVideo(Video video)
         {
-            await _mediaContext.VideoDb.AddAsync(video);
-            await _mediaContext.SaveChangesAsync();
+            _ = await _mediaContext.VideoDb.AddAsync(video);
+            _ = await _mediaContext.SaveChangesAsync();
+
+            _ = await SetVideoInCache(video.VideoId);
             return video;
         }
 
         public async Task<Video> UpdateVideo(Video video)
         {
-            _mediaContext.VideoDb.Update(video);
-            await _mediaContext.SaveChangesAsync();
+            Video videoToUpdate = await _mediaContext.VideoDb.SingleOrDefaultAsync(v => v.VideoId == video.VideoId);
+            if (videoToUpdate != null)
+            {
+                videoToUpdate.Location = video.Location;
+                videoToUpdate.AccessLevel = video.AccessLevel;
+                videoToUpdate.ProgenyId = video.ProgenyId;
+                videoToUpdate.CommentThreadNumber = video.CommentThreadNumber;
+                videoToUpdate.Altitude = video.Altitude;
+                videoToUpdate.Duration = video.Duration;
+                videoToUpdate.DurationHours = video.DurationHours;
+                videoToUpdate.DurationMinutes = video.DurationMinutes;
+                videoToUpdate.DurationSeconds = video.DurationSeconds;
+                videoToUpdate.Author = video.Author;
+                videoToUpdate.Latitude = video.Latitude;
+                videoToUpdate.Longtitude = video.Longtitude;
+                videoToUpdate.Owners = video.Owners;
+                videoToUpdate.Tags = video.Tags;
+                videoToUpdate.VideoLink = video.VideoLink;
+                videoToUpdate.VideoNumber = video.VideoNumber;
+                videoToUpdate.VideoTime = video.VideoTime;
+                videoToUpdate.ThumbLink = video.ThumbLink;
+                videoToUpdate.TimeZone = video.TimeZone;
+                videoToUpdate.VideoType = video.VideoType;
+                videoToUpdate.Progeny = video.Progeny;
+                videoToUpdate.Comments = video.Comments;
+
+                _ = _mediaContext.VideoDb.Update(videoToUpdate);
+                _ = await _mediaContext.SaveChangesAsync();
+
+                _ = await SetVideoInCache(videoToUpdate.VideoId);
+            }
+            
             return video;
         }
 
         public async Task<Video> DeleteVideo(Video video)
         {
-            _mediaContext.VideoDb.Remove(video);
-            await _mediaContext.SaveChangesAsync();
+            Video videoToDelete = await _mediaContext.VideoDb.SingleOrDefaultAsync(v => v.VideoId == video.VideoId);
+            if (videoToDelete != null)
+            {
+                _mediaContext.VideoDb.Remove(videoToDelete);
+                _ = await _mediaContext.SaveChangesAsync();
+                await RemoveVideoFromCache(videoToDelete.VideoId, videoToDelete.ProgenyId);
+            }
+            
             return video;
         }
 
-        public async Task RemoveVideo(int videoId, int progenyId)
+        public async Task RemoveVideoFromCache(int videoId, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "video" + videoId);
-
-            await SetVideosList(progenyId);
+            _ = await SetVideosListInCache(progenyId);
         }
 
         public async Task<List<Video>> GetVideosList(int progenyId)
         {
-            List<Video> videosList;
-            string cachedVideosList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId);
-            if (!string.IsNullOrEmpty(cachedVideosList))
+            List<Video> videosList = await GetVideosListFromCache(progenyId);
+            if (!videosList.Any())
             {
-                videosList = JsonConvert.DeserializeObject<List<Video>>(cachedVideosList);
-            }
-            else
-            {
-                videosList = await _mediaContext.VideoDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId, JsonConvert.SerializeObject(videosList), _cacheOptionsSliding);
+                videosList = await SetVideosListInCache(progenyId);
             }
 
             return videosList;
         }
 
-        public async Task<List<Video>> SetVideosList(int progenyId)
+        private async Task<List<Video>> GetVideosListFromCache(int progenyId)
+        {
+            List<Video> videosList = new List<Video>();
+            string cachedVideosList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId);
+            if (!string.IsNullOrEmpty(cachedVideosList))
+            {
+                videosList = JsonConvert.DeserializeObject<List<Video>>(cachedVideosList);
+            }
+
+            return videosList;
+        }
+
+        public async Task<List<Video>> SetVideosListInCache(int progenyId)
         {
             List<Video> videosList = await _mediaContext.VideoDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId, JsonConvert.SerializeObject(videosList), _cacheOptionsSliding);

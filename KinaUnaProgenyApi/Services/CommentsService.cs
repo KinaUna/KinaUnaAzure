@@ -72,8 +72,8 @@ namespace KinaUnaProgenyApi.Services
                     Video video = await _mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(p => p.CommentThreadNumber == comment.CommentThreadNumber);
                     if (video != null)
                     {
-                        _ = await _videosService.SetVideo(video.VideoId);
-                        _ = await _videosService.SetVideosList(video.ProgenyId);
+                        _ = await _videosService.SetVideoInCache(video.VideoId);
+                        _ = await _videosService.SetVideosListInCache(video.ProgenyId);
                     }
                 }
             }
@@ -97,8 +97,8 @@ namespace KinaUnaProgenyApi.Services
                 Video video = await _mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(p => p.CommentThreadNumber == commentThreadId);
                 if (video != null)
                 {
-                    _ = await _videosService.SetVideo(video.VideoId);
-                    _ = await _videosService.SetVideosList(video.ProgenyId);
+                    _ = await _videosService.SetVideoInCache(video.VideoId);
+                    _ = await _videosService.SetVideosListInCache(video.ProgenyId);
                 }
             }
         }
