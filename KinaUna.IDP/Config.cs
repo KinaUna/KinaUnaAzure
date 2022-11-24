@@ -15,7 +15,7 @@ namespace KinaUna.IDP
         // If you make changes here, temporarily set ResetIdentityDb (KinaUna.Data/Constants.cs) to true to reset the database.
 
         // identity-related resources (scopes)
-        public static IEnumerable<IdentityResource> GetIdentityResources()
+        public static List<IdentityResource> GetIdentityResources()
         {
             return new List<IdentityResource>
             {
@@ -56,7 +56,7 @@ namespace KinaUna.IDP
         }
 
         // API related resources (Scopes)
-        public static IEnumerable<ApiResource> GetApiResources(IConfiguration configuration)
+        public static List<ApiResource> GetApiResources(IConfiguration configuration)
         {
             string secretString = configuration.GetValue<string>("SecretString");
             return new List<ApiResource>
@@ -90,14 +90,14 @@ namespace KinaUna.IDP
             };
         }
 
-        public static IEnumerable<ApiScope> ApiScopes =>
+        public static List<ApiScope> ApiScopes =>
             new List<ApiScope>
             {
                 new ApiScope(Constants.ProgenyApiName, "KinaUna Progeny API",new List<string> {"role" }),
                 new ApiScope(Constants.MediaApiName, "KinaUna Media API",new List<string> {"role" })
             };
 
-        public static IEnumerable<Client> GetClients(IConfiguration configuration)
+        public static List<Client> GetClients(IConfiguration configuration)
         {
             string webServerUrl = configuration.GetValue<string>("WebServer");
             string webBlazorServerUrl = configuration.GetValue<string>("WebBlazorServer");
@@ -444,5 +444,4 @@ namespace KinaUna.IDP
 
         }
     }
-    
 }
