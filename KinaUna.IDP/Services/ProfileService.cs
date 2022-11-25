@@ -74,6 +74,11 @@ namespace KinaUna.IDP.Services
 
         private IEnumerable<Claim> GetClaimsFromUser(ApplicationUser user)
         {
+            if (user == null || string.IsNullOrEmpty(user.UserName) || string.IsNullOrEmpty(user.Email))
+            {
+                return new List<Claim>();
+            }
+
             List<Claim> claims = new List<Claim>
             {
                 new Claim(JwtClaimTypes.Subject, user.Id),

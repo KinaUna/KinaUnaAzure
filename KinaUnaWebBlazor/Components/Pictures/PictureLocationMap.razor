@@ -33,7 +33,7 @@
     private Location _location = new Location();
     List<Location> _locationsList = new List<Location>();
     
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
         if(Latitude != null){
             _latitude = Latitude.Value;

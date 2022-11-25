@@ -16,10 +16,10 @@ namespace KinaUnaWebBlazor.Services
         public AuthHttpClient(HttpClient httpClient, IConfiguration configuration, IHostEnvironment env, IHttpContextAccessor httpContextAccessor)
         {
             IConfiguration configuration1 = configuration;
-            string clientUri = configuration1.GetValue<string>("AuthenticationServer");
+            string clientUri = configuration1.GetValue<string>("AuthenticationServer") ?? throw new InvalidOperationException("AuthenticationServer value missing in configuration");
             if (env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugPivoqServer))
             {
-                clientUri = configuration1.GetValue<string>("AuthenticationServer" + Constants.DebugPivoqServer);
+                clientUri = configuration1.GetValue<string>("AuthenticationServer" + Constants.DebugPivoqServer) ?? throw new InvalidOperationException("AuthenticationServer value missing in configuration");
             }
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();

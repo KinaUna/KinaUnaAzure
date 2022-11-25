@@ -50,7 +50,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(video2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VideosService videoService = new VideosService(context, memoryCache);
 
@@ -102,7 +102,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(video1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VideosService videoService = new VideosService(context, memoryCache);
 
@@ -143,7 +143,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(video1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VideosService videoService = new VideosService(context, memoryCache);
 
@@ -248,7 +248,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(video2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VideosService videoService = new VideosService(context, memoryCache);
 
@@ -334,7 +334,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(video2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VideosService videoService = new VideosService(context, memoryCache);
 
@@ -402,7 +402,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(video2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VideosService videoService = new VideosService(context, memoryCache);
 
@@ -469,7 +469,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(video2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VideosService videoService = new VideosService(context, memoryCache);
 
@@ -541,7 +541,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(video2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VideosService videoService = new VideosService(context, memoryCache);
 

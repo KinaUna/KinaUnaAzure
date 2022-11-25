@@ -27,10 +27,10 @@ namespace KinaUnaWebBlazor.Services
             _apiTokenClient = apiTokenClient;
             _env = env;
             _cache = cache;
-            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            string clientUri = _configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration");
             if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
             {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer);
+                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration");
             }
 
             httpClient.BaseAddress = new Uri(clientUri);
@@ -56,21 +56,22 @@ namespace KinaUnaWebBlazor.Services
                 }
             }
 
-            string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
+            string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId") ?? throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
             if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
             {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer);
+                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ??
+                                               throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
             }
 
             string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
-                _configuration.GetValue<string>("AuthenticationServerClientSecret"));
+                _configuration.GetValue<string>("AuthenticationServerClientSecret") ?? throw new InvalidOperationException("AuthenticationServerClientSecret value missing in configuration"));
             return accessToken;
         }
 
         private async Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false)
         {
             List<KinaUnaLanguage> languageList = new List<KinaUnaLanguage>();
-            string cachedLanguagesString = await _cache.GetStringAsync("AllLanguages");
+            string? cachedLanguagesString = await _cache.GetStringAsync("AllLanguages");
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguagesString))
             {
                 languageList = JsonConvert.DeserializeObject<List<KinaUnaLanguage>>(cachedLanguagesString);
@@ -99,7 +100,7 @@ namespace KinaUnaWebBlazor.Services
         public async Task<KinaUnaText> GetPageTextByTitle(string title, string page, int languageId, bool updateCache = false)
         {
             KinaUnaText text = new KinaUnaText();
-            string cachedText = await _cache.GetStringAsync("PageText" + title + "&Page" + page + "&Lang" + languageId);
+            string? cachedText = await _cache.GetStringAsync("PageText" + title + "&Page" + page + "&Lang" + languageId);
             if (!updateCache && !string.IsNullOrEmpty(cachedText))
             {
                 text = JsonConvert.DeserializeObject<KinaUnaText>(cachedText);
@@ -163,7 +164,7 @@ namespace KinaUnaWebBlazor.Services
         public async Task<KinaUnaText> GetPageTextById(int id, bool updateCache = false)
         {
             KinaUnaText text = new KinaUnaText();
-            string cachedText = await _cache.GetStringAsync("PageText&Id" + id);
+            string? cachedText = await _cache.GetStringAsync("PageText&Id" + id);
             if (!updateCache && !string.IsNullOrEmpty(cachedText))
             {
                 text = JsonConvert.DeserializeObject<KinaUnaText>(cachedText);
@@ -190,7 +191,7 @@ namespace KinaUnaWebBlazor.Services
         public async Task<KinaUnaText> GetPageTextByTextId(int textId, int languageId, bool updateCache = false)
         {
             KinaUnaText text = new KinaUnaText();
-            string cachedText = await _cache.GetStringAsync("PageText&TextId" + textId + "&Language" + languageId);
+            string? cachedText = await _cache.GetStringAsync("PageText&TextId" + textId + "&Language" + languageId);
             if (!updateCache && !string.IsNullOrEmpty(cachedText))
             {
                 text = JsonConvert.DeserializeObject<KinaUnaText>(cachedText);
@@ -234,7 +235,7 @@ namespace KinaUnaWebBlazor.Services
         public async Task<List<KinaUnaText>> GetAllPivoqTexts(int languageId = 0, bool updateCache = false)
         {
             List<KinaUnaText> allPivoqTexts = new List<KinaUnaText>();
-            string cachedTextsList = await _cache.GetStringAsync("AllPivoqTexts" + "&Lang" + languageId);
+            string? cachedTextsList = await _cache.GetStringAsync("AllPivoqTexts" + "&Lang" + languageId);
             if (!updateCache && languageId != 0 && !string.IsNullOrEmpty(cachedTextsList))
             {
                 allPivoqTexts = JsonConvert.DeserializeObject<List<KinaUnaText>>(cachedTextsList);

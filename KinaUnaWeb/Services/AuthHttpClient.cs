@@ -27,7 +27,7 @@ namespace KinaUnaWeb.Services
             {
                 clientUri = configuration1.GetValue<string>("AuthenticationServer" + Constants.DebugPivoqServer);
             }
-            httpClient.BaseAddress = new Uri(clientUri);
+            httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestVersion = new Version(2, 0);
@@ -89,8 +89,11 @@ namespace KinaUnaWeb.Services
         public async Task<bool> IsApplicationUserValid(string userId)
         {
             string checkAccountPath = "/Account/IsApplicationUserValid/";
-            UserInfo userInfo = new UserInfo();
-            userInfo.UserId = userId;
+            UserInfo userInfo = new UserInfo
+            {
+                UserId = userId
+            };
+
             HttpResponseMessage checkResponse = await _httpClient.PostAsync(checkAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
             if (checkResponse.IsSuccessStatusCode)
             {

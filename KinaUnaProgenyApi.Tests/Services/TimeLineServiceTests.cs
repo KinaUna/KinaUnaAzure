@@ -42,7 +42,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(timeLineItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             TimelineService timelineService = new TimelineService(context, memoryCache);
 
@@ -84,7 +84,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(timeLineItem1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             TimelineService timelineService = new TimelineService(context, memoryCache);
 
@@ -115,7 +115,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(timeLineItem1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             TimelineService timelineService = new TimelineService(context, memoryCache);
 
@@ -189,7 +189,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(timeLineItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             TimelineService timelineService = new TimelineService(context, memoryCache);
 
@@ -255,7 +255,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(timeLineItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             TimelineService timelineService = new TimelineService(context, memoryCache);
 
@@ -303,7 +303,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(timeLineItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             TimelineService timelineService = new TimelineService(context, memoryCache);
 
@@ -354,7 +354,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(timeLineItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             TimelineService timelineService = new TimelineService(context, memoryCache);
 

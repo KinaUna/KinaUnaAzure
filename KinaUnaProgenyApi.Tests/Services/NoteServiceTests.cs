@@ -38,7 +38,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(note2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             NoteService noteService = new NoteService(context, memoryCache);
 
@@ -81,7 +81,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(note1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             NoteService noteService = new NoteService(context, memoryCache);
 
@@ -113,7 +113,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(note1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             NoteService noteService = new NoteService(context, memoryCache);
 
@@ -190,7 +190,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(note2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             NoteService noteService = new NoteService(context, memoryCache);
 
@@ -257,7 +257,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(note2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             NoteService noteService = new NoteService(context, memoryCache);
 
@@ -307,7 +307,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(note2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             NoteService noteService = new NoteService(context, memoryCache);
 
@@ -360,7 +360,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(note2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             NoteService noteService = new NoteService(context, memoryCache);
 

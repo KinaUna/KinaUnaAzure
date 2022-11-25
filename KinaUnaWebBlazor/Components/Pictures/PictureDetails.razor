@@ -42,7 +42,7 @@
         UserInfo = UserStateService.CurrentUser;
     }
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
 
         if (PictureViewModel != null)

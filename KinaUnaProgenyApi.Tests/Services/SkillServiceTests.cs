@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(skill2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SkillService skillService = new SkillService(context, memoryCache);
 
@@ -83,7 +83,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(skill1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SkillService skillService = new SkillService(context, memoryCache);
 
@@ -116,7 +116,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(skill1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SkillService skillService = new SkillService(context, memoryCache);
 
@@ -196,7 +196,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(skill2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SkillService skillService = new SkillService(context, memoryCache);
 
@@ -266,7 +266,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(skill2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SkillService skillService = new SkillService(context, memoryCache);
 
@@ -318,7 +318,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(skill2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SkillService skillService = new SkillService(context, memoryCache);
 
@@ -373,7 +373,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(skill2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SkillService skillService = new SkillService(context, memoryCache);
 

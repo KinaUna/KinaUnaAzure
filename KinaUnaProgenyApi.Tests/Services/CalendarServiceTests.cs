@@ -46,7 +46,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(calendarItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CalendarService calendarService = new CalendarService(context, memoryCache);
 
@@ -89,7 +89,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(calendarItem1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CalendarService calendarService = new CalendarService(context, memoryCache);
 
@@ -122,7 +122,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(calendarItem1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CalendarService calendarService = new CalendarService(context, memoryCache);
 
@@ -203,7 +203,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(calendarItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CalendarService calendarService = new CalendarService(context, memoryCache);
 
@@ -273,7 +273,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(calendarItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CalendarService calendarService = new CalendarService(context, memoryCache);
 
@@ -326,7 +326,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CalendarService calendarService = new CalendarService(context, memoryCache);
 
@@ -380,7 +380,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(calendarItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CalendarService calendarService = new CalendarService(context, memoryCache);
 

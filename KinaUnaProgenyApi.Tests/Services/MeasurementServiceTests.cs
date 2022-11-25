@@ -41,7 +41,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(measurement2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             MeasurementService measurementService = new MeasurementService(context, memoryCache);
 
@@ -87,7 +87,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(measurement1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             MeasurementService measurementService = new MeasurementService(context, memoryCache);
 
@@ -111,7 +111,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(measurement1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             MeasurementService measurementService = new MeasurementService(context, memoryCache);
 
@@ -198,7 +198,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(measurement2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             MeasurementService measurementService = new MeasurementService(context, memoryCache);
 
@@ -272,7 +272,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(measurement2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             MeasurementService measurementService = new MeasurementService(context, memoryCache);
 
@@ -329,7 +329,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(measurement2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             MeasurementService measurementService = new MeasurementService(context, memoryCache);
 
@@ -389,7 +389,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(measurement2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             MeasurementService measurementService = new MeasurementService(context, memoryCache);
 

@@ -27,8 +27,8 @@ namespace KinaUnaWebBlazor.Services
             notification.Link = link;
             notification.Tag = tag;
             string payload = JsonConvert.SerializeObject(notification);
-            string vapidPublicKey = _configuration["VapidPublicKey"];
-            string vapidPrivateKey = _configuration["VapidPrivateKey"];
+            string vapidPublicKey = _configuration["VapidPublicKey"] ?? throw new InvalidOperationException("VapidPublicKey value missing in configuration");
+            string vapidPrivateKey = _configuration["VapidPrivateKey"] ?? throw new InvalidOperationException("VapidPrivateKey value missing in configuration");
 
             List<PushDevices> deviceList = await _context.PushDevices.Where(m => m.Name == user).ToListAsync();
             if (deviceList.Any())

@@ -46,7 +46,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(comment2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
@@ -102,7 +102,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(comment2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
@@ -148,7 +148,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(comment2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
@@ -199,7 +199,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(comment2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
@@ -249,7 +249,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(comment2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
@@ -334,7 +334,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
@@ -405,7 +405,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(comment2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
@@ -475,7 +475,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(comment2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
@@ -528,7 +528,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
             
@@ -566,7 +566,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(commentThread2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
@@ -590,7 +590,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(commentThread2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
@@ -612,7 +612,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(commentThread2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
             
@@ -653,7 +653,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(commentThread2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 

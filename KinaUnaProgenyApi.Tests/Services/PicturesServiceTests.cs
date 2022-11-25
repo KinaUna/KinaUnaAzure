@@ -52,7 +52,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(picture2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             PicturesService pictureService = new PicturesService(context, memoryCache);
 
@@ -106,7 +106,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(picture1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             PicturesService pictureService = new PicturesService(context, memoryCache);
 
@@ -149,7 +149,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(picture1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             PicturesService pictureService = new PicturesService(context, memoryCache);
 
@@ -260,7 +260,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(picture2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             PicturesService pictureService = new PicturesService(context, memoryCache);
 
@@ -350,7 +350,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(picture2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             PicturesService pictureService = new PicturesService(context, memoryCache);
 
@@ -423,7 +423,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(picture2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             PicturesService pictureService = new PicturesService(context, memoryCache);
 
@@ -494,7 +494,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(picture2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             PicturesService pictureService = new PicturesService(context, memoryCache);
 
@@ -570,7 +570,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(picture2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             PicturesService pictureService = new PicturesService(context, memoryCache);
 

@@ -31,7 +31,7 @@ namespace KinaUna.IDP.Services
                 clientUri = configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer);
             }
 
-            httpClient.BaseAddress = new Uri(clientUri);
+            httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestVersion = new Version(2, 0);
@@ -125,7 +125,7 @@ namespace KinaUna.IDP.Services
                 languageList = JsonConvert.DeserializeObject<List<KinaUnaLanguage>>(languageListAsString);
             }
 
-            if (languageList.Any())
+            if (languageList != null && languageList.Any())
             {
                 await _cache.SetStringAsync("AllLanguages", JsonConvert.SerializeObject(languageList));
             }

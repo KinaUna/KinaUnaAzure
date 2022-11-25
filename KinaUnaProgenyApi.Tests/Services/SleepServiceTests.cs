@@ -38,7 +38,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(sleep2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SleepService sleepService = new SleepService(context, memoryCache);
 
@@ -82,7 +82,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(sleep1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SleepService sleepService = new SleepService(context, memoryCache);
 
@@ -115,7 +115,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(sleep1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SleepService sleepService = new SleepService(context, memoryCache);
             
@@ -196,7 +196,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(sleep2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SleepService sleepService = new SleepService(context, memoryCache);
 
@@ -266,7 +266,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(sleep2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SleepService sleepService = new SleepService(context, memoryCache);
 
@@ -318,7 +318,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(sleep2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SleepService sleepService = new SleepService(context, memoryCache);
 
@@ -373,7 +373,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(sleep2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             SleepService sleepService = new SleepService(context, memoryCache);
 

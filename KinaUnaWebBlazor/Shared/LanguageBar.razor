@@ -12,10 +12,10 @@
                           Data="CurrentState?.LanguageList"
                           TextField="@((item) => item.Name)"
                           ValueField="@((item) => item.Id)"
-                          @bind-SelectedValue="CurrentState.LanguageId"
+                          @bind-SelectedValue="SelectedLanguageId"
                           Class="d-inline languagebar-dropdown kinauna_yellow_text font-weight-bold"
                           Style="z-index: 1099;">
-                          @CurrentState.LanguageName
+                          @SelectedLanguageName
             </DropdownList>
         </Div>
         
@@ -27,5 +27,17 @@
 @code {
     [CascadingParameter] 
     KinaUnaStateComponent? CurrentState { get; set; }
+
+    private int SelectedLanguageId
+    {
+        get => CurrentState?.LanguageId ?? 1;
+        set
+        {
+            if (CurrentState != null) CurrentState.LanguageId = value;
+        }
+    }
+
+    private string SelectedLanguageName => CurrentState?.LanguageName ?? "English";
+
 }
 

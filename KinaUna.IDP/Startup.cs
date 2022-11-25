@@ -127,7 +127,7 @@ namespace KinaUna.IDP
                 certStore.Open(OpenFlags.ReadOnly);
                 X509Certificate2Collection certCollection = certStore.Certificates.Find(
                     X509FindType.FindByThumbprint,
-                    Configuration["X509ThumbPrint"],
+                    Configuration["X509ThumbPrint"] ?? throw new InvalidOperationException("X509ThumbPrint value not found in configuration."),
                     false);
                 // Get the first cert with the thumbprint
                 if (certCollection.Count > 0)
@@ -253,22 +253,22 @@ namespace KinaUna.IDP
                 })
                 .AddApple(options =>
                 {
-                    options.ClientId = Configuration["AppleClientId"]; 
+                    options.ClientId = Configuration["AppleClientId"] ?? throw new InvalidOperationException("AppleClientId missing in configuration."); 
                     options.KeyId = Configuration["AppleKeyId"];
-                    options.TeamId = Configuration["AppleTeamId"];
+                    options.TeamId = Configuration["AppleTeamId"] ?? throw new InvalidOperationException("AppleTeamId missing in configuration");
                     options.UsePrivateKey((keyId) => _env.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
                     options.SaveTokens = true;
                 })
                 .AddGoogle("Google", "Google", options =>
                 {
-                    options.ClientId = Configuration["GoogleClientId"];
-                    options.ClientSecret = Configuration["GoogleClientSecret"];
+                    options.ClientId = Configuration["GoogleClientId"] ?? throw new InvalidOperationException("GoogleClientId missing in configuration.");
+                    options.ClientSecret = Configuration["GoogleClientSecret"] ?? throw new InvalidOperationException("GoogleClientSecret missing in configuration.");
                     options.SaveTokens = true;
                 })
                 .AddMicrosoftAccount("Microsoft", "Microsoft", microsoftOptions =>
                 {
-                    microsoftOptions.ClientId = Configuration["MicrosoftClientId"];
-                    microsoftOptions.ClientSecret = Configuration["MicrosoftClientSecret"];
+                    microsoftOptions.ClientId = Configuration["MicrosoftClientId"] ?? throw new InvalidOperationException("MicrosoftClientId missing in configuration.");
+                    microsoftOptions.ClientSecret = Configuration["MicrosoftClientSecret"] ?? throw new InvalidOperationException("MicrosoftClientSecret missing in configuration");
                     microsoftOptions.SaveTokens = true;
                 });
 

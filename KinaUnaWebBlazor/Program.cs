@@ -43,30 +43,33 @@ builder.Services.AddDbContext<WebDbContext>(options =>
             sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
         }));
 
-string authorityServerUrl = builder.Configuration.GetValue<string>("AuthenticationServer");
+string authorityServerUrl = builder.Configuration.GetValue<string>("AuthenticationServer") ?? throw new InvalidOperationException("AuthenticationServer value missing in configuration.");
 if (builder.Environment.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
 {
-    authorityServerUrl = builder.Configuration.GetValue<string>("AuthenticationServer" + Constants.DebugKinaUnaServer);
+    authorityServerUrl = builder.Configuration.GetValue<string>("AuthenticationServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("AuthenticationServer value missing in configuration.");
 }
 
-string authenticationServerClientId = builder.Configuration.GetValue<string>("AuthenticationServerClientId");
+string authenticationServerClientId = builder.Configuration.GetValue<string>("AuthenticationServerClientId") ??
+                                      throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
 if (builder.Environment.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
 {
-    authenticationServerClientId = builder.Configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer);
+    authenticationServerClientId = builder.Configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ??
+                                   throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
 }
 
-string authenticationServerClientSecret = builder.Configuration.GetValue<string>("AuthenticationServerClientSecret");
+string authenticationServerClientSecret = builder.Configuration.GetValue<string>("AuthenticationServerClientSecret") ??
+                                          throw new InvalidOperationException("AuthenticationServerClientSecret value missing in configuration.");
 
-string progenyServerUrl = builder.Configuration.GetValue<string>("ProgenyApiServer");
+string progenyServerUrl = builder.Configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
 if (builder.Environment.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
 {
-    progenyServerUrl = builder.Configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer);
+    progenyServerUrl = builder.Configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
 }
 
-string mediaServerUrl = builder.Configuration.GetValue<string>("MediaApiServer");
+string mediaServerUrl = builder.Configuration.GetValue<string>("MediaApiServer") ?? throw new InvalidOperationException("MediaApiServer value missing in configuration.");
 if (builder.Environment.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
 {
-    mediaServerUrl = builder.Configuration.GetValue<string>("MediaApiServer" + Constants.DebugKinaUnaServer);
+    mediaServerUrl = builder.Configuration.GetValue<string>("MediaApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("MediaApiServer value missing in configuration.");
 }
 
 builder.Services.Configure<AuthConfigurations>(config =>

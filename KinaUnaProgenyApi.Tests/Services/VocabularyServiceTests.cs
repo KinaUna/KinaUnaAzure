@@ -41,7 +41,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vocabularyItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
 
@@ -86,7 +86,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vocabularyItem1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
 
@@ -120,7 +120,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vocabularyItem1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
             
@@ -204,7 +204,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vocabularyItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
 
@@ -276,7 +276,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vocabularyItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
 
@@ -330,7 +330,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vocabularyItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
 
@@ -387,7 +387,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vocabularyItem2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
 

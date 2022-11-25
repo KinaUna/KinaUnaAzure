@@ -42,7 +42,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vaccination2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
 
@@ -84,7 +84,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vaccination1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
 
@@ -115,7 +115,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vaccination1);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
             
@@ -190,7 +190,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vaccination2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
 
@@ -256,7 +256,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vaccination2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
 
@@ -304,7 +304,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vaccination2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
 
@@ -355,7 +355,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(vaccination2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions>? memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
 

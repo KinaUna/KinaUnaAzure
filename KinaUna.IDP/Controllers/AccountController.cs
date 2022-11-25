@@ -224,7 +224,7 @@ namespace KinaUna.IDP.Controllers
                     }
                    
                 }
-                return Redirect(logoutRedirectUri);
+                return Redirect(logoutRedirectUri!);
             }
 
             if (context != null && context.ClientId != null && context.ClientId.ToLower().Contains("kinaunamaui"))
@@ -357,8 +357,13 @@ namespace KinaUna.IDP.Controllers
                    
                 }
             }
-            return Redirect(logout.PostLogoutRedirectUri);
-            
+
+            if (logout.PostLogoutRedirectUri != null)
+            {
+                return Redirect(logout.PostLogoutRedirectUri);
+            }
+
+            return RedirectToAction("Index", "Home");
         }
 
         public async Task<IActionResult> DeviceLogOut(string redirectUrl)
@@ -411,11 +416,11 @@ namespace KinaUna.IDP.Controllers
 
                 if (user.TimeZone == null)
                 {
-                    user.TimeZone = (await _userManager.FindByEmailAsync(Constants.AdminEmail)).TimeZone;
+                    user.TimeZone = ((await _userManager.FindByEmailAsync(Constants.AdminEmail))!).TimeZone;
                 }
                 
                 IdentityResult result = await _userManager.CreateAsync(user, model.Password);
-                if (result != null && result.Errors.Count() > 0)
+                if (result.Errors.Any())
                 {
                     AddErrors(result);
                     // If we got this far, something failed, redisplay form
@@ -606,11 +611,12 @@ namespace KinaUna.IDP.Controllers
             if (result.Succeeded)
             {
                 user = await _userManager.FindByIdAsync(userId);
-                if (user.JoinDate.AddDays(7) > DateTime.UtcNow)
+                if (user != null && user.JoinDate.AddDays(7) > DateTime.UtcNow)
                 {
                     user.JoinDate = DateTime.UtcNow;
                 }
-                await _userManager.UpdateAsync(user);
+
+                await _userManager.UpdateAsync(user!);
 
                 if (!String.IsNullOrEmpty(oldEmail))
                 {
@@ -635,7 +641,7 @@ namespace KinaUna.IDP.Controllers
                         foreach (Progeny prog in progenyList)
                         {
                             string adminList = prog.Admins.ToUpper();
-                            prog.Admins = adminList.Replace(oldEmail.ToUpper(), user.Email.ToUpper());
+                            prog.Admins = adminList.Replace(oldEmail.ToUpper(), user.Email!.ToUpper());
                         }
                         _progContext.ProgenyDb.UpdateRange(progenyList);
                         await _progContext.SaveChangesAsync();
