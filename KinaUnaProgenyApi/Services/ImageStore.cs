@@ -15,7 +15,7 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly string _storageKey;
-        readonly string baseUri = Constants.CloudBlobBase;
+        private readonly string _baseUri = Constants.CloudBlobBase;
         
         public ImageStore(IConfiguration configuration)
         {
@@ -36,10 +36,6 @@ namespace KinaUnaProgenyApi.Services
 
         public string UriFor(string imageId, string containerName = "pictures")
         {
-            //BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
-
-            //BlobClient blob = container.GetBlobClient(imageId);
-            
             StorageSharedKeyCredential credential = new StorageSharedKeyCredential(Constants.CloudBlobUsername, _storageKey);
             BlobSasBuilder sas = new BlobSasBuilder
             {
@@ -50,7 +46,7 @@ namespace KinaUnaProgenyApi.Services
             };
 
             sas.SetPermissions(BlobAccountSasPermissions.Read);
-            UriBuilder sasUri = new UriBuilder($"{baseUri}{containerName}/{imageId}");
+            UriBuilder sasUri = new UriBuilder($"{_baseUri}{containerName}/{imageId}");
             
             sasUri.Query = sas.ToSasQueryParameters(credential).ToString();
 

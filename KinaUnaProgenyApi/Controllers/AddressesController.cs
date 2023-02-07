@@ -48,7 +48,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Address value)
         {
-            Address addressItem = await _locationService.GetAddressItem(id); // _context.AddressDb.SingleOrDefaultAsync(a => a.AddressId == id);
+            Address addressItem = await _locationService.GetAddressItem(id);
             if (addressItem == null)
             {
                 return NotFound();
@@ -70,7 +70,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Address addressItem = await _locationService.GetAddressItem(id); // _context.AddressDb.SingleOrDefaultAsync(a => a.AddressId == id);
+            Address addressItem = await _locationService.GetAddressItem(id);
             if (addressItem != null)
             {
                 await _locationService.RemoveAddressItem(id); 
