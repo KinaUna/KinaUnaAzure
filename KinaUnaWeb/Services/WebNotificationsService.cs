@@ -1,53 +1,46 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaWeb.Services
 {
     public class WebNotificationsService: IWebNotificationsService
     {
-        private readonly WebDbContext _context;
-
-        public WebNotificationsService(WebDbContext context)
+        private readonly INotificationsHttpClient _notificationsHttpClient;
+        public WebNotificationsService(INotificationsHttpClient notificationsHttpClient)
         {
-            _context = context;
+            _notificationsHttpClient = notificationsHttpClient;
         }
 
         public async Task<WebNotification> SaveNotification(WebNotification notification)
         {
-            await _context.WebNotificationsDb.AddAsync(notification);
-            await _context.SaveChangesAsync();
+            notification = await _notificationsHttpClient.AddWebNotification(notification);
 
             return notification;
         }
 
         public async Task<WebNotification> UpdateNotification(WebNotification notification)
         {
-            _context.WebNotificationsDb.Update(notification);
-            await _context.SaveChangesAsync();
+            notification = await _notificationsHttpClient.UpdateWebNotification(notification);
 
             return notification;
         }
 
         public async Task RemoveNotification(WebNotification notification)
         {
-            _context.WebNotificationsDb.Remove(notification);
-            await _context.SaveChangesAsync();
+            await _notificationsHttpClient.RemoveWebNotification(notification);
         }
 
         public async Task<WebNotification> GetNotificationById(int id)
         {
-            WebNotification notification = await _context.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == id);
+            WebNotification notification = await _notificationsHttpClient.GetWebNotificationById(id);
 
             return notification;
         }
 
         public async Task<List<WebNotification>> GetUsersNotifications(string userId)
         {
-            List<WebNotification> usersNotifications = await _context.WebNotificationsDb.Where(n => n.To == userId).ToListAsync();
+            List<WebNotification> usersNotifications = await _notificationsHttpClient.GetUsersWebNotifications(userId);
 
             return usersNotifications;
         }

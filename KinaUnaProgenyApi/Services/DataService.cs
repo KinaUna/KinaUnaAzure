@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -117,6 +116,42 @@ namespace KinaUnaProgenyApi.Services
             List<PushDevices> deviceList = await _webDbContext.PushDevices.Where(m => m.Name == userId).ToListAsync();
 
             return deviceList;
+        }
+
+        public async Task<WebNotification> AddWebNotification(WebNotification notification)
+        {
+            await _webDbContext.WebNotificationsDb.AddAsync(notification);
+            await _webDbContext.SaveChangesAsync();
+
+            return notification;
+        }
+
+        public async Task<WebNotification> UpdateWebNotification(WebNotification notification)
+        {
+            _webDbContext.WebNotificationsDb.Update(notification);
+            await _context.SaveChangesAsync();
+
+            return notification;
+        }
+
+        public async Task RemoveWebNotification(WebNotification notification)
+        {
+            _webDbContext.WebNotificationsDb.Remove(notification);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<WebNotification> GetWebNotificationById(int id)
+        {
+            WebNotification notification = await _webDbContext.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == id);
+
+            return notification;
+        }
+
+        public async Task<List<WebNotification>> GetUsersWebNotifications(string userId)
+        {
+            List<WebNotification> usersNotifications = await _webDbContext.WebNotificationsDb.Where(n => n.To == userId).ToListAsync();
+
+            return usersNotifications;
         }
     }
 }

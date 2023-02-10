@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -9,7 +8,6 @@ using KinaUna.Data;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -179,6 +177,95 @@ namespace KinaUnaWeb.Services
             }
 
             return pushDevice;
+        }
+
+        public async Task<WebNotification> AddWebNotification(WebNotification notification)
+        {
+            WebNotification addedNotification = new WebNotification();
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string addApiPath = "/api/Notifications/AddWebNotification/";
+            HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(notification), System.Text.Encoding.UTF8, "application/json"));
+            if (addResponse.IsSuccessStatusCode)
+            {
+                string addResponseString = await addResponse.Content.ReadAsStringAsync();
+                addedNotification = JsonConvert.DeserializeObject<WebNotification>(addResponseString);
+            }
+
+            return addedNotification;
+        }
+
+        public async Task<WebNotification> UpdateWebNotification(WebNotification notification)
+        {
+            WebNotification addedNotification = new WebNotification();
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string addApiPath = "/api/Notifications/UpdateWebNotification/";
+            HttpResponseMessage addResponse = await _httpClient.PutAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(notification), System.Text.Encoding.UTF8, "application/json"));
+            if (addResponse.IsSuccessStatusCode)
+            {
+                string addResponseString = await addResponse.Content.ReadAsStringAsync();
+                addedNotification = JsonConvert.DeserializeObject<WebNotification>(addResponseString);
+            }
+
+            return addedNotification;
+        }
+
+        public async Task<WebNotification> RemoveWebNotification(WebNotification notification)
+        {
+            WebNotification removedNotification = new WebNotification();
+            string accessToken = await GetNewToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string removeApiPath = "/api/Notifications/RemoveWebNotification/";
+            HttpResponseMessage removeResponse = await _httpClient.PostAsync(removeApiPath, new StringContent(JsonConvert.SerializeObject(notification), System.Text.Encoding.UTF8, "application/json"));
+            if (removeResponse.IsSuccessStatusCode)
+            {
+                string removeResponseString = await removeResponse.Content.ReadAsStringAsync();
+                removedNotification = JsonConvert.DeserializeObject<WebNotification>(removeResponseString);
+            }
+
+            return removedNotification;
+        }
+
+        public async Task<WebNotification> GetWebNotificationById(int id)
+        {
+            WebNotification notification = new WebNotification();
+
+            string accessToken = await GetNewToken(true);
+            _httpClient.SetBearerToken(accessToken);
+
+            string apiPath = "/api/Notifications/GetWebNotificationById/" + id;
+            HttpResponseMessage httpResponse = await _httpClient.GetAsync(apiPath);
+
+            if (httpResponse.IsSuccessStatusCode)
+            {
+                string notificationAsString = await httpResponse.Content.ReadAsStringAsync();
+                notification = JsonConvert.DeserializeObject<WebNotification>(notificationAsString);
+            }
+
+            return notification;
+        }
+
+        public async Task<List<WebNotification>> GetUsersWebNotifications(string user)
+        {
+            List<WebNotification> usersWebNotifications = new List<WebNotification>();
+
+            string accessToken = await GetNewToken(true);
+            _httpClient.SetBearerToken(accessToken);
+
+            string apiPath = "/api/Notifications/GetUsersNotifications/" + user;
+            HttpResponseMessage notificationsResponse = await _httpClient.GetAsync(apiPath);
+
+            if (notificationsResponse.IsSuccessStatusCode)
+            {
+                string notificationsListAsString = await notificationsResponse.Content.ReadAsStringAsync();
+                usersWebNotifications = JsonConvert.DeserializeObject<List<WebNotification>>(notificationsListAsString);
+            }
+
+            return usersWebNotifications;
         }
     }
 }

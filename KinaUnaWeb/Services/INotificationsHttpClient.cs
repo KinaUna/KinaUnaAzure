@@ -12,4 +12,9 @@ public interface INotificationsHttpClient
     Task<PushDevices> RemovePushDevice(PushDevices device);
     Task<List<PushDevices>> GetPushDeviceByUserId(string user);
     Task<PushDevices> GetPushDevice(PushDevices device);
+    Task<WebNotification> AddWebNotification(WebNotification notification);
+    Task<WebNotification> UpdateWebNotification(WebNotification notification);
+    Task<WebNotification> RemoveWebNotification(WebNotification notification);
+    Task<WebNotification> GetWebNotificationById(int id);
+    Task<List<WebNotification>> GetUsersWebNotifications(string user);
 }

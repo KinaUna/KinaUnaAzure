@@ -196,6 +196,8 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]")]
         public async Task<IActionResult> AddPushDevice([FromBody] PushDevices device)
         {
+            //Todo: Add UserId to PushDevice and check if user should have access.
+
             device = await _dataService.AddPushDevice(device);
 
             return Ok(device);
@@ -207,7 +209,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             await _dataService.RemovePushDevice(device);
 
-            return NoContent();
+            return Ok(device);
         }
 
         [HttpGet]
@@ -215,7 +217,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetPushDeviceById(int id)
         {
             PushDevices device = await _dataService.GetPushDeviceById(id);
-
+            
             return Ok(device);
         }
 
@@ -223,6 +225,12 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{userId}")]
         public async Task<IActionResult> GetPushDeviceByUserId(string userId)
         {
+            string currentUserId = User.GetUserId() ?? "";
+            if (userId != currentUserId)
+            {
+                return Unauthorized();
+            }
+
             List<PushDevices> devices = await _dataService.GetPushDeviceByUserId(userId);
 
             return Ok(devices);
@@ -235,6 +243,81 @@ namespace KinaUnaProgenyApi.Controllers
             device = await _dataService.GetPushDevice(device);
 
             return Ok(device);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> AddWebNotification([FromBody] WebNotification notification)
+        {
+            string currentUserId = User.GetUserId() ?? "";
+            if (notification.From != currentUserId && notification.To != currentUserId)
+            {
+                return Unauthorized();
+            }
+
+            notification = await _dataService.AddWebNotification(notification);
+
+            return Ok(notification);
+        }
+
+        [HttpPut]
+        [Route("[action]")]
+        public async Task<IActionResult> UpdateWebNotification([FromBody] WebNotification notification)
+        {
+            string currentUserId = User.GetUserId() ?? "";
+            if (notification.From != currentUserId && notification.To != currentUserId)
+            {
+                return Unauthorized();
+            }
+
+            notification = await _dataService.UpdateWebNotification(notification);
+
+            return Ok(notification);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> RemoveWebNotification([FromBody] WebNotification notification)
+        {
+            string currentUserId = User.GetUserId() ?? "";
+            if (notification.From != currentUserId && notification.To != currentUserId)
+            {
+                return Unauthorized();
+            }
+
+            await _dataService.RemoveWebNotification(notification);
+
+            return Ok(notification);
+        }
+
+        [HttpGet]
+        [Route("[action]/{id}")]
+        public async Task<IActionResult> GetWebNotificationById(int id)
+        {
+            WebNotification webNotification = await _dataService.GetWebNotificationById(id);
+
+            string currentUserId = User.GetUserId() ?? "";
+            if (webNotification.From != currentUserId && webNotification.To != currentUserId)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(webNotification);
+        }
+
+        [HttpGet]
+        [Route("[action]/{userId}")]
+        public async Task<IActionResult> GetUsersNotifications(string userId)
+        {
+            string currentUserId = User.GetUserId() ?? "";
+            if (userId != currentUserId)
+            {
+                return Unauthorized();
+            }
+
+            List<WebNotification> webNotifications = await _dataService.GetUsersWebNotifications(userId);
+
+            return Ok(webNotifications);
         }
     }
 }
