@@ -12,6 +12,6 @@
 </div>
 
 <br />
-<div><a class="leavePage" asp-controller="AddItem" asp-action="AddVideo">@await LocaleManager.GetTranslation("Return to upload video", PageNames.Videos, Model.LanguageId)</a></div>
+<div><a class="leavePage" asp-controller="Videos" asp-action="AddVideo">@await LocaleManager.GetTranslation("Return to upload video", PageNames.Videos, Model.LanguageId)</a></div>
 <br />
 <div><a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-childId="@Model.ProgenyId">@await LocaleManager.GetTranslation("Return to video gallery", PageNames.Videos, Model.LanguageId)</a></div>

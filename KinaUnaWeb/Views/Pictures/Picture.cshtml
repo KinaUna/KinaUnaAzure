@@ -201,7 +201,7 @@
                             @if (cmnt.Author == Model.UserId)
                             {
                                 <div class="media-footer">
-                                    <form class="form-inline float-right" asp-controller="AddItem" asp-action="DeletePictureComment" role="form" method="post">
+                                    <form class="form-inline float-right" asp-controller="Pictures" asp-action="DeletePictureComment" role="form" method="post">
 
                                         <div class="form-group">
                                             <div>
@@ -224,7 +224,7 @@
 }
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
-    <form asp-controller="AddItem" asp-action="AddPictureComment" role="form" method="post">
+    <form asp-controller="Pictures" asp-action="AddPictureComment" role="form" method="post">
         <div class="form-group">
             <label Name="CommentText" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("New comment:", PageNames.Pictures, Model.LanguageId)</label>
             <div class="col-md-10">
@@ -263,7 +263,7 @@
     </div>
     <div id="editSection" style="display: none; padding: 15px;">
         <div>@await LocaleManager.GetTranslation("Edit user access, location, or date and time for this photo", PageNames.Pictures, Model.LanguageId)</div><br />
-        <form asp-controller="AddItem" asp-action="EditPicture" role="form">
+        <form asp-controller="Pictures" asp-action="EditPicture" role="form">
             <div class="form-group">
                 <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-lg-10 col-md-10 col-sm-10">
@@ -354,7 +354,7 @@
                 </div>
             </div>
         </form>
-        <form asp-controller="AddItem" asp-action="DeletePicture" role="form" method="get">
+        <form asp-controller="Pictures" asp-action="DeletePicture" role="form" method="get">
             <div class="form-group">
                 <label class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Remove this picture:", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-lg-9">

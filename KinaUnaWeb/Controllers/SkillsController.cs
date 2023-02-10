@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -18,13 +19,17 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly ISkillsHttpClient _skillsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-        
-        public SkillsController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, ISkillsHttpClient skillsHttpClient, IUserAccessHttpClient userAccessHttpClient)
+        private readonly IPushMessageSender _pushMessageSender;
+        private readonly IWebNotificationsService _webNotificationsService;
+        public SkillsController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, ISkillsHttpClient skillsHttpClient, IUserAccessHttpClient userAccessHttpClient,
+            IPushMessageSender pushMessageSender, IWebNotificationsService webNotificationsService)
         {
             _progenyHttpClient = progenyHttpClient;
             _userInfosHttpClient = userInfosHttpClient;
             _skillsHttpClient = skillsHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
+            _pushMessageSender = pushMessageSender;
+            _webNotificationsService = webNotificationsService;
         }
 
         [AllowAnonymous]
@@ -108,6 +113,259 @@ namespace KinaUnaWeb.Controllers
 
             return View(model);
 
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AddSkill()
+        {
+            SkillViewModel model = new SkillViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+            if (model.CurrentUser == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+
+            if (User.Identity != null && User.Identity.IsAuthenticated && userEmail != null && model.CurrentUser.UserId != null)
+            {
+                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                if (accessList.Any())
+                {
+                    foreach (Progeny prog in accessList)
+                    {
+                        SelectListItem selItem = new SelectListItem()
+                        {
+                            Text = accessList.Single(p => p.Id == prog.Id).NickName,
+                            Value = prog.Id.ToString()
+                        };
+                        if (prog.Id == model.CurrentUser.ViewChild)
+                        {
+                            selItem.Selected = true;
+                        }
+
+                        model.ProgenyList.Add(selItem);
+                    }
+                }
+            }
+
+            if (model.LanguageId == 2)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDe;
+            }
+
+            if (model.LanguageId == 3)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDa;
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddSkill(SkillViewModel model)
+        {
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                // Todo: Show no access info.
+                return RedirectToAction("Index");
+            }
+
+            Skill skillItem = new Skill();
+            skillItem.ProgenyId = model.ProgenyId;
+            skillItem.Category = model.Category;
+            skillItem.Description = model.Description;
+            skillItem.Name = model.Name;
+            skillItem.SkillAddedDate = DateTime.UtcNow;
+            if (model.SkillFirstObservation == null)
+            {
+                model.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            skillItem.SkillFirstObservation = model.SkillFirstObservation;
+            skillItem.AccessLevel = model.AccessLevel;
+            skillItem.Author = model.CurrentUser.UserId;
+
+            await _skillsHttpClient.AddSkill(skillItem);
+
+            string authorName = "";
+            if (!string.IsNullOrEmpty(model.CurrentUser.FirstName))
+            {
+                authorName = model.CurrentUser.FirstName;
+            }
+            if (!string.IsNullOrEmpty(model.CurrentUser.MiddleName))
+            {
+                authorName = authorName + " " + model.CurrentUser.MiddleName;
+            }
+            if (!string.IsNullOrEmpty(model.CurrentUser.LastName))
+            {
+                authorName = authorName + " " + model.CurrentUser.LastName;
+            }
+
+            authorName = authorName.Trim();
+            if (string.IsNullOrEmpty(authorName))
+            {
+                authorName = model.CurrentUser.UserName;
+            }
+            List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(model.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            foreach (UserAccess ua in usersToNotif)
+            {
+                if (ua.AccessLevel <= skillItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(ua.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        string skillTimeString = "\r\nDate: " + skillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy");
+
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = authorName;
+                        notification.Message = "Skill: " + skillItem.Name + "\r\nCategory: " + skillItem.Category + skillTimeString;
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = model.CurrentUser.ProfilePicture;
+                        notification.Title = "A new skill was added for " + progeny.NickName;
+                        notification.Link = "/Skills?childId=" + progeny.Id;
+                        notification.Type = "Notification";
+
+                        notification = await _webNotificationsService.SaveNotification(notification);
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaskill" + progeny.Id);
+                    }
+                }
+            }
+            return RedirectToAction("Index", "Skills");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditSkill(int itemId)
+        {
+            SkillViewModel model = new SkillViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+            Skill skill = await _skillsHttpClient.GetSkill(itemId);
+            Progeny prog = await _progenyHttpClient.GetProgeny(skill.ProgenyId);
+            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                // Todo: Show no access info.
+                return RedirectToAction("Index");
+            }
+            model.ProgenyId = skill.ProgenyId;
+            model.AccessLevel = skill.AccessLevel;
+            model.Author = skill.Author;
+            model.Category = skill.Category;
+            model.Description = skill.Description;
+            model.Name = skill.Name;
+            model.SkillAddedDate = skill.SkillAddedDate;
+            if (skill.SkillFirstObservation == null)
+            {
+                skill.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            model.SkillFirstObservation = skill.SkillFirstObservation;
+            model.SkillId = skill.SkillId;
+            model.AccessLevelListEn[model.AccessLevel].Selected = true;
+            model.AccessLevelListDa[model.AccessLevel].Selected = true;
+            model.AccessLevelListDe[model.AccessLevel].Selected = true;
+
+            if (model.LanguageId == 2)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDe;
+            }
+
+            if (model.LanguageId == 3)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDa;
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditSkill(SkillViewModel model)
+        {
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                // Todo: Show no access info.
+                return RedirectToAction("Index");
+            }
+            if (ModelState.IsValid)
+            {
+                Skill editedSkill = new Skill();
+
+                editedSkill.ProgenyId = model.ProgenyId;
+                editedSkill.AccessLevel = model.AccessLevel;
+                editedSkill.Author = model.Author;
+                editedSkill.Category = model.Category;
+                editedSkill.Description = model.Description;
+                editedSkill.Name = model.Name;
+                editedSkill.SkillAddedDate = model.SkillAddedDate;
+                if (model.SkillFirstObservation == null)
+                {
+                    model.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                }
+                editedSkill.SkillFirstObservation = model.SkillFirstObservation;
+                editedSkill.SkillId = model.SkillId;
+
+                await _skillsHttpClient.UpdateSkill(editedSkill);
+            }
+
+            return RedirectToAction("Index", "Skills");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteSkill(int itemId)
+        {
+            SkillViewModel model = new SkillViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+            model.Skill = await _skillsHttpClient.GetSkill(itemId);
+
+            Progeny prog = await _progenyHttpClient.GetProgeny(model.Skill.ProgenyId);
+            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                // Todo: Show no access info.
+                return RedirectToAction("Index");
+            }
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteSkill(SkillViewModel model)
+        {
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+            Skill skill = await _skillsHttpClient.GetSkill(model.Skill.SkillId);
+            Progeny prog = await _progenyHttpClient.GetProgeny(skill.ProgenyId);
+            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                // Todo: Show no access info.
+                return RedirectToAction("Index");
+            }
+
+            await _skillsHttpClient.DeleteSkill(skill.SkillId);
+
+            return RedirectToAction("Index", "Skills");
         }
     }
 }

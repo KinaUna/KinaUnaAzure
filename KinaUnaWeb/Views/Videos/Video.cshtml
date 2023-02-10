@@ -218,7 +218,7 @@
                             @if (cmnt.Author == Model.UserId)
                             {
                                 <div class="media-footer">
-                                    <form class="form-inline float-right" asp-controller="AddItem" asp-action="DeleteVideoComment" role="form" method="post">
+                                    <form class="form-inline float-right" asp-controller="Videos" asp-action="DeleteVideoComment" role="form" method="post">
                                         <div class="form-group">
                                             <div>
                                                 <button class="btn btn-danger btn-sm leavePage" type="submit">@await LocaleManager.GetTranslation("Delete comment", PageNames.Videos, Model.LanguageId)</button>
@@ -240,7 +240,7 @@
 }
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
-    <form asp-controller="AddItem" asp-action="AddVideoComment" role="form" method="post">
+    <form asp-controller="Videos" asp-action="AddVideoComment" role="form" method="post">
         <div class="form-group">
             <label Name="CommentText" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("New comments:", PageNames.Videos, Model.LanguageId)</label>
             <div class="col-md-10">
@@ -279,7 +279,7 @@
     </div>
     <div id="editSection" style="display: none; padding: 15px;">
         <div>@await LocaleManager.GetTranslation("Edit user access, location, or date and time for this video", PageNames.Videos, Model.LanguageId)</div><br />
-        <form asp-controller="AddItem" asp-action="EditVideo" role="form">
+        <form asp-controller="Videos" asp-action="EditVideo" role="form">
             <div class="form-group">
                 <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Videos, Model.LanguageId)</label>
                 <div class="col-lg-10 col-md-10 col-sm-10">
@@ -400,7 +400,7 @@
                 </div>
             </div>
         </form>
-        <form asp-controller="AddItem" asp-action="DeleteVideo" role="form" method="get">
+        <form asp-controller="Videos" asp-action="DeleteVideo" role="form" method="get">
             <div class="form-group">
                 <label class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Remove this video:", PageNames.Videos, Model.LanguageId)</label>
                 <div class="col-lg-9">

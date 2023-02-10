@@ -44,7 +44,7 @@ else
 @if (Model.IsAdmin)
 {
     <div class="btn-group" style="float: right;">
-        <a asp-controller="AddItem" asp-action="AddLocation" class="btn btn-success btn-round leavePage">
+        <a asp-controller="Locations" asp-action="AddLocation" class="btn btn-success btn-round leavePage">
             <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add location", PageNames.Locations, Model.LanguageId)
         </a>
     </div>
@@ -164,10 +164,10 @@ else
                     {
                         <div style="float: right;">
 
-                            <a asp-controller="AddItem" asp-action="EditLocation" asp-route-itemId="@locationModel.LocationId" class="btn btn-info btn-sm leavePage">
+                            <a asp-controller="Locations" asp-action="EditLocation" asp-route-itemId="@locationModel.LocationId" class="btn btn-info btn-sm leavePage">
                                 <i class="fas fa-pencil-alt"></i>
                             </a>
-                            <a asp-controller="AddItem" asp-action="DeleteLocation" asp-route-itemId="@locationModel.LocationId" class="btn btn-danger btn-sm leavePage">
+                            <a asp-controller="Locations" asp-action="DeleteLocation" asp-route-itemId="@locationModel.LocationId" class="btn btn-danger btn-sm leavePage">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
                         </div>

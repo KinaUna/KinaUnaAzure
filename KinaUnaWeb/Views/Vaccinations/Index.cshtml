@@ -15,7 +15,7 @@ else
     if (Model.IsAdmin)
     {
         <div class="btn-group" style="float: right;">
-            <a asp-controller="AddItem" asp-action="AddVaccination" class="btn btn-success btn-round leavePage">
+            <a asp-controller="Vaccinations" asp-action="AddVaccination" class="btn btn-success btn-round leavePage">
                 <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add vaccination", PageNames.Vaccinations, Model.LanguageId)
             </a>
         </div>
@@ -47,10 +47,10 @@ else
                         {
                             <td style="min-width: 135px;">
                                 <div>
-                                    <a asp-controller="AddItem" asp-action="EditVaccination" asp-route-itemId="@vaccinationViewModel.VaccinationId" class="btn btn-info btn-round btn-sm leavePage">
+                                    <a asp-controller="Vaccinations" asp-action="EditVaccination" asp-route-itemId="@vaccinationViewModel.VaccinationId" class="btn btn-info btn-round btn-sm leavePage">
                                         <i class="fas fa-pencil-alt"></i>
                                     </a>
-                                    <a asp-controller="AddItem" asp-action="DeleteVaccination" asp-route-itemId="@vaccinationViewModel.VaccinationId" class="btn btn-danger btn-round btn-sm leavePage">
+                                    <a asp-controller="Vaccinations" asp-action="DeleteVaccination" asp-route-itemId="@vaccinationViewModel.VaccinationId" class="btn btn-danger btn-round btn-sm leavePage">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </div>

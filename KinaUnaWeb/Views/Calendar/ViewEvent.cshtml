@@ -27,10 +27,10 @@
             @if (Model.IsAdmin)
             {
                 <div style="margin: 15px;">
-                    <a asp-controller="AddItem" asp-action="EditEvent" asp-route-itemId="@Model.EventId" class="btn btn-info leavePage">
+                    <a asp-controller="Calendar" asp-action="EditEvent" asp-route-itemId="@Model.EventId" class="btn btn-info leavePage">
                         <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                     </a>
-                    <a asp-controller="AddItem" asp-action="DeleteEvent" asp-route-itemId="@Model.EventId" class="btn btn-danger leavePage">
+                    <a asp-controller="Calendar" asp-action="DeleteEvent" asp-route-itemId="@Model.EventId" class="btn btn-danger leavePage">
                         <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
                     </a>
                 </div>

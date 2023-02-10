@@ -3,13 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models.FamilyViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -18,17 +16,36 @@ namespace KinaUnaWeb.Controllers
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
-        private readonly WebDbContext _context;
+        private readonly ICalendarsHttpClient _calendarsHttpClient;
+        private readonly IWordsHttpClient _wordsHttpClient;
+        private readonly ISkillsHttpClient _skillsHttpClient;
+        private readonly IFriendsHttpClient _friendsHttpClient;
+        private readonly IMeasurementsHttpClient _measurementsHttpClient;
+        private readonly ISleepHttpClient _sleepHttpClient;
+        private readonly INotesHttpClient _notesClient;
+        private readonly IContactsHttpClient _contactsHttpClient;
+        private readonly IVaccinationsHttpClient _vaccinationsHttpClient;
         private readonly ImageStore _imageStore;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
-
-        public ProgenyController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, WebDbContext context, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient)
+        private readonly ITimelineHttpClient _timelineHttpClient;
+        public ProgenyController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, ITimelineHttpClient timelineHttpClient,
+            ICalendarsHttpClient calendarsHttpClient, IWordsHttpClient wordsHttpClient, ISkillsHttpClient skillsHttpClient, IFriendsHttpClient friendsHttpClient, IMeasurementsHttpClient measurementsHttpClient,
+            ISleepHttpClient sleepHttpClient, INotesHttpClient notesClient, IContactsHttpClient contactsHttpClient, IVaccinationsHttpClient vaccinationsHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
-            _context = context; // Todo: Replace _context with httpClient
             _imageStore = imageStore;
             _userInfosHttpClient = userInfosHttpClient;
+            _timelineHttpClient = timelineHttpClient;
+            _calendarsHttpClient = calendarsHttpClient;
+            _wordsHttpClient = wordsHttpClient;
+            _skillsHttpClient = skillsHttpClient;
+            _friendsHttpClient = friendsHttpClient;
+            _measurementsHttpClient = measurementsHttpClient;
+            _sleepHttpClient = sleepHttpClient;
+            _notesClient = notesClient;
+            _contactsHttpClient = contactsHttpClient;
+            _vaccinationsHttpClient = vaccinationsHttpClient;
         }
         public IActionResult Index()
         {
@@ -128,7 +145,7 @@ namespace KinaUnaWeb.Controllers
             if (model.File != null && model.File.Name != string.Empty)
             {
                 string oldPictureLink = prog.PictureLink;
-                using (Stream stream = model.File.OpenReadStream())
+                await using (Stream stream = model.File.OpenReadStream())
                 {
                     prog.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Progeny);
                 }
@@ -170,18 +187,16 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            // Todo: Move operations to api.
             List<Picture> photoList = await _mediaHttpClient.GetPictureList(model.Id, (int)AccessLevel.Private, userinfo.Timezone);
             if (photoList.Any())
             {
                 foreach (Picture picture in photoList)
                 {
-                    TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                        t.ItemId == picture.PictureId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Photo);
+
+                    TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(picture.PictureId.ToString(), (int)KinaUnaTypes.TimeLineType.Photo);
                     if (tItem != null)
                     {
-                        _context.TimeLineDb.Remove(tItem);
-                        await _context.SaveChangesAsync();
+                        await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
                     }
 
                     await _mediaHttpClient.DeletePicture(picture.PictureId);
@@ -193,168 +208,151 @@ namespace KinaUnaWeb.Controllers
             {
                 foreach (Video video in videoList)
                 {
-                    TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                        t.ItemId == video.VideoId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Video);
+                    TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(video.VideoId.ToString(), (int)KinaUnaTypes.TimeLineType.Video);
                     if (tItem != null)
                     {
-                        _context.TimeLineDb.Remove(tItem);
-                        await _context.SaveChangesAsync();
+                        await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
                     }
 
                     await _mediaHttpClient.DeleteVideo(video.VideoId);
                 }
             }
 
-            List<CalendarItem> eventsList = _context.CalendarDb.Where(e => e.ProgenyId == model.Id).ToList();
+            List<CalendarItem> eventsList = await _calendarsHttpClient.GetCalendarList(model.Id, 0);
             if (eventsList.Any())
             {
                 foreach (CalendarItem evt in eventsList)
                 {
-                    TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                        t.ItemId == evt.EventId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Calendar);
+                    TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(evt.EventId.ToString(), (int)KinaUnaTypes.TimeLineType.Calendar);
                     if (tItem != null)
                     {
-                        _context.TimeLineDb.Remove(tItem);
-                        await _context.SaveChangesAsync();
+                        await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
                     }
-                    _context.CalendarDb.Remove(evt);
-                    await _context.SaveChangesAsync();
+
+                    await _calendarsHttpClient.DeleteCalendarItem(evt.EventId);
                 }
             }
 
-            List<VocabularyItem> vocabList = _context.VocabularyDb.Where(v => v.ProgenyId == model.Id).ToList();
+            List<VocabularyItem> vocabList = await _wordsHttpClient.GetWordsList(model.Id, 0);
             if (vocabList.Any())
             {
                 foreach (VocabularyItem voc in vocabList)
                 {
-                    TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                        t.ItemId == voc.WordId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Vocabulary);
+                    TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(voc.WordId.ToString(), (int)KinaUnaTypes.TimeLineType.Vocabulary);
+
                     if (tItem != null)
                     {
-                        _context.TimeLineDb.Remove(tItem);
-                        await _context.SaveChangesAsync();
+                        await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
                     }
-                    _context.VocabularyDb.Remove(voc);
-                    await _context.SaveChangesAsync();
+
+                    await _wordsHttpClient.DeleteWord(voc.WordId);
                 }
             }
 
-            List<Skill> skillList = _context.SkillsDb.Where(s => s.ProgenyId == model.Id).ToList();
+            List<Skill> skillList = await _skillsHttpClient.GetSkillsList(model.Id, 0);
             if (skillList.Any())
             {
                 foreach (Skill skill in skillList)
                 {
-                    TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                        t.ItemId == skill.SkillId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Skill);
+                    TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(skill.SkillId.ToString(), (int)KinaUnaTypes.TimeLineType.Skill);
+
                     if (tItem != null)
                     {
-                        _context.TimeLineDb.Remove(tItem);
-                        await _context.SaveChangesAsync();
+                        await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
                     }
-                    _context.SkillsDb.Remove(skill);
-                    await _context.SaveChangesAsync();
+
+                    await _skillsHttpClient.DeleteSkill(skill.SkillId);
                 }
             }
 
-            List<Friend> friendsList = _context.FriendsDb.Where(f => f.ProgenyId == model.Id).ToList();
+            List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(model.Id, 0);
+
             if (friendsList.Any())
             {
                 foreach (Friend friend in friendsList)
                 {
-                    TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                        t.ItemId == friend.FriendId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Friend);
+                    TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(friend.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend);
                     if (tItem != null)
                     {
-                        _context.TimeLineDb.Remove(tItem);
-                        await _context.SaveChangesAsync();
+                        await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
                     }
 
                     if (!friend.PictureLink.ToLower().StartsWith("http"))
                     {
                         await _imageStore.DeleteImage(friend.PictureLink);
                     }
-                    _context.FriendsDb.Remove(friend);
-                    await _context.SaveChangesAsync();
+
+                    await _friendsHttpClient.DeleteFriend(friend.FriendId);
                 }
             }
 
-            List<Measurement> measurementsList =
-                _context.MeasurementsDb.Where(m => m.ProgenyId == model.Id).ToList();
+            List<Measurement> measurementsList = await _measurementsHttpClient.GetMeasurementsList(model.Id, 0);
+
             if (measurementsList.Any())
             {
                 foreach (Measurement measurement in measurementsList)
                 {
-                    TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                        t.ItemId == measurement.MeasurementId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Measurement);
+                    TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(measurement.MeasurementId.ToString(), (int)KinaUnaTypes.TimeLineType.Measurement);
+
                     if (tItem != null)
                     {
-                        _context.TimeLineDb.Remove(tItem);
-                        await _context.SaveChangesAsync();
+                        await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
                     }
 
-                    _context.MeasurementsDb.Remove(measurement);
-                    await _context.SaveChangesAsync();
+                    await _measurementsHttpClient.DeleteMeasurement(measurement.MeasurementId);
                 }
             }
 
-            List<Sleep> sleepList = _context.SleepDb.Where(s => s.ProgenyId == model.Id).ToList();
+            List<Sleep> sleepList = await _sleepHttpClient.GetSleepList(model.Id, 0);
+            
             if (sleepList.Any())
             {
                 foreach (Sleep sleep in sleepList)
                 {
-                    TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                        t.ItemId == sleep.SleepId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Sleep);
+                    TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(sleep.SleepId.ToString(), (int)KinaUnaTypes.TimeLineType.Sleep);
+
                     if (tItem != null)
                     {
-                        _context.TimeLineDb.Remove(tItem);
-                        await _context.SaveChangesAsync();
+                        await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
                     }
 
-                    _context.SleepDb.Remove(sleep);
-                    await _context.SaveChangesAsync();
+                    await _sleepHttpClient.DeleteSleepItem(sleep.SleepId);
                 }
             }
 
-            List<Note> notesList = _context.NotesDb.Where(n => n.ProgenyId == model.Id).ToList();
+            List<Note> notesList = await _notesClient.GetNotesList(model.Id, 0);
+
             if (notesList.Any())
             {
                 foreach (Note note in notesList)
                 {
-                    TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                        t.ItemId == note.NoteId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Note);
+                    TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(note.NoteId.ToString(), (int)KinaUnaTypes.TimeLineType.Note);
+
                     if (tItem != null)
                     {
-                        _context.TimeLineDb.Remove(tItem);
-                        await _context.SaveChangesAsync();
+                        await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
                     }
                     // Todo: Delete content added from notes
-                    _context.NotesDb.Remove(note);
-                    await _context.SaveChangesAsync();
+
+                    await _notesClient.DeleteNote(note.NoteId);
                 }
             }
 
-            List<Contact> contactsList = _context.ContactsDb.Where(c => c.ProgenyId == model.Id).ToList();
+            List<Contact> contactsList = await _contactsHttpClient.GetContactsList(model.Id, 0);
+            
             if (contactsList.Any())
             {
                 foreach (Contact contact in contactsList)
                 {
-                    TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                        t.ItemId == contact.ContactId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Contact);
+                    TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(contact.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
+
                     if (tItem != null)
                     {
-                        _context.TimeLineDb.Remove(tItem);
-                        await _context.SaveChangesAsync();
+                        await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
                     }
 
-                    _context.ContactsDb.Remove(contact);
-                    if (contact.AddressIdNumber != null)
-                    {
-                        Address address = await _context.AddressDb.SingleAsync(a => a.AddressId == contact.AddressIdNumber);
-                        _context.AddressDb.Remove(address);
-                    }
-
-                    await _context.SaveChangesAsync();
-
+                    await _contactsHttpClient.DeleteContact(contact.ContactId);
+                    
                     if (!contact.PictureLink.ToLower().StartsWith("http"))
                     {
                         await _imageStore.DeleteImage(contact.PictureLink);
@@ -362,22 +360,20 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<Vaccination> vaccinationsList =
-                _context.VaccinationsDb.Where(v => v.ProgenyId == model.Id).ToList();
+            List<Vaccination> vaccinationsList = await _vaccinationsHttpClient.GetVaccinationsList(model.Id, 0);
+
             if (vaccinationsList.Any())
             {
                 foreach (Vaccination vaccination in vaccinationsList)
                 {
-                    TimeLineItem tItem = await _context.TimeLineDb.SingleOrDefaultAsync(t =>
-                        t.ItemId == vaccination.VaccinationId.ToString() && t.ItemType == (int)KinaUnaTypes.TimeLineType.Vaccination);
+                    TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(vaccination.VaccinationId.ToString(), (int)KinaUnaTypes.TimeLineType.Vaccination);
+
                     if (tItem != null)
                     {
-                        _context.TimeLineDb.Remove(tItem);
-                        await _context.SaveChangesAsync();
+                        await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
                     }
 
-                    _context.VaccinationsDb.Remove(vaccination);
-                    await _context.SaveChangesAsync();
+                    await _vaccinationsHttpClient.DeleteVaccination(vaccination.VaccinationId);
                 }
             }
 

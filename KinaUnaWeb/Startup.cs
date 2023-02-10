@@ -108,6 +108,7 @@ namespace KinaUnaWeb
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IPushMessageSender, PushMessageSender>();
+            services.AddTransient<IWebNotificationsService, WebNotificationsService>();
             services.AddSingleton<ApiTokenInMemoryClient>();
             services.AddHttpClient<IUserInfosHttpClient, UserInfosHttpClient>();
             services.AddHttpClient<ITimelineHttpClient, TimelineHttpClient>();

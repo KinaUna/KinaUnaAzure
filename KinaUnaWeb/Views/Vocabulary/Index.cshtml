@@ -26,7 +26,7 @@ else
         @if (Model.IsAdmin)
         {
             <div class="btn-group" style="float: right;">
-                <a asp-controller="AddItem" asp-action="AddVocabulary" class="btn btn-success btn-round leavePage">
+                <a asp-controller="Vocabulary" asp-action="AddVocabulary" class="btn btn-success btn-round leavePage">
                     <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add word", PageNames.Vocabulary, Model.LanguageId)
                 </a>
             </div>
@@ -68,10 +68,10 @@ else
                         {
                             <td style="min-width: 135px">
                                 <div>
-                                    <a asp-controller="AddItem" asp-action="EditVocabulary" asp-route-itemId="@wordItem.WordId" class="btn btn-info btn-round btn-sm leavePage">
+                                    <a asp-controller="Vocabulary" asp-action="EditVocabulary" asp-route-itemId="@wordItem.WordId" class="btn btn-info btn-round btn-sm leavePage">
                                         <i class="fas fa-pencil-alt"></i>
                                     </a>
-                                    <a asp-controller="AddItem" asp-action="DeleteVocabulary" asp-route-itemId="@wordItem.WordId" class="btn btn-danger btn-round btn-sm leavePage">
+                                    <a asp-controller="Vocabulary" asp-action="DeleteVocabulary" asp-route-itemId="@wordItem.WordId" class="btn btn-danger btn-round btn-sm leavePage">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </div>
