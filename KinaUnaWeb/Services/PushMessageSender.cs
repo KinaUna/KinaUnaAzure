@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using WebPush;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace KinaUnaWeb.Services
 {
@@ -73,6 +74,36 @@ namespace KinaUnaWeb.Services
             PushDevices device = await _context.PushDevices.SingleOrDefaultAsync(m => m.Id == id);
 
             return device;
+        }
+
+        public async Task<List<PushDevices>> GetAllPushDevices()
+        {
+            var pushDevicesList = await _context.PushDevices.ToListAsync();
+
+            return pushDevicesList;
+        }
+
+        public async Task<PushDevices> AddPushDevice(PushDevices device)
+        {
+            _context.PushDevices.Add(device);
+            await _context.SaveChangesAsync();
+
+            return device;
+
+        }
+
+        public async Task<PushDevices> GetDevice(PushDevices device)
+        {
+            PushDevices result = await _context.PushDevices.SingleOrDefaultAsync(p =>
+                p.Name == device.Name && p.PushP256DH == device.PushP256DH && p.PushAuth == device.PushAuth && p.PushEndpoint == device.PushEndpoint);
+            
+            return result;
+        }
+
+        public async Task RemoveDevice(PushDevices device)
+        {
+            _context.PushDevices.Remove(device);
+            await _context.SaveChangesAsync();
         }
     }
 }
