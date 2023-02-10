@@ -116,7 +116,7 @@ else
             @if (Model.IsAdmin)
             {
                 <div class="btn-group" style="float: right;">
-                    <a asp-controller="AddItem" asp-action="AddFriend" class="btn btn-info btn-round leavePage">
+                    <a asp-controller="Friends" asp-action="AddFriend" class="btn btn-info btn-round leavePage">
                         <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add friend", PageNames.Friends, Model.LanguageId)
                     </a>
                 </div>
