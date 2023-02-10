@@ -140,7 +140,7 @@
 @if (Model.IsAdmin)
 {
     <div class="btn-group" style="float: right;">
-        <a asp-controller="AddItem" asp-action="AddSleep" class="btn btn-success btn-round leavePage">
+        <a asp-controller="Sleep" asp-action="AddSleep" class="btn btn-success btn-round leavePage">
             <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add sleep", PageNames.Sleep, Model.LanguageId)
         </a>
     </div>
