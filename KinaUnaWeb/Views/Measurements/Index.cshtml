@@ -26,7 +26,7 @@ else
     if (Model.IsAdmin)
     {
         <div class="btn-group" style="float: right;">
-            <a asp-controller="AddItem" asp-action="AddMeasurement" class="btn btn-success btn-round leavePage">
+            <a asp-controller="Measurements" asp-action="AddMeasurement" class="btn btn-success btn-round leavePage">
                 <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add measurement", PageNames.Measurements, Model.LanguageId)
             </a>
         </div>
@@ -62,10 +62,10 @@ else
                         {
                             <td>
                                 <div>
-                                    <a asp-controller="AddItem" asp-action="EditMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-info btn-round btn-sm leavePage">
+                                    <a asp-controller="Measurements" asp-action="EditMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-info btn-round btn-sm leavePage">
                                         <i class="fas fa-pencil-alt"></i>
                                     </a>
-                                    <a asp-controller="AddItem" asp-action="DeleteMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-danger btn-round btn-sm leavePage">
+                                    <a asp-controller="Measurements" asp-action="DeleteMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-danger btn-round btn-sm leavePage">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </div>

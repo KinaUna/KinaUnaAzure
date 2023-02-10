@@ -24,7 +24,6 @@ namespace KinaUnaWeb.Controllers
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IVaccinationsHttpClient _vaccinationsHttpClient;
-        private readonly IMeasurementsHttpClient _measurementsHttpClient;
         private readonly ILocationsHttpClient _locationsHttpClient;
         private readonly IContactsHttpClient _contactsHttpClient;
         private readonly ISleepHttpClient _sleepHttpClient;
@@ -32,11 +31,11 @@ namespace KinaUnaWeb.Controllers
         private readonly ImageStore _imageStore;
         private readonly WebDbContext _context;
         private readonly IPushMessageSender _pushMessageSender;
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
+        
 
         public AddItemController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore, WebDbContext context, IPushMessageSender pushMessageSender,
             IUserInfosHttpClient userInfosHttpClient, IVaccinationsHttpClient vaccinationsHttpClient,
-            IMeasurementsHttpClient measurementsHttpClient, ILocationsHttpClient locationsHttpClient, IContactsHttpClient contactsHttpClient,
+            ILocationsHttpClient locationsHttpClient, IContactsHttpClient contactsHttpClient,
             ISleepHttpClient sleepHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
@@ -45,7 +44,6 @@ namespace KinaUnaWeb.Controllers
             _pushMessageSender = pushMessageSender;
             _userInfosHttpClient = userInfosHttpClient;
             _vaccinationsHttpClient = vaccinationsHttpClient;
-            _measurementsHttpClient = measurementsHttpClient;
             _locationsHttpClient = locationsHttpClient;
             _contactsHttpClient = contactsHttpClient;
             _sleepHttpClient = sleepHttpClient;
@@ -58,249 +56,6 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
         
-        
-
-        
-
-        [HttpGet]
-        public async Task<IActionResult> AddMeasurement()
-        {
-            MeasurementViewModel model = new MeasurementViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-            
-            if (model.CurrentUser == null)
-            {
-                return RedirectToAction("Index");
-            }
-            
-            if (User.Identity != null && User.Identity.IsAuthenticated && userEmail != null && model.CurrentUser.UserId != null)
-            {
-                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
-                if (accessList.Any())
-                {
-                    foreach (Progeny prog in accessList)
-                    {
-                        SelectListItem selItem = new SelectListItem()
-                        {
-                            Text = accessList.Single(p => p.Id == prog.Id).NickName,
-                            Value = prog.Id.ToString()
-                        };
-                        if (prog.Id == model.CurrentUser.ViewChild)
-                        {
-                            selItem.Selected = true;
-                        }
-
-                        model.ProgenyList.Add(selItem);
-                    }
-                }
-            }
-
-            if (model.LanguageId == 2)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDe;
-            }
-
-            if (model.LanguageId == 3)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDa;
-            }
-
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddMeasurement(MeasurementViewModel model)
-        {
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
-            {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
-            }
-            Measurement measurementItem = new Measurement();
-            measurementItem.ProgenyId = model.ProgenyId;
-            measurementItem.CreatedDate = DateTime.UtcNow;
-            measurementItem.Date = model.Date;
-            measurementItem.Height = model.Height;
-            measurementItem.Weight = model.Weight;
-            measurementItem.Circumference = model.Circumference;
-            measurementItem.HairColor = model.HairColor;
-            measurementItem.EyeColor = model.EyeColor;
-            measurementItem.AccessLevel = model.AccessLevel;
-            measurementItem.Author = model.CurrentUser.UserId;
-
-            await _measurementsHttpClient.AddMeasurement(measurementItem);
-            
-            string authorName = "";
-            if (!string.IsNullOrEmpty(model.CurrentUser.FirstName))
-            {
-                authorName = model.CurrentUser.FirstName;
-            }
-            if (!string.IsNullOrEmpty(model.CurrentUser.MiddleName))
-            {
-                authorName = authorName + " " + model.CurrentUser.MiddleName;
-            }
-            if (!string.IsNullOrEmpty(model.CurrentUser.LastName))
-            {
-                authorName = authorName + " " + model.CurrentUser.LastName;
-            }
-
-            authorName = authorName.Trim();
-            if (string.IsNullOrEmpty(authorName))
-            {
-                authorName = model.CurrentUser.UserName;
-            }
-            List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(model.ProgenyId);
-            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            foreach (UserAccess ua in usersToNotif)
-            {
-                if (ua.AccessLevel <= measurementItem.AccessLevel)
-                {
-                    UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(ua.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
-                    {
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = authorName;
-                        notification.Message = "Height: " + measurementItem.Height + "\r\nWeight: " + measurementItem.Weight;
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = model.CurrentUser.ProfilePicture;
-                        notification.Title = "A new measurement was added for " + progeny.NickName;
-                        notification.Link = "/Measurements?childId=" + progeny.Id;
-                        notification.Type = "Notification";
-                        await _context.WebNotificationsDb.AddAsync(notification);
-                        await _context.SaveChangesAsync();
-
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunameasurement" + progeny.Id);
-                    }
-                }
-            }
-            return RedirectToAction("Index", "Measurements");
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> EditMeasurement(int itemId)
-        {
-            MeasurementViewModel model = new MeasurementViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
-            Measurement measurement = await _measurementsHttpClient.GetMeasurement(itemId);
-            Progeny prog = await _progenyHttpClient.GetProgeny(measurement.ProgenyId);
-            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
-            {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
-            }
-
-            model.ProgenyId = measurement.ProgenyId;
-            model.MeasurementId = measurement.MeasurementId;
-            model.AccessLevel = measurement.AccessLevel;
-            model.Author = measurement.Author;
-            model.CreatedDate = measurement.CreatedDate;
-            model.Date = measurement.Date;
-            model.Height = measurement.Height;
-            model.Weight = measurement.Weight;
-            model.Circumference = measurement.Circumference;
-            model.HairColor = measurement.HairColor;
-            model.EyeColor = measurement.EyeColor;
-            model.AccessLevelListEn[model.AccessLevel].Selected = true;
-            model.AccessLevelListDa[model.AccessLevel].Selected = true;
-            model.AccessLevelListDe[model.AccessLevel].Selected = true;
-
-            if (model.LanguageId == 2)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDe;
-            }
-
-            if (model.LanguageId == 3)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDa;
-            }
-
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditMeasurement(MeasurementViewModel model)
-        {
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.IsInAdminList(userinfo.UserEmail))
-            {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
-            }
-
-            Measurement editedMeasurement = new Measurement();
-            editedMeasurement.ProgenyId = model.ProgenyId;
-            editedMeasurement.MeasurementId = model.MeasurementId;
-            editedMeasurement.AccessLevel = model.AccessLevel;
-            editedMeasurement.Author = model.Author;
-            editedMeasurement.CreatedDate = model.CreatedDate;
-            editedMeasurement.Date = model.Date;
-            editedMeasurement.Height = model.Height;
-            editedMeasurement.Weight = model.Weight;
-            editedMeasurement.Circumference = model.Circumference;
-            editedMeasurement.HairColor = model.HairColor;
-            editedMeasurement.EyeColor = model.EyeColor;
-
-            await _measurementsHttpClient.UpdateMeasurement(editedMeasurement);
-
-            return RedirectToAction("Index", "Measurements");
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> DeleteMeasurement(int itemId)
-        {
-            MeasurementViewModel model = new MeasurementViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
-            model.Measurement = await _measurementsHttpClient.GetMeasurement(itemId);
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.Measurement.ProgenyId);
-            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
-            {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
-            }
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteMeasurement(MeasurementViewModel model)
-        {
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
-            Measurement measurement = await _measurementsHttpClient.GetMeasurement(model.Measurement.MeasurementId);
-            Progeny prog = await _progenyHttpClient.GetProgeny(measurement.ProgenyId);
-            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
-            {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
-            }
-
-            await _measurementsHttpClient.DeleteMeasurement(measurement.MeasurementId);
-            
-            return RedirectToAction("Index", "Measurements");
-        }
-
         [HttpGet]
         public async Task<IActionResult> AddContact()
         {
