@@ -11,7 +11,7 @@
     <div style="float: left; margin-right: 25px;">
         <div style="margin-top: 2px; margin-bottom: 3px;">
             <div class="btn-group">
-                <a asp-controller="AddItem" asp-action="AddNote" class="btn btn-primary leavePage">
+                <a asp-controller="Notes" asp-action="AddNote" class="btn btn-primary leavePage">
                     <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Note", PageNames.AddItem, Model.LanguageId)
                 </a>
             </div>

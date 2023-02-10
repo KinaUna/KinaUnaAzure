@@ -16,7 +16,7 @@ else
     if (Model.IsAdmin)
     {
         <div class="btn-group" style="float: right;">
-            <a asp-controller="AddItem" asp-action="AddNote" class="btn btn-success btn-round leavePage">
+            <a asp-controller="Notes" asp-action="AddNote" class="btn btn-success btn-round leavePage">
                 <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add note", PageNames.Notes, Model.LanguageId)
             </a>
         </div>
@@ -31,10 +31,10 @@ else
                     {
                         <div style="float: right;">
 
-                            <a asp-controller="AddItem" asp-action="EditNote" asp-route-itemId="@noteViewModel.NoteId" class="btn btn-info btn-sm leavePage">
+                            <a asp-controller="Notes" asp-action="EditNote" asp-route-itemId="@noteViewModel.NoteId" class="btn btn-info btn-sm leavePage">
                                 <i class="fas fa-pencil-alt"></i>
                             </a>
-                            <a asp-controller="AddItem" asp-action="DeleteNote" asp-route-itemId="@noteViewModel.NoteId" class="btn btn-danger btn-sm leavePage">
+                            <a asp-controller="Notes" asp-action="DeleteNote" asp-route-itemId="@noteViewModel.NoteId" class="btn btn-danger btn-sm leavePage">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
                         </div>
