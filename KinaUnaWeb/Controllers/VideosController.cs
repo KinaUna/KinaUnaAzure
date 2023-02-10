@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Contexts;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -22,9 +23,15 @@ namespace KinaUnaWeb.Controllers
         private readonly ILocationsHttpClient _locationsHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
+        private readonly WebDbContext _context;
+        private readonly IPushMessageSender _pushMessageSender;
+        private readonly ITimelineHttpClient _timelineHttpClient;
+        private readonly IEmailSender _emailSender;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
 
-        public VideosController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient, ILocationsHttpClient locationsHttpClient)
+        public VideosController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient,
+            IUserAccessHttpClient userAccessHttpClient, ILocationsHttpClient locationsHttpClient, WebDbContext context, IPushMessageSender pushMessageSender,
+            ITimelineHttpClient timelineHttpClient, IEmailSender emailSender)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
@@ -32,6 +39,10 @@ namespace KinaUnaWeb.Controllers
             _userInfosHttpClient = userInfosHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
             _locationsHttpClient = locationsHttpClient;
+            _context = context;
+            _pushMessageSender = pushMessageSender;
+            _timelineHttpClient = timelineHttpClient;
+            _emailSender = emailSender;
         }
 
         [AllowAnonymous]
@@ -261,6 +272,474 @@ namespace KinaUnaWeb.Controllers
         public IActionResult Youtube(string link)
         {
             return PartialView("Youtube", link);
+        }
+
+        public async Task<IActionResult> AddVideo()
+        {
+            UploadVideoViewModel model = new UploadVideoViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+            if (model.CurrentUser == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            if (User.Identity != null && User.Identity.IsAuthenticated && userEmail != null && model.CurrentUser.UserId != null)
+            {
+                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                if (accessList.Any())
+                {
+                    foreach (Progeny prog in accessList)
+                    {
+                        SelectListItem selItem = new SelectListItem()
+                        { Text = accessList.Single(p => p.Id == prog.Id).NickName, Value = prog.Id.ToString() };
+                        if (prog.Id == model.CurrentUser.ViewChild)
+                        {
+                            selItem.Selected = true;
+                        }
+                        model.ProgenyList.Add(selItem);
+                    }
+                }
+                model.Owners = userEmail;
+                model.Author = model.CurrentUser.UserId;
+                model.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            if (model.LanguageId == 2)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDe;
+            }
+
+            if (model.LanguageId == 3)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDa;
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadVideo(UploadVideoViewModel model)
+        {
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            bool isAdmin = false;
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            if (progeny != null)
+            {
+                if (progeny.IsInAdminList(model.CurrentUser.UserEmail))
+                {
+                    isAdmin = true;
+                }
+            }
+            if (!isAdmin)
+            {
+                return RedirectToRoute(new
+                {
+                    controller = "Home",
+                    action = "Index"
+                });
+            }
+
+            Video video = new Video();
+            video.ProgenyId = model.ProgenyId;
+            video.AccessLevel = model.AccessLevel;
+            video.Author = model.CurrentUser.UserId;
+            video.Owners = model.Owners;
+            video.ThumbLink = Constants.WebAppUrl + "/videodb/moviethumb.png";
+            video.VideoTime = DateTime.UtcNow;
+            if (model.VideoTime != null)
+            {
+                video.VideoTime = TimeZoneInfo.ConvertTimeToUtc(model.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            video.VideoType = 2; // Todo: Replace with Enum or constant
+            int.TryParse(model.DurationHours, out int durHours);
+            int.TryParse(model.DurationMinutes, out int durMins);
+            int.TryParse(model.DurationSeconds, out int durSecs);
+            if (durHours + durMins + durSecs != 0)
+            {
+                video.Duration = new TimeSpan(durHours, durMins, durSecs);
+            }
+            if (model.FileLink.Contains("<iframe"))
+            {
+                string[] vLink1 = model.FileLink.Split('"');
+                foreach (string str in vLink1)
+                {
+                    if (str.Contains("://"))
+                    {
+                        video.VideoLink = str;
+                    }
+                }
+            }
+
+            if (model.FileLink.Contains("watch?v"))
+            {
+                string str = model.FileLink.Split('=').Last();
+                video.VideoLink = "https://www.youtube.com/embed/" + str;
+            }
+
+            if (model.FileLink.StartsWith("https://youtu.be"))
+            {
+                string str = model.FileLink.Split('/').Last();
+                video.VideoLink = "https://www.youtube.com/embed/" + str;
+            }
+
+            video.ThumbLink = "https://i.ytimg.com/vi/" + video.VideoLink.Split("/").Last() + "/hqdefault.jpg";
+
+            Video newVideo = await _mediaHttpClient.AddVideo(video);
+
+            TimeLineItem tItem = new TimeLineItem();
+            tItem.ProgenyId = newVideo.ProgenyId;
+            tItem.AccessLevel = newVideo.AccessLevel;
+            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
+            tItem.ItemId = newVideo.VideoId.ToString();
+            tItem.CreatedBy = model.CurrentUser.UserId;
+            tItem.CreatedTime = DateTime.UtcNow;
+            if (newVideo.VideoTime.HasValue)
+            {
+                tItem.ProgenyTime = newVideo.VideoTime.Value;
+            }
+            else
+            {
+                tItem.ProgenyTime = DateTime.UtcNow;
+            }
+
+            await _timelineHttpClient.AddTimeLineItem(tItem);
+
+            string authorName = "";
+            if (!string.IsNullOrEmpty(model.CurrentUser.FirstName))
+            {
+                authorName = model.CurrentUser.FirstName;
+            }
+            if (!string.IsNullOrEmpty(model.CurrentUser.MiddleName))
+            {
+                authorName = authorName + " " + model.CurrentUser.MiddleName;
+            }
+            if (!string.IsNullOrEmpty(model.CurrentUser.LastName))
+            {
+                authorName = authorName + " " + model.CurrentUser.LastName;
+            }
+
+            authorName = authorName.Trim();
+            if (string.IsNullOrEmpty(authorName))
+            {
+                authorName = model.CurrentUser.UserName;
+            }
+            List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(model.ProgenyId);
+            foreach (UserAccess userAccess in usersToNotif)
+            {
+                if (userAccess.AccessLevel <= newVideo.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        string vidTimeString;
+                        if (newVideo.VideoTime.HasValue)
+                        {
+                            DateTime vidTime = TimeZoneInfo.ConvertTimeFromUtc(newVideo.VideoTime.Value,
+                                TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                            vidTimeString = "Video recorded: " + vidTime.ToString("dd-MMM-yyyy HH:mm");
+                        }
+                        else
+                        {
+                            vidTimeString = "Video recorded: Unknown";
+                        }
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = authorName;
+                        notification.Message = vidTimeString + "\r\n";
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = model.CurrentUser.ProfilePicture;
+                        notification.Title = "A video was added for " + progeny.NickName;
+                        notification.Link = "/Videos/Video/" + newVideo.VideoId + "?childId=" + model.ProgenyId;
+                        notification.Type = "Notification";
+                        await _context.WebNotificationsDb.AddAsync(notification);
+                        await _context.SaveChangesAsync();
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavideo" + progeny.Id);
+                    }
+                }
+            }
+
+            if (model.LanguageId == 2)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDe;
+            }
+
+            if (model.LanguageId == 3)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDa;
+            }
+
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditVideo(VideoViewModel model)
+        {
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            model.CurrentUser = new UserInfo();
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                string userEmail = User.GetEmail();
+                model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+                Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+                if (progeny != null)
+                {
+                    if (progeny.IsInAdminList(model.CurrentUser.UserEmail))
+                    {
+                        model.IsAdmin = true;
+                    }
+                }
+            }
+
+            if (!model.IsAdmin)
+            {
+                return RedirectToRoute(new
+                {
+                    controller = "Videos",
+                    action = "Video",
+                    id = model.VideoId,
+                    childId = model.ProgenyId,
+                    sortBy = model.SortBy
+                });
+            }
+
+            Video newVideo = await _mediaHttpClient.GetVideo(model.VideoId, model.CurrentUser.Timezone);
+
+            newVideo.AccessLevel = model.AccessLevel;
+            newVideo.Author = model.Author;
+            if (model.VideoTime != null)
+            {
+                newVideo.VideoTime = TimeZoneInfo.ConvertTimeToUtc(model.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            int.TryParse(model.DurationHours, out int durHours);
+            int.TryParse(model.DurationMinutes, out int durMins);
+            int.TryParse(model.DurationSeconds, out int durSecs);
+            if (durHours + durMins + durSecs != 0)
+            {
+                newVideo.Duration = new TimeSpan(durHours, durMins, durSecs);
+            }
+
+            if (!string.IsNullOrEmpty(model.Tags))
+            {
+                newVideo.Tags = model.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
+            }
+
+            if (!string.IsNullOrEmpty(model.Location))
+            {
+                newVideo.Location = model.Location;
+            }
+            if (!string.IsNullOrEmpty(model.Longtitude))
+            {
+                newVideo.Longtitude = model.Longtitude;
+            }
+            if (!string.IsNullOrEmpty(model.Latitude))
+            {
+                newVideo.Latitude = model.Latitude;
+            }
+            if (!string.IsNullOrEmpty(model.Altitude))
+            {
+                newVideo.Altitude = model.Altitude;
+            }
+
+            await _mediaHttpClient.UpdateVideo(newVideo);
+
+            TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(newVideo.VideoId.ToString(),
+                (int)KinaUnaTypes.TimeLineType.Video);
+            if (tItem != null)
+            {
+                if (newVideo.VideoTime.HasValue)
+                {
+                    tItem.ProgenyTime = newVideo.VideoTime.Value;
+                }
+                else
+                {
+                    tItem.ProgenyTime = DateTime.UtcNow;
+                }
+                tItem.AccessLevel = newVideo.AccessLevel;
+                await _timelineHttpClient.UpdateTimeLineItem(tItem);
+            }
+
+            return RedirectToRoute(new { controller = "Videos", action = "Video", id = model.VideoId, childId = model.ProgenyId, tagFilter = model.TagFilter, sortBy = model.SortBy });
+        }
+
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> DeleteVideo(int videoId)
+        {
+            VideoViewModel model = new VideoViewModel();
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+            Video video = await _mediaHttpClient.GetVideo(videoId, model.CurrentUser.Timezone);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(video.ProgenyId);
+
+            if (progeny != null)
+            {
+                if (progeny.IsInAdminList(model.CurrentUser.UserEmail))
+                {
+                    model.IsAdmin = true;
+                }
+            }
+
+            ViewBag.NotAuthorized = "You do not have sufficient access rights to modify this picture.";
+            model.ProgenyId = video.ProgenyId;
+            model.VideoId = videoId;
+            model.ThumbLink = video.ThumbLink;
+            model.VideoTime = video.VideoTime;
+            if (video.VideoTime.HasValue)
+            {
+                video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(video.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteVideo(VideoViewModel model)
+        {
+            model.LanguageId = Request.GetLanguageIdFromCookie();
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+            Video video = await _mediaHttpClient.GetVideo(model.VideoId, model.CurrentUser.Timezone);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(video.ProgenyId);
+            bool videoDeleted = false;
+            if (progeny != null)
+            {
+                if (progeny.IsInAdminList(model.CurrentUser.UserEmail))
+                {
+                    videoDeleted = await _mediaHttpClient.DeleteVideo(model.VideoId);
+
+                }
+            }
+
+            if (videoDeleted)
+            {
+                TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(video.VideoId.ToString(),
+                    (int)KinaUnaTypes.TimeLineType.Video);
+                if (tItem != null)
+                {
+                    await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
+                }
+            }
+            // Todo: else, error, show info
+
+            // Todo: show confirmation info, instead of gallery page.
+            return RedirectToAction("Index", "Videos");
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddVideoComment(CommentViewModel model)
+        {
+            string userEmail = User.GetEmail();
+            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            Comment cmnt = new Comment();
+
+            cmnt.CommentThreadNumber = model.CommentThreadNumber;
+            cmnt.CommentText = model.CommentText;
+            cmnt.Author = model.CurrentUser.UserId;
+            cmnt.DisplayName = model.CurrentUser.UserName + "(" + model.CurrentUser.FirstName + " " + model.CurrentUser.MiddleName + " " + model.CurrentUser.LastName + ")";
+            cmnt.Created = DateTime.UtcNow;
+            cmnt.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
+            cmnt.ItemId = model.ItemId.ToString();
+            cmnt.Progeny = progeny;
+            bool commentAdded = await _mediaHttpClient.AddVideoComment(cmnt);
+
+            if (commentAdded)
+            {
+                if (progeny != null)
+                {
+                    string imgLink = Constants.WebAppUrl + "/Videos/Video/" + model.ItemId + "?childId=" + model.ProgenyId;
+                    List<string> emails = progeny.Admins.Split(",").ToList();
+                    foreach (string toMail in emails)
+                    {
+                        await _emailSender.SendEmailAsync(toMail, "New Comment on " + progeny.NickName + "'s Picture",
+                           "A comment was added to " + progeny.NickName + "'s picture by " + cmnt.DisplayName + ":<br/><br/>" + cmnt.CommentText + "<br/><br/>Picture Link: <a href=\"" + imgLink + "\">" + imgLink + "</a>");
+                    }
+                    List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(model.ProgenyId);
+                    Video vid = await _mediaHttpClient.GetVideo(model.ItemId, model.CurrentUser.Timezone);
+                    string authorName = "";
+                    if (!string.IsNullOrEmpty(model.CurrentUser.FirstName))
+                    {
+                        authorName = model.CurrentUser.FirstName;
+                    }
+                    if (!string.IsNullOrEmpty(model.CurrentUser.MiddleName))
+                    {
+                        authorName = authorName + " " + model.CurrentUser.MiddleName;
+                    }
+                    if (!string.IsNullOrEmpty(model.CurrentUser.LastName))
+                    {
+                        authorName = authorName + " " + model.CurrentUser.LastName;
+                    }
+
+                    authorName = authorName.Trim();
+                    if (string.IsNullOrEmpty(authorName))
+                    {
+                        authorName = model.CurrentUser.UserName;
+                        if (string.IsNullOrEmpty(authorName))
+                        {
+                            authorName = cmnt.DisplayName;
+                        }
+                    }
+                    foreach (UserAccess ua in usersToNotif)
+                    {
+                        if (ua.AccessLevel <= vid.AccessLevel)
+                        {
+                            UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(ua.UserId);
+                            if (uaUserInfo.UserId != "Unknown")
+                            {
+                                string commentTxtStr = cmnt.CommentText;
+                                if (cmnt.CommentText.Length > 99)
+                                {
+                                    commentTxtStr = cmnt.CommentText.Substring(0, 100) + "...";
+                                }
+                                WebNotification notification = new WebNotification();
+                                notification.To = uaUserInfo.UserId;
+                                notification.From = authorName;
+                                notification.Message = commentTxtStr;
+                                notification.DateTime = DateTime.UtcNow;
+                                notification.Icon = model.CurrentUser.ProfilePicture;
+                                notification.Title = "New comment on " + progeny.NickName + "'s video";
+                                notification.Link = "/Videos/Video/" + vid.VideoId + "?childId=" + model.ProgenyId;
+                                notification.Type = "Notification";
+                                await _context.WebNotificationsDb.AddAsync(notification);
+                                await _context.SaveChangesAsync();
+
+                                await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunacomment" + vid.VideoId);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return RedirectToRoute(new { controller = "Videos", action = "Video", id = model.ItemId, childId = model.ProgenyId });
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteVideoComment(int commentThreadNumber, int commentId, int videoId, int progenyId)
+        {
+            await _mediaHttpClient.DeleteVideoComment(commentId);
+
+            return RedirectToRoute(new { controller = "Videos", action = "Video", id = videoId, childId = progenyId });
         }
     }
 }
