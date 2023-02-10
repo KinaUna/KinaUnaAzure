@@ -10,7 +10,6 @@ using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using KinaUna.Data.Contexts;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -20,18 +19,17 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IMeasurementsHttpClient _measurementsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private readonly WebDbContext _context;
         private readonly IPushMessageSender _pushMessageSender;
-
+        private readonly IWebNotificationsService _webNotificationsService;
         public MeasurementsController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IMeasurementsHttpClient measurementsHttpClient, IUserAccessHttpClient userAccessHttpClient,
-            IPushMessageSender pushMessageSender, WebDbContext context)
+            IPushMessageSender pushMessageSender, IWebNotificationsService webNotificationsService )
         {
             _progenyHttpClient = progenyHttpClient;
             _userInfosHttpClient = userInfosHttpClient;
             _measurementsHttpClient = measurementsHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
             _pushMessageSender = pushMessageSender;
-            _context = context;
+            _webNotificationsService = webNotificationsService;
         }
 
         [AllowAnonymous]
@@ -217,8 +215,8 @@ namespace KinaUnaWeb.Controllers
                         notification.Title = "A new measurement was added for " + progeny.NickName;
                         notification.Link = "/Measurements?childId=" + progeny.Id;
                         notification.Type = "Notification";
-                        await _context.WebNotificationsDb.AddAsync(notification);
-                        await _context.SaveChangesAsync();
+
+                        notification = await _webNotificationsService.SaveNotification(notification);
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunameasurement" + progeny.Id);

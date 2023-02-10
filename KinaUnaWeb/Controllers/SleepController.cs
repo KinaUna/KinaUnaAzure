@@ -10,7 +10,6 @@ using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using KinaUna.Data.Contexts;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -20,18 +19,18 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly ISleepHttpClient _sleepHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private readonly WebDbContext _context;
         private readonly IPushMessageSender _pushMessageSender;
+        private readonly IWebNotificationsService _webNotificationsService;
 
         public SleepController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, ISleepHttpClient sleepHttpClient, IUserAccessHttpClient userAccessHttpClient,
-            IPushMessageSender pushMessageSender, WebDbContext context)
+            IPushMessageSender pushMessageSender, IWebNotificationsService webNotificationsService)
         {
             _progenyHttpClient = progenyHttpClient;
             _userInfosHttpClient = userInfosHttpClient;
             _sleepHttpClient = sleepHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
             _pushMessageSender = pushMessageSender;
-            _context = context;
+            _webNotificationsService = webNotificationsService;
         }
 
         [AllowAnonymous]
@@ -388,8 +387,8 @@ namespace KinaUnaWeb.Controllers
                         notification.Title = "Sleep Added for " + prog.NickName;
                         notification.Link = "/Sleep?childId=" + prog.Id;
                         notification.Type = "Notification";
-                        await _context.WebNotificationsDb.AddAsync(notification);
-                        await _context.SaveChangesAsync();
+
+                        notification = await _webNotificationsService.SaveNotification(notification);
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title, notification.Message,
                             Constants.WebAppUrl + notification.Link, "kinaunasleep" + prog.Id);

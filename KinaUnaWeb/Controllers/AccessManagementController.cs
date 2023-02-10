@@ -18,7 +18,7 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
-        private int _progId = Constants.DefaultChildId;
+        private int _progenyId = Constants.DefaultChildId;
         public AccessManagementController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
@@ -45,7 +45,7 @@ namespace KinaUnaWeb.Controllers
             }
             if (userinfo.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
+                _progenyId = userinfo.ViewChild;
             }
             
             model.ProgenyId = int.Parse(progenyId);
@@ -71,7 +71,7 @@ namespace KinaUnaWeb.Controllers
                             Text = accessList.Single(p => p.Id == prog.Id).NickName,
                             Value = prog.Id.ToString()
                         };
-                        if (prog.Id == _progId)
+                        if (prog.Id == _progenyId)
                         {
                             selItem.Selected = true;
                         }
@@ -94,7 +94,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (userinfo != null && userinfo.ViewChild > 0)
             {
-                _progId = userinfo.ViewChild;
+                _progenyId = userinfo.ViewChild;
             }
 
             UserAccess accessModel = new UserAccess();

@@ -11,7 +11,6 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Syncfusion.EJ2.Schedule;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using KinaUna.Data.Contexts;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -22,17 +21,16 @@ namespace KinaUnaWeb.Controllers
         private readonly ICalendarsHttpClient _calendarsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly IPushMessageSender _pushMessageSender;
-        private readonly WebDbContext _context;
-
+        private readonly IWebNotificationsService _webNotificationsService;
         public CalendarController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, ICalendarsHttpClient calendarsHttpClient,
-            IUserAccessHttpClient userAccessHttpClient, WebDbContext context, IPushMessageSender pushMessageSender)
+            IUserAccessHttpClient userAccessHttpClient, IPushMessageSender pushMessageSender, IWebNotificationsService webNotificationsService)
         {
             _progenyHttpClient = progenyHttpClient;
             _userInfosHttpClient = userInfosHttpClient;
             _calendarsHttpClient = calendarsHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
-            _context = context;
             _pushMessageSender = pushMessageSender;
+            _webNotificationsService = webNotificationsService;
         }
 
         [AllowAnonymous]
@@ -313,8 +311,8 @@ namespace KinaUnaWeb.Controllers
                             notification.Title = "A new calendar event was added for " + progeny.NickName;
                             notification.Link = "/Calendar/ViewEvent?eventId=" + eventItem.EventId + "&childId=" + progeny.Id;
                             notification.Type = "Notification";
-                            await _context.WebNotificationsDb.AddAsync(notification);
-                            await _context.SaveChangesAsync();
+
+                            notification = await _webNotificationsService.SaveNotification(notification);
 
                             await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                                 notification.Message, Constants.WebAppUrl + notification.Link, "kinaunacalendar" + progeny.Id);

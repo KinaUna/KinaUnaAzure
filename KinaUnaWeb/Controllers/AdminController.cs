@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
@@ -21,7 +20,6 @@ namespace KinaUnaWeb.Controllers
     public class AdminController: Controller
     {
         private readonly IUserInfosHttpClient _userInfosHttpClient;
-        private readonly WebDbContext _context;
         private readonly IHubContext<WebNotificationHub> _hubContext;
         private readonly IPushMessageSender _pushMessageSender;
         private readonly string _adminEmail = Constants.AdminEmail;
@@ -30,10 +28,11 @@ namespace KinaUnaWeb.Controllers
         private readonly ITranslationsHttpClient _translationsHttpClient;
         private readonly IPageTextsHttpClient _pageTextsHttpClient;
         private readonly ImageStore _imageStore;
-        public AdminController(WebDbContext context, IBackgroundTaskQueue queue, IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender, IAuthHttpClient authHttpClient,
-            IUserInfosHttpClient userInfosHttpClient, ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient, IPageTextsHttpClient pageTextsHttpClient, ImageStore imageStore)
+        private readonly IWebNotificationsService _webNotificationsService;
+        public AdminController(IBackgroundTaskQueue queue, IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender, IAuthHttpClient authHttpClient,
+            IUserInfosHttpClient userInfosHttpClient, ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient, IPageTextsHttpClient pageTextsHttpClient,
+            ImageStore imageStore, IWebNotificationsService webNotificationsService)
         {
-            _context = context;
             Queue = queue;
             _hubContext = hubContext;
             _pushMessageSender = pushMessageSender;
@@ -43,6 +42,7 @@ namespace KinaUnaWeb.Controllers
             _translationsHttpClient = translationsHttpClient;
             _pageTextsHttpClient = pageTextsHttpClient;
             _imageStore = imageStore;
+            _webNotificationsService = webNotificationsService;
         }
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Local
@@ -591,8 +591,9 @@ namespace KinaUnaWeb.Controllers
                     }
 
                     notification.DateTime = DateTime.UtcNow;
-                    await _context.WebNotificationsDb.AddAsync(notification);
-                    await _context.SaveChangesAsync();
+
+                    notification = await _webNotificationsService.SaveNotification(notification);
+                    
                     await _hubContext.Clients.User(userinfo.UserId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
 
                     WebNotification webNotification = new WebNotification();

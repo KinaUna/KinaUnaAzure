@@ -13,7 +13,6 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 using System.IO;
-using KinaUna.Data.Contexts;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -25,13 +24,13 @@ namespace KinaUnaWeb.Controllers
         private readonly ILocationsHttpClient _locationsHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
-        private readonly WebDbContext _context;
         private readonly ITimelineHttpClient _timelineHttpClient;
         private readonly IPushMessageSender _pushMessageSender;
         private readonly IEmailSender _emailSender;
+        private readonly IWebNotificationsService _webNotificationsService;
 
         public PicturesController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient,
-            ILocationsHttpClient locationsHttpClient, WebDbContext context, ITimelineHttpClient timelineHttpClient, IPushMessageSender pushMessageSender, IEmailSender emailSender)
+            ILocationsHttpClient locationsHttpClient, ITimelineHttpClient timelineHttpClient, IPushMessageSender pushMessageSender, IEmailSender emailSender, IWebNotificationsService webNotificationsService)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
@@ -39,10 +38,10 @@ namespace KinaUnaWeb.Controllers
             _userInfosHttpClient = userInfosHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
             _locationsHttpClient = locationsHttpClient;
-            _context = context;
             _timelineHttpClient = timelineHttpClient;
             _pushMessageSender = pushMessageSender;
             _emailSender = emailSender;
+            _webNotificationsService = webNotificationsService;
         }
 
         [AllowAnonymous]
@@ -423,8 +422,8 @@ namespace KinaUnaWeb.Controllers
                                 notification.Title = "A photo was added for " + progeny.NickName;
                                 notification.Link = "/Pictures/Picture/" + newPicture.PictureId + "?childId=" + progeny.Id;
                                 notification.Type = "Notification";
-                                await _context.WebNotificationsDb.AddAsync(notification);
-                                await _context.SaveChangesAsync();
+
+                                notification = await _webNotificationsService.SaveNotification(notification);
 
                                 await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaphoto" + progeny.Id);
@@ -656,8 +655,8 @@ namespace KinaUnaWeb.Controllers
                             notification.Title = "Photo deleted for " + progeny.NickName;
                             notification.Link = "";
                             notification.Type = "Notification";
-                            await _context.WebNotificationsDb.AddAsync(notification);
-                            await _context.SaveChangesAsync();
+
+                            _ = await _webNotificationsService.SaveNotification(notification);
                         }
                     }
                 }
@@ -749,8 +748,8 @@ namespace KinaUnaWeb.Controllers
                                 notification.Title = "New comment on " + progeny.NickName + "'s photo";
                                 notification.Link = "/Pictures/Picture/" + model.ItemId + "?childId=" + model.ProgenyId;
                                 notification.Type = "Notification";
-                                await _context.WebNotificationsDb.AddAsync(notification);
-                                await _context.SaveChangesAsync();
+
+                                notification = await _webNotificationsService.SaveNotification(notification);
 
                                 await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunacomment" + model.ItemId);

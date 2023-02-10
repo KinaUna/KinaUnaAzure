@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using KinaUna.Data.Contexts;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -23,15 +22,14 @@ namespace KinaUnaWeb.Controllers
         private readonly ILocationsHttpClient _locationsHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
-        private readonly WebDbContext _context;
         private readonly IPushMessageSender _pushMessageSender;
         private readonly ITimelineHttpClient _timelineHttpClient;
         private readonly IEmailSender _emailSender;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
-
+        private readonly IWebNotificationsService _webNotificationsService;
         public VideosController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient,
-            IUserAccessHttpClient userAccessHttpClient, ILocationsHttpClient locationsHttpClient, WebDbContext context, IPushMessageSender pushMessageSender,
-            ITimelineHttpClient timelineHttpClient, IEmailSender emailSender)
+            IUserAccessHttpClient userAccessHttpClient, ILocationsHttpClient locationsHttpClient, IPushMessageSender pushMessageSender,
+            ITimelineHttpClient timelineHttpClient, IEmailSender emailSender, IWebNotificationsService webNotificationsService)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
@@ -39,10 +37,10 @@ namespace KinaUnaWeb.Controllers
             _userInfosHttpClient = userInfosHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
             _locationsHttpClient = locationsHttpClient;
-            _context = context;
             _pushMessageSender = pushMessageSender;
             _timelineHttpClient = timelineHttpClient;
             _emailSender = emailSender;
+            _webNotificationsService = webNotificationsService;
         }
 
         [AllowAnonymous]
@@ -457,8 +455,8 @@ namespace KinaUnaWeb.Controllers
                         notification.Title = "A video was added for " + progeny.NickName;
                         notification.Link = "/Videos/Video/" + newVideo.VideoId + "?childId=" + model.ProgenyId;
                         notification.Type = "Notification";
-                        await _context.WebNotificationsDb.AddAsync(notification);
-                        await _context.SaveChangesAsync();
+
+                        notification = await _webNotificationsService.SaveNotification(notification);
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavideo" + progeny.Id);
@@ -718,8 +716,8 @@ namespace KinaUnaWeb.Controllers
                                 notification.Title = "New comment on " + progeny.NickName + "'s video";
                                 notification.Link = "/Videos/Video/" + vid.VideoId + "?childId=" + model.ProgenyId;
                                 notification.Type = "Notification";
-                                await _context.WebNotificationsDb.AddAsync(notification);
-                                await _context.SaveChangesAsync();
+
+                                notification = await _webNotificationsService.SaveNotification(notification);
 
                                 await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunacomment" + vid.VideoId);

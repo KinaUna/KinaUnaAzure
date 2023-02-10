@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
@@ -9,24 +8,23 @@ using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Controllers
 {
     public class NotificationsController : Controller
     {
-        private readonly WebDbContext _context;
         private readonly IHubContext<WebNotificationHub> _hubContext;
         private readonly ImageStore _imageStore;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
+        private readonly IWebNotificationsService _webNotificationsService;
 
-        public NotificationsController(WebDbContext context, IHubContext<WebNotificationHub> hubContext, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient)
+        public NotificationsController(IHubContext<WebNotificationHub> hubContext, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, IWebNotificationsService webNotificationsService)
         {
-            _context = context; // Todo: Replace _context with httpClient
             _hubContext = hubContext;
             _imageStore = imageStore;
             _userInfosHttpClient = userInfosHttpClient;
+            _webNotificationsService = webNotificationsService;
         }
 
         public async Task<IActionResult> Index(int Id = 0)
@@ -35,8 +33,8 @@ namespace KinaUnaWeb.Controllers
             model.LanguageId = Request.GetLanguageIdFromCookie();
             string userEmail = User.GetEmail();
             model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-            
-            model.NotificationsList = await _context.WebNotificationsDb.Where(n => n.To == model.CurrentUser.UserId).ToListAsync();
+
+            model.NotificationsList = await _webNotificationsService.GetUsersNotifications(model.CurrentUser.UserId);
             
             if (model.NotificationsList.Any())
             {
@@ -55,7 +53,7 @@ namespace KinaUnaWeb.Controllers
             }
             if (Id != 0)
             {
-                WebNotification notification = await _context.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == Id);
+                WebNotification notification = await _webNotificationsService.GetNotificationById(Id);
                 if (notification != null && notification.To == model.CurrentUser.UserId)
                 {
                     notification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(notification.DateTime,
@@ -115,16 +113,15 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SetUnread(int Id)
         {
             string userId = User.FindFirst("sub")?.Value ?? "NoUser";
-            WebNotification updateNotification =
-                await _context.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == Id);
+            WebNotification updateNotification = await _webNotificationsService.GetNotificationById(Id);
 
             if (updateNotification != null)
             {
                 if (userId == updateNotification.To)
                 {
                     updateNotification.IsRead = false;
-                    _context.WebNotificationsDb.Update(updateNotification);
-                    await _context.SaveChangesAsync();
+                    updateNotification = await _webNotificationsService.UpdateNotification(updateNotification);
+
                     await _hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
                 }
             }
@@ -135,16 +132,16 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SetRead(int Id)
         {
             string userId = User.FindFirst("sub")?.Value ?? "NoUser";
-            WebNotification updateNotification =
-                await _context.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == Id);
+            WebNotification updateNotification = await _webNotificationsService.GetNotificationById(Id);
 
             if (updateNotification != null)
             {
                 if (userId == updateNotification.To)
                 {
                     updateNotification.IsRead = true;
-                    _context.WebNotificationsDb.Update(updateNotification);
-                    await _context.SaveChangesAsync();
+                    
+                    updateNotification = await _webNotificationsService.UpdateNotification(updateNotification);
+
                     await _hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
                 }
             }
@@ -155,15 +152,13 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Remove(int Id)
         {
             string userId = User.FindFirst("sub")?.Value ?? "NoUser";
-            WebNotification updateNotification =
-                await _context.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == Id);
+            WebNotification updateNotification = await _webNotificationsService.GetNotificationById(Id);
 
             if (updateNotification != null)
             {
                 if (userId == updateNotification.To)
                 {
-                    _context.WebNotificationsDb.Remove(updateNotification);
-                    await _context.SaveChangesAsync();
+                    await _webNotificationsService.RemoveNotification(updateNotification);
                     await _hubContext.Clients.User(userId).SendAsync("DeleteMessage", JsonConvert.SerializeObject(updateNotification));
                 }
             }

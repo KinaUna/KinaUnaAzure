@@ -10,7 +10,6 @@ using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using KinaUna.Data.Contexts;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -20,20 +19,20 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly INotesHttpClient _notesHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private readonly WebDbContext _context;
         private readonly IPushMessageSender _pushMessageSender;
         private readonly ImageStore _imageStore;
+        private readonly IWebNotificationsService _webNotificationsService;
 
         public NotesController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, INotesHttpClient notesHttpClient, IUserAccessHttpClient userAccessHttpClient,
-            WebDbContext context, IPushMessageSender pushMessageSender, ImageStore imageStore)
+            IPushMessageSender pushMessageSender, ImageStore imageStore, IWebNotificationsService webNotificationsService)
         {
             _progenyHttpClient = progenyHttpClient;
             _userInfosHttpClient = userInfosHttpClient;
             _notesHttpClient = notesHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
-            _context = context;
             _pushMessageSender = pushMessageSender;
             _imageStore = imageStore;
+            _webNotificationsService = webNotificationsService;
         }
 
         [AllowAnonymous]
@@ -229,8 +228,8 @@ namespace KinaUnaWeb.Controllers
                         notification.Title = "A new note was added for " + progeny.NickName;
                         notification.Link = "/Notes?childId=" + model.ProgenyId;
                         notification.Type = "Notification";
-                        await _context.WebNotificationsDb.AddAsync(notification);
-                        await _context.SaveChangesAsync();
+
+                        notification = await _webNotificationsService.SaveNotification(notification);
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunanote" + progeny.Id);

@@ -11,7 +11,6 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.IO;
-using KinaUna.Data.Contexts;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -22,18 +21,19 @@ namespace KinaUnaWeb.Controllers
         private readonly IFriendsHttpClient _friendsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly ImageStore _imageStore;
-        private readonly WebDbContext _context;
         private readonly IPushMessageSender _pushMessageSender;
+        private readonly IWebNotificationsService _webNotificationsService;
 
-        public FriendsController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, IFriendsHttpClient friendsHttpClient, IUserAccessHttpClient userAccessHttpClient, WebDbContext context, IPushMessageSender pushMessageSender)
+        public FriendsController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, IFriendsHttpClient friendsHttpClient,
+            IUserAccessHttpClient userAccessHttpClient, IPushMessageSender pushMessageSender, IWebNotificationsService webNotificationsService)
         {
             _progenyHttpClient = progenyHttpClient;
             _imageStore = imageStore;
             _userInfosHttpClient = userInfosHttpClient;
             _friendsHttpClient = friendsHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
-            _context = context;
             _pushMessageSender = pushMessageSender;
+            _webNotificationsService = webNotificationsService;
         }
         
 
@@ -415,8 +415,8 @@ namespace KinaUnaWeb.Controllers
                         notification.Title = "A new friend was added for " + progeny.NickName;
                         notification.Link = "/Friends?childId=" + progeny.Id;
                         notification.Type = "Notification";
-                        await _context.WebNotificationsDb.AddAsync(notification);
-                        await _context.SaveChangesAsync();
+
+                        notification = await _webNotificationsService.SaveNotification(notification);
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunafriend" + progeny.Id);

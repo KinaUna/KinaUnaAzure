@@ -11,7 +11,6 @@ using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using KinaUna.Data.Contexts;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -22,11 +21,11 @@ namespace KinaUnaWeb.Controllers
         private readonly ILocationsHttpClient _locationsHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
-        private readonly WebDbContext _context;
         private readonly IPushMessageSender _pushMessageSender;
+        private readonly IWebNotificationsService _webNotificationsService;
 
         public LocationsController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, IUserInfosHttpClient userInfosHttpClient,
-            ILocationsHttpClient locationsHttpClient, IUserAccessHttpClient userAccessHttpClient, IPushMessageSender pushMessageSender, WebDbContext context)
+            ILocationsHttpClient locationsHttpClient, IUserAccessHttpClient userAccessHttpClient, IPushMessageSender pushMessageSender, IWebNotificationsService webNotificationsService)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
@@ -34,7 +33,7 @@ namespace KinaUnaWeb.Controllers
             _locationsHttpClient = locationsHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
             _pushMessageSender = pushMessageSender;
-            _context = context;
+            _webNotificationsService = webNotificationsService;
         }
 
         [AllowAnonymous]
@@ -269,7 +268,7 @@ namespace KinaUnaWeb.Controllers
                         }
                         model.ProgenyList.Add(selItem);
 
-                        List<Location> locList1 = _context.LocationsDb.Where(l => l.ProgenyId == prog.Id).ToList();
+                        List<Location> locList1 = await _locationsHttpClient.GetLocationsList(prog.Id, 0);
                         foreach (Location loc in locList1)
                         {
                             if (!string.IsNullOrEmpty(loc.Tags))
@@ -406,8 +405,8 @@ namespace KinaUnaWeb.Controllers
                         notification.Title = "A new location was added for " + progeny.NickName;
                         notification.Link = "/Locations?childId=" + progeny.Id;
                         notification.Type = "Notification";
-                        await _context.WebNotificationsDb.AddAsync(notification);
-                        await _context.SaveChangesAsync();
+
+                        notification = await _webNotificationsService.SaveNotification(notification);
 
                         await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunalocation" + progeny.Id);
