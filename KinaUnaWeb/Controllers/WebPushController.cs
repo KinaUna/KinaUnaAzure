@@ -1,10 +1,9 @@
 ﻿using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
+using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 using WebPush;
@@ -16,18 +15,18 @@ namespace KinaUnaWeb.Controllers
     public class WebPushController : Controller
     {
         private readonly IConfiguration _configuration;
-        private readonly WebDbContext _context;
+        private readonly IPushMessageSender _messageSender;
 
-        public WebPushController(WebDbContext context, IConfiguration configuration)
+        public WebPushController(IConfiguration configuration, IPushMessageSender pushMessageSender)
         {
-            _context = context;
             _configuration = configuration;
+            _messageSender = pushMessageSender;
         }
 
-        public IActionResult Send(int? id)
+        public IActionResult Send()
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
-            // Todo: Replace with role based access
+            
             if (userEmail.ToUpper() != Constants.AdminEmail.ToUpper())
             {
                 return RedirectToAction("Index", "Home");
@@ -41,14 +40,14 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Send(int id)
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
-            // Todo: Replace with role based access
+            
             if (userEmail.ToUpper() != Constants.AdminEmail.ToUpper())
             {
                 return RedirectToAction("Index", "Home");
             }
 
             StringValues payload = Request.Form["payload"];
-            PushDevices device = await _context.PushDevices.SingleOrDefaultAsync(m => m.Id == id);
+            PushDevices device = await _messageSender.GetPushDeviceById(id);
 
             string vapidPublicKey = _configuration["VapidPublicKey"];
             string vapidPrivateKey = _configuration["VapidPrivateKey"];
@@ -59,7 +58,7 @@ namespace KinaUnaWeb.Controllers
                 VapidDetails vapidDetails = new VapidDetails("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
 
                 WebPushClient webPushClient = new WebPushClient();
-                webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
+                await webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
             }
 
             return View();
@@ -68,7 +67,7 @@ namespace KinaUnaWeb.Controllers
         public IActionResult GenerateKeys()
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
-            // Todo: Replace with role based access
+            
             if (userEmail.ToUpper() != Constants.AdminEmail.ToUpper())
             {
                 return RedirectToAction("Index", "Home");

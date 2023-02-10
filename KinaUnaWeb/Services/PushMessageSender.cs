@@ -67,5 +67,12 @@ namespace KinaUnaWeb.Services
             }
             
         }
+
+        public async Task<PushDevices> GetPushDeviceById(int id)
+        {
+            PushDevices device = await _context.PushDevices.SingleOrDefaultAsync(m => m.Id == id);
+
+            return device;
+        }
     }
 }
