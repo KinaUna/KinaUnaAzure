@@ -48,8 +48,6 @@ namespace KinaUnaWeb
 
             _ = services.Configure<CookiePolicyOptions>(options =>
             {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                // Todo: Fix consent to work with my cookies and language selection
                 options.CheckConsentNeeded = delegate { return true; };
                 options.MinimumSameSitePolicy = SameSiteMode.Lax;
                 options.Secure = CookieSecurePolicy.Always;
@@ -158,7 +156,6 @@ namespace KinaUnaWeb
 
                 o.AddPolicy("KinaUnaCors", builder =>
                 {
-                    // Todo: Update cors policy
                     if (_env.IsDevelopment())
                     {
                         builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324",

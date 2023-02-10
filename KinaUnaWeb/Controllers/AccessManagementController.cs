@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -122,7 +121,7 @@ namespace KinaUnaWeb.Controllers
         {
             UserAccessViewModel model = new UserAccessViewModel();
             model.LanguageId = Request.GetLanguageIdFromCookie();
-            UserAccess userAccess = await _userAccessHttpClient.GetUserAccess(Int32.Parse(accessId));
+            UserAccess userAccess = await _userAccessHttpClient.GetUserAccess(int.Parse(accessId));
             model.ProgenyId = userAccess.ProgenyId;
             model.UserId = userAccess.UserId;
             model.AccessId = userAccess.AccessId;

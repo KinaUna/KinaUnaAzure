@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Hubs
@@ -16,13 +14,13 @@ namespace KinaUnaWeb.Hubs
     [AllowAnonymous]
     public class WebNotificationHub: Hub
     {
-        private readonly WebDbContext _context;
+        private readonly IWebNotificationsService _notificationsService;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
 
-        public WebNotificationHub(WebDbContext context, IUserInfosHttpClient userInfosHttpClient)
+        public WebNotificationHub(IUserInfosHttpClient userInfosHttpClient, IWebNotificationsService notificationsService)
         {
-            _context = context;
             _userInfosHttpClient = userInfosHttpClient;
+            _notificationsService = notificationsService;
         }
 
         public override async Task OnConnectedAsync()
@@ -46,13 +44,15 @@ namespace KinaUnaWeb.Hubs
             string userTimeZone = Context.GetHttpContext()?.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
             if (userId != "NoUser")
             {
-                List<WebNotification> notifications = await
-                    _context.WebNotificationsDb.Where(w => w.To == userId).OrderByDescending(n => n.DateTime).Skip(start -1).Take(count).ToListAsync();
+                List<WebNotification> notifications = await _notificationsService.GetUsersNotifications(userId);
+
+                notifications = notifications.OrderByDescending(n => n.DateTime).Skip(start - 1).Take(count).ToList();
+
                 if (notifications.Any())
                 {
                     foreach (WebNotification webn in notifications)
                     {
-                        if (String.IsNullOrEmpty(webn.Link))
+                        if (string.IsNullOrEmpty(webn.Link))
                         {
                             webn.Link = "/Notifications?Id=" + webn.Id;
                         }
@@ -87,7 +87,7 @@ namespace KinaUnaWeb.Hubs
 
 
                 notification.From = userId;
-                if (!String.IsNullOrEmpty(userinfo.ProfilePicture))
+                if (!string.IsNullOrEmpty(userinfo.ProfilePicture))
                 {
                     notification.Icon = userinfo.ProfilePicture;
                 }
@@ -97,8 +97,8 @@ namespace KinaUnaWeb.Hubs
                 }
 
                 notification.DateTime = DateTime.UtcNow;
-                await _context.WebNotificationsDb.AddAsync(notification);
-                await _context.SaveChangesAsync();
+
+                notification = await _notificationsService.SaveNotification(notification);
 
                 WebNotification webNotification = new WebNotification();
                 webNotification.Title = "Notification Sent to " + notification.To;
@@ -109,7 +109,7 @@ namespace KinaUnaWeb.Hubs
                 webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(webNotification.DateTime,
                     TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                 webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                if (String.IsNullOrEmpty(webNotification.Link))
+                if (string.IsNullOrEmpty(webNotification.Link))
                 {
                     webNotification.Link = "/Notifications?Id=" + webNotification.Id;
                 }
@@ -121,12 +121,10 @@ namespace KinaUnaWeb.Hubs
         public async Task SetRead(string notification)
         {
             string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
-            int id;
-            bool idParsed = Int32.TryParse(notification, out id);
+            bool idParsed = int.TryParse(notification, out int id);
             if (idParsed)
             {
-                WebNotification updateNotification =
-                    await _context.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == id);
+                WebNotification updateNotification = await _notificationsService.GetNotificationById(id);
 
                 if (updateNotification != null)
                 {
@@ -137,8 +135,9 @@ namespace KinaUnaWeb.Hubs
                             updateNotification.Link = "/Notifications?Id=" + updateNotification.Id;
                         }
                         updateNotification.IsRead = true;
-                        _context.WebNotificationsDb.Update(updateNotification);
-                        await _context.SaveChangesAsync();
+
+                        updateNotification = await _notificationsService.UpdateNotification(updateNotification);
+
                         await Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
                     }
                 }
@@ -149,11 +148,10 @@ namespace KinaUnaWeb.Hubs
         {
             string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
             int id;
-            bool idParsed = Int32.TryParse(notification, out id);
+            bool idParsed = int.TryParse(notification, out id);
             if (idParsed)
             {
-                WebNotification updateNotification =
-                    await _context.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == id);
+                WebNotification updateNotification = await _notificationsService.GetNotificationById(id);
 
                 if (updateNotification != null)
                 {
@@ -164,8 +162,9 @@ namespace KinaUnaWeb.Hubs
                             updateNotification.Link = "/Notifications?Id=" + updateNotification.Id;
                         }
                         updateNotification.IsRead = false;
-                        _context.WebNotificationsDb.Update(updateNotification);
-                        await _context.SaveChangesAsync();
+
+                        updateNotification = await _notificationsService.UpdateNotification(updateNotification);
+
                         await Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
                     }
                 }
@@ -176,18 +175,17 @@ namespace KinaUnaWeb.Hubs
         {
             string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
             int id;
-            bool idParsed = Int32.TryParse(notification, out id);
+            bool idParsed = int.TryParse(notification, out id);
             if (idParsed)
             {
-                WebNotification deleteNotification =
-                    await _context.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == id);
-
+                WebNotification deleteNotification = await _notificationsService.GetNotificationById(id);
+                
                 if (deleteNotification != null)
                 {
                     if (userId == deleteNotification.To)
                     {
-                        _context.WebNotificationsDb.Remove(deleteNotification);
-                        await _context.SaveChangesAsync();
+                        await _notificationsService.RemoveNotification(deleteNotification);
+
                         await Clients.User(userId).SendAsync("DeleteMessage", JsonConvert.SerializeObject(deleteNotification));
                     }
                 }
@@ -207,9 +205,9 @@ namespace KinaUnaWeb.Hubs
                 else
                 {
                     notification.DateTime = DateTime.UtcNow;
-                    await _context.WebNotificationsDb.AddAsync(notification);
-                    await _context.SaveChangesAsync();
 
+                    notification = await _notificationsService.SaveNotification(notification);
+                    
                     WebNotification webNotification = new WebNotification();
                     webNotification.Title = "Notification Sent to " + notification.To;
                     webNotification.Message = "";
@@ -219,7 +217,7 @@ namespace KinaUnaWeb.Hubs
                     webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(webNotification.DateTime,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                     webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                    if (String.IsNullOrEmpty(webNotification.Link))
+                    if (string.IsNullOrEmpty(webNotification.Link))
                     {
                         webNotification.Link = "/Notifications?Id=" + webNotification.Id;
                     }

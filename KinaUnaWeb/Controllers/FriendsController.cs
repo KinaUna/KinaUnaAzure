@@ -101,7 +101,7 @@ namespace KinaUnaWeb.Controllers
                     friendViewModel.Context = friend.Context;
                     friendViewModel.Notes = friend.Notes;
                     friendViewModel.Tags = friend.Tags;
-                    if (!String.IsNullOrEmpty(friendViewModel.Tags))
+                    if (!string.IsNullOrEmpty(friendViewModel.Tags))
                     {
                         List<string> pvmTags = friendViewModel.Tags.Split(',').ToList();
                         foreach (string tagstring in pvmTags)
