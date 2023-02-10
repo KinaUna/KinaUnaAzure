@@ -14,13 +14,13 @@ namespace KinaUnaWeb.Services
     public class PushMessageSender: IPushMessageSender
     {
         private readonly IConfiguration _configuration;
+        private readonly INotificationsHttpClient _notificationHttpClient;
+        
 
-        private readonly WebDbContext _context;
-
-        public PushMessageSender(WebDbContext context, IConfiguration configuration)
+        public PushMessageSender(IConfiguration configuration, INotificationsHttpClient notificationHttpClient)
         {
-            _context = context;
             _configuration = configuration;
+            _notificationHttpClient = notificationHttpClient;
         }
 
         public async Task SendMessage(string user, string title, string message, string link, string tag)
@@ -34,7 +34,7 @@ namespace KinaUnaWeb.Services
             string vapidPublicKey = _configuration["VapidPublicKey"];
             string vapidPrivateKey = _configuration["VapidPrivateKey"];
 
-            List<PushDevices> deviceList = await _context.PushDevices.Where(m => m.Name == user).ToListAsync();
+            List<PushDevices> deviceList = await _notificationHttpClient.GetPushDeviceByUserId(user);
             if (deviceList.Any())
             {
                 foreach (PushDevices dev in deviceList)
@@ -43,22 +43,20 @@ namespace KinaUnaWeb.Services
                     VapidDetails vapidDetails = new VapidDetails("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
                     if (string.IsNullOrEmpty(dev.PushAuth) || string.IsNullOrEmpty(dev.PushEndpoint))
                     {
-                        _context.PushDevices.Remove(dev);
-                        await _context.SaveChangesAsync();
+                        await _notificationHttpClient.RemovePushDevice(dev);
                     }
                     else
                     {
                         WebPushClient webPushClient = new WebPushClient();
                         try
                         {
-                            webPushClient.SendNotification(pushSubscription, payload, vapidDetails);
+                            await webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
                         }
                         catch (WebPushException ex)
                         {
                             if (ex.Message == "Subscription no longer valid")
                             {
-                                _context.PushDevices.Remove(dev);
-                                await _context.SaveChangesAsync();
+                                await _notificationHttpClient.RemovePushDevice(dev);
                             }
                         }
                     }
@@ -70,22 +68,21 @@ namespace KinaUnaWeb.Services
 
         public async Task<PushDevices> GetPushDeviceById(int id)
         {
-            PushDevices device = await _context.PushDevices.SingleOrDefaultAsync(m => m.Id == id);
+            PushDevices device = await _notificationHttpClient.GetPushDeviceById(id);
 
             return device;
         }
 
         public async Task<List<PushDevices>> GetAllPushDevices()
         {
-            var pushDevicesList = await _context.PushDevices.ToListAsync();
+            var pushDevicesList = await _notificationHttpClient.GetAllPushDevices();
 
             return pushDevicesList;
         }
 
         public async Task<PushDevices> AddPushDevice(PushDevices device)
         {
-            _context.PushDevices.Add(device);
-            await _context.SaveChangesAsync();
+            device = await _notificationHttpClient.AddPushDevice(device);
 
             return device;
 
@@ -93,16 +90,14 @@ namespace KinaUnaWeb.Services
 
         public async Task<PushDevices> GetDevice(PushDevices device)
         {
-            PushDevices result = await _context.PushDevices.SingleOrDefaultAsync(p =>
-                p.Name == device.Name && p.PushP256DH == device.PushP256DH && p.PushAuth == device.PushAuth && p.PushEndpoint == device.PushEndpoint);
+            PushDevices result = await _notificationHttpClient.GetPushDevice(device);
             
             return result;
         }
 
         public async Task RemoveDevice(PushDevices device)
         {
-            _context.PushDevices.Remove(device);
-            await _context.SaveChangesAsync();
+            await _notificationHttpClient.RemovePushDevice(device);
         }
     }
 }

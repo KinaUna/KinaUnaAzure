@@ -107,6 +107,7 @@ namespace KinaUnaWeb
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IPushMessageSender, PushMessageSender>();
             services.AddTransient<IWebNotificationsService, WebNotificationsService>();
+            services.AddHttpClient<INotificationsHttpClient, NotificationsHttpClient>();
             services.AddSingleton<ApiTokenInMemoryClient>();
             services.AddHttpClient<IUserInfosHttpClient, UserInfosHttpClient>();
             services.AddHttpClient<ITimelineHttpClient, TimelineHttpClient>();

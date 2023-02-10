@@ -32,8 +32,11 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(notification1);
             context.Add(notification2);
             await context.SaveChangesAsync();
-            
-            DataService dataService = new DataService(context);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetMobileNotification_Should_Return_MobileNotification_Object_When_Id_Is_Valid2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
 
             MobileNotification resultNotification1 = await dataService.GetMobileNotification(1);
             
@@ -80,7 +83,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(notification2);
             await context.SaveChangesAsync();
 
-            DataService dataService = new DataService(context);
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetMobileNotification_Should_Return_Null_When_Id_Is_Invalid2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
 
             MobileNotification resultNotification1 = await dataService.GetMobileNotification(3);
             
@@ -109,7 +115,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(notification1);
             await context.SaveChangesAsync();
 
-            DataService dataService = new DataService(context);
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("AddMobileNotification_Should_Save_MobileNotification2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
 
             MobileNotification notificationToAdd = new MobileNotification
             {
@@ -187,7 +196,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(notification2);
             await context.SaveChangesAsync();
 
-            DataService dataService = new DataService(context);
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("UpdateMobileNotification_Should_Save_MobileNotification2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
 
             MobileNotification notificationToUpdate = await dataService.GetMobileNotification(1);
             notificationToUpdate.Read = true;
@@ -253,7 +265,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(notification2);
             await context.SaveChangesAsync();
 
-            DataService dataService = new DataService(context);
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("DeleteMobileNotification_Should_Remove_MobileNotification2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
 
             int notificationItemsCountBeforeDelete = context.MobileNotificationsDb.Count();
             MobileNotification notificationToDelete = await dataService.GetMobileNotification(1);
@@ -302,7 +317,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(notification2);
             await context.SaveChangesAsync();
 
-            DataService dataService = new DataService(context);
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetUsersMobileNotifications_Should_Return_List_Of_MobileNotifications_When_User_Has_Saved_MobileNotifications2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
 
             List<MobileNotification> notificationsList = await dataService.GetUsersMobileNotifications("User1", "EN");
             MobileNotification firstNotification = notificationsList.First();
@@ -352,7 +370,11 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(notification2);
             await context.SaveChangesAsync();
 
-            DataService dataService = new DataService(context);
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>()
+                .UseInMemoryDatabase("GetUsersMobileNotifications_Should_Return_Empty_List_Of_MobileNotifications_When_User_Has_No_Saved_MobileNotifications2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
 
             List<MobileNotification> contactsList = await dataService.GetUsersMobileNotifications("NoUser", "EN");
             

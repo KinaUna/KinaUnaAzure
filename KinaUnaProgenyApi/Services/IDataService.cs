@@ -11,5 +11,11 @@ namespace KinaUnaProgenyApi.Services
         Task<MobileNotification> UpdateMobileNotification(MobileNotification notification);
         Task<MobileNotification> DeleteMobileNotification(MobileNotification notification);
         Task<List<MobileNotification>> GetUsersMobileNotifications(string userId, string language);
+        Task<PushDevices> AddPushDevice(PushDevices device);
+        Task RemovePushDevice(PushDevices device);
+        Task<PushDevices> GetPushDeviceById(int id);
+        Task<List<PushDevices>> GetAllPushDevices();
+        Task<PushDevices> GetPushDevice(PushDevices device);
+        Task<List<PushDevices>> GetPushDeviceByUserId(string userId);
     }
 }

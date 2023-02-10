@@ -191,5 +191,50 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
         }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> AddPushDevice([FromBody] PushDevices device)
+        {
+            device = await _dataService.AddPushDevice(device);
+
+            return Ok(device);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> RemovePushDevice([FromBody] PushDevices device)
+        {
+            await _dataService.RemovePushDevice(device);
+
+            return NoContent();
+        }
+
+        [HttpGet]
+        [Route("[action]/{id}")]
+        public async Task<IActionResult> GetPushDeviceById(int id)
+        {
+            PushDevices device = await _dataService.GetPushDeviceById(id);
+
+            return Ok(device);
+        }
+
+        [HttpGet]
+        [Route("[action]/{userId}")]
+        public async Task<IActionResult> GetPushDeviceByUserId(string userId)
+        {
+            List<PushDevices> devices = await _dataService.GetPushDeviceByUserId(userId);
+
+            return Ok(devices);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> GetPushDevice([FromBody] PushDevices device)
+        {
+            device = await _dataService.GetPushDevice(device);
+
+            return Ok(device);
+        }
     }
 }
