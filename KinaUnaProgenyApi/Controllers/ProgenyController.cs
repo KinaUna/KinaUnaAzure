@@ -224,7 +224,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             // Todo: Implement confirmation mail to verify that all content really should be deleted.
-            Progeny progeny = await _progenyService.GetProgeny(id); // _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == id);
+            Progeny progeny = await _progenyService.GetProgeny(id);
             if (progeny != null)
             {
                 // Check if user is allowed to edit this child.
@@ -233,21 +233,7 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     return Unauthorized();
                 }
-
-                // Todo: Delete content associated with progeny.
-                // Todo: Delete TimeLine
-                // Todo: Delete Pictures
-                // Todo: Delete Videos
-                // Todo: Delete Calendar
-                // Todo: Delete Locations
-                // Todo: Delete Vocabulary
-                // Todo: Delete Skills
-                // Todo: Delete Friends
-                // Todo: Delete Measurements
-                // Todo: Delete Sleep
-                // Todo: Delete Notes
-                // Todo: Delete Contacts
-                // Todo: Delete Vaccinations
+                
                 
                 if (!progeny.PictureLink.ToLower().StartsWith("http") && !String.IsNullOrEmpty(progeny.PictureLink))
                 {

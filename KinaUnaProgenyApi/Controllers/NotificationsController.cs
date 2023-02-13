@@ -223,7 +223,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{userId}")]
-        public async Task<IActionResult> GetPushDeviceByUserId(string userId)
+        public async Task<IActionResult> GetPushDevicesListByUserId(string userId)
         {
             string currentUserId = User.GetUserId() ?? "";
             if (userId != currentUserId)
@@ -231,7 +231,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            List<PushDevices> devices = await _dataService.GetPushDeviceByUserId(userId);
+            List<PushDevices> devices = await _dataService.GetPushDevicesListByUserId(userId);
 
             return Ok(devices);
         }

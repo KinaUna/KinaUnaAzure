@@ -32,7 +32,7 @@ namespace KinaUnaWeb.Services
             string vapidPublicKey = _configuration["VapidPublicKey"];
             string vapidPrivateKey = _configuration["VapidPrivateKey"];
 
-            List<PushDevices> deviceList = await _notificationHttpClient.GetPushDeviceByUserId(user);
+            List<PushDevices> deviceList = await _notificationHttpClient.GetPushDevicesListByUserId(user);
             if (deviceList.Any())
             {
                 foreach (PushDevices dev in deviceList)

@@ -382,5 +382,337 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.IsType<List<MobileNotification>>(contactsList);
             Assert.Empty(contactsList);
         }
+
+        [Fact]
+        public async Task GetPushDeviceById_Should_Return_PushDevices_Object_When_Id_Is_Valid()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPushDeviceById_Should_Return_PushDevices_Object_When_Id_Is_Valid").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDeviceById_Should_Return_PushDevices_Object_When_Id_Is_Valid2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            PushDevices pushDevice1 = new PushDevices
+            {
+                Name = "PushDevice1",
+                PushAuth = "",
+                PushEndpoint = "",
+                PushP256DH = ""
+            };
+
+            webContext.Add(pushDevice1);
+            await webContext.SaveChangesAsync();
+            PushDevices resultPushDevice1 = await dataService.GetPushDeviceById(1);
+            
+            Assert.NotNull(resultPushDevice1);
+            Assert.IsType<PushDevices>(resultPushDevice1);
+            Assert.Equal(pushDevice1.Name, resultPushDevice1.Name);
+        }
+
+        [Fact]
+        public async Task GetPushDeviceById_Should_Return_Null_When_Id_Is_Invalid()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPushDeviceById_Should_Return_Null_When_Id_Is_Invalid").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDeviceById_Should_Return_Null_When_Id_Is_Invalid2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            PushDevices pushDevice1 = new PushDevices
+            {
+                Name = "PushDevice1",
+                PushAuth = "",
+                PushEndpoint = "",
+                PushP256DH = ""
+            };
+
+            webContext.Add(pushDevice1);
+            await webContext.SaveChangesAsync();
+            PushDevices resultPushDevice2 = await dataService.GetPushDeviceById(2);
+
+            Assert.Null(resultPushDevice2);
+        }
+
+        [Fact]
+        public async Task GetPushDevice_Should_Return_PushDevices_Object_When_Parameter_Is_Valid()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPushDevice_Should_Return_PushDevices_Object_When_Parameter_Is_Valid").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDevice_Should_Return_PushDevices_Object_When_Parameter_Is_Valid2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            PushDevices pushDevice1 = new PushDevices
+            {
+                Name = "PushDevice1",
+                PushAuth = "Auth1",
+                PushEndpoint = "EndPoint1",
+                PushP256DH = "P2256DH1"
+            };
+
+            webContext.Add(pushDevice1);
+            await webContext.SaveChangesAsync();
+
+            PushDevices requestPushDevice1 = new PushDevices
+            {
+                Name = "PushDevice1",
+                PushAuth = "Auth1",
+                PushEndpoint = "EndPoint1",
+                PushP256DH = "P2256DH1"
+            };
+
+            PushDevices resultPushDevice1 = await dataService.GetPushDevice(requestPushDevice1);
+
+            Assert.NotNull(resultPushDevice1);
+            Assert.IsType<PushDevices>(resultPushDevice1);
+            Assert.Equal(pushDevice1.Name, resultPushDevice1.Name);
+            Assert.Equal(pushDevice1.PushAuth, resultPushDevice1.PushAuth);
+            Assert.Equal(pushDevice1.PushEndpoint, resultPushDevice1.PushEndpoint);
+            Assert.Equal(pushDevice1.PushP256DH, resultPushDevice1.PushP256DH);
+            Assert.Equal(pushDevice1.Id, resultPushDevice1.Id);
+        }
+
+        [Fact]
+        public async Task GetPushDevice_Should_Return_Null_When_Parameter_Is_Invalid()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPushDevice_Should_Return_Null_When_Parameter_Is_Invalid").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDevice_Should_Return_Null_When_Parameter_Is_Invalid2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            PushDevices pushDevice1 = new PushDevices
+            {
+                Name = "PushDevice1",
+                PushAuth = "Auth1",
+                PushEndpoint = "EndPoint1",
+                PushP256DH = "P2256DH1"
+            };
+
+            webContext.Add(pushDevice1);
+            await webContext.SaveChangesAsync();
+
+            PushDevices requestPushDevice1 = new PushDevices
+            {
+                Name = "PushDevice2",
+                PushAuth = "Auth2",
+                PushEndpoint = "EndPoint2",
+                PushP256DH = "P2256DH2"
+            };
+
+            PushDevices resultPushDevice1 = await dataService.GetPushDevice(requestPushDevice1);
+
+            Assert.Null(resultPushDevice1);
+        }
+
+        [Fact]
+        public async Task GetPushDeviceByUserId_Should_Return_List_of_PushDevices_When_UserId_Is_Valid()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPushDeviceByUserId_Should_Return_List_of_PushDevices_When_UserId_Is_Valid").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDeviceByUserId_Should_Return_List_of_PushDevices_When_UserId_Is_Valid2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            PushDevices pushDevice1 = new PushDevices
+            {
+                Name = "PushDevice1",
+                PushAuth = "Auth1",
+                PushEndpoint = "Endpoint1",
+                PushP256DH = "P256DH1"
+            };
+
+            PushDevices pushDevice2 = new PushDevices
+            {
+                Name = "PushDevice1",
+                PushAuth = "Auth2",
+                PushEndpoint = "Endpoint2",
+                PushP256DH = "P256DH2"
+            };
+
+            webContext.Add(pushDevice1);
+            webContext.Add(pushDevice2);
+            await webContext.SaveChangesAsync();
+
+            List<PushDevices> resultPushDevicesList1 = await dataService.GetPushDevicesListByUserId("PushDevice1");
+
+            Assert.NotNull(resultPushDevicesList1);
+            Assert.Equal(webContext.PushDevices.Count(), resultPushDevicesList1.Count);
+            Assert.NotNull(resultPushDevicesList1.FirstOrDefault());
+            Assert.IsType<PushDevices>(resultPushDevicesList1.FirstOrDefault());
+            Assert.Equal(pushDevice1.Name, resultPushDevicesList1.FirstOrDefault()!.Name);
+
+        }
+
+        [Fact]
+        public async Task GetPushDeviceByUSerId_Should_Return_Empty_List_When_UserId_Is_Invalid()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPushDeviceByUSerId_Should_Return_Empty_List_When_UserId_Is_Invalid").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDeviceByUSerId_Should_Return_Empty_List_When_UserId_Is_Invalid2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            PushDevices pushDevice1 = new PushDevices
+            {
+                Name = "PushDevice1",
+                PushAuth = "Auth1",
+                PushEndpoint = "Endpoint1",
+                PushP256DH = "P256DH1"
+            };
+
+            PushDevices pushDevice2 = new PushDevices
+            {
+                Name = "PushDevice1",
+                PushAuth = "Auth2",
+                PushEndpoint = "Endpoint2",
+                PushP256DH = "P256DH2"
+            };
+
+            webContext.Add(pushDevice1);
+            webContext.Add(pushDevice2);
+            await webContext.SaveChangesAsync();
+
+            List<PushDevices> resultPushDevicesList2 = await dataService.GetPushDevicesListByUserId("PushDevice2");
+
+            Assert.Empty(resultPushDevicesList2);
+        }
+
+        [Fact]
+        public async Task GetAllPushDevices_Should_Return_List_of_PushDevices()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetAllPushDevices_Should_Return_List_of_PushDevices").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetAllPushDevices_Should_Return_List_of_PushDevices2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            PushDevices pushDevice1 = new PushDevices
+            {
+                Name = "PushDevice1",
+                PushAuth = "Auth1",
+                PushEndpoint = "Endpoint1",
+                PushP256DH = "P256DH1"
+            };
+
+            PushDevices pushDevice2 = new PushDevices
+            {
+                Name = "PushDevice1",
+                PushAuth = "Auth2",
+                PushEndpoint = "Endpoint2",
+                PushP256DH = "P256DH2"
+            };
+
+            webContext.Add(pushDevice1);
+            webContext.Add(pushDevice2);
+            await webContext.SaveChangesAsync();
+
+            List<PushDevices> resultPushDevicesList1 = await dataService.GetAllPushDevices();
+
+            Assert.NotNull(resultPushDevicesList1);
+            Assert.Equal(webContext.PushDevices.Count(), resultPushDevicesList1.Count);
+            Assert.NotNull(resultPushDevicesList1.FirstOrDefault());
+            Assert.IsType<PushDevices>(resultPushDevicesList1.FirstOrDefault());
+            Assert.Equal(pushDevice1.Name, resultPushDevicesList1.FirstOrDefault()!.Name);
+
+        }
+
+        [Fact]
+        public async Task AddPushDevice_Should_Save_PushDevices_Object()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddPushDevice_Should_Save_PushDevices_Object").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("AddPushDevice_Should_Save_PushDevices_Object2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            PushDevices pushDevice1 = new PushDevices
+            {
+                Name = "PushDevice1",
+                PushAuth = "Auth1",
+                PushEndpoint = "EndPoint1",
+                PushP256DH = "P2256DH1"
+            };
+
+            webContext.Add(pushDevice1);
+            await webContext.SaveChangesAsync();
+
+            PushDevices addPushDevice1 = new PushDevices
+            {
+                Name = "PushDevice2",
+                PushAuth = "Auth2",
+                PushEndpoint = "EndPoint2",
+                PushP256DH = "P2256DH2"
+            };
+
+            PushDevices addedPushDevice = await dataService.AddPushDevice(addPushDevice1);
+
+            PushDevices resultPushDevice1 = await dataService.GetPushDeviceById(addedPushDevice.Id);
+
+            Assert.NotNull(addedPushDevice);
+            Assert.IsType<PushDevices>(addedPushDevice);
+            Assert.NotNull(resultPushDevice1);
+            Assert.IsType<PushDevices>(resultPushDevice1);
+            Assert.Equal(addPushDevice1.Name, resultPushDevice1.Name);
+            Assert.Equal(addPushDevice1.PushAuth, resultPushDevice1.PushAuth);
+            Assert.Equal(addPushDevice1.PushEndpoint, resultPushDevice1.PushEndpoint);
+            Assert.Equal(addPushDevice1.PushP256DH, resultPushDevice1.PushP256DH);
+            Assert.Equal(addPushDevice1.Id, resultPushDevice1.Id);
+        }
+
+        [Fact]
+        public async Task RemovePushDevice_Should_Remove_PushDevices_Object()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("RemovePushDevice_Should_Remove_PushDevices_Object").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("RemovePushDevice_Should_Remove_PushDevices_Object2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            PushDevices pushDevice1 = new PushDevices
+            {
+                Name = "PushDevice1",
+                PushAuth = "Auth1",
+                PushEndpoint = "EndPoint1",
+                PushP256DH = "P2256DH1"
+            };
+
+            PushDevices pushDevice2 = new PushDevices
+            {
+                Name = "PushDevice2",
+                PushAuth = "Auth2",
+                PushEndpoint = "EndPoint2",
+                PushP256DH = "P2256DH2"
+            };
+
+            webContext.Add(pushDevice1);
+            webContext.Add(pushDevice2);
+            await webContext.SaveChangesAsync();
+
+            int deviceBeforeRemove = webContext.PushDevices.Count();
+            await dataService.RemovePushDevice(pushDevice1);
+            int deviceAfterRemove = webContext.PushDevices.Count();
+
+            Assert.Equal(2, deviceBeforeRemove);
+            Assert.Equal(1, deviceAfterRemove);
+        }
     }
 }

@@ -10,7 +10,7 @@ public interface INotificationsHttpClient
     Task<PushDevices> GetPushDeviceById(int id, bool updateCache = false);
     Task<PushDevices> AddPushDevice(PushDevices device);
     Task<PushDevices> RemovePushDevice(PushDevices device);
-    Task<List<PushDevices>> GetPushDeviceByUserId(string user);
+    Task<List<PushDevices>> GetPushDevicesListByUserId(string user);
     Task<PushDevices> GetPushDevice(PushDevices device);
     Task<WebNotification> AddWebNotification(WebNotification notification);
     Task<WebNotification> UpdateWebNotification(WebNotification notification);

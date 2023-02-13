@@ -16,7 +16,7 @@ namespace KinaUnaProgenyApi.Services
         Task<PushDevices> GetPushDeviceById(int id);
         Task<List<PushDevices>> GetAllPushDevices();
         Task<PushDevices> GetPushDevice(PushDevices device);
-        Task<List<PushDevices>> GetPushDeviceByUserId(string userId);
+        Task<List<PushDevices>> GetPushDevicesListByUserId(string userId);
         Task<WebNotification> AddWebNotification(WebNotification notification);
         Task<WebNotification> UpdateWebNotification(WebNotification notification);
         Task RemoveWebNotification(WebNotification notification);

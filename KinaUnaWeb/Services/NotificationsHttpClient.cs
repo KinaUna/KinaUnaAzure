@@ -143,14 +143,14 @@ namespace KinaUnaWeb.Services
             return deletedPushDevice;
         }
 
-        public async Task<List<PushDevices>> GetPushDeviceByUserId(string user)
+        public async Task<List<PushDevices>> GetPushDevicesListByUserId(string user)
         {
             List<PushDevices> pushDevicesList = new List<PushDevices>();
            
             string accessToken = await GetNewToken(true);
             _httpClient.SetBearerToken(accessToken);
 
-            string apiPath = "/api/Notifications/GetPushDeviceByUserId/" + user;
+            string apiPath = "/api/Notifications/GetPushDevicesListByUserId/" + user;
             HttpResponseMessage devicesResponse = await _httpClient.GetAsync(apiPath);
 
             if (devicesResponse.IsSuccessStatusCode)

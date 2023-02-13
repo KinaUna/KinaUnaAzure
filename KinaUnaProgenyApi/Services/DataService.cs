@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services
@@ -77,21 +78,33 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<PushDevices> AddPushDevice(PushDevices device)
         {
+            PushDevices existingDevice = await GetPushDevice(device);
+            if (existingDevice != null)
+            {
+                return existingDevice;
+            }
+
             _webDbContext.PushDevices.Add(device);
-            await _context.SaveChangesAsync();
+            await _webDbContext.SaveChangesAsync();
 
             return device;
         }
 
         public async Task RemovePushDevice(PushDevices device)
         {
+            PushDevices existingDevice = await GetPushDevice(device);
+            if (existingDevice == null)
+            {
+                return;
+            }
+
             _webDbContext.PushDevices.Remove(device);
-            await _context.SaveChangesAsync();
+            await _webDbContext.SaveChangesAsync();
         }
 
         public async Task<PushDevices> GetPushDeviceById(int id)
         {
-            PushDevices device = await _webDbContext.PushDevices.SingleOrDefaultAsync(m => m.Id == id);
+            PushDevices device = await _webDbContext.PushDevices.SingleOrDefaultAsync(p => p.Id == id);
 
             return device;
         }
@@ -111,7 +124,7 @@ namespace KinaUnaProgenyApi.Services
             return result;
         }
 
-        public async Task<List<PushDevices>> GetPushDeviceByUserId(string userId)
+        public async Task<List<PushDevices>> GetPushDevicesListByUserId(string userId)
         {
             List<PushDevices> deviceList = await _webDbContext.PushDevices.Where(m => m.Name == userId).ToListAsync();
 
@@ -129,7 +142,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<WebNotification> UpdateWebNotification(WebNotification notification)
         {
             _webDbContext.WebNotificationsDb.Update(notification);
-            await _context.SaveChangesAsync();
+            await _webDbContext.SaveChangesAsync();
 
             return notification;
         }
@@ -137,7 +150,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task RemoveWebNotification(WebNotification notification)
         {
             _webDbContext.WebNotificationsDb.Remove(notification);
-            await _context.SaveChangesAsync();
+            await _webDbContext.SaveChangesAsync();
         }
 
         public async Task<WebNotification> GetWebNotificationById(int id)
