@@ -92,25 +92,14 @@ namespace KinaUnaWeb.Controllers
 
         public async Task LogOut()
         {
-            // Clears the local cookie.
-            // await HttpContext.SignOutAsync("Cookie");
-            // await HttpContext.SignOutAsync("oidc");
-
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
-
-            
-            //var homeUrl = Url.Action(nameof(HomeController.Index), "Home");
-            //return new SignOutResult(OpenIdConnectDefaults.AuthenticationScheme,
-            //    new Microsoft.AspNetCore.Authentication.AuthenticationProperties { RedirectUri = homeUrl });
         }
 
         public async Task CheckOut(string returnUrl = null)
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
-            
-            
         }
 
         public IActionResult AccessDenied()
@@ -122,8 +111,9 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> MyAccount()
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value;
-            bool.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out bool mailConfirmed);
-            DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out DateTime joinDate);
+            _ = bool.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out bool mailConfirmed);
+            _ = DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out DateTime joinDate);
+
             UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             if (userinfo == null)
             {
@@ -175,7 +165,7 @@ namespace KinaUnaWeb.Controllers
             model.LanguageId = Request.GetLanguageIdFromCookie();
 
             string userEmail = HttpContext.User.FindFirst("email")?.Value;
-            bool.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out bool mailConfirmed);
+            _ = bool.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out bool mailConfirmed);
             UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             userinfo.FirstName = model.FirstName;
             userinfo.MiddleName = model.MiddleName;
@@ -207,14 +197,11 @@ namespace KinaUnaWeb.Controllers
 
             if (model.File != null && model.File.Name != string.Empty)
             {
-                using (Stream stream = model.File.OpenReadStream())
-                {
-                    userinfo.ProfilePicture = await _imageStore.SaveImage(stream, BlobContainers.Profiles);
-                }
+                await using Stream stream = model.File.OpenReadStream();
+                userinfo.ProfilePicture = await _imageStore.SaveImage(stream, BlobContainers.Profiles);
             }
 
             await _userInfosHttpClient.UpdateUserInfo(userinfo);
-
             
             model.ProfilePicture = userinfo.ProfilePicture;
             if (!userinfo.ProfilePicture.ToLower().StartsWith("http"))
@@ -237,9 +224,10 @@ namespace KinaUnaWeb.Controllers
                 newEmail = userEmail;
             }
 
-            bool.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out bool mailConfirmed);
+            _ = bool.TryParse(HttpContext.User.FindFirst("email_verified")?.Value, out bool mailConfirmed);
             UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out DateTime joinDate);
+            _ = DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out DateTime joinDate);
+            
             UserInfoViewModel model = new UserInfoViewModel
             {
                 Id = userinfo.Id,
@@ -285,7 +273,8 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteAccount()
         {
             string userId = HttpContext.User.GetUserId();
-            DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out DateTime joinDate);
+            _ = DateTime.TryParse(HttpContext.User.FindFirst("joindate")?.Value, out DateTime joinDate);
+            
             UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(userId);
             if (userInfo == null)
             {

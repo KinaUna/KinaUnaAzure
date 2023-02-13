@@ -96,8 +96,13 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddAccess(UserAccessViewModel model)
         {
             string userEmail = User.GetEmail() ?? _defaultUser;
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             
+            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            if(!progeny.IsInAdminList(userEmail))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             UserAccess userAccessToAdd = new UserAccess();
             userAccessToAdd.ProgenyId = model.ProgenyId;
             userAccessToAdd.UserId = model.Email.ToUpper();
@@ -122,11 +127,13 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> EditAccess(string accessId)
+        public async Task<IActionResult> EditAccess(int accessId)
         {
+            string userEmail = User.GetEmail() ?? _defaultUser;
+
             UserAccessViewModel model = new UserAccessViewModel();
             model.LanguageId = Request.GetLanguageIdFromCookie();
-            UserAccess userAccess = await _userAccessHttpClient.GetUserAccess(int.Parse(accessId));
+            UserAccess userAccess = await _userAccessHttpClient.GetUserAccess(accessId);
             model.ProgenyId = userAccess.ProgenyId;
             model.UserId = userAccess.UserId;
             model.AccessId = userAccess.AccessId;
@@ -160,6 +167,11 @@ namespace KinaUnaWeb.Controllers
                 model.AccessLevelListEn = model.AccessLevelListDa;
             }
 
+            if (!model.Progeny.IsInAdminList(userEmail))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             return View(model);
         }
 
@@ -167,6 +179,13 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditAccess(UserAccessViewModel model)
         {
+            string userEmail = User.GetEmail() ?? _defaultUser;
+            model.Progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            if (!model.Progeny.IsInAdminList(userEmail))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             UserAccess userAccess = new UserAccess();
             userAccess.AccessId = model.AccessId;
             userAccess.ProgenyId = model.ProgenyId;
@@ -216,7 +235,11 @@ namespace KinaUnaWeb.Controllers
                 model.AccessLevelListEn = model.AccessLevelListDa;
             }
 
-            // Todo: Notify user of update
+            string userEmail = User.GetEmail() ?? _defaultUser;
+            if (!model.Progeny.IsInAdminList(userEmail))
+            {
+                return RedirectToAction("Index", "Home");
+            }
 
             return View(model);
         }
@@ -225,10 +248,17 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAccess(UserAccessViewModel model)
         {
+            string userEmail = User.GetEmail() ?? _defaultUser;
+            model.Progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
+            if (!model.Progeny.IsInAdminList(userEmail))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             await _userAccessHttpClient.GetUserAccess(model.AccessId);
             await _userAccessHttpClient.DeleteUserAccess(model.AccessId);
             
-            // To do: Notify user of update
+            // Todo: Notify user of update
             return RedirectToAction("Index");
         }
     }
