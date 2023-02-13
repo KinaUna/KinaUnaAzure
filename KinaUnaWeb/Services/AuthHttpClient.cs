@@ -21,11 +21,10 @@ namespace KinaUnaWeb.Services
 
         public AuthHttpClient(HttpClient httpClient, IConfiguration configuration, IHostEnvironment env, IHttpContextAccessor httpContextAccessor)
         {
-            IConfiguration configuration1 = configuration;
-            string clientUri = configuration1.GetValue<string>("AuthenticationServer");
+            string clientUri = configuration.GetValue<string>("AuthenticationServer");
             if (env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugPivoqServer))
             {
-                clientUri = configuration1.GetValue<string>("AuthenticationServer" + Constants.DebugPivoqServer);
+                clientUri = configuration.GetValue<string>("AuthenticationServer" + Constants.DebugPivoqServer);
             }
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
