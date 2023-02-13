@@ -17,7 +17,7 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
-        private int _progenyId = Constants.DefaultChildId;
+        
         public AccessManagementController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
@@ -31,7 +31,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> AddAccess(string progenyId)
+        public async Task<IActionResult> AddAccess(int progenyId)
         {
             UserAccessViewModel model = new UserAccessViewModel();
             model.LanguageId = Request.GetLanguageIdFromCookie();
@@ -42,17 +42,15 @@ namespace KinaUnaWeb.Controllers
             {
                 return RedirectToAction("Index");
             }
-            if (userinfo.ViewChild > 0)
+
+            model.ProgenyId = progenyId;
+
+            if (progenyId == 0 && userinfo.ViewChild > 0)
             {
-                _progenyId = userinfo.ViewChild;
+                model.ProgenyId = userinfo.ViewChild;
             }
             
-            model.ProgenyId = int.Parse(progenyId);
-            if (progenyId == "0")
-            {
-                progenyId = userinfo.ViewChild.ToString();
-            }
-            model.Progeny = await _progenyHttpClient.GetProgeny(int.Parse(progenyId));
+            model.Progeny = await _progenyHttpClient.GetProgeny(progenyId);
             model.ProgenyName = model.Progeny.Name;
             model.Email = "";
             model.AccessLevel = (int)AccessLevel.Users;
@@ -70,7 +68,7 @@ namespace KinaUnaWeb.Controllers
                             Text = accessList.Single(p => p.Id == prog.Id).NickName,
                             Value = prog.Id.ToString()
                         };
-                        if (prog.Id == _progenyId)
+                        if (prog.Id == model.ProgenyId)
                         {
                             selItem.Selected = true;
                         }
@@ -79,8 +77,16 @@ namespace KinaUnaWeb.Controllers
                     }
                 }
             }
+            
+            if (model.LanguageId == 2)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDe;
+            }
 
-            // Todo: Access level list translations.
+            if (model.LanguageId == 3)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDa;
+            }
 
             return View(model);
         }
@@ -91,28 +97,27 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = User.GetEmail() ?? _defaultUser;
             UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            if (userinfo != null && userinfo.ViewChild > 0)
-            {
-                _progenyId = userinfo.ViewChild;
-            }
-
-            UserAccess accessModel = new UserAccess();
-            accessModel.ProgenyId = model.ProgenyId;
-            accessModel.UserId = model.Email.ToUpper();
-            accessModel.AccessLevel = model.AccessLevel;
+            
+            UserAccess userAccessToAdd = new UserAccess();
+            userAccessToAdd.ProgenyId = model.ProgenyId;
+            userAccessToAdd.UserId = model.Email.ToUpper();
+            userAccessToAdd.AccessLevel = model.AccessLevel;
+            
             List<UserAccess> progenyAccessList = await _userAccessHttpClient.GetUserAccessList(model.Email.ToUpper());
+            
             UserAccess oldUserAccess = progenyAccessList.SingleOrDefault(u => u.ProgenyId == model.ProgenyId);
             if (oldUserAccess == null)
             {
-                await _userAccessHttpClient.AddUserAccess(accessModel);
+                await _userAccessHttpClient.AddUserAccess(userAccessToAdd);
             }
             else
             {
                 await _userAccessHttpClient.DeleteUserAccess(oldUserAccess.AccessId);
-                await _userAccessHttpClient.AddUserAccess(accessModel);
+                await _userAccessHttpClient.AddUserAccess(userAccessToAdd);
             }
             
             // Todo: Notify user of update
+            
             return RedirectToAction("Index");
         }
 
@@ -131,6 +136,7 @@ namespace KinaUnaWeb.Controllers
             model.FirstName = "No user found";
             model.MiddleName = "No user found";
             model.LastName = "No user found";
+            
             UserInfo userInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
             if (userInfo != null)
             {
@@ -177,14 +183,14 @@ namespace KinaUnaWeb.Controllers
             model.FirstName = "No user found";
             model.MiddleName = "No user found";
             model.LastName = "No user found";
-            UserInfo appUser = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
-            if (appUser != null)
+            UserInfo userAccessUserInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
+            if (userAccessUserInfo != null)
             {
-                model.Email = appUser.UserEmail;
-                model.UserName = appUser.UserName;
-                model.FirstName = appUser.FirstName;
-                model.MiddleName = appUser.MiddleName;
-                model.LastName = appUser.LastName;
+                model.Email = userAccessUserInfo.UserEmail;
+                model.UserName = userAccessUserInfo.UserName;
+                model.FirstName = userAccessUserInfo.FirstName;
+                model.MiddleName = userAccessUserInfo.MiddleName;
+                model.LastName = userAccessUserInfo.LastName;
             }
             model.Progeny = await _progenyHttpClient.GetProgeny(userAccess.ProgenyId);
             model.ProgenyName = model.Progeny.Name;
