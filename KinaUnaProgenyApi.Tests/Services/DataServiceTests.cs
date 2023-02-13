@@ -714,5 +714,331 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(2, deviceBeforeRemove);
             Assert.Equal(1, deviceAfterRemove);
         }
+
+        [Fact]
+        public async Task GetWebNotificationById_Should_Return_WebNotification_Object_When_Id_Is_Valid()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetWebNotificationById_Should_Return_WebNotification_Object_When_Id_Is_Valid").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetWebNotificationById_Should_Return_WebNotification_Object_When_Id_Is_Valid2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            WebNotification webNotification1 = new WebNotification
+            {
+                Title = "Title1",
+                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                From = "From1",
+                To = "To1",
+                Message = "Message1",
+                Link = "Link1",
+                Icon = "Icon1"
+            };
+
+            webContext.Add(webNotification1);
+            await webContext.SaveChangesAsync();
+
+            WebNotification resultWebNotification1 = await dataService.GetWebNotificationById(1);
+
+            Assert.NotNull(resultWebNotification1);
+            Assert.IsType<WebNotification>(resultWebNotification1);
+            Assert.Equal(webNotification1.Title, resultWebNotification1.Title);
+            Assert.Equal(webNotification1.From, resultWebNotification1.From);
+            Assert.Equal(webNotification1.To, resultWebNotification1.To);
+
+        }
+
+        [Fact]
+        public async Task GetWebNotificationById_Should_Return_Null_Object_When_Id_Is_Invalid()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetWebNotificationById_Should_Return_Null_Object_When_Id_Is_Invalid").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetWebNotificationById_Should_Return_Null_Object_When_Id_Is_Invalid2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            WebNotification webNotification1 = new WebNotification
+            {
+                Title = "Title1",
+                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                From = "From1",
+                To = "To1",
+                Message = "Message1",
+                Link = "Link1",
+                Icon = "Icon1"
+            };
+
+            webContext.Add(webNotification1);
+            await webContext.SaveChangesAsync();
+
+            WebNotification resultWebNotification1 = await dataService.GetWebNotificationById(2);
+
+            Assert.Null(resultWebNotification1);
+        }
+
+        [Fact]
+        public async Task GetUsersWebNotifications_Should_Return_List_of_WebNotification_When_UserId_Is_Valid()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUsersWebNotifications_Should_Return_List_of_WebNotification_When_UserId_Is_Valid").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetUsersWebNotifications_Should_Return_List_of_WebNotification_When_UserId_Is_Valid2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            WebNotification webNotification1 = new WebNotification
+            {
+                Title = "Title1",
+                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                From = "From1",
+                To = "To1",
+                Message = "Message1",
+                Link = "Link1",
+                Icon = "Icon1"
+            };
+
+            WebNotification webNotification2 = new WebNotification
+            {
+                Title = "Title2",
+                DateTime = new DateTime(2022, 2, 2, 22, 22, 22),
+                From = "From1",
+                To = "To1",
+                Message = "Message2",
+                Link = "Link2",
+                Icon = "Icon2"
+            };
+
+            WebNotification webNotification3 = new WebNotification
+            {
+                Title = "Title3",
+                DateTime = new DateTime(2022, 3, 3, 11, 33, 33),
+                From = "From1",
+                To = "To2",
+                Message = "Message3",
+                Link = "Link3",
+                Icon = "Icon3"
+            };
+
+            webContext.Add(webNotification1);
+            webContext.Add(webNotification2);
+            webContext.Add(webNotification3);
+            await webContext.SaveChangesAsync();
+
+            List<WebNotification> resultWebNotificationsList1 = await dataService.GetUsersWebNotifications("To1");
+
+            Assert.NotNull(resultWebNotificationsList1.FirstOrDefault());
+            Assert.IsType<WebNotification>(resultWebNotificationsList1.FirstOrDefault());
+            Assert.Equal(2, resultWebNotificationsList1.Count);
+        }
+
+        [Fact]
+        public async Task GetUsersWebNotifications_Should_Return_Empty_List_of_WebNotification_When_UserId_Is_Invalid()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUsersWebNotifications_Should_Return_Empty_List_of_WebNotification_When_UserId_Is_Invalid").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetUsersWebNotifications_Should_Return_Empty_List_of_WebNotification_When_UserId_Is_Invalid2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            WebNotification webNotification1 = new WebNotification
+            {
+                Title = "Title1",
+                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                From = "From1",
+                To = "To1",
+                Message = "Message1",
+                Link = "Link1",
+                Icon = "Icon1"
+            };
+
+            WebNotification webNotification2 = new WebNotification
+            {
+                Title = "Title2",
+                DateTime = new DateTime(2022, 2, 2, 22, 22, 22),
+                From = "From1",
+                To = "To1",
+                Message = "Message2",
+                Link = "Link2",
+                Icon = "Icon2"
+            };
+
+            WebNotification webNotification3 = new WebNotification
+            {
+                Title = "Title3",
+                DateTime = new DateTime(2022, 3, 3, 11, 33, 33),
+                From = "From1",
+                To = "To2",
+                Message = "Message3",
+                Link = "Link3",
+                Icon = "Icon3"
+            };
+
+            webContext.Add(webNotification1);
+            webContext.Add(webNotification2);
+            webContext.Add(webNotification3);
+            await webContext.SaveChangesAsync();
+
+            List<WebNotification> resultWebNotificationsList1 = await dataService.GetUsersWebNotifications("To3");
+
+            Assert.NotNull(resultWebNotificationsList1);
+            Assert.Empty(resultWebNotificationsList1);
+        }
+
+        [Fact]
+        public async Task AddWebNotification_Should_Save_WebNotification()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddWebNotification_Should_Save_WebNotification").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("AddWebNotification_Should_Save_WebNotification2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            WebNotification webNotification1 = new WebNotification
+            {
+                Title = "Title1",
+                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                From = "From1",
+                To = "To1",
+                Message = "Message1",
+                Link = "Link1",
+                Icon = "Icon1"
+            };
+
+            webContext.Add(webNotification1);
+            await webContext.SaveChangesAsync();
+
+            WebNotification webNotificationToAdd = new WebNotification
+            {
+                Title = "Title2",
+                DateTime = new DateTime(2022, 2, 2, 22, 22, 22),
+                From = "From1",
+                To = "To1",
+                Message = "Message2",
+                Link = "Link2",
+                Icon = "Icon2"
+            };
+
+            WebNotification addedWebNotification = await dataService.AddWebNotification(webNotificationToAdd);
+
+            WebNotification resultWebNotification1 = await dataService.GetWebNotificationById(addedWebNotification.Id);
+
+            Assert.NotNull(resultWebNotification1);
+            Assert.IsType<WebNotification>(resultWebNotification1);
+            Assert.Equal(webNotificationToAdd.Title, resultWebNotification1.Title);
+            Assert.Equal(webNotificationToAdd.From, resultWebNotification1.From);
+            Assert.Equal(webNotificationToAdd.To, resultWebNotification1.To);
+
+        }
+
+        [Fact]
+        public async Task UpdateWebNotification_Should_Save_WebNotification()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateWebNotification_Should_Save_WebNotification").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("UpdateWebNotification_Should_Save_WebNotification2").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            WebNotification webNotification1 = new WebNotification
+            {
+                Title = "Title1",
+                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                From = "From1",
+                To = "To1",
+                Message = "Message1",
+                Link = "Link1",
+                Icon = "Icon1"
+            };
+
+            WebNotification webNotification2 = new WebNotification
+            {
+                Title = "Title2",
+                DateTime = new DateTime(2022, 2, 2, 22, 22, 22),
+                From = "From1",
+                To = "To1",
+                Message = "Message2",
+                Link = "Link2",
+                Icon = "Icon2"
+            };
+            webContext.Add(webNotification1);
+            webContext.Add(webNotification2);
+            await webContext.SaveChangesAsync();
+
+            WebNotification webNotificationToUpdate = await dataService.GetWebNotificationById(1);
+            webNotificationToUpdate.Title = "Title3";
+            webNotificationToUpdate.IsRead = true;
+
+            await dataService.UpdateWebNotification(webNotificationToUpdate);
+
+            WebNotification resultWebNotification1 = await dataService.GetWebNotificationById(1);
+
+            Assert.NotNull(resultWebNotification1);
+            Assert.IsType<WebNotification>(resultWebNotification1);
+            Assert.Equal("Title3", resultWebNotification1.Title);
+            Assert.True(resultWebNotification1.IsRead);
+
+        }
+
+        [Fact]
+        public async Task RemoveWebNotification_Should_Delete_WebNotification()
+        {
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("RemoveWebNotification_Should_Delete_WebNotification").Options;
+            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("RemoveWebNotification_Should_Delete_WebNotification").Options;
+            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+
+            DataService dataService = new DataService(context, webContext);
+
+            WebNotification webNotification1 = new WebNotification
+            {
+                Title = "Title1",
+                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                From = "From1",
+                To = "To1",
+                Message = "Message1",
+                Link = "Link1",
+                Icon = "Icon1"
+            };
+
+            WebNotification webNotification2 = new WebNotification
+            {
+                Title = "Title2",
+                DateTime = new DateTime(2022, 2, 2, 22, 22, 22),
+                From = "From1",
+                To = "To1",
+                Message = "Message2",
+                Link = "Link2",
+                Icon = "Icon2"
+            };
+            webContext.Add(webNotification1);
+            webContext.Add(webNotification2);
+            await webContext.SaveChangesAsync();
+
+            WebNotification webNotificationToDelete = await dataService.GetWebNotificationById(1);
+            int countBeforeDelete = webContext.WebNotificationsDb.Count();
+            
+            await dataService.RemoveWebNotification(webNotificationToDelete);
+            
+            int countAfterDelete = webContext.WebNotificationsDb.Count();
+
+            WebNotification resultWebNotification1 = await dataService.GetWebNotificationById(1);
+
+            Assert.Null(resultWebNotification1);
+            Assert.Equal(2, countBeforeDelete);
+            Assert.Equal(1, countAfterDelete);
+
+        }
     }
 }
