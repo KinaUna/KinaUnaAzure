@@ -150,6 +150,16 @@ namespace KinaUnaWeb.Controllers
             model.Progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             model.ProgenyName = model.Progeny.Name;
 
+            if (model.LanguageId == 2)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDe;
+            }
+
+            if (model.LanguageId == 3)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDa;
+            }
+
             return View(model);
         }
 
@@ -164,7 +174,8 @@ namespace KinaUnaWeb.Controllers
             userAccess.AccessLevel = model.AccessLevel;
             await _userAccessHttpClient.UpdateUserAccess(userAccess);
             
-            // To do: Notify user of update
+            // Todo: Notify user of update
+            
             return RedirectToAction("Index");
         }
 
@@ -194,6 +205,18 @@ namespace KinaUnaWeb.Controllers
             }
             model.Progeny = await _progenyHttpClient.GetProgeny(userAccess.ProgenyId);
             model.ProgenyName = model.Progeny.Name;
+
+            if (model.LanguageId == 2)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDe;
+            }
+
+            if (model.LanguageId == 3)
+            {
+                model.AccessLevelListEn = model.AccessLevelListDa;
+            }
+
+            // Todo: Notify user of update
 
             return View(model);
         }
