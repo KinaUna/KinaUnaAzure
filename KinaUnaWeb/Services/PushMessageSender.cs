@@ -12,13 +12,13 @@ namespace KinaUnaWeb.Services
     public class PushMessageSender: IPushMessageSender
     {
         private readonly IConfiguration _configuration;
-        private readonly INotificationsHttpClient _notificationHttpClient;
+        private readonly IWebNotificationsHttpClient _webNotificationHttpClient;
         
 
-        public PushMessageSender(IConfiguration configuration, INotificationsHttpClient notificationHttpClient)
+        public PushMessageSender(IConfiguration configuration, IWebNotificationsHttpClient webNotificationHttpClient)
         {
             _configuration = configuration;
-            _notificationHttpClient = notificationHttpClient;
+            _webNotificationHttpClient = webNotificationHttpClient;
         }
 
         public async Task SendMessage(string user, string title, string message, string link, string tag)
@@ -32,7 +32,7 @@ namespace KinaUnaWeb.Services
             string vapidPublicKey = _configuration["VapidPublicKey"];
             string vapidPrivateKey = _configuration["VapidPrivateKey"];
 
-            List<PushDevices> deviceList = await _notificationHttpClient.GetPushDevicesListByUserId(user);
+            List<PushDevices> deviceList = await _webNotificationHttpClient.GetPushDevicesListByUserId(user);
             if (deviceList.Any())
             {
                 foreach (PushDevices dev in deviceList)
@@ -41,7 +41,7 @@ namespace KinaUnaWeb.Services
                     VapidDetails vapidDetails = new VapidDetails("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
                     if (string.IsNullOrEmpty(dev.PushAuth) || string.IsNullOrEmpty(dev.PushEndpoint))
                     {
-                        await _notificationHttpClient.RemovePushDevice(dev);
+                        await _webNotificationHttpClient.RemovePushDevice(dev);
                     }
                     else
                     {
@@ -54,7 +54,7 @@ namespace KinaUnaWeb.Services
                         {
                             if (ex.Message == "Subscription no longer valid")
                             {
-                                await _notificationHttpClient.RemovePushDevice(dev);
+                                await _webNotificationHttpClient.RemovePushDevice(dev);
                             }
                         }
                     }
@@ -66,21 +66,21 @@ namespace KinaUnaWeb.Services
 
         public async Task<PushDevices> GetPushDeviceById(int id)
         {
-            PushDevices device = await _notificationHttpClient.GetPushDeviceById(id);
+            PushDevices device = await _webNotificationHttpClient.GetPushDeviceById(id);
 
             return device;
         }
 
         public async Task<List<PushDevices>> GetAllPushDevices()
         {
-            var pushDevicesList = await _notificationHttpClient.GetAllPushDevices();
+            var pushDevicesList = await _webNotificationHttpClient.GetAllPushDevices();
 
             return pushDevicesList;
         }
 
         public async Task<PushDevices> AddPushDevice(PushDevices device)
         {
-            device = await _notificationHttpClient.AddPushDevice(device);
+            device = await _webNotificationHttpClient.AddPushDevice(device);
 
             return device;
 
@@ -88,14 +88,14 @@ namespace KinaUnaWeb.Services
 
         public async Task<PushDevices> GetDevice(PushDevices device)
         {
-            PushDevices result = await _notificationHttpClient.GetPushDevice(device);
+            PushDevices result = await _webNotificationHttpClient.GetPushDevice(device);
             
             return result;
         }
 
         public async Task RemoveDevice(PushDevices device)
         {
-            await _notificationHttpClient.RemovePushDevice(device);
+            await _webNotificationHttpClient.RemovePushDevice(device);
         }
     }
 }

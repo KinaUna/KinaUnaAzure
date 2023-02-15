@@ -1,11 +1,11 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
-@model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
+@model KinaUnaWeb.Models.ItemViewModels.CalendarListViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Calendar", PageNames.Calendar, Model.LanguageId);
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Calendar", PageNames.Calendar, Model.LanguageId);
 }
-@if (Model.IsAdmin)
+@if (Model.IsCurrentUserProgenyAdmin)
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="Calendar" asp-action="AddEvent" class="btn btn-success btn-round">
@@ -29,7 +29,7 @@
             </e-eventsettings-fields>
         </e-schedule-eventsettings>
     </ejs-schedule>
-    @if (Model.IsAdmin)
+    @if (Model.IsCurrentUserProgenyAdmin)
     {
         <script>
             let selectedEventId = 0;
@@ -60,13 +60,13 @@
                 if (args.type === 'Editor') {
                     args.cancel = true;
                     if (selectedEventId > 0) {
-                        window.location.href = '/AddItem/EditEvent?itemId=' + selectedEventId;
+                        window.location.href = '/Calendar/EditEvent?itemId=' + selectedEventId;
                     }
                 }
                 if (args.type === 'DeleteAlert') {
                     args.cancel = true;
                     if (selectedEventId > 0) {
-                        window.location.href = '/AddItem/DeleteEvent?itemId=' + selectedEventId;
+                        window.location.href = '/Calendar/DeleteEvent?itemId=' + selectedEventId;
                     }
                 }
             }

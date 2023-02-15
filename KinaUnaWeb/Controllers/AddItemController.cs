@@ -30,8 +30,6 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
         
-        
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteFile(FileItem model)

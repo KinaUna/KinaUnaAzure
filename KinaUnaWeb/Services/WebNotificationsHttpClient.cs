@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services
 {
-    public class NotificationsHttpClient : INotificationsHttpClient
+    public class WebNotificationsHttpClient : IWebNotificationsHttpClient
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
@@ -23,7 +23,7 @@ namespace KinaUnaWeb.Services
         private readonly ApiTokenInMemoryClient _apiTokenClient;
         private readonly IHostEnvironment _env;
         
-        public NotificationsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
+        public WebNotificationsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;

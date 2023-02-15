@@ -63,6 +63,7 @@ namespace KinaUnaProgenyApi.Controllers
             bool startParsed = DateTime.TryParseExact(start, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime startDate);
             bool endParsed = DateTime.TryParseExact(end, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime endDate);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId && startParsed && endParsed)
             {
@@ -86,7 +87,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-                if ((userAccess != null && userAccess.AccessLevel <= result.AccessLevel) || id == Constants.DefaultChildId)
+                if ((userAccess != null && userAccess.AccessLevel <= result.AccessLevel) || result.ProgenyId == Constants.DefaultChildId)
                 {
                     return Ok(result);
                 }
@@ -99,14 +100,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CalendarItem value)
         {
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to add calendar items for this child.
-
-                if (!prog.IsInAdminList(userEmail))
+            
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -115,47 +114,21 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-
-            CalendarItem calendarItem = new CalendarItem();
-            calendarItem.AccessLevel = value.AccessLevel;
-            calendarItem.Author = value.Author;
-            calendarItem.Notes = value.Notes;
-            calendarItem.ProgenyId = value.ProgenyId;
-            calendarItem.AllDay = value.AllDay;
-            calendarItem.Context = value.Context;
-            calendarItem.Location = value.Location;
-            calendarItem.Title = value.Title;
-            calendarItem.StartTime = value.StartTime;
-            calendarItem.EndTime = value.EndTime;
-
-            calendarItem = await _calendarService.AddCalendarItem(calendarItem);
             
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = calendarItem.ProgenyId;
-            tItem.AccessLevel = calendarItem.AccessLevel;
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Calendar;
-            tItem.ItemId = calendarItem.EventId.ToString();
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            tItem.CreatedBy = userinfo?.UserId ?? "User not found";
-            tItem.CreatedTime = DateTime.UtcNow;
-            if (calendarItem.StartTime != null)
-            {
-                tItem.ProgenyTime = calendarItem.StartTime.Value;
-            }
-            else
-            {
-                tItem.ProgenyTime = DateTime.UtcNow;
-            }
+            CalendarItem calendarItem = await _calendarService.AddCalendarItem(value);
 
-            _ = await _timelineService.AddTimeLineItem(tItem);
+            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
             
-            string title = "Calendar item added for " + prog.NickName;
-            if (userinfo != null)
-            {
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new calendar item for " + prog.NickName;
-
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
-            }
+            TimeLineItem timeLineItem = new TimeLineItem();
+            
+            timeLineItem.CopyCalendarItemPropertiesForAdd(calendarItem, userInfo.UserId);
+            
+            _ = await _timelineService.AddTimeLineItem(timeLineItem);
+            
+            string notificationTitle = "Calendar item added for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " added a new calendar item for " + progeny.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            
             return Ok(calendarItem);
         }
 
@@ -169,15 +142,12 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to edit calendar items for this child.
-
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -186,34 +156,20 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
+            
+            calendarItem = await _calendarService.UpdateCalendarItem(value);
 
-            calendarItem.AccessLevel = value.AccessLevel;
-            calendarItem.Author = value.Author;
-            calendarItem.Notes = value.Notes;
-            calendarItem.ProgenyId = value.ProgenyId;
-            calendarItem.AllDay = value.AllDay;
-            calendarItem.Context = value.Context;
-            calendarItem.Location = value.Location;
-            calendarItem.Title = value.Title;
-            calendarItem.StartTime = value.StartTime;
-            calendarItem.EndTime = value.EndTime;
+            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(calendarItem.EventId.ToString(), (int)KinaUnaTypes.TimeLineType.Calendar);
 
-            calendarItem = await _calendarService.UpdateCalendarItem(calendarItem);
-
-            TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(calendarItem.EventId.ToString(), (int)KinaUnaTypes.TimeLineType.Calendar);
-
-            if (tItem != null && calendarItem.StartTime.HasValue && calendarItem.EndTime.HasValue)
+            if (timeLineItem != null && timeLineItem.CopyCalendarItemPropertiesForUpdate(calendarItem))
             {
-                tItem.ProgenyTime = calendarItem.StartTime.Value;
-                tItem.AccessLevel = calendarItem.AccessLevel;
-                _ = await _timelineService.UpdateTimeLineItem(tItem);
-               
+                _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
             }
             
             UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            string title = "Calendar edited for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a calendar item for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            string title = "Calendar edited for " + progeny.NickName;
+            string message = userinfo.FullName() + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a calendar item for " + progeny.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(title, message, timeLineItem, userinfo.ProfilePicture);
 
             return Ok(calendarItem);
         }
@@ -226,13 +182,11 @@ namespace KinaUnaProgenyApi.Controllers
             if (calendarItem != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                // Check if child exists.
-                Progeny prog = await _progenyService.GetProgeny(calendarItem.ProgenyId);
-                if (prog != null)
+                
+                Progeny progeny = await _progenyService.GetProgeny(calendarItem.ProgenyId);
+                if (progeny != null)
                 {
-                    // Check if user is allowed to edit calendar items for this child.
-                    
-                    if (!prog.IsInAdminList(userEmail))
+                    if (!progeny.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }
@@ -242,23 +196,22 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(calendarItem.EventId.ToString(), (int)KinaUnaTypes.TimeLineType.Calendar);
-                if (tItem != null)
+                TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(calendarItem.EventId.ToString(), (int)KinaUnaTypes.TimeLineType.Calendar);
+                if (timeLineItem != null)
                 {
-                    _ = await _timelineService.DeleteTimeLineItem(tItem);
-                    
+                    _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
                 }
 
                 await _calendarService.DeleteCalendarItem(calendarItem);
                 
-                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                string title = "Calendar item deleted for " + prog.NickName;
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a calendar item for " + prog.NickName + ". Event: " + calendarItem.Title;
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                string title = "Calendar item deleted for " + progeny.NickName;
+                string message = userInfo.FullName() + " deleted a calendar item for " + progeny.NickName + ". Event: " + calendarItem.Title;
 
-                if (tItem != null)
+                if (timeLineItem != null)
                 {
-                    tItem.AccessLevel = 0;
-                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                    timeLineItem.AccessLevel = 0;
+                    await _azureNotifications.ProgenyUpdateNotification(title, message, timeLineItem, userInfo.ProfilePicture);
                 }
 
                 return NoContent();
@@ -278,12 +231,12 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (userAccess != null || progenyId == Constants.DefaultChildId)
             {
-                List<CalendarItem> model = await _calendarService.GetCalendarList(progenyId);
-                model = model.Where(c => userAccess != null && c.EndTime > DateTime.UtcNow && c.AccessLevel >= userAccess.AccessLevel).ToList();
-                model = model.OrderBy(e => e.StartTime).ToList();
-                model = model.Take(8).ToList();
+                List<CalendarItem> calendarList = await _calendarService.GetCalendarList(progenyId);
+                calendarList = calendarList.Where(c => userAccess != null && c.EndTime > DateTime.UtcNow && c.AccessLevel >= userAccess.AccessLevel).ToList();
+                calendarList = calendarList.OrderBy(e => e.StartTime).ToList();
+                calendarList = calendarList.Take(8).ToList();
 
-                return Ok(model);
+                return Ok(calendarList);
             }
 
             return NotFound();
@@ -292,13 +245,13 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetItemMobile(int id)
         {
-            CalendarItem result = await _calendarService.GetCalendarItem(id);
+            CalendarItem calendarItem = await _calendarService.GetCalendarItem(id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-            if (userAccess != null && userAccess.AccessLevel <= result.AccessLevel)
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(calendarItem.ProgenyId, userEmail);
+            if (userAccess != null && userAccess.AccessLevel <= calendarItem.AccessLevel)
             {
-                return Ok(result);
+                return Ok(calendarItem);
             }
 
             return Unauthorized();

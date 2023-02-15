@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -38,12 +39,15 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<CalendarItem> AddCalendarItem(CalendarItem item)
         {
-            _context.CalendarDb.Add(item);
-            await _context.SaveChangesAsync();
+            CalendarItem calendarItemToAdd = new CalendarItem();
+            calendarItemToAdd.CopyPropertiesForAdd(item);
+            
+            _ = _context.CalendarDb.Add(calendarItemToAdd);
+            _ = await _context.SaveChangesAsync();
 
-            await SetCalendarItemInCache(item.EventId);
+            _ = await SetCalendarItemInCache(calendarItemToAdd.EventId);
 
-            return item;
+            return calendarItemToAdd;
         }
 
         private async Task<CalendarItem> GetCalendarItemFromCache(int id)
@@ -72,12 +76,12 @@ namespace KinaUnaProgenyApi.Services
             return calendarItem;
         }
 
-        public async Task RemoveCalendarItemFromCache(int id, int progenyId)
+        private async Task RemoveCalendarItemFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id);
 
             List<CalendarItem> calendarList = _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToList();
-            _cache.SetString(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
         }
 
         public async Task<CalendarItem> UpdateCalendarItem(CalendarItem item)
@@ -85,26 +89,11 @@ namespace KinaUnaProgenyApi.Services
             CalendarItem calendarItemToUpdate = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
             if (calendarItemToUpdate != null)
             {
-                calendarItemToUpdate.Author = item.Author;
-                calendarItemToUpdate.AccessLevel = item.AccessLevel;
-                calendarItemToUpdate.AllDay = item.AllDay;
-                calendarItemToUpdate.Context = item.Context;
-                calendarItemToUpdate.End = item.End;
-                calendarItemToUpdate.EndString = item.EndString;
-                calendarItemToUpdate.EndTime = item.EndTime;
-                calendarItemToUpdate.StartTime = item.StartTime;
-                calendarItemToUpdate.IsReadonly = item.IsReadonly;
-                calendarItemToUpdate.Location = item.Location;
-                calendarItemToUpdate.Notes = item.Notes;
-                calendarItemToUpdate.ProgenyId = item.ProgenyId;
-                calendarItemToUpdate.Start = item.Start;
-                calendarItemToUpdate.StartString = item.StartString;
-                calendarItemToUpdate.Title = item.Title;
-                calendarItemToUpdate.Progeny = item.Progeny;
+                calendarItemToUpdate.CopyPropertiesForUpdate(item);
 
-                _context.CalendarDb.Update(calendarItemToUpdate);
-                await _context.SaveChangesAsync();
-                await SetCalendarItemInCache(calendarItemToUpdate.EventId);
+                _ = _context.CalendarDb.Update(calendarItemToUpdate);
+                _ = await _context.SaveChangesAsync();
+                _ = await SetCalendarItemInCache(calendarItemToUpdate.EventId);
             }
             
             return calendarItemToUpdate;
@@ -112,15 +101,15 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<CalendarItem> DeleteCalendarItem(CalendarItem item)
         {
-            await RemoveCalendarItemFromCache(item.EventId, item.ProgenyId);
             CalendarItem calendarItemToDelete = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
             if (calendarItemToDelete != null)
             {
-                _context.CalendarDb.Remove(calendarItemToDelete);
-                await _context.SaveChangesAsync();
+                _ = _context.CalendarDb.Remove(calendarItemToDelete);
+                _ = await _context.SaveChangesAsync();
+
+                await RemoveCalendarItemFromCache(item.EventId, item.ProgenyId);
             }
-            
-            
+
             return item;
         }
         

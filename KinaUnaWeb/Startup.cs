@@ -98,7 +98,7 @@ namespace KinaUnaWeb
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IPushMessageSender, PushMessageSender>();
             services.AddTransient<IWebNotificationsService, WebNotificationsService>();
-            services.AddHttpClient<INotificationsHttpClient, NotificationsHttpClient>();
+            services.AddHttpClient<IWebNotificationsHttpClient, WebNotificationsHttpClient>();
             services.AddSingleton<ApiTokenInMemoryClient>();
             services.AddHttpClient<IUserInfosHttpClient, UserInfosHttpClient>();
             services.AddHttpClient<ITimelineHttpClient, TimelineHttpClient>();
@@ -117,6 +117,8 @@ namespace KinaUnaWeb
             services.AddHttpClient<ILanguagesHttpClient, LanguagesHttpClient>();
             services.AddHttpClient<ITranslationsHttpClient, TranslationsHttpClient>();
             services.AddHttpClient<IPageTextsHttpClient, PageTextsHttpClient>();
+            services.AddTransient<IViewModelSetupService, ViewModelSetupService>();
+            services.AddTransient<INotificationsService, NotificationsService>();
             services.AddDistributedMemoryCache();
 
             string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer");

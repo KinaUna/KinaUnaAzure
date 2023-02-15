@@ -4,7 +4,7 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Services;
 
-public interface INotificationsHttpClient
+public interface IWebNotificationsHttpClient
 {
     Task<List<PushDevices>> GetAllPushDevices(bool updateCache = false);
     Task<PushDevices> GetPushDeviceById(int id, bool updateCache = false);

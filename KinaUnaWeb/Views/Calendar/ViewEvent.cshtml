@@ -3,7 +3,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Event:", PageNames.Calendar, Model.LanguageId) + Model.Title;
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Event:", PageNames.Calendar, Model.LanguageId) + Model.Title;
 }
 <h2>@ViewData["Title"]</h2>
 <br />
@@ -24,7 +24,7 @@
             <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, Model.LanguageId)</strong> @Model.Location</div>
             <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Context:", PageNames.Calendar, Model.LanguageId)</strong> @Model.Context</div>
             <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, Model.LanguageId)</strong> @Model.Notes</div>
-            @if (Model.IsAdmin)
+            @if (Model.IsCurrentUserProgenyAdmin)
             {
                 <div style="margin: 15px;">
                     <a asp-controller="Calendar" asp-action="EditEvent" asp-route-itemId="@Model.EventId" class="btn btn-info leavePage">
