@@ -11,6 +11,7 @@ namespace KinaUnaProgenyApi.Services
         Task<List<UserAccess>> GetProgenyUserAccessList(int progenyId);
         Task<List<UserAccess>> SetProgenyUserAccessListInCache(int progenyId);
         Task<List<UserAccess>> GetUsersUserAccessList(string email);
+        Task<List<UserAccess>> GetUsersUserAdminAccessList(string email);
         Task<List<UserAccess>> SetUsersUserAccessListInCache(string email);
         Task<UserAccess> GetUserAccess(int id);
         Task<UserAccess> SetUserAccessInCache(int id);

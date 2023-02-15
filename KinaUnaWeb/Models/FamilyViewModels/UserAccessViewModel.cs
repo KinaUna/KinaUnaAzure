@@ -4,11 +4,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.FamilyViewModels
 {
-    public class UserAccessViewModel: BaseViewModel
+    public class UserAccessViewModel: BaseItemsViewModel
     {
         public int AccessId { get; set; }
-        public int ProgenyId { get; set; }
-        public Progeny Progeny { get; set; }
         public string ProgenyName { get; set; }
         public string UserId { get; set; }
         public string UserName { get; set; }
@@ -25,11 +23,69 @@ namespace KinaUnaWeb.Models.FamilyViewModels
         public UserAccessViewModel()
         {
             ProgenyList = new List<SelectListItem>();
-            AccessLevelList accList  = new AccessLevelList();
+        }
+
+        public UserAccessViewModel(BaseItemsViewModel baseItemsViewModel)
+        {
+            SetBaseProperties(baseItemsViewModel);
+            ProgenyName = CurrentProgeny.Name;
+            Email = "";
+            AccessLevel = (int)KinaUna.Data.Models.AccessLevel.Users;
+            UserId = "";
+        }
+
+        public void SetAccessLevelList()
+        {
+            AccessLevelList accList = new AccessLevelList();
             AccessLevelListEn = accList.AccessLevelListEn;
             AccessLevelListDa = accList.AccessLevelListDa;
             AccessLevelListDe = accList.AccessLevelListDe;
 
+            AccessLevelListEn[AccessLevel].Selected = true;
+            AccessLevelListDa[AccessLevel].Selected = true;
+            AccessLevelListDe[AccessLevel].Selected = true;
+
+            if (LanguageId == 2)
+            {
+                AccessLevelListEn = AccessLevelListDe;
+            }
+
+            if (LanguageId == 3)
+            {
+                AccessLevelListEn = AccessLevelListDa;
+            }
+        }
+
+        public void SetUserAccessItem(UserAccess userAccess, UserInfo userInfo)
+        {
+            UserId = userAccess.UserId;
+            AccessId = userAccess.AccessId;
+            AccessLevel = userAccess.AccessLevel;
+            Email = userAccess.UserId;
+            UserName = "No user found";
+            FirstName = "No user found";
+            MiddleName = "No user found";
+            LastName = "No user found";
+
+            if (userInfo != null)
+            {
+                Email = userInfo.UserEmail;
+                UserName = userInfo.UserName;
+                FirstName = userInfo.FirstName;
+                MiddleName = userInfo.MiddleName;
+                LastName = userInfo.LastName;
+            }
+        }
+
+        public UserAccess CreateUserAccess()
+        {
+            UserAccess userAccess = new UserAccess();
+            userAccess.AccessId = AccessId;
+            userAccess.ProgenyId = CurrentProgenyId;
+            userAccess.UserId = Email;
+            userAccess.AccessLevel = AccessLevel;
+
+            return userAccess;
         }
     }
 }

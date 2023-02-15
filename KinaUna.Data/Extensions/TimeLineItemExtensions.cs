@@ -34,5 +34,21 @@ namespace KinaUna.Data.Extensions
                 currentTimeLineItem.ProgenyTime = DateTime.UtcNow;
             }
         }
+
+        public static void CopyUserAccessItemPropertiesForAdd(this TimeLineItem currentTimeLineItem, UserAccess userAccessItem)
+        {
+            currentTimeLineItem.ProgenyId = userAccessItem.ProgenyId;
+            currentTimeLineItem.AccessLevel = 0;
+            currentTimeLineItem.ItemId = userAccessItem.AccessId.ToString();
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
+        }
+
+        public static void CopyUserAccessItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, UserAccess userAccessItem)
+        {
+            currentTimeLineItem.ProgenyId = userAccessItem.ProgenyId;
+            currentTimeLineItem.AccessLevel = 0;
+            currentTimeLineItem.ItemId = userAccessItem.AccessId.ToString();
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
+        }
     }
 }

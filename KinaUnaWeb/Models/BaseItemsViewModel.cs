@@ -48,4 +48,15 @@ public class BaseItemsViewModel : BaseViewModel
             CurrentAccessLevel = (int)AccessLevel.Private;
         }
     }
+
+    public void SetBaseProperties(BaseItemsViewModel baseItemsViewModel)
+    {
+        LanguageId = baseItemsViewModel.LanguageId;
+        CurrentUser = baseItemsViewModel.CurrentUser;
+        CurrentProgenyId = baseItemsViewModel.CurrentProgenyId;
+        CurrentAccessLevel = baseItemsViewModel.CurrentAccessLevel;
+        CurrentProgeny = baseItemsViewModel.CurrentProgeny;
+        CurrentProgenyAccessList = baseItemsViewModel.CurrentProgenyAccessList;
+        IsCurrentUserProgenyAdmin = baseItemsViewModel.IsCurrentUserProgenyAdmin;
+    }
 }

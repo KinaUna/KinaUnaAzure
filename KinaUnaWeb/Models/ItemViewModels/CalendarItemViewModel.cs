@@ -28,10 +28,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public CalendarItemViewModel()
         {
             ProgenyList = new List<SelectListItem>();
-            AccessLevelList accList = new AccessLevelList();
-            AccessLevelListEn = accList.AccessLevelListEn;
-            AccessLevelListDa = accList.AccessLevelListDa;
-            AccessLevelListDe = accList.AccessLevelListDe;
         }
 
         public CalendarItemViewModel(BaseItemsViewModel baseItemsViewModel)
@@ -39,23 +35,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
             SetBaseProperties(baseItemsViewModel);
 
             ProgenyList = new List<SelectListItem>();
-            AccessLevelList accList = new AccessLevelList();
-            AccessLevelListEn = accList.AccessLevelListEn;
-            AccessLevelListDa = accList.AccessLevelListDa;
-            AccessLevelListDe = accList.AccessLevelListDe;
         }
-
-        public void SetBaseProperties(BaseItemsViewModel baseItemsViewModel)
-        {
-            LanguageId = baseItemsViewModel.LanguageId;
-            CurrentUser = baseItemsViewModel.CurrentUser;
-            CurrentProgenyId = baseItemsViewModel.CurrentProgenyId;
-            CurrentAccessLevel = baseItemsViewModel.CurrentAccessLevel;
-            CurrentProgeny = baseItemsViewModel.CurrentProgeny;
-            CurrentProgenyAccessList = baseItemsViewModel.CurrentProgenyAccessList;
-            IsCurrentUserProgenyAdmin = baseItemsViewModel.IsCurrentUserProgenyAdmin;
-        }
-
+        
         public void SetCalendarItem(CalendarItem eventItem)
         {
             EventId = eventItem.EventId;
@@ -76,6 +57,11 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetAccessLevelList()
         {
+            AccessLevelList accList = new AccessLevelList();
+            AccessLevelListEn = accList.AccessLevelListEn;
+            AccessLevelListDa = accList.AccessLevelListDa;
+            AccessLevelListDe = accList.AccessLevelListDe;
+
             AccessLevelListEn[AccessLevel].Selected = true;
             AccessLevelListDa[AccessLevel].Selected = true;
             AccessLevelListDe[AccessLevel].Selected = true;

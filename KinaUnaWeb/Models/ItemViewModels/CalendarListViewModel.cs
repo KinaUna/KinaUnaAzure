@@ -14,13 +14,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public CalendarListViewModel(BaseItemsViewModel baseItemsViewModel)
         {
-            LanguageId = baseItemsViewModel.LanguageId;
-            CurrentUser = baseItemsViewModel.CurrentUser;
-            CurrentProgenyId = baseItemsViewModel.CurrentProgenyId;
-            CurrentAccessLevel = baseItemsViewModel.CurrentAccessLevel;
-            CurrentProgeny = baseItemsViewModel.CurrentProgeny;
-            CurrentProgenyAccessList = baseItemsViewModel.CurrentProgenyAccessList;
-            IsCurrentUserProgenyAdmin = baseItemsViewModel.IsCurrentUserProgenyAdmin;
+            SetBaseProperties(baseItemsViewModel);
 
             EventsList = new List<CalendarItem>();
 

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -98,7 +99,15 @@ namespace KinaUnaProgenyApi.Services
             return accessList;
         }
 
-        public async Task<List<UserAccess>> GetUsersUserAccessListFromCache(string email)
+        public async Task<List<UserAccess>> GetUsersUserAdminAccessList(string email)
+        {
+            List<UserAccess> userAccessList = await GetUsersUserAccessList(email);
+            userAccessList = userAccessList.Where(u => u.AccessLevel == 0).ToList();
+
+            return userAccessList;
+        }
+
+        private async Task<List<UserAccess>> GetUsersUserAccessListFromCache(string email)
         {
             List<UserAccess> accessList = new List<UserAccess>();
             string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "usersaccesslist" + email.ToUpper());
@@ -159,13 +168,27 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<UserAccess> AddUserAccess(UserAccess userAccess)
         {
-            await _context.UserAccessDb.AddAsync(userAccess);
-            await _context.SaveChangesAsync();
+            // If a UserAccess entry with the same user and progeny exists, replace it.
+            List<UserAccess> progenyAccessList = await GetUsersUserAccessList(userAccess.UserId);
+            UserAccess oldUserAccess = progenyAccessList.SingleOrDefault(u => u.ProgenyId == userAccess.ProgenyId);
+            if (oldUserAccess != null)
+            {
+                await RemoveUserAccess(oldUserAccess.AccessId, oldUserAccess.ProgenyId, oldUserAccess.UserId);
+            }
 
-            await SetUserAccessInCache(userAccess.AccessId);
-            await SetUsersUserAccessListInCache(userAccess.UserId);
-            await SetProgenyUserAccessListInCache(userAccess.ProgenyId);
-            await SetProgenyUserIsAdminInCache(userAccess.UserId);
+            _ = await _context.UserAccessDb.AddAsync(userAccess);
+            _ = await _context.SaveChangesAsync();
+
+            _ = await SetUserAccessInCache(userAccess.AccessId);
+            _ = await SetUsersUserAccessListInCache(userAccess.UserId);
+            _ = await SetProgenyUserAccessListInCache(userAccess.ProgenyId);
+            _ = await SetProgenyUserIsAdminInCache(userAccess.UserId);
+
+            if (userAccess.AccessLevel == (int)AccessLevel.Private && !userAccess.Progeny.IsInAdminList(userAccess.UserId))
+            {
+                userAccess.Progeny.Admins = userAccess.Progeny.Admins + ", " + userAccess.UserId.ToUpper();
+                await UpdateProgenyAdmins(userAccess.Progeny);
+            }
             return userAccess;
         }
 
@@ -174,21 +197,22 @@ namespace KinaUnaProgenyApi.Services
             UserAccess userAccessToUpdate = await _context.UserAccessDb.SingleOrDefaultAsync(ua => ua.AccessId == userAccess.AccessId);
             if (userAccessToUpdate != null)
             {
-                userAccessToUpdate.UserId = userAccess.UserId;
-                userAccessToUpdate.Progeny = userAccess.Progeny;
-                userAccessToUpdate.AccessLevel = userAccess.AccessLevel;
-                userAccessToUpdate.AccessLevelString = userAccess.AccessLevelString;
-                userAccessToUpdate.CanContribute = userAccess.CanContribute;
-                userAccessToUpdate.ProgenyId = userAccess.ProgenyId;
-                userAccessToUpdate.User = userAccess.User;
+                userAccessToUpdate.CopyForUpdate(userAccess);
 
-                _context.UserAccessDb.Update(userAccessToUpdate);
-                await _context.SaveChangesAsync();
+                _ = _context.UserAccessDb.Update(userAccessToUpdate);
+                _ = await _context.SaveChangesAsync();
 
-                await SetUserAccessInCache(userAccessToUpdate.AccessId);
-                await SetUsersUserAccessListInCache(userAccessToUpdate.UserId);
-                await SetProgenyUserAccessListInCache(userAccessToUpdate.ProgenyId);
-                await SetProgenyUserIsAdminInCache(userAccessToUpdate.UserId);
+                _ = await SetUserAccessInCache(userAccessToUpdate.AccessId);
+                _ = await SetUsersUserAccessListInCache(userAccessToUpdate.UserId);
+                _ = await SetProgenyUserAccessListInCache(userAccessToUpdate.ProgenyId);
+                _ = await SetProgenyUserIsAdminInCache(userAccessToUpdate.UserId);
+
+                if (userAccess.AccessLevel == (int)AccessLevel.Private && !userAccess.Progeny.IsInAdminList(userAccess.UserId))
+                {
+
+                    userAccess.Progeny.Admins = userAccess.Progeny.Admins + ", " + userAccess.UserId.ToUpper();
+                    await UpdateProgenyAdmins(userAccess.Progeny);
+                }
             }
 
             return userAccessToUpdate;
@@ -199,13 +223,36 @@ namespace KinaUnaProgenyApi.Services
             UserAccess deleteUserAccess = await _context.UserAccessDb.SingleOrDefaultAsync(u => u.AccessId == id && u.ProgenyId == progenyId);
             if (deleteUserAccess != null)
             {
-                _context.UserAccessDb.Remove(deleteUserAccess);
-                await _context.SaveChangesAsync();
+                if (deleteUserAccess.AccessLevel == (int)AccessLevel.Private && deleteUserAccess.Progeny.IsInAdminList(deleteUserAccess.UserId))
+                {
+                    deleteUserAccess.Progeny = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == deleteUserAccess.ProgenyId);
+                    if (deleteUserAccess.Progeny != null)
+                    {
+                        string[] adminList = deleteUserAccess.Progeny.Admins.Split(',');
+                        deleteUserAccess.Progeny.Admins = "";
+                        foreach (string adminItem in adminList)
+                        {
+                            if (!adminItem.Trim().ToUpper().Equals(deleteUserAccess.UserId.Trim().ToUpper()))
+                            {
+                                deleteUserAccess.Progeny.Admins = deleteUserAccess.Progeny.Admins + ", " + deleteUserAccess.UserId.ToUpper();
+                            }
+                        }
+
+                        deleteUserAccess.Progeny.Admins = deleteUserAccess.Progeny.Admins.Trim(',');
+                        await UpdateProgenyAdmins(deleteUserAccess.Progeny);
+                    }
+                    
+                }
+
+                _ = _context.UserAccessDb.Remove(deleteUserAccess);
+                _ = await _context.SaveChangesAsync();
+                
                 await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id);
                 await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + progenyId + userId);
-                await SetUsersUserAccessListInCache(userId);
-                await SetProgenyUserAccessListInCache(progenyId);
-                await SetProgenyUserIsAdminInCache(userId);
+                
+                _ = await SetUsersUserAccessListInCache(userId);
+                _ = await SetProgenyUserAccessListInCache(progenyId);
+                _ = await SetProgenyUserIsAdminInCache(userId);
             }
         }
 
@@ -247,8 +294,8 @@ namespace KinaUnaProgenyApi.Services
             if (existingProgeny != null)
             {
                 existingProgeny.Admins = progeny.Admins;
-                _context.ProgenyDb.Update(existingProgeny);
-                await _context.SaveChangesAsync();
+                _ = _context.ProgenyDb.Update(existingProgeny);
+                _ = await _context.SaveChangesAsync();
 
                 await SetProgenyInCache(existingProgeny);
             }
