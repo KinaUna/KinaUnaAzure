@@ -346,10 +346,32 @@ namespace KinaUnaProgenyApi.Tests.Services
                 AccessLevel = 0,
                 ProgenyId = 1
             };
-
+            
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddUserAccess_Should_Save_UserAccess").Options;
             await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
 
+            Progeny progeny1 = new Progeny
+            {
+                Admins = "User1",
+                BirthDay = DateTime.UtcNow,
+                Name = "Progeny1",
+                NickName = "NickName1",
+                PictureLink = Constants.ProfilePictureUrl,
+                TimeZone = Constants.DefaultTimezone
+            };
+
+            Progeny progeny2 = new Progeny
+            {
+                Admins = "User1",
+                BirthDay = DateTime.UtcNow,
+                Name = "Progeny2",
+                NickName = "NickName2",
+                PictureLink = Constants.ProfilePictureUrl,
+                TimeZone = Constants.DefaultTimezone
+            };
+
+            context.Add(progeny1);
+            context.Add(progeny2);
             context.Add(userAccessToAdd1);
             await context.SaveChangesAsync();
 
@@ -363,6 +385,8 @@ namespace KinaUnaProgenyApi.Tests.Services
                 AccessLevel = 0,
                 ProgenyId = 2
             };
+
+            userAccessToAdd2.Progeny = await context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == userAccessToAdd2.ProgenyId);
 
             UserAccess addedUserAccess = await userAccessService.AddUserAccess(userAccessToAdd2);
             UserAccess? dbUserAccess = await context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(ua => ua.AccessId == addedUserAccess.AccessId);
