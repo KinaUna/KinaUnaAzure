@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using KinaUna.Data;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 
@@ -46,6 +47,29 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Text = tz.DisplayName,
                 Value = tz.Id
             }).ToArray();
+        }
+    }
+
+    public static class UserInfoViewModelExtensions
+    {
+        public static void CopyPropertiesFromUserInfoViewModel(this UserInfo userInfo, UserInfoViewModel viewModel)
+        {
+            userInfo.FirstName = viewModel.FirstName;
+            userInfo.MiddleName = viewModel.MiddleName;
+            userInfo.LastName = viewModel.LastName;
+
+            userInfo.UserName = viewModel.UserName;
+            if (string.IsNullOrEmpty(userInfo.UserName))
+            {
+                userInfo.UserName = userInfo.UserEmail;
+            }
+
+            userInfo.Timezone = viewModel.Timezone;
+
+            if (string.IsNullOrEmpty(userInfo.ProfilePicture))
+            {
+                userInfo.ProfilePicture = Constants.ProfilePictureUrl;
+            }
         }
     }
 }
