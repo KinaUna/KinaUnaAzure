@@ -50,7 +50,6 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Todo: Implement Admin as role instead
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? Constants.DefaultUserEmail;
             
             if (userEmail.ToUpper() != _adminEmail.ToUpper())
@@ -152,6 +151,7 @@ namespace KinaUnaWeb.Controllers
             _ = await _languagesHttpClient.UpdateLanguage(model);
             _ = await _languagesHttpClient.GetLanguage(model.Id, true);
             _ = await _languagesHttpClient.GetAllLanguages(true);
+
             return RedirectToAction("ManageLanguages", "Admin");
         }
 
@@ -165,6 +165,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             KinaUnaLanguage model = await _languagesHttpClient.GetLanguage(languageId);
+
             return View(model);
         }
 
@@ -182,6 +183,7 @@ namespace KinaUnaWeb.Controllers
             _ = await _languagesHttpClient.DeleteLanguage(model); 
             _ = await _languagesHttpClient.GetLanguage(model.Id, true);
             _ = await _languagesHttpClient.GetAllLanguages(true);
+
             return RedirectToAction("ManageLanguages", "Admin");
         }
 
@@ -199,6 +201,7 @@ namespace KinaUnaWeb.Controllers
             model.Translations = await _translationsHttpClient.GetAllTranslations();
             model.PagesList = new List<string>();
             model.WordsList = new List<string>();
+
             foreach (TextTranslation translationItem in model.Translations)
             {
                 if (!model.PagesList.Contains(translationItem.Page))
@@ -230,6 +233,7 @@ namespace KinaUnaWeb.Controllers
             model.Translations = await _translationsHttpClient.GetAllTranslations();
             model.PagesList = new List<string>();
             model.WordsList = new List<string>();
+
             foreach (TextTranslation translationItem in model.Translations)
             {
                 if (translationItem.Page.Trim().ToUpper() == pageName.Trim().ToUpper())
@@ -511,8 +515,6 @@ namespace KinaUnaWeb.Controllers
                 Response.Clear();
                 Response.ContentType = "application/json; charset=utf-8";
                 Response.StatusCode = 204;
-                //Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = "No Content";
-                //Response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = e.Message;
             }
 
             return Content("");
@@ -610,6 +612,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             notification.Title = "Notification Added";
+
             return View(notification);
         }
 
@@ -625,6 +628,7 @@ namespace KinaUnaWeb.Controllers
 
             PushNotification notification = new PushNotification();
             notification.UserId = userId;
+
             return View(notification);
         }
 
@@ -646,6 +650,7 @@ namespace KinaUnaWeb.Controllers
             await _pushMessageSender.SendMessage(notification.UserId, notification.Title, notification.Message,
                 notification.Link, "kinaunapush");
             notification.Title = "Message Sent";
+
             return View(notification);
         }
         
