@@ -111,6 +111,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Context = contact.Context;
             Website = contact.Website;
             Tags = contact.Tags;
+            Author = contact.Author;
             IsCurrentUserProgenyAdmin = isAdmin;
 
             DateTime tempTime = contact.DateAdded ?? DateTime.UtcNow;

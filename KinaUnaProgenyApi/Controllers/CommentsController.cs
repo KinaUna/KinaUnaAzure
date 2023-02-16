@@ -62,10 +62,7 @@ namespace KinaUnaProgenyApi.Controllers
                         string authorName = "";
                         if (!String.IsNullOrEmpty(authorImg))
                         {
-                            if (!authorImg.ToLower().StartsWith("http"))
-                            {
-                                authorImg = _imageStore.UriFor(authorImg, "profiles");
-                            }
+                            authorImg = _imageStore.UriFor(authorImg, "profiles");
                         }
 
                         comment.AuthorImage = authorImg;

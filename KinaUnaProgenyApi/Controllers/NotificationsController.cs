@@ -99,14 +99,12 @@ namespace KinaUnaProgenyApi.Controllers
                 notifications = notifications.Skip(start).Take(count).ToList();
                 foreach (MobileNotification notif in notifications)
                 {
-                    if (!string.IsNullOrEmpty(notif.IconLink) && !notif.IconLink.ToLower().StartsWith("http"))
-                    {
-                        notif.IconLink = _imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
-                    }
-                    else
+                    if (string.IsNullOrEmpty(notif.IconLink))
                     {
                         notif.IconLink = Constants.ProfilePictureUrl;
                     }
+                    
+                    notif.IconLink = _imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
                 }
             }
 
@@ -136,14 +134,12 @@ namespace KinaUnaProgenyApi.Controllers
                 notifications = notifications.Skip(start).Take(count).ToList();
                 foreach (MobileNotification notif in notifications)
                 {
-                    if (!string.IsNullOrEmpty(notif.IconLink) && !notif.IconLink.ToLower().StartsWith("http"))
-                    {
-                        notif.IconLink = _imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
-                    }
-                    else
+                    if (string.IsNullOrEmpty(notif.IconLink))
                     {
                         notif.IconLink = Constants.ProfilePictureUrl;
                     }
+
+                    notif.IconLink = _imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
                 }
             }
 

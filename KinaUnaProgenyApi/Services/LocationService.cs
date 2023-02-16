@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -184,12 +185,14 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Address> AddAddressItem(Address addressItem)
         {
-            _ = await _context.AddressDb.AddAsync(addressItem);
+            Address addressToAdd = new Address();
+            addressToAdd.CopyPropertiesForAdd(addressItem);
+            _ = await _context.AddressDb.AddAsync(addressToAdd);
             _ = await _context.SaveChangesAsync();
 
-            _ = await SetAddressItemInCache(addressItem.AddressId);
+            _ = await SetAddressItemInCache(addressToAdd.AddressId);
 
-            return addressItem;
+            return addressToAdd;
         }
 
         public async Task<Address> UpdateAddressItem(Address addressItem)

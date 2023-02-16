@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -38,11 +39,14 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Contact> AddContact(Contact contact)
         {
-            _context.ContactsDb.Add(contact);
-            _ = await _context.SaveChangesAsync();
-            _ = await SetContactInCache(contact.ContactId);
+            Contact contactToAdd = new Contact();
+            contactToAdd.CopyPropertiesForAdd(contact);
 
-            return contact;
+            _context.ContactsDb.Add(contactToAdd);
+            _ = await _context.SaveChangesAsync();
+            _ = await SetContactInCache(contactToAdd.ContactId);
+
+            return contactToAdd;
         }
 
         private async Task<Contact> GetContactFromCache(int id)

@@ -240,11 +240,7 @@ namespace KinaUnaProgenyApi.Controllers
                     _ = await _timelineService.DeleteTimeLineItem(tItem);
                 }
 
-                // Remove picture
-                if (!friendItem.PictureLink.ToLower().StartsWith("http"))
-                {
-                    _ = await _imageStore.DeleteImage(friendItem.PictureLink, BlobContainers.Friends);
-                }
+                _ = await _imageStore.DeleteImage(friendItem.PictureLink, BlobContainers.Friends);
 
                 _ = await _friendService.DeleteFriend(friendItem);
                 
@@ -279,10 +275,8 @@ namespace KinaUnaProgenyApi.Controllers
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {
-                    if (!result.PictureLink.ToLower().StartsWith("http"))
-                    {
-                        result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Friends);
-                    }
+                    result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Friends);
+
                     return Ok(result);
                 }
             }
@@ -304,11 +298,9 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     foreach (Friend friend in friendsList)
                     {
-                        if (!friend.PictureLink.ToLower().StartsWith("http"))
-                        {
-                            friend.PictureLink = _imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
-                        }
+                        friend.PictureLink = _imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
                     }
+
                     return Ok(friendsList);
                 }
                 return NotFound();

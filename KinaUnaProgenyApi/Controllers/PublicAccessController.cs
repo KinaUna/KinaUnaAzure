@@ -74,10 +74,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetProgeny(int id)
         {
             Progeny result = await _progenyService.GetProgeny(Constants.DefaultChildId);
-            if (!result.PictureLink.ToLower().StartsWith("http"))
-            {
-                result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Progeny);
-            }
+            result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Progeny);
             return Ok(result);
         }
 
@@ -208,10 +205,7 @@ namespace KinaUnaProgenyApi.Controllers
                 result.Email1 = Constants.SupportEmail;
                 result.PictureLink = Constants.ProfilePictureUrl;
             }
-            if (!result.PictureLink.ToLower().StartsWith("http"))
-            {
-                result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Contacts);
-            }
+            result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Contacts);
             return Ok(result);
         }
 
@@ -225,10 +219,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 foreach (Contact cont in contactsList)
                 {
-                    if (!cont.PictureLink.ToLower().StartsWith("http"))
-                    {
-                        cont.PictureLink = _imageStore.UriFor(cont.PictureLink, BlobContainers.Contacts);
-                    }
+                    cont.PictureLink = _imageStore.UriFor(cont.PictureLink, BlobContainers.Contacts);
                 }
                 return Ok(contactsList);
             }
@@ -249,10 +240,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 foreach (Friend frn in friendsList)
                 {
-                    if (!frn.PictureLink.ToLower().StartsWith("http"))
-                    {
-                        frn.PictureLink = _imageStore.UriFor(frn.PictureLink, BlobContainers.Friends);
-                    }
+                    frn.PictureLink = _imageStore.UriFor(frn.PictureLink, BlobContainers.Friends);
                 }
                 return Ok(friendsList);
             }
@@ -260,7 +248,6 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Ok(new List<Contact>());
             }
-
         }
 
         [HttpGet("[action]/{id}")]
@@ -328,10 +315,8 @@ namespace KinaUnaProgenyApi.Controllers
                 result.Type = 1;
                 result.PictureLink = Constants.ProfilePictureUrl;
             }
-            if (!result.PictureLink.ToLower().StartsWith("http"))
-            {
-                result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Friends);
-            }
+
+            result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Friends);
             return Ok(result);
         }
 
@@ -1022,12 +1007,9 @@ namespace KinaUnaProgenyApi.Controllers
                 int pictureNumber = r.Next(0, picturesList.Count);
 
                 Picture picture = picturesList[pictureNumber];
-                if (!picture.PictureLink.ToLower().StartsWith("http"))
-                {
-                    picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
-                    picture.PictureLink1200 = _imageStore.UriFor(picture.PictureLink1200);
-                    picture.PictureLink600 = _imageStore.UriFor(picture.PictureLink600);
-                }
+                picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
+                picture.PictureLink1200 = _imageStore.UriFor(picture.PictureLink1200);
+                picture.PictureLink600 = _imageStore.UriFor(picture.PictureLink600);
 
                 return Ok(picture);
             }
@@ -1059,12 +1041,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (result.ProgenyId == Constants.DefaultChildId)
                 {
-                    if (!result.PictureLink.ToLower().StartsWith("http"))
-                    {
-                        result.PictureLink = _imageStore.UriFor(result.PictureLink);
-                        result.PictureLink1200 = _imageStore.UriFor(result.PictureLink1200);
-                        result.PictureLink600 = _imageStore.UriFor(result.PictureLink600);
-                    }
+                    result.PictureLink = _imageStore.UriFor(result.PictureLink);
+                    result.PictureLink1200 = _imageStore.UriFor(result.PictureLink1200);
+                    result.PictureLink600 = _imageStore.UriFor(result.PictureLink600);
                     return Ok(result);
                 }
 
@@ -1152,18 +1131,9 @@ namespace KinaUnaProgenyApi.Controllers
             foreach (Picture pic in itemsOnPage)
             {
                 pic.Comments = await _commentsService.GetCommentsList(pic.CommentThreadNumber);
-                if (!pic.PictureLink.ToLower().StartsWith("http"))
-                {
-                    pic.PictureLink = _imageStore.UriFor(pic.PictureLink);
-                }
-                if (!pic.PictureLink1200.ToLower().StartsWith("http"))
-                {
-                    pic.PictureLink1200 = _imageStore.UriFor(pic.PictureLink1200);
-                }
-                if (!pic.PictureLink600.ToLower().StartsWith("http"))
-                {
-                    pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
-                }
+                pic.PictureLink = _imageStore.UriFor(pic.PictureLink);
+                pic.PictureLink1200 = _imageStore.UriFor(pic.PictureLink1200);
+                pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
             }
             PicturePageViewModel model = new PicturePageViewModel();
             model.PicturesList = itemsOnPage;
@@ -1201,10 +1171,7 @@ namespace KinaUnaProgenyApi.Controllers
                 model.ProgenyId = picture.ProgenyId;
                 model.Owners = picture.Owners;
                 model.PictureLink = picture.PictureLink1200;
-                if (!model.PictureLink.ToLower().StartsWith("http"))
-                {
-                    model.PictureLink = _imageStore.UriFor(model.PictureLink);
-                }
+                model.PictureLink = _imageStore.UriFor(model.PictureLink);
                 model.AccessLevel = picture.AccessLevel;
                 model.Author = picture.Author;
                 model.CommentThreadNumber = picture.CommentThreadNumber;

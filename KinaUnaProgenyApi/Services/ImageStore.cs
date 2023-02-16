@@ -36,6 +36,11 @@ namespace KinaUnaProgenyApi.Services
 
         public string UriFor(string imageId, string containerName = "pictures")
         {
+            if (imageId.ToLower().StartsWith("http"))
+            {
+                return imageId;
+            }
+
             StorageSharedKeyCredential credential = new StorageSharedKeyCredential(Constants.CloudBlobUsername, _storageKey);
             BlobSasBuilder sas = new BlobSasBuilder
             {
@@ -66,6 +71,11 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<string> DeleteImage(string imageId, string containerName = "pictures")
         {
+            if (string.IsNullOrEmpty(imageId) || imageId.ToLower().StartsWith("http"))
+            {
+                return imageId;
+            }
+                
             BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
 
             BlobClient blob = container.GetBlobClient(imageId);

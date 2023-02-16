@@ -250,10 +250,9 @@ namespace KinaUnaProgenyApi.Controllers
                         {
                             progeny.PictureLink = Constants.ProfilePictureUrl;
                         }
-                        if (!progeny.PictureLink.ToLower().StartsWith("http"))
-                        {
-                            progeny.PictureLink = _imageStore.UriFor(progeny.PictureLink, "progeny");
-                        }
+
+                        progeny.PictureLink = _imageStore.UriFor(progeny.PictureLink, "progeny");
+                        
                         result.Add(progeny);
                     }
 
@@ -284,10 +283,7 @@ namespace KinaUnaProgenyApi.Controllers
                             progeny.PictureLink = Constants.ProfilePictureUrl;
                         }
 
-                        if (!progeny.PictureLink.ToLower().StartsWith("http"))
-                        {
-                            progeny.PictureLink = _imageStore.UriFor(progeny.PictureLink, "progeny");
-                        }
+                        progeny.PictureLink = _imageStore.UriFor(progeny.PictureLink, "progeny");
 
                         result.Add(progeny);
                     }

@@ -277,18 +277,9 @@ namespace KinaUnaProgenyApi.Controllers
                 foreach (Picture pic in picturesList)
                 {
                     pic.Comments = await _commentsService.GetCommentsList(pic.CommentThreadNumber);
-                    if (!pic.PictureLink.ToLower().StartsWith("http"))
-                    {
-                        pic.PictureLink = _imageStore.UriFor(pic.PictureLink);
-                    }
-                    if (!pic.PictureLink1200.ToLower().StartsWith("http"))
-                    {
-                        pic.PictureLink1200 = _imageStore.UriFor(pic.PictureLink1200);
-                    }
-                    if (!pic.PictureLink600.ToLower().StartsWith("http"))
-                    {
-                        pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
-                    }
+                    pic.PictureLink = _imageStore.UriFor(pic.PictureLink);
+                    pic.PictureLink1200 = _imageStore.UriFor(pic.PictureLink1200);
+                    pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
                 }
 
                 return Ok(picturesList);
@@ -770,12 +761,10 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     await _commentsService.RemoveCommentsListFromCache(picture.CommentThreadNumber);
                 }
-                if (!picture.PictureLink.ToLower().StartsWith("http"))
-                {
-                    await _imageStore.DeleteImage(picture.PictureLink);
-                    await _imageStore.DeleteImage(picture.PictureLink600);
-                    await _imageStore.DeleteImage(picture.PictureLink1200);
-                }
+
+                await _imageStore.DeleteImage(picture.PictureLink);
+                await _imageStore.DeleteImage(picture.PictureLink600);
+                await _imageStore.DeleteImage(picture.PictureLink1200);
 
                 await _picturesService.DeletePicture(picture);
                 await _picturesService.RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
@@ -1016,18 +1005,9 @@ namespace KinaUnaProgenyApi.Controllers
             foreach (Picture pic in itemsOnPage)
             {
                 pic.Comments = await _commentsService.GetCommentsList(pic.CommentThreadNumber);
-                if (!pic.PictureLink.ToLower().StartsWith("http"))
-                {
-                    pic.PictureLink = _imageStore.UriFor(pic.PictureLink);
-                }
-                if (!pic.PictureLink1200.ToLower().StartsWith("http"))
-                {
-                    pic.PictureLink1200 = _imageStore.UriFor(pic.PictureLink1200);
-                }
-                if (!pic.PictureLink600.ToLower().StartsWith("http"))
-                {
-                    pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
-                }
+                pic.PictureLink = _imageStore.UriFor(pic.PictureLink);
+                pic.PictureLink1200 = _imageStore.UriFor(pic.PictureLink1200);
+                pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
             }
             PicturePageViewModel model = new PicturePageViewModel();
             model.PicturesList = itemsOnPage;
@@ -1068,10 +1048,7 @@ namespace KinaUnaProgenyApi.Controllers
                 model.ProgenyId = picture.ProgenyId;
                 model.Owners = picture.Owners;
                 model.PictureLink = picture.PictureLink1200;
-                if (!model.PictureLink.ToLower().StartsWith("http"))
-                {
-                    model.PictureLink = _imageStore.UriFor(model.PictureLink);
-                }
+                model.PictureLink = _imageStore.UriFor(model.PictureLink);
                 model.AccessLevel = picture.AccessLevel;
                 model.Author = picture.Author;
                 model.CommentThreadNumber = picture.CommentThreadNumber;
@@ -1598,15 +1575,8 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet]
         public IActionResult GetProfilePicture(string id)
         {
-            string result = "";
-            if (!string.IsNullOrEmpty(id))
-            {
-                if (!id.ToLower().StartsWith("http"))
-                {
-                    result = _imageStore.UriFor(id, "profiles");
-                }
-            }
-            
+            string result = _imageStore.UriFor(id, "profiles");
+
             if (string.IsNullOrEmpty(result))
             {
                 result = Constants.ProfilePictureUrl;

@@ -50,5 +50,36 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.ItemId = userAccessItem.AccessId.ToString();
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
         }
+
+        public static bool CopyContactItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Contact contactItem)
+        {
+            if (contactItem.DateAdded.HasValue)
+            {
+                currentTimeLineItem.ProgenyTime = contactItem.DateAdded.Value;
+                currentTimeLineItem.AccessLevel = contactItem.AccessLevel;
+                
+                return true;
+            }
+
+            return false;
+        }
+
+        public static void CopyContactPropertiesForAdd(this TimeLineItem currentTimeLineItem, Contact contactItem)
+        {
+            currentTimeLineItem.ProgenyId = contactItem.ProgenyId;
+            currentTimeLineItem.AccessLevel = contactItem.AccessLevel;
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Contact;
+            currentTimeLineItem.ItemId = contactItem.ContactId.ToString();
+            currentTimeLineItem.CreatedBy = contactItem.Author;
+            currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            if (contactItem.DateAdded.HasValue)
+            {
+                currentTimeLineItem.ProgenyTime = contactItem.DateAdded.Value;
+            }
+            else
+            {
+                currentTimeLineItem.ProgenyTime = DateTime.UtcNow;
+            }
+        }
     }
 }

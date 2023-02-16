@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -80,10 +79,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                if (!result.PictureLink.ToLower().StartsWith("http"))
-                {
-                    result.PictureLink = _imageStore.UriFor(result.PictureLink, "progeny");
-                }
+                result.PictureLink = _imageStore.UriFor(result.PictureLink, "progeny");
                 return Ok(result);
             }
 
@@ -233,12 +229,9 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     return Unauthorized();
                 }
-                
-                
-                if (!progeny.PictureLink.ToLower().StartsWith("http") && !String.IsNullOrEmpty(progeny.PictureLink))
-                {
-                    await _imageStore.DeleteImage(progeny.PictureLink, "progeny");
-                }
+
+
+                await _imageStore.DeleteImage(progeny.PictureLink, "progeny");
 
                 List<UserAccess> userAccessList = await _userAccessService.GetProgenyUserAccessList(progeny.Id);
                     

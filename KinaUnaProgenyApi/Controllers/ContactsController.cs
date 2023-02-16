@@ -1,7 +1,6 @@
 ﻿using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -100,72 +99,27 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 value.PictureLink = Constants.ProfilePictureUrl;
             }
-
-            Contact contactItem = new Contact();
-            contactItem.AccessLevel = value.AccessLevel;
-            contactItem.Active = value.Active;
-            contactItem.AddressString = value.AddressString;
-            contactItem.ProgenyId = value.ProgenyId;
-            contactItem.Author = value.Author;
-            contactItem.DateAdded = value.DateAdded ?? DateTime.UtcNow;
-            contactItem.Context = value.Context;
-            contactItem.DisplayName = value.DisplayName;
-            contactItem.Email1 = value.Email1;
-            contactItem.Email2 = value.Email2;
-            contactItem.FirstName = value.FirstName;
-            contactItem.LastName = value.LastName;
-            contactItem.MiddleName = value.MiddleName;
-            contactItem.MobileNumber = value.MobileNumber;
-            contactItem.Notes = value.Notes;
-            contactItem.PhoneNumber = value.PhoneNumber;
-            contactItem.PictureLink = value.PictureLink;
-            contactItem.Tags = value.Tags;
-            contactItem.Website = value.Website;
-            contactItem.Address = value.Address;
-
-            if (contactItem.Address != null)
+            
+            if (value.Address != null)
             {
-                if (contactItem.Address.AddressLine1 + contactItem.Address.AddressLine2 + contactItem.Address.City + contactItem.Address.Country + contactItem.Address.PostalCode + contactItem.Address.State != "")
+                if (value.Address.HasValues())
                 {
-                    Address address = new Address();
-                    address.AddressLine1 = contactItem.Address.AddressLine1;
-                    address.AddressLine2 = contactItem.Address.AddressLine2;
-                    address.City = contactItem.Address.City;
-                    address.PostalCode = contactItem.Address.PostalCode;
-                    address.State = contactItem.Address.State;
-                    address.Country = contactItem.Address.Country;
-                    address = await _locationService.AddAddressItem(address);
-                    contactItem.AddressIdNumber = address.AddressId;
+                    value.Address = await _locationService.AddAddressItem(value.Address);
+                    value.AddressIdNumber = value.Address.AddressId;
                 }
             }
 
-            contactItem = await _contactService.AddContact(contactItem);
+            Contact contactItem = await _contactService.AddContact(value);
             
             TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = contactItem.ProgenyId;
-            tItem.AccessLevel = contactItem.AccessLevel;
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Contact;
-            tItem.ItemId = contactItem.ContactId.ToString();
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            tItem.CreatedBy = userinfo?.UserId ?? "User not found";
-            tItem.CreatedTime = DateTime.UtcNow;
-            if (contactItem.DateAdded.HasValue)
-            {
-                tItem.ProgenyTime = contactItem.DateAdded.Value;
-            }
-            else
-            {
-                tItem.ProgenyTime = DateTime.UtcNow;
-            }
+            tItem.CopyContactPropertiesForAdd(contactItem);
 
             await _timelineService.AddTimeLineItem(tItem);
 
-            string title = "Contact added for " + progeny.NickName;
-            if (userinfo != null)
-            {
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new contact for " + progeny.NickName;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
-            }
+            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+            string notificationTitle = "Contact added for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " added a new contact for " + progeny.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, tItem, userInfo.ProfilePicture);
 
             return Ok(contactItem);
         }
@@ -180,14 +134,11 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to edit contacts for this child.
-
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -202,73 +153,30 @@ namespace KinaUnaProgenyApi.Controllers
                 value.PictureLink = Constants.ProfilePictureUrl;
             }
 
-            contactItem.AccessLevel = value.AccessLevel;
-            contactItem.Active = value.Active;
-            contactItem.AddressIdNumber = value.AddressIdNumber;
-            contactItem.AddressString = value.AddressString;
-            contactItem.ProgenyId = value.ProgenyId;
-            contactItem.Author = value.Author;
-            if (value.DateAdded.HasValue)
-            {
-                contactItem.DateAdded = value.DateAdded.Value;
-            }
-            else
-            {
-                contactItem.DateAdded = DateTime.UtcNow;
-            }
-            
-            contactItem.Context = value.Context;
-            contactItem.DisplayName = value.DisplayName;
-            contactItem.Email1 = value.Email1;
-            contactItem.Email2 = value.Email2;
-            contactItem.FirstName = value.FirstName;
-            contactItem.LastName = value.LastName;
-            contactItem.MiddleName = value.MiddleName;
-            contactItem.MobileNumber = value.MobileNumber;
-            contactItem.Notes = value.Notes;
-            contactItem.PhoneNumber = value.PhoneNumber;
-            if (value.PictureLink != Constants.KeepExistingLink)
-            {
-                contactItem.PictureLink = value.PictureLink;
-            }
-            contactItem.Tags = value.Tags;
-            contactItem.Website = value.Website;
-            contactItem.Address = value.Address;
+            contactItem.CopyPropertiesForUpdate(value);
+
             if (contactItem.AddressIdNumber != null && contactItem.AddressIdNumber.Value != 0)
             {
-                Address addressOld = await _locationService.GetAddressItem(contactItem.AddressIdNumber.Value);
+                Address existingAddress = await _locationService.GetAddressItem(contactItem.AddressIdNumber.Value);
                 if (contactItem.Address != null)
                 {
-                    addressOld.AddressLine1 = contactItem.Address.AddressLine1;
-                    addressOld.AddressLine2 = contactItem.Address.AddressLine2;
-                    addressOld.City = contactItem.Address.City;
-                    addressOld.PostalCode = contactItem.Address.PostalCode;
-                    addressOld.State = contactItem.Address.State;
-                    addressOld.Country = contactItem.Address.Country;
-                    contactItem.Address = addressOld;
-
-                    await _locationService.UpdateAddressItem(addressOld);
+                    existingAddress.CopyPropertiesForUpdate(contactItem.Address);
                     
+                    contactItem.Address = await _locationService.UpdateAddressItem(existingAddress);
                 }
                 else
                 {
-                    int removedAddressId = addressOld.AddressId;
+                    int removedAddressId = existingAddress.AddressId;
                     contactItem.AddressIdNumber = null;
                     await _locationService.RemoveAddressItem(removedAddressId);
                 }
             }
             else
             {
-                if (contactItem.Address.AddressLine1 + contactItem.Address.AddressLine2 + contactItem.Address.City + contactItem.Address.Country + contactItem.Address.PostalCode + contactItem.Address.State !=
-                    "")
+                if (contactItem.Address.HasValues())
                 {
                     Address address = new Address();
-                    address.AddressLine1 = contactItem.Address.AddressLine1;
-                    address.AddressLine2 = contactItem.Address.AddressLine2;
-                    address.City = contactItem.Address.City;
-                    address.PostalCode = contactItem.Address.PostalCode;
-                    address.State = contactItem.Address.State;
-                    address.Country = contactItem.Address.Country;
+                    address.CopyPropertiesForAdd(contactItem.Address);
                     address = await _locationService.AddAddressItem(address);
                     contactItem.AddressIdNumber = address.AddressId;
                 }
@@ -276,18 +184,16 @@ namespace KinaUnaProgenyApi.Controllers
 
             contactItem = await _contactService.UpdateContact(contactItem);
             
-            TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(contactItem.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
-            if (tItem != null && contactItem.DateAdded.HasValue)
-            {
-                tItem.ProgenyTime = contactItem.DateAdded.Value;
-                tItem.AccessLevel = contactItem.AccessLevel;
-                _ = await _timelineService.UpdateTimeLineItem(tItem);
+            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(contactItem.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
+            if (timeLineItem != null && timeLineItem.CopyContactItemPropertiesForUpdate(contactItem))
+            { 
+                _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
             }
 
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            string title = "Contact edited for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a contact for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+            string notificationTitle = "Contact edited for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " edited a contact for " + progeny.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
 
             return Ok(contactItem);
         }
@@ -300,10 +206,10 @@ namespace KinaUnaProgenyApi.Controllers
             if (contactItem != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                Progeny prog = await _progenyService.GetProgeny(contactItem.ProgenyId);
-                if (prog != null)
+                Progeny progeny = await _progenyService.GetProgeny(contactItem.ProgenyId);
+                if (progeny != null)
                 {
-                    if (!prog.IsInAdminList(userEmail))
+                    if (!progeny.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }
@@ -327,16 +233,14 @@ namespace KinaUnaProgenyApi.Controllers
                         await _locationService.RemoveAddressItem(address.AddressId);
                     }
                 }
-                if (!contactItem.PictureLink.ToLower().StartsWith("http"))
-                {
-                    await _imageStore.DeleteImage(contactItem.PictureLink, BlobContainers.Contacts);
-                }
+
+                await _imageStore.DeleteImage(contactItem.PictureLink, BlobContainers.Contacts);
 
                 _ = await _contactService.DeleteContact(contactItem);
                 
                 UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                string title = "Contact deleted for " + prog.NickName;
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a contact for " + prog.NickName + ". Contact: " + contactItem.DisplayName;
+                string title = "Contact deleted for " + progeny.NickName;
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a contact for " + progeny.NickName + ". Contact: " + contactItem.DisplayName;
                 if (tItem != null)
                 {
                     tItem.AccessLevel = 0;
@@ -365,10 +269,9 @@ namespace KinaUnaProgenyApi.Controllers
                     {
                         result.Address = await _locationService.GetAddressItem(result.AddressIdNumber.Value);
                     }
-                    if (!result.PictureLink.ToLower().StartsWith("http"))
-                    {
-                        result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Contacts);
-                    }
+
+                    result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Contacts);
+
                     return Ok(result);
                 }
             }
@@ -388,17 +291,14 @@ namespace KinaUnaProgenyApi.Controllers
             
             if ((userAccess != null || id == Constants.DefaultChildId) && contactsList.Any())
             {
-                foreach (Contact cont in contactsList)
+                foreach (Contact contact in contactsList)
                 {
-                    if (cont.AddressIdNumber.HasValue)
+                    if (contact.AddressIdNumber.HasValue)
                     {
-                        cont.Address = await _locationService.GetAddressItem(cont.AddressIdNumber.Value);
+                        contact.Address = await _locationService.GetAddressItem(contact.AddressIdNumber.Value);
                     }
 
-                    if (!cont.PictureLink.ToLower().StartsWith("http"))
-                    {
-                        cont.PictureLink = _imageStore.UriFor(cont.PictureLink, BlobContainers.Contacts);
-                    }
+                    contact.PictureLink = _imageStore.UriFor(contact.PictureLink, BlobContainers.Contacts);
                 }
                 return Ok(contactsList);
             }
@@ -421,7 +321,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (userAccess != null && userAccess.AccessLevel > 0 && contact.PictureLink.ToLower().StartsWith("http"))
             {
-                using (Stream stream = await GetStreamFromUrl(contact.PictureLink))
+                await using (Stream stream = await GetStreamFromUrl(contact.PictureLink))
                 {
                     contact.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Contacts);
                 }
