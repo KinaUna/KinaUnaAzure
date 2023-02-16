@@ -2,9 +2,14 @@
 
 namespace KinaUnaWeb.Models.FamilyViewModels
 {
-    public class FamilyViewModel: BaseViewModel
+    public class FamilyViewModel: BaseItemsViewModel
     {
         public Family Family { get; set; }
+
+        public FamilyViewModel(BaseItemsViewModel baseItemsViewModel)
+        {
+            SetBaseProperties(baseItemsViewModel);
+        }
 
     }
 }

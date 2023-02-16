@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models.FamilyViewModels;
+using KinaUnaWeb.Models;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -14,52 +15,38 @@ namespace KinaUnaWeb.Controllers
     {
         
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
+        private readonly IViewModelSetupService _viewModelSetupService;
         
-        public FamilyController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient)
+        public FamilyController(IProgenyHttpClient progenyHttpClient, IUserAccessHttpClient userAccessHttpClient, IViewModelSetupService viewModelSetupService)
         {
             _progenyHttpClient = progenyHttpClient;
-            _userInfosHttpClient = userInfosHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
+            _viewModelSetupService = viewModelSetupService;
         }
 
         public async Task<IActionResult> Index()
         {
-            FamilyViewModel model = new FamilyViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            FamilyViewModel model = new FamilyViewModel(baseModel);
             
             model.Family = new Family();
-            model.Family.Children = await _progenyHttpClient.GetProgenyAdminList(userEmail);
-            model.Family.FamilyMembers = new List<UserInfo>();
-            model.Family.OtherMembers = new List<UserInfo>();
-            model.Family.AccessList = new List<UserAccess>();
+            model.Family.Children = await _progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+            
             if (model.Family.Children != null && model.Family.Children.Any())
             {
-                foreach (Progeny prog in model.Family.Children)
+                foreach (Progeny progeny in model.Family.Children)
                 {
-                    if (prog.BirthDay.HasValue)
+                    if (progeny.BirthDay.HasValue)
                     {
-                        prog.BirthDay = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(prog.BirthDay.Value,prog.TimeZone,model.CurrentUser.Timezone);
+                        progeny.BirthDay = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(progeny.BirthDay.Value,progeny.TimeZone,model.CurrentUser.Timezone);
                     }
-                    List<UserAccess> uaList = await _userAccessHttpClient.GetProgenyAccessList(prog.Id);
-                    model.Family.AccessList.AddRange(uaList);
+                    List<UserAccess> userAccesses = await _userAccessHttpClient.GetProgenyAccessList(progeny.Id);
+                    model.Family.AccessList.AddRange(userAccesses);
                 }
             }
-
-            model.Family.AccessLevelList = new AccessLevelList();
-
-            if (model.LanguageId == 2)
-            {
-                model.Family.AccessLevelList.AccessLevelListEn = model.Family.AccessLevelList.AccessLevelListDe;
-            }
-
-            if (model.LanguageId == 3)
-            {
-                model.Family.AccessLevelList.AccessLevelListEn = model.Family.AccessLevelList.AccessLevelListDa;
-            }
+            
+            model.Family.SetAccessLevelList(model.LanguageId);
 
             return View(model);
         }
