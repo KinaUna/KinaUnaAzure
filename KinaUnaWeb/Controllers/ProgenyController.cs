@@ -113,10 +113,7 @@ namespace KinaUnaWeb.Controllers
             model.TimeZone = prog.TimeZone;
             model.Admins = prog.Admins.ToUpper();
             model.PictureLink = prog.PictureLink;
-            if (!prog.PictureLink.ToLower().StartsWith("http"))
-            {
-                model.PictureLink = _imageStore.UriFor(prog.PictureLink, BlobContainers.Progeny);
-            }
+            model.PictureLink = _imageStore.UriFor(prog.PictureLink, BlobContainers.Progeny);
             
             return View(model);
         }
@@ -150,10 +147,7 @@ namespace KinaUnaWeb.Controllers
                     prog.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Progeny);
                 }
 
-                if (!oldPictureLink.ToLower().StartsWith("http") && !string.IsNullOrEmpty(oldPictureLink))
-                {
-                    await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Progeny);
-                }
+                await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Progeny);
             }
             await _progenyHttpClient.UpdateProgeny(prog);
             return RedirectToAction("Index");
@@ -277,10 +271,7 @@ namespace KinaUnaWeb.Controllers
                         await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
                     }
 
-                    if (!friend.PictureLink.ToLower().StartsWith("http"))
-                    {
-                        await _imageStore.DeleteImage(friend.PictureLink);
-                    }
+                    await _imageStore.DeleteImage(friend.PictureLink);
 
                     await _friendsHttpClient.DeleteFriend(friend.FriendId);
                 }
@@ -353,10 +344,7 @@ namespace KinaUnaWeb.Controllers
 
                     await _contactsHttpClient.DeleteContact(contact.ContactId);
                     
-                    if (!contact.PictureLink.ToLower().StartsWith("http"))
-                    {
-                        await _imageStore.DeleteImage(contact.PictureLink);
-                    }
+                    await _imageStore.DeleteImage(contact.PictureLink);
                 }
             }
 

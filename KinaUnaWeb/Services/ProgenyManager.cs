@@ -158,11 +158,7 @@ namespace KinaUnaWeb.Services
 
         public string GetImageUrl(string pictureLink, string pictureContainer)
         {
-            string returnString = pictureLink;
-            if (!pictureLink.ToLower().StartsWith("http"))
-            {
-                returnString = _imageStore.UriFor(pictureLink, pictureContainer);
-            }
+            string returnString = _imageStore.UriFor(pictureLink, pictureContainer);
             return returnString;
         }
 

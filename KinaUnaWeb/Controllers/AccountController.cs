@@ -126,10 +126,7 @@ namespace KinaUnaWeb.Controllers
                 userInfo.ProfilePicture = Constants.ProfilePictureUrl;
             }
 
-            if (!userInfo.ProfilePicture.ToLower().StartsWith("http"))
-            {
-                userInfo.ProfilePicture = _imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
-            }
+            userInfo.ProfilePicture = _imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
 
             UserInfoViewModel model = new UserInfoViewModel
             {
@@ -192,10 +189,7 @@ namespace KinaUnaWeb.Controllers
             await _userInfosHttpClient.UpdateUserInfo(userInfo);
             
             model.ProfilePicture = userInfo.ProfilePicture;
-            if (!userInfo.ProfilePicture.ToLower().StartsWith("http"))
-            {
-                model.ProfilePicture = _imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
-            }
+            model.ProfilePicture = _imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
 
             if (emailChanged)
             {
@@ -273,10 +267,7 @@ namespace KinaUnaWeb.Controllers
                 userInfo.ProfilePicture = Constants.ProfilePictureUrl;
             }
 
-            if (!userInfo.ProfilePicture.ToLower().StartsWith("http"))
-            {
-                userInfo.ProfilePicture = _imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
-            }
+            userInfo.ProfilePicture = _imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
 
             UserInfoViewModel model = new UserInfoViewModel
             {

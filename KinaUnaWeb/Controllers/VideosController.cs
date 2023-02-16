@@ -199,10 +199,7 @@ namespace KinaUnaWeb.Controllers
                     string authorName = "";
                     if (!string.IsNullOrEmpty(authorImg))
                     {
-                        if (!authorImg.ToLower().StartsWith("http"))
-                        {
-                            authorImg = _imageStore.UriFor(authorImg, "profiles");
-                        }
+                        authorImg = _imageStore.UriFor(authorImg, "profiles");
                     }
                     else
                     {

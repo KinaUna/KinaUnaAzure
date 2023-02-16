@@ -40,6 +40,6 @@ namespace KinaUnaWeb.Services
         /// <param name="progenyId">int: The id of the progeny (Progeny.Id).</param>
         /// <param name="accessLevel">int: The user's access level.</param>
         /// <returns>List of Contact objects.</returns>
-        Task<List<Contact>> GetContactsList(int progenyId, int accessLevel);
+        Task<List<Contact>> GetContactsList(int progenyId, int accessLevel = 5);
     }
 }

@@ -156,10 +156,7 @@ namespace KinaUnaWeb.Controllers
                     PictureViewModel picture = await _mediaHttpClient.GetPictureViewModel(itemId, 0, 1, userinfo.Timezone);
                     if (picture != null && picture.PictureId > 0)
                     {
-                        if (!picture.PictureLink.StartsWith("https://"))
-                        {
-                            picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
-                        }
+                        picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
                         picture.CommentsCount = picture.CommentsList.Count;
                         return PartialView("TimeLinePhotoPartial", picture);
                     }
@@ -232,10 +229,7 @@ namespace KinaUnaWeb.Controllers
                     Friend frn = await _friendsHttpClient.GetFriend(itemId);
                     if (frn != null && frn.FriendId > 0)
                     {
-                        if (!frn.PictureLink.StartsWith("https://"))
-                        {
-                            frn.PictureLink = _imageStore.UriFor(frn.PictureLink, "friends");
-                        }
+                        frn.PictureLink = _imageStore.UriFor(frn.PictureLink, "friends");
                         return PartialView("TimeLineFriendPartial", frn);
                     }
                 }
@@ -295,13 +289,11 @@ namespace KinaUnaWeb.Controllers
                     {
                         if (cnt.DateAdded == null)
                         {
-                            if (!cnt.PictureLink.StartsWith("https://"))
-                            {
-                                cnt.PictureLink = _imageStore.UriFor(cnt.PictureLink, "contacts");
-                            }
-
-                            cnt.DateAdded = new DateTime(1900, 1, 1);
+                            cnt.DateAdded = DateTime.UtcNow;
                         }
+
+                        cnt.PictureLink = _imageStore.UriFor(cnt.PictureLink, "contacts");
+
                         return PartialView("TimeLineContactPartial", cnt);
                     }
                 }

@@ -127,7 +127,7 @@ namespace KinaUnaWeb.Services
             return true;
         }
 
-        public async Task<List<Contact>> GetContactsList(int progenyId, int accessLevel)
+        public async Task<List<Contact>> GetContactsList(int progenyId, int accessLevel = 5)
         {
             List<Contact> progenyContactsList = new List<Contact>();
             string accessToken = await GetNewToken();

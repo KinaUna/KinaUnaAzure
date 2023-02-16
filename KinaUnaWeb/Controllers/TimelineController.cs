@@ -236,10 +236,7 @@ namespace KinaUnaWeb.Controllers
                     PictureViewModel picture = await _mediaHttpClient.GetPictureViewModel(itemId, 0, 1, model.CurrentUser.Timezone);
                     if (picture != null && picture.PictureId > 0)
                     {
-                        if (!picture.PictureLink.StartsWith("https://"))
-                        {
-                            picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
-                        }
+                        picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
                         picture.CommentsCount = picture.CommentsList.Count;
                         return PartialView("TimeLinePhotoPartial", picture);
                     }
@@ -309,10 +306,7 @@ namespace KinaUnaWeb.Controllers
                     Friend frn = await _friendsHttpClient.GetFriend(itemId);
                     if (frn != null && frn.FriendId > 0)
                     {
-                        if (!frn.PictureLink.StartsWith("https://"))
-                        {
-                            frn.PictureLink = _imageStore.UriFor(frn.PictureLink, "friends");
-                        }
+                        frn.PictureLink = _imageStore.UriFor(frn.PictureLink, "friends");
                         return PartialView("TimeLineFriendPartial", frn);
                     }
                 }
@@ -369,13 +363,10 @@ namespace KinaUnaWeb.Controllers
                     Contact cnt = await _contactsHttpClient.GetContact(itemId);
                     if (cnt != null && cnt.ContactId > 0)
                     {
-                        if (!cnt.PictureLink.StartsWith("https://"))
-                        {
-                            cnt.PictureLink = _imageStore.UriFor(cnt.PictureLink, "contacts");
-                        }
+                        cnt.PictureLink = _imageStore.UriFor(cnt.PictureLink, "contacts");
                         if (cnt.DateAdded == null)
                         {
-                            cnt.DateAdded = new DateTime(1900, 1, 1);
+                            cnt.DateAdded = DateTime.UtcNow;
                         }
                         return PartialView("TimeLineContactPartial", cnt);
                     }

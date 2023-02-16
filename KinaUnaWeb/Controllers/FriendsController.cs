@@ -112,10 +112,8 @@ namespace KinaUnaWeb.Controllers
                             }
                         }
                     }
-                    if (!friendViewModel.PictureLink.StartsWith("https://"))
-                    {
-                        friendViewModel.PictureLink = _imageStore.UriFor(friendViewModel.PictureLink, "friends");
-                    }
+
+                    friendViewModel.PictureLink = _imageStore.UriFor(friendViewModel.PictureLink, "friends");
 
                     if (friendViewModel.AccessLevel >= userAccessLevel)
                     {
@@ -194,10 +192,7 @@ namespace KinaUnaWeb.Controllers
             model.Tags = friend.Tags;
             model.Progeny = progeny;
             
-            if (!model.PictureLink.StartsWith("https://"))
-            {
-                model.PictureLink = _imageStore.UriFor(model.PictureLink, "friends");
-            }
+            model.PictureLink = _imageStore.UriFor(model.PictureLink, "friends");
 
             List<string> tagsList = new List<string>();
             List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(model.ProgenyId, userAccessLevel);
@@ -454,10 +449,7 @@ namespace KinaUnaWeb.Controllers
             model.FriendId = friend.FriendId;
             model.FriendSince = friend.FriendSince;
             model.PictureLink = friend.PictureLink;
-            if (!friend.PictureLink.ToLower().StartsWith("http"))
-            {
-                model.PictureLink = _imageStore.UriFor(friend.PictureLink, "friends");
-            }
+            model.PictureLink = _imageStore.UriFor(friend.PictureLink, "friends");
             model.AccessLevelListEn[model.AccessLevel].Selected = true;
             model.AccessLevelListDa[model.AccessLevel].Selected = true;
             model.AccessLevelListDe[model.AccessLevel].Selected = true;
@@ -559,10 +551,7 @@ namespace KinaUnaWeb.Controllers
                         editedFriend.PictureLink = await _imageStore.SaveImage(stream, "friends");
                     }
 
-                    if (!oldPictureLink.ToLower().StartsWith("http"))
-                    {
-                        await _imageStore.DeleteImage(oldPictureLink, "friends");
-                    }
+                    await _imageStore.DeleteImage(oldPictureLink, "friends");
                 }
 
                 await _friendsHttpClient.UpdateFriend(editedFriend);

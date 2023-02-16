@@ -5,7 +5,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.ContactListViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
 }
 @section Scripts
 {
@@ -95,39 +95,40 @@
     }
     else
     {
+        @if (Model.IsCurrentUserProgenyAdmin)
+        {
+            <div class="btn-group" style="float: right;">
+                <a asp-controller="Contacts" asp-action="AddContact" class="btn btn-info btn-round leavePage">
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add contact", PageNames.Contacts, Model.LanguageId)
+                </a>
+            </div>
+        }
+        <h2>@ViewData["Title"]</h2>
+        <br style="clear: both;"/>
+        <div>
+            <span style="color: black;">Show:</span>
+            <span class="button-checkbox">
+                <button type="button" class="btn" data-color="primary">@await LocaleManager.GetTranslation("Active contacts", PageNames.Contacts, Model.LanguageId)</button>
+                <input type="checkbox" name="contactClassTrue" style="margin-right: 18px;" checked="checked" class="hidden" hidden/>
+            </span>
+            <span class="button-checkbox">
+                <button type="button" class="btn" data-color="primary">@await LocaleManager.GetTranslation("Inactive contacts", PageNames.Contacts, Model.LanguageId)</button>
+                <input type="checkbox" name="contactClassFalse" style="margin-right: 18px;" checked="checked" class="hidden" hidden/>
+            </span>
+
+        </div>
+        @if (!string.IsNullOrEmpty(Model.TagFilter))
+        {
+            <br/>
+            <div class="text-dark" style="float: right;">@await LocaleManager.GetTranslation("Tag filter:", PageNames.Contacts, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
+                <a class="btn btn-info btn-sm" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
+                    <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Contacts, Model.LanguageId)</a></div>
+            <br/>
+        }
         <div class="card" style="clear: both; margin-top: 25px;">
 
-            <div class="card-header card-header-success">
-                @if (Model.IsAdmin)
-                {
-                    <div class="btn-group" style="float: right;">
-                        <a asp-controller="Contacts" asp-action="AddContact" class="btn btn-info btn-round leavePage">
-                            <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add contact", PageNames.Contacts, Model.LanguageId)
-                        </a>
-                    </div>
-                }
-                <h2 class="title">@ViewData["Title"]</h2>
-            </div>
             <div class="card-body" style="padding-bottom: 35px;">
-                <div>
-                    <span style="color: black;">Show:</span>
-                    <span class="button-checkbox">
-                        <button type="button" class="btn" data-color="primary">@await LocaleManager.GetTranslation("Active contacts", PageNames.Contacts, Model.LanguageId)</button>
-                        <input type="checkbox" name="contactClassTrue" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
-                    </span>
-                    <span class="button-checkbox">
-                        <button type="button" class="btn" data-color="primary">@await LocaleManager.GetTranslation("Inactive contacts", PageNames.Contacts, Model.LanguageId)</button>
-                        <input type="checkbox" name="contactClassFalse" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
-                    </span>
-
-                </div>
-                @if (!string.IsNullOrEmpty(Model.TagFilter))
-                {
-                    <br />
-                    <div class="text-dark" style="float: right;">@await LocaleManager.GetTranslation("Tag filter:", PageNames.Contacts, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm" asp-action="Index" asp-route-childId="@Model.Progeny.Id">
-                        <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Contacts, Model.LanguageId)</a></div>
-                    <br />
-                }
+                
                 <div class="card-deck">
                     @foreach (ContactViewModel contactViewModel in Model.ContactsList)
                     {
@@ -161,7 +162,7 @@
                             string[] tagsList = Model.Tags.Split(',');
                             foreach (string tagString in tagsList)
                             {
-                                <a asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                                <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
                             }
                         }
                     }

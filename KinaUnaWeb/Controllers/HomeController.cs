@@ -159,10 +159,8 @@ namespace KinaUnaWeb.Controllers
                 {
                     displayPicture = tempPicture;
                 }
-                if (!displayPicture.PictureLink600.StartsWith("https://"))
-                {
-                    displayPicture.PictureLink600 = _imageStore.UriFor(displayPicture.PictureLink600);
-                }
+
+                displayPicture.PictureLink600 = _imageStore.UriFor(displayPicture.PictureLink600);
 
                 model.ImageLink600 = displayPicture.PictureLink600;
                 model.ImageId = displayPicture.PictureId;
@@ -173,10 +171,7 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                if (!displayPicture.PictureLink600.StartsWith("https://"))
-                {
-                    displayPicture.PictureLink600 = _imageStore.UriFor(displayPicture.PictureLink600);
-                }
+                displayPicture.PictureLink600 = _imageStore.UriFor(displayPicture.PictureLink600);
 
                 model.ImageLink600 = displayPicture.PictureLink600;
                 model.ImageId = displayPicture.PictureId;

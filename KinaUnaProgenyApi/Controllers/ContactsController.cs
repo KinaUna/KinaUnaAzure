@@ -51,7 +51,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 List<Contact> contactsList = await _contactService.GetContactsList(id);
-                contactsList = contactsList.Where(c => c.AccessLevel >= accessLevel).ToList();
+                contactsList = contactsList.Where(c => c.AccessLevel >= (userAccess?.AccessLevel ?? accessLevel)).ToList();
                 if (contactsList.Any())
                 {
                     return Ok(contactsList);
@@ -81,14 +81,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Contact value)
         {
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to add contacts for this child.
-
-                if (!prog.IsInAdminList(userEmail))
+            
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -97,7 +95,12 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-            
+
+            if (value.PictureLink == Constants.DefaultPictureLink)
+            {
+                value.PictureLink = Constants.ProfilePictureUrl;
+            }
+
             Contact contactItem = new Contact();
             contactItem.AccessLevel = value.AccessLevel;
             contactItem.Active = value.Active;
@@ -115,10 +118,7 @@ namespace KinaUnaProgenyApi.Controllers
             contactItem.MobileNumber = value.MobileNumber;
             contactItem.Notes = value.Notes;
             contactItem.PhoneNumber = value.PhoneNumber;
-            if (value.PictureLink != "[KeepExistingLink]")
-            {
-                contactItem.PictureLink = value.PictureLink;
-            }
+            contactItem.PictureLink = value.PictureLink;
             contactItem.Tags = value.Tags;
             contactItem.Website = value.Website;
             contactItem.Address = value.Address;
@@ -160,10 +160,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             await _timelineService.AddTimeLineItem(tItem);
 
-            string title = "Contact added for " + prog.NickName;
+            string title = "Contact added for " + progeny.NickName;
             if (userinfo != null)
             {
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new contact for " + prog.NickName;
+                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new contact for " + progeny.NickName;
                 await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
             }
 
@@ -197,6 +197,11 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
+            if (value.PictureLink == Constants.DefaultPictureLink)
+            {
+                value.PictureLink = Constants.ProfilePictureUrl;
+            }
+
             contactItem.AccessLevel = value.AccessLevel;
             contactItem.Active = value.Active;
             contactItem.AddressIdNumber = value.AddressIdNumber;
@@ -205,7 +210,7 @@ namespace KinaUnaProgenyApi.Controllers
             contactItem.Author = value.Author;
             if (value.DateAdded.HasValue)
             {
-                contactItem.DateAdded = value.DateAdded.Value.ToUniversalTime();
+                contactItem.DateAdded = value.DateAdded.Value;
             }
             else
             {
@@ -222,7 +227,7 @@ namespace KinaUnaProgenyApi.Controllers
             contactItem.MobileNumber = value.MobileNumber;
             contactItem.Notes = value.Notes;
             contactItem.PhoneNumber = value.PhoneNumber;
-            if (value.PictureLink != "[KeepExistingLink]")
+            if (value.PictureLink != Constants.KeepExistingLink)
             {
                 contactItem.PictureLink = value.PictureLink;
             }
@@ -295,11 +300,9 @@ namespace KinaUnaProgenyApi.Controllers
             if (contactItem != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                // Check if child exists.
                 Progeny prog = await _progenyService.GetProgeny(contactItem.ProgenyId);
                 if (prog != null)
                 {
-                    // Check if user is allowed to delete contacts for this child.
                     if (!prog.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
@@ -318,7 +321,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                 if (contactItem.AddressIdNumber != null)
                 {
-                    Address address = await _locationService.GetAddressItem(contactItem.AddressIdNumber.Value); //_context.AddressDb.SingleAsync(a => a.AddressId == contactItem.AddressIdNumber);
+                    Address address = await _locationService.GetAddressItem(contactItem.AddressIdNumber.Value);
                     if (address != null)
                     {
                         await _locationService.RemoveAddressItem(address.AddressId);

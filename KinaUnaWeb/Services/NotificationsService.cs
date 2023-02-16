@@ -27,9 +27,9 @@ namespace KinaUnaWeb.Services
 
         public async Task SendCalendarNotification(CalendarItem eventItem, UserInfo currentUser)
         {
-            List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(eventItem.ProgenyId);
+            List<UserAccess> usersToNotify = await _userAccessHttpClient.GetProgenyAccessList(eventItem.ProgenyId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(eventItem.ProgenyId);
-            foreach (UserAccess ua in usersToNotif)
+            foreach (UserAccess ua in usersToNotify)
             {
                 if (ua.AccessLevel <= eventItem.AccessLevel)
                 {
@@ -64,6 +64,36 @@ namespace KinaUnaWeb.Services
                             await _pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
                                 webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunacalendar" + progeny.Id);
                         }
+                    }
+                }
+            }
+        }
+
+        public async Task SendContactNotification(Contact contactItem, UserInfo currentUser)
+        {
+            List<UserAccess> usersToNotify = await _userAccessHttpClient.GetProgenyAccessList(contactItem.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(contactItem.ProgenyId);
+            foreach (UserAccess userAccess in usersToNotify)
+            {
+                if (userAccess.AccessLevel <= contactItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        WebNotification webNotification = new WebNotification();
+                        webNotification.To = uaUserInfo.UserId;
+                        webNotification.From = currentUser.FullName();
+                        webNotification.Message = "Name: " + contactItem.DisplayName + "\r\nContext: " + contactItem.Context;
+                        webNotification.DateTime = DateTime.UtcNow;
+                        webNotification.Icon = currentUser.ProfilePicture;
+                        webNotification.Title = "A new contact was added for " + progeny.NickName;
+                        webNotification.Link = "/Contacts/ContactDetails?contactId=" + contactItem.ContactId + "&childId=" + progeny.Id;
+                        webNotification.Type = "Notification";
+
+                        webNotification = await _webNotificationsService.SaveNotification(webNotification);
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
+                            webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunacontact" + progeny.Id);
                     }
                 }
             }

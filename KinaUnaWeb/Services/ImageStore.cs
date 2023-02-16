@@ -12,13 +12,13 @@ namespace KinaUnaWeb.Services
 {
     public class ImageStore
     {
-        CloudBlobClient blobClient;
-        string baseUri = Constants.CloudBlobBase;
+        readonly CloudBlobClient blobClient;
+        readonly string _baseUri = Constants.CloudBlobBase;
         
         public ImageStore(IConfiguration configuration)
         {
             StorageCredentials credentials = new StorageCredentials(Constants.CloudBlobUsername, configuration["BlobStorageKey"]);
-            blobClient = new CloudBlobClient(new Uri(baseUri), credentials);
+            blobClient = new CloudBlobClient(new Uri(_baseUri), credentials);
         }
 
         /// <summary>
@@ -44,6 +44,11 @@ namespace KinaUnaWeb.Services
         /// <returns>string: The URI for the image.</returns>
         public string UriFor(string imageId, string containerName = "pictures")
         {
+            if (string.IsNullOrEmpty(imageId) || imageId.ToLower().StartsWith("http"))
+            {
+                return imageId;
+            }
+
             SharedAccessBlobPolicy sasPolicy = new SharedAccessBlobPolicy
             {
                 Permissions = SharedAccessBlobPermissions.Read,
@@ -54,7 +59,7 @@ namespace KinaUnaWeb.Services
             CloudBlobContainer container = blobClient.GetContainerReference(containerName);
             CloudBlockBlob blob = container.GetBlockBlobReference(imageId);
             string sas = blob.GetSharedAccessSignature(sasPolicy);
-            return $"{baseUri}{containerName}/{imageId}{sas}";
+            return $"{_baseUri}{containerName}/{imageId}{sas}";
         }
 
         /// <summary>
@@ -65,6 +70,11 @@ namespace KinaUnaWeb.Services
         /// <returns>string: The image Id (Picture.PictureLink).</returns>
         public async Task<string> DeleteImage(string imageId, string containerName = "pictures")
         {
+            if (string.IsNullOrEmpty(imageId) || imageId.ToLower().StartsWith("http"))
+            {
+                return imageId;
+            }
+
             CloudBlobContainer container = blobClient.GetContainerReference(containerName);
             CloudBlockBlob blob = container.GetBlockBlobReference(imageId);
             await blob.DeleteIfExistsAsync();

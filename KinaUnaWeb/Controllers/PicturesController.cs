@@ -92,10 +92,7 @@ namespace KinaUnaWeb.Controllers
             model.PageSize = pageSize;
             foreach (Picture pic in model.PicturesList)
             {
-                if (!pic.PictureLink600.StartsWith("https://"))
-                {
-                    pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
-                }
+                pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
             }
 
             return View(model);
@@ -141,11 +138,8 @@ namespace KinaUnaWeb.Controllers
             }
             
             PictureViewModel picture = await _mediaHttpClient.GetPictureViewModel(id, userAccessLevel, sortBy, model.CurrentUser.Timezone);
-            if (!picture.PictureLink.StartsWith("https://"))
-            {
-                picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
-            }
-            
+            picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
+
             model.PictureId = picture.PictureId;
             model.PictureTime = picture.PictureTime;
             model.ProgenyId = picture.ProgenyId;
@@ -202,10 +196,7 @@ namespace KinaUnaWeb.Controllers
                     string authorName = "";
                     if (!string.IsNullOrEmpty(authorImg))
                     {
-                        if (!authorImg.ToLower().StartsWith("http"))
-                        {
-                            authorImg = _imageStore.UriFor(authorImg, "profiles");
-                        }
+                        authorImg = _imageStore.UriFor(authorImg, "profiles");
                     }
                     else
                     {
@@ -560,10 +551,8 @@ namespace KinaUnaWeb.Controllers
                     model.IsAdmin = true;
                 }
             }
-            if (!picture.PictureLink600.ToLower().StartsWith("http"))
-            {
-                picture.PictureLink600 = _imageStore.UriFor(picture.PictureLink600);
-            }
+
+            picture.PictureLink600 = _imageStore.UriFor(picture.PictureLink600);
 
             ViewBag.NotAuthorized = "You do not have sufficient access rights to modify this picture.";
             model.ProgenyId = picture.ProgenyId;

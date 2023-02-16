@@ -45,7 +45,7 @@ namespace KinaUnaWeb.Controllers
                     notif.DateTime = TimeZoneInfo.ConvertTimeFromUtc(notif.DateTime,
                         TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                     notif.DateTimeString = notif.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
-                    if (!notif.Icon.StartsWith("/") && !notif.Icon.StartsWith("http"))
+                    if (!notif.Icon.StartsWith("/"))
                     {
                         notif.Icon = _imageStore.UriFor(notif.Icon, "profiles");
                     }
@@ -60,7 +60,7 @@ namespace KinaUnaWeb.Controllers
                         TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                     notification.DateTimeString = notification.DateTime.ToString("dd-MMM-yyyy HH:mm");
                     model.SelectedNotification = notification;
-                    if (!notification.Icon.StartsWith("/") && !notification.Icon.StartsWith("http"))
+                    if (!notification.Icon.StartsWith("/"))
                     {
                         notification.Icon = _imageStore.UriFor(notification.Icon, "profiles");
                     }
@@ -77,7 +77,7 @@ namespace KinaUnaWeb.Controllers
             string userEmail = User.GetEmail();
             model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
 
-            if (!notification.Icon.StartsWith("/") && !notification.Icon.StartsWith("http"))
+            if (!notification.Icon.StartsWith("/"))
             {
                 notification.Icon = _imageStore.UriFor(notification.Icon, "profiles");
             }
@@ -97,7 +97,7 @@ namespace KinaUnaWeb.Controllers
             string userEmail = User.GetEmail();
             model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
 
-            if (!notification.Icon.StartsWith("/") && !notification.Icon.StartsWith("http"))
+            if (!notification.Icon.StartsWith("/"))
             {
                 notification.Icon = _imageStore.UriFor(notification.Icon, "profiles");
             }
