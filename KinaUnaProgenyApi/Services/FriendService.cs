@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -62,10 +63,15 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Friend> AddFriend(Friend friend)
         {
-            _ = _context.FriendsDb.Add(friend);
+            Friend friendToAdd = new Friend();
+            friendToAdd.CopyPropertiesForAdd(friend);
+
+            _ = _context.FriendsDb.Add(friendToAdd);
             _ = await _context.SaveChangesAsync();
-            _ = await SetFriendInCache(friend.FriendId);
-            return friend;
+
+            _ = await SetFriendInCache(friendToAdd.FriendId);
+
+            return friendToAdd;
         }
         
 

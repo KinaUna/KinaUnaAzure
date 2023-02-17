@@ -105,50 +105,17 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 value.PictureLink = Constants.ProfilePictureUrl;
             }
-
-            Friend friendItem = new Friend();
-            friendItem.AccessLevel = value.AccessLevel;
-            friendItem.Author = value.Author;
-            friendItem.Context = value.Context;
-            friendItem.Name = value.Name;
-            friendItem.Type = value.Type;
-            friendItem.FriendAddedDate = DateTime.UtcNow;
-            friendItem.ProgenyId = value.ProgenyId;
-            friendItem.Description = value.Description;
-            friendItem.FriendSince = value.FriendSince;
-            friendItem.Notes = value.Notes;
-            friendItem.PictureLink = value.PictureLink;
-            friendItem.Tags = value.Tags;
-
-            friendItem = await _friendService.AddFriend(friendItem);
             
+            Friend friendItem = await _friendService.AddFriend(value);
+            
+            TimeLineItem timeLineItem = new TimeLineItem();
+            timeLineItem.CopyFriendPropertiesForAdd(friendItem);
+            await _timelineService.AddTimeLineItem(timeLineItem);
 
-            // Add item to Timeline.
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = friendItem.ProgenyId;
-            tItem.AccessLevel = friendItem.AccessLevel;
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Friend;
-            tItem.ItemId = friendItem.FriendId.ToString();
             UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            tItem.CreatedBy = userinfo?.UserId ?? "User Not Found";
-            tItem.CreatedTime = DateTime.UtcNow;
-            if (friendItem.FriendSince != null)
-            {
-                tItem.ProgenyTime = friendItem.FriendSince.Value;
-            }
-            else
-            {
-                tItem.ProgenyTime = DateTime.UtcNow;
-            }
-
-            await _timelineService.AddTimeLineItem(tItem);
-
-            string title = "Friend added for " + prog.NickName;
-            if (userinfo != null)
-            {
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new friend for " + prog.NickName;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
-            }
+            string notificationTitle = "Friend added for " + prog.NickName;
+            string notificationMessage = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new friend for " + prog.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
 
             return Ok(friendItem);
         }
@@ -185,36 +152,21 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            friendItem.AccessLevel = value.AccessLevel;
-            friendItem.Author = value.Author;
-            friendItem.Context = value.Context;
-            friendItem.Name = value.Name;
-            friendItem.Type = value.Type;
-            friendItem.ProgenyId = value.ProgenyId;
-            friendItem.Description = value.Description;
-            friendItem.FriendSince = value.FriendSince ?? DateTime.UtcNow;
-            friendItem.Notes = value.Notes;
-            if (value.PictureLink != "[KeepExistingLink]")
-            {
-                friendItem.PictureLink = value.PictureLink;
-            }
-            friendItem.Tags = value.Tags;
-
+            friendItem.CopyPropertiesForUpdate(value);
+            
             friendItem = await _friendService.UpdateFriend(friendItem);
             
             // Update timeline
-            TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(friendItem.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend);
-            if (tItem != null && friendItem.FriendSince.HasValue)
+            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(friendItem.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend);
+            if (timeLineItem != null && timeLineItem.CopyFriendItemPropertiesForUpdate(friendItem))
             {
-                tItem.ProgenyTime = friendItem.FriendSince.Value;
-                tItem.AccessLevel = friendItem.AccessLevel;
-                _ = await _timelineService.UpdateTimeLineItem(tItem);
+                _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
             }
 
             UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            string title = "Friend edited for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a friend for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            string notificationTitle = "Friend edited for " + prog.NickName;
+            string notificationMessage = userinfo.FullName() + " edited a friend for " + prog.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
 
             return Ok(friendItem);
         }
@@ -243,25 +195,25 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 // Remove item from timeline.
-                TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(friendItem.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend);
-                if (tItem != null)
+                TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(friendItem.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend);
+                
+                if (timeLineItem != null)
                 {
-                    _ = await _timelineService.DeleteTimeLineItem(tItem);
+                    _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
                 }
 
                 _ = await _imageStore.DeleteImage(friendItem.PictureLink, BlobContainers.Friends);
 
                 _ = await _friendService.DeleteFriend(friendItem);
                 
-
-                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                string title = "Friend deleted for " + prog.NickName;
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a friend for " + prog.NickName + ". Friend: " + friendItem.Name;
-
-                if (tItem != null)
+                if (timeLineItem != null)
                 {
-                    tItem.AccessLevel = 0;
-                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                    UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                    string notificationTitle = "Friend deleted for " + prog.NickName;
+                    string notificationMessage = userInfo.FullName() + " deleted a friend for " + prog.NickName + ". Friend: " + friendItem.Name;
+                    timeLineItem.AccessLevel = 0;
+                    
+                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                 }
 
                 return NoContent();

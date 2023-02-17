@@ -81,5 +81,37 @@ namespace KinaUna.Data.Extensions
                 currentTimeLineItem.ProgenyTime = DateTime.UtcNow;
             }
         }
+
+        public static bool CopyFriendItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Friend friendItem)
+        {
+            if (friendItem.FriendSince.HasValue)
+            {
+                currentTimeLineItem.ProgenyTime = friendItem.FriendSince.Value;
+                currentTimeLineItem.AccessLevel = friendItem.AccessLevel;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public static void CopyFriendPropertiesForAdd(this TimeLineItem currentTimeLineItem, Friend friendItem)
+        {
+            currentTimeLineItem.ProgenyId = friendItem.ProgenyId;
+            currentTimeLineItem.AccessLevel = friendItem.AccessLevel;
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Friend;
+            currentTimeLineItem.ItemId = friendItem.FriendId.ToString();
+            currentTimeLineItem.CreatedBy = friendItem.Author;
+            currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            
+            if (friendItem.FriendSince != null)
+            {
+                currentTimeLineItem.ProgenyTime = friendItem.FriendSince.Value;
+            }
+            else
+            {
+                currentTimeLineItem.ProgenyTime = DateTime.UtcNow;
+            }
+        }
     }
 }

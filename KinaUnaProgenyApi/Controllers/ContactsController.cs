@@ -238,13 +238,13 @@ namespace KinaUnaProgenyApi.Controllers
 
                 _ = await _contactService.DeleteContact(contactItem);
                 
-                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                string title = "Contact deleted for " + progeny.NickName;
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a contact for " + progeny.NickName + ". Contact: " + contactItem.DisplayName;
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                string notificationTitle = "Contact deleted for " + progeny.NickName;
+                string notificationMessage = userInfo.FullName() + " deleted a contact for " + progeny.NickName + ". Contact: " + contactItem.DisplayName;
                 if (tItem != null)
                 {
                     tItem.AccessLevel = 0;
-                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, tItem, userInfo.ProfilePicture);
                 }
 
                 return NoContent();
