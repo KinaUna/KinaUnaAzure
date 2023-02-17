@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
@@ -127,7 +128,7 @@ namespace KinaUnaWeb.Services
             return true;
         }
 
-        public async Task<List<Contact>> GetContactsList(int progenyId, int accessLevel = 5)
+        public async Task<List<Contact>> GetContactsList(int progenyId, int accessLevel = 5, string tagFilter = "")
         {
             List<Contact> progenyContactsList = new List<Contact>();
             string accessToken = await GetNewToken();
@@ -139,6 +140,11 @@ namespace KinaUnaWeb.Services
             {
                 string contactsAsString = await contactsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 progenyContactsList = JsonConvert.DeserializeObject<List<Contact>>(contactsAsString);
+
+                if (!string.IsNullOrEmpty(tagFilter))
+                {
+                    progenyContactsList = progenyContactsList.Where(c => c.Tags != null && c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
+                }
             }
 
             return progenyContactsList;

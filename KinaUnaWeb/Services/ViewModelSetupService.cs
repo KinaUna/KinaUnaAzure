@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.ItemViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Services
@@ -56,6 +57,32 @@ namespace KinaUnaWeb.Services
             }
 
             return progenyList;
+        }
+
+        public async Task<TimeLineViewModel> GetLatestPostTimeLineModel(int progenyId, int accessLevel, int languageId)
+        {
+            TimeLineViewModel latestPosts = new TimeLineViewModel();
+            latestPosts.LanguageId = languageId;
+            latestPosts.TimeLineItems = await _progenyHttpClient.GetProgenyLatestPosts(progenyId, accessLevel);
+            if (latestPosts.TimeLineItems.Any())
+            {
+                latestPosts.TimeLineItems = latestPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).Take(5).ToList();
+            }
+
+            return latestPosts;
+        }
+
+        public async Task<TimeLineViewModel> GetYearAgoPostsTimeLineModel(int progenyId, int accessLevel, int languageId)
+        {
+            TimeLineViewModel yearAgoPosts = new TimeLineViewModel();
+            yearAgoPosts.LanguageId = languageId;
+            yearAgoPosts.TimeLineItems = await _progenyHttpClient.GetProgenyYearAgo(progenyId, accessLevel);
+            if (yearAgoPosts.TimeLineItems.Any())
+            {
+                yearAgoPosts.TimeLineItems = yearAgoPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).ToList();
+            }
+
+            return yearAgoPosts;
         }
     }
 }

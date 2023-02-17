@@ -1,15 +1,12 @@
 ﻿using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.HomeViewModels;
-using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
@@ -22,180 +19,83 @@ namespace KinaUnaWeb.Controllers
     [AllowAnonymous]
     public class HomeController : Controller
     {
-        private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly ICalendarsHttpClient _calendarsHttpClient;
-        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
         private readonly IWebHostEnvironment _env;
         private readonly ILanguagesHttpClient _languagesHttpClient;
-        public HomeController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IWebHostEnvironment env, IUserInfosHttpClient userInfosHttpClient, ICalendarsHttpClient calendarsHttpClient,
-            IUserAccessHttpClient userAccessHttpClient, ILanguagesHttpClient languagesHttpClient)
+        private readonly IViewModelSetupService _viewModelSetupService;
+        public HomeController(IMediaHttpClient mediaHttpClient, ImageStore imageStore, IWebHostEnvironment env, IUserInfosHttpClient userInfosHttpClient,
+            ICalendarsHttpClient calendarsHttpClient, ILanguagesHttpClient languagesHttpClient, IViewModelSetupService viewModelSetupService)
         {
-            _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
             _imageStore = imageStore;
             _env = env;
             _userInfosHttpClient = userInfosHttpClient;
             _calendarsHttpClient = calendarsHttpClient;
-            _userAccessHttpClient = userAccessHttpClient;
             _languagesHttpClient = languagesHttpClient;
+            _viewModelSetupService = viewModelSetupService;
         }
 
         [AllowAnonymous]
         public async Task<IActionResult> Index(int id = 0)
         {
-            HomeFeedViewModel model = new HomeFeedViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
-
-            if (id == 0 && model.CurrentUser.ViewChild > 0)
-            {
-                id = model.CurrentUser.ViewChild;
-            }
-
-            if (id == 0)
-            {
-                id = Constants.DefaultChildId;
-            }
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), id);
+            HomeFeedViewModel model = new HomeFeedViewModel(baseModel);
             
-
-            Progeny progeny = await _progenyHttpClient.GetProgeny(id);
-            if (progeny.Name == "401")
+            if (model.CurrentProgeny.Name == "401")
             {
                 string returnUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
                 return RedirectToAction("CheckOut", "Account", new{returnUrl});
             }
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(id);
-
-            int userAccessLevel = (int)AccessLevel.Public;
-
-            if (accessList.Count != 0)
+            
+            if (model.CurrentProgeny.BirthDay.HasValue)
             {
-                UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
-                if (userAccess != null)
-                {
-                    userAccessLevel = userAccess.AccessLevel;
-                }
-            }
-
-            if (progeny.IsInAdminList(userEmail))
-            {
-                userAccessLevel = (int)AccessLevel.Private;
-            }
-
-            if (progeny.BirthDay.HasValue)
-            {
-                progeny.BirthDay = DateTime.SpecifyKind(progeny.BirthDay.Value, DateTimeKind.Unspecified);
+                model.CurrentProgeny.BirthDay = DateTime.SpecifyKind(model.CurrentProgeny.BirthDay.Value, DateTimeKind.Unspecified);
             }
             
-            
-            model.UserAccessLevel = (int)AccessLevel.Public;
-            if (accessList.Count != 0)
-            {
-                UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
-                if (userAccess != null)
-                {
-                    model.UserAccessLevel = userAccess.AccessLevel;
-                }
-                else
-                {
-                    ViewBag.OriginalProgeny = progeny;
-                    progeny = await _progenyHttpClient.GetProgeny(Constants.DefaultChildId);
-                }
-            }
-            if (progeny.IsInAdminList(userEmail))
-            {
-                model.UserAccessLevel = (int)AccessLevel.Private;
-            }
-            
-            BirthTime progBirthTime;
-            if (!string.IsNullOrEmpty(progeny.NickName) && progeny.BirthDay.HasValue && model.UserAccessLevel < (int)AccessLevel.Public)
-            {
-                progBirthTime = new BirthTime(progeny.BirthDay.Value,
-                    TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
-            }
-            else
-            {
-                progBirthTime = new BirthTime(new DateTime(2018, 02, 18, 18, 02, 00), TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
-            }
-
-            model.CurrentTime = progBirthTime.CurrentTime;
-            model.Years = progBirthTime.CalcYears();
-            model.Months = progBirthTime.CalcMonths();
-            model.Weeks = progBirthTime.CalcWeeks();
-            model.Days = progBirthTime.CalcDays();
-            model.Hours = progBirthTime.CalcHours();
-            model.Minutes = progBirthTime.CalcMinutes();
-            model.NextBirthday = progBirthTime.CalcNextBirthday();
-            model.MinutesMileStone = progBirthTime.CalcMileStoneMinutes();
-            model.HoursMileStone = progBirthTime.CalcMileStoneHours();
-            model.DaysMileStone = progBirthTime.CalcMileStoneDays();
-            model.WeeksMileStone = progBirthTime.CalcMileStoneWeeks();
+            model.SetBirthTimeData();
 
             
-            Picture tempPicture = new Picture();
-            tempPicture.ProgenyId = 0;
-            tempPicture.Progeny = progeny;
-            tempPicture.AccessLevel = (int)AccessLevel.Public;
-            tempPicture.PictureLink600 = $"https://{Request.Host}{Request.PathBase}" + "/photodb/0/default_temp.jpg";
-            tempPicture.ProgenyId = progeny.Id;
-            tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
+            Picture tempPicture = model.CreateTempPicture($"https://{Request.Host}{Request.PathBase}");
 
-            Picture displayPicture = tempPicture;
+            model.DisplayPicture = tempPicture;
 
-            if (model.UserAccessLevel < (int)AccessLevel.Public)
+            if (model.CurrentAccessLevel < (int)AccessLevel.Public)
             {
-                displayPicture = await _mediaHttpClient.GetRandomPicture(progeny.Id, model.UserAccessLevel, model.CurrentUser.Timezone);
+                model.DisplayPicture = await _mediaHttpClient.GetRandomPicture(model.CurrentProgeny.Id, model.CurrentAccessLevel, model.CurrentUser.Timezone);
             }
-            PictureTime picTime = new PictureTime(new DateTime(2018, 02, 18, 20, 18, 00), new DateTime(2018, 02, 18, 20, 18, 00), TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
-            if (model.UserAccessLevel == (int)AccessLevel.Public || displayPicture == null)
+
+            model.PictureTime = new PictureTime(new DateTime(2018, 02, 18, 20, 18, 00),
+                new DateTime(2018, 02, 18, 20, 18, 00), TimeZoneInfo.FindSystemTimeZoneById(model.CurrentProgeny.TimeZone));
+            
+            if (model.CurrentAccessLevel == (int)AccessLevel.Public || model.DisplayPicture == null)
             {
-                displayPicture = await _mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, model.UserAccessLevel, model.CurrentUser.Timezone);
-                if(displayPicture == null)
+                model.DisplayPicture = await _mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, model.CurrentAccessLevel, model.CurrentUser.Timezone);
+                if(model.DisplayPicture == null)
                 {
-                    displayPicture = tempPicture;
+                    model.DisplayPicture = tempPicture;
                 }
-
-                displayPicture.PictureLink600 = _imageStore.UriFor(displayPicture.PictureLink600);
-
-                model.ImageLink600 = displayPicture.PictureLink600;
-                model.ImageId = displayPicture.PictureId;
-                picTime = new PictureTime(new DateTime(2018, 02, 18, 20, 18, 00), displayPicture.PictureTime, TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
-                model.Tags = displayPicture.Tags;
-                model.Location = displayPicture.Location;
+                
                 model.PicTimeValid = false;
             }
             else
             {
-                displayPicture.PictureLink600 = _imageStore.UriFor(displayPicture.PictureLink600);
-
-                model.ImageLink600 = displayPicture.PictureLink600;
-                model.ImageId = displayPicture.PictureId;
-                if (displayPicture.PictureTime != null && progeny.BirthDay.HasValue)
+                if (model.DisplayPicture.PictureTime != null && model.CurrentProgeny.BirthDay.HasValue)
                 {
-                    picTime = new PictureTime(progeny.BirthDay.Value,
-                        displayPicture.PictureTime,
-                        TimeZoneInfo.FindSystemTimeZoneById(progeny.TimeZone));
                     model.PicTimeValid = true;
                 }
 
-                model.Tags = displayPicture.Tags;
-                model.Location = displayPicture.Location;
             }
-            model.PicTime = picTime.PictureDateTime;
-            model.PicYears = picTime.CalcYears();
-            model.PicMonths = picTime.CalcMonths();
-            model.PicWeeks = picTime.CalcWeeks();
-            model.PicDays = picTime.CalcDays();
-            model.PicHours = picTime.CalcHours();
-            model.PicMinutes = picTime.CalcMinutes();
-            model.Progeny = progeny;
-            model.EventsList = new List<CalendarItem>();
-            model.EventsList = await _calendarsHttpClient.GetUpcomingEvents(id, userAccessLevel);
+
+            model.SetDisplayPictureData();
+            model.DisplayPicture.PictureLink600 = _imageStore.UriFor(model.DisplayPicture.PictureLink600);
+            model.ImageLink600 = model.DisplayPicture.PictureLink600;
+
+            model.SetPictureTimeData();
+            
+            model.EventsList = await _calendarsHttpClient.GetUpcomingEvents(id, model.CurrentAccessLevel);
             
             foreach (CalendarItem eventItem in model.EventsList)
             {
@@ -206,23 +106,9 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            model.LatestPosts = new TimeLineViewModel();
-            model.LatestPosts.LanguageId = model.LanguageId; 
-            model.LatestPosts.TimeLineItems = new List<TimeLineItem>();
-            model.LatestPosts.TimeLineItems = await _progenyHttpClient.GetProgenyLatestPosts(id, userAccessLevel);
-            if (model.LatestPosts.TimeLineItems.Any())
-            {
-                model.LatestPosts.TimeLineItems = model.LatestPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).Take(5).ToList();
-            }
+            model.LatestPosts = await _viewModelSetupService.GetLatestPostTimeLineModel(model.CurrentProgenyId, model.CurrentAccessLevel, model.LanguageId);
 
-            model.YearAgoPosts = new TimeLineViewModel();
-            model.YearAgoPosts.LanguageId = model.LanguageId;
-            model.YearAgoPosts.TimeLineItems = new List<TimeLineItem>();
-            model.YearAgoPosts.TimeLineItems = await _progenyHttpClient.GetProgenyYearAgo(id, userAccessLevel);
-            if (model.YearAgoPosts.TimeLineItems.Any())
-            {
-                model.YearAgoPosts.TimeLineItems = model.YearAgoPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).ToList();
-            }
+            model.YearAgoPosts = await _viewModelSetupService.GetYearAgoPostsTimeLineModel(model.CurrentProgenyId, model.CurrentAccessLevel, model.LanguageId);
 
             return View(model);
         }

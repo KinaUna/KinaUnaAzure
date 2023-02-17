@@ -38,25 +38,25 @@
                         </div>
                     }
                     <div style="font-size: 16px;">
-                        <div>@Model.Progeny.NickName @isNowString @Model.Years @await LocaleManager.GetTranslation("years old.", PageNames.Home, Model.LanguageId)</div>
-                        <div>@Model.Progeny.NickName @isNowString @Model.Months @await LocaleManager.GetTranslation("months old.", PageNames.Home, Model.LanguageId)</div>
-                        <div>@Model.Progeny.NickName @isNowString @Model.Weeks[0] @weeksAndString @Model.Weeks[1] @daysOldString</div>
-                        <div>@Model.Progeny.NickName @isNowString @Model.Days @daysOldString</div>
-                        <div>@Model.Progeny.NickName @isNowString @Model.Hours @await LocaleManager.GetTranslation("hours old.", PageNames.Home, Model.LanguageId)</div>
-                        <div>@Model.Progeny.NickName @isNowString @Model.Minutes @await LocaleManager.GetTranslation("minutes old.", PageNames.Home, Model.LanguageId)</div>
+                        <div>@Model.CurrentProgeny.NickName @isNowString @Model.Years @await LocaleManager.GetTranslation("years old.", PageNames.Home, Model.LanguageId)</div>
+                        <div>@Model.CurrentProgeny.NickName @isNowString @Model.Months @await LocaleManager.GetTranslation("months old.", PageNames.Home, Model.LanguageId)</div>
+                        <div>@Model.CurrentProgeny.NickName @isNowString @Model.Weeks[0] @weeksAndString @Model.Weeks[1] @daysOldString</div>
+                        <div>@Model.CurrentProgeny.NickName @isNowString @Model.Days @daysOldString</div>
+                        <div>@Model.CurrentProgeny.NickName @isNowString @Model.Hours @await LocaleManager.GetTranslation("hours old.", PageNames.Home, Model.LanguageId)</div>
+                        <div>@Model.CurrentProgeny.NickName @isNowString @Model.Minutes @await LocaleManager.GetTranslation("minutes old.", PageNames.Home, Model.LanguageId)</div>
                         <br/>
-                        <div>@Model.Progeny.NickName @await LocaleManager.GetTranslation("will have the next birthday in", PageNames.Home, Model.LanguageId)@Model.NextBirthday @daysString.</div>
+                        <div>@Model.CurrentProgeny.NickName @await LocaleManager.GetTranslation("will have the next birthday in", PageNames.Home, Model.LanguageId)@Model.NextBirthday @daysString.</div>
                     </div>
                     <br/>
                     <div style="font-size: 16px;">
-                        <div>@Model.Progeny.NickName @willBeString @Model.WeeksMileStone[0] @weeksString: @Model.WeeksMileStone[1]</div>
-                        <div>@Model.Progeny.NickName @willBeString @Model.DaysMileStone[0] @daysString: @Model.DaysMileStone[1]</div>
-                        <div>@Model.Progeny.NickName @willBeString @Model.HoursMileStone[0] @hoursString: @Model.HoursMileStone[1]</div>
-                        <div>@Model.Progeny.NickName @willBeString @Model.MinutesMileStone[0] @minutesString: @Model.MinutesMileStone[1]</div>
+                        <div>@Model.CurrentProgeny.NickName @willBeString @Model.WeeksMileStone[0] @weeksString: @Model.WeeksMileStone[1]</div>
+                        <div>@Model.CurrentProgeny.NickName @willBeString @Model.DaysMileStone[0] @daysString: @Model.DaysMileStone[1]</div>
+                        <div>@Model.CurrentProgeny.NickName @willBeString @Model.HoursMileStone[0] @hoursString: @Model.HoursMileStone[1]</div>
+                        <div>@Model.CurrentProgeny.NickName @willBeString @Model.MinutesMileStone[0] @minutesString: @Model.MinutesMileStone[1]</div>
                     </div>
                     <br/><br/>
                     <div>
-                        <a asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.ImageId" asp-route-childId="@Model.Progeny.Id" class="leavePage" aria-label="View Image">
+                        <a asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.ImageId" asp-route-childId="@Model.CurrentProgeny.Id" class="leavePage" aria-label="View Image">
                             <img src="@Model.ImageLink600" style="width: 100%; max-width: 100%"/>
                         </a>
 
@@ -83,12 +83,12 @@
                         <div style="font-size: 16px;">
 
                             <div>@await LocaleManager.GetTranslation("Photo taken:", PageNames.Home, Model.LanguageId) @Model.PicTime</div>
-                            <div>@Model.Progeny.NickName @wasString @Model.PicYears @yearsOldString</div>
-                            <div>@Model.Progeny.NickName @wasString @Model.PicMonths @monthsOldString</div>
-                            <div>@Model.Progeny.NickName @wasString @Model.PicWeeks[0] @weeksAndString @Model.PicWeeks[1] @daysOldString</div>
-                            <div>@Model.Progeny.NickName @wasString @Model.PicDays @daysOldString</div>
-                            <div>@Model.Progeny.NickName @wasString @Model.PicHours @hoursOldString</div>
-                            <div>@Model.Progeny.NickName @wasString @Model.PicMinutes @minutesOldString</div>
+                            <div>@Model.CurrentProgeny.NickName @wasString @Model.PicYears @yearsOldString</div>
+                            <div>@Model.CurrentProgeny.NickName @wasString @Model.PicMonths @monthsOldString</div>
+                            <div>@Model.CurrentProgeny.NickName @wasString @Model.PicWeeks[0] @weeksAndString @Model.PicWeeks[1] @daysOldString</div>
+                            <div>@Model.CurrentProgeny.NickName @wasString @Model.PicDays @daysOldString</div>
+                            <div>@Model.CurrentProgeny.NickName @wasString @Model.PicHours @hoursOldString</div>
+                            <div>@Model.CurrentProgeny.NickName @wasString @Model.PicMinutes @minutesOldString</div>
                         </div>
 
                     }

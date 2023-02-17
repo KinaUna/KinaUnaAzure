@@ -39,13 +39,8 @@ namespace KinaUnaWeb.Controllers
             
             List<string> tagsList = new List<string>();
 
-            List<Contact> contactList = await _contactsHttpClient.GetContactsList(model.CurrentProgenyId);
-
-            if (!string.IsNullOrEmpty(tagFilter))
-            {
-                contactList = contactList.Where(c => c.Tags != null && c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
-            }
-
+            List<Contact> contactList = await _contactsHttpClient.GetContactsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
+            
             if (contactList.Count != 0)
             {
                 foreach (Contact contact in contactList)

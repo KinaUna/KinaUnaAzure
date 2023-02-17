@@ -39,7 +39,8 @@ namespace KinaUnaWeb.Services
         /// </summary>
         /// <param name="progenyId">int: The id of the progeny (Progeny.Id).</param>
         /// <param name="accessLevel">int: The user's access level.</param>
+        /// <param name="tagFilter">string: The string to filter the result list by</param>
         /// <returns>List of Contact objects.</returns>
-        Task<List<Contact>> GetContactsList(int progenyId, int accessLevel = 5);
+        Task<List<Contact>> GetContactsList(int progenyId, int accessLevel = 5, string tagFilter = "");
     }
 }
