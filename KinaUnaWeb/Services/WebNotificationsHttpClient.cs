@@ -75,7 +75,7 @@ namespace KinaUnaWeb.Services
         {
             List<PushDevices> pushDevicesList = new List<PushDevices>();
             
-            string accessToken = await GetNewToken(true);
+            string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string admininfoApiPath = "/api/Notifications/GetAllPushDevices";
@@ -94,7 +94,7 @@ namespace KinaUnaWeb.Services
         {
             PushDevices pushDevice = new PushDevices();
             
-            string accessToken = await GetNewToken(true);
+            string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string apiPath = "/api/Notifications/GetPushDeviceById/" + id;
@@ -147,7 +147,7 @@ namespace KinaUnaWeb.Services
         {
             List<PushDevices> pushDevicesList = new List<PushDevices>();
            
-            string accessToken = await GetNewToken(true);
+            string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string apiPath = "/api/Notifications/GetPushDevicesListByUserId/" + user;
@@ -234,7 +234,7 @@ namespace KinaUnaWeb.Services
         {
             WebNotification notification = new WebNotification();
 
-            string accessToken = await GetNewToken(true);
+            string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string apiPath = "/api/Notifications/GetWebNotificationById/" + id;
@@ -253,7 +253,7 @@ namespace KinaUnaWeb.Services
         {
             List<WebNotification> usersWebNotifications = new List<WebNotification>();
 
-            string accessToken = await GetNewToken(true);
+            string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string apiPath = "/api/Notifications/GetUsersNotifications/" + user;
