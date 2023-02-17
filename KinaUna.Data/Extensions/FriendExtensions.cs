@@ -17,7 +17,7 @@ namespace KinaUna.Data.Extensions
             currentFriend.Description = otherFriend.Description;
             currentFriend.FriendSince = otherFriend.FriendSince ?? DateTime.UtcNow;
             currentFriend.Notes = otherFriend.Notes;
-            if (otherFriend.PictureLink != "[KeepExistingLink]")
+            if (otherFriend.PictureLink != Constants.KeepExistingLink)
             {
                 currentFriend.PictureLink = otherFriend.PictureLink;
             }

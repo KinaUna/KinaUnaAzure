@@ -231,6 +231,8 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
+            friend.PictureLink = _imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
+
             model.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
             
             List<string> tagsList = new List<string>();
@@ -284,6 +286,10 @@ namespace KinaUnaWeb.Controllers
 
                 await _imageStore.DeleteImage(originalFriend.PictureLink, "friends");
             }
+            else
+            {
+                editedFriend.PictureLink = Constants.KeepExistingLink;
+            }
 
             await _friendsHttpClient.UpdateFriend(editedFriend);
 
@@ -296,13 +302,16 @@ namespace KinaUnaWeb.Controllers
             Friend friend = await _friendsHttpClient.GetFriend(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
             FriendViewModel model = new FriendViewModel(baseModel);
-            model.Friend = friend;
-
+            
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
+
+            friend.PictureLink = _imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
+            model.Friend = friend;
+
             return View(model);
         }
 
