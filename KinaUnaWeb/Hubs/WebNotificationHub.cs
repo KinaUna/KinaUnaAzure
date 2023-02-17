@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -69,7 +70,8 @@ namespace KinaUnaWeb.Hubs
         public async Task SendUpdateToUser(WebNotification notification)
         {
             string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
-            string userTimeZone = Context.GetHttpContext()?.User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
+            UserInfo currentUserInfo = await _userInfosHttpClient.GetUserInfoByUserId(userId);
+            
             // Todo: Check if sender has access rights to send to receiver.
 
             if (userId != "NoUser")
@@ -86,7 +88,8 @@ namespace KinaUnaWeb.Hubs
                 }
 
 
-                notification.From = userId;
+                notification.From = currentUserInfo.FullName();
+
                 if (!string.IsNullOrEmpty(userinfo.ProfilePicture))
                 {
                     notification.Icon = userinfo.ProfilePicture;
@@ -107,7 +110,7 @@ namespace KinaUnaWeb.Hubs
                 webNotification.Type = "Notification";
                 webNotification.DateTime = DateTime.UtcNow;
                 webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(webNotification.DateTime,
-                    TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
+                    TimeZoneInfo.FindSystemTimeZoneById(currentUserInfo.Timezone));
                 webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
                 if (string.IsNullOrEmpty(webNotification.Link))
                 {

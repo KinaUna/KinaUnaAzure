@@ -365,27 +365,7 @@ namespace KinaUnaWeb.Controllers
                     tItem.ProgenyTime = newPicture.PictureTime ?? DateTime.UtcNow;
 
                     await _timelineHttpClient.AddTimeLineItem(tItem);
-
-                    string authorName = "";
-                    if (!string.IsNullOrEmpty(model.CurrentUser.FirstName))
-                    {
-                        authorName = model.CurrentUser.FirstName;
-                    }
-                    if (!string.IsNullOrEmpty(model.CurrentUser.MiddleName))
-                    {
-                        authorName = authorName + " " + model.CurrentUser.MiddleName;
-                    }
-                    if (!string.IsNullOrEmpty(model.CurrentUser.LastName))
-                    {
-                        authorName = authorName + " " + model.CurrentUser.LastName;
-                    }
-
-                    authorName = authorName.Trim();
-                    if (string.IsNullOrEmpty(authorName))
-                    {
-                        authorName = model.CurrentUser.UserName;
-                    }
-
+                    
                     foreach (UserAccess ua in usersToNotif)
                     {
                         if (ua.AccessLevel <= newPicture.AccessLevel)
@@ -406,7 +386,7 @@ namespace KinaUnaWeb.Controllers
                                 }
                                 WebNotification notification = new WebNotification();
                                 notification.To = uaUserInfo.UserId;
-                                notification.From = authorName;
+                                notification.From = model.CurrentUser.FullName();
                                 notification.Message = picTimeString + "\r\n";
                                 notification.DateTime = DateTime.UtcNow;
                                 notification.Icon = model.CurrentUser.ProfilePicture;
@@ -597,25 +577,7 @@ namespace KinaUnaWeb.Controllers
                     await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
                 }
 
-                string authorName = "";
-                if (!string.IsNullOrEmpty(model.CurrentUser.FirstName))
-                {
-                    authorName = model.CurrentUser.FirstName;
-                }
-                if (!string.IsNullOrEmpty(model.CurrentUser.MiddleName))
-                {
-                    authorName = authorName + " " + model.CurrentUser.MiddleName;
-                }
-                if (!string.IsNullOrEmpty(model.CurrentUser.LastName))
-                {
-                    authorName = authorName + " " + model.CurrentUser.LastName;
-                }
-
-                authorName = authorName.Trim();
-                if (string.IsNullOrEmpty(authorName))
-                {
-                    authorName = model.CurrentUser.UserName;
-                }
+                
                 List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(model.ProgenyId);
                 foreach (UserAccess ua in usersToNotif)
                 {
@@ -638,7 +600,7 @@ namespace KinaUnaWeb.Controllers
                             WebNotification notification = new WebNotification();
                             notification.To = uaUserInfo.UserId;
                             notification.From = Constants.AppName;
-                            notification.Message = "Photo deleted by " + authorName + "\r\nPhoto ID: " + model.PictureId + "\r\n" + picTimeString + "\r\n";
+                            notification.Message = "Photo deleted by " + model.CurrentUser.FullName() + "\r\nPhoto ID: " + model.PictureId + "\r\n" + picTimeString + "\r\n";
                             notification.DateTime = DateTime.UtcNow;
                             notification.Icon = "/images/kinaunalogo48x48.png";
                             notification.Title = "Photo deleted for " + progeny.NickName;
@@ -692,29 +654,7 @@ namespace KinaUnaWeb.Controllers
                         await _emailSender.SendEmailAsync(toMail, "New Comment on " + progeny.NickName + "'s Picture",
                            "A comment was added to " + progeny.NickName + "'s picture by " + cmnt.DisplayName + ":<br/><br/>" + cmnt.CommentText + "<br/><br/>Picture Link: <a href=\"" + imgLink + "\">" + imgLink + "</a>");
                     }
-                    string authorName = "";
-                    if (!string.IsNullOrEmpty(model.CurrentUser.FirstName))
-                    {
-                        authorName = model.CurrentUser.FirstName;
-                    }
-                    if (!string.IsNullOrEmpty(model.CurrentUser.MiddleName))
-                    {
-                        authorName = authorName + " " + model.CurrentUser.MiddleName;
-                    }
-                    if (!string.IsNullOrEmpty(model.CurrentUser.LastName))
-                    {
-                        authorName = authorName + " " + model.CurrentUser.LastName;
-                    }
 
-                    authorName = authorName.Trim();
-                    if (string.IsNullOrEmpty(authorName))
-                    {
-                        authorName = model.CurrentUser.UserName;
-                        if (string.IsNullOrEmpty(authorName))
-                        {
-                            authorName = cmnt.DisplayName;
-                        }
-                    }
                     List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(model.ProgenyId);
                     foreach (UserAccess ua in usersToNotif)
                     {
@@ -730,7 +670,7 @@ namespace KinaUnaWeb.Controllers
                             {
                                 WebNotification notification = new WebNotification();
                                 notification.To = uaUserInfo.UserId;
-                                notification.From = authorName;
+                                notification.From = model.CurrentUser.FullName();
                                 notification.Message = commentTxtStr;
                                 notification.DateTime = DateTime.UtcNow;
                                 notification.Icon = model.CurrentUser.ProfilePicture;

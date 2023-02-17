@@ -133,25 +133,36 @@
                     @foreach (ContactViewModel contactViewModel in Model.ContactsList)
                     {
                         string chkClass = "contactClass" + contactViewModel.Active.ToString();
-                        <a class="@chkClass leavePage" style="margin-bottom: 15px;" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactId">
-                            <div class="card text-white bg-info" style="padding: 3px; float: left; clear: right; text-align: center; height: 100%; width: 300px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
+                        <div class="@chkClass" style="margin-bottom: 15px;">
+                            <div class="card text-white bg-info" style="float: left; clear: right; text-align: center; height: 100%; width: 300px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
+                                <a class="leavePage" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactId">
                                 <div class="card-header card-header-warning card-title">@contactViewModel.DisplayName</div>
+                                </a>
                                 <div class="card-body">
                                     <div class="card-text">
-                                        <img class="img-thumbnail" style="max-height: 250px; max-width: 250px; background: black; margin-bottom: 10px;" src="@contactViewModel.PictureLink" />
-                                        <br />
-                                        <div class="card-title" align="left">
-                                            @contactViewModel.FirstName @contactViewModel.MiddleName @contactViewModel.LastName
+                                        <a class="leavePage" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactId">
+                                            <div style="height: 253px;">
+                                                <img class="img-thumbnail mx-auto d-block" style="max-height: 250px; max-width: 270px; background: black; margin-bottom: 10px;" src="@contactViewModel.PictureLink" />
+                                            </div>
+                                            <br />
+                                            <div class="card-title" align="left">
+                                                @contactViewModel.FirstName @contactViewModel.MiddleName @contactViewModel.LastName
+                                            </div>
+                                            <div class="text-white" align="left">@await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId) @contactViewModel.Email1 @contactViewModel.Email2</div>
+                                            <div class="text-white" align="left">@await LocaleManager.GetTranslation("Phone:", PageNames.Contacts, Model.LanguageId) @contactViewModel.PhoneNumber</div>
+                                            <div class="text-white" align="left">@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId) @contactViewModel.MobileNumber</div>
+                                            <div class="text-white" align="left">@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, Model.LanguageId) @contactViewModel.Context</div>
+                                        </a>
+                                        <div align="left">@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)
+                                            @if (!string.IsNullOrEmpty(contactViewModel.Website))
+                                            {
+                                                <a class="btn-link-yellow" href="@contactViewModel.Website">@contactViewModel.Website</a>
+                                            }
                                         </div>
-                                        <div align="left">@await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId) @contactViewModel.Email1 @contactViewModel.Email2</div>
-                                        <div align="left">@await LocaleManager.GetTranslation("Phone:", PageNames.Contacts, Model.LanguageId) @contactViewModel.PhoneNumber</div>
-                                        <div align="left">@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId) @contactViewModel.MobileNumber</div>
-                                        <div align="left">@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId) @contactViewModel.Website</div>
-                                        <div align="left">@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, Model.LanguageId) @contactViewModel.Context</div>
                                     </div>
                                 </div>
                             </div>
-                        </a>
+                        </div>
                     }
                 </div>
                 <br />

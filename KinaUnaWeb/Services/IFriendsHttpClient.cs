@@ -39,7 +39,8 @@ namespace KinaUnaWeb.Services
         /// </summary>
         /// <param name="progenyId">int: The id of the progeny (Progeny.Id).</param>
         /// <param name="accessLevel">int: The user's access level.</param>
+        /// <param name="tagFilter">string: The tag to filter by, returns all friends if empty.</param>
         /// <returns></returns>
-        Task<List<Friend>> GetFriendsList(int progenyId, int accessLevel);
+        Task<List<Friend>> GetFriendsList(int progenyId, int accessLevel, string tagFilter = "");
     }
 }

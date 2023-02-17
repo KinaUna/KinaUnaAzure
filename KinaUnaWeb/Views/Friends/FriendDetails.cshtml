@@ -3,7 +3,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Friend:", PageNames.Friends, Model.LanguageId) + Model.Name;
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Friend:", PageNames.Friends, Model.LanguageId) + Model.Name;
 }
 @{
     string personalFriend = await LocaleManager.GetTranslation("Personal friend", PageNames.Friends, Model.LanguageId);
@@ -59,12 +59,12 @@
                     List<string> tagsList = Model.Tags.Split(',').ToList();
                     foreach (string tagString in tagsList)
                     {
-                        <a asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                        <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
                     }
                 }
             }
         </div>
-        @if (Model.IsAdmin)
+        @if (Model.IsCurrentUserProgenyAdmin)
         {
             <div style="margin: 15px;">
                 <a asp-controller="Friends" asp-action="EditFriend" asp-route-itemId="@Model.FriendId" class="btn btn-info leavePage">

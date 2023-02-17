@@ -97,7 +97,7 @@
         </div>
         <script>
             $('input[name="Tags"').amsifySuggestags({
-                suggestions: @Html.Raw(ViewBag.TagsList)
+                suggestions: @Html.Raw(Model.TagsList)
             });
         </script>
     </div>
@@ -107,7 +107,7 @@
             <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
         </div>
     </div>
-    <input asp-for="ProgenyId" value="@Model.ProgenyId" type="hidden" />
+    <input asp-for="CurrentProgenyId" value="@Model.CurrentProgenyId" type="hidden" />
     <input asp-for="FriendAddedDate" value="@Model.FriendAddedDate" type="hidden" />
     <input asp-for="FriendId" value="@Model.FriendId" type="hidden" />
     <input asp-for="PictureLink" value="@Model.PictureLink" type="hidden" />

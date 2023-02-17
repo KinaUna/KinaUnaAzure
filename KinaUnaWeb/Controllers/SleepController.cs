@@ -346,25 +346,6 @@ namespace KinaUnaWeb.Controllers
 
             sleepItem = await _sleepHttpClient.AddSleep(sleepItem);
 
-            string authorName = "";
-            if (!string.IsNullOrEmpty(model.CurrentUser.FirstName))
-            {
-                authorName = model.CurrentUser.FirstName;
-            }
-            if (!string.IsNullOrEmpty(model.CurrentUser.MiddleName))
-            {
-                authorName = authorName + " " + model.CurrentUser.MiddleName;
-            }
-            if (!string.IsNullOrEmpty(model.CurrentUser.LastName))
-            {
-                authorName = authorName + " " + model.CurrentUser.LastName;
-            }
-
-            authorName = authorName.Trim();
-            if (string.IsNullOrEmpty(authorName))
-            {
-                authorName = model.CurrentUser.UserName;
-            }
             List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(sleepItem.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
             {
@@ -380,7 +361,7 @@ namespace KinaUnaWeb.Controllers
 
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = authorName;
+                        notification.From = model.CurrentUser.FullName();
                         notification.Message = "Start: " + sleepStart.ToString("dd-MMM-yyyy HH:mm") + "\r\nEnd: " + sleepEnd.ToString("dd-MMM-yyyy HH:mm");
                         notification.DateTime = DateTime.UtcNow;
                         notification.Icon = model.CurrentUser.ProfilePicture;

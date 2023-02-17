@@ -246,7 +246,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> AddWebNotification([FromBody] WebNotification notification)
         {
             string currentUserId = User.GetUserId() ?? "";
-            if (notification.From != currentUserId && notification.To != currentUserId)
+            if (notification.To != currentUserId)
             {
                 return Unauthorized();
             }
@@ -261,7 +261,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> UpdateWebNotification([FromBody] WebNotification notification)
         {
             string currentUserId = User.GetUserId() ?? "";
-            if (notification.From != currentUserId && notification.To != currentUserId)
+            if (notification.To != currentUserId)
             {
                 return Unauthorized();
             }
@@ -276,7 +276,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> RemoveWebNotification([FromBody] WebNotification notification)
         {
             string currentUserId = User.GetUserId() ?? "";
-            if (notification.From != currentUserId && notification.To != currentUserId)
+            if (notification.To != currentUserId)
             {
                 return Unauthorized();
             }
@@ -293,7 +293,7 @@ namespace KinaUnaProgenyApi.Controllers
             WebNotification webNotification = await _dataService.GetWebNotificationById(id);
 
             string currentUserId = User.GetUserId() ?? "";
-            if (webNotification.From != currentUserId && webNotification.To != currentUserId)
+            if (webNotification.To != currentUserId)
             {
                 return Unauthorized();
             }

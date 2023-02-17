@@ -82,7 +82,7 @@ namespace KinaUnaWeb.Controllers
                 notification.Icon = _imageStore.UriFor(notification.Icon, "profiles");
             }
 
-            if (model.CurrentUser.UserId == notification.To || model.CurrentUser.UserId == notification.From)
+            if (model.CurrentUser.UserId == notification.To)
             {
                 model.WebNotification = notification;
             }
@@ -102,7 +102,7 @@ namespace KinaUnaWeb.Controllers
                 notification.Icon = _imageStore.UriFor(notification.Icon, "profiles");
             }
 
-            if (model.CurrentUser.UserId == notification.To || model.CurrentUser.UserId == notification.From)
+            if (model.CurrentUser.UserId == notification.To)
             {
                 model.WebNotification = notification;
             }

@@ -178,25 +178,6 @@ namespace KinaUnaWeb.Controllers
 
             await _measurementsHttpClient.AddMeasurement(measurementItem);
 
-            string authorName = "";
-            if (!string.IsNullOrEmpty(model.CurrentUser.FirstName))
-            {
-                authorName = model.CurrentUser.FirstName;
-            }
-            if (!string.IsNullOrEmpty(model.CurrentUser.MiddleName))
-            {
-                authorName = authorName + " " + model.CurrentUser.MiddleName;
-            }
-            if (!string.IsNullOrEmpty(model.CurrentUser.LastName))
-            {
-                authorName = authorName + " " + model.CurrentUser.LastName;
-            }
-
-            authorName = authorName.Trim();
-            if (string.IsNullOrEmpty(authorName))
-            {
-                authorName = model.CurrentUser.UserName;
-            }
             List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(model.ProgenyId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
@@ -208,7 +189,7 @@ namespace KinaUnaWeb.Controllers
                     {
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = authorName;
+                        notification.From = model.CurrentUser.UserId;
                         notification.Message = "Height: " + measurementItem.Height + "\r\nWeight: " + measurementItem.Weight;
                         notification.DateTime = DateTime.UtcNow;
                         notification.Icon = model.CurrentUser.ProfilePicture;

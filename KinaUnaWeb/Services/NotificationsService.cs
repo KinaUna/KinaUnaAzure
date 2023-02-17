@@ -98,5 +98,35 @@ namespace KinaUnaWeb.Services
                 }
             }
         }
+
+        public async Task SendFriendNotification(Friend friendItem, UserInfo currentUser)
+        {
+            List<UserAccess> usersToNotify = await _userAccessHttpClient.GetProgenyAccessList(friendItem.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(friendItem.ProgenyId);
+            foreach (UserAccess userAccess in usersToNotify)
+            {
+                if (userAccess.AccessLevel <= friendItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = currentUser.FullName();
+                        notification.Message = "Friend: " + friendItem.Name + "\r\nContext: " + friendItem.Context;
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = currentUser.ProfilePicture;
+                        notification.Title = "A new friend was added for " + progeny.NickName;
+                        notification.Link = "/Friends?childId=" + progeny.Id;
+                        notification.Type = "Notification";
+
+                        notification = await _webNotificationsService.SaveNotification(notification);
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunafriend" + progeny.Id);
+                    }
+                }
+            }
+        }
     }
 }

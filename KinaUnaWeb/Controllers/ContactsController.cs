@@ -167,10 +167,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserEmail != null && model.CurrentUser.UserId != null)
-            {
-                model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
-            }
+            model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
 
             List<string> tagsList = new List<string>();
             foreach (SelectListItem item in model.ProgenyList)
@@ -195,19 +192,9 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            model.TagsList = "[";
-            if (tagsList.Any())
-            {
-                foreach (string tagstring in tagsList)
-                {
-                    model.TagsList = model.TagsList + "'" + tagstring + "',";
-                }
+            model.SetTagList(tagsList);
+            model.SetAccessLevelList();
 
-                model.TagsList = model.TagsList.Remove(model.TagsList.Length - 1);
-
-            }
-            model.TagsList = model.TagsList + "]";
-            
             return View(model);
         }
 
@@ -218,7 +205,6 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
             model.SetBaseProperties(baseModel);
-
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
@@ -267,7 +253,6 @@ namespace KinaUnaWeb.Controllers
             model.PictureLink = _imageStore.UriFor(contact.PictureLink, "contacts");
 
             model.SetPropertiesFromContact(contact, model.IsCurrentUserProgenyAdmin);
-            model.SetAccessLevelList();
             
             List<string> tagsList = new List<string>();
             List<Contact> contactsList1 = await _contactsHttpClient.GetContactsList(model.CurrentProgenyId, 0);
@@ -286,20 +271,9 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            string tagItems = "[";
-            if (tagsList.Any())
-            {
-                foreach (string tagstring in tagsList)
-                {
-                    tagItems = tagItems + "'" + tagstring + "',";
-                }
+            model.SetTagList(tagsList);
+            model.SetAccessLevelList();
 
-                tagItems = tagItems.Remove(tagItems.Length - 1);
-                tagItems = tagItems + "]";
-            }
-
-            model.TagsList = tagItems;
-            
             return View(model);
         }
 
@@ -316,30 +290,27 @@ namespace KinaUnaWeb.Controllers
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
-            
-            if (ModelState.IsValid)
+
+            Contact editedContact = model.CreateContact();
+
+            if (model.File != null && model.File.Name != string.Empty)
             {
-                Contact editedContact = model.CreateContact();
-                
-                if (model.File != null && model.File.Name != string.Empty)
+                Contact originalContact = await _contactsHttpClient.GetContact(model.ContactId);
+                model.FileName = model.File.FileName;
+                await using (Stream stream = model.File.OpenReadStream())
                 {
-                    Contact originalContact = await _contactsHttpClient.GetContact(model.ContactId);
-                    model.FileName = model.File.FileName;
-                    await using (Stream stream = model.File.OpenReadStream())
-                    {
-                        editedContact.PictureLink = await _imageStore.SaveImage(stream, "contacts");
-                    }
-
-                    await _imageStore.DeleteImage(originalContact.PictureLink, "contacts");
+                    editedContact.PictureLink = await _imageStore.SaveImage(stream, "contacts");
                 }
-                else
-                {
 
-                    editedContact.PictureLink = Constants.KeepExistingLink;
-                }
-                
-                await _contactsHttpClient.UpdateContact(editedContact);
+                await _imageStore.DeleteImage(originalContact.PictureLink, "contacts");
             }
+            else
+            {
+
+                editedContact.PictureLink = Constants.KeepExistingLink;
+            }
+
+            await _contactsHttpClient.UpdateContact(editedContact);
 
             return RedirectToAction("Index", "Contacts");
         }

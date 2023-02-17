@@ -212,25 +212,7 @@ namespace KinaUnaWeb.Controllers
 
             await _wordsHttpClient.AddWord(vocabItem);
 
-            string authorName = "";
-            if (!string.IsNullOrEmpty(model.CurrentUser.FirstName))
-            {
-                authorName = model.CurrentUser.FirstName;
-            }
-            if (!string.IsNullOrEmpty(model.CurrentUser.MiddleName))
-            {
-                authorName = authorName + " " + model.CurrentUser.MiddleName;
-            }
-            if (!string.IsNullOrEmpty(model.CurrentUser.LastName))
-            {
-                authorName = authorName + " " + model.CurrentUser.LastName;
-            }
-
-            authorName = authorName.Trim();
-            if (string.IsNullOrEmpty(authorName))
-            {
-                authorName = model.CurrentUser.UserName;
-            }
+            
             List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(model.ProgenyId);
             Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
             foreach (UserAccess ua in usersToNotif)
@@ -247,7 +229,7 @@ namespace KinaUnaWeb.Controllers
 
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
-                        notification.From = authorName;
+                        notification.From = model.CurrentUser.FullName();
                         notification.Message = "Word: " + vocabItem.Word + "\r\nLanguage: " + vocabItem.Language + vocabTimeString;
                         notification.DateTime = DateTime.UtcNow;
                         notification.Icon = model.CurrentUser.ProfilePicture;

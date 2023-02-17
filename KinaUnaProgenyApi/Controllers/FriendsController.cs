@@ -101,6 +101,11 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
+            if (value.PictureLink == Constants.DefaultPictureLink)
+            {
+                value.PictureLink = Constants.ProfilePictureUrl;
+            }
+
             Friend friendItem = new Friend();
             friendItem.AccessLevel = value.AccessLevel;
             friendItem.Author = value.Author;
@@ -169,6 +174,11 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
+            if (value.PictureLink == Constants.DefaultPictureLink)
+            {
+                value.PictureLink = Constants.ProfilePictureUrl;
+            }
+
             Friend friendItem = await _friendService.GetFriend(id);
             if (friendItem == null)
             {
@@ -180,7 +190,6 @@ namespace KinaUnaProgenyApi.Controllers
             friendItem.Context = value.Context;
             friendItem.Name = value.Name;
             friendItem.Type = value.Type;
-            friendItem.FriendAddedDate = DateTime.UtcNow;
             friendItem.ProgenyId = value.ProgenyId;
             friendItem.Description = value.Description;
             friendItem.FriendSince = value.FriendSince ?? DateTime.UtcNow;

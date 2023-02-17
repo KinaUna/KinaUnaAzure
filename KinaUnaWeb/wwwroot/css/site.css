@@ -63,16 +63,6 @@
     float: none;
     background: #3a2051;
 }
-.card .card-header {
-    border-radius: 3px;
-    padding: 1rem 15px;
-    margin-left: 15px;
-    margin-right: 15px;
-    margin-top: -5px;
-    margin-bottom: 15px;
-    border: 0;
-    /*background: linear-gradient(60deg, #aaaaaa, #666666);*/
-}
 
 .form-control {
     background: no-repeat center bottom, center calc(100% - 1px), #a9f753;
@@ -1060,7 +1050,6 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 .card {
     border: 0;
     margin-bottom: 30px;
-    margin-top: 30px;
     border-radius: 6px;
     color: rgba(0, 0, 0, .87);
     background: #fff;
@@ -1077,16 +1066,16 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     box-shadow: 0 2px 2px 0 rgb(0 0 0 / 14%), 0 3px 1px -2px rgb(0 0 0 / 20%), 0 1px 5px 0 rgb(0 0 0 / 12%);
 }
 
-.card .card-header {
-    border-radius: 3px;
-    padding: 1rem 15px;
-    margin-left: 15px;
-    margin-right: 15px;
-    margin-top: -5px;
-    margin-bottom: 15px;
-    border: 0;
-    /* background: linear-gradient(60deg, #aaaaaa, #666666); */
-}
+    .card .card-header {
+        border-radius: 3px;
+        padding: 1rem 15px;
+        /*margin-left: 15px;
+        margin-right: 15px;*/
+        margin-top: -5px;
+        margin-bottom: 15px;
+        border: 0;
+        /* background: linear-gradient(60deg, #aaaaaa, #666666); */
+    }
 
 .card.bg-warning, .card .card-header-warning, .card.card-rotate.bg-warning .back, .card.card-rotate.bg-warning .front {
     background: linear-gradient(60deg, #ffa726, #f57c00);
@@ -1107,6 +1096,15 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 }
 .card[class*=bg-], .card[class*=bg-] .card-title, .card[class*=bg-] .card-title a, .card[class*=bg-] .icon i, .card [class*=header-], .card [class*=header-] .card-title, .card [class*=header-] .card-title a, .card [class*=header-] .icon i {
     color: #fff;
+}
+
+.img-thumbnail {
+    padding: 0;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    max-width: 100%;
+    height: auto;
 }
 
 .h1, .h2, .h3, .h4, h1, h2, h3, h4, h5, h6 {

@@ -6,19 +6,16 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class FriendViewModel: BaseViewModel
+    public class FriendViewModel: BaseItemsViewModel
     {
         public int FriendId { get; set; }
 
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime? FriendSince { get; set; }
-        public DateTime FriendAddedDate { get; set; }
+        public DateTime? FriendAddedDate { get; set; }
         public string PictureLink { get; set; }
-        public int ProgenyId { get; set; }
-        public Progeny Progeny { get; set; }
         public List<SelectListItem> ProgenyList { get; set; }
-        public bool IsAdmin { get; set; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
@@ -34,16 +31,98 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string FileName { get; set; }
         public IFormFile File { get; set; }
         public string Tags { get; set; }
+        public string TagFilter { get; set; }
 
         public FriendViewModel()
         {
             ProgenyList = new List<SelectListItem>();
+            SetAccessLevelList();
+            SetFriendTypeList();
+        }
 
+        public FriendViewModel(BaseItemsViewModel baseItemsViewModel)
+        {
+            SetBaseProperties(baseItemsViewModel);
+            SetAccessLevelList();
+            SetFriendTypeList();
+        }
+
+        public void SetPropertiesFromFriendItem(Friend friend, bool isAdmin)
+        {
+            CurrentProgenyId = friend.ProgenyId;
+            AccessLevel = friend.AccessLevel;
+            FriendAddedDate = friend.FriendAddedDate;
+            FriendSince = friend.FriendSince;
+            Name = friend.Name;
+            Description = friend.Description;
+            IsCurrentUserProgenyAdmin = isAdmin;
+            FriendId = friend.FriendId;
+            PictureLink = friend.PictureLink;
+            Type = friend.Type;
+            Context = friend.Context;
+            Notes = friend.Notes;
+            Author = friend.Author;
+            Tags = friend.Tags;
+        }
+
+        public Friend CreateFriend()
+        {
+            Friend friendItem = new Friend();
+            friendItem.FriendId = FriendId;
+            friendItem.ProgenyId = CurrentProgenyId;
+            friendItem.Description = Description;
+            friendItem.PictureLink = PictureLink;
+            friendItem.Name = Name;
+            friendItem.AccessLevel = AccessLevel;
+            friendItem.Type = Type;
+            friendItem.Context = Context;
+            friendItem.Notes = Notes;
+            friendItem.Author = CurrentUser.UserId;
+
+            if (FriendAddedDate == null)
+            {
+                FriendAddedDate = DateTime.UtcNow;
+            }
+            friendItem.FriendAddedDate = FriendAddedDate.Value;
+            
+            if (FriendSince == null)
+            {
+                FriendSince = DateTime.UtcNow;
+            }
+            friendItem.FriendSince = FriendSince;
+
+            if (!string.IsNullOrEmpty(Tags))
+            {
+                friendItem.Tags = Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
+            }
+            
+            return friendItem;
+        }
+
+        public void SetAccessLevelList()
+        {
             AccessLevelList accList = new AccessLevelList();
             AccessLevelListEn = accList.AccessLevelListEn;
             AccessLevelListDa = accList.AccessLevelListDa;
             AccessLevelListDe = accList.AccessLevelListDe;
 
+            if (LanguageId == 2)
+            {
+                AccessLevelListEn = AccessLevelListDe;
+            }
+
+            if (LanguageId == 3)
+            {
+                AccessLevelListEn = AccessLevelListDa;
+            }
+
+            AccessLevelListEn[AccessLevel].Selected = true;
+            AccessLevelListDa[AccessLevel].Selected = true;
+            AccessLevelListDe[AccessLevel].Selected = true;
+        }
+
+        public void SetFriendTypeList()
+        {
             FriendTypeListEn = new List<SelectListItem>();
             SelectListItem friendType1 = new SelectListItem();
             friendType1.Text = "Personal Friend";
@@ -109,6 +188,20 @@ namespace KinaUnaWeb.Models.ItemViewModels
             FriendTypeListDe.Add(friendType3De);
             FriendTypeListDe.Add(friendType4De);
             FriendTypeListDe.Add(friendType5De);
+
+            if (LanguageId == 2)
+            {
+                FriendTypeListEn = FriendTypeListDe;
+            }
+
+            if (LanguageId == 3)
+            {
+                FriendTypeListEn = FriendTypeListDa;
+            }
+
+            FriendTypeListEn[Type].Selected = true;
+            FriendTypeListDa[Type].Selected = true;
+            FriendTypeListDe[Type].Selected = true;
         }
     }
 }

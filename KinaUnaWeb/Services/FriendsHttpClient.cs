@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -136,7 +137,7 @@ namespace KinaUnaWeb.Services
             return false;
         }
 
-        public async Task<List<Friend>> GetFriendsList(int progenyId, int accessLevel)
+        public async Task<List<Friend>> GetFriendsList(int progenyId, int accessLevel, string tagFilter = "")
         {
             List<Friend> progenyFriendsList = new List<Friend>();
             string accessToken = await GetNewToken();
@@ -149,6 +150,11 @@ namespace KinaUnaWeb.Services
                 string friendsAsString = await friendsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                 progenyFriendsList = JsonConvert.DeserializeObject<List<Friend>>(friendsAsString);
+
+                if (!string.IsNullOrEmpty(tagFilter))
+                {
+                    progenyFriendsList = progenyFriendsList.Where(c => c.Tags != null && c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
+                }
             }
 
             return progenyFriendsList;

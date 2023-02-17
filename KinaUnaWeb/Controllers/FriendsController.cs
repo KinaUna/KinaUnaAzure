@@ -11,137 +11,80 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.IO;
+using KinaUnaWeb.Models;
 
 namespace KinaUnaWeb.Controllers
 {
     public class FriendsController : Controller
     {
-        private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IFriendsHttpClient _friendsHttpClient;
-        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly ImageStore _imageStore;
-        private readonly IPushMessageSender _pushMessageSender;
-        private readonly IWebNotificationsService _webNotificationsService;
+        private readonly IViewModelSetupService _viewModelSetupService;
+        private readonly INotificationsService _notificationsService;
 
-        public FriendsController(IProgenyHttpClient progenyHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, IFriendsHttpClient friendsHttpClient,
-            IUserAccessHttpClient userAccessHttpClient, IPushMessageSender pushMessageSender, IWebNotificationsService webNotificationsService)
+        public FriendsController(ImageStore imageStore, IFriendsHttpClient friendsHttpClient, IViewModelSetupService viewModelSetupService, INotificationsService notificationsService)
         {
-            _progenyHttpClient = progenyHttpClient;
             _imageStore = imageStore;
-            _userInfosHttpClient = userInfosHttpClient;
             _friendsHttpClient = friendsHttpClient;
-            _userAccessHttpClient = userAccessHttpClient;
-            _pushMessageSender = pushMessageSender;
-            _webNotificationsService = webNotificationsService;
+            _viewModelSetupService = viewModelSetupService;
+            _notificationsService = notificationsService;
         }
         
-
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, string tagFilter = "")
         {
-            FriendsListViewModel model = new FriendsListViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
-            if (childId == 0 && model.CurrentUser.ViewChild > 0)
-            {
-                childId = model.CurrentUser.ViewChild;
-            }
-
-            if (childId == 0)
-            {
-                childId = Constants.DefaultChildId;
-            }
-
-            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
-
-            int userAccessLevel = (int)AccessLevel.Public;
-
-            if (accessList.Count != 0)
-            {
-                UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
-                if (userAccess != null)
-                {
-                    userAccessLevel = userAccess.AccessLevel;
-                }
-            }
-
-            if (progeny.IsInAdminList(userEmail))
-            {
-                model.IsAdmin = true;
-                userAccessLevel = (int)AccessLevel.Private;
-            }
-
-            List<string> tagsList = new List<string>();
-            List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(childId, userAccessLevel);
-            if (!string.IsNullOrEmpty(tagFilter))
-            {
-                friendsList = friendsList.Where(c => c.Tags != null && c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
-            }
-
-            friendsList = friendsList.OrderBy(f => f.FriendSince).ToList();
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            FriendsListViewModel model = new FriendsListViewModel(baseModel);
+            List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
+            
             if (friendsList.Count != 0)
             {
+                friendsList = friendsList.OrderBy(f => f.FriendSince).ToList();
+                
+                List<string> tagsList = new List<string>();
+                
                 foreach (Friend friend in friendsList)
                 {
                     FriendViewModel friendViewModel = new FriendViewModel();
-                    friendViewModel.ProgenyId = friend.ProgenyId;
-                    friendViewModel.AccessLevel = friend.AccessLevel;
-                    friendViewModel.FriendAddedDate = friend.FriendAddedDate;
-                    friendViewModel.FriendSince = friend.FriendSince;
-                    friendViewModel.Name = friend.Name;
-                    friendViewModel.Description = friend.Description;
-                    friendViewModel.IsAdmin = model.IsAdmin;
-                    friendViewModel.FriendId = friend.FriendId;
-                    friendViewModel.PictureLink = friend.PictureLink;
-                    friendViewModel.Type = friend.Type;
-                    friendViewModel.Context = friend.Context;
-                    friendViewModel.Notes = friend.Notes;
-                    friendViewModel.Tags = friend.Tags;
+                    friendViewModel.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
+
+                    friendViewModel.PictureLink = _imageStore.UriFor(friendViewModel.PictureLink, "friends");
+
                     if (!string.IsNullOrEmpty(friendViewModel.Tags))
                     {
-                        List<string> pvmTags = friendViewModel.Tags.Split(',').ToList();
-                        foreach (string tagstring in pvmTags)
+                        List<string> friendTagsList = friendViewModel.Tags.Split(',').ToList();
+                        foreach (string tagString in friendTagsList)
                         {
-                            if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                            if (!tagsList.Contains(tagString.TrimStart(' ', ',').TrimEnd(' ', ',')))
                             {
-                                tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                                tagsList.Add(tagString.TrimStart(' ', ',').TrimEnd(' ', ','));
                             }
                         }
                     }
 
-                    friendViewModel.PictureLink = _imageStore.UriFor(friendViewModel.PictureLink, "friends");
-
-                    if (friendViewModel.AccessLevel >= userAccessLevel)
-                    {
-                        model.FriendViewModelsList.Add(friendViewModel);
-                    }
+                    model.FriendViewModelsList.Add(friendViewModel);
                 }
 
-                string tags = "";
-                foreach (string tstr in tagsList)
+                string allTagsString = "";
+                foreach (string tagString in tagsList)
                 {
-                    tags = tags + tstr + ",";
+                    allTagsString = allTagsString + tagString + ",";
                 }
-                model.Tags = tags.TrimEnd(',');
+                model.Tags = allTagsString.TrimEnd(',');
+                model.TagFilter = tagFilter;
             }
             else
             {
                 FriendViewModel friendViewModel = new FriendViewModel();
-                friendViewModel.ProgenyId = childId;
+                friendViewModel.CurrentProgenyId = model.CurrentProgenyId;
                 friendViewModel.Name = "No friends found.";
                 friendViewModel.FriendAddedDate = DateTime.UtcNow;
                 friendViewModel.FriendSince = DateTime.UtcNow;
                 friendViewModel.Description = "The friends list is empty.";
-                friendViewModel.IsAdmin = model.IsAdmin;
+                friendViewModel.IsCurrentUserProgenyAdmin = model.IsCurrentUserProgenyAdmin;
                 model.FriendViewModelsList.Add(friendViewModel);
             }
 
-            model.Progeny = progeny;
-            model.TagFilter = tagFilter;
             return View(model);
 
         }
@@ -149,53 +92,22 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> FriendDetails(int friendId, string tagFilter)
         {
-            FriendViewModel model = new FriendViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+            Friend friend = await _friendsHttpClient.GetFriend(friendId);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
+            FriendViewModel model = new FriendViewModel(baseModel);
 
-            Friend friend = await _friendsHttpClient.GetFriend(friendId); 
-            Progeny progeny = await _progenyHttpClient.GetProgeny(friend.ProgenyId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(progeny.Id);
-
-            int userAccessLevel = (int)AccessLevel.Public;
-
-            if (accessList.Count != 0)
+            if (friend.AccessLevel < model.CurrentAccessLevel)
             {
-                UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
-                if (userAccess != null)
-                {
-                    userAccessLevel = userAccess.AccessLevel;
-                }
+                return RedirectToAction("Index");
             }
 
-            if (progeny.IsInAdminList(userEmail))
-            {
-                model.IsAdmin = true;
-                userAccessLevel = (int)AccessLevel.Private;
-            }
-
-
+            model.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
             
-            
-            model.ProgenyId = friend.ProgenyId;
-            model.Context = friend.Context;
-            model.Notes = friend.Notes;
-            model.Type = friend.Type;
-            model.AccessLevel = friend.AccessLevel;
-            model.Description = friend.Description;
-            model.FriendAddedDate = friend.FriendAddedDate;
-            model.FriendId = friend.FriendId;
-            model.FriendSince = friend.FriendSince;
-            model.PictureLink = friend.PictureLink;
-            model.Name = friend.Name;
-            model.Tags = friend.Tags;
-            model.Progeny = progeny;
             
             model.PictureLink = _imageStore.UriFor(model.PictureLink, "friends");
 
             List<string> tagsList = new List<string>();
-            List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(model.ProgenyId, userAccessLevel);
+            List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
             foreach (Friend frn in friendsList)
             {
                 if (!string.IsNullOrEmpty(frn.Tags))
@@ -223,12 +135,8 @@ namespace KinaUnaWeb.Controllers
                 tagItems = tagItems + "]";
             }
 
-            ViewBag.TagsList = tagItems;
-            ViewBag.TagFilter = tagFilter;
-            if (model.AccessLevel < userAccessLevel)
-            {
-                return RedirectToAction("Index");
-            }
+            model.TagsList = tagItems;
+            model.TagFilter = tagFilter;
             
             return View(model);
         }
@@ -236,90 +144,44 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddFriend()
         {
-            FriendViewModel model = new FriendViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-            List<string> tagsList = new List<string>();
-
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            FriendViewModel model = new FriendViewModel(baseModel);
+            
+            
             if (model.CurrentUser == null)
             {
                 return RedirectToAction("Index");
             }
 
-            if (User.Identity != null && User.Identity.IsAuthenticated && userEmail != null && model.CurrentUser.UserId != null)
+            model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+
+            List<string> tagsList = new List<string>();
+            foreach (SelectListItem item in model.ProgenyList)
             {
-                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
-                if (accessList.Any())
+                if (int.TryParse(item.Value, out int progenyId))
                 {
-                    foreach (Progeny prog in accessList)
+                    List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(progenyId, 0);
+                    foreach (Friend friend in friendsList)
                     {
-                        SelectListItem selItem = new SelectListItem()
+                        if (!string.IsNullOrEmpty(friend.Tags))
                         {
-                            Text = accessList.Single(p => p.Id == prog.Id).NickName,
-                            Value = prog.Id.ToString()
-                        };
-                        if (prog.Id == model.CurrentUser.ViewChild)
-                        {
-                            selItem.Selected = true;
-                        }
-
-                        model.ProgenyList.Add(selItem);
-
-                        List<Friend> friendsList1 = await _friendsHttpClient.GetFriendsList(prog.Id, 0);
-                        foreach (Friend frn in friendsList1)
-                        {
-                            if (!string.IsNullOrEmpty(frn.Tags))
+                            List<string> friendTagsList = friend.Tags.Split(',').ToList();
+                            foreach (string tagstring in friendTagsList)
                             {
-                                List<string> fvmTags = frn.Tags.Split(',').ToList();
-                                foreach (string tagstring in fvmTags)
+                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                                 {
-                                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                    {
-                                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                    }
+                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                                 }
                             }
                         }
                     }
                 }
             }
-
-            string tagItems = "[";
-            if (tagsList.Any())
-            {
-                foreach (string tagstring in tagsList)
-                {
-                    tagItems = tagItems + "'" + tagstring + "',";
-                }
-
-                tagItems = tagItems.Remove(tagItems.Length - 1);
-            }
-            tagItems = tagItems + "]";
-            ViewBag.TagsList = tagItems;
-
-            if (model.LanguageId == 2)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDe;
-                model.FriendTypeListEn = model.FriendTypeListDe;
-            }
-
-            if (model.LanguageId == 3)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDa;
-                model.FriendTypeListEn = model.FriendTypeListDa;
-            }
-
-            if (model.LanguageId == 2)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDe;
-            }
-
-            if (model.LanguageId == 3)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDa;
-            }
-
+            
+            model.SetTagList(tagsList);
+            model.SetAccessLevelList();
+            model.SetFriendTypeList();
+            
             return View(model);
         }
 
@@ -328,147 +190,57 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> AddFriend(FriendViewModel model)
         {
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            model.SetBaseProperties(baseModel);
 
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
-            Friend friendItem = new Friend();
-            friendItem.ProgenyId = model.ProgenyId;
-            friendItem.Description = model.Description;
-            friendItem.FriendAddedDate = DateTime.UtcNow;
-            if (model.FriendSince == null)
-            {
-                model.FriendSince = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
-            friendItem.FriendSince = model.FriendSince;
-            friendItem.Name = model.Name;
-            friendItem.AccessLevel = model.AccessLevel;
-            friendItem.Type = model.Type;
-            friendItem.Context = model.Context;
-            friendItem.Notes = model.Notes;
-            friendItem.Author = model.CurrentUser.UserId;
-            if (!string.IsNullOrEmpty(model.Tags))
-            {
-                friendItem.Tags = model.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
-            }
 
+            Friend friendItem = model.CreateFriend();
+            
             if (model.File != null)
             {
-                using (Stream stream = model.File.OpenReadStream())
-                {
-                    friendItem.PictureLink = await _imageStore.SaveImage(stream, "friends");
-
-                }
+                await using Stream stream = model.File.OpenReadStream();
+                friendItem.PictureLink = await _imageStore.SaveImage(stream, "friends");
             }
             else
             {
                 friendItem.PictureLink = Constants.ProfilePictureUrl;
             }
 
-            await _friendsHttpClient.AddFriend(friendItem);
+            friendItem = await _friendsHttpClient.AddFriend(friendItem);
 
-            string authorName = "";
-            if (!string.IsNullOrEmpty(model.CurrentUser.FirstName))
-            {
-                authorName = model.CurrentUser.FirstName;
-            }
-            if (!string.IsNullOrEmpty(model.CurrentUser.MiddleName))
-            {
-                authorName = authorName + " " + model.CurrentUser.MiddleName;
-            }
-            if (!string.IsNullOrEmpty(model.CurrentUser.LastName))
-            {
-                authorName = authorName + " " + model.CurrentUser.LastName;
-            }
-
-            authorName = authorName.Trim();
-            if (string.IsNullOrEmpty(authorName))
-            {
-                authorName = model.CurrentUser.UserName;
-            }
-            List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(model.ProgenyId);
-            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            foreach (UserAccess ua in usersToNotif)
-            {
-                if (ua.AccessLevel <= friendItem.AccessLevel)
-                {
-                    UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(ua.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
-                    {
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = authorName;
-                        notification.Message = "Friend: " + friendItem.Name + "\r\nContext: " + friendItem.Context;
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = model.CurrentUser.ProfilePicture;
-                        notification.Title = "A new friend was added for " + progeny.NickName;
-                        notification.Link = "/Friends?childId=" + progeny.Id;
-                        notification.Type = "Notification";
-
-                        notification = await _webNotificationsService.SaveNotification(notification);
-
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunafriend" + progeny.Id);
-                    }
-                }
-            }
+            await _notificationsService.SendFriendNotification(friendItem, model.CurrentUser);
+            
             return RedirectToAction("Index", "Friends");
         }
 
         [HttpGet]
         public async Task<IActionResult> EditFriend(int itemId)
         {
-            FriendViewModel model = new FriendViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
             Friend friend = await _friendsHttpClient.GetFriend(itemId);
-            Progeny prog = await _progenyHttpClient.GetProgeny(friend.ProgenyId);
-            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
+            FriendViewModel model = new FriendViewModel(baseModel);
+            
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
-            model.ProgenyId = friend.ProgenyId;
-            model.AccessLevel = friend.AccessLevel;
-            model.Author = friend.Author;
-            if (friend.FriendSince == null)
-            {
-                friend.FriendSince = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
-            model.FriendAddedDate = friend.FriendAddedDate;
-            model.Description = friend.Description;
-            model.Name = friend.Name;
-            model.FriendId = friend.FriendId;
-            model.FriendSince = friend.FriendSince;
-            model.PictureLink = friend.PictureLink;
-            model.PictureLink = _imageStore.UriFor(friend.PictureLink, "friends");
-            model.AccessLevelListEn[model.AccessLevel].Selected = true;
-            model.AccessLevelListDa[model.AccessLevel].Selected = true;
-            model.AccessLevelListDe[model.AccessLevel].Selected = true;
-            model.Type = friend.Type;
-            model.FriendTypeListEn[model.Type].Selected = true;
-            model.FriendTypeListDa[model.Type].Selected = true;
-            model.FriendTypeListDe[model.Type].Selected = true;
-            model.Context = friend.Context;
-            model.Notes = friend.Notes;
-            model.Tags = friend.Tags;
 
+            model.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
+            
             List<string> tagsList = new List<string>();
-            List<Friend> friendsList1 = await _friendsHttpClient.GetFriendsList(model.ProgenyId, 0);
-            foreach (Friend frn in friendsList1)
+            List<Friend> friendsList1 = await _friendsHttpClient.GetFriendsList(model.CurrentProgenyId, 0);
+            foreach (Friend friendItem in friendsList1)
             {
-                if (!string.IsNullOrEmpty(frn.Tags))
+                if (!string.IsNullOrEmpty(friendItem.Tags))
                 {
-                    List<string> fvmTags = frn.Tags.Split(',').ToList();
-                    foreach (string tagstring in fvmTags)
+                    List<string> friendTagsList = friendItem.Tags.Split(',').ToList();
+                    foreach (string tagstring in friendTagsList)
                     {
                         if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                         {
@@ -477,32 +249,10 @@ namespace KinaUnaWeb.Controllers
                     }
                 }
             }
-
-            string tagItems = "[";
-            if (tagsList.Any())
-            {
-                foreach (string tagstring in tagsList)
-                {
-                    tagItems = tagItems + "'" + tagstring + "',";
-                }
-
-                tagItems = tagItems.Remove(tagItems.Length - 1);
-                tagItems = tagItems + "]";
-            }
-
-            ViewBag.TagsList = tagItems;
-
-            if (model.LanguageId == 2)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDe;
-                model.FriendTypeListEn = model.FriendTypeListDe;
-            }
-
-            if (model.LanguageId == 3)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDa;
-                model.FriendTypeListEn = model.FriendTypeListDa;
-            }
+            
+            model.SetTagList(tagsList);
+            model.SetAccessLevelList();
+            model.SetFriendTypeList();
 
             return View(model);
         }
@@ -512,64 +262,43 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> EditFriend(FriendViewModel model)
         {
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            model.SetBaseProperties(baseModel);
+            
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
-            if (ModelState.IsValid)
+
+            Friend editedFriend = model.CreateFriend();
+
+            if (model.File != null && model.File.Name != string.Empty)
             {
-                Friend editedFriend = await _friendsHttpClient.GetFriend(model.FriendId);
-                editedFriend.AccessLevel = model.AccessLevel;
-                editedFriend.Author = model.Author;
-                editedFriend.Description = model.Description;
-                editedFriend.Name = model.Name;
-                editedFriend.FriendId = model.FriendId;
-                if (model.FriendSince == null)
+                Friend originalFriend = await _friendsHttpClient.GetFriend(model.FriendId);
+                model.FileName = model.File.FileName;
+                await using (Stream stream = model.File.OpenReadStream())
                 {
-                    model.FriendSince = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                }
-                editedFriend.FriendSince = model.FriendSince;
-                editedFriend.Type = model.Type;
-                editedFriend.Context = model.Context;
-                editedFriend.Notes = model.Notes;
-                if (!string.IsNullOrEmpty(model.Tags))
-                {
-                    editedFriend.Tags = model.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
-                }
-                if (model.File != null && model.File.Name != string.Empty)
-                {
-                    string oldPictureLink = model.PictureLink;
-                    model.FileName = model.File.FileName;
-                    using (Stream stream = model.File.OpenReadStream())
-                    {
-                        editedFriend.PictureLink = await _imageStore.SaveImage(stream, "friends");
-                    }
-
-                    await _imageStore.DeleteImage(oldPictureLink, "friends");
+                    editedFriend.PictureLink = await _imageStore.SaveImage(stream, "friends");
                 }
 
-                await _friendsHttpClient.UpdateFriend(editedFriend);
+                await _imageStore.DeleteImage(originalFriend.PictureLink, "friends");
             }
+
+            await _friendsHttpClient.UpdateFriend(editedFriend);
+
             return RedirectToAction("Index", "Friends");
         }
 
         [HttpGet]
         public async Task<IActionResult> DeleteFriend(int itemId)
         {
-            FriendViewModel model = new FriendViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+            Friend friend = await _friendsHttpClient.GetFriend(itemId);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
+            FriendViewModel model = new FriendViewModel(baseModel);
+            model.Friend = friend;
 
-            model.Friend = await _friendsHttpClient.GetFriend(itemId);
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.Friend.ProgenyId);
-            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -581,12 +310,11 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteFriend(FriendViewModel model)
         {
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
             Friend friend = await _friendsHttpClient.GetFriend(model.Friend.FriendId);
-            Progeny prog = await _progenyHttpClient.GetProgeny(friend.ProgenyId);
-            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
