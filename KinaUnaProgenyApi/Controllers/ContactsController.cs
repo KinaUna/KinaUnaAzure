@@ -219,10 +219,10 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(contactItem.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
-                if (tItem != null)
+                TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(contactItem.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
+                if (timeLineItem != null)
                 {
-                    _ = await _timelineService.DeleteTimeLineItem(tItem);
+                    _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
                 }
 
                 if (contactItem.AddressIdNumber != null)
@@ -241,10 +241,10 @@ namespace KinaUnaProgenyApi.Controllers
                 UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
                 string notificationTitle = "Contact deleted for " + progeny.NickName;
                 string notificationMessage = userInfo.FullName() + " deleted a contact for " + progeny.NickName + ". Contact: " + contactItem.DisplayName;
-                if (tItem != null)
+                if (timeLineItem != null)
                 {
-                    tItem.AccessLevel = 0;
-                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, tItem, userInfo.ProfilePicture);
+                    timeLineItem.AccessLevel = 0;
+                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                 }
 
                 return NoContent();

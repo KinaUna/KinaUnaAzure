@@ -84,14 +84,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Location value)
         {
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to add locations for this child.
-
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -100,58 +97,17 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-
-            Location location = new Location();
-            location.AccessLevel = value.AccessLevel;
-            location.Author = value.Author;
-            location.City = value.City;
-            location.Country = value.Country;
-            location.County = value.County;
-            location.Date = value.Date;
-            location.DateAdded = value.DateAdded;
-            location.District = value.District;
-            location.HouseNumber = value.HouseNumber;
-            location.Latitude = value.Latitude;
-            location.Longitude = value.Longitude;
-            location.Name = value.Name;
-            location.Notes = value.Notes;
-            location.PostalCode = value.PostalCode;
-            location.ProgenyId = value.ProgenyId;
-            location.State = value.State;
-            location.StreetName = value.StreetName;
-            location.Tags = value.Tags;
-
-            location = await _locationService.AddLocation(location);
+            
+            Location location = await _locationService.AddLocation(value);
             
             TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = location.ProgenyId;
-            tItem.AccessLevel = location.AccessLevel;
-            tItem.ItemType = (int) KinaUnaTypes.TimeLineType.Location;
-            tItem.ItemId = location.LocationId.ToString();
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            if (userinfo != null)
-            {
-                tItem.CreatedBy = userinfo.UserId;
-            }
-            tItem.CreatedTime = DateTime.UtcNow;
-            if (location.Date.HasValue)
-            {
-                tItem.ProgenyTime = location.Date.Value;
-            }
-            else
-            {
-                tItem.ProgenyTime = DateTime.UtcNow;
-            }
-
+            tItem.CopyLocationPropertiesForAdd(location);
             _ = await _timelineService.AddTimeLineItem(tItem);
 
-            string title = "Location added for " + prog.NickName;
-            if (userinfo != null)
-            {
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
-                                 " added a new location for " + prog.NickName;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
-            }
+            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+            string notificationTitle = "Location added for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " added a new location for " + progeny.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, tItem, userInfo.ProfilePicture);
 
             return Ok(location);
         }
@@ -181,45 +137,21 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-
-            location.AccessLevel = value.AccessLevel;
-            location.Author = value.Author;
-            location.City = value.City;
-            location.Country = value.Country;
-            location.County = value.County;
-            location.Date = value.Date;
-            location.DateAdded = value.DateAdded;
-            location.District = value.District;
-            location.HouseNumber = value.HouseNumber;
-            location.Latitude = value.Latitude;
-            location.Longitude = value.Longitude;
-            location.Name = value.Name;
-            location.Notes = value.Notes;
-            location.PostalCode = value.PostalCode;
-            location.ProgenyId = value.ProgenyId;
-            location.State = value.State;
-            location.StreetName = value.StreetName;
-            location.Tags = value.Tags;
-
-            location = await _locationService.UpdateLocation(location);
             
-            // Update Timeline.
-            TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
-            if (tItem != null)
+            location = await _locationService.UpdateLocation(value);
+            
+            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
+            if (timeLineItem != null)
             {
-                if (location.Date.HasValue)
-                {
-                    tItem.ProgenyTime = location.Date.Value;
-                }
-
-                tItem.AccessLevel = location.AccessLevel;
-                await _timelineService.UpdateTimeLineItem(tItem);
+                timeLineItem.CopyLocationPropertiesForUpdate(location);
+                await _timelineService.UpdateTimeLineItem(timeLineItem);
             }
 
             UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            string title = "Location edited for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a location for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            string notificationTitle = "Location edited for " + prog.NickName;
+            string notificationMessage = userinfo.FullName() + " edited a location for " + prog.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
+
             return Ok(location);
         }
 
@@ -230,13 +162,12 @@ namespace KinaUnaProgenyApi.Controllers
             Location location = await _locationService.GetLocation(id);
             if (location != null)
             {
-                // Check if child exists.
-                Progeny prog = await _progenyService.GetProgeny(location.ProgenyId);
+                Progeny progeny = await _progenyService.GetProgeny(location.ProgenyId);
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                if (prog != null)
+                if (progeny != null)
                 {
                     // Check if user is allowed to delete locations for this child.
-                    if (!prog.IsInAdminList(userEmail))
+                    if (!progeny.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }
@@ -246,26 +177,20 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
-                if (tItem != null)
+                TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
+                if (timeLineItem != null)
                 {
-                    if (location.Date.HasValue)
-                    {
-                        tItem.ProgenyTime = location.Date.Value;
-                    }
-
-                    tItem.AccessLevel = location.AccessLevel;
-                    _ = await _timelineService.DeleteTimeLineItem(tItem);
+                    _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
                 }
 
                 _ = await _locationService.DeleteLocation(location);
                 UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                string title = "Location deleted for " + prog.NickName;
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a location for " + prog.NickName + ". Location: " + location.Name;
-                if (tItem != null)
+                string notificationTitle = "Location deleted for " + progeny.NickName;
+                string notificationMessage = userinfo.FullName() + " deleted a location for " + progeny.NickName + ". Location: " + location.Name;
+                if (timeLineItem != null)
                 {
-                    tItem.AccessLevel = 0;
-                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                    timeLineItem.AccessLevel = 0;
+                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
                 }
 
                 return NoContent();
@@ -301,7 +226,6 @@ namespace KinaUnaProgenyApi.Controllers
             [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
-            // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
 

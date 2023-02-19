@@ -64,10 +64,15 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Location> AddLocation(Location location)
         {
-            _ = _context.LocationsDb.Add(location);
+            Location locationToAdd = new Location();
+            locationToAdd.CopyPropertiesForAdd(location);
+
+            _ = _context.LocationsDb.Add(locationToAdd);
             _ = await _context.SaveChangesAsync();
-            _ = await SetLocationInCache(location.LocationId);
-            return location;
+            
+            _ = await SetLocationInCache(locationToAdd.LocationId);
+            
+            return locationToAdd;
         }
         
         public async Task<Location> UpdateLocation(Location location)
@@ -75,33 +80,15 @@ namespace KinaUnaProgenyApi.Services
             Location locationToUpdate = await _context.LocationsDb.SingleOrDefaultAsync(l => l.LocationId == location.LocationId);
             if (locationToUpdate != null)
             {
-                locationToUpdate.AccessLevel = location.AccessLevel;
-                locationToUpdate.Author = location.Author;
-                locationToUpdate.City = location.City;
-                locationToUpdate.Country = location.Country;
-                locationToUpdate.State = location.State;
-                locationToUpdate.PostalCode = location.PostalCode;
-                locationToUpdate.County = location.County;
-                locationToUpdate.Date = location.Date;
-                locationToUpdate.Latitude = location.Latitude;
-                locationToUpdate.Longitude = location.Longitude;
-                locationToUpdate.DateAdded = location.DateAdded;
-                locationToUpdate.District = location.District;
-                locationToUpdate.HouseNumber = location.HouseNumber;
-                locationToUpdate.LocationNumber = location.LocationNumber;
-                locationToUpdate.Name = location.Name;
-                locationToUpdate.Notes = location.Notes;
-                locationToUpdate.StreetName = location.StreetName;
-                locationToUpdate.ProgenyId = location.ProgenyId;
-                locationToUpdate.Tags = location.Tags;
-                locationToUpdate.Progeny = location.Progeny;
-
+                locationToUpdate.CopyPropertiesForUpdate(location);
+                
                 _ = _context.LocationsDb.Update(locationToUpdate);
                 _ = await _context.SaveChangesAsync();
-                _ = await SetLocationInCache(location.LocationId);
+                
+                _ = await SetLocationInCache(locationToUpdate.LocationId);
             }
             
-            return location;
+            return locationToUpdate;
         }
 
         public async Task<Location> DeleteLocation(Location location)
@@ -109,14 +96,16 @@ namespace KinaUnaProgenyApi.Services
             Location locationToDelete = await _context.LocationsDb.SingleOrDefaultAsync(l => l.LocationId == location.LocationId);
             if (locationToDelete != null)
             {
-                _context.LocationsDb.Remove(locationToDelete);
-                await _context.SaveChangesAsync();
+                _ = _context.LocationsDb.Remove(locationToDelete);
+                _ = await _context.SaveChangesAsync();
+
                 await RemoveLocationFromCache(location.LocationId, location.ProgenyId);
             }
 
             return location;
         }
-        public async Task RemoveLocationFromCache(int id, int progenyId)
+
+        private async Task RemoveLocationFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "location" + id);
 
@@ -130,6 +119,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 locationsList = await SetLocationsListInCache(progenyId);
             }
+
             return locationsList;
         }
 
@@ -152,6 +142,7 @@ namespace KinaUnaProgenyApi.Services
 
             return locationsList;
         }
+
         public async Task<Address> GetAddressItem(int id)
         {
             Address address = await GetAddressFromCache(id);
@@ -200,19 +191,15 @@ namespace KinaUnaProgenyApi.Services
             Address addressToUpdate = await _context.AddressDb.SingleOrDefaultAsync(a => a.AddressId == addressItem.AddressId);
             if (addressToUpdate != null)
             {
-                addressToUpdate.PostalCode = addressItem.PostalCode;
-                addressToUpdate.Country = addressItem.Country;
-                addressToUpdate.City = addressItem.City;
-                addressToUpdate.AddressLine1 = addressItem.AddressLine1;
-                addressToUpdate.AddressLine2 = addressItem.AddressLine2;
-                addressToUpdate.State = addressItem.State;
+                addressToUpdate.CopyPropertiesForUpdate(addressItem);
                 
                 _ = _context.AddressDb.Update(addressToUpdate);
                 _ = await _context.SaveChangesAsync();
+
                 _ = await SetAddressItemInCache(addressItem.AddressId);
             }
             
-            return addressItem;
+            return addressToUpdate;
         }
 
         public async Task RemoveAddressItem(int id)

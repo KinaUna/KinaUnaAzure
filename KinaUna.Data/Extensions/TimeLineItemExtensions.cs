@@ -135,5 +135,33 @@ namespace KinaUna.Data.Extensions
                 currentTimeLineItem.ProgenyTime = DateTime.UtcNow;
             }
         }
+
+        public static void CopyLocationPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Location location)
+        {
+            if (location.Date.HasValue)
+            {
+                currentTimeLineItem.ProgenyTime = location.Date.Value;
+            }
+
+            currentTimeLineItem.AccessLevel = location.AccessLevel;
+        }
+
+        public static void CopyLocationPropertiesForAdd(this TimeLineItem currentTimeLineItem, Location location)
+        {
+            currentTimeLineItem.ProgenyId = location.ProgenyId;
+            currentTimeLineItem.AccessLevel = location.AccessLevel;
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Location;
+            currentTimeLineItem.ItemId = location.LocationId.ToString();
+            currentTimeLineItem.CreatedBy = location.Author;
+            currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            if (location.Date.HasValue)
+            {
+                currentTimeLineItem.ProgenyTime = location.Date.Value;
+            }
+            else
+            {
+                currentTimeLineItem.ProgenyTime = DateTime.UtcNow;
+            }
+        }
     }
 }
