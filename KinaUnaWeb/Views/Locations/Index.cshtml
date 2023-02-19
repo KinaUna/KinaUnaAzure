@@ -4,7 +4,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Locations", PageNames.Locations, Model.LanguageId);
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Locations", PageNames.Locations, Model.LanguageId);
 }
 @section Scripts{
     <script src="https://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
@@ -26,22 +26,22 @@
     sortNewest = "btn btn-primary btn-sm";
     <div>
         @sortString <span class="@sortNewest"><i class="fas fa-check-circle"></i> @newestFirstString</span>
-        <a class="@sortOldest" asp-controller="Locations" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">@oldestFirstString</a>
+        <a class="@sortOldest" asp-controller="Locations" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">@oldestFirstString</a>
     </div>
 }
 else
 {
     <div>
         @sortString <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> @oldestFirstString</span>
-        <a class="@sortNewest" asp-controller="Locations" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@ViewBag.TagFilter">@newestFirstString</a>
+        <a class="@sortNewest" asp-controller="Locations" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@ViewBag.TagFilter">@newestFirstString</a>
     </div>
 }
 @if (!string.IsNullOrEmpty(Model.TagFilter))
 {
     <br />
-    <div style="float: right;">@await LocaleManager.GetTranslation("Tag filter:", PageNames.Locations, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Locations, Model.LanguageId)</a></div>
+    <div style="float: right;">@await LocaleManager.GetTranslation("Tag filter:", PageNames.Locations, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Locations, Model.LanguageId)</a></div>
 }
-@if (Model.IsAdmin)
+@if (Model.IsCurrentUserProgenyAdmin)
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="Locations" asp-action="AddLocation" class="btn btn-success btn-round leavePage">
@@ -160,7 +160,7 @@ else
             string locId = "loc" + locationModel.LocationId;
             <div id="@locId" class="card text-white bg-light" align="left" style="margin: 15px; margin-bottom: 25px; padding: 1px; float: left; min-width: 49%;">
                 <div class="card-text card-header-success rounded" style="padding-left: 15px; padding-right: 5px;">
-                    @if (Model.IsAdmin)
+                    @if (Model.IsCurrentUserProgenyAdmin)
                     {
                         <div style="float: right;">
 
@@ -220,7 +220,7 @@ else
                                 List<string> tagsList = locationModel.Tags.Split(',').ToList();
                                 foreach (string tagString in tagsList)
                                 {
-                                    <a asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                                    <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
                                 }
                             }
                         }
@@ -237,7 +237,7 @@ else
                     string[] tagsList = Model.Tags.Split(',');
                     foreach (string tagString in tagsList)
                     {
-                        <a asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                        <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
                     }
                 }
             }

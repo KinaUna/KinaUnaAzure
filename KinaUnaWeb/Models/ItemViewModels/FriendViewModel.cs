@@ -30,7 +30,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string Notes { get; set; }
         public string FileName { get; set; }
         public IFormFile File { get; set; }
-        public string Tags { get; set; }
         public string TagFilter { get; set; }
 
         public FriendViewModel()

@@ -128,5 +128,42 @@ namespace KinaUnaWeb.Services
                 }
             }
         }
+
+        public async Task SendLocationNotification(Location locationItem, UserInfo currentUser)
+        {
+            List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(locationItem.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(locationItem.ProgenyId);
+            foreach (UserAccess userAccess in usersToNotif)
+            {
+                if (userAccess.AccessLevel <= locationItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        DateTime tempDate = DateTime.UtcNow;
+                        if (locationItem.Date.HasValue)
+                        {
+                            tempDate = TimeZoneInfo.ConvertTimeFromUtc(locationItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                        }
+
+                        string dateString = tempDate.ToString("dd-MMM-yyyy");
+                        WebNotification webNotification = new WebNotification();
+                        webNotification.To = uaUserInfo.UserId;
+                        webNotification.From = currentUser.FullName();
+                        webNotification.Message = "Name: " + locationItem.Name + "\r\nDate: " + dateString;
+                        webNotification.DateTime = DateTime.UtcNow;
+                        webNotification.Icon = currentUser.ProfilePicture;
+                        webNotification.Title = "A new location was added for " + progeny.NickName;
+                        webNotification.Link = "/Locations?childId=" + progeny.Id;
+                        webNotification.Type = "Notification";
+
+                        webNotification = await _webNotificationsService.SaveNotification(webNotification);
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
+                            webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunalocation" + progeny.Id);
+                    }
+                }
+            }
+        }
     }
 }

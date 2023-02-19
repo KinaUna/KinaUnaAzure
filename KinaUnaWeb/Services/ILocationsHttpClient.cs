@@ -47,8 +47,9 @@ namespace KinaUnaWeb.Services
         /// </summary>
         /// <param name="progenyId">int: The Id of the progeny (Progeny.Id).</param>
         /// <param name="accessLevel">int: The user's access level.</param>
+        /// <param name="tagFilter">string: The string to filter the result list by. An empty string will return all locations.</param>
         /// <returns>List of Location objects.</returns>
-        Task<List<Location>> GetLocationsList(int progenyId, int accessLevel);
+        Task<List<Location>> GetLocationsList(int progenyId, int accessLevel, string tagFilter = "");
 
         /// <summary>
         /// Gets the address with a given AddressId.

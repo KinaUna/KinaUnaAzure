@@ -4,7 +4,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Photo locations", PageNames.Locations, Model.LanguageId);
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Photo locations", PageNames.Locations, Model.LanguageId);
 }
 @section Scripts{
     <script src="https://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
@@ -16,9 +16,9 @@
 @if (!String.IsNullOrEmpty(Model.TagFilter))
 {
     <br />
-    <div style="float: right;">Tag filter: <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Reset Filter</a></div>
+    <div style="float: right;">Tag filter: <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Reset Filter</a></div>
 }
-@if (Model.IsAdmin)
+@if (Model.IsCurrentUserProgenyAdmin)
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="Locations" asp-action="AddLocation" class="btn btn-success btn-round leavePage">
@@ -258,7 +258,7 @@ else
                     string[] tagsList = Model.Tags.Split(',');
                     foreach (string tagString in tagsList)
                     {
-                        <a asp-action="PhotoLocations" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                        <a asp-action="PhotoLocations" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
                     }
                 }
             }

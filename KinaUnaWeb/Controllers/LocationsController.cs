@@ -7,92 +7,48 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using KinaUnaWeb.Models;
 
 namespace KinaUnaWeb.Controllers
 {
     public class LocationsController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly ILocationsHttpClient _locationsHttpClient;
-        private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
-        private readonly IPushMessageSender _pushMessageSender;
-        private readonly IWebNotificationsService _webNotificationsService;
-
-        public LocationsController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, IUserInfosHttpClient userInfosHttpClient,
-            ILocationsHttpClient locationsHttpClient, IUserAccessHttpClient userAccessHttpClient, IPushMessageSender pushMessageSender, IWebNotificationsService webNotificationsService)
+        private readonly IViewModelSetupService _viewModelSetupService;
+        private readonly INotificationsService _notificationsService;
+        public LocationsController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ILocationsHttpClient locationsHttpClient,
+            IViewModelSetupService viewModelSetupService, INotificationsService notificationsService)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
-            _userInfosHttpClient = userInfosHttpClient;
             _locationsHttpClient = locationsHttpClient;
-            _userAccessHttpClient = userAccessHttpClient;
-            _pushMessageSender = pushMessageSender;
-            _webNotificationsService = webNotificationsService;
+            _viewModelSetupService = viewModelSetupService;
+            _notificationsService = notificationsService;
         }
 
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, string tagFilter = "")
         {
-            LocationViewModel model = new LocationViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
-            if (childId == 0 && model.CurrentUser.ViewChild > 0)
-            {
-                childId = model.CurrentUser.ViewChild;
-            }
-
-            if (childId == 0)
-            {
-                childId = Constants.DefaultChildId;
-            }
-
-            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
-            int userAccessLevel = (int)AccessLevel.Public;
-            if (accessList.Count != 0)
-            {
-                UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
-                if (userAccess != null)
-                {
-                    userAccessLevel = userAccess.AccessLevel;
-                }
-            }
-
-            if (progeny.IsInAdminList(userEmail))
-            {
-                model.IsAdmin = true;
-                userAccessLevel = (int)AccessLevel.Private;
-            }
-
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            LocationViewModel model = new LocationViewModel(baseModel);
+            
             List<string> tagsList = new List<string>();
 
-            // ToDo: Implement _progenyHttpClient.GetLocations() 
-            List<Location> locationsList = await _locationsHttpClient.GetLocationsList(childId, userAccessLevel);
-            if (!string.IsNullOrEmpty(tagFilter))
-            {
-                locationsList = locationsList.Where(l => l.Tags != null && l.Tags.Contains(tagFilter)).ToList();
-            }
-            locationsList = locationsList.OrderBy(l => l.Date).ToList();
+            List<Location> locationsList = await _locationsHttpClient.GetLocationsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
             
-            model.Progeny = progeny;
-
             if (locationsList.Any())
             {
                 model.LocationsList = new List<Location>();
                 foreach (Location loc in locationsList)
                 {
-                    if (loc.AccessLevel == (int)AccessLevel.Public || loc.AccessLevel >= userAccessLevel)
+                    if (loc.AccessLevel == (int)AccessLevel.Public || loc.AccessLevel >= model.CurrentAccessLevel)
                     {
                         model.LocationsList.Add(loc);
-                        if (!String.IsNullOrEmpty(loc.Tags))
+                        if (!string.IsNullOrEmpty(loc.Tags))
                         {
                             List<string> locTags = loc.Tags.Split(',').ToList();
                             foreach (string tagstring in locTags)
@@ -127,44 +83,15 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> PhotoLocations(int childId = 0, string tagFilter = "")
         {
-            LocationViewModel model = new LocationViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-            
-            if (childId == 0 && model.CurrentUser.ViewChild > 0)
-            {
-                childId = model.CurrentUser.ViewChild;
-            }
-
-            if (childId == 0)
-            {
-                childId = Constants.DefaultChildId;
-            }
-
-            Progeny progeny = await _progenyHttpClient.GetProgeny(childId);
-            List<UserAccess> accessList = await _userAccessHttpClient.GetProgenyAccessList(childId);
-            int userAccessLevel = (int)AccessLevel.Public;
-            if (accessList.Count != 0)
-            {
-                UserAccess userAccess = accessList.SingleOrDefault(u => u.UserId.ToUpper() == userEmail.ToUpper());
-                if (userAccess != null)
-                {
-                    userAccessLevel = userAccess.AccessLevel;
-                }
-            }
-
-            if (progeny.IsInAdminList(userEmail))
-            {
-                model.IsAdmin = true;
-                userAccessLevel = (int)AccessLevel.Private;
-            }
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            LocationViewModel model = new LocationViewModel(baseModel);
             
             model.LocationsList = new List<Location>();
+            
             List<string> tagsList = new List<string>();
-            model.ProgenyId = childId;
-            model.Progeny = progeny;
-            List<Picture> pictures = await _mediaHttpClient.GetPictureList(progeny.Id, userAccessLevel, model.CurrentUser.Timezone);
+            
+            List<Picture> pictures = await _mediaHttpClient.GetPictureList(model.CurrentProgenyId, model.CurrentAccessLevel, model.CurrentUser.Timezone);
+            
             if (string.IsNullOrEmpty(tagFilter))
             {
                 pictures = pictures.FindAll(p => !string.IsNullOrEmpty(p.Longtitude));
@@ -175,6 +102,7 @@ namespace KinaUnaWeb.Controllers
                     !string.IsNullOrEmpty(p.Longtitude) && p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper()));
             }
             pictures = pictures.OrderBy(p => p.PictureTime).ToList();
+
             List<Picture> locPictures = new List<Picture>();
             foreach (Picture pic in pictures)
             {
@@ -198,7 +126,7 @@ namespace KinaUnaWeb.Controllers
                     validCoords = false;
                 }
 
-                if (validCoords && (pic.AccessLevel == (int)AccessLevel.Public || pic.AccessLevel >= userAccessLevel))
+                if (validCoords && (pic.AccessLevel == (int)AccessLevel.Public || pic.AccessLevel >= model.CurrentAccessLevel))
                 {
                     picLoc.LocationId = pic.PictureId;
                     model.LocationsList.Add(picLoc);
@@ -223,24 +151,17 @@ namespace KinaUnaWeb.Controllers
                     }
                 }
             }
-
-            string tags = "";
-            foreach (string tstr in tagsList)
-            {
-                tags = tags + tstr + ",";
-            }
-            model.Tags = tags.TrimEnd(',');
+            
             model.TagFilter = tagFilter;
+
             return View(model);
         }
 
         public async Task<IActionResult> AddLocation()
         {
-            LocationViewModel model = new LocationViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            LocationViewModel model = new LocationViewModel(baseModel);
+            
             List<string> tagsList = new List<string>();
 
             if (model.CurrentUser == null)
@@ -248,27 +169,16 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            if (User.Identity != null && User.Identity.IsAuthenticated && userEmail != null && model.CurrentUser.UserId != null)
+            model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+
+            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
                 if (accessList.Any())
                 {
-                    model.Progeny = accessList[0];
-                    foreach (Progeny prog in accessList)
+                    foreach (Progeny progeny in accessList)
                     {
-                        SelectListItem selItem = new SelectListItem()
-                        {
-                            Text = accessList.Single(p => p.Id == prog.Id).NickName,
-                            Value = prog.Id.ToString()
-                        };
-                        if (prog.Id == model.CurrentUser.ViewChild)
-                        {
-                            selItem.Selected = true;
-                            model.Progeny = prog;
-                        }
-                        model.ProgenyList.Add(selItem);
-
-                        List<Location> locList1 = await _locationsHttpClient.GetLocationsList(prog.Id, 0);
+                        List<Location> locList1 = await _locationsHttpClient.GetLocationsList(progeny.Id, 0);
                         foreach (Location loc in locList1)
                         {
                             if (!string.IsNullOrEmpty(loc.Tags))
@@ -287,32 +197,12 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            string tagItems = "[";
-            if (tagsList.Any())
-            {
-                foreach (string tagstring in tagsList)
-                {
-                    tagItems = tagItems + "'" + tagstring + "',";
-                }
-
-                tagItems = tagItems.Remove(tagItems.Length - 1);
-
-            }
-            tagItems = tagItems + "]";
-            model.TagsList = tagItems;
+            model.SetTagList(tagsList);
             model.Latitude = 30.94625288456589;
             model.Longitude = -54.10861860580418;
             model.Date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
-            if (model.LanguageId == 2)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDe;
-            }
-
-            if (model.LanguageId == 3)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDa;
-            }
+            model.SetAccessLevelList();
 
             return View(model);
         }
@@ -321,120 +211,53 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddLocation(LocationViewModel model)
         {
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            model.SetBaseProperties(baseModel);
 
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
 
-            model.Progeny = prog;
-            Location locItem = new Location();
-            locItem.Latitude = model.Latitude;
-            locItem.Longitude = model.Longitude;
-            locItem.Name = model.Name;
-            locItem.HouseNumber = model.HouseNumber;
-            locItem.StreetName = model.StreetName;
-            locItem.District = model.District;
-            locItem.City = model.City;
-            locItem.PostalCode = model.PostalCode;
-            locItem.County = model.County;
-            locItem.State = model.State;
-            locItem.Country = model.Country;
-            locItem.Notes = model.Notes;
-            if (model.Date.HasValue)
-            {
-                locItem.Date = TimeZoneInfo.ConvertTimeToUtc(model.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.Progeny.TimeZone));
-            }
-            if (!string.IsNullOrEmpty(model.Tags))
-            {
-                locItem.Tags = model.Tags.Trim().TrimEnd(',', ' ').TrimStart(',', ' ');
-            }
-            locItem.ProgenyId = model.ProgenyId;
-            locItem.DateAdded = DateTime.UtcNow;
-            locItem.Author = model.CurrentUser.UserId;
-            locItem.AccessLevel = model.AccessLevel;
+            Location locationItem = model.CreateLocation();
 
-            await _locationsHttpClient.AddLocation(locItem);
+            locationItem = await _locationsHttpClient.AddLocation(locationItem);
+
+            await _notificationsService.SendLocationNotification(locationItem, model.CurrentUser);
             
-            List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(model.ProgenyId);
-            Progeny progeny = await _progenyHttpClient.GetProgeny(model.ProgenyId);
-            foreach (UserAccess ua in usersToNotif)
-            {
-                if (ua.AccessLevel <= locItem.AccessLevel)
-                {
-                    UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(ua.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
-                    {
-                        DateTime tempDate = DateTime.UtcNow;
-                        if (locItem.Date.HasValue)
-                        {
-                            tempDate = TimeZoneInfo.ConvertTimeFromUtc(locItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.Progeny.TimeZone));
-                        }
-
-                        string dateString = tempDate.ToString("dd-MMM-yyyy");
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = model.CurrentUser.FullName();
-                        notification.Message = "Name: " + locItem.Name + "\r\nDate: " + dateString;
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = model.CurrentUser.ProfilePicture;
-                        notification.Title = "A new location was added for " + progeny.NickName;
-                        notification.Link = "/Locations?childId=" + progeny.Id;
-                        notification.Type = "Notification";
-
-                        notification = await _webNotificationsService.SaveNotification(notification);
-
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunalocation" + progeny.Id);
-                    }
-                }
-            }
             return RedirectToAction("Index", "Locations");
         }
 
         public async Task<IActionResult> EditLocation(int itemId)
         {
-            LocationViewModel model = new LocationViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
-            List<string> tagsList = new List<string>();
+            Location location = await _locationsHttpClient.GetLocation(itemId);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
+            LocationViewModel model = new LocationViewModel(baseModel);
+            
+            
             if (model.CurrentUser == null)
             {
                 return RedirectToAction("Index");
             }
 
-            if (User.Identity != null && User.Identity.IsAuthenticated && userEmail != null && model.CurrentUser.UserId != null)
+            List<string> tagsList = new List<string>();
+            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userEmail);
+                model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+
+                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
                 if (accessList.Any())
                 {
-                    foreach (Progeny chld in accessList)
+                    foreach (Progeny progeny in accessList)
                     {
-                        SelectListItem selItem = new SelectListItem()
+                        
+                        List<Location> locList1 = await _locationsHttpClient.GetLocationsList(progeny.Id, 0);
+                        foreach (Location locationItem in locList1)
                         {
-                            Text = accessList.Single(p => p.Id == chld.Id).NickName,
-                            Value = chld.Id.ToString()
-                        };
-                        if (chld.Id == model.CurrentUser.ViewChild)
-                        {
-                            selItem.Selected = true;
-                        }
-
-                        model.ProgenyList.Add(selItem);
-
-                        List<Location> locList1 = await _locationsHttpClient.GetLocationsList(chld.Id, 0);
-                        foreach (Location loc in locList1)
-                        {
-                            if (!string.IsNullOrEmpty(loc.Tags))
+                            if (!string.IsNullOrEmpty(locationItem.Tags))
                             {
-                                List<string> locTags = loc.Tags.Split(',').ToList();
+                                List<string> locTags = locationItem.Tags.Split(',').ToList();
                                 foreach (string tagstring in locTags)
                                 {
                                     if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
@@ -447,60 +270,11 @@ namespace KinaUnaWeb.Controllers
                     }
                 }
             }
-
-            Location locItem = await _locationsHttpClient.GetLocation(itemId);
-            Progeny prog = await _progenyHttpClient.GetProgeny(locItem.ProgenyId);
-            model.Progeny = prog;
-            model.LocationId = locItem.LocationId;
-            model.Latitude = locItem.Latitude;
-            model.Longitude = locItem.Longitude;
-            model.Name = locItem.Name;
-            model.HouseNumber = locItem.HouseNumber;
-            model.StreetName = locItem.StreetName;
-            model.District = locItem.District;
-            model.City = locItem.City;
-            model.PostalCode = locItem.PostalCode;
-            model.County = locItem.County;
-            model.State = locItem.State;
-            model.Country = locItem.Country;
-            model.Notes = locItem.Notes;
-            if (locItem.Date.HasValue)
-            {
-                model.Date = TimeZoneInfo.ConvertTimeFromUtc(locItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
-
-            model.Tags = locItem.Tags;
-            model.ProgenyId = locItem.ProgenyId;
-            model.DateAdded = locItem.DateAdded;
-            model.Author = locItem.Author;
-            model.AccessLevel = locItem.AccessLevel;
-            model.AccessLevelListEn[model.AccessLevel].Selected = true;
-            model.AccessLevelListDa[model.AccessLevel].Selected = true;
-            model.AccessLevelListDe[model.AccessLevel].Selected = true;
-
-            string tagItems = "[";
-            if (tagsList.Any())
-            {
-                foreach (string tagstring in tagsList)
-                {
-                    tagItems = tagItems + "'" + tagstring + "',";
-                }
-
-                tagItems = tagItems.Remove(tagItems.Length - 1);
-
-            }
-            tagItems = tagItems + "]";
-            model.TagsList = tagItems;
-
-            if (model.LanguageId == 2)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDe;
-            }
-
-            if (model.LanguageId == 3)
-            {
-                model.AccessLevelListEn = model.AccessLevelListDa;
-            }
+            
+            model.SetPropertiesFromLocation(location, model.IsCurrentUserProgenyAdmin, model.CurrentUser.Timezone);
+            
+            model.SetTagList(tagsList);
+            model.SetAccessLevelList();
 
             return View(model);
         }
@@ -509,57 +283,30 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditLocation(LocationViewModel model)
         {
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
-            Location locItem = await _locationsHttpClient.GetLocation(model.LocationId);
-            Progeny prog = await _progenyHttpClient.GetProgeny(locItem.ProgenyId);
-            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            model.SetBaseProperties(baseModel);
+            
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
 
-            model.Progeny = prog;
-            locItem.Latitude = model.Latitude;
-            locItem.Longitude = model.Longitude;
-            locItem.Name = model.Name;
-            locItem.HouseNumber = model.HouseNumber;
-            locItem.StreetName = model.StreetName;
-            locItem.District = model.District;
-            locItem.City = model.City;
-            locItem.PostalCode = model.PostalCode;
-            locItem.County = model.County;
-            locItem.State = model.State;
-            locItem.Country = model.Country;
-            locItem.Notes = model.Notes;
-            if (model.Date.HasValue)
-            {
-                locItem.Date = TimeZoneInfo.ConvertTimeToUtc(model.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
-            if (!string.IsNullOrEmpty(model.Tags))
-            {
-                locItem.Tags = model.Tags.Trim().TrimEnd(',', ' ').TrimStart(',', ' ');
-            }
-
-            locItem.AccessLevel = model.AccessLevel;
-
-            await _locationsHttpClient.UpdateLocation(locItem);
+            Location location = model.CreateLocation();
+            
+            await _locationsHttpClient.UpdateLocation(location);
 
             return RedirectToAction("Index", "Locations");
         }
 
         public async Task<IActionResult> DeleteLocation(int itemId)
         {
-            LocationViewModel model = new LocationViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+            Location location = await _locationsHttpClient.GetLocation(itemId);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
+            LocationViewModel model = new LocationViewModel(baseModel);
+            model.Location = location;
 
-            model.Location = await _locationsHttpClient.GetLocation(itemId);
-            Progeny prog = await _progenyHttpClient.GetProgeny(model.Location.ProgenyId);
-            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
@@ -571,19 +318,18 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteLocation(LocationViewModel model)
         {
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+            Location location = await _locationsHttpClient.GetLocation(model.Location.LocationId);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
+            model.SetBaseProperties(baseModel);
 
-            Location locItem = await _locationsHttpClient.GetLocation(model.Location.LocationId);
-            Progeny prog = await _progenyHttpClient.GetProgeny(locItem.ProgenyId);
-            if (!prog.IsInAdminList(model.CurrentUser.UserEmail))
+            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
 
-            await _locationsHttpClient.DeleteLocation(locItem.LocationId);
+            await _locationsHttpClient.DeleteLocation(location.LocationId);
+
             return RedirectToAction("Index", "Locations");
         }
     }

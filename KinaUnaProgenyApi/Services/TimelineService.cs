@@ -8,7 +8,6 @@ using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace KinaUnaProgenyApi.Services
 {

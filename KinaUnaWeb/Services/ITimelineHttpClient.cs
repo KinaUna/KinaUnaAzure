@@ -40,7 +40,7 @@ namespace KinaUnaWeb.Services
         /// </summary>
         /// <param name="progenyId">int: The Id of the progeny (Progeny.Id).</param>
         /// <param name="accessLevel">int: The user's access level.</param>
-        /// <param name="sortBy">int: 0 for ascending, 1 for descending</param>
+        /// <param name="order">int: 0 for ascending, 1 for descending</param>
         /// <returns></returns>
         Task<List<TimeLineItem>> GetTimeline(int progenyId, int accessLevel, int order);
     }

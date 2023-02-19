@@ -13,6 +13,7 @@ public class BaseItemsViewModel : BaseViewModel
     public Progeny CurrentProgeny { get; set; }
     public List<UserAccess> CurrentProgenyAccessList { get; set; }
     public bool IsCurrentUserProgenyAdmin { get; set; }
+    public string Tags { get; set; }
     public string TagsList { get; set; }
 
     public void SetCurrentProgenyId(int progenyId)
@@ -77,5 +78,17 @@ public class BaseItemsViewModel : BaseViewModel
         tagItems = tagItems + "]";
 
         TagsList = tagItems;
+    }
+
+    public void SetTags(List<string> tagsList)
+    {
+        string tags = "";
+        foreach (string tstr in tagsList)
+        {
+            tags = tags + tstr + ",";
+        }
+
+        Tags = tags.TrimEnd(',');
+
     }
 }

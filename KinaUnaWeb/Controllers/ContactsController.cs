@@ -72,12 +72,7 @@ namespace KinaUnaWeb.Controllers
                 
                 model.ContactsList = model.ContactsList.OrderBy(m => m.DisplayName).ToList();
 
-                string tags = "";
-                foreach (string tstr in tagsList)
-                {
-                    tags = tags + tstr + ",";
-                }
-                model.Tags = tags.TrimEnd(',');
+                model.SetTags(tagsList);
             }
             else
             {
@@ -133,19 +128,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            string tagItems = "[";
-            if (tagsList.Any())
-            {
-                foreach (string tagstring in tagsList)
-                {
-                    tagItems = tagItems + "'" + tagstring + "',";
-                }
-
-                tagItems = tagItems.Remove(tagItems.Length - 1);
-                tagItems = tagItems + "]";
-            }
-
-            model.TagsList = tagItems;
+            model.SetTagList(tagsList);
             model.TagFilter = tagFilter;
             
             return View(model);
@@ -170,12 +153,12 @@ namespace KinaUnaWeb.Controllers
                 if (int.TryParse(item.Value, out int progenyId))
                 {
                     List<Contact> contactsList1 = await _contactsHttpClient.GetContactsList(progenyId, 0);
-                    foreach (Contact cont in contactsList1)
+                    foreach (Contact contact in contactsList1)
                     {
-                        if (!string.IsNullOrEmpty(cont.Tags))
+                        if (!string.IsNullOrEmpty(contact.Tags))
                         {
-                            List<string> cvmTags = cont.Tags.Split(',').ToList();
-                            foreach (string tagstring in cvmTags)
+                            List<string> contactTags = contact.Tags.Split(',').ToList();
+                            foreach (string tagstring in contactTags)
                             {
                                 if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                                 {

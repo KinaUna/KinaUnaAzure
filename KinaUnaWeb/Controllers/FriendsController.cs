@@ -65,12 +65,7 @@ namespace KinaUnaWeb.Controllers
                     model.FriendViewModelsList.Add(friendViewModel);
                 }
 
-                string allTagsString = "";
-                foreach (string tagString in tagsList)
-                {
-                    allTagsString = allTagsString + tagString + ",";
-                }
-                model.Tags = allTagsString.TrimEnd(',');
+                model.SetTags(tagsList);
                 model.TagFilter = tagFilter;
             }
             else
@@ -123,19 +118,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            string tagItems = "[";
-            if (tagsList.Any())
-            {
-                foreach (string tagstring in tagsList)
-                {
-                    tagItems = tagItems + "'" + tagstring + "',";
-                }
-
-                tagItems = tagItems.Remove(tagItems.Length - 1);
-                tagItems = tagItems + "]";
-            }
-
-            model.TagsList = tagItems;
+            model.SetTagList(tagsList);
             model.TagFilter = tagFilter;
             
             return View(model);

@@ -2,7 +2,6 @@
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;

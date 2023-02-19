@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -154,7 +155,7 @@ namespace KinaUnaWeb.Services
             return progenyLocations;
         }
 
-        public async Task<List<Location>> GetLocationsList(int progenyId, int accessLevel)
+        public async Task<List<Location>> GetLocationsList(int progenyId, int accessLevel, string tagFilter = "")
         {
             List<Location> progenyLocationsList = new List<Location>();
             string accessToken = await GetNewToken();
@@ -167,6 +168,12 @@ namespace KinaUnaWeb.Services
                 string locationsAsString = await locationsResponse.Content.ReadAsStringAsync();
 
                 progenyLocationsList = JsonConvert.DeserializeObject<List<Location>>(locationsAsString);
+                if (!string.IsNullOrEmpty(tagFilter))
+                {
+                    progenyLocationsList = progenyLocationsList.Where(l => l.Tags != null && l.Tags.Contains(tagFilter)).ToList();
+                }
+
+                progenyLocationsList = progenyLocationsList.OrderBy(l => l.Date).ToList();
             }
 
             return progenyLocationsList;

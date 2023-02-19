@@ -8,4 +8,5 @@ public interface INotificationsService
     Task SendCalendarNotification(CalendarItem eventItem, UserInfo currentUser);
     Task SendContactNotification(Contact contactItem, UserInfo currentUser);
     Task SendFriendNotification(Friend friendItem, UserInfo currentUser);
+    Task SendLocationNotification(Location locationItem, UserInfo currentUser);
 }

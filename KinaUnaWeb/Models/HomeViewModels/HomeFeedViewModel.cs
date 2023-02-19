@@ -34,7 +34,6 @@ namespace KinaUnaWeb.Models.HomeViewModels
         public string PicHours { get; set; }
         public string PicMinutes { get; set; }
 
-        public string Tags { get; set; }
         public string Location { get; set; }
         public TimeLineViewModel LatestPosts { get; set; }
         public TimeLineViewModel YearAgoPosts { get; set; }

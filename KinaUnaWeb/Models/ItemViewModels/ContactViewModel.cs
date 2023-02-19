@@ -24,14 +24,12 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string PictureLink { get; set; }
         public string Website { get; set; }
         public string Context { get; set; }
-        public int AccessLevel { get; set; }
         public string Author { get; set; }
         public List<SelectListItem> ProgenyList { get; set; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
         
-
         public Address Address { get; set; }
         public string AddressLine1 { get; set; }
         public string AddressLine2 { get; set; }
@@ -41,7 +39,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string Country { get; set; }
         public string FileName { get; set; }
         public IFormFile File { get; set; }
-        public string Tags { get; set; }
         public string TagFilter { get; set; }
         public DateTime? DateAdded { get; set; }
         
@@ -75,9 +72,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
             AccessLevelListDa = accList.AccessLevelListDa;
             AccessLevelListDe = accList.AccessLevelListDe;
 
-            AccessLevelListEn[AccessLevel].Selected = true;
-            AccessLevelListDa[AccessLevel].Selected = true;
-            AccessLevelListDe[AccessLevel].Selected = true;
+            AccessLevelListEn[CurrentAccessLevel].Selected = true;
+            AccessLevelListDa[CurrentAccessLevel].Selected = true;
+            AccessLevelListDe[CurrentAccessLevel].Selected = true;
 
             if (LanguageId == 2)
             {
@@ -93,7 +90,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public void SetPropertiesFromContact(Contact contact, bool isAdmin)
         {
             CurrentProgenyId = contact.ProgenyId;
-            AccessLevel = contact.AccessLevel;
+            CurrentAccessLevel = contact.AccessLevel;
             FirstName = contact.FirstName;
             MiddleName = contact.MiddleName;
             LastName = contact.LastName;
@@ -144,7 +141,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             contactItem.Website = Website;
             contactItem.Active = true;
             contactItem.Context = Context;
-            contactItem.AccessLevel = AccessLevel;
+            contactItem.AccessLevel = CurrentAccessLevel;
             contactItem.Author = CurrentUser.UserId;
             contactItem.ProgenyId = CurrentProgenyId;
             contactItem.PictureLink = PictureLink;
