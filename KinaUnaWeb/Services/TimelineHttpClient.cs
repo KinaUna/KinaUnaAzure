@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -143,7 +144,7 @@ namespace KinaUnaWeb.Services
             return false;
         }
 
-        public async Task<List<TimeLineItem>> GetTimeline(int progenyId, int accessLevel)
+        public async Task<List<TimeLineItem>> GetTimeline(int progenyId, int accessLevel, int order)
         {
             List<TimeLineItem> progenyTimeline = new List<TimeLineItem>();
             
@@ -156,6 +157,14 @@ namespace KinaUnaWeb.Services
             {
                 string timelineAsString = await timelineResponse.Content.ReadAsStringAsync();
                 progenyTimeline = JsonConvert.DeserializeObject<List<TimeLineItem>>(timelineAsString);
+                if (order == 1)
+                {
+                    progenyTimeline = progenyTimeline.OrderByDescending(t => t.ProgenyTime).ToList();
+                }
+                else
+                {
+                    progenyTimeline = progenyTimeline.OrderBy(t => t.ProgenyTime).ToList();
+                }
             }
 
             return progenyTimeline;

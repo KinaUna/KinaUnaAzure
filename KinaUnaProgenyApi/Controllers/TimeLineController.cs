@@ -139,14 +139,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] TimeLineItem value)
         {
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to add timeline items for this child.
-
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -155,17 +152,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-
-            TimeLineItem timeLineItem = new TimeLineItem();
-            timeLineItem.ProgenyId = value.ProgenyId;
-            timeLineItem.AccessLevel = value.AccessLevel;
-            timeLineItem.CreatedBy = value.CreatedBy;
-            timeLineItem.CreatedTime = value.CreatedTime;
-            timeLineItem.ItemId = value.ItemId;
-            timeLineItem.ItemType = value.ItemType;
-            timeLineItem.ProgenyTime = value.ProgenyTime;
-
-            _ = await _timelineService.AddTimeLineItem(timeLineItem);
+            
+            TimeLineItem timeLineItem = await _timelineService.AddTimeLineItem(value);
 
             return Ok(timeLineItem);
         }
@@ -180,13 +168,12 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(timeLineItem.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(timeLineItem.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            
+            if (progeny != null)
             {
-                // Check if user is allowed to edit timeline items for this child.
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -195,16 +182,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-
-            timeLineItem.ProgenyId = value.ProgenyId;
-            timeLineItem.AccessLevel = value.AccessLevel;
-            timeLineItem.CreatedBy = value.CreatedBy;
-            timeLineItem.CreatedTime = value.CreatedTime;
-            timeLineItem.ItemId = value.ItemId;
-            timeLineItem.ItemType = value.ItemType;
-            timeLineItem.ProgenyTime = value.ProgenyTime;
-
-            _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
+            
+            _ = await _timelineService.UpdateTimeLineItem(value);
 
             return Ok(timeLineItem);
         }
@@ -216,13 +195,11 @@ namespace KinaUnaProgenyApi.Controllers
             TimeLineItem timeLineItem = await _timelineService.GetTimeLineItem(id);
             if (timeLineItem != null)
             {
-                // Check if child exists.
-                Progeny prog = await _progenyService.GetProgeny(timeLineItem.ProgenyId);
+                Progeny progeny = await _progenyService.GetProgeny(timeLineItem.ProgenyId);
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                if (prog != null)
+                if (progeny != null)
                 {
-                    // Check if user is allowed to delete timeline items for this child.
-                    if (!prog.IsInAdminList(userEmail))
+                    if (!progeny.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }
@@ -252,7 +229,6 @@ namespace KinaUnaProgenyApi.Controllers
                 UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
                 if (userAccess != null)
                 {
-                    // Check if the correct access level is used. If not use the one retrieved from database.
                     accessLevel = userAccess.AccessLevel;
                     
                     DateTime startDate;
@@ -267,16 +243,16 @@ namespace KinaUnaProgenyApi.Controllers
                     }
 
                     List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(id);
-                    timeLineList = timeLineList.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime < startDate)
-                        .OrderBy(t => t.ProgenyTime).ToList();
+                    
                     if (timeLineList.Any())
                     {
+                        timeLineList = timeLineList.Where(t => t.AccessLevel >= accessLevel && t.ProgenyTime < startDate)
+                            .OrderBy(t => t.ProgenyTime).ToList();
                         timeLineList.Reverse();
 
                         return Ok(timeLineList.Skip(start).Take(count));
                     }
                 }
-                
             }
 
             return Ok(new List<TimeLineItem>());

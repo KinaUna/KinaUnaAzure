@@ -3,10 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -38,11 +40,15 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<TimeLineItem> AddTimeLineItem(TimeLineItem timeLineItem)
         {
-            _ = await _context.TimeLineDb.AddAsync(timeLineItem);
-            _ = await _context.SaveChangesAsync();
-            _ = await SetTimeLineItemInCache(timeLineItem.TimeLineId);
+            TimeLineItem timeLineItemToAdd = new TimeLineItem();
+            timeLineItemToAdd.CopyPropertiesForAdd(timeLineItem);
 
-            return timeLineItem;
+            _ = await _context.TimeLineDb.AddAsync(timeLineItemToAdd);
+            _ = await _context.SaveChangesAsync();
+
+            _ = await SetTimeLineItemInCache(timeLineItemToAdd.TimeLineId);
+
+            return timeLineItemToAdd;
         }
 
         private async Task<TimeLineItem> GetTimeLineItemFromCache(int id)
@@ -57,7 +63,7 @@ namespace KinaUnaProgenyApi.Services
             return timeLineItem;
         }
 
-        public async Task<TimeLineItem> SetTimeLineItemInCache(int id)
+        private async Task<TimeLineItem> SetTimeLineItemInCache(int id)
         {
             TimeLineItem timeLineItem = await _context.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(t => t.TimeLineId == id);
             if (timeLineItem != null)
@@ -75,15 +81,11 @@ namespace KinaUnaProgenyApi.Services
             TimeLineItem timeLineItemToUpdate = await _context.TimeLineDb.SingleOrDefaultAsync(ti => ti.TimeLineId == item.TimeLineId);
             if (timeLineItemToUpdate != null)
             {
-                timeLineItemToUpdate.AccessLevel = item.AccessLevel;
-                timeLineItemToUpdate.ItemId = item.ItemId;
-                timeLineItemToUpdate.ItemType = item.ItemType;
-                timeLineItemToUpdate.CreatedBy = item.CreatedBy;
-                timeLineItemToUpdate.CreatedTime = item.CreatedTime;
-                timeLineItemToUpdate.ProgenyId = item.ProgenyId;
-                timeLineItemToUpdate.ProgenyTime = item.ProgenyTime;
+                timeLineItemToUpdate.CopyPropertiesForUpdate(item);
+
                 _ = _context.TimeLineDb.Update(timeLineItemToUpdate);
                 _ = await _context.SaveChangesAsync();
+                
                 _ = await SetTimeLineItemInCache(item.TimeLineId);
             }
             
@@ -103,7 +105,8 @@ namespace KinaUnaProgenyApi.Services
 
             return item;
         }
-        public async Task RemoveTimeLineItemFromCache(int timeLineItemId, int timeLineType, int progenyId)
+
+        private async Task RemoveTimeLineItemFromCache(int timeLineItemId, int timeLineType, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + timeLineItemId);
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + timeLineItemId + "type" + timeLineType);

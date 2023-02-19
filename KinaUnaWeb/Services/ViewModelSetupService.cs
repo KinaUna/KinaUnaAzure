@@ -34,6 +34,15 @@ namespace KinaUnaWeb.Services
            return viewModel;
         }
 
+        public async Task<BaseItemsViewModel> SetupTimeLineItemViewModel(int languageId, string userEmail)
+        {
+            BaseItemsViewModel viewModel = new BaseItemsViewModel();
+            viewModel.LanguageId = languageId;
+            viewModel.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+
+            return viewModel;
+        }
+
         public async Task<List<SelectListItem>> GetProgenySelectList(UserInfo userInfo)
         {
             List<SelectListItem> progenyList = new List<SelectListItem>();

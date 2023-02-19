@@ -1,10 +1,33 @@
 ﻿using KinaUna.Data.Models;
+using Newtonsoft.Json.Linq;
 using System;
 
 namespace KinaUna.Data.Extensions
 {
     public static class TimeLineItemExtensions
     {
+        public static void CopyPropertiesForUpdate(this TimeLineItem currentTimeLineItem, TimeLineItem otherTimeLineItem)
+        {
+            currentTimeLineItem.ProgenyId = otherTimeLineItem.ProgenyId;
+            currentTimeLineItem.AccessLevel = otherTimeLineItem.AccessLevel;
+            currentTimeLineItem.CreatedBy = otherTimeLineItem.CreatedBy;
+            currentTimeLineItem.CreatedTime = otherTimeLineItem.CreatedTime;
+            currentTimeLineItem.ItemId = otherTimeLineItem.ItemId;
+            currentTimeLineItem.ItemType = otherTimeLineItem.ItemType;
+            currentTimeLineItem.ProgenyTime = otherTimeLineItem.ProgenyTime;
+        }
+
+        public static void CopyPropertiesForAdd(this TimeLineItem currentTimeLineItem, TimeLineItem otherTimeLineItem)
+        {
+            currentTimeLineItem.ProgenyId = otherTimeLineItem.ProgenyId;
+            currentTimeLineItem.AccessLevel = otherTimeLineItem.AccessLevel;
+            currentTimeLineItem.CreatedBy = otherTimeLineItem.CreatedBy;
+            currentTimeLineItem.CreatedTime = otherTimeLineItem.CreatedTime;
+            currentTimeLineItem.ItemId = otherTimeLineItem.ItemId;
+            currentTimeLineItem.ItemType = otherTimeLineItem.ItemType;
+            currentTimeLineItem.ProgenyTime = otherTimeLineItem.ProgenyTime;
+        }
+
         public static bool CopyCalendarItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, CalendarItem calendarItem )
         {
             if (currentTimeLineItem != null && calendarItem.StartTime.HasValue && calendarItem.EndTime.HasValue)
