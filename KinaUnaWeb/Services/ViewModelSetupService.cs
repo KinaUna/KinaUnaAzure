@@ -40,14 +40,14 @@ namespace KinaUnaWeb.Services
             List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userInfo.UserEmail);
             if (accessList.Any())
             {
-                foreach (Progeny prog in accessList)
+                foreach (Progeny progeny in accessList)
                 {
                     SelectListItem selItem = new SelectListItem()
                     {
-                        Text = accessList.Single(p => p.Id == prog.Id).NickName,
-                        Value = prog.Id.ToString()
+                        Text = accessList.Single(p => p.Id == progeny.Id).NickName,
+                        Value = progeny.Id.ToString()
                     };
-                    if (prog.Id == userInfo.ViewChild)
+                    if (progeny.Id == userInfo.ViewChild)
                     {
                         selItem.Selected = true;
                     }

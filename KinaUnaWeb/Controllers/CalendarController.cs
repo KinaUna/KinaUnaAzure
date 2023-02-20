@@ -72,10 +72,11 @@ namespace KinaUnaWeb.Controllers
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserEmail != null && model.CurrentUser.UserId != null)
             {
                 model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.SetProgenyList();
             }
             
             model.SetAccessLevelList();
-
+            
             return View(model);
         }
 
@@ -124,7 +125,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditEvent(CalendarItemViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CalendarItem.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))

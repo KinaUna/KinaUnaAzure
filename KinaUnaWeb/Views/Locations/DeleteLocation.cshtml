@@ -3,44 +3,44 @@
 @model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = await LocaleManager.GetTranslation("Delete friend", PageNames.Locations, Model.LanguageId);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Delete location", PageNames.Locations, Model.LanguageId);
 }
-<h2>@ViewData["Title"] - @Model.Location.Name</h2>
+<h2>@ViewData["Title"] - @Model.LocationItem.Name</h2>
 <form asp-action="DeleteLocation" role="form" method="post">
     <div>
-        @await LocaleManager.GetTranslation("Are you sure you want to delete this location?", PageNames.Locations, Model.LanguageId) @Model.Location.Name
+        @await LocaleManager.GetTranslation("Are you sure you want to delete this location?", PageNames.Locations, Model.LanguageId) @Model.LocationItem.Name
     </div>
-    <div>@await LocaleManager.GetTranslation("Latitude:", PageNames.Locations, Model.LanguageId) @Model.Location.Latitude</div>
-    <div>@await LocaleManager.GetTranslation("Longitude:", PageNames.Locations, Model.LanguageId) @Model.Location.Longitude</div>
+    <div>@await LocaleManager.GetTranslation("Latitude:", PageNames.Locations, Model.LanguageId) @Model.LocationItem.Latitude</div>
+    <div>@await LocaleManager.GetTranslation("Longitude:", PageNames.Locations, Model.LanguageId) @Model.LocationItem.Longitude</div>
     <br />
     <br />
-    @if(Model.Location.Date != null)
+    @if (Model.LocationItem.Date != null)
     {
-    <div>@await LocaleManager.GetTranslation("Date:", PageNames.Locations, Model.LanguageId) @Model.Location.Date.Value</div>
+        <div>@await LocaleManager.GetTranslation("Date:", PageNames.Locations, Model.LanguageId) @Model.LocationItem.Date.Value</div>
     }
     <br />
-    <div>@await LocaleManager.GetTranslation("Street name:", PageNames.Locations, Model.LanguageId) @Model.Location.StreetName</div>
+    <div>@await LocaleManager.GetTranslation("Street name:", PageNames.Locations, Model.LanguageId) @Model.LocationItem.StreetName</div>
     <br />
-    <div>@await LocaleManager.GetTranslation("House number:", PageNames.Locations, Model.LanguageId) @Model.Location.HouseNumber</div>
+    <div>@await LocaleManager.GetTranslation("House number:", PageNames.Locations, Model.LanguageId) @Model.LocationItem.HouseNumber</div>
     <br />
-    <div>@await LocaleManager.GetTranslation("District:", PageNames.Locations, Model.LanguageId) @Model.Location.District</div>
+    <div>@await LocaleManager.GetTranslation("District:", PageNames.Locations, Model.LanguageId) @Model.LocationItem.District</div>
     <br />
-    <div>@await LocaleManager.GetTranslation("City:", PageNames.Locations, Model.LanguageId) @Model.Location.City</div>
+    <div>@await LocaleManager.GetTranslation("City:", PageNames.Locations, Model.LanguageId) @Model.LocationItem.City</div>
     <br />
-    <div>@await LocaleManager.GetTranslation("Postal code:", PageNames.Locations, Model.LanguageId) @Model.Location.PostalCode</div>
+    <div>@await LocaleManager.GetTranslation("Postal code:", PageNames.Locations, Model.LanguageId) @Model.LocationItem.PostalCode</div>
     <br />
-    <div>@await LocaleManager.GetTranslation("County:", PageNames.Locations, Model.LanguageId) @Model.Location.County</div>
+    <div>@await LocaleManager.GetTranslation("County:", PageNames.Locations, Model.LanguageId) @Model.LocationItem.County</div>
     <br />
-    <div>@await LocaleManager.GetTranslation("State:", PageNames.Locations, Model.LanguageId) @Model.Location.State</div>
+    <div>@await LocaleManager.GetTranslation("State:", PageNames.Locations, Model.LanguageId) @Model.LocationItem.State</div>
     <br />
-    <div>@await LocaleManager.GetTranslation("Country:", PageNames.Locations, Model.LanguageId) @Model.Location.Country</div>
+    <div>@await LocaleManager.GetTranslation("Country:", PageNames.Locations, Model.LanguageId) @Model.LocationItem.Country</div>
     <br />
     <div>
-        @await LocaleManager.GetTranslation("Notes:", PageNames.Locations, Model.LanguageId) @Model.Location.Notes
+        @await LocaleManager.GetTranslation("Notes:", PageNames.Locations, Model.LanguageId) @Model.LocationItem.Notes
     </div>
     <br />
 
-    <input asp-for="Location.LocationId" class="form-control" value="@Model.Location.LocationId" type="hidden" />
+    <input asp-for="LocationItem.LocationId" class="form-control" value="@Model.LocationItem.LocationId" type="hidden" />
     <div><Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes, delete this location", PageNames.Locations, Model.LanguageId)</Button>
         <a class="btn btn-danger leavePage" asp-controller="Locations" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
     </div>

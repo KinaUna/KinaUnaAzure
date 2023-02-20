@@ -20,7 +20,7 @@
         <div class="form-group">
             <label class="control-label col-sm-3">@addEventForString </label>
             <div class="col-lg-9">
-                <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="CurrentProgenyId" asp-items="@Model.ProgenyList"></select>
+                <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="CalendarItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
             </div>
         </div>
     }
@@ -31,20 +31,20 @@
             <div class="col-lg-9">
                 <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
             </div>
-            <input asp-for="CurrentProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+            <input asp-for="CalendarItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
         </div>
     }
     <div class="form-group">
-        <label asp-for="Title" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Title", PageNames.Calendar, Model.LanguageId)</label>
+        <label asp-for="CalendarItem.Title" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Title", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <input asp-for="Title" class="form-control" />
+            <input asp-for="CalendarItem.Title" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="StartTime" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Start", PageNames.Calendar, Model.LanguageId)</label>
+        <label asp-for="CalendarItem.StartTime" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Start", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
-                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="StartTime" value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(@Model.CurrentUser.Timezone)).ToString("dd-MMM-yyyy HH:mm")" />
+                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CalendarItem.StartTime" value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(@Model.CurrentUser.Timezone)).ToString("dd-MMM-yyyy HH:mm")" />
             </div>
         </div>
     </div>
@@ -57,10 +57,10 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="EndTime" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("End", PageNames.Calendar, Model.LanguageId)</label>
+        <label asp-for="CalendarItem.EndTime" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("End", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
-                <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="EndTime" value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow + TimeSpan.FromMinutes(10), TimeZoneInfo.FindSystemTimeZoneById(Model.CurrentUser.Timezone)).ToString("dd-MMM-yyyy HH:mm")" />
+                <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CalendarItem.EndTime" value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow + TimeSpan.FromMinutes(10), TimeZoneInfo.FindSystemTimeZoneById(Model.CurrentUser.Timezone)).ToString("dd-MMM-yyyy HH:mm")" />
             </div>
         </div>
     </div>
@@ -73,33 +73,33 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="Notes" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Calendar, Model.LanguageId)</label>
+        <label asp-for="CalendarItem.Notes" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <textarea asp-for="Notes" class="form-control" rows="4"></textarea>
+            <textarea asp-for="CalendarItem.Notes" class="form-control" rows="4"></textarea>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Location" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Location", PageNames.Calendar, Model.LanguageId)</label>
+        <label asp-for="CalendarItem.Location" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Location", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <input asp-for="Location" class="form-control" />
+            <input asp-for="CalendarItem.Location" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Context" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Context", PageNames.Calendar, Model.LanguageId)</label>
+        <label asp-for="CalendarItem.Context" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Context", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <input asp-for="Context" class="form-control" />
+            <input asp-for="CalendarItem.Context" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="AllDay" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("All day", PageNames.Calendar, Model.LanguageId)</label>
+        <label asp-for="CalendarItem.AllDay" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("All day", PageNames.Calendar, Model.LanguageId)</label>
         <div class="col-lg-1">
-            <input type="checkbox" asp-for="AllDay" class="form-control" checked="@Model.AllDay" value="@Model.AllDay" />
+            <input type="checkbox" asp-for="CalendarItem.AllDay" class="form-control" checked="@Model.CalendarItem.AllDay" value="@Model.CalendarItem.AllDay" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)Access Level</label>
+        <label asp-for="CalendarItem.AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)Access Level</label>
         <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="CalendarItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
         </div>
     </div>
     <div>

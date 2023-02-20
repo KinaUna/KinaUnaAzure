@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using Location = KinaUna.Data.Models.Location;
+﻿using Location = KinaUna.Data.Models.Location;
 
 namespace KinaUna.Data.Extensions
 {

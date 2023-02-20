@@ -64,13 +64,13 @@ namespace KinaUnaWeb.Controllers
                         }
                     }
 
-                    contactViewModel.PictureLink = _imageStore.UriFor(contactViewModel.PictureLink, "contacts");
+                    contactViewModel.ContactItem.PictureLink = _imageStore.UriFor(contactViewModel.ContactItem.PictureLink, "contacts");
 
                     model.ContactsList.Add(contactViewModel);
 
                 }
                 
-                model.ContactsList = model.ContactsList.OrderBy(m => m.DisplayName).ToList();
+                model.ContactsList = model.ContactsList.OrderBy(m => m.ContactItem.DisplayName).ToList();
 
                 model.SetTags(tagsList);
             }
@@ -78,8 +78,9 @@ namespace KinaUnaWeb.Controllers
             {
                 ContactViewModel notfoundContactViewModel = new ContactViewModel();
                 notfoundContactViewModel.CurrentProgenyId = model.CurrentProgenyId;
-                notfoundContactViewModel.DisplayName = "No friends found.";
-                notfoundContactViewModel.PictureLink = Constants.ProfilePictureUrl;
+                notfoundContactViewModel.ContactItem.ProgenyId = model.CurrentProgenyId;
+                notfoundContactViewModel.ContactItem.DisplayName = "No friends found.";
+                notfoundContactViewModel.ContactItem.PictureLink = Constants.ProfilePictureUrl;
                 notfoundContactViewModel.IsCurrentUserProgenyAdmin = model.IsCurrentUserProgenyAdmin;
                 model.ContactsList.Add(notfoundContactViewModel);
             }
@@ -109,7 +110,7 @@ namespace KinaUnaWeb.Controllers
 
             model.SetPropertiesFromContact(contact, model.IsCurrentUserProgenyAdmin);
 
-            model.PictureLink = _imageStore.UriFor(model.PictureLink, "contacts");
+            model.ContactItem.PictureLink = _imageStore.UriFor(model.ContactItem.PictureLink, "contacts");
 
             List<string> tagsList = new List<string>();
             List<Contact> contactsList1 = await _contactsHttpClient.GetContactsList(model.CurrentProgenyId, model.CurrentAccessLevel); 
@@ -146,6 +147,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.SetProgenyList();
 
             List<string> tagsList = new List<string>();
             foreach (SelectListItem item in model.ProgenyList)
@@ -181,7 +183,7 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> AddContact(ContactViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.ContactItem.ProgenyId);
             model.SetBaseProperties(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -227,11 +229,11 @@ namespace KinaUnaWeb.Controllers
             {
                 contact.Address = await _locationsHttpClient.GetAddress(contact.AddressIdNumber.Value);
             }
-
-            model.PictureLink = _imageStore.UriFor(contact.PictureLink, "contacts");
-
-            model.SetPropertiesFromContact(contact, model.IsCurrentUserProgenyAdmin);
             
+            model.SetPropertiesFromContact(contact, model.IsCurrentUserProgenyAdmin);
+
+            model.ContactItem.PictureLink = _imageStore.UriFor(contact.PictureLink, "contacts");
+
             List<string> tagsList = new List<string>();
             List<Contact> contactsList1 = await _contactsHttpClient.GetContactsList(model.CurrentProgenyId, 0);
             foreach (Contact cont in contactsList1)
@@ -260,7 +262,7 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> EditContact(ContactViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.ContactItem.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -273,7 +275,7 @@ namespace KinaUnaWeb.Controllers
 
             if (model.File != null && model.File.Name != string.Empty)
             {
-                Contact originalContact = await _contactsHttpClient.GetContact(model.ContactId);
+                Contact originalContact = await _contactsHttpClient.GetContact(model.ContactItem.ContactId);
                 model.FileName = model.File.FileName;
                 await using (Stream stream = model.File.OpenReadStream())
                 {
@@ -306,7 +308,8 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            model.Contact = contact;
+            model.ContactItem = contact;
+            model.ContactItem.PictureLink = _imageStore.UriFor(model.ContactItem.PictureLink, BlobContainers.Contacts);
 
             return View(model);
         }
@@ -315,7 +318,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteContact(ContactViewModel model)
         {
-            Contact contact = await _contactsHttpClient.GetContact(model.Contact.ContactId);
+            Contact contact = await _contactsHttpClient.GetContact(model.ContactItem.ContactId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), contact.ProgenyId);
             model.SetBaseProperties(baseModel);
             

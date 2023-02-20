@@ -88,11 +88,11 @@ namespace KinaUnaWeb.Services
 
             try
             {
-                HttpResponseMessage progenyResponse = await _httpClient.GetAsync(progenyApiPath).ConfigureAwait(false);
+                HttpResponseMessage progenyResponse = await _httpClient.GetAsync(progenyApiPath);
 
                 if (progenyResponse.IsSuccessStatusCode)
                 {
-                    string progenyAsString = await progenyResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    string progenyAsString = await progenyResponse.Content.ReadAsStringAsync();
                     progeny = JsonConvert.DeserializeObject<Progeny>(progenyAsString);
                 }
                 else
@@ -170,10 +170,10 @@ namespace KinaUnaWeb.Services
             string accessApiPath = "/api/Access/AdminListByUserPost/";
             string id = email;
             List <Progeny> accessList = new List<Progeny>();
-            HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(id), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
+            HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(id), System.Text.Encoding.UTF8, "application/json"));
             if (accessResponse.IsSuccessStatusCode)
             {
-                string accessResponseString = await accessResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                string accessResponseString = await accessResponse.Content.ReadAsStringAsync();
                 accessList = JsonConvert.DeserializeObject<List<Progeny>>(accessResponseString);
             }
             
@@ -188,10 +188,10 @@ namespace KinaUnaWeb.Services
             _httpClient.SetBearerToken(accessToken);
 
             string latestApiPath = "/api/Timeline/ProgenyLatest/" + progenyId + "/" + accessLevel + "/5/0";
-            HttpResponseMessage latestResponse = await _httpClient.GetAsync(latestApiPath).ConfigureAwait(false);
+            HttpResponseMessage latestResponse = await _httpClient.GetAsync(latestApiPath);
             if (latestResponse.IsSuccessStatusCode)
             {
-                string latestAsString = await latestResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                string latestAsString = await latestResponse.Content.ReadAsStringAsync();
 
                 progenyPosts = JsonConvert.DeserializeObject<List<TimeLineItem>>(latestAsString);
             }
@@ -206,10 +206,10 @@ namespace KinaUnaWeb.Services
             _httpClient.SetBearerToken(accessToken);
 
             string yearAgoApiPath = "/api/Timeline/ProgenyYearAgo/" + progenyId + "/" + accessLevel;
-            HttpResponseMessage yearAgoResponse = await _httpClient.GetAsync(yearAgoApiPath).ConfigureAwait(false);
+            HttpResponseMessage yearAgoResponse = await _httpClient.GetAsync(yearAgoApiPath);
             if (yearAgoResponse.IsSuccessStatusCode)
             {
-                string yearAgoAsString = await yearAgoResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                string yearAgoAsString = await yearAgoResponse.Content.ReadAsStringAsync();
 
                 yearAgoPosts = JsonConvert.DeserializeObject<List<TimeLineItem>>(yearAgoAsString);
             }

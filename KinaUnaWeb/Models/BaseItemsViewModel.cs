@@ -69,7 +69,10 @@ public class BaseItemsViewModel : BaseViewModel
         {
             foreach (string tagstring in tagsList)
             {
-                tagItems = tagItems + "'" + tagstring + "',";
+                if (!string.IsNullOrEmpty(tagstring))
+                {
+                    tagItems = tagItems + "'" + tagstring + "',";
+                }
             }
 
             tagItems = tagItems.Remove(tagItems.Length - 1);
@@ -83,9 +86,12 @@ public class BaseItemsViewModel : BaseViewModel
     public void SetTags(List<string> tagsList)
     {
         string tags = "";
-        foreach (string tstr in tagsList)
+        foreach (string tagstring in tagsList)
         {
-            tags = tags + tstr + ",";
+            if (!string.IsNullOrEmpty(tagstring))
+            {
+                tags = tags + tagstring + ",";
+            }
         }
 
         Tags = tags.TrimEnd(',');

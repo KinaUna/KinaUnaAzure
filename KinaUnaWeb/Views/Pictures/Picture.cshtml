@@ -270,9 +270,9 @@
                     <input id="tagList" type="text" asp-for="Tags" value="@Model.Tags" placeholder="Add tag..." class="form-control" />
                 </div>
                 <script>
-                    $('input[name="Tags"').amsifySuggestags({
+                    $('input[id="tagList"').amsifySuggestags({
                         suggestions: @Html.Raw(Model.TagsList)
-                    });
+                                });
                 </script>
             </div>
             <div class="form-group">

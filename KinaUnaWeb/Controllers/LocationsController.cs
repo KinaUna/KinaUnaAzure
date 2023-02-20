@@ -62,13 +62,8 @@ namespace KinaUnaWeb.Controllers
                     }
                 }
             }
-
-            string tags = "";
-            foreach (string tstr in tagsList)
-            {
-                tags = tags + tstr + ",";
-            }
-            model.Tags = tags.TrimEnd(',');
+            
+            model.SetTags(tagsList);
             
             if (sortBy == 1)
             {
@@ -152,6 +147,8 @@ namespace KinaUnaWeb.Controllers
                 }
             }
             
+            model.SetTagList(tagsList);
+            model.SetTags(tagsList);
             model.TagFilter = tagFilter;
 
             return View(model);
@@ -196,14 +193,15 @@ namespace KinaUnaWeb.Controllers
                     }
                 }
             }
-
+            
             model.SetTagList(tagsList);
-            model.Latitude = 30.94625288456589;
-            model.Longitude = -54.10861860580418;
-            model.Date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            model.LocationItem.Latitude = 30.94625288456589;
+            model.LocationItem.Longitude = -54.10861860580418;
+            model.LocationItem.Date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
             model.SetAccessLevelList();
-
+            model.SetProgenyList();
             return View(model);
         }
 
@@ -211,7 +209,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddLocation(LocationViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.LocationItem.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -283,7 +281,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditLocation(LocationViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.LocationItem.ProgenyId);
             model.SetBaseProperties(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -304,7 +302,7 @@ namespace KinaUnaWeb.Controllers
             Location location = await _locationsHttpClient.GetLocation(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
             LocationViewModel model = new LocationViewModel(baseModel);
-            model.Location = location;
+            model.LocationItem = location;
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
@@ -318,7 +316,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteLocation(LocationViewModel model)
         {
-            Location location = await _locationsHttpClient.GetLocation(model.Location.LocationId);
+            Location location = await _locationsHttpClient.GetLocation(model.LocationItem.LocationId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
             model.SetBaseProperties(baseModel);
 

@@ -7,23 +7,11 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class CalendarItemViewModel: BaseItemsViewModel
     {
-        public int EventId { get; set; }
-        public string Title { get; set; }
-        public string Notes { get; set; }
-        public DateTime? StartTime { get; set; }
-        public DateTime? EndTime { get; set; }
-        public string Location { get; set; }
-        public string Context { get; set; }
-        public bool AllDay { get; set; }
-        public int AccessLevel { get; set; }
-        public string Author { get; set; }
         public List<SelectListItem> ProgenyList { get; set; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
-        public string StartString { get; set; }
-        public string EndString { get; set; }
-        public CalendarItem CalendarItem { get; set; }
+        public CalendarItem CalendarItem { get; set; } = new CalendarItem();
 
         public CalendarItemViewModel()
         {
@@ -39,32 +27,51 @@ namespace KinaUnaWeb.Models.ItemViewModels
         
         public void SetCalendarItem(CalendarItem eventItem)
         {
-            EventId = eventItem.EventId;
-            Title = eventItem.Title;
-            AllDay = eventItem.AllDay;
+            CalendarItem.EventId = eventItem.EventId;
+            CalendarItem.ProgenyId = eventItem.ProgenyId;
+            CalendarItem.Title = eventItem.Title;
+            CalendarItem.AllDay = eventItem.AllDay;
             if (eventItem.StartTime.HasValue && eventItem.EndTime.HasValue)
             {
-                StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
-                EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+                CalendarItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+                CalendarItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
             }
-            Notes = eventItem.Notes;
-            Location = eventItem.Location;
-            Context = eventItem.Context;
-            AccessLevel = eventItem.AccessLevel;
-            
+
+            CalendarItem.Notes = eventItem.Notes;
+            CalendarItem.Location = eventItem.Location;
+            CalendarItem.Context = eventItem.Context;
+            CalendarItem.AccessLevel = eventItem.AccessLevel;
+            CalendarItem.Author = eventItem.Author;
+
             SetAccessLevelList();
+        }
+
+        public void SetProgenyList()
+        {
+            CalendarItem.ProgenyId = CurrentProgenyId;
+            foreach (SelectListItem item in ProgenyList)
+            {
+                if (item.Value == CurrentProgenyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
         }
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accList = new AccessLevelList();
-            AccessLevelListEn = accList.AccessLevelListEn;
-            AccessLevelListDa = accList.AccessLevelListDa;
-            AccessLevelListDe = accList.AccessLevelListDe;
+            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelListEn = accessLevelList.AccessLevelListEn;
+            AccessLevelListDa = accessLevelList.AccessLevelListDa;
+            AccessLevelListDe = accessLevelList.AccessLevelListDe;
 
-            AccessLevelListEn[AccessLevel].Selected = true;
-            AccessLevelListDa[AccessLevel].Selected = true;
-            AccessLevelListDe[AccessLevel].Selected = true;
+            AccessLevelListEn[CalendarItem.AccessLevel].Selected = true;
+            AccessLevelListDa[CalendarItem.AccessLevel].Selected = true;
+            AccessLevelListDe[CalendarItem.AccessLevel].Selected = true;
 
             if (LanguageId == 2)
             {
@@ -80,23 +87,23 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public CalendarItem CreateCalendarItem()
         {
             CalendarItem eventItem = new CalendarItem();
-            eventItem.EventId = EventId;
-            eventItem.ProgenyId = CurrentProgenyId;
-            eventItem.Title = Title;
-            eventItem.Notes = Notes;
-            if (StartTime != null && EndTime != null)
+            eventItem.EventId = CalendarItem.EventId;
+            eventItem.ProgenyId = CalendarItem.ProgenyId;
+            eventItem.Title = CalendarItem.Title;
+            eventItem.Notes = CalendarItem.Notes;
+            if (CalendarItem.StartTime != null && CalendarItem.EndTime != null)
             {
-                eventItem.StartTime = TimeZoneInfo.ConvertTimeToUtc(StartTime.Value,
+                eventItem.StartTime = TimeZoneInfo.ConvertTimeToUtc(CalendarItem.StartTime.Value,
                     TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
-                eventItem.EndTime = TimeZoneInfo.ConvertTimeToUtc(EndTime.Value,
+                eventItem.EndTime = TimeZoneInfo.ConvertTimeToUtc(CalendarItem.EndTime.Value,
                     TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
             }
             
-            eventItem.Location = Location;
-            eventItem.Context = Context;
-            eventItem.AllDay = AllDay;
-            eventItem.AccessLevel = AccessLevel;
-            eventItem.Author = CurrentUser.UserId;
+            eventItem.Location = CalendarItem.Location;
+            eventItem.Context = CalendarItem.Context;
+            eventItem.AllDay = CalendarItem.AllDay;
+            eventItem.AccessLevel = CalendarItem.AccessLevel;
+            eventItem.Author = CalendarItem.Author;
 
             return eventItem;
         }

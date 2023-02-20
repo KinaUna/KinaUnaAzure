@@ -191,7 +191,7 @@ else
                 maptypes.normal.map,
                 {
                     zoom: 3,
-                    center: { lng: @Model.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.'), lat: @Model.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')},
+                    center: { lng: @Model.LocationItem.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.'), lat: @Model.LocationItem.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')},
                     pixelRatio: pixelRatio
                 });
             @*map.addObject(new H.map.Marker({ lng: @Model.Longtitude, lat: @Model.Latitude}));*@

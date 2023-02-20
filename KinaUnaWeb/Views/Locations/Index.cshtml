@@ -108,7 +108,7 @@ else
                 maptypes.normal.map,
                 {
                     zoom: 3,
-                    center: { lng: @Model.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.'), lat: @Model.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') },
+                    center: { lng: @Model.LocationItem.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.'), lat: @Model.LocationItem.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') },
                     pixelRatio: pixelRatio
                 });
             @*map.addObject(new H.map.Marker({ lng: @Model.Longtitude, lat: @Model.Latitude}));*@
@@ -158,8 +158,8 @@ else
         @foreach (Location locationModel in Model.LocationsList)
         {
             string locId = "loc" + locationModel.LocationId;
-            <div id="@locId" class="card text-white bg-light" align="left" style="margin: 15px; margin-bottom: 25px; padding: 1px; float: left; min-width: 49%;">
-                <div class="card-text card-header-success rounded" style="padding-left: 15px; padding-right: 5px;">
+            <div id="@locId" class="card text-black bg-light" align="left" style="margin: 15px; margin-bottom: 25px; padding: 1px; float: left; min-width: 49%;">
+                <div class="card-header bg-primary rounded" style="padding-left: 25px; padding-right: 5px;">
                     @if (Model.IsCurrentUserProgenyAdmin)
                     {
                         <div style="float: right;">
@@ -172,7 +172,7 @@ else
                             </a>
                         </div>
                     }
-                    <h4 class="title text-white">@locationModel.Name</h4>
+                    <h4 class="card-title">@locationModel.Name</h4>
                 </div>
                 <div class="card-body">
                     <div class="card-text">
@@ -212,7 +212,7 @@ else
                         </div>
                     </div>
                 </div>
-                <div class="card-subtitle card-footer " style="margin: 0; padding: 0;">
+                <div class="card-footer " style="margin: 0; padding: 10px;">
                     <div class="container card-category text-primary" style="margin-top: 0;">
                         @{
                             if (!string.IsNullOrEmpty(locationModel.Tags))
@@ -230,17 +230,21 @@ else
 
             </div>
         }
-        <div>
-            @{
-                if (!string.IsNullOrEmpty(Model.Tags))
-                {
-                    string[] tagsList = Model.Tags.Split(',');
-                    foreach (string tagString in tagsList)
-                    {
-                        <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    @{
+                        if (!string.IsNullOrEmpty(Model.Tags))
+                        {
+                            string[] tagsList = Model.Tags.Split(',');
+                            foreach (string tagString in tagsList)
+                            {
+                                <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                            }
+                        }
                     }
-                }
-            }
+                </div>
+            </div>
         </div>
     </div>
 }

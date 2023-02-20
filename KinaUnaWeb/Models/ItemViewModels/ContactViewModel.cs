@@ -8,41 +8,15 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class ContactViewModel: BaseItemsViewModel
     {
-        public int ContactId { get; set; }
-
-        public bool Active { get; set; }
-        public string FirstName { get; set; }
-        public string MiddleName { get; set; }
-        public string LastName { get; set; }
-        public string DisplayName { get; set; }
-        public int? AddressIdNumber { get; set; }
-        public string Email1 { get; set; }
-        public string Email2 { get; set; }
-        public string PhoneNumber { get; set; }
-        public string MobileNumber { get; set; }
-        public string Notes { get; set; }
-        public string PictureLink { get; set; }
-        public string Website { get; set; }
-        public string Context { get; set; }
-        public string Author { get; set; }
         public List<SelectListItem> ProgenyList { get; set; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
-        
-        public Address Address { get; set; }
-        public string AddressLine1 { get; set; }
-        public string AddressLine2 { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string PostalCode { get; set; }
-        public string Country { get; set; }
         public string FileName { get; set; }
         public IFormFile File { get; set; }
         public string TagFilter { get; set; }
-        public DateTime? DateAdded { get; set; }
-        
-        public Contact Contact { get; set; }
+        public Address AddressItem { get; set; } = new Address();
+        public Contact ContactItem { get; set; } = new Contact();
         
         public ContactViewModel()
         {
@@ -65,16 +39,32 @@ namespace KinaUnaWeb.Models.ItemViewModels
             ProgenyList = new List<SelectListItem>();
         }
 
+        public void SetProgenyList()
+        {
+            ContactItem.ProgenyId = CurrentProgenyId;
+            foreach (SelectListItem item in ProgenyList)
+            {
+                if (item.Value == CurrentProgenyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
+        }
+
         public void SetAccessLevelList()
         {
-            AccessLevelList accList = new AccessLevelList();
-            AccessLevelListEn = accList.AccessLevelListEn;
-            AccessLevelListDa = accList.AccessLevelListDa;
-            AccessLevelListDe = accList.AccessLevelListDe;
+            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelListEn = accessLevelList.AccessLevelListEn;
+            AccessLevelListDa = accessLevelList.AccessLevelListDa;
+            AccessLevelListDe = accessLevelList.AccessLevelListDe;
 
-            AccessLevelListEn[CurrentAccessLevel].Selected = true;
-            AccessLevelListDa[CurrentAccessLevel].Selected = true;
-            AccessLevelListDe[CurrentAccessLevel].Selected = true;
+            AccessLevelListEn[ContactItem.AccessLevel].Selected = true;
+            AccessLevelListDa[ContactItem.AccessLevel].Selected = true;
+            AccessLevelListDe[ContactItem.AccessLevel].Selected = true;
 
             if (LanguageId == 2)
             {
@@ -89,86 +79,86 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetPropertiesFromContact(Contact contact, bool isAdmin)
         {
-            CurrentProgenyId = contact.ProgenyId;
-            CurrentAccessLevel = contact.AccessLevel;
-            FirstName = contact.FirstName;
-            MiddleName = contact.MiddleName;
-            LastName = contact.LastName;
-            DisplayName = contact.DisplayName;
-            AddressIdNumber = contact.AddressIdNumber;
-            Email1 = contact.Email1;
-            Email2 = contact.Email2;
-            PhoneNumber = contact.PhoneNumber;
-            MobileNumber = contact.MobileNumber;
-            Notes = contact.Notes;
-            PictureLink = contact.PictureLink;
-            Active = contact.Active;
-            ContactId = contact.ContactId;
-            Context = contact.Context;
-            Website = contact.Website;
-            Tags = contact.Tags;
-            Author = contact.Author;
+            ContactItem.ProgenyId = contact.ProgenyId;
+            ContactItem.AccessLevel = contact.AccessLevel;
+            ContactItem.FirstName = contact.FirstName;
+            ContactItem.MiddleName = contact.MiddleName;
+            ContactItem.LastName = contact.LastName;
+            ContactItem.DisplayName = contact.DisplayName;
+            ContactItem.AddressIdNumber = contact.AddressIdNumber;
+            ContactItem.Email1 = contact.Email1;
+            ContactItem.Email2 = contact.Email2;
+            ContactItem.PhoneNumber = contact.PhoneNumber;
+            ContactItem.MobileNumber = contact.MobileNumber;
+            ContactItem.Notes = contact.Notes;
+            ContactItem.PictureLink = contact.PictureLink;
+            ContactItem.Active = contact.Active;
+            ContactItem.ContactId = contact.ContactId;
+            ContactItem.Context = contact.Context;
+            ContactItem.Website = contact.Website;
+            ContactItem.Tags = Tags = contact.Tags;
+            ContactItem.Author = contact.Author;
             IsCurrentUserProgenyAdmin = isAdmin;
 
             DateTime tempTime = contact.DateAdded ?? DateTime.UtcNow;
-            DateAdded = TimeZoneInfo.ConvertTimeFromUtc(tempTime, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+            ContactItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(tempTime, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
 
             if (contact.Address != null)
             {
-                AddressIdNumber = contact.AddressIdNumber;
-                AddressLine1 = contact.Address.AddressLine1;
-                AddressLine2 = contact.Address.AddressLine2;
-                City = contact.Address.City;
-                State = contact.Address.State;
-                PostalCode = contact.Address.PostalCode;
-                Country = contact.Address.Country;
+                ContactItem.AddressIdNumber = contact.AddressIdNumber;
+                AddressItem.AddressLine1 = contact.Address.AddressLine1;
+                AddressItem.AddressLine2 = contact.Address.AddressLine2;
+                AddressItem.City = contact.Address.City;
+                AddressItem.State = contact.Address.State;
+                AddressItem.PostalCode = contact.Address.PostalCode;
+                AddressItem.Country = contact.Address.Country;
             }
         }
 
         public Contact CreateContact()
         {
             Contact contactItem = new Contact();
-            contactItem.ContactId = ContactId;
-            contactItem.FirstName = FirstName;
-            contactItem.MiddleName = MiddleName;
-            contactItem.LastName = LastName;
-            contactItem.DisplayName = DisplayName;
-            contactItem.Email1 = Email1;
-            contactItem.Email2 = Email2;
-            contactItem.PhoneNumber = PhoneNumber;
-            contactItem.MobileNumber = MobileNumber;
-            contactItem.Notes = Notes;
-            contactItem.Website = Website;
+            contactItem.ContactId = ContactItem.ContactId;
+            contactItem.FirstName = ContactItem.FirstName;
+            contactItem.MiddleName = ContactItem.MiddleName;
+            contactItem.LastName = ContactItem.LastName;
+            contactItem.DisplayName = ContactItem.DisplayName;
+            contactItem.Email1 = ContactItem.Email1;
+            contactItem.Email2 = ContactItem.Email2;
+            contactItem.PhoneNumber = ContactItem.PhoneNumber;
+            contactItem.MobileNumber = ContactItem.MobileNumber;
+            contactItem.Notes = ContactItem.Notes;
+            contactItem.Website = ContactItem.Website;
             contactItem.Active = true;
-            contactItem.Context = Context;
-            contactItem.AccessLevel = CurrentAccessLevel;
+            contactItem.Context = ContactItem.Context;
+            contactItem.AccessLevel = ContactItem.AccessLevel;
             contactItem.Author = CurrentUser.UserId;
-            contactItem.ProgenyId = CurrentProgenyId;
-            contactItem.PictureLink = PictureLink;
+            contactItem.ProgenyId = ContactItem.ProgenyId;
+            contactItem.PictureLink = ContactItem.PictureLink;
 
-            if (DateAdded == null)
+            if (ContactItem.DateAdded == null)
             {
                 contactItem.DateAdded = DateTime.UtcNow;
             }
             else
             {
-                contactItem.DateAdded = TimeZoneInfo.ConvertTimeToUtc(DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+                contactItem.DateAdded = TimeZoneInfo.ConvertTimeToUtc(ContactItem.DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
             }
             
-            if (!string.IsNullOrEmpty(Tags))
+            if (!string.IsNullOrEmpty(ContactItem.Tags))
             {
-                contactItem.Tags = Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
+                contactItem.Tags = ContactItem.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
             }
 
-            if (AddressLine1 + AddressLine2 + City + Country + PostalCode + State != "")
+            if (AddressItem.AddressLine1 + AddressItem.AddressLine2 + AddressItem.City + AddressItem.Country + AddressItem.PostalCode + AddressItem.State != "")
             {
                 Address address = new Address();
-                address.AddressLine1 = AddressLine1;
-                address.AddressLine2 = AddressLine2;
-                address.City = City;
-                address.PostalCode = PostalCode;
-                address.State = State;
-                address.Country = Country;
+                address.AddressLine1 = AddressItem.AddressLine1;
+                address.AddressLine2 = AddressItem.AddressLine2;
+                address.City = AddressItem.City;
+                address.PostalCode = AddressItem.PostalCode;
+                address.State = AddressItem.State;
+                address.Country = AddressItem.Country;
                 contactItem.Address = address;
             }
 

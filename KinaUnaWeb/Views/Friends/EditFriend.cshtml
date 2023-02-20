@@ -14,18 +14,18 @@
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
 
-<h2>@ViewData["Title"] - @Model.Name</h2>
+<h2>@ViewData["Title"] - @Model.FriendItem.Name</h2>
 <form asp-action="EditFriend" role="form" method="post" enctype="multipart/form-data">
     <div class="form-group">
-        <label asp-for="Name" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Name", PageNames.Friends, Model.LanguageId)</label>
+        <label asp-for="FriendItem.Name" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Name", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <input asp-for="Name" class="form-control" value="@Model.Name" />
+            <input asp-for="FriendItem.Name" class="form-control" value="@Model.FriendItem.Name" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Description" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Description", PageNames.Friends, Model.LanguageId)</label>
+        <label asp-for="FriendItem.Description" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Description", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <textarea asp-for="Description" class="form-control" rows="4" value="@Model.Description"></textarea>
+            <textarea asp-for="FriendItem.Description" class="form-control" rows="4" value="@Model.FriendItem.Description"></textarea>
         </div>
     </div>
     <div class="form-group">
@@ -33,7 +33,7 @@
         <div class="col-lg-9">
             <div class="fileinput fileinput-new text-center" data-provides="fileinput">
                 <div class="fileinput-new thumbnail img-raised">
-                    <img src="@Model.PictureLink" alt="...">
+                    <img src="@Model.FriendItem.PictureLink" alt="...">
                 </div>
                 <div class="fileinput-preview fileinput-exists thumbnail img-raised"></div>
                 <div>
@@ -51,16 +51,16 @@
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="FriendSince" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Friends since", PageNames.Friends, Model.LanguageId)</label>
+        <label asp-for="FriendItem.FriendSince" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Friends since", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             @{ DateTime fs = new DateTime(); }
-            @if (Model.FriendSince.HasValue)
+            @if (Model.FriendItem.FriendSince.HasValue)
             {
-                fs = Model.FriendSince.Value;
+                fs = Model.FriendItem.FriendSince.Value;
             }
             <div class="input-group date">
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy" type="text"
-                       class="form-control" data-zdp_readonly_element="false" asp-for="FriendSince" value="@fs.ToString("dd-MMM-yyyy")" />
+                       class="form-control" data-zdp_readonly_element="false" asp-for="FriendItem.FriendSince" value="@fs.ToString("dd-MMM-yyyy")" />
             </div>
         </div>
     </div>
@@ -73,45 +73,45 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="Type" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Type of friend", PageNames.Friends, Model.LanguageId)</label>
+        <label asp-for="FriendItem.Type" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Type of friend", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FriendTypeListEn.Count" asp-for="Type" asp-items="@Model.FriendTypeListEn"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FriendTypeListEn.Count" asp-for="FriendItem.Type" asp-items="@Model.FriendTypeListEn"></select>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Context" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Context", PageNames.Friends, Model.LanguageId)</label>
+        <label asp-for="FriendItem.Context" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Context", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <input asp-for="Context" class="form-control" value="@Model.Context" />
+            <input asp-for="FriendItem.Context" class="form-control" value="@Model.FriendItem.Context" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Notes" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Friends, Model.LanguageId)</label>
+        <label asp-for="FriendItem.Notes" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <textarea asp-for="Notes" class="form-control" rows="4" value="@Model.Notes"></textarea>
+            <textarea asp-for="FriendItem.Notes" class="form-control" rows="4" value="@Model.FriendItem.Notes"></textarea>
         </div>
     </div>
     <div class="form-group">
         <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Friends, Model.LanguageId)</label>
         <div class="col-lg-9 col-md-9 col-sm-9">
-            <input id="tagList" type="text" asp-for="Tags" value="@Model.Tags" placeholder="Add tag..." class="form-control" />
+            <input id="tagList" type="text" asp-for="FriendItem.Tags" value="@Model.FriendItem.Tags" placeholder="Add tag..." class="form-control" />
         </div>
         <script>
-            $('input[name="Tags"').amsifySuggestags({
+            $('input[id="tagList"').amsifySuggestags({
                 suggestions: @Html.Raw(Model.TagsList)
-            });
+                        });
         </script>
     </div>
     <div class="form-group">
-        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+        <label asp-for="FriendItem.AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="FriendItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
         </div>
     </div>
-    <input asp-for="CurrentProgenyId" value="@Model.CurrentProgenyId" type="hidden" />
-    <input asp-for="FriendAddedDate" value="@Model.FriendAddedDate" type="hidden" />
-    <input asp-for="FriendId" value="@Model.FriendId" type="hidden" />
-    <input asp-for="PictureLink" value="@Model.PictureLink" type="hidden" />
-    <input asp-for="Author" value="@Model.Author" type="hidden" />
+    <input asp-for="FriendItem.ProgenyId" value="@Model.FriendItem.ProgenyId" type="hidden" />
+    <input asp-for="FriendItem.FriendAddedDate" value="@Model.FriendItem.FriendAddedDate" type="hidden" />
+    <input asp-for="FriendItem.FriendId" value="@Model.FriendItem.FriendId" type="hidden" />
+    <input asp-for="FriendItem.PictureLink" value="@Model.FriendItem.PictureLink" type="hidden" />
+    <input asp-for="FriendItem.Author" value="@Model.FriendItem.Author" type="hidden" />
     <div>
         <div class="form-group">
             <div class="col-lg-3 col-sm-3 control-label"></div>

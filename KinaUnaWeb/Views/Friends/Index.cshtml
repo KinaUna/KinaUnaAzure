@@ -158,20 +158,20 @@ else
             <div class="card-deck" style="clear: both;">
                 @foreach (FriendViewModel friendViewModel in Model.FriendViewModelsList)
                 {
-                    string chkClass = "friendClass" + friendViewModel.Type.ToString();
-                    <a class="@chkClass leavePage" style="margin-bottom: 15px;" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@friendViewModel.FriendId">
+                    string chkClass = "friendClass" + friendViewModel.FriendItem.Type.ToString();
+                    <a class="@chkClass leavePage" style="margin-bottom: 15px;" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@friendViewModel.FriendItem.FriendId">
                         <div class="card text-white bg-primary" style="padding: 3px; float: left; clear: right; text-align: center; height: 100%; width: 305px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
-                            <div class="card-header card-header-rose card-title h4">@friendViewModel.Name</div>
+                            <div class="card-header card-header-rose card-title h4">@friendViewModel.FriendItem.Name</div>
                             <div style="height: 305px;">
-                                <img class="img-thumbnail mx-auto d-block" style="max-height: 300px; max-width: 280px; background: black; margin-bottom: 10px;" src="@friendViewModel.PictureLink"/>
+                                <img class="img-thumbnail mx-auto d-block" style="max-height: 300px; max-width: 280px; background: black; margin-bottom: 10px;" src="@friendViewModel.FriendItem.PictureLink" />
                             </div>
                             <div class="card-body">
                                 <div align="left">
                                     <strong>@await LocaleManager.GetTranslation("Friends since:", PageNames.Friends, Model.LanguageId) </strong>
                                     <span align="left">
-                                        @if (friendViewModel.FriendSince != null)
+                                        @if (friendViewModel.FriendItem.FriendSince != null)
                                         {
-                                            @friendViewModel.FriendSince.Value.ToString("dd-MMM-yyyy")
+                                            @friendViewModel.FriendItem.FriendSince.Value.ToString("dd-MMM-yyyy")
                                         }
                                         else
                                         {
@@ -180,10 +180,10 @@ else
                                     </span>
                                 </div>
                                 <div align="left">
-                                    <strong>@await LocaleManager.GetTranslation("Type:", PageNames.Friends, Model.LanguageId)</strong> @typeList[friendViewModel.Type]
+                                    <strong>@await LocaleManager.GetTranslation("Type:", PageNames.Friends, Model.LanguageId)</strong> @typeList[friendViewModel.FriendItem.Type]
                                 </div>
                                 <div align="left">
-                                    <strong>@await LocaleManager.GetTranslation("Context:", PageNames.Friends, Model.LanguageId)</strong> @friendViewModel.Context
+                                    <strong>@await LocaleManager.GetTranslation("Context:", PageNames.Friends, Model.LanguageId)</strong> @friendViewModel.FriendItem.Context
                                 </div>
                             </div>
                         </div>

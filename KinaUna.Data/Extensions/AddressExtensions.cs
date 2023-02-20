@@ -28,6 +28,11 @@ namespace KinaUna.Data.Extensions
 
         public static bool HasValues(this Address currentAddress)
         {
+            if (currentAddress == null)
+            {
+                return false;
+            }
+
             if (currentAddress.AddressLine1 + currentAddress.AddressLine2 + currentAddress.City + currentAddress.Country + currentAddress.PostalCode + currentAddress.State != "")
             {
                 return true;

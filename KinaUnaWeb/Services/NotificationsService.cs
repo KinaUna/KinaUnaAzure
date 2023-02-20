@@ -165,5 +165,35 @@ namespace KinaUnaWeb.Services
                 }
             }
         }
+
+        public async Task SendMeasurementNotification(Measurement measurementItem, UserInfo currentUser)
+        {
+            List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(measurementItem.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(measurementItem.ProgenyId);
+            foreach (UserAccess userAccess in usersToNotif)
+            {
+                if (userAccess.AccessLevel <= measurementItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = currentUser.FullName();
+                        notification.Message = "Height: " + measurementItem.Height + "\r\nWeight: " + measurementItem.Weight;
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = currentUser.ProfilePicture;
+                        notification.Title = "A new measurement was added for " + progeny.NickName;
+                        notification.Link = "/Measurements?childId=" + progeny.Id;
+                        notification.Type = "Notification";
+
+                        notification = await _webNotificationsService.SaveNotification(notification);
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunameasurement" + progeny.Id);
+                    }
+                }
+            }
+        }
     }
 }

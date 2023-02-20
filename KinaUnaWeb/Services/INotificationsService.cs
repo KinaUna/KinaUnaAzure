@@ -9,4 +9,5 @@ public interface INotificationsService
     Task SendContactNotification(Contact contactItem, UserInfo currentUser);
     Task SendFriendNotification(Friend friendItem, UserInfo currentUser);
     Task SendLocationNotification(Location locationItem, UserInfo currentUser);
+    Task SendMeasurementNotification(Measurement measurementItem, UserInfo currentUser);
 }

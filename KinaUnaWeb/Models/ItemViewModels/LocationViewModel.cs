@@ -7,23 +7,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class LocationViewModel: BaseItemsViewModel
     {
-        public int LocationId { get; set; }
-        public string Name { get; set; }
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
-        public string StreetName { get; set; }
-        public string HouseNumber { get; set; }
-        public string City { get; set; }
-        public string District { get; set; }
-        public string County { get; set; }
-        public string State { get; set; }
-        public string Country { get; set; }
-        public string PostalCode { get; set; }
-        public string Notes { get; set; }
-        public DateTime? Date { get; set; }
-        public DateTime? DateAdded { get; set; }
-        public string Author { get; set; }
-
         public List<Location> LocationsList { get; set; }
         public List<SelectListItem> ProgenyList { get; set; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
@@ -33,16 +16,16 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string TagFilter { get; set; }
         public int? SortBy { get; set; }
 
-        public Location Location { get; set; }
+        public Location LocationItem { get; set; } = new Location();
 
         public LocationViewModel()
         {
             LocationsList = new List<Location>();
             ProgenyList = new List<SelectListItem>();
-            AccessLevelList aclList = new AccessLevelList();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
+            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelListEn = accessLevelList.AccessLevelListEn;
+            AccessLevelListDa = accessLevelList.AccessLevelListDa;
+            AccessLevelListDe = accessLevelList.AccessLevelListDe;
         }
 
         public LocationViewModel(BaseItemsViewModel baseItemsViewModel)
@@ -59,9 +42,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
             AccessLevelListDa = accList.AccessLevelListDa;
             AccessLevelListDe = accList.AccessLevelListDe;
 
-            AccessLevelListEn[CurrentAccessLevel].Selected = true;
-            AccessLevelListDa[CurrentAccessLevel].Selected = true;
-            AccessLevelListDe[CurrentAccessLevel].Selected = true;
+            AccessLevelListEn[LocationItem.AccessLevel].Selected = true;
+            AccessLevelListDa[LocationItem.AccessLevel].Selected = true;
+            AccessLevelListDe[LocationItem.AccessLevel].Selected = true;
 
             if (LanguageId == 2)
             {
@@ -74,61 +57,78 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
         }
 
+        public void SetProgenyList()
+        {
+            LocationItem.ProgenyId = CurrentProgenyId;
+            foreach (SelectListItem item in ProgenyList)
+            {
+                if (item.Value == CurrentProgenyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
+        }
+
         public void SetPropertiesFromLocation(Location location, bool isAdmin, string timeZone)
         {
-            LocationId = location.LocationId;
-            Latitude = location.Latitude;
-            Longitude = location.Longitude;
-            Name = location.Name;
-            HouseNumber = location.HouseNumber;
-            StreetName = location.StreetName;
-            District = location.District;
-            City = location.City;
-            PostalCode = location.PostalCode;
-            County = location.County;
-            State = location.State;
-            Country = location.Country;
-            Notes = location.Notes;
+            LocationItem.LocationId = location.LocationId;
+            LocationItem.Latitude = location.Latitude;
+            LocationItem.Longitude = location.Longitude;
+            LocationItem.Name = location.Name;
+            LocationItem.HouseNumber = location.HouseNumber;
+            LocationItem.StreetName = location.StreetName;
+            LocationItem.District = location.District;
+            LocationItem.City = location.City;
+            LocationItem.PostalCode = location.PostalCode;
+            LocationItem.County = location.County;
+            LocationItem.State = location.State;
+            LocationItem.Country = location.Country;
+            LocationItem.Notes = location.Notes;
             if (location.Date.HasValue)
             {
-                Date = TimeZoneInfo.ConvertTimeFromUtc(location.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                LocationItem.Date = TimeZoneInfo.ConvertTimeFromUtc(location.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
             }
 
-            Tags = location.Tags;
-            CurrentProgenyId = location.ProgenyId;
-            DateAdded = location.DateAdded;
-            Author = location.Author;
+            LocationItem.Tags = location.Tags;
+            LocationItem.ProgenyId = location.ProgenyId;
+            LocationItem.DateAdded = location.DateAdded;
+            LocationItem.Author = location.Author;
         }
 
         public Location CreateLocation()
         {
             Location location = new Location();
-            location.Latitude = Latitude;
-            location.Longitude = Longitude;
-            location.Name = Name;
-            location.HouseNumber = HouseNumber;
-            location.StreetName = StreetName;
-            location.District = District;
-            location.City = City;
-            location.PostalCode = PostalCode;
-            location.County = County;
-            location.State = State;
-            location.Country = Country;
-            location.Notes = Notes;
-            if (Date.HasValue)
+            location.LocationId = LocationItem.LocationId;
+            location.Latitude = LocationItem.Latitude;
+            location.Longitude = LocationItem.Longitude;
+            location.Name = LocationItem.Name;
+            location.HouseNumber = LocationItem.HouseNumber;
+            location.StreetName = LocationItem.StreetName;
+            location.District = LocationItem.District;
+            location.City = LocationItem.City;
+            location.PostalCode = LocationItem.PostalCode;
+            location.County = LocationItem.County;
+            location.State = LocationItem.State;
+            location.Country = LocationItem.Country;
+            location.Notes = LocationItem.Notes;
+            if (LocationItem.Date.HasValue)
             {
-                location.Date = TimeZoneInfo.ConvertTimeToUtc(Date.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentProgeny.TimeZone));
+                location.Date = TimeZoneInfo.ConvertTimeToUtc(LocationItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
             }
 
-            if (!string.IsNullOrEmpty(Tags))
+            if (!string.IsNullOrEmpty(LocationItem.Tags))
             {
-                location.Tags = Tags.Trim().TrimEnd(',', ' ').TrimStart(',', ' ');
+                location.Tags = LocationItem.Tags.Trim().TrimEnd(',', ' ').TrimStart(',', ' ');
             }
 
-            location.ProgenyId = CurrentProgenyId;
-            location.DateAdded = DateTime.UtcNow;
-            location.Author = CurrentUser.UserId;
-            location.AccessLevel = CurrentAccessLevel;
+            location.ProgenyId = LocationItem.ProgenyId;
+            location.DateAdded = LocationItem.DateAdded;
+            location.Author = location.Author;
+            location.AccessLevel = LocationItem.AccessLevel;
 
             return location;
         }

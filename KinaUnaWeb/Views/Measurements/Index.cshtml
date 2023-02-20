@@ -3,7 +3,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.MeasurementViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.Progeny.NickName  + " - " + await LocaleManager.GetTranslation("Measurements", PageNames.Measurements, Model.LanguageId);
+    ViewData["Title"] = Model.MeasurementItem.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Measurements", PageNames.Measurements, Model.LanguageId);
     string heightString = await LocaleManager.GetTranslation("Height", PageNames.Measurements, Model.LanguageId);
     string weightString = await LocaleManager.GetTranslation("Weight", PageNames.Measurements, Model.LanguageId);
 }
@@ -23,7 +23,7 @@
 }
 else
 {
-    if (Model.IsAdmin)
+    if (Model.IsCurrentUserProgenyAdmin)
     {
         <div class="btn-group" style="float: right;">
             <a asp-controller="Measurements" asp-action="AddMeasurement" class="btn btn-success btn-round leavePage">
@@ -42,7 +42,7 @@ else
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Head size", PageNames.Measurements, Model.LanguageId)</th>
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Eye color", PageNames.Measurements, Model.LanguageId)</th>
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Hair color", PageNames.Measurements, Model.LanguageId)</th>
-                    @if (Model.IsAdmin)
+                    @if (Model.IsCurrentUserProgenyAdmin)
                     {
                         <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Measurements, Model.LanguageId)</th>
                     }
@@ -58,7 +58,7 @@ else
                         <td>@measurementItem.Circumference</td>
                         <td>@measurementItem.EyeColor</td>
                         <td>@measurementItem.HairColor</td>
-                        @if (Model.IsAdmin)
+                        @if (Model.IsCurrentUserProgenyAdmin)
                         {
                             <td>
                                 <div>
