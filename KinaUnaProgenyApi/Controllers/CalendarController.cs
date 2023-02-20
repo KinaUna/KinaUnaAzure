@@ -114,7 +114,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-            
+
+            value.Author = User.GetUserId();
+
             CalendarItem calendarItem = await _calendarService.AddCalendarItem(value);
 
             UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);

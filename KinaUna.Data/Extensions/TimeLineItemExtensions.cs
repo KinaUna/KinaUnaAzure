@@ -163,5 +163,22 @@ namespace KinaUna.Data.Extensions
                 currentTimeLineItem.ProgenyTime = DateTime.UtcNow;
             }
         }
+
+        public static void CopyMeasurementPropertiesForAdd(this TimeLineItem currentTimeLineItem, Measurement measurement)
+        {
+            currentTimeLineItem.ProgenyId = measurement.ProgenyId;
+            currentTimeLineItem.AccessLevel = measurement.AccessLevel;
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Measurement;
+            currentTimeLineItem.ItemId = measurement.MeasurementId.ToString();
+            currentTimeLineItem.CreatedBy = measurement.Author;
+            currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            currentTimeLineItem.ProgenyTime = measurement.Date;
+        }
+
+        public static void CopyMeasurementPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Measurement measurement)
+        {
+            currentTimeLineItem.ProgenyTime = measurement.Date;
+            currentTimeLineItem.AccessLevel = measurement.AccessLevel;
+        }
     }
 }

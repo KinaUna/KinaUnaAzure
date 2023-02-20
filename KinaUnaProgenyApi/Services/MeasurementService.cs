@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -63,11 +64,14 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Measurement> AddMeasurement(Measurement measurement)
         {
-            _ = _context.MeasurementsDb.Add(measurement);
-            _ = await _context.SaveChangesAsync();
-            _ = await SetMeasurementInCache(measurement.MeasurementId);
+            Measurement measurementToAdd = new Measurement();
+            measurementToAdd.CopyPropertiesForAdd(measurement);
 
-            return measurement;
+            _ = _context.MeasurementsDb.Add(measurementToAdd);
+            _ = await _context.SaveChangesAsync();
+            _ = await SetMeasurementInCache(measurementToAdd.MeasurementId);
+
+            return measurementToAdd;
         }
         
 
@@ -76,19 +80,11 @@ namespace KinaUnaProgenyApi.Services
             Measurement measurementToUpdate = await _context.MeasurementsDb.SingleOrDefaultAsync(m => m.MeasurementId == measurement.MeasurementId);
             if (measurementToUpdate != null)
             {
-                measurementToUpdate.AccessLevel = measurement.AccessLevel;
-                measurementToUpdate.Author = measurement.Author;
-                measurementToUpdate.Circumference = measurement.Circumference;
-                measurementToUpdate.CreatedDate = measurement.CreatedDate;
-                measurementToUpdate.Date = measurement.Date;
-                measurementToUpdate.EyeColor = measurement.EyeColor;
-                measurementToUpdate.HairColor = measurement.HairColor;
-                measurementToUpdate.Height = measurement.Height;
-                measurementToUpdate.MeasurementNumber = measurement.MeasurementNumber;
-                measurementToUpdate.Weight = measurement.Weight;
-                measurementToUpdate.Progeny = measurement.Progeny;
+                measurementToUpdate.CopyPropertiesForUpdate(measurement);
+
                 _ = _context.MeasurementsDb.Update(measurementToUpdate);
                 _ = await _context.SaveChangesAsync();
+
                 _ = await SetMeasurementInCache(measurement.MeasurementId);
             }
             

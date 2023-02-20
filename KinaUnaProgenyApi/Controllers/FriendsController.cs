@@ -100,6 +100,8 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
+            value.Author = User.GetUserId();
+
             if (value.PictureLink == Constants.DefaultPictureLink)
             {
                 value.PictureLink = Constants.ProfilePictureUrl;

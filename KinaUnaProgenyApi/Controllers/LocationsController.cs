@@ -97,7 +97,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-            
+
+            value.Author = User.GetUserId();
+
             Location location = await _locationService.AddLocation(value);
             
             TimeLineItem tItem = new TimeLineItem();

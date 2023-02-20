@@ -77,14 +77,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Measurement value)
         {
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to add measurements for this child.
-
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -94,39 +91,21 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            Measurement measurementItem = new Measurement();
-            measurementItem.AccessLevel = value.AccessLevel;
-            measurementItem.Author = value.Author;
-            measurementItem.Date = value.Date;
-            measurementItem.Circumference = value.Circumference;
-            measurementItem.ProgenyId = value.ProgenyId;
-            measurementItem.EyeColor = value.EyeColor;
-            measurementItem.CreatedDate = DateTime.UtcNow;
-            measurementItem.HairColor = value.HairColor;
-            measurementItem.Height = value.Height;
-            measurementItem.Weight = value.Weight;
+            value.Author = User.GetUserId();
 
-            measurementItem = await _measurementService.AddMeasurement(measurementItem);
+            Measurement measurementItem = await _measurementService.AddMeasurement(value);
+
+            TimeLineItem timeLineItem = new TimeLineItem();
+            timeLineItem.CopyMeasurementPropertiesForAdd(measurementItem);
+
             
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = measurementItem.ProgenyId;
-            tItem.AccessLevel = measurementItem.AccessLevel;
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Measurement;
-            tItem.ItemId = measurementItem.MeasurementId.ToString();
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            tItem.CreatedBy = userinfo?.UserId ?? "Unknown";
-            tItem.CreatedTime = DateTime.UtcNow;
-            tItem.ProgenyTime = measurementItem.Date;
+            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+            
+            await _timelineService.AddTimeLineItem(timeLineItem);
 
-            await _timelineService.AddTimeLineItem(tItem);
-
-            string title = "Measurement added for " + prog.NickName;
-            if (userinfo != null)
-            {
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
-                                 " added a new measurement for " + prog.NickName;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
-            }
+            string notificationTitle = "Measurement added for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " added a new measurement for " + progeny.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
 
             return Ok(measurementItem);
         }
@@ -135,13 +114,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Measurement value)
         {
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to edit measurements for this child.
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -156,33 +133,20 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-
-            measurementItem.AccessLevel = value.AccessLevel;
-            measurementItem.Author = value.Author;
-            measurementItem.Date = value.Date;
-            measurementItem.Circumference = value.Circumference;
-            measurementItem.ProgenyId = value.ProgenyId;
-            measurementItem.EyeColor = value.EyeColor;
-            measurementItem.CreatedDate = DateTime.UtcNow;
-            measurementItem.HairColor = value.HairColor;
-            measurementItem.Height = value.Height;
-            measurementItem.Weight = value.Weight;
-
-            measurementItem = await _measurementService.UpdateMeasurement(measurementItem);
             
-
-            TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(measurementItem.MeasurementId.ToString(), (int)KinaUnaTypes.TimeLineType.Measurement);
-            if (tItem != null)
+            measurementItem = await _measurementService.UpdateMeasurement(value);
+            
+            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(measurementItem.MeasurementId.ToString(), (int)KinaUnaTypes.TimeLineType.Measurement);
+            if (timeLineItem != null)
             {
-                tItem.ProgenyTime = measurementItem.Date;
-                tItem.AccessLevel = measurementItem.AccessLevel;
-                _ = await _timelineService.UpdateTimeLineItem(tItem);
+                timeLineItem.CopyMeasurementPropertiesForUpdate(measurementItem);
+                _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
             }
-
+            
             UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            string title = "Measurement edited for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a measurement for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            string notificationTitle = "Measurement edited for " + progeny.NickName;
+            string notificationMessage = userinfo.FullName() + " edited a measurement for " + progeny.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
 
             return Ok(measurementItem);
         }
@@ -194,13 +158,11 @@ namespace KinaUnaProgenyApi.Controllers
             Measurement measurementItem = await _measurementService.GetMeasurement(id);
             if (measurementItem != null)
             {
-                // Check if child exists.
-                Progeny prog = await _progenyService.GetProgeny(measurementItem.ProgenyId);
+                Progeny progeny = await _progenyService.GetProgeny(measurementItem.ProgenyId);
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                if (prog != null)
+                if (progeny != null)
                 {
-                    // Check if user is allowed to delete measurements for this child.
-                    if (!prog.IsInAdminList(userEmail))
+                    if (!progeny.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }
@@ -210,21 +172,21 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(measurementItem.MeasurementId.ToString(), (int)KinaUnaTypes.TimeLineType.Measurement);
-                if (tItem != null)
+                TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(measurementItem.MeasurementId.ToString(), (int)KinaUnaTypes.TimeLineType.Measurement);
+                if (timeLineItem != null)
                 {
-                    _ = await _timelineService.DeleteTimeLineItem(tItem);
+                    _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
                 }
 
                 _ = await _measurementService.DeleteMeasurement(measurementItem);
                 
-                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                string title = "Measurement deleted for " + prog.NickName;
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a measurement for " + prog.NickName + ". Measurement date: " + measurementItem.Date.Date.ToString("dd-MMM-yyyy");
-                if (tItem != null)
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                string notificationTitle = "Measurement deleted for " + progeny.NickName;
+                string notificationMessage = userInfo.FullName() + " deleted a measurement for " + progeny.NickName + ". Measurement date: " + measurementItem.Date.Date.ToString("dd-MMM-yyyy");
+                if (timeLineItem != null)
                 {
-                    tItem.AccessLevel = 0;
-                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                    timeLineItem.AccessLevel = 0;
+                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                 }
 
                 return NoContent();
@@ -260,7 +222,6 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetMeasurementsListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
-            // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
 
