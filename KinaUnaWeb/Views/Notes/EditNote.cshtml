@@ -15,16 +15,16 @@
     <script src="/lib/quilljs/image-resize.min.js"></script>
 }
 
-<h2>@ViewData["Title"] - @Model.Title</h2>
+<h2>@ViewData["Title"] - @Model.NoteItem.Title</h2>
 <form asp-action="EditNote" role="form" method="post">
     <div class="form-group">
-        <label asp-for="Title" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Title", PageNames.Notes, Model.LanguageId)</label>
+        <label asp-for="NoteItem.Title" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Title", PageNames.Notes, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <input asp-for="Title" class="form-control" value="@Model.Title" />
+            <input asp-for="NoteItem.Title" class="form-control" value="@Model.NoteItem.Title" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Content" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Content", PageNames.Notes, Model.LanguageId)</label>
+        <label asp-for="NoteItem.Content" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Content", PageNames.Notes, Model.LanguageId)</label>
         <div class="col-lg-9">
             @{
                 string[] toolbarItems = new[] {"Bold", "Italic", "Underline", "StrikeThrough",
@@ -35,7 +35,7 @@
                     "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
                     "SourceCode", "FullScreen", "|", "Undo", "Redo" };
             }
-            <ejs-richtexteditor id="contentRTE" ejs-for="Content" imageUploadSuccess="onImageUploadSuccess">
+            <ejs-richtexteditor id="contentRTE" ejs-for="NoteItem.Content" imageUploadSuccess="onImageUploadSuccess">
                 <e-richtexteditor-toolbarsettings items="@toolbarItems"></e-richtexteditor-toolbarsettings>
                 <e-richtexteditor-insertimagesettings saveUrl="/AddItem/SaveRtfFile" path=""></e-richtexteditor-insertimagesettings>
                 <e-content-template>
@@ -55,17 +55,17 @@
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Category" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Category", PageNames.Notes, Model.LanguageId)</label>
+        <label asp-for="NoteItem.Category" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Category", PageNames.Notes, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <input asp-for="Category" class="form-control" value="@Model.Category" />
+            <input asp-for="NoteItem.Category" class="form-control" value="@Model.NoteItem.Category" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="CreatedDate" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Date and time", PageNames.Notes, Model.LanguageId)</label>
+        <label asp-for="NoteItem.CreatedDate" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Date and time", PageNames.Notes, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text"
-                       class="form-control" data-zdp_readonly_element="false" asp-for="CreatedDate" value="@Model.CreatedDate.ToString("dd-MMM-yyyy HH:mm")" />
+                       class="form-control" data-zdp_readonly_element="false" asp-for="NoteItem.CreatedDate" value="@Model.NoteItem.CreatedDate.ToString("dd-MMM-yyyy HH:mm")" />
             </div>
         </div>
     </div>
@@ -78,14 +78,14 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+        <label asp-for="NoteItem.AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="NoteItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
         </div>
     </div>
-    <input asp-for="ProgenyId" value="@Model.ProgenyId" type="hidden" />
-    <input asp-for="NoteId" value="@Model.NoteId" type="hidden" />
-    <input asp-for="Owner" value="@Model.Owner" type="hidden" />
+    <input asp-for="NoteItem.ProgenyId" value="@Model.NoteItem.ProgenyId" type="hidden" />
+    <input asp-for="NoteItem.NoteId" value="@Model.NoteItem.NoteId" type="hidden" />
+    <input asp-for="NoteItem.Owner" value="@Model.NoteItem.Owner" type="hidden" />
     <div>
         <div class="form-group">
             <div class="col-lg-3 col-sm-3 control-label"></div>

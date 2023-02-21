@@ -1098,6 +1098,66 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     color: #fff;
 }
 
+.bg-calendar {
+    background: #260333;
+    background: linear-gradient(60deg, #480f5d, #361343);
+}
+
+.bg-contact {
+    background: #150505;
+    background: linear-gradient(60deg, #351515, #150505);
+}
+
+.bg-friend {
+    background: #555555;
+    background: linear-gradient(60deg, #667788, #555868);
+}
+
+.bg-location {
+    background: #507832;
+    background: linear-gradient(60deg, #007bff, #005bee);
+}
+
+.bg-measurement {
+    background: #b43c32;
+    background: linear-gradient(60deg, #b44c4f, #b43c32);
+}
+
+.bg-notes {
+    background: #507832;
+    background: linear-gradient(60deg, #507832, #306822);
+}
+
+.bg-photo {
+    background: #326ebe;
+    background: linear-gradient(60deg, #326ebe, #2d64a9);
+}
+
+.bg-skill {
+    background: #787864;
+    background: linear-gradient(60deg, #787864, #686854);
+}
+
+.bg-sleep {
+    background: #519966;
+    background: linear-gradient(60deg, #46a03c, #36902c);
+}
+
+.bg-vaccination {
+    background: #c800c8;
+    background: linear-gradient(60deg, #c800c8, #b540b5);
+}
+
+.bg-video {
+    background: #953761;
+    background: linear-gradient(60deg, #c53771, #a53761);
+}
+
+.bg-vocabulary {
+    background: #641e1e;
+    background: linear-gradient(60deg, #641e1e, #540e0e);
+}
+
 .img-thumbnail {
     padding: 0;
     background-color: #fff;

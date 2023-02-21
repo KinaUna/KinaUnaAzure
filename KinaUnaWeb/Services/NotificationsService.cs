@@ -195,5 +195,35 @@ namespace KinaUnaWeb.Services
                 }
             }
         }
+
+        public async Task SendNoteNotification(Note noteItem, UserInfo currentUser)
+        {
+            List<UserAccess> usersToNotif = await _userAccessHttpClient.GetProgenyAccessList(noteItem.ProgenyId);
+            Progeny progeny = await _progenyHttpClient.GetProgeny(noteItem.ProgenyId);
+            foreach (UserAccess userAccess in usersToNotif)
+            {
+                if (userAccess.AccessLevel <= noteItem.AccessLevel)
+                {
+                    UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
+                    if (uaUserInfo.UserId != "Unknown")
+                    {
+                        WebNotification notification = new WebNotification();
+                        notification.To = uaUserInfo.UserId;
+                        notification.From = currentUser.FullName();
+                        notification.Message = "Title: " + noteItem.Title + "\r\nCategory: " + noteItem.Category;
+                        notification.DateTime = DateTime.UtcNow;
+                        notification.Icon = currentUser.ProfilePicture;
+                        notification.Title = "A new note was added for " + progeny.NickName;
+                        notification.Link = "/Notes?childId=" + progeny.Id;
+                        notification.Type = "Notification";
+
+                        notification = await _webNotificationsService.SaveNotification(notification);
+
+                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                            notification.Message, Constants.WebAppUrl + notification.Link, "kinaunanote" + progeny.Id);
+                    }
+                }
+            }
+        }
     }
 }

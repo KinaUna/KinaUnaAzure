@@ -97,7 +97,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             ContactItem.Context = contact.Context;
             ContactItem.Website = contact.Website;
             ContactItem.Tags = Tags = contact.Tags;
-            ContactItem.Author = contact.Author;
+            ContactItem.Author = contact.Author ?? CurrentUser.UserId;
             IsCurrentUserProgenyAdmin = isAdmin;
 
             DateTime tempTime = contact.DateAdded ?? DateTime.UtcNow;
@@ -132,7 +132,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             contactItem.Active = true;
             contactItem.Context = ContactItem.Context;
             contactItem.AccessLevel = ContactItem.AccessLevel;
-            contactItem.Author = CurrentUser.UserId;
+            contactItem.Author = ContactItem.Author ?? CurrentUser.UserId;
             contactItem.ProgenyId = ContactItem.ProgenyId;
             contactItem.PictureLink = ContactItem.PictureLink;
 

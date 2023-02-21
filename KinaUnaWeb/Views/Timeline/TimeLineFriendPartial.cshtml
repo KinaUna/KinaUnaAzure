@@ -22,7 +22,7 @@
 }
 <a class="leavePage2" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@Model.FriendId">
     <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
-        <div class="card-body" style="background: #6e6e6e; background: rgba(110, 110, 110, 0.5)">
+        <div class="card-body bg-friend">
             <div class="info-title">
                 <span style="font-size: 18px; color: white; margin-right: 12px;" class="fas fa-users"></span><strong style="font-size: 12px;" class="text-warning">
                     @Model.FriendSince.Value.ToString("dd-MMM-yyyy HH:mm")</strong>

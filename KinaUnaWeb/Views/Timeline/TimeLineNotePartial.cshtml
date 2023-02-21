@@ -7,8 +7,8 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
 <a class="leavePage2" asp-controller="Notes" asp-action="Index">
-    <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
-        <div class="card-body" style="background: #507832; background: rgba(80, 120, 50, 0.8)">
+    <div class="card text-white bg-notes" style="margin-top: 0; margin-bottom: 8px;">
+        <div class="card-body">
             <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 20px;" class="fa fa-sticky-note"></span><strong class="text-warning" style="font-size: 12px;">@Model.CreatedDate.ToString("dd-MMM-yyyy HH:mm") </strong></div>
             <div class="title text-white" style="font-size: 12px; margin-bottom: 12px; margin-left: 2px;">@Model.Title</div>
             <div style="margin-left: 2px; padding: 6px; font-size: 12px; overflow-x: hidden;" class="rounded text-dark card-body bg-white" align="left">@Html.Raw(System.Web.HttpUtility.HtmlDecode(Model.Content))</div>

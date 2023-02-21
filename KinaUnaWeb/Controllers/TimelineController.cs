@@ -32,7 +32,7 @@ namespace KinaUnaWeb.Controllers
             
             model.SortBy = sortBy;
             
-            model.TimeLineItems = await _timelineHttpClient.GetTimeline(childId, model.CurrentAccessLevel, sortBy);
+            model.TimeLineItems = await _timelineHttpClient.GetTimeline(model.CurrentProgenyId, model.CurrentAccessLevel, sortBy);
             
             model.Items = items;
             

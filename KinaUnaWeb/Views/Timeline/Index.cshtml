@@ -83,11 +83,12 @@ else
             onClose: function () { }
         });
     }
+    
     let currentItemNumber = 0;
     let maxNumber = @Model.TimeLineItems.Count;
     let sortBy = @Model.SortBy;
     @{
-        string[] idNumbers = new String[Model.TimeLineItems.Count];
+        string[] idNumbers = new string[Model.TimeLineItems.Count];
         int[] itmType = new int[Model.TimeLineItems.Count];
         int tiCount = 0;
         foreach (TimeLineItem tItm in Model.TimeLineItems)
