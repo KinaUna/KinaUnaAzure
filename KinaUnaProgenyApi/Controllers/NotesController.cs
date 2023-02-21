@@ -84,14 +84,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Note value)
         {
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to add notes for this child.
-
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -101,41 +98,19 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            Note noteItem = new Note();
-            noteItem.AccessLevel = value.AccessLevel;
-            noteItem.Owner = value.Owner;
-            noteItem.Content = value.Content;
-            noteItem.Category = value.Category;
-            noteItem.ProgenyId = value.ProgenyId;
-            noteItem.Title = value.Title;
-            noteItem.CreatedDate = value.CreatedDate;
+            value.Owner = User.GetUserId();
 
-            noteItem = await _noteService.AddNote(noteItem);
+            Note noteItem = await _noteService.AddNote(value);
             
-            // Add to Timeline.
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = noteItem.ProgenyId;
-            tItem.AccessLevel = noteItem.AccessLevel;
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Note;
-            tItem.ItemId = noteItem.NoteId.ToString();
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            if (userinfo != null)
-            {
-                tItem.CreatedBy = userinfo.UserId;
-            }
-            tItem.CreatedTime = noteItem.CreatedDate;
-            tItem.ProgenyTime = noteItem.CreatedDate;
-
-            _ = await _timelineService.AddTimeLineItem(tItem);
-
-            string title = "Note added for " + prog.NickName;
-            if (userinfo != null)
-            {
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
-                                 " added a new note for " + prog.NickName;
-
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
-            }
+            TimeLineItem timeLineItem = new TimeLineItem();
+            timeLineItem.CopyNotePropertiesForAdd(noteItem);
+            _ = await _timelineService.AddTimeLineItem(timeLineItem);
+            
+            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+            
+            string notificationTitle = "Note added for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " added a new note for " + progeny.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
 
             return Ok(noteItem);
         }
@@ -144,13 +119,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Note value)
         {
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to edit notes for this child.
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -165,30 +138,21 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-
-            noteItem.AccessLevel = value.AccessLevel;
-            noteItem.Owner = value.Owner;
-            noteItem.Content = value.Content;
-            noteItem.Category = value.Category;
-            noteItem.ProgenyId = value.ProgenyId;
-            noteItem.Title = value.Title;
-            noteItem.CreatedDate = value.CreatedDate;
-
-            noteItem = await _noteService.UpdateNote(noteItem);
             
-            // Update Timeline.
-            TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(noteItem.NoteId.ToString(), (int)KinaUnaTypes.TimeLineType.Note);
-            if (tItem != null)
+            noteItem = await _noteService.UpdateNote(value);
+            
+            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(noteItem.NoteId.ToString(), (int)KinaUnaTypes.TimeLineType.Note);
+            if (timeLineItem != null)
             {
-                tItem.ProgenyTime = noteItem.CreatedDate;
-                tItem.AccessLevel = noteItem.AccessLevel;
-                _ = await _timelineService.UpdateTimeLineItem(tItem);
+                timeLineItem.CopyNotePropertiesForUpdate(noteItem);
+                _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
             }
 
             UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            string title = "Note edited for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a note for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            string title = "Note edited for " + progeny.NickName;
+            string message = userinfo.FullName() + " edited a note for " + progeny.NickName;
+            await _azureNotifications.ProgenyUpdateNotification(title, message, timeLineItem, userinfo.ProfilePicture);
+
             return Ok(noteItem);
         }
 
@@ -199,13 +163,11 @@ namespace KinaUnaProgenyApi.Controllers
             Note noteItem = await _noteService.GetNote(id);
             if (noteItem != null)
             {
-                // Check if child exists.
-                Progeny prog = await _progenyService.GetProgeny(noteItem.ProgenyId);
+                Progeny progeny = await _progenyService.GetProgeny(noteItem.ProgenyId);
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                if (prog != null)
+                if (progeny != null)
                 {
-                    // Check if user is allowed to delete notes for this child.
-                    if (!prog.IsInAdminList(userEmail))
+                    if (!progeny.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }
@@ -224,8 +186,8 @@ namespace KinaUnaProgenyApi.Controllers
                 _ = await _noteService.DeleteNote(noteItem);
 
                 UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                string title = "Note deleted for " + prog.NickName;
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a note for " + prog.NickName + ". Note: " + noteItem.Title;
+                string title = "Note deleted for " + progeny.NickName;
+                string message = userinfo.FullName() + " deleted a note for " + progeny.NickName + ". Note: " + noteItem.Title;
                 if (tItem != null)
                 {
                     tItem.AccessLevel = 0;

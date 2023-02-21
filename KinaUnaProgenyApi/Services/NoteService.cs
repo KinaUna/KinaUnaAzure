@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -63,10 +65,16 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Note> AddNote(Note note)
         {
-            _ = _context.NotesDb.Add(note);
+            Note noteToAdd = new Note();
+            noteToAdd.CopyPropertiesForAdd(note);
+            noteToAdd.CreatedDate = DateTime.UtcNow;
+            
+            _ = _context.NotesDb.Add(noteToAdd);
             _ = await _context.SaveChangesAsync();
-            _ = await SetNoteInCache(note.NoteId);
-            return note;
+            
+            _ = await SetNoteInCache(noteToAdd.NoteId);
+            
+            return noteToAdd;
         }
 
         
@@ -76,17 +84,11 @@ namespace KinaUnaProgenyApi.Services
             Note noteToUpdate = await _context.NotesDb.SingleOrDefaultAsync(n => n.NoteId == note.NoteId);
             if (noteToUpdate != null)
             {
-                noteToUpdate.AccessLevel = note.AccessLevel;
-                noteToUpdate.ProgenyId = note.ProgenyId;
-                noteToUpdate.Category = note.Category;
-                noteToUpdate.Content = note.Content;
-                noteToUpdate.CreatedDate = note.CreatedDate;
-                noteToUpdate.NoteNumber = note.NoteNumber;
-                noteToUpdate.Owner = note.Owner;
-                noteToUpdate.Title = note.Title;
-                noteToUpdate.Progeny = note.Progeny;
+                noteToUpdate.CopyPropertiesForUpdate(note);
+
                 _ = _context.NotesDb.Update(noteToUpdate);
                 _ = await _context.SaveChangesAsync();
+                
                 _ = await SetNoteInCache(noteToUpdate.NoteId);
             }
             

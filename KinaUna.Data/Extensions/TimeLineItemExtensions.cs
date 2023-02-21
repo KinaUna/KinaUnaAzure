@@ -180,5 +180,22 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.ProgenyTime = measurement.Date;
             currentTimeLineItem.AccessLevel = measurement.AccessLevel;
         }
+
+        public static void CopyNotePropertiesForAdd(this TimeLineItem currentTimeLineItem, Note note)
+        {
+            currentTimeLineItem.ProgenyId = note.ProgenyId;
+            currentTimeLineItem.AccessLevel = note.AccessLevel;
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Note;
+            currentTimeLineItem.ItemId = note.NoteId.ToString();
+            currentTimeLineItem.CreatedBy = note.Owner;
+            currentTimeLineItem.CreatedTime = note.CreatedDate;
+            currentTimeLineItem.ProgenyTime = note.CreatedDate;
+        }
+
+        public static void CopyNotePropertiesForUpdate(this TimeLineItem currentTimeLineItem, Note note)
+        {
+            currentTimeLineItem.ProgenyTime = note.CreatedDate;
+            currentTimeLineItem.AccessLevel = note.AccessLevel;
+        }
     }
 }
