@@ -11,14 +11,12 @@ namespace KinaUnaWeb.Controllers
 {
     public class TimelineController : Controller
     {
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly ITimelineHttpClient _timelineHttpClient;
         private readonly ITimeLineItemsService _timeLineItemsService;
         private readonly IViewModelSetupService _viewModelSetupService;
 
-        public TimelineController(IUserInfosHttpClient userInfosHttpClient, ITimelineHttpClient timelineHttpClient, ITimeLineItemsService timeLineItemsService, IViewModelSetupService viewModelSetupService)
+        public TimelineController(ITimelineHttpClient timelineHttpClient, ITimeLineItemsService timeLineItemsService, IViewModelSetupService viewModelSetupService)
         {
-            _userInfosHttpClient = userInfosHttpClient;
             _timelineHttpClient = timelineHttpClient;
             _timeLineItemsService = timeLineItemsService;
             _viewModelSetupService = viewModelSetupService;
@@ -150,8 +148,8 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> GetTimeLineItem(TimeLineItemViewModel model)
         {
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(User.GetEmail());
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            model.SetBaseProperties(baseModel);
             
             TimeLineItemPartialViewModel timeLineItemPartialViewModel = await _timeLineItemsService.GetTimeLineItemPartialViewModel(model);
             return PartialView(timeLineItemPartialViewModel.PartialViewName, timeLineItemPartialViewModel.TimeLineItem);

@@ -14,12 +14,11 @@ namespace KinaUnaWeb.Controllers
     {
         private readonly ICalendarsHttpClient _calendarsHttpClient;
         private readonly IViewModelSetupService _viewModelSetupService;
-        private readonly INotificationsService _notificationsService;
-        public CalendarController(ICalendarsHttpClient calendarsHttpClient, IViewModelSetupService viewModelSetupService, INotificationsService notificationsService)
+
+        public CalendarController(ICalendarsHttpClient calendarsHttpClient, IViewModelSetupService viewModelSetupService)
         {
             _calendarsHttpClient = calendarsHttpClient;
             _viewModelSetupService = viewModelSetupService;
-            _notificationsService = notificationsService;
         }
         
         [AllowAnonymous]
@@ -95,10 +94,8 @@ namespace KinaUnaWeb.Controllers
 
             CalendarItem eventItem = model.CreateCalendarItem();
             
-            eventItem = await _calendarsHttpClient.AddCalendarItem(eventItem);
-
-            await _notificationsService.SendCalendarNotification(eventItem, model.CurrentUser);
-
+            _ = await _calendarsHttpClient.AddCalendarItem(eventItem);
+            
             return RedirectToAction("Index", "Calendar");
         }
 

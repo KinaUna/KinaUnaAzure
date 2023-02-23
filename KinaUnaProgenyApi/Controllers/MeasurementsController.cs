@@ -23,10 +23,11 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly ITimelineService _timelineService;
         private readonly IMeasurementService _measurementService;
         private readonly IProgenyService _progenyService;
-        private readonly AzureNotifications _azureNotifications;
+        private readonly IAzureNotifications _azureNotifications;
+        private readonly IWebNotificationsService _webNotificationsService;
 
-        public MeasurementsController(AzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService,
-            ITimelineService timelineService, IMeasurementService measurementService, IProgenyService progenyService)
+        public MeasurementsController(IAzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService,
+            ITimelineService timelineService, IMeasurementService measurementService, IProgenyService progenyService, IWebNotificationsService webNotificationsService)
         {
             _azureNotifications = azureNotifications;
             _userInfoService = userInfoService;
@@ -34,6 +35,7 @@ namespace KinaUnaProgenyApi.Controllers
             _timelineService = timelineService;
             _measurementService = measurementService;
             _progenyService = progenyService;
+            _webNotificationsService = webNotificationsService;
         }
 
         // GET api/measurements/progeny/[id]
@@ -106,6 +108,7 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "Measurement added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new measurement for " + progeny.NickName;
             await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await _webNotificationsService.SendMeasurementNotification(measurementItem, userInfo, notificationTitle);
 
             return Ok(measurementItem);
         }
@@ -141,13 +144,16 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 timeLineItem.CopyMeasurementPropertiesForUpdate(measurementItem);
                 _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
+
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+
+                string notificationTitle = "Measurement edited for " + progeny.NickName;
+                string notificationMessage = userInfo.FullName() + " edited a measurement for " + progeny.NickName;
+                
+                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await _webNotificationsService.SendMeasurementNotification(measurementItem, userInfo, notificationTitle);
             }
             
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            string notificationTitle = "Measurement edited for " + progeny.NickName;
-            string notificationMessage = userinfo.FullName() + " edited a measurement for " + progeny.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
-
             return Ok(measurementItem);
         }
 
@@ -180,13 +186,17 @@ namespace KinaUnaProgenyApi.Controllers
 
                 _ = await _measurementService.DeleteMeasurement(measurementItem);
                 
-                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                string notificationTitle = "Measurement deleted for " + progeny.NickName;
-                string notificationMessage = userInfo.FullName() + " deleted a measurement for " + progeny.NickName + ". Measurement date: " + measurementItem.Date.Date.ToString("dd-MMM-yyyy");
                 if (timeLineItem != null)
                 {
-                    timeLineItem.AccessLevel = 0;
+                    UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+
+                    string notificationTitle = "Measurement deleted for " + progeny.NickName;
+                    string notificationMessage = userInfo.FullName() + " deleted a measurement for " + progeny.NickName + ". Measurement date: " + measurementItem.Date.Date.ToString("dd-MMM-yyyy");
+
+                    measurementItem.AccessLevel = timeLineItem.AccessLevel = 0;
+
                     await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                    await _webNotificationsService.SendMeasurementNotification(measurementItem, userInfo, notificationTitle);
                 }
 
                 return NoContent();

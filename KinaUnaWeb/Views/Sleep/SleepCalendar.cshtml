@@ -3,7 +3,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.SleepViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Sleep calendar", PageNames.Sleep, Model.LanguageId);
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Sleep calendar", PageNames.Sleep, Model.LanguageId);
 }
 @section Scripts{
     <link href="/lib/fullcalendar/fullcalendar.min.css" rel="stylesheet" />
@@ -133,11 +133,11 @@
 </script>
 
 <div class="btn-group" style="float: right;">
-    <a asp-controller="Sleep" asp-action="Index" asp-route-childId="@Model.ProgenyId" class="btn btn-primary leavePage">
+    <a asp-controller="Sleep" asp-action="Index" asp-route-childId="@Model.CurrentProgenyId" class="btn btn-primary leavePage">
         <i class="fas fa-list"></i> @await LocaleManager.GetTranslation("Go to sleep list", PageNames.Sleep, Model.LanguageId)
     </a>
 </div>
-@if (Model.IsAdmin)
+@if (Model.IsCurrentUserProgenyAdmin)
 {
     <div class="btn-group" style="float: right;">
         <a asp-controller="Sleep" asp-action="AddSleep" class="btn btn-success btn-round leavePage">

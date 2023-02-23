@@ -150,6 +150,7 @@ namespace KinaUnaWeb.Controllers
                 await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Progeny);
             }
             await _progenyHttpClient.UpdateProgeny(prog);
+
             return RedirectToAction("Index");
         }
 

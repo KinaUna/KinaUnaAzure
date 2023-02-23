@@ -11,7 +11,7 @@ using Azure.Storage.Sas;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class ImageStore
+    public class ImageStore : IImageStore
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly string _storageKey;
@@ -38,6 +38,11 @@ namespace KinaUnaProgenyApi.Services
         {
             if (imageId.ToLower().StartsWith("http"))
             {
+                if (string.IsNullOrEmpty(imageId))
+                {
+                    imageId = Constants.ProfilePictureUrl;
+                }
+
                 return imageId;
             }
 
@@ -73,6 +78,11 @@ namespace KinaUnaProgenyApi.Services
         {
             if (string.IsNullOrEmpty(imageId) || imageId.ToLower().StartsWith("http"))
             {
+                if (string.IsNullOrEmpty(imageId))
+                {
+                    imageId = Constants.ProfilePictureUrl;
+                }
+                
                 return imageId;
             }
                 
@@ -95,10 +105,12 @@ namespace KinaUnaProgenyApi.Services
             {
                 originalText = "";
             }
+
             string updatedText = originalText;
             int lastIndex = 0;
             List<string> blobStrings = new List<string>();
             int linkFound = 1000000000;
+
             while (linkFound > 0)
             {
                 linkFound = originalText.IndexOf("https://kinaunastorage.blob.core.windows.net", lastIndex, StringComparison.Ordinal);
@@ -108,7 +120,6 @@ namespace KinaUnaProgenyApi.Services
                     blobStrings.Add(originalText.Substring(linkFound, linkEnd - linkFound));
                     lastIndex = linkEnd;
                 }
-                
             }
 
             if (blobStrings.Any())

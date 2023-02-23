@@ -19,15 +19,14 @@ namespace KinaUnaWeb.Controllers
         private readonly ILocationsHttpClient _locationsHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly IViewModelSetupService _viewModelSetupService;
-        private readonly INotificationsService _notificationsService;
+
         public LocationsController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ILocationsHttpClient locationsHttpClient,
-            IViewModelSetupService viewModelSetupService, INotificationsService notificationsService)
+            IViewModelSetupService viewModelSetupService)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
             _locationsHttpClient = locationsHttpClient;
             _viewModelSetupService = viewModelSetupService;
-            _notificationsService = notificationsService;
         }
 
         [AllowAnonymous]
@@ -220,9 +219,7 @@ namespace KinaUnaWeb.Controllers
 
             Location locationItem = model.CreateLocation();
 
-            locationItem = await _locationsHttpClient.AddLocation(locationItem);
-
-            await _notificationsService.SendLocationNotification(locationItem, model.CurrentUser);
+            _ = await _locationsHttpClient.AddLocation(locationItem);
             
             return RedirectToAction("Index", "Locations");
         }
@@ -291,8 +288,8 @@ namespace KinaUnaWeb.Controllers
             }
 
             Location location = model.CreateLocation();
-            
-            await _locationsHttpClient.UpdateLocation(location);
+
+            _ = await _locationsHttpClient.UpdateLocation(location);
 
             return RedirectToAction("Index", "Locations");
         }
@@ -326,7 +323,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            await _locationsHttpClient.DeleteLocation(location.LocationId);
+            _ = await _locationsHttpClient.DeleteLocation(location.LocationId);
 
             return RedirectToAction("Index", "Locations");
         }

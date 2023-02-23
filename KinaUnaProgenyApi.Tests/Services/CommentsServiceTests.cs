@@ -322,7 +322,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Created = DateTime.UtcNow,
                 DisplayName = "User2",
                 ItemType = 1,
-                ItemId = "1"
+                ItemId = "2"
             };
 
             CommentThread commentThread1 = new CommentThread{CommentsCount = 2};
@@ -348,7 +348,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Created = DateTime.UtcNow,
                 DisplayName = "User3",
                 ItemType = 1,
-                ItemId = "2"
+                ItemId = "3"
             };
             int commentsCountBefore = 0;
             CommentThread? testCommentThread = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == 1);
@@ -399,7 +399,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Created = DateTime.UtcNow,
                 DisplayName = "User2",
                 ItemType = 1,
-                ItemId = "1"
+                ItemId = "2"
             };
             context.Add(comment1);
             context.Add(comment2);
@@ -516,7 +516,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Created = DateTime.UtcNow,
                 DisplayName = "User2",
                 ItemType = 1,
-                ItemId = "1"
+                ItemId = "2"
             };
 
             CommentThread commentThread1 = new CommentThread { CommentsCount = 2 };

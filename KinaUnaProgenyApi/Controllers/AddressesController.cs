@@ -31,15 +31,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Address value)
         {
-            Address addressItem = new Address();
-            addressItem.AddressLine1 = value.AddressLine1;
-            addressItem.AddressLine2 = value.AddressLine2;
-            addressItem.City = value.City;
-            addressItem.Country = value.Country;
-            addressItem.PostalCode = value.PostalCode;
-            addressItem.State = value.State;
-            
-            addressItem = await _locationService.AddAddressItem(addressItem);
+            Address addressItem = await _locationService.AddAddressItem(value);
             
             return Ok(addressItem);
         }
@@ -53,15 +45,8 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-
-            addressItem.AddressLine1 = value.AddressLine1;
-            addressItem.AddressLine2 = value.AddressLine2;
-            addressItem.City = value.City;
-            addressItem.Country = value.Country;
-            addressItem.PostalCode = value.PostalCode;
-            addressItem.State = value.State;
             
-            addressItem = await _locationService.UpdateAddressItem(addressItem);
+            addressItem = await _locationService.UpdateAddressItem(value);
             
             return Ok(addressItem);
         }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
@@ -22,10 +21,11 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly ITimelineService _timelineService;
         private readonly IVaccinationService _vaccinationService;
         private readonly IProgenyService _progenyService;
-        private readonly AzureNotifications _azureNotifications;
+        private readonly IAzureNotifications _azureNotifications;
+        private readonly IWebNotificationsService _webNotificationsService;
 
-        public VaccinationsController(AzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService,
-            ITimelineService timelineService, IVaccinationService vaccinationService, IProgenyService progenyService)
+        public VaccinationsController(IAzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService,
+            ITimelineService timelineService, IVaccinationService vaccinationService, IProgenyService progenyService, IWebNotificationsService webNotificationsService)
         {
             _azureNotifications = azureNotifications;
             _userInfoService = userInfoService;
@@ -33,6 +33,7 @@ namespace KinaUnaProgenyApi.Controllers
             _timelineService = timelineService;
             _vaccinationService = vaccinationService;
             _progenyService = progenyService;
+            _webNotificationsService = webNotificationsService;
         }
 
         // GET api/vaccinations/progeny/[id]
@@ -77,14 +78,13 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Vaccination value)
         {
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            if (progeny != null)
             {
                 // Check if user is allowed to add vaccinations for this child.
 
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -94,39 +94,21 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            Vaccination vaccinationItem = new Vaccination();
-            vaccinationItem.AccessLevel = value.AccessLevel;
-            vaccinationItem.Author = value.Author;
-            vaccinationItem.Notes = value.Notes;
-            vaccinationItem.VaccinationDate = value.VaccinationDate;
-            vaccinationItem.ProgenyId = value.ProgenyId;
-            vaccinationItem.VaccinationDescription = value.VaccinationDescription;
-            vaccinationItem.VaccinationName = value.VaccinationName;
+            value.Author = User.GetUserId();
 
-            vaccinationItem = await _vaccinationService.AddVaccination(vaccinationItem);
+            Vaccination vaccinationItem = await _vaccinationService.AddVaccination(value);
             
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = vaccinationItem.ProgenyId;
-            tItem.AccessLevel = vaccinationItem.AccessLevel;
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Vaccination;
-            tItem.ItemId = vaccinationItem.VaccinationId.ToString();
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            if (userinfo != null)
-            {
-                tItem.CreatedBy = userinfo.UserId;
-            }
-            tItem.CreatedTime = DateTime.UtcNow;
-            tItem.ProgenyTime = vaccinationItem.VaccinationDate;
+            TimeLineItem timeLineItem = new TimeLineItem();
+            timeLineItem.CopyVaccinationPropertiesForAdd(vaccinationItem);
 
-            _ = await _timelineService.AddTimeLineItem(tItem);
-
-            string title = "Vaccination added for " + prog.NickName;
-            if (userinfo != null)
-            {
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
-                                 " added a new vaccination for " + prog.NickName;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
-            }
+            _ = await _timelineService.AddTimeLineItem(timeLineItem);
+            
+            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+            string notificationTitle = "Vaccination added for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " added a new vaccination for " + progeny.NickName;
+            
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await _webNotificationsService.SendVaccinationNotification(vaccinationItem, userInfo, notificationTitle);
 
             return Ok(vaccinationItem);
         }
@@ -135,13 +117,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Vaccination value)
         {
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to edit vaccinations for this child.
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -156,30 +136,24 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-
-            vaccinationItem.AccessLevel = value.AccessLevel;
-            vaccinationItem.Author = value.Author;
-            vaccinationItem.Notes = value.Notes;
-            vaccinationItem.VaccinationDate = value.VaccinationDate;
-            vaccinationItem.ProgenyId = value.ProgenyId;
-            vaccinationItem.VaccinationDescription = value.VaccinationDescription;
-            vaccinationItem.VaccinationName = value.VaccinationName;
-
-            vaccinationItem = await _vaccinationService.UpdateVaccination(vaccinationItem);
             
-
-            TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(vaccinationItem.VaccinationId.ToString(), (int)KinaUnaTypes.TimeLineType.Vaccination);
-            if (tItem != null)
+            vaccinationItem = await _vaccinationService.UpdateVaccination(value);
+            
+            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(vaccinationItem.VaccinationId.ToString(), (int)KinaUnaTypes.TimeLineType.Vaccination);
+            if (timeLineItem != null)
             {
-                tItem.ProgenyTime = vaccinationItem.VaccinationDate;
-                tItem.AccessLevel = vaccinationItem.AccessLevel;
-                _ = await _timelineService.UpdateTimeLineItem(tItem);
+                timeLineItem.CopyVaccinationPropertiesForUpdate(vaccinationItem);
+                _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
+
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                string notificationTitle = "Vaccination edited for " + progeny.NickName;
+                string notificationMessage = userInfo.FullName() + " edited a vaccination for " + progeny.NickName;
+
+                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await _webNotificationsService.SendVaccinationNotification(vaccinationItem, userInfo, notificationTitle);
             }
 
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            string title = "Vaccination edited for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a vaccination for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            
 
             return Ok(vaccinationItem);
         }
@@ -191,13 +165,11 @@ namespace KinaUnaProgenyApi.Controllers
             Vaccination vaccinationItem = await _vaccinationService.GetVaccination(id);
             if (vaccinationItem != null)
             {
-                // Check if child exists.
-                Progeny prog = await _progenyService.GetProgeny(vaccinationItem.ProgenyId);
+                Progeny progeny = await _progenyService.GetProgeny(vaccinationItem.ProgenyId);
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                if (prog != null)
+                if (progeny != null)
                 {
-                    // Check if user is allowed to delete vaccinations for this child.
-                    if (!prog.IsInAdminList(userEmail))
+                    if (!progeny.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }
@@ -207,44 +179,47 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(vaccinationItem.VaccinationId.ToString(), (int)KinaUnaTypes.TimeLineType.Vaccination);
-                if (tItem != null)
+                TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(vaccinationItem.VaccinationId.ToString(), (int)KinaUnaTypes.TimeLineType.Vaccination);
+                if (timeLineItem != null)
                 {
-                    _ = await _timelineService.DeleteTimeLineItem(tItem);
+                    _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
                 }
 
                 _ = await _vaccinationService.DeleteVaccination(vaccinationItem);
-                
-                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                string title = "Vaccination deleted for " + prog.NickName;
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a vaccination for " + prog.NickName + ". Vaccination: " + vaccinationItem.VaccinationName;
-                if (tItem != null)
+
+               
+                if (timeLineItem != null)
                 {
-                    tItem.AccessLevel = 0;
-                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                    UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+
+                    string notificationTitle = "Vaccination deleted for " + progeny.NickName;
+                    string notificationMessage = userInfo.FullName() + " deleted a vaccination for " + progeny.NickName + ". Vaccination: " + vaccinationItem.VaccinationName;
+
+                    vaccinationItem.AccessLevel = timeLineItem.AccessLevel = 0;
+
+                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                    await _webNotificationsService.SendVaccinationNotification(vaccinationItem, userInfo, notificationTitle);
                 }
 
                 return NoContent();
             }
-            else
-            {
-                return NotFound();
-            }
+
+            return NotFound();
         }
 
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetVaccinationMobile(int id)
         {
-            Vaccination result = await _vaccinationService.GetVaccination(id);
+            Vaccination vaccination = await _vaccinationService.GetVaccination(id);
 
-            if (result != null)
+            if (vaccination != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(vaccination.ProgenyId, userEmail);
 
-                if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
+                if (userAccess != null || vaccination.ProgenyId == Constants.DefaultChildId)
                 {
-                    return Ok(result);
+                    return Ok(vaccination);
                 }
 
                 return Unauthorized();

@@ -20,7 +20,7 @@
         <div class="form-group">
             <label class="control-label col-sm-3">@addVaccinationForString </label>
             <div class="col-lg-9">
-                <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="ProgenyId" asp-items="@Model.ProgenyList"></select>
+                <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="VaccinationItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
             </div>
         </div>
     }
@@ -31,33 +31,33 @@
             <div class="col-lg-9">
                 <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
             </div>
-            <input asp-for="ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+            <input asp-for="VaccinationItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
         </div>
     }
     <div class="form-group">
-        <label asp-for="VaccinationName" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Vaccination name", PageNames.Vaccinations, Model.LanguageId)</label>
+        <label asp-for="VaccinationItem.VaccinationName" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Vaccination name", PageNames.Vaccinations, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <input asp-for="VaccinationName" class="form-control" />
+            <input asp-for="VaccinationItem.VaccinationName" class="form-control" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="VaccinationDescription" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Description", PageNames.Vaccinations, Model.LanguageId)</label>
+        <label asp-for="VaccinationItem.VaccinationDescription" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Description", PageNames.Vaccinations, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <textarea asp-for="VaccinationDescription" class="form-control" rows="4"></textarea>
+            <textarea asp-for="VaccinationItem.VaccinationDescription" class="form-control" rows="4"></textarea>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Notes" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Vaccinations, Model.LanguageId)</label>
+        <label asp-for="VaccinationItem.Notes" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Vaccinations, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <textarea asp-for="Notes" class="form-control" rows="4"></textarea>
+            <textarea asp-for="VaccinationItem.Notes" class="form-control" rows="4"></textarea>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="VaccinationDate" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Date", PageNames.Vaccinations, Model.LanguageId)</label>
+        <label asp-for="VaccinationItem.VaccinationDate" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Date", PageNames.Vaccinations, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy" type="text"
-                       class="form-control" data-zdp_readonly_element="false" asp-for="VaccinationDate" value="" />
+                       class="form-control" data-zdp_readonly_element="false" asp-for="VaccinationItem.VaccinationDate" value="" />
             </div>
         </div>
     </div>
@@ -70,9 +70,9 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+        <label asp-for="VaccinationItem.AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
         <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="VaccinationItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
         </div>
     </div>
     <div>

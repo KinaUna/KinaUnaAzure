@@ -13,6 +13,7 @@ namespace KinaUnaWeb.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IPushMessageSender _messageSender;
+
         public PushDevicesController(IConfiguration configuration, IPushMessageSender messageSender)
         {
             _configuration = configuration;

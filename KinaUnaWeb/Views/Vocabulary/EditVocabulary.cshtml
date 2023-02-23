@@ -11,45 +11,45 @@
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
 
-<h2>@ViewData["Title"] - @Model.Word</h2>
+<h2>@ViewData["Title"] - @Model.VocabularyItem.Word</h2>
 <form asp-action="EditVocabulary" role="form" method="post">
     <div class="form-group">
-        <label asp-for="Word" class="col-3 control-label">@await LocaleManager.GetTranslation("Word", PageNames.Vocabulary, Model.LanguageId)</label>
+        <label asp-for="VocabularyItem.Word" class="col-3 control-label">@await LocaleManager.GetTranslation("Word", PageNames.Vocabulary, Model.LanguageId)</label>
         <div class="col-9">
-            <input asp-for="Word" class="form-control" value="@Model.Word" />
+            <input asp-for="VocabularyItem.Word" class="form-control" value="@Model.VocabularyItem.Word" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="SoundsLike" class="col-3 control-label">@await LocaleManager.GetTranslation("Sounds like", PageNames.Vocabulary, Model.LanguageId)</label>
+        <label asp-for="VocabularyItem.SoundsLike" class="col-3 control-label">@await LocaleManager.GetTranslation("Sounds like", PageNames.Vocabulary, Model.LanguageId)</label>
         <div class="col-9">
-            <input asp-for="SoundsLike" class="form-control" value="@Model.SoundsLike" />
+            <input asp-for="VocabularyItem.SoundsLike" class="form-control" value="@Model.VocabularyItem.SoundsLike" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Description" class="col-3 control-label">@await LocaleManager.GetTranslation("Description", PageNames.Vocabulary, Model.LanguageId)</label>
+        <label asp-for="VocabularyItem.Description" class="col-3 control-label">@await LocaleManager.GetTranslation("Description", PageNames.Vocabulary, Model.LanguageId)</label>
         <div class="col-9">
-            <textarea asp-for="Description" class="form-control" rows="4" value="@Model.Description"></textarea>
+            <textarea asp-for="VocabularyItem.Description" class="form-control" rows="4" value="@Model.VocabularyItem.Description"></textarea>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Language" class="col-3 control-label">@await LocaleManager.GetTranslation("Language", PageNames.Vocabulary, Model.LanguageId)</label>
+        <label asp-for="VocabularyItem.Language" class="col-3 control-label">@await LocaleManager.GetTranslation("Language", PageNames.Vocabulary, Model.LanguageId)</label>
         <div class="col-9">
-            <input asp-for="Language" class="form-control" value="@Model.Language" />
+            <input asp-for="VocabularyItem.Language" class="form-control" value="@Model.VocabularyItem.Language" />
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="Date" class="col-3 control-label">@await LocaleManager.GetTranslation("Date", PageNames.Vocabulary, Model.LanguageId)</label>
+        <label asp-for="VocabularyItem.Date" class="col-3 control-label">@await LocaleManager.GetTranslation("Date", PageNames.Vocabulary, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 @{
-                    if (!Model.Date.HasValue)
+                    if (!Model.VocabularyItem.Date.HasValue)
                     {
-                        Model.Date = DateTime.UtcNow;
+                        Model.VocabularyItem.Date = DateTime.UtcNow;
                     }
                 }
                 <input id="datetimepicker1" data-format="dd-MMM-yyyy" type="text"
-                       class="form-control" data-zdp_readonly_element="false" asp-for="Date"
-                       value="@Model.Date.Value.ToString("dd-MMM-yyyy")" />
+                       class="form-control" data-zdp_readonly_element="false" asp-for="VocabularyItem.Date"
+                       value="@Model.VocabularyItem.Date.Value.ToString("dd-MMM-yyyy")" />
             </div>
         </div>
     </div>
@@ -62,15 +62,15 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="AccessLevel" class="col-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+        <label asp-for="VocabularyItem.AccessLevel" class="col-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
         <div class="col-9">
-            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="VocabularyItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
         </div>
     </div>
-    <input asp-for="ProgenyId" value="@Model.ProgenyId" type="hidden" />
-    <input asp-for="DateAdded" value="@Model.DateAdded" type="hidden" />
-    <input asp-for="WordId" value="@Model.WordId" type="hidden" />
-    <input asp-for="Author" value="@Model.Author" type="hidden" />
+    <input asp-for="VocabularyItem.ProgenyId" value="@Model.VocabularyItem.ProgenyId" type="hidden" />
+    <input asp-for="VocabularyItem.DateAdded" value="@Model.VocabularyItem.DateAdded" type="hidden" />
+    <input asp-for="VocabularyItem.WordId" value="@Model.VocabularyItem.WordId" type="hidden" />
+    <input asp-for="VocabularyItem.Author" value="@Model.VocabularyItem.Author" type="hidden" />
     <div>
         <div class="form-group">
             <div class="col-3 control-label"></div>

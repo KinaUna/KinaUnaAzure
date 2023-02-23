@@ -43,6 +43,7 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     return Ok(timeLineList);
                 }
+
                 return Ok(new List<TimeLineItem>());
             }
 
@@ -66,10 +67,8 @@ namespace KinaUnaProgenyApi.Controllers
 
                     return Ok(timeLineList.Skip(start).Take(count));
                 }
-                else
-                {
-                    return Ok(new List<TimeLineItem>());
-                }
+
+                return Ok(new List<TimeLineItem>());
             }
 
             return Unauthorized();
@@ -93,10 +92,8 @@ namespace KinaUnaProgenyApi.Controllers
 
                     return Ok(timeLineList);
                 }
-                else
-                {
-                    return Ok(new List<TimeLineItem>());
-                }
+
+                return Ok(new List<TimeLineItem>());
             }
 
             return Unauthorized();

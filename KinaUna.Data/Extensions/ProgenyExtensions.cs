@@ -1,4 +1,5 @@
 ﻿using KinaUna.Data.Models;
+using System;
 
 namespace KinaUna.Data.Extensions
 {
@@ -27,6 +28,16 @@ namespace KinaUna.Data.Extensions
                 }
             }
             return false;
+        }
+
+        public static void ApplyPlaceHolderProperties(this Progeny progeny)
+        {
+            progeny.Name = Constants.AppName;
+            progeny.Admins = Constants.AdminEmail;
+            progeny.NickName = Constants.AppName;
+            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+            progeny.Id = 0;
+            progeny.TimeZone = Constants.DefaultTimezone;
         }
     }
 }

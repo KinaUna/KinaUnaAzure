@@ -73,11 +73,8 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     return NotFound();
                 }
-
-                language.Name = value.Name?.Trim();
-                language.Code = value.Code;
-                language.Icon = value.Icon;
-                language = await _languagesService.UpdateLanguage(language);
+                
+                language = await _languagesService.UpdateLanguage(value);
 
                 return Ok(language);
             }

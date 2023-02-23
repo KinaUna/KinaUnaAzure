@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
+using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -16,24 +17,23 @@ namespace KinaUnaWeb.Controllers
     {
         private readonly IHubContext<WebNotificationHub> _hubContext;
         private readonly ImageStore _imageStore;
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IWebNotificationsService _webNotificationsService;
+        private readonly IViewModelSetupService _viewModelSetupService;
 
-        public NotificationsController(IHubContext<WebNotificationHub> hubContext, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, IWebNotificationsService webNotificationsService)
+        public NotificationsController(IHubContext<WebNotificationHub> hubContext, ImageStore imageStore,
+            IWebNotificationsService webNotificationsService, IViewModelSetupService viewModelSetupService)
         {
             _hubContext = hubContext;
             _imageStore = imageStore;
-            _userInfosHttpClient = userInfosHttpClient;
             _webNotificationsService = webNotificationsService;
+            _viewModelSetupService = viewModelSetupService;
         }
 
         public async Task<IActionResult> Index(int Id = 0)
         {
-            NotificationsListViewModel model = new NotificationsListViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            NotificationsListViewModel model = new NotificationsListViewModel(baseModel);
+            
             model.NotificationsList = await _webNotificationsService.GetUsersNotifications(model.CurrentUser.UserId);
             
             if (model.NotificationsList.Any())
@@ -51,6 +51,7 @@ namespace KinaUnaWeb.Controllers
                     }
                 }
             }
+
             if (Id != 0)
             {
                 WebNotification notification = await _webNotificationsService.GetNotificationById(Id);
@@ -72,11 +73,9 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> ShowNotification(WebNotification notification)
         {
-            WebNotificationViewModel model = new WebNotificationViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            WebNotificationViewModel model = new WebNotificationViewModel(baseModel);
+            
             if (!notification.Icon.StartsWith("/"))
             {
                 notification.Icon = _imageStore.UriFor(notification.Icon, "profiles");
@@ -92,11 +91,9 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> ShowUpdatedNotification(WebNotification notification)
         {
-            WebNotificationViewModel model = new WebNotificationViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-            string userEmail = User.GetEmail();
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            WebNotificationViewModel model = new WebNotificationViewModel(baseModel);
+            
             if (!notification.Icon.StartsWith("/"))
             {
                 notification.Icon = _imageStore.UriFor(notification.Icon, "profiles");
@@ -112,7 +109,7 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> SetUnread(int Id)
         {
-            string userId = User.FindFirst("sub")?.Value ?? "NoUser";
+            string userId = User.GetUserId() ?? "NoUser";
             WebNotification updateNotification = await _webNotificationsService.GetNotificationById(Id);
 
             if (updateNotification != null)
@@ -131,7 +128,7 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> SetRead(int Id)
         {
-            string userId = User.FindFirst("sub")?.Value ?? "NoUser";
+            string userId = User.GetUserId() ?? "NoUser";
             WebNotification updateNotification = await _webNotificationsService.GetNotificationById(Id);
 
             if (updateNotification != null)
@@ -151,7 +148,7 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> Remove(int Id)
         {
-            string userId = User.FindFirst("sub")?.Value ?? "NoUser";
+            string userId = User.GetUserId() ?? "NoUser";
             WebNotification updateNotification = await _webNotificationsService.GetNotificationById(Id);
 
             if (updateNotification != null)

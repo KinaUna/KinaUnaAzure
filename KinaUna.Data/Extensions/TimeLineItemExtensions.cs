@@ -7,12 +7,7 @@ namespace KinaUna.Data.Extensions
     {
         public static void CopyPropertiesForUpdate(this TimeLineItem currentTimeLineItem, TimeLineItem otherTimeLineItem)
         {
-            currentTimeLineItem.ProgenyId = otherTimeLineItem.ProgenyId;
             currentTimeLineItem.AccessLevel = otherTimeLineItem.AccessLevel;
-            currentTimeLineItem.CreatedBy = otherTimeLineItem.CreatedBy;
-            currentTimeLineItem.CreatedTime = otherTimeLineItem.CreatedTime;
-            currentTimeLineItem.ItemId = otherTimeLineItem.ItemId;
-            currentTimeLineItem.ItemType = otherTimeLineItem.ItemType;
             currentTimeLineItem.ProgenyTime = otherTimeLineItem.ProgenyTime;
         }
 
@@ -67,10 +62,7 @@ namespace KinaUna.Data.Extensions
 
         public static void CopyUserAccessItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, UserAccess userAccessItem)
         {
-            currentTimeLineItem.ProgenyId = userAccessItem.ProgenyId;
             currentTimeLineItem.AccessLevel = 0;
-            currentTimeLineItem.ItemId = userAccessItem.AccessId.ToString();
-            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
         }
 
         public static bool CopyContactItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Contact contactItem)
@@ -196,6 +188,150 @@ namespace KinaUna.Data.Extensions
         {
             currentTimeLineItem.ProgenyTime = note.CreatedDate;
             currentTimeLineItem.AccessLevel = note.AccessLevel;
+        }
+
+        public static void CopyPicturePropertiesForAdd(this TimeLineItem currentTimeLineItem, Picture picture)
+        {
+            currentTimeLineItem.ProgenyId = picture.ProgenyId;
+            currentTimeLineItem.ItemId = picture.PictureId.ToString();
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Photo;
+            currentTimeLineItem.AccessLevel = picture.AccessLevel;
+            if (picture.PictureTime.HasValue)
+            {
+                currentTimeLineItem.ProgenyTime = picture.PictureTime.Value;
+            }
+
+            currentTimeLineItem.CreatedBy = picture.Author;
+            currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+
+        }
+
+        public static void CopyPicturePropertiesForUpdate(this TimeLineItem currentTimeLineItem, Picture picture)
+        {
+            currentTimeLineItem.AccessLevel = picture.AccessLevel;
+            if (picture.PictureTime.HasValue)
+            {
+                currentTimeLineItem.ProgenyTime = picture.PictureTime.Value;
+            }
+        }
+
+        public static void CopyVideoPropertiesForAdd(this TimeLineItem currentTimeLineItem, Video video)
+        {
+            currentTimeLineItem.ProgenyId = video.ProgenyId;
+            currentTimeLineItem.ItemId = video.VideoId.ToString();
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
+            currentTimeLineItem.AccessLevel = video.AccessLevel;
+            if (video.VideoTime.HasValue)
+            {
+                currentTimeLineItem.ProgenyTime = video.VideoTime.Value;
+            }
+
+            currentTimeLineItem.CreatedBy = video.Author;
+            currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+
+        }
+
+        public static void CopyVideoPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Video video)
+        {
+            currentTimeLineItem.AccessLevel = video.AccessLevel;
+            if (video.VideoTime.HasValue)
+            {
+                currentTimeLineItem.ProgenyTime = video.VideoTime.Value;
+            }
+        }
+
+        public static void CopySkillPropertiesForAdd(this TimeLineItem currentTimeLineItem, Skill skill)
+        {
+            currentTimeLineItem.ProgenyId = skill.ProgenyId;
+            currentTimeLineItem.AccessLevel = skill.AccessLevel;
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Skill;
+            currentTimeLineItem.ItemId = skill.SkillId.ToString();
+            currentTimeLineItem.CreatedBy = skill.Author;
+            currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            if (skill.SkillFirstObservation != null)
+            {
+                currentTimeLineItem.ProgenyTime = skill.SkillFirstObservation.Value;
+            }
+            else
+            {
+                currentTimeLineItem.ProgenyTime = DateTime.UtcNow;
+            }
+        }
+
+        public static void CopySkillPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Skill skill)
+        {
+            if (skill.SkillFirstObservation != null)
+            {
+                currentTimeLineItem.ProgenyTime = skill.SkillFirstObservation.Value;
+            }
+            else
+            {
+                currentTimeLineItem.ProgenyTime = DateTime.UtcNow;
+            }
+
+            currentTimeLineItem.AccessLevel = skill.AccessLevel;
+        }
+
+        public static void CopySleepPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Sleep sleep)
+        {
+            currentTimeLineItem.ProgenyTime = sleep.SleepStart;
+            currentTimeLineItem.AccessLevel = sleep.AccessLevel;
+        }
+
+        public static void CopySleepPropertiesForAdd(this TimeLineItem currentTimeLineItem, Sleep sleep)
+        {
+            currentTimeLineItem.ProgenyId = sleep.ProgenyId;
+            currentTimeLineItem.AccessLevel = sleep.AccessLevel;
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Sleep;
+            currentTimeLineItem.ItemId = sleep.SleepId.ToString();
+            currentTimeLineItem.CreatedBy = sleep.Author;
+            currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            currentTimeLineItem.ProgenyTime = sleep.SleepStart;
+        }
+
+        public static void CopyVaccinationPropertiesForAdd(this TimeLineItem currentTimeLineItem, Vaccination vaccination)
+        {
+            currentTimeLineItem.ProgenyId = vaccination.ProgenyId;
+            currentTimeLineItem.AccessLevel = vaccination.AccessLevel;
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Vaccination;
+            currentTimeLineItem.ItemId = vaccination.VaccinationId.ToString();
+            currentTimeLineItem.CreatedBy = vaccination.Author;
+            currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            currentTimeLineItem.ProgenyTime = vaccination.VaccinationDate;
+        }
+
+        public static void CopyVaccinationPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Vaccination vaccination)
+        {
+            currentTimeLineItem.AccessLevel = vaccination.AccessLevel;
+            currentTimeLineItem.ProgenyTime = vaccination.VaccinationDate;
+        }
+
+        public static void CopyVocabularyItemPropertiesForAdd(this TimeLineItem currentTimeLineItem, VocabularyItem vocabularyItem)
+        {
+            currentTimeLineItem.ProgenyId = vocabularyItem.ProgenyId;
+            currentTimeLineItem.AccessLevel = vocabularyItem.AccessLevel;
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Vocabulary;
+            currentTimeLineItem.ItemId = vocabularyItem.WordId.ToString();
+            currentTimeLineItem.CreatedBy = vocabularyItem.Author;
+            currentTimeLineItem.CreatedTime = DateTime.UtcNow;
+            if (vocabularyItem.Date != null)
+            {
+                currentTimeLineItem.ProgenyTime = vocabularyItem.Date.Value;
+            }
+            else
+            {
+                currentTimeLineItem.ProgenyTime = DateTime.UtcNow;
+            }
+        }
+
+        public static void CopyVocabularyItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, VocabularyItem vocabularyItem)
+        {
+            currentTimeLineItem.AccessLevel = vocabularyItem.AccessLevel;
+            if (vocabularyItem.Date.HasValue)
+            {
+                currentTimeLineItem.ProgenyTime = vocabularyItem.Date.Value;
+            }
+            
         }
     }
 }

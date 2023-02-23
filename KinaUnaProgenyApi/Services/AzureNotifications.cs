@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class AzureNotifications
+    public class AzureNotifications : IAzureNotifications
     {
         private readonly IDataService _dataService;
         private readonly IUserInfoService _userInfoService;
@@ -58,7 +58,6 @@ namespace KinaUnaProgenyApi.Services
                         string userTag = "userEmail:" + userAcces.UserId.ToUpper();
                         _ = await Hub.SendFcmNativeNotificationAsync(payload.ToString(Newtonsoft.Json.Formatting.None), userTag);
                         _ = await Hub.SendAppleNativeNotificationAsync(alert, userTag);
-                        
                     }
                 }
             }

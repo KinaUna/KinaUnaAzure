@@ -5,25 +5,25 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Delete sleep", PageNames.Sleep, Model.LanguageId);
 }
-<h2>@ViewData["Title"] - @await LocaleManager.GetTranslation("from", PageNames.Sleep, Model.LanguageId) @Model.Sleep.SleepStart @await LocaleManager.GetTranslation("to", PageNames.Sleep, Model.LanguageId) @Model.Sleep.SleepEnd</h2>
+<h2>@ViewData["Title"] - @await LocaleManager.GetTranslation("from", PageNames.Sleep, Model.LanguageId) @Model.SleepItem.SleepStart @await LocaleManager.GetTranslation("to", PageNames.Sleep, Model.LanguageId) @Model.SleepItem.SleepEnd</h2>
 <form asp-action="DeleteSleep" role="form" method="post">
     <div>
         @await LocaleManager.GetTranslation("Are you sure you want to delete this sleep record?", PageNames.Sleep, Model.LanguageId)
     </div>
     <br/>
     <div>
-        @await LocaleManager.GetTranslation("Start:", PageNames.Sleep, Model.LanguageId) @Model.Sleep.SleepStart
+        @await LocaleManager.GetTranslation("Start:", PageNames.Sleep, Model.LanguageId) @Model.SleepItem.SleepStart
     </div>
     <br/>
     <div>
-        @await LocaleManager.GetTranslation("End:", PageNames.Sleep, Model.LanguageId) @Model.Sleep.SleepEnd
+        @await LocaleManager.GetTranslation("End:", PageNames.Sleep, Model.LanguageId) @Model.SleepItem.SleepEnd
     </div>
     <br/>
     <div>
-        @await LocaleManager.GetTranslation("Notes:", PageNames.Sleep, Model.LanguageId) @Model.Sleep.SleepNotes
+        @await LocaleManager.GetTranslation("Notes:", PageNames.Sleep, Model.LanguageId) @Model.SleepItem.SleepNotes
     </div>
     <br />
-    <input asp-for="Sleep.SleepId" class="form-control" value="@Model.Sleep.SleepId" type="hidden" />
+    <input asp-for="SleepItem.SleepId" class="form-control" value="@Model.SleepItem.SleepId" type="hidden" />
     <div>
         <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - delete this sleep record", PageNames.Sleep, Model.LanguageId)</Button>
         <a class="btn btn-danger leavePage" asp-controller="Sleep" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>

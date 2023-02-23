@@ -86,7 +86,7 @@ namespace KinaUnaWeb.Services
             {
                 string pictureAsString = await pictureResponse.Content.ReadAsStringAsync();
                 Picture picture = JsonConvert.DeserializeObject<Picture>(pictureAsString);
-                if (picture != null && picture.PictureTime.HasValue)
+                if (picture != null && picture.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
                 {
                     picture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(picture.PictureTime.Value,
                         TimeZoneInfo.FindSystemTimeZoneById(timeZone));
@@ -114,7 +114,7 @@ namespace KinaUnaWeb.Services
                 Picture resultPicture = JsonConvert.DeserializeObject<Picture>(pictureResponseString);
                 if (timeZone != "" && resultPicture != null)
                 {
-                    if (resultPicture.PictureTime.HasValue)
+                    if (resultPicture.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
                     {
                         resultPicture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(resultPicture.PictureTime.Value,
                             TimeZoneInfo.FindSystemTimeZoneById(timeZone));
@@ -142,7 +142,7 @@ namespace KinaUnaWeb.Services
                 {
                     foreach (Picture pic in resultPictureList)
                     {
-                        if (pic.PictureTime.HasValue)
+                        if (pic.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
                         {
                             pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
                                 TimeZoneInfo.FindSystemTimeZoneById(timeZone));
@@ -302,7 +302,7 @@ namespace KinaUnaWeb.Services
                 {
                     foreach (Picture pic in model.PicturesList)
                     {
-                        if (pic.PictureTime.HasValue)
+                        if (pic.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
                         {
                             pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
                                 TimeZoneInfo.FindSystemTimeZoneById(timeZone));
@@ -332,13 +332,13 @@ namespace KinaUnaWeb.Services
                 PictureViewModel pictureViewModel = JsonConvert.DeserializeObject<PictureViewModel>(picturesViewModelAsString);
                 if (timeZone != "" && pictureViewModel != null)
                 {
-                    if (pictureViewModel.PictureTime.HasValue)
+                    if (pictureViewModel.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
                     {
                         pictureViewModel.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pictureViewModel.PictureTime.Value,
                             TimeZoneInfo.FindSystemTimeZoneById(timeZone));
                     }
 
-                    if (pictureViewModel.CommentsList.Count > 0)
+                    if (pictureViewModel.CommentsList.Count > 0 && !string.IsNullOrEmpty(timeZone))
                     {
                         foreach (Comment cmnt in pictureViewModel.CommentsList)
                         {
@@ -377,7 +377,7 @@ namespace KinaUnaWeb.Services
                 string videoPageAsString = await videoResponse.Content.ReadAsStringAsync();
                 VideoPageViewModel model = JsonConvert.DeserializeObject<VideoPageViewModel>(videoPageAsString);
 
-                if (timeZone != "" && model != null && model.VideosList.Any())
+                if (model != null && !string.IsNullOrEmpty(timeZone) && model.VideosList.Any())
                 {
                     foreach (Video vid in model.VideosList)
                     {
@@ -411,7 +411,7 @@ namespace KinaUnaWeb.Services
                 string videoViewModelAsString = await videoViewModelResponse.Content.ReadAsStringAsync();
                 VideoViewModel videoViewModel = JsonConvert.DeserializeObject<VideoViewModel>(videoViewModelAsString);
 
-                if (timeZone != "" && videoViewModel != null)
+                if (videoViewModel != null && !string.IsNullOrEmpty(timeZone))
                 {
                     if (videoViewModel.VideoTime.HasValue)
                     {
@@ -450,7 +450,7 @@ namespace KinaUnaWeb.Services
                 Video resultVideo = JsonConvert.DeserializeObject<Video>(videoAsString);
                 if (resultVideo != null)
                 {
-                    if (timeZone != "")
+                    if (!string.IsNullOrEmpty(timeZone))
                     {
                         if (resultVideo.VideoTime.HasValue)
                         {
@@ -477,7 +477,7 @@ namespace KinaUnaWeb.Services
             {
                 string videoListAsString = await videosListReponse.Content.ReadAsStringAsync();
                 List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoListAsString);
-                if (timeZone != "" && resultVideoList != null)
+                if (resultVideoList != null && !string.IsNullOrEmpty(timeZone))
                 {
                     foreach (Video vid in resultVideoList)
                     {

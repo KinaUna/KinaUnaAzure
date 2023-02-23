@@ -5,26 +5,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class SkillViewModel: BaseViewModel
+    public class SkillViewModel: BaseItemsViewModel
     {
-        public int SkillId { get; set; }
-
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string Category { get; set; }
-        public DateTime? SkillFirstObservation { get; set; }
-        public DateTime SkillAddedDate { get; set; }
-        public string Author { get; set; }
-        public int ProgenyId { get; set; }
-        public Progeny Progeny { get; set; }
         public List<SelectListItem> ProgenyList { get; set; }
-        public bool IsAdmin { get; set; }
-        public Skill Skill { get; set; }
+        public Skill SkillItem { get; set; } = new Skill();
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
-        public int AccessLevel { get; set; }
-
+        
         public SkillViewModel()
         {
             ProgenyList = new List<SelectListItem>();
@@ -32,6 +20,84 @@ namespace KinaUnaWeb.Models.ItemViewModels
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
             AccessLevelListDe = aclList.AccessLevelListDe;
+        }
+
+        public SkillViewModel(BaseItemsViewModel baseItemsViewModel)
+        {
+            SetBaseProperties(baseItemsViewModel);
+        }
+
+        public void SetProgenyList()
+        {
+            SkillItem.ProgenyId = CurrentProgenyId;
+            foreach (SelectListItem item in ProgenyList)
+            {
+                if (item.Value == CurrentProgenyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
+        }
+
+        public void SetAccessLevelList()
+        {
+            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelListEn = accessLevelList.AccessLevelListEn;
+            AccessLevelListDa = accessLevelList.AccessLevelListDa;
+            AccessLevelListDe = accessLevelList.AccessLevelListDe;
+
+            AccessLevelListEn[SkillItem.AccessLevel].Selected = true;
+            AccessLevelListDa[SkillItem.AccessLevel].Selected = true;
+            AccessLevelListDe[SkillItem.AccessLevel].Selected = true;
+
+            if (LanguageId == 2)
+            {
+                AccessLevelListEn = AccessLevelListDe;
+            }
+
+            if (LanguageId == 3)
+            {
+                AccessLevelListEn = AccessLevelListDa;
+            }
+        }
+
+        public Skill CreateSkill()
+        {
+            Skill skillItem = new Skill();
+            skillItem.ProgenyId = SkillItem.ProgenyId;
+            skillItem.Category = SkillItem.Category;
+            skillItem.Description = SkillItem.Description;
+            skillItem.Name = SkillItem.Name;
+            skillItem.SkillAddedDate = SkillItem.SkillAddedDate;
+            if (SkillItem.SkillFirstObservation.HasValue)
+            {
+                skillItem.SkillFirstObservation = TimeZoneInfo.ConvertTimeToUtc(SkillItem.SkillFirstObservation.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+            }
+            else
+            {
+                skillItem.SkillFirstObservation = DateTime.UtcNow;
+            }
+            
+            skillItem.AccessLevel = SkillItem.AccessLevel;
+            skillItem.Author = CurrentUser.UserId;
+
+            return skillItem;
+        }
+
+        public void SetPropertiesFromSkillItem(Skill skill, bool isAdmin)
+        {
+            SkillItem.ProgenyId = skill.ProgenyId;
+            SkillItem.AccessLevel = skill.AccessLevel;
+            SkillItem.Description = skill.Description;
+            SkillItem.Category = skill.Category;
+            SkillItem.Name = skill.Name;
+            SkillItem.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(skill.SkillFirstObservation?? DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+            SkillItem.SkillId = skill.SkillId;
+            IsCurrentUserProgenyAdmin = isAdmin;
         }
     }
 }

@@ -16,11 +16,11 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class ProgenyController : ControllerBase
     {
-        private readonly ImageStore _imageStore;
+        private readonly IImageStore _imageStore;
         private readonly IProgenyService _progenyService;
         private readonly IUserAccessService _userAccessService;
 
-        public ProgenyController(ImageStore imageStore, IProgenyService progenyService, IUserAccessService userAccessService)
+        public ProgenyController(IImageStore imageStore, IProgenyService progenyService, IUserAccessService userAccessService)
         {
             _imageStore = imageStore;
             _progenyService = progenyService;
@@ -32,7 +32,6 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}")]
         public async Task<IActionResult> Parent(string id)
         {
-            // Check if user should be allowed to access this.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() == id.ToUpper())
             {
@@ -146,7 +145,6 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            // Check if user is allowed to edit this child.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (!progeny.IsInAdminList(userEmail))
             {
@@ -223,7 +221,6 @@ namespace KinaUnaProgenyApi.Controllers
             Progeny progeny = await _progenyService.GetProgeny(id);
             if (progeny != null)
             {
-                // Check if user is allowed to edit this child.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 if (!progeny.IsInAdminList(userEmail))
                 {

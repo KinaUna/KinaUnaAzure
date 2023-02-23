@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services
 {
@@ -13,17 +17,28 @@ namespace KinaUnaWeb.Services
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
-
-        public ViewModelSetupService(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient)
+        private readonly IDistributedCache _cache;
+        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
+        
+        public ViewModelSetupService(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient,IDistributedCache cache)
         {
             _progenyHttpClient = progenyHttpClient;
             _userInfosHttpClient = userInfosHttpClient;
             _userAccessHttpClient = userAccessHttpClient;
+            _cache = cache;
+            _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 0, 30)); // Expire after 30 seconds.
         }
 
         public async Task<BaseItemsViewModel> SetupViewModel(int languageId, string userEmail, int progenyId)
         {
            BaseItemsViewModel viewModel = new BaseItemsViewModel();
+           string cachedBaseViewModel = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId);
+           if (!string.IsNullOrEmpty(cachedBaseViewModel))
+           {
+               viewModel = JsonConvert.DeserializeObject<BaseItemsViewModel>(cachedBaseViewModel);
+               return viewModel;
+           }
+
            viewModel.LanguageId = languageId;
            viewModel.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
            viewModel.SetCurrentProgenyId(progenyId);
@@ -31,6 +46,8 @@ namespace KinaUnaWeb.Services
            viewModel.CurrentProgenyAccessList = await _userAccessHttpClient.GetProgenyAccessList(viewModel.CurrentProgenyId);
            viewModel.SetCurrentUsersAccessLevel();
 
+           await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId, JsonConvert.SerializeObject(viewModel), _cacheOptions);
+           
            return viewModel;
         }
         

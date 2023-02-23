@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -38,10 +39,15 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Vaccination> AddVaccination(Vaccination vaccination)
         {
-            _ = _context.VaccinationsDb.Add(vaccination);
+            Vaccination vaccinationToAdd = new Vaccination();
+            vaccinationToAdd.CopyPropertiesForAdd(vaccination);
+
+            _ = _context.VaccinationsDb.Add(vaccinationToAdd);
             _ = await _context.SaveChangesAsync();
-            _ = await SetVaccinationInCache(vaccination.VaccinationId);
-            return vaccination;
+            
+            _ = await SetVaccinationInCache(vaccinationToAdd.VaccinationId);
+
+            return vaccinationToAdd;
         }
 
         private async Task<Vaccination> GetVaccinationFromCache(int id)
@@ -74,14 +80,7 @@ namespace KinaUnaProgenyApi.Services
             Vaccination vaccinationToUpdate = await _context.VaccinationsDb.SingleOrDefaultAsync(v => v.VaccinationId == vaccination.VaccinationId);
             if (vaccinationToUpdate != null)
             {
-                vaccinationToUpdate.AccessLevel = vaccination.AccessLevel;
-                vaccinationToUpdate.ProgenyId = vaccination.ProgenyId;
-                vaccinationToUpdate.Author = vaccination.Author;
-                vaccinationToUpdate.Notes = vaccination.Notes;
-                vaccinationToUpdate.VaccinationDate = vaccination.VaccinationDate;
-                vaccinationToUpdate.VaccinationDescription = vaccination.VaccinationDescription;
-                vaccinationToUpdate.VaccinationName = vaccination.VaccinationName;
-                vaccinationToUpdate.Progeny = vaccination.Progeny;
+                vaccinationToUpdate.CopyPropertiesForUpdate(vaccination);
 
                 _ = _context.VaccinationsDb.Update(vaccinationToUpdate);
                 _ = await _context.SaveChangesAsync();

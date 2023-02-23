@@ -23,10 +23,12 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly IProgenyService _progenyService;
         private readonly IUserInfoService _userInfoService;
         private readonly IUserAccessService _userAccessService;
-        private readonly AzureNotifications _azureNotifications;
+        private readonly IAzureNotifications _azureNotifications;
+        private readonly IWebNotificationsService _webNotificationsService;
+        private readonly ITimelineService _timelineService;
 
-        public VideosController(AzureNotifications azureNotifications, IVideosService videosService, ICommentsService commentsService, IProgenyService progenyService,
-            IUserInfoService userInfoService, IUserAccessService userAccessService)
+        public VideosController(IAzureNotifications azureNotifications, IVideosService videosService, ICommentsService commentsService, IProgenyService progenyService,
+            IUserInfoService userInfoService, IUserAccessService userAccessService, IWebNotificationsService webNotificationsService, ITimelineService timelineService)
         {
             _azureNotifications = azureNotifications;
             _videosService = videosService;
@@ -34,6 +36,8 @@ namespace KinaUnaProgenyApi.Controllers
             _progenyService = progenyService;
             _userInfoService = userInfoService;
             _userAccessService = userAccessService;
+            _webNotificationsService = webNotificationsService;
+            _timelineService = timelineService;
         }
 
         // GET api/videos/page[?pageSize=3&pageIndex=10&progenyId=2&accessLevel=1&tagFilter=funny]
@@ -127,6 +131,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 vid.Comments = await _commentsService.GetCommentsList(vid.CommentThreadNumber);
             }
+            
             VideoPageViewModel model = new VideoPageViewModel();
             model.VideosList = itemsOnPage;
             model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
@@ -149,7 +154,6 @@ namespace KinaUnaProgenyApi.Controllers
             Video video = await _videosService.GetVideo(id); 
             if (video != null)
             {
-                // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail); 
                 if (userAccess == null && video.ProgenyId != Constants.DefaultChildId)
@@ -195,7 +199,7 @@ namespace KinaUnaProgenyApi.Controllers
                             currentIndex = indexer;
                         }
                         indexer++;
-                        if (!String.IsNullOrEmpty(vid.Tags))
+                        if (!string.IsNullOrEmpty(vid.Tags))
                         {
                             List<string> pvmTags = vid.Tags.Split(',').ToList();
                             foreach (string tagstring in pvmTags)
@@ -346,19 +350,19 @@ namespace KinaUnaProgenyApi.Controllers
 
                 model = await _videosService.AddVideo(model);
                 await _videosService.SetVideoInCache(model.VideoId);
-                await _commentsService.SetCommentsListInCache(model.CommentThreadNumber);
+                await _commentsService.SetCommentsList(model.CommentThreadNumber);
 
-                Progeny prog = await _progenyService.GetProgeny(model.ProgenyId);
-                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
-                string title = "New Video added for " + prog.NickName;
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new video for " + prog.NickName;
-                TimeLineItem tItem = new TimeLineItem();
-                tItem.ProgenyId = model.ProgenyId;
-                tItem.ItemId = model.VideoId.ToString();
-                tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
-                tItem.AccessLevel = model.AccessLevel;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
-
+                Progeny progeny = await _progenyService.GetProgeny(model.ProgenyId);
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
+                string notificationTitle = "New Video added for " + progeny.NickName;
+                string notificationMessage = userInfo.FullName() + " added a new video for " + progeny.NickName;
+                
+                TimeLineItem timeLineItem = new TimeLineItem();
+                timeLineItem.CopyVideoPropertiesForAdd(model);
+                _ = await _timelineService.AddTimeLineItem(timeLineItem);
+                
+                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await _webNotificationsService.SendVideoNotification(model, userInfo, notificationTitle);
                 return Ok(model);
             }
 
@@ -399,20 +403,20 @@ namespace KinaUnaProgenyApi.Controllers
             video.Altitude = value.Altitude;
 
             video = await _videosService.UpdateVideo(video);
+            
             await _videosService.SetVideoInCache(video.VideoId);
-            await _commentsService.SetCommentsListInCache(video.CommentThreadNumber);
+            await _commentsService.SetCommentsList(video.CommentThreadNumber);
 
-            Progeny prog = await _progenyService.GetProgeny(video.ProgenyId);
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
-            string title = "Video Edited for " + prog.NickName;
-            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a video for " + prog.NickName;
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = video.ProgenyId;
-            tItem.ItemId = video.VideoId.ToString();
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
-            tItem.AccessLevel = video.AccessLevel;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            Progeny progeny = await _progenyService.GetProgeny(video.ProgenyId);
+            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
+            string notificationTitle = "Video Edited for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " edited a video for " + progeny.NickName;
+            TimeLineItem timeLineItem = new TimeLineItem();
+            timeLineItem.CopyVideoPropertiesForUpdate(video);
+            _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
 
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await _webNotificationsService.SendVideoNotification(video, userInfo, notificationTitle);
             return Ok(video);
         }
 
@@ -438,7 +442,7 @@ namespace KinaUnaProgenyApi.Controllers
                     foreach (Comment deletedComment in comments)
                     {
                         _ = await _commentsService.DeleteComment(deletedComment);
-                        await _commentsService.RemoveCommentFromCache(deletedComment.CommentId, deletedComment.CommentThreadNumber);
+                        await _commentsService.RemoveComment(deletedComment.CommentId, deletedComment.CommentThreadNumber);
                     }
                 }
 
@@ -446,22 +450,30 @@ namespace KinaUnaProgenyApi.Controllers
                 if (cmntThread != null)
                 {
                     _ = await _commentsService.DeleteCommentThread(cmntThread);
-                    await _commentsService.RemoveCommentsListFromCache(video.CommentThreadNumber);
+                    await _commentsService.RemoveCommentsList(video.CommentThreadNumber);
+                }
+
+                TimeLineItem existingTimeLineItem = await _timelineService.GetTimeLineItemByItemId(video.VideoId.ToString(), (int)KinaUnaTypes.TimeLineType.Video);
+                if (existingTimeLineItem != null)
+                {
+                    _ = await _timelineService.DeleteTimeLineItem(existingTimeLineItem);
                 }
 
                 _ = await _videosService.DeleteVideo(video);
                 await _videosService.RemoveVideoFromCache(video.VideoId, video.ProgenyId);
 
-                Progeny prog = await _progenyService.GetProgeny(video.ProgenyId);
-                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
-                string title = "Video deleted for " + prog.NickName;
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a video for " + prog.NickName;
-                TimeLineItem tItem = new TimeLineItem();
-                tItem.ProgenyId = video.ProgenyId;
-                tItem.ItemId = video.VideoId.ToString();
-                tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
-                tItem.AccessLevel = 0;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                Progeny progeny = await _progenyService.GetProgeny(video.ProgenyId);
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
+                string notificationTitle = "Video deleted for " + progeny.NickName;
+                string notificationMessage = userInfo.FullName() + " deleted a video for " + progeny.NickName;
+                TimeLineItem timeLineItem = new TimeLineItem();
+                timeLineItem.ProgenyId = video.ProgenyId;
+                timeLineItem.ItemId = video.VideoId.ToString();
+                timeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
+                timeLineItem.AccessLevel = 0;
+
+                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await _webNotificationsService.SendVideoNotification(video, userInfo, notificationTitle);
 
                 return NoContent();
             }

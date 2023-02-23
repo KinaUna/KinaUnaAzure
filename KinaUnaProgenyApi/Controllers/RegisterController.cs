@@ -19,8 +19,8 @@ namespace KinaUnaProgenyApi.Controllers
     public class RegisterController : ControllerBase
     {
         private readonly NotificationHubClient _hub;
-
-        public RegisterController(AzureNotifications azureNotifications)
+        
+        public RegisterController(IAzureNotifications azureNotifications)
         {
             _hub = azureNotifications.Hub;
         }

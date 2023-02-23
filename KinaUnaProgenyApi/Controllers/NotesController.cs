@@ -23,11 +23,12 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly ITimelineService _timelineService;
         private readonly INoteService _noteService;
         private readonly IProgenyService _progenyService;
-        private readonly AzureNotifications _azureNotifications;
-        private readonly ImageStore _imageStore;
+        private readonly IAzureNotifications _azureNotifications;
+        private readonly IWebNotificationsService _webNotificationsService;
+        private readonly IImageStore _imageStore;
 
-        public NotesController(AzureNotifications azureNotifications, ImageStore imageStore, IUserInfoService userInfoService, IUserAccessService userAccessService, ITimelineService timelineService,
-            INoteService noteService, IProgenyService progenyService)
+        public NotesController(IAzureNotifications azureNotifications, IImageStore imageStore, IUserInfoService userInfoService, IUserAccessService userAccessService, ITimelineService timelineService,
+            INoteService noteService, IProgenyService progenyService, IWebNotificationsService webNotificationsService)
         {
             _azureNotifications = azureNotifications;
             _imageStore = imageStore;
@@ -36,6 +37,7 @@ namespace KinaUnaProgenyApi.Controllers
             _timelineService = timelineService;
             _noteService = noteService;
             _progenyService = progenyService;
+            _webNotificationsService = webNotificationsService;
         }
 
         // GET api/notes/progeny/[id]
@@ -111,6 +113,7 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "Note added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new note for " + progeny.NickName;
             await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await _webNotificationsService.SendNoteNotification(noteItem, userInfo, notificationTitle);
 
             return Ok(noteItem);
         }
@@ -146,12 +149,14 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 timeLineItem.CopyNotePropertiesForUpdate(noteItem);
                 _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
-            }
 
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            string title = "Note edited for " + progeny.NickName;
-            string message = userinfo.FullName() + " edited a note for " + progeny.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, timeLineItem, userinfo.ProfilePicture);
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                string notificationTitle = "Note edited for " + progeny.NickName;
+                string notificationMessage = userInfo.FullName() + " edited a note for " + progeny.NickName;
+                
+                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await _webNotificationsService.SendNoteNotification(noteItem, userInfo, notificationTitle);
+            }
 
             return Ok(noteItem);
         }
@@ -177,21 +182,24 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(noteItem.NoteId.ToString(), (int)KinaUnaTypes.TimeLineType.Note);
-                if (tItem != null)
+                TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(noteItem.NoteId.ToString(), (int)KinaUnaTypes.TimeLineType.Note);
+                if (timeLineItem != null)
                 {
-                    _ = await _timelineService.DeleteTimeLineItem(tItem);
+                    _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
                 }
 
                 _ = await _noteService.DeleteNote(noteItem);
-
-                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                string title = "Note deleted for " + progeny.NickName;
-                string message = userinfo.FullName() + " deleted a note for " + progeny.NickName + ". Note: " + noteItem.Title;
-                if (tItem != null)
+                
+                if (timeLineItem != null)
                 {
-                    tItem.AccessLevel = 0;
-                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                    UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                    
+                    string notificationTitle = "Note deleted for " + progeny.NickName;
+                    string notificationMessage = userInfo.FullName() + " deleted a note for " + progeny.NickName + ". Note: " + noteItem.Title;
+
+                    noteItem.AccessLevel = timeLineItem.AccessLevel = 0;
+                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                    await _webNotificationsService.SendNoteNotification(noteItem, userInfo, notificationTitle);
                 }
 
                 return NoContent();

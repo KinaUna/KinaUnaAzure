@@ -35,9 +35,6 @@ namespace KinaUnaProgenyApi
             string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
             string authenticationServerClientSecret = Configuration["AuthenticationServerClientSecret"];
 
-            services.AddSingleton<ImageStore>();
-            services.AddScoped<AzureNotifications>();
-
             services.AddDbContext<ProgenyDbContext>(options =>
                 options.UseSqlServer(Configuration["ProgenyDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
             
@@ -63,6 +60,8 @@ namespace KinaUnaProgenyApi
                     }));
 
             services.AddDistributedMemoryCache();
+            services.AddScoped<IImageStore, ImageStore>();
+            services.AddScoped<IAzureNotifications, AzureNotifications>();
             services.AddScoped<IDataService, DataService>();
             services.AddScoped<IProgenyService, ProgenyService>();
             services.AddScoped<IUserInfoService, UserInfoService>();
@@ -84,6 +83,8 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IPicturesService, PicturesService>();
             services.AddScoped<IVideosService, VideosService>();
             services.AddScoped<ICommentsService, CommentsService>();
+            services.AddScoped<IPushMessageSender, PushMessageSender>();
+            services.AddScoped<IWebNotificationsService, WebNotificationsService>();
 
             services.AddControllers().AddNewtonsoftJson();
             

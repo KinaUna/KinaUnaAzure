@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
@@ -19,16 +17,19 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly ICommentsService _commentsService;
         private readonly IProgenyService _progenyService;
         private readonly IUserInfoService _userInfoService;
-        private readonly ImageStore _imageStore;
-        private readonly AzureNotifications _azureNotifications;
+        private readonly IImageStore _imageStore;
+        private readonly IAzureNotifications _azureNotifications;
+        private readonly IWebNotificationsService _webNotificationsService;
 
-        public CommentsController(ImageStore imageStore, AzureNotifications azureNotifications, ICommentsService commentsService, IProgenyService progenyService, IUserInfoService userInfoService)
+        public CommentsController(IImageStore imageStore, IAzureNotifications azureNotifications, ICommentsService commentsService, IProgenyService progenyService,
+            IUserInfoService userInfoService, IWebNotificationsService webNotificationsService)
         {
             _imageStore = imageStore;
             _azureNotifications = azureNotifications;
             _commentsService = commentsService;
             _progenyService = progenyService;
             _userInfoService = userInfoService;
+            _webNotificationsService = webNotificationsService;
         }
 
         // GET api/comments/5
@@ -55,48 +56,15 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 foreach (Comment comment in result)
                 {
-                    UserInfo cmntAuthor = await _userInfoService.GetUserInfoByUserId(comment.Author);
-                    if (cmntAuthor != null)
+                    UserInfo commentAuthor = await _userInfoService.GetUserInfoByUserId(comment.Author);
+                    if (commentAuthor != null)
                     {
-                        string authorImg = cmntAuthor.ProfilePicture ?? "";
-                        string authorName = "";
-                        if (!String.IsNullOrEmpty(authorImg))
-                        {
-                            authorImg = _imageStore.UriFor(authorImg, "profiles");
-                        }
-
-                        comment.AuthorImage = authorImg;
-                        if (string.IsNullOrEmpty(comment.AuthorImage))
-                        {
-                            comment.AuthorImage = Constants.ProfilePictureUrl;
-                        }
-
-                        if (!String.IsNullOrEmpty(cmntAuthor.FirstName))
-                        {
-                            authorName = cmntAuthor.FirstName;
-                        }
-                        if (!String.IsNullOrEmpty(cmntAuthor.MiddleName))
-                        {
-                            authorName = authorName + " " + cmntAuthor.MiddleName;
-                        }
-                        if (!String.IsNullOrEmpty(cmntAuthor.LastName))
-                        {
-                            authorName = authorName + " " + cmntAuthor.LastName;
-                        }
-
-                        authorName = authorName.Trim();
-                        if (String.IsNullOrEmpty(authorName))
-                        {
-                            authorName = cmntAuthor.UserName;
-                            if (String.IsNullOrEmpty(authorName))
-                            {
-                                authorName = comment.DisplayName;
-                            }
-                        }
-
-                        comment.DisplayName = authorName;
+                        string authorImg = commentAuthor.ProfilePicture ?? "";
+                        comment.AuthorImage = _imageStore.UriFor(authorImg, "profiles");
+                        comment.DisplayName = commentAuthor.FullName();
                     }
                 }
+
                 return Ok(result);
             }
 
@@ -107,26 +75,38 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Comment model)
         {
-            Comment newComment = new Comment();
-            newComment.Created = DateTime.UtcNow;
-            newComment.Author = model.Author;
-            newComment.CommentText = model.CommentText;
-            newComment.CommentThreadNumber = model.CommentThreadNumber;
-            newComment.DisplayName = model.DisplayName;
+            Progeny progeny = await _progenyService.GetProgeny(model.Progeny.Id);
 
-            newComment = await _commentsService.AddComment(newComment);
-            await _commentsService.SetCommentInCache(newComment.CommentId);
+            string userId = User.GetUserId();
+            if (progeny != null)
+            {
+                if (userId != model.Author)
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
 
-            model.Progeny = await _progenyService.GetProgeny(model.Progeny.Id);
-            string title = "New comment for " + model.Progeny.NickName;
-            string message = model.DisplayName + " added a new comment for " + model.Progeny.NickName;
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = model.Progeny.Id;
-            tItem.ItemId = model.ItemId;
-            tItem.ItemType = model.ItemType;
-            tItem.AccessLevel = model.AccessLevel;
+            Comment newComment = await _commentsService.AddComment(model);
+            await _commentsService.SetComment(newComment.CommentId);
+
+            newComment.Progeny = progeny;
+            string notificationTitle = "New comment for " + newComment.Progeny.NickName;
+            string notificationMessage = model.DisplayName + " added a new comment for " + newComment.Progeny.NickName;
+
+            TimeLineItem timeLineItem = new TimeLineItem();
+            timeLineItem.ProgenyId = newComment.Progeny.Id;
+            timeLineItem.ItemId = newComment.ItemId;
+            timeLineItem.ItemType = newComment.ItemType;
+            timeLineItem.AccessLevel = newComment.AccessLevel;
+            
             UserInfo userinfo = await _userInfoService.GetUserInfoByUserId(model.Author);
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
+            await _webNotificationsService.SendCommentNotification(newComment, userinfo, notificationTitle, notificationMessage);
 
             return Ok(newComment);
         }
@@ -136,21 +116,30 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Put(int id, [FromBody] Comment value)
         {
             Comment comment = await _commentsService.GetComment(id);
-
-            // Todo: more validation of the values
             if (comment == null)
             {
                 return NotFound();
             }
 
-            comment.CommentText = value.CommentText;
-            comment.Author = value.Author;
-            comment.DisplayName = value.DisplayName;
-            comment.Created = value.Created;
+            Progeny progeny = await _progenyService.GetProgeny(value.Progeny.Id);
 
-            comment = await _commentsService.UpdateComment(comment);
-            
-            await _commentsService.SetCommentInCache(comment.CommentId);
+            string userId = User.GetUserId();
+            if (progeny != null)
+            {
+
+                if (userId != comment.Author)
+                {
+                    return Unauthorized();
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+
+            comment = await _commentsService.UpdateComment(value);
+
+            await _commentsService.SetComment(comment.CommentId);
 
             return Ok(comment);
         }
@@ -163,14 +152,14 @@ namespace KinaUnaProgenyApi.Controllers
             Comment comment = await _commentsService.GetComment(id);
             if (comment != null)
             {
-                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
-                if (userInfo.UserId != comment.Author)
+                string userId = User.GetUserId();
+                if (userId != comment.Author)
                 {
                     return Unauthorized();
                 }
 
                 _ = await _commentsService.DeleteComment(comment);
-                await _commentsService.RemoveCommentFromCache(comment.CommentId, comment.CommentThreadNumber);
+                await _commentsService.RemoveComment(comment.CommentId, comment.CommentThreadNumber);
                 return NoContent();
             }
             else

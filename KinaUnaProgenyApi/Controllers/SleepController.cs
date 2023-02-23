@@ -23,9 +23,10 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly ISleepService _sleepService;
         private readonly IProgenyService _progenyService;
         private readonly IUserInfoService _userInfoService;
-        private readonly AzureNotifications _azureNotifications;
+        private readonly IAzureNotifications _azureNotifications;
+        private readonly IWebNotificationsService _webNotificationsService;
 
-        public SleepController(AzureNotifications azureNotifications, IUserAccessService userAccessService, ITimelineService timelineService, ISleepService sleepService, IProgenyService progenyService, IUserInfoService userInfoService)
+        public SleepController(IAzureNotifications azureNotifications, IUserAccessService userAccessService, ITimelineService timelineService, ISleepService sleepService, IProgenyService progenyService, IUserInfoService userInfoService, IWebNotificationsService webNotificationsService)
         {
             _azureNotifications = azureNotifications;
             _userAccessService = userAccessService;
@@ -33,6 +34,7 @@ namespace KinaUnaProgenyApi.Controllers
             _sleepService = sleepService;
             _progenyService = progenyService;
             _userInfoService = userInfoService;
+            _webNotificationsService = webNotificationsService;
         }
 
         // GET api/sleep/progeny/[id]
@@ -80,14 +82,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Sleep value)
         {
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail();
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to add sleep for this child.
-                
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -97,38 +96,22 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            Sleep sleepItem = new Sleep();
-            sleepItem.AccessLevel = value.AccessLevel;
-            sleepItem.Author = value.Author;
-            sleepItem.SleepNotes = value.SleepNotes;
-            sleepItem.SleepRating = value.SleepRating;
-            sleepItem.ProgenyId = value.ProgenyId;
-            sleepItem.SleepStart = value.SleepStart;
-            sleepItem.SleepEnd = value.SleepEnd;
-            sleepItem.CreatedDate = DateTime.UtcNow;
-
-            sleepItem = await _sleepService.AddSleep(sleepItem);
+            value.Author = User.GetUserId();
             
+            Sleep sleepItem = await _sleepService.AddSleep(value);
+            
+            TimeLineItem timeLineItem = new TimeLineItem();
+            timeLineItem.CopySleepPropertiesForAdd(sleepItem);
+            
+            _ = await _timelineService.AddTimeLineItem(timeLineItem);
 
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = sleepItem.ProgenyId;
-            tItem.AccessLevel = sleepItem.AccessLevel;
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Sleep;
-            tItem.ItemId = sleepItem.SleepId.ToString();
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            tItem.CreatedBy = userinfo?.UserId ?? "Unknown";
-            tItem.CreatedTime = DateTime.UtcNow;
-            tItem.ProgenyTime = sleepItem.SleepStart;
-
-            _ = await _timelineService.AddTimeLineItem(tItem);
-
-            string title = "Sleep added for " + prog.NickName;
-            if (userinfo != null)
-            {
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
-                                 " added a new sleep item for " + prog.NickName;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
-            }
+            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+            
+            string notificationTitle = "Sleep added for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " added a new sleep item for " + progeny.NickName;
+            
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await _webNotificationsService.SendSleepNotification(sleepItem, userInfo, notificationTitle);
 
             return Ok(sleepItem);
         }
@@ -143,14 +126,11 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail();
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to edit sleep for this child.
-
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -160,32 +140,22 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            sleepItem.AccessLevel = value.AccessLevel;
-            sleepItem.Author = value.Author;
-            sleepItem.SleepNotes = value.SleepNotes;
-            sleepItem.SleepRating = value.SleepRating;
-            sleepItem.ProgenyId = value.ProgenyId;
-            sleepItem.SleepStart = value.SleepStart;
-            sleepItem.SleepEnd = value.SleepEnd;
-            sleepItem.CreatedDate = value.CreatedDate;
-
-            sleepItem = await _sleepService.UpdateSleep(sleepItem);
+            sleepItem = await _sleepService.UpdateSleep(value);
             
-            TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(sleepItem.SleepId.ToString(), (int)KinaUnaTypes.TimeLineType.Sleep);
-            if (tItem != null)
+            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(sleepItem.SleepId.ToString(), (int)KinaUnaTypes.TimeLineType.Sleep);
+            
+            if (timeLineItem != null)
             {
-                tItem.ProgenyTime = sleepItem.SleepStart;
-                tItem.AccessLevel = sleepItem.AccessLevel;
-                _ = await _timelineService.UpdateTimeLineItem(tItem);
-            }
+                timeLineItem.CopySleepPropertiesForUpdate(sleepItem);
+                _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
 
-            string title = "Sleep for " + prog.NickName + " edited";
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            if (userinfo != null)
-            {
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
-                                 " edited a sleep item for " + prog.NickName;
-                await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+
+                string notificationTitle = "Sleep for " + progeny.NickName + " edited";
+                string notificationMessage = userInfo.FullName() + " edited a sleep item for " + progeny.NickName;
+                
+                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await _webNotificationsService.SendSleepNotification(sleepItem, userInfo, notificationTitle);
             }
 
             return Ok(sleepItem);
@@ -199,13 +169,10 @@ namespace KinaUnaProgenyApi.Controllers
             if (sleepItem != null)
             {
                 string userEmail = User.GetEmail();
-                // Check if child exists.
-                Progeny prog = await _progenyService.GetProgeny(sleepItem.ProgenyId);
-                if (prog != null)
+                Progeny progeny = await _progenyService.GetProgeny(sleepItem.ProgenyId);
+                if (progeny != null)
                 {
-                    // Check if user is allowed to delete sleep for this child.
-                    
-                    if (!prog.IsInAdminList(userEmail))
+                    if (!progeny.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
                     }
@@ -215,25 +182,27 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                TimeLineItem tItem = await _timelineService.GetTimeLineItemByItemId(sleepItem.SleepId.ToString(), (int)KinaUnaTypes.TimeLineType.Sleep);
-                if (tItem != null)
+                TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(sleepItem.SleepId.ToString(), (int)KinaUnaTypes.TimeLineType.Sleep);
+                if (timeLineItem != null)
                 {
-                    _ = await _timelineService.DeleteTimeLineItem(tItem);
+                    _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
                 }
 
                 _ = await _sleepService.DeleteSleep(sleepItem);
-                
 
-                string title = "Sleep for " + prog.NickName + " deleted";
-                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                if (userinfo != null)
+                if (timeLineItem != null)
                 {
-                    string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName +
-                                     " deleted a sleep item for " + prog.NickName + ". Sleep start: " +
-                                     sleepItem.SleepStart.ToString("dd-MMM-yyyy HH:mm");
-                    await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
-                }
+                    UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
 
+                    string notificationTitle = "Sleep for " + progeny.NickName + " deleted";
+                    string notificationMessage = userInfo.FullName() + " deleted a sleep item for " + progeny.NickName + ". Sleep start: " + sleepItem.SleepStart.ToString("dd-MMM-yyyy HH:mm");
+                    
+                    sleepItem.AccessLevel = timeLineItem.AccessLevel = 0;
+
+                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                    await _webNotificationsService.SendSleepNotification(sleepItem, userInfo, notificationTitle);
+                }
+                
                 return NoContent();
             }
             else
@@ -261,7 +230,6 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
-            // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail); 
 
@@ -340,61 +308,11 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail); 
             if (userAccess != null)
             {
-                string userTimeZone = Constants.DefaultTimezone;
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                string userTimeZone = userInfo.Timezone;
+                List<Sleep> allSleepList = await _sleepService.GetSleepList(progenyId);
                 SleepStatsModel model = new SleepStatsModel();
-                model.SleepTotal = TimeSpan.Zero;
-                model.SleepLastYear = TimeSpan.Zero;
-                model.SleepLastMonth = TimeSpan.Zero;
-                List<Sleep> sList = await _sleepService.GetSleepList(progenyId); 
-                List<Sleep> sleepList = new List<Sleep>();
-                DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
-                DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
-                if (sList.Count != 0)
-                {
-                    foreach (Sleep s in sList)
-                    {
-
-                        bool isLessThanYear = s.SleepEnd > yearAgo;
-                        bool isLessThanMonth = s.SleepEnd > monthAgo;
-                        s.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(s.SleepStart,
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-                        s.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(s.SleepEnd,
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-                        DateTimeOffset sOffset = new DateTimeOffset(s.SleepStart,
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
-                        DateTimeOffset eOffset = new DateTimeOffset(s.SleepEnd,
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
-                        s.SleepDuration = eOffset - sOffset;
-
-                        model.SleepTotal = model.SleepTotal + s.SleepDuration;
-                        if (isLessThanYear)
-                        {
-                            model.SleepLastYear = model.SleepLastYear + s.SleepDuration;
-                        }
-
-                        if (isLessThanMonth)
-                        {
-                            model.SleepLastMonth = model.SleepLastMonth + s.SleepDuration;
-                        }
-
-                        if (s.AccessLevel >= accessLevel)
-                        {
-                            sleepList.Add(s);
-                        }
-                    }
-                    sleepList = sleepList.OrderBy(s => s.SleepStart).ToList();
-
-                    model.TotalAverage = model.SleepTotal / (DateTime.UtcNow - sleepList.First().SleepStart).TotalDays;
-                    model.LastYearAverage = model.SleepLastYear / (DateTime.UtcNow - yearAgo).TotalDays;
-                    model.LastMonthAverage = model.SleepLastMonth / 30;
-
-                }
-                else
-                {
-                    model.TotalAverage = TimeSpan.Zero;
-                    model.LastYearAverage = TimeSpan.Zero;
-                    model.LastMonthAverage = TimeSpan.Zero;
-                }
+                model.ProcessSleepStats(allSleepList, accessLevel, userTimeZone);
 
                 return Ok(model);
             }
@@ -409,91 +327,13 @@ namespace KinaUnaProgenyApi.Controllers
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail); 
             if (userAccess != null)
             {
-                string userTimeZone = Constants.DefaultTimezone;
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                string userTimeZone = userInfo.Timezone;
+
                 List<Sleep> sList = await _sleepService.GetSleepList(progenyId);
-                List<Sleep> sleepList = new List<Sleep>();
-                foreach (Sleep s in sList)
-                {
-                    s.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(s.SleepStart,
-                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-                    s.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(s.SleepEnd,
-                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-                    DateTimeOffset sOffset = new DateTimeOffset(s.SleepStart,
-                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
-                    DateTimeOffset eOffset = new DateTimeOffset(s.SleepEnd,
-                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
-                    s.SleepDuration = eOffset - sOffset;
-
-                    if (s.AccessLevel >= accessLevel)
-                    {
-                        sleepList.Add(s);
-                    }
-                }
-                sleepList = sleepList.OrderBy(s => s.SleepStart).ToList();
-
-                List<Sleep> chartList = new List<Sleep>();
-                foreach (Sleep chartItem in sleepList)
-                {
-                    double durationStartDate = 0.0;
-                    if (chartItem.SleepStart.Date == chartItem.SleepEnd.Date)
-                    {
-                        durationStartDate = durationStartDate + chartItem.SleepDuration.TotalMinutes;
-                        Sleep slpItem = chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date);
-                        if (slpItem != null)
-                        {
-                            slpItem.SleepDuration += TimeSpan.FromMinutes(durationStartDate);
-                        }
-                        else
-                        {
-                            Sleep newSleep = new Sleep();
-                            newSleep.SleepStart = chartItem.SleepStart;
-                            newSleep.SleepDuration = TimeSpan.FromMinutes(durationStartDate);
-                            chartList.Add(newSleep);
-                        }
-                    }
-                    else
-                    {
-                        DateTimeOffset sOffset = new DateTimeOffset(chartItem.SleepStart,
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(chartItem.SleepStart));
-                        DateTimeOffset s2Offset = new DateTimeOffset(chartItem.SleepStart.Date + TimeSpan.FromDays(1),
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone)
-                                .GetUtcOffset(chartItem.SleepStart.Date + TimeSpan.FromDays(1)));
-                        DateTimeOffset eOffset = new DateTimeOffset(chartItem.SleepEnd,
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(chartItem.SleepEnd));
-                        DateTimeOffset e2Offset = new DateTimeOffset(chartItem.SleepEnd.Date,
-                            TimeZoneInfo.FindSystemTimeZoneById(userTimeZone)
-                                .GetUtcOffset(chartItem.SleepEnd.Date));
-                        TimeSpan sDateDuration = s2Offset - sOffset;
-                        TimeSpan eDateDuration = eOffset - e2Offset;
-                        durationStartDate = chartItem.SleepDuration.TotalMinutes - (eDateDuration.TotalMinutes);
-                        double durationEndDate = chartItem.SleepDuration.TotalMinutes - sDateDuration.TotalMinutes;
-                        Sleep slpItem = chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date);
-                        if (slpItem != null)
-                        {
-                            slpItem.SleepDuration += TimeSpan.FromMinutes(durationStartDate);
-                        }
-                        else
-                        {
-                            Sleep newSleep = new Sleep();
-                            newSleep.SleepStart = chartItem.SleepStart;
-                            newSleep.SleepDuration = TimeSpan.FromMinutes(durationStartDate);
-                            chartList.Add(newSleep);
-                        }
-
-                        Sleep slpItem2 = chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepEnd.Date);
-                        if (slpItem2 != null)
-                        {
-                            slpItem2.SleepDuration += TimeSpan.FromMinutes(durationEndDate);
-                        }
-                        else
-                        {
-                            Sleep newSleep = new Sleep();
-                            newSleep.SleepStart = chartItem.SleepEnd;
-                            newSleep.SleepDuration = TimeSpan.FromMinutes(durationEndDate);
-                            chartList.Add(newSleep);
-                        }
-                    }
-                }
+                
+                SleepStatsModel sleepStatsModel = new SleepStatsModel();
+                List<Sleep> chartList = sleepStatsModel.ProcessSleepChartData(sList, accessLevel, userTimeZone);
 
                 List<Sleep> model = chartList.OrderBy(s => s.SleepStart).ToList();
 
@@ -507,62 +347,21 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepDetails(int sleepId, int accessLevel, int sortOrder)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            
             Sleep currentSleep = await _sleepService.GetSleep(sleepId);
+            
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(currentSleep.ProgenyId, userEmail);
+            
             if (userAccess != null)
             {
-                string userTimeZone = Constants.DefaultTimezone;
-                List<Sleep> sList = await _sleepService.GetSleepList(currentSleep.ProgenyId);
-                List<Sleep> sleepList = new List<Sleep>();
-                foreach (Sleep s in sList)
-                {
-                    if (s.AccessLevel >= accessLevel)
-                    {
-                        sleepList.Add(s);
-                    }
-                }
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                string userTimeZone = userInfo.Timezone;
 
-                if (sortOrder == 0)
-                {
-                    sleepList = sleepList.OrderBy(s => s.SleepStart).ToList();
-                }
-                else
-                {
-                    sleepList = sleepList.OrderByDescending(s => s.SleepStart).ToList();
-                }
-                
-                List<Sleep> model = new List<Sleep>();
+                List<Sleep> allSleepList = await _sleepService.GetSleepList(currentSleep.ProgenyId);
+                SleepDetailsModel sleepDetailsModel = new SleepDetailsModel();
+                sleepDetailsModel.CreateSleepList(currentSleep, allSleepList, accessLevel, sortOrder, userTimeZone);
 
-                model.Add(currentSleep);
-                int currentSleepIndex = sleepList.IndexOf(currentSleep);
-                if (currentSleepIndex > 0)
-                {
-                    model.Add(sleepList[currentSleepIndex - 1]);
-                }
-                else
-                {
-                    model.Add(sleepList[sleepList.Count - 1]);
-                }
-
-                if (sleepList.Count < currentSleepIndex + 1)
-                {
-                    model.Add(sleepList[currentSleepIndex + 1]);
-                }
-                else
-                {
-                    model.Add(sleepList[0]);
-                }
-
-                foreach (Sleep s in model)
-                {
-                    DateTimeOffset sOffset = new DateTimeOffset(s.SleepStart,
-                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
-                    DateTimeOffset eOffset = new DateTimeOffset(s.SleepEnd,
-                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
-                    s.SleepDuration = eOffset - sOffset;
-                }
-
-                return Ok(model);
+                return Ok(sleepDetailsModel.SleepList);
             }
 
             return Unauthorized();

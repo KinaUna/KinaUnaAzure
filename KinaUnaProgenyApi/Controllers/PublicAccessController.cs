@@ -17,7 +17,7 @@ namespace KinaUnaProgenyApi.Controllers
     [AllowAnonymous]
     public class PublicAccessController : ControllerBase
     {
-        private readonly ImageStore _imageStore;
+        private readonly IImageStore _imageStore;
         private readonly IProgenyService _progenyService;
         private readonly IUserInfoService _userInfoService;
         private readonly IUserAccessService _userAccessService;
@@ -35,7 +35,7 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly IPicturesService _picturesService;
         private readonly IVideosService _videosService;
         private readonly ICommentsService _commentsService;
-        public PublicAccessController(ImageStore imageStore, IProgenyService progenyService, IUserInfoService userInfoService, IUserAccessService userAccessService, ICalendarService calendarService,
+        public PublicAccessController(IImageStore imageStore, IProgenyService progenyService, IUserInfoService userInfoService, IUserAccessService userAccessService, ICalendarService calendarService,
             IContactService contactService, IFriendService friendService, ILocationService locationService, ITimelineService timelineService, IMeasurementService measurementService, INoteService noteService,
             ISkillService skillService, ISleepService sleepService, IVaccinationService vaccinationService, IVocabularyService vocabularyService, IPicturesService picturesService, IVideosService videosService,
             ICommentsService commentsService)

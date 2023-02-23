@@ -39,6 +39,12 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<TimeLineItem> AddTimeLineItem(TimeLineItem timeLineItem)
         {
+            TimeLineItem existingTimeLineItem = await _context.TimeLineDb.SingleOrDefaultAsync(t => t.ItemId == timeLineItem.ItemId && t.ItemType == timeLineItem.ItemType);
+            if (existingTimeLineItem != null)
+            {
+                return timeLineItem;
+            }
+
             TimeLineItem timeLineItemToAdd = new TimeLineItem();
             timeLineItemToAdd.CopyPropertiesForAdd(timeLineItem);
 

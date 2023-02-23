@@ -1,9 +1,9 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
-@model KinaUnaWeb.Models.ItemViewModels.PicturePageViewModel
+@model KinaUnaWeb.Models.ItemViewModels.PicturesListViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Photo gallery", PageNames.Pictures, Model.LanguageId);
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Photo gallery", PageNames.Pictures, Model.LanguageId);
     string pageString = await LocaleManager.GetTranslation("Page", PageNames.Pictures, Model.LanguageId);
     string ofString = await LocaleManager.GetTranslation("of", PageNames.Pictures, Model.LanguageId);
     string firstText = await LocaleManager.GetTranslation("First", PageNames.Pictures, Model.LanguageId);
@@ -15,7 +15,7 @@
     string go5PagesForwardString = await LocaleManager.GetTranslation("Go 5 pages forward", PageNames.Pictures, Model.LanguageId);
     string go5PagesBackString = await LocaleManager.GetTranslation("Go 5 pages back", PageNames.Pictures, Model.LanguageId);
 }
-@if (Model.IsAdmin)
+@if (Model.IsCurrentUserProgenyAdmin)
 {
     <div style="float: right;">
         <div class="btn-group">
@@ -116,7 +116,7 @@
         }
     }
     <div class="col-6 text-right" style="float: right;">
-        @await LocaleManager.GetTranslation("Photos per page:", PageNames.Pictures, Model.LanguageId) <a class="@picPerPageStyle4" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="4" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">4</a> <a class="@picPerPageStyle8" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="8" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">8</a> <a class="@picPerPageStyle16" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="16" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">16</a> <a class="@picPerPageStyle32" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="32" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">32</a> <a class="@picPerPageStyle64" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="64" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">64</a>
+        @await LocaleManager.GetTranslation("Photos per page:", PageNames.Pictures, Model.LanguageId) <a class="@picPerPageStyle4" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="4" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">4</a> <a class="@picPerPageStyle8" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="8" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">8</a> <a class="@picPerPageStyle16" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="16" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">16</a> <a class="@picPerPageStyle32" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="32" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">32</a> <a class="@picPerPageStyle64" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="64" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">64</a>
     </div>
     @if (Model.SortBy == 1)
     {
@@ -124,42 +124,42 @@
         sortNewest = "btn btn-primary btn-sm";
         <div class="col-6">
             @sortString <span class="@sortNewest"><i class="fas fa-check-circle"></i> @newestFirstString</span>
-            <a class="@sortOldest" asp-controller="Pictures" asp-action="Index" asp-route-id="@newPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">@oldestFirstString</a>
+            <a class="@sortOldest" asp-controller="Pictures" asp-action="Index" asp-route-id="@newPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">@oldestFirstString</a>
         </div>
     }
     else
     {
         <div>
             @sortString <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> @oldestFirstString</span>
-            <a class="@sortNewest" asp-controller="Pictures" asp-action="Index" asp-route-id="@newPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@Model.TagFilter">@newestFirstString</a>
+            <a class="@sortNewest" asp-controller="Pictures" asp-action="Index" asp-route-id="@newPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@Model.TagFilter">@newestFirstString</a>
         </div>
     }
 
     @if (!string.IsNullOrEmpty(Model.TagFilter))
     {
         <br />
-        <div style="float: right;">@await LocaleManager.GetTranslation("Tag filter:", PageNames.Pictures, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-id="1" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Pictures, Model.LanguageId)</a></div>
+        <div style="float: right;">@await LocaleManager.GetTranslation("Tag filter:", PageNames.Pictures, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-id="1" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Pictures, Model.LanguageId)</a></div>
     }
     <br />
     @if (Model.TotalPages > 1)
     {
         <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
             <div style="float:left">
-                <a id="previousPhotoLink" class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@prevPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id"
+                <a id="previousPhotoLink" class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@prevPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
                 asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @photosString</a>
                 @if (Model.TotalPages > 5)
                 {
-                    <a style="margin-left: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@prev5Page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id"
+                    <a style="margin-left: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@prev5Page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
                     asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> @go5PagesBackString</a>
                 }
             </div>
             <div style="float: right">
                 @if (Model.TotalPages > 5)
                 {
-                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@next5Page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id"
+                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@next5Page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
                     asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@go5PagesForwardString <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
                 }
-                <a id="nextPhotoLink" class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@nextPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id"
+                <a id="nextPhotoLink" class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@nextPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
                 asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText @photosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
             </div>
         </div>
@@ -170,19 +170,19 @@
         @foreach (Picture item in Model.PicturesList)
         {
             string bgColor = "#181274";
-            if (Model.IsAdmin && item.AccessLevel == 0)
+            if (Model.IsCurrentUserProgenyAdmin && item.AccessLevel == 0)
             {
                 bgColor = "#870000";
             }
-            if (Model.IsAdmin && item.AccessLevel == 1)
+            if (Model.IsCurrentUserProgenyAdmin && item.AccessLevel == 1)
             {
                 bgColor = "#247f00";
             }
-            if (Model.IsAdmin && item.AccessLevel == 2)
+            if (Model.IsCurrentUserProgenyAdmin && item.AccessLevel == 2)
             {
                 bgColor = "#72007f";
             }
-            if (Model.IsAdmin && item.AccessLevel == 3)
+            if (Model.IsCurrentUserProgenyAdmin && item.AccessLevel == 3)
             {
                 bgColor = "#007987";
             }
@@ -191,7 +191,7 @@
             {
                 pTime = item.PictureTime.Value.ToString("dd-MMM-yyyy HH:mm");
             }
-            <a class="leavePage" asp-area="" asp-controller="Pictures" asp-action="Picture" asp-route-id="@item.PictureId" asp-route-childId="@Model.Progeny.Id" asp-route-tagFilter="@Model.TagFilter">
+            <a class="leavePage" asp-area="" asp-controller="Pictures" asp-action="Picture" asp-route-id="@item.PictureId" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@Model.TagFilter">
                 <div align="center" class="img-rounded" style="margin: 2px; padding: 1px; float: left; width: 270px; height: 270px; background-color: #000000; text-align: center; line-height: 271px; display: inline-block; position: relative;">
                     <img src="@item.PictureLink600" class="img-rounded" style="max-width: 97%; max-height: 97%; vertical-align: middle; display: inline-block; margin: auto; padding: auto;" />
 
@@ -213,22 +213,22 @@
     {
         <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
             <div style="float:left">
-                <a class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@prevPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id"
+                <a class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@prevPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
                 asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @photosString</a>
                 @if (Model.TotalPages > 5)
                 {
-                    <a style="margin-left: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@prev5Page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" 
-                    asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> @go5PagesBackString</a>
+                    <a style="margin-left: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@prev5Page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
+               asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> @go5PagesBackString</a>
                 }
             </div>
             <div style="float: right">
                 @if (Model.TotalPages > 5)
                 {
-                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@next5Page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" 
-                    asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@go5PagesForwardString<i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                    <a class="leavePage" style="margin-right: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@next5Page" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
+               asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@go5PagesForwardString<i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
                 }
-                <a class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@nextPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" 
-                asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText @photosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                <a class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@nextPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
+               asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText @photosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
             </div>
         </div>
     }
@@ -240,14 +240,14 @@
                 string[] tagsList = Model.TagsList.Split(',');
                 foreach (string tagString in tagsList)
                 {
-                    <a asp-action="Index" asp-route-id="1" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.Progeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                    <a asp-action="Index" asp-route-id="1" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
                 }
             }
         }
     </div>
 </div>
 
-@if (Model.IsAdmin)
+@if (Model.IsCurrentUserProgenyAdmin)
 {
     <br /><br />
     <div>

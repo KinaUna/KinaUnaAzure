@@ -18,11 +18,11 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class NotificationsController : ControllerBase
     {
-        private readonly AzureNotifications _azureNotifications;
+        private readonly IAzureNotifications _azureNotifications;
         private readonly IDataService _dataService;
-        private readonly ImageStore _imageStore;
+        private readonly IImageStore _imageStore;
 
-        public NotificationsController(AzureNotifications azureNotifications, ImageStore imageStore, IDataService dataService)
+        public NotificationsController(IAzureNotifications azureNotifications, IImageStore imageStore, IDataService dataService)
         {
             _azureNotifications = azureNotifications;
             _dataService = dataService;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -46,7 +47,46 @@ namespace KinaUnaProgenyApi.Models.ViewModels
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
             AccessLevelListDe = aclList.AccessLevelListDe;
+        }
 
+        public void SetPicturePropertiesFromPictureItem(Picture picture)
+        {
+            PictureId = picture.PictureId;
+            PictureTime = picture.PictureTime;
+            ProgenyId = picture.ProgenyId;
+            Owners = picture.Owners;
+            PictureLink = picture.PictureLink1200;
+            AccessLevel = picture.AccessLevel;
+            Author = picture.Author;
+            AccessLevelListEn[picture.AccessLevel].Selected = true;
+            AccessLevelListDa[picture.AccessLevel].Selected = true;
+            AccessLevelListDe[picture.AccessLevel].Selected = true;
+            Tags = picture.Tags;
+            Location = picture.Location;
+            Latitude = picture.Latitude;
+            Longtitude = picture.Longtitude;
+            Altitude = picture.Altitude;
+            CommentThreadNumber = picture.CommentThreadNumber;
+        }
+
+        public void SetTagsList(List<string> tagsList)
+        {
+            string tagItems = "[";
+            
+            if (tagsList.Any())
+            {
+                foreach (string tagstring in tagsList)
+                {
+                    tagItems = tagItems + "'" + tagstring + "',";
+                }
+
+                tagItems = tagItems.Remove(tagItems.Length - 1);
+                
+            }
+
+            tagItems = tagItems + "]";
+
+            TagsList = tagItems;
         }
     }
 }

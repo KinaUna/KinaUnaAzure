@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -37,11 +38,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Skill> AddSkill(Skill skill)
         {
-            _ = _context.SkillsDb.Add(skill);
+            Skill skillToAdd = new Skill();
+            skillToAdd.CopyPropertiesForAdd(skill);
+            _ = _context.SkillsDb.Add(skillToAdd);
             _ = await _context.SaveChangesAsync();
-            _ = await SetSkillInCache(skill.SkillId);
+            _ = await SetSkillInCache(skillToAdd.SkillId);
 
-            return skill;
+            return skillToAdd;
         }
 
         private async Task<Skill> GetSkillFromCache(int id)
@@ -74,19 +77,11 @@ namespace KinaUnaProgenyApi.Services
             Skill skillToUpdate = await _context.SkillsDb.SingleOrDefaultAsync(s => s.SkillId == skill.SkillId);
             if (skillToUpdate != null)
             {
-                skillToUpdate.ProgenyId = skill.ProgenyId;
-                skillToUpdate.AccessLevel = skill.AccessLevel;
-                skillToUpdate.Author = skill.Author;
-                skillToUpdate.Description = skill.Description;
-                skillToUpdate.Category = skill.Category;
-                skillToUpdate.Name = skill.Name;
-                skillToUpdate.SkillAddedDate = skill.SkillAddedDate;
-                skillToUpdate.Progeny = skill.Progeny;
-                skillToUpdate.SkillFirstObservation = skill.SkillFirstObservation;
-                skillToUpdate.SkillNumber = skill.SkillNumber;
-                
+                skillToUpdate.CopyPropertiesForUpdate(skill);
+
                 _ = _context.SkillsDb.Update(skillToUpdate);
                 _ = await _context.SaveChangesAsync();
+
                 _ = await SetSkillInCache(skill.SkillId);
             }
             

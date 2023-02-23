@@ -20,14 +20,12 @@ namespace KinaUnaWeb.Controllers
         private readonly IFriendsHttpClient _friendsHttpClient;
         private readonly ImageStore _imageStore;
         private readonly IViewModelSetupService _viewModelSetupService;
-        private readonly INotificationsService _notificationsService;
 
-        public FriendsController(ImageStore imageStore, IFriendsHttpClient friendsHttpClient, IViewModelSetupService viewModelSetupService, INotificationsService notificationsService)
+        public FriendsController(ImageStore imageStore, IFriendsHttpClient friendsHttpClient, IViewModelSetupService viewModelSetupService)
         {
             _imageStore = imageStore;
             _friendsHttpClient = friendsHttpClient;
             _viewModelSetupService = viewModelSetupService;
-            _notificationsService = notificationsService;
         }
         
         [AllowAnonymous]
@@ -195,10 +193,8 @@ namespace KinaUnaWeb.Controllers
                 friendItem.PictureLink = Constants.ProfilePictureUrl;
             }
 
-            friendItem = await _friendsHttpClient.AddFriend(friendItem);
+            _ = await _friendsHttpClient.AddFriend(friendItem);
 
-            await _notificationsService.SendFriendNotification(friendItem, model.CurrentUser);
-            
             return RedirectToAction("Index", "Friends");
         }
 
@@ -275,7 +271,7 @@ namespace KinaUnaWeb.Controllers
                 editedFriend.PictureLink = Constants.KeepExistingLink;
             }
 
-            await _friendsHttpClient.UpdateFriend(editedFriend);
+            _ = await _friendsHttpClient.UpdateFriend(editedFriend);
 
             return RedirectToAction("Index", "Friends");
         }
@@ -313,7 +309,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            await _friendsHttpClient.DeleteFriend(friend.FriendId);
+            _ = await _friendsHttpClient.DeleteFriend(friend.FriendId);
 
             return RedirectToAction("Index", "Friends");
         }

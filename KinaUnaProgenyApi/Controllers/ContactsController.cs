@@ -18,17 +18,18 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class ContactsController : ControllerBase
     {
-        private readonly ImageStore _imageStore;
+        private readonly IImageStore _imageStore;
         private readonly IUserInfoService _userInfoService;
         private readonly IUserAccessService _userAccessService;
         private readonly IContactService _contactService;
         private readonly ILocationService _locationService;
         private readonly ITimelineService _timelineService;
         private readonly IProgenyService _progenyService;
-        private readonly AzureNotifications _azureNotifications;
+        private readonly IAzureNotifications _azureNotifications;
+        private readonly IWebNotificationsService _webNotificationsService;
 
-        public ContactsController(ImageStore imageStore, AzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService,
-            IContactService contactService, ILocationService locationService, ITimelineService timelineService, IProgenyService progenyService)
+        public ContactsController(IImageStore imageStore, IAzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService,
+            IContactService contactService, ILocationService locationService, ITimelineService timelineService, IProgenyService progenyService, IWebNotificationsService webNotificationsService)
         {
             _imageStore = imageStore;
             _azureNotifications = azureNotifications;
@@ -38,6 +39,7 @@ namespace KinaUnaProgenyApi.Controllers
             _locationService = locationService;
             _timelineService = timelineService;
             _progenyService = progenyService;
+            _webNotificationsService = webNotificationsService;
         }
 
         // GET api/contacts/progeny/[id]
@@ -113,15 +115,16 @@ namespace KinaUnaProgenyApi.Controllers
 
             Contact contactItem = await _contactService.AddContact(value);
             
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.CopyContactPropertiesForAdd(contactItem);
+            TimeLineItem timeLineItem = new TimeLineItem();
+            timeLineItem.CopyContactPropertiesForAdd(contactItem);
 
-            await _timelineService.AddTimeLineItem(tItem);
+            await _timelineService.AddTimeLineItem(timeLineItem);
 
             UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
             string notificationTitle = "Contact added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new contact for " + progeny.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, tItem, userInfo.ProfilePicture);
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await _webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
 
             return Ok(contactItem);
         }
@@ -185,18 +188,21 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             contactItem = await _contactService.UpdateContact(contactItem);
-            
+
+            contactItem.Author = User.GetUserId();
+
             TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(contactItem.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
             if (timeLineItem != null && timeLineItem.CopyContactItemPropertiesForUpdate(contactItem))
             { 
                 _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                string notificationTitle = "Contact edited for " + progeny.NickName;
+                string notificationMessage = userInfo.FullName() + " edited a contact for " + progeny.NickName;
+            
+                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await _webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
             }
-
-            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            string notificationTitle = "Contact edited for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " edited a contact for " + progeny.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-
+            
             return Ok(contactItem);
         }
 
@@ -239,14 +245,18 @@ namespace KinaUnaProgenyApi.Controllers
                 await _imageStore.DeleteImage(contactItem.PictureLink, BlobContainers.Contacts);
 
                 _ = await _contactService.DeleteContact(contactItem);
-                
+
+                contactItem.Author = User.GetUserId();
                 UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                
                 string notificationTitle = "Contact deleted for " + progeny.NickName;
                 string notificationMessage = userInfo.FullName() + " deleted a contact for " + progeny.NickName + ". Contact: " + contactItem.DisplayName;
+                
                 if (timeLineItem != null)
                 {
-                    timeLineItem.AccessLevel = 0;
+                    contactItem.AccessLevel = timeLineItem.AccessLevel = 0;
                     await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                    await _webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
                 }
 
                 return NoContent();

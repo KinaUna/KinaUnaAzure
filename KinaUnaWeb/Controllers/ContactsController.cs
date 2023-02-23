@@ -19,15 +19,12 @@ namespace KinaUnaWeb.Controllers
         private readonly ILocationsHttpClient _locationsHttpClient;
         private readonly IContactsHttpClient _contactsHttpClient;
         private readonly ImageStore _imageStore;
-        private readonly INotificationsService _notificationsService;
         private readonly IViewModelSetupService _viewModelSetupService;
-        public ContactsController(ImageStore imageStore, ILocationsHttpClient locationsHttpClient, IContactsHttpClient contactsHttpClient,
-            INotificationsService notificationsService, IViewModelSetupService viewModelSetupService)
+        public ContactsController(ImageStore imageStore, ILocationsHttpClient locationsHttpClient, IContactsHttpClient contactsHttpClient, IViewModelSetupService viewModelSetupService)
         {
             _imageStore = imageStore;
             _locationsHttpClient = locationsHttpClient;
             _contactsHttpClient = contactsHttpClient;
-            _notificationsService = notificationsService;
             _viewModelSetupService = viewModelSetupService;
         }
 
@@ -205,9 +202,7 @@ namespace KinaUnaWeb.Controllers
                 contactItem.PictureLink = Constants.ProfilePictureUrl;
             }
             
-            contactItem = await _contactsHttpClient.AddContact(contactItem);
-
-            await _notificationsService.SendContactNotification(contactItem, model.CurrentUser);
+            _ = await _contactsHttpClient.AddContact(contactItem);
             
             return RedirectToAction("Index", "Contacts");
         }
@@ -290,7 +285,7 @@ namespace KinaUnaWeb.Controllers
                 editedContact.PictureLink = Constants.KeepExistingLink;
             }
 
-            await _contactsHttpClient.UpdateContact(editedContact);
+            _ = await _contactsHttpClient.UpdateContact(editedContact);
 
             return RedirectToAction("Index", "Contacts");
         }
@@ -328,7 +323,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            await _contactsHttpClient.DeleteContact(contact.ContactId);
+            _ = await _contactsHttpClient.DeleteContact(contact.ContactId);
 
             return RedirectToAction("Index", "Contacts");
         }

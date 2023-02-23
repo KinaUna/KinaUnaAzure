@@ -16,13 +16,11 @@ namespace KinaUnaWeb.Controllers
     {
         private readonly IMeasurementsHttpClient _measurementsHttpClient;
         private readonly IViewModelSetupService _viewModelSetupService;
-        private readonly INotificationsService _notificationsService;
 
-        public MeasurementsController(IMeasurementsHttpClient measurementsHttpClient, IViewModelSetupService viewModelSetupService, INotificationsService notificationsService )
+        public MeasurementsController(IMeasurementsHttpClient measurementsHttpClient, IViewModelSetupService viewModelSetupService)
         {
             _measurementsHttpClient = measurementsHttpClient;
             _viewModelSetupService = viewModelSetupService;
-            _notificationsService = notificationsService;
         }
 
         [AllowAnonymous]
@@ -85,9 +83,7 @@ namespace KinaUnaWeb.Controllers
 
             Measurement measurementItem = model.CreateMeasurement();
 
-            measurementItem = await _measurementsHttpClient.AddMeasurement(measurementItem);
-
-            await _notificationsService.SendMeasurementNotification(measurementItem, model.CurrentUser);
+            _ = await _measurementsHttpClient.AddMeasurement(measurementItem);
             
             return RedirectToAction("Index", "Measurements");
         }
@@ -126,8 +122,8 @@ namespace KinaUnaWeb.Controllers
             }
 
             Measurement editedMeasurement = model.CreateMeasurement();
-            
-            await _measurementsHttpClient.UpdateMeasurement(editedMeasurement);
+
+            _ = await _measurementsHttpClient.UpdateMeasurement(editedMeasurement);
 
             return RedirectToAction("Index", "Measurements");
         }
@@ -163,7 +159,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            await _measurementsHttpClient.DeleteMeasurement(measurement.MeasurementId);
+            _ = await _measurementsHttpClient.DeleteMeasurement(measurement.MeasurementId);
 
             return RedirectToAction("Index", "Measurements");
         }

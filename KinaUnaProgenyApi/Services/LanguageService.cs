@@ -35,8 +35,8 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<KinaUnaLanguage> AddLanguage(KinaUnaLanguage language)
         {
-            _context.Languages.Add(language);
-            await _context.SaveChangesAsync();
+            _ = _context.Languages.Add(language);
+            _ = await _context.SaveChangesAsync();
             return language;
         }
 
@@ -50,8 +50,8 @@ namespace KinaUnaProgenyApi.Services
                 languageToUpdate.Icon = language.Icon;
                 languageToUpdate.IconLink = language.IconLink;
 
-                _context.Languages.Update(languageToUpdate);
-                await _context.SaveChangesAsync();
+                _ = _context.Languages.Update(languageToUpdate);
+                _ = await _context.SaveChangesAsync();
             }
             
             return language;
@@ -65,8 +65,8 @@ namespace KinaUnaProgenyApi.Services
                 return new KinaUnaLanguage() { Id = -1 };
             }
 
-            _context.Languages.Remove(language);
-            await _context.SaveChangesAsync();
+            _ = _context.Languages.Remove(language);
+            _ = await _context.SaveChangesAsync();
 
             return language;
         }

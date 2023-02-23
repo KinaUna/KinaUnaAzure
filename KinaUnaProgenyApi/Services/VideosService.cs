@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -68,6 +69,8 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Video> AddVideo(Video video)
         {
+            video.RemoveNullStrings();
+
             _ = await _mediaContext.VideoDb.AddAsync(video);
             _ = await _mediaContext.SaveChangesAsync();
 
@@ -77,31 +80,12 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Video> UpdateVideo(Video video)
         {
+            video.RemoveNullStrings();
+
             Video videoToUpdate = await _mediaContext.VideoDb.SingleOrDefaultAsync(v => v.VideoId == video.VideoId);
             if (videoToUpdate != null)
             {
-                videoToUpdate.Location = video.Location;
-                videoToUpdate.AccessLevel = video.AccessLevel;
-                videoToUpdate.ProgenyId = video.ProgenyId;
-                videoToUpdate.CommentThreadNumber = video.CommentThreadNumber;
-                videoToUpdate.Altitude = video.Altitude;
-                videoToUpdate.Duration = video.Duration;
-                videoToUpdate.DurationHours = video.DurationHours;
-                videoToUpdate.DurationMinutes = video.DurationMinutes;
-                videoToUpdate.DurationSeconds = video.DurationSeconds;
-                videoToUpdate.Author = video.Author;
-                videoToUpdate.Latitude = video.Latitude;
-                videoToUpdate.Longtitude = video.Longtitude;
-                videoToUpdate.Owners = video.Owners;
-                videoToUpdate.Tags = video.Tags;
-                videoToUpdate.VideoLink = video.VideoLink;
-                videoToUpdate.VideoNumber = video.VideoNumber;
-                videoToUpdate.VideoTime = video.VideoTime;
-                videoToUpdate.ThumbLink = video.ThumbLink;
-                videoToUpdate.TimeZone = video.TimeZone;
-                videoToUpdate.VideoType = video.VideoType;
-                videoToUpdate.Progeny = video.Progeny;
-                videoToUpdate.Comments = video.Comments;
+                videoToUpdate.CopyPropertiesForUpdate(video);
 
                 _ = _mediaContext.VideoDb.Update(videoToUpdate);
                 _ = await _mediaContext.SaveChangesAsync();

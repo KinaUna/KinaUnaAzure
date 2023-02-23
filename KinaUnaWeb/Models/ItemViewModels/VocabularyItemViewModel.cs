@@ -5,35 +5,84 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class VocabularyItemViewModel: BaseViewModel
+    public class VocabularyItemViewModel: BaseItemsViewModel
     {
-        public int WordId { get; set; }
-        public string Word { get; set; }
-        public string Description { get; set; }
-        public string Language { get; set; }
-        public string SoundsLike { get; set; }
-        public DateTime? Date { get; set; }
-        public DateTime DateAdded { get; set; }
-        public string Author { get; set; }
-        public int ProgenyId { get; set; }
-        public Progeny Progeny { get; set; }
-        public List<SelectListItem> ProgenyList { get; set; }
-        public bool IsAdmin { get; set; }
-        public int AccessLevel { get; set; }
-        public VocabularyItem VocabularyItem { get; set; }
+        public List<SelectListItem> ProgenyList { get; set; } = new List<SelectListItem>();
+        public VocabularyItem VocabularyItem { get; set; } = new VocabularyItem();
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
 
         public VocabularyItemViewModel()
         {
-            ProgenyList = new List<SelectListItem>();
             AccessLevelList aclList = new AccessLevelList();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
             AccessLevelListDe = aclList.AccessLevelListDe;
         }
+
+        public VocabularyItemViewModel(BaseItemsViewModel baseItemsViewModel)
+        {
+            SetBaseProperties(baseItemsViewModel);
+        }
+
+        public void SetProgenyList()
+        {
+            VocabularyItem.ProgenyId = CurrentProgenyId;
+            foreach (SelectListItem item in ProgenyList)
+            {
+                if (item.Value == CurrentProgenyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
+        }
+
+        public void SetAccessLevelList()
+        {
+            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelListEn = accessLevelList.AccessLevelListEn;
+            AccessLevelListDa = accessLevelList.AccessLevelListDa;
+            AccessLevelListDe = accessLevelList.AccessLevelListDe;
+
+            AccessLevelListEn[VocabularyItem.AccessLevel].Selected = true;
+            AccessLevelListDa[VocabularyItem.AccessLevel].Selected = true;
+            AccessLevelListDe[VocabularyItem.AccessLevel].Selected = true;
+
+            if (LanguageId == 2)
+            {
+                AccessLevelListEn = AccessLevelListDe;
+            }
+
+            if (LanguageId == 3)
+            {
+                AccessLevelListEn = AccessLevelListDa;
+            }
+        }
+
+        public void SetPropertiesFromVocabularyItem(VocabularyItem vocabularyItem)
+        {
+            VocabularyItem.AccessLevel = vocabularyItem.AccessLevel;
+            VocabularyItem.Author = vocabularyItem.Author;
+            VocabularyItem.Date = vocabularyItem.Date;
+            if (VocabularyItem.Date == null)
+            {
+                VocabularyItem.Date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+            }
+
+            VocabularyItem.DateAdded = vocabularyItem.DateAdded;
+            VocabularyItem.Description = vocabularyItem.Description;
+            VocabularyItem.Language = vocabularyItem.Language;
+            VocabularyItem.SoundsLike = vocabularyItem.SoundsLike;
+            VocabularyItem.Word = vocabularyItem.Word;
+            VocabularyItem.WordId = vocabularyItem.WordId;
+        }
     }
+
 
     public class WordDateCount
     {

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -49,7 +50,7 @@ namespace KinaUnaMediaApi.Services
         public async Task<Comment> SetComment(int commentId)
         {
             Comment comment = await _mediaContext.CommentsDb.AsNoTracking().SingleOrDefaultAsync(c => c.CommentId == commentId);
-            _cache.SetString(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
             if (comment != null)
             {
                 await SetCommentsList(comment.CommentThreadNumber);
@@ -128,10 +129,13 @@ namespace KinaUnaMediaApi.Services
 
         public async Task<Comment> AddComment(Comment comment)
         {
-            await _mediaContext.CommentsDb.AddAsync(comment);
+            Comment commentToAdd = new Comment();
+            commentToAdd.CopyPropertiesForAdd(comment);
+
+            await _mediaContext.CommentsDb.AddAsync(commentToAdd);
             await _mediaContext.SaveChangesAsync();
 
-            CommentThread cmntThread = await _mediaContext.CommentThreadsDb.SingleOrDefaultAsync(c => c.Id == comment.CommentThreadNumber);
+            CommentThread cmntThread = await _mediaContext.CommentThreadsDb.SingleOrDefaultAsync(c => c.Id == commentToAdd.CommentThreadNumber);
             if (cmntThread != null)
             {
                 cmntThread.CommentsCount += 1;
@@ -139,14 +143,21 @@ namespace KinaUnaMediaApi.Services
                 await SetCommentsList(cmntThread.Id);
             }
 
-            return comment;
+            return commentToAdd;
         }
 
         public async Task<Comment> UpdateComment(Comment comment)
         {
-            _mediaContext.CommentsDb.Update(comment);
-            await _mediaContext.SaveChangesAsync();
-            return comment;
+            Comment commentToUpdate = await _mediaContext.CommentsDb.SingleOrDefaultAsync(c => c.CommentId == comment.CommentId);
+            if (commentToUpdate != null)
+            {
+                commentToUpdate.CopyPropertiesForUpdate(comment);
+                _mediaContext.CommentsDb.Update(commentToUpdate);
+
+                await _mediaContext.SaveChangesAsync();
+            }
+            
+            return commentToUpdate;
         }
 
         public async Task<Comment> DeleteComment(Comment comment)

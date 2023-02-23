@@ -19,16 +19,19 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly IProgenyService _progenyService;
         private readonly IUserInfoService _userInfoService;
         private readonly IUserAccessService _userAccessService;
-        private readonly ImageStore _imageStore;
-        private readonly AzureNotifications _azureNotifications;
+        private readonly IImageStore _imageStore;
+        private readonly IAzureNotifications _azureNotifications;
+        private readonly IWebNotificationsService _webNotificationsService;
 
-        public AccessController(ImageStore imageStore, AzureNotifications azureNotifications, IProgenyService progenyService, IUserInfoService userInfoService, IUserAccessService userAccessService)
+        public AccessController(IImageStore imageStore, IAzureNotifications azureNotifications, IProgenyService progenyService,
+            IUserInfoService userInfoService, IUserAccessService userAccessService, IWebNotificationsService webNotificationsService)
         {
             _imageStore = imageStore;
             _azureNotifications = azureNotifications;
             _progenyService = progenyService;
             _userInfoService = userInfoService;
             _userAccessService = userAccessService;
+            _webNotificationsService = webNotificationsService;
         }
 
         // GET api/Access/Progeny/[id]
@@ -109,14 +112,16 @@ namespace KinaUnaProgenyApi.Controllers
             
             UserAccess userAccess = await _userAccessService.AddUserAccess(value);
             
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.CopyUserAccessItemPropertiesForAdd(userAccess);
+            TimeLineItem timeLineItem = new TimeLineItem();
+            timeLineItem.CopyUserAccessItemPropertiesForAdd(userAccess);
+            timeLineItem.AccessLevel = 0;
 
             UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
             string notificationTitle = "User added for " + userAccess.Progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added user: " + userAccess.UserId;
             
-            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, tItem, userInfo.ProfilePicture);
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await _webNotificationsService.SendUserAccessNotification(userAccess, userInfo, notificationTitle);
 
             return Ok(userAccess);
         }
@@ -150,12 +155,15 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
             if (userInfo != null)
             {
-                string notificationMessage = userInfo.FullName() + " modified access for user: " + userAccess.UserId;
+                string notificationMessage = userInfo.FullName() + " modified access to " + value.Progeny.NickName + " for user: " + userAccess.UserId;
                 
                 TimeLineItem timeLineItem = new TimeLineItem();
                 timeLineItem.CopyUserAccessItemPropertiesForUpdate(userAccess);
-
+                
+                timeLineItem.AccessLevel = 0;
+                
                 await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await _webNotificationsService.SendUserAccessNotification(userAccess, userInfo, notificationTitle);
             }
 
             return Ok(userAccess);
@@ -186,15 +194,16 @@ namespace KinaUnaProgenyApi.Controllers
                 
                 await _userAccessService.RemoveUserAccess(userAccess.AccessId, userAccess.ProgenyId, userAccess.UserId);
 
-                string notificationTitle = "User removed for " + userAccess.Progeny.NickName;
+                
                 UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                if (userInfo != null)
-                {
-                    string notificationMessage = userInfo.FullName() + " removed user: " + userAccess.UserId;
-                    TimeLineItem timeLineItem = new TimeLineItem();
-                    timeLineItem.CopyUserAccessItemPropertiesForUpdate(userAccess);
-                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                }
+                string notificationTitle = "User removed for " + userAccess.Progeny.NickName;
+                string notificationMessage = userInfo.FullName() + " removed access to " + userAccess.Progeny.NickName + " for user: " + userAccess.UserId;
+                TimeLineItem timeLineItem = new TimeLineItem();
+                timeLineItem.CopyUserAccessItemPropertiesForUpdate(userAccess);
+                timeLineItem.AccessLevel = 0;
+
+                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await _webNotificationsService.SendUserAccessNotification(userAccess, userInfo, notificationTitle);
 
                 return NoContent();
             }

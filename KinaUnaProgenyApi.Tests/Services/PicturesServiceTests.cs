@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace KinaUnaProgenyApi.Tests.Services
 {
@@ -54,7 +55,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            PicturesService pictureService = new PicturesService(context, memoryCache);
+            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            
+            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
 
             Picture resultPicture1 = await pictureService.GetPicture(1);
             Picture resultPicture2 = await pictureService.GetPicture(1); // Uses cache
@@ -108,7 +111,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            PicturesService pictureService = new PicturesService(context, memoryCache);
+            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+
+            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
 
             Picture resultPicture1 = await pictureService.GetPicture(2);
             Picture resultPicture2 = await pictureService.GetPicture(2); // Using cache
@@ -151,7 +156,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            PicturesService pictureService = new PicturesService(context, memoryCache);
+            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+
+            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
 
             Picture pictureToAdd = new Picture
             {
@@ -262,7 +269,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            PicturesService pictureService = new PicturesService(context, memoryCache);
+            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+
+            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
 
             Picture pictureToUpdate = await pictureService.GetPicture(1);
             pictureToUpdate.AccessLevel = 5;
@@ -352,7 +361,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            PicturesService pictureService = new PicturesService(context, memoryCache);
+            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+
+            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
 
             int pictureItemsCountBeforeDelete = context.PicturesDb.Count();
             Picture pictureToDelete = await pictureService.GetPicture(1);
@@ -425,7 +436,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            PicturesService pictureService = new PicturesService(context, memoryCache);
+            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+
+            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
 
             Picture resultPicture1 = await pictureService.GetPictureByLink("TestLink1");
             
@@ -496,7 +509,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            PicturesService pictureService = new PicturesService(context, memoryCache);
+            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+
+            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
 
             List<Picture> picturesList = await pictureService.GetPicturesList(1);
             List<Picture> picturesList2 = await pictureService.GetPicturesList(1); // Test cached result.
@@ -572,7 +587,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            PicturesService pictureService = new PicturesService(context, memoryCache);
+            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+
+            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
 
             List<Picture> picturesList = await pictureService.GetPicturesList(2);
             List<Picture> picturesList2 = await pictureService.GetPicturesList(2); // Test cached result.

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -38,11 +39,14 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<VocabularyItem> AddVocabularyItem(VocabularyItem vocabularyItem)
         {
-            _ = _context.VocabularyDb.Add(vocabularyItem);
-            _ = await _context.SaveChangesAsync();
-            _ = await SetVocabularyItemInCache(vocabularyItem.WordId);
+            VocabularyItem vocabularyItemToAdd = new VocabularyItem();
+            vocabularyItemToAdd.CopyPropertiesForAdd(vocabularyItem);
 
-            return vocabularyItem;
+            _ = _context.VocabularyDb.Add(vocabularyItemToAdd);
+            _ = await _context.SaveChangesAsync();
+            _ = await SetVocabularyItemInCache(vocabularyItemToAdd.WordId);
+
+            return vocabularyItemToAdd;
         }
 
         private async Task<VocabularyItem> GetVocabularyItemFromCache(int id)
@@ -75,25 +79,16 @@ namespace KinaUnaProgenyApi.Services
             VocabularyItem vocabularyItemToUpdate = await _context.VocabularyDb.SingleOrDefaultAsync(v => v.WordId == vocabularyItem.WordId);
             if (vocabularyItemToUpdate != null)
             {
-                vocabularyItemToUpdate.AccessLevel = vocabularyItem.AccessLevel;
-                vocabularyItemToUpdate.ProgenyId = vocabularyItem.ProgenyId;
-                vocabularyItemToUpdate.Author = vocabularyItem.Author;
-                vocabularyItemToUpdate.Description = vocabularyItem.Description;
-                vocabularyItemToUpdate.Date = vocabularyItem.Date;
-                vocabularyItemToUpdate.Language = vocabularyItem.Language;
-                vocabularyItemToUpdate.DateAdded = vocabularyItem.DateAdded;
-                vocabularyItemToUpdate.SoundsLike = vocabularyItem.SoundsLike;
-                vocabularyItemToUpdate.Word = vocabularyItem.Word;
-                vocabularyItemToUpdate.VocabularyItemNumber = vocabularyItem.VocabularyItemNumber;
-                vocabularyItemToUpdate.Progeny = vocabularyItem.Progeny;
+                vocabularyItemToUpdate.CopyPropertiesForUpdate(vocabularyItem);
 
                 _ = _context.VocabularyDb.Update(vocabularyItemToUpdate);
                 _ = await _context.SaveChangesAsync();
+
                 _ = await SetVocabularyItemInCache(vocabularyItemToUpdate.WordId);
             }
             
 
-            return vocabularyItem;
+            return vocabularyItemToUpdate;
         }
 
         public async Task<VocabularyItem> DeleteVocabularyItem(VocabularyItem vocabularyItem)

@@ -46,6 +46,11 @@ namespace KinaUnaWeb.Services
         {
             if (string.IsNullOrEmpty(imageId) || imageId.ToLower().StartsWith("http"))
             {
+                if (string.IsNullOrEmpty(imageId))
+                {
+                    imageId = Constants.ProfilePictureUrl;
+                }
+
                 return imageId;
             }
 
@@ -72,6 +77,10 @@ namespace KinaUnaWeb.Services
         {
             if (string.IsNullOrEmpty(imageId) || imageId.ToLower().StartsWith("http"))
             {
+                if (string.IsNullOrEmpty(imageId))
+                {
+                    imageId = Constants.ProfilePictureUrl;
+                }
                 return imageId;
             }
 
@@ -92,10 +101,12 @@ namespace KinaUnaWeb.Services
             {
                 originalText = "";
             }
+
             string updatedText = originalText;
             int lastIndex = 0;
             List<string> blobStrings = new List<string>();
             int linkFound = 1000000000;
+            
             while (linkFound > 0)
             {
                 linkFound = originalText.IndexOf("https://kinaunastorage.blob.core.windows.net", lastIndex, StringComparison.Ordinal);
@@ -105,7 +116,6 @@ namespace KinaUnaWeb.Services
                     blobStrings.Add(originalText.Substring(linkFound, linkEnd - linkFound));
                     lastIndex = linkEnd;
                 }
-
             }
 
             if (blobStrings.Any())

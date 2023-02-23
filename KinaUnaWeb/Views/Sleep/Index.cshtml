@@ -6,7 +6,7 @@
 @{
     string sleepString = await LocaleManager.GetTranslation("Sleep", PageNames.Sleep, Model.LanguageId);
     string durationInHoursString = await LocaleManager.GetTranslation("Duration in hours", PageNames.Sleep, Model.LanguageId);
-    ViewData["Title"] = Model.Progeny.NickName + " - " + sleepString;
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + sleepString;
 }
 @section Scripts
     {
@@ -27,7 +27,7 @@
 else
 {
     <div class="container">
-        @if (Model.IsAdmin)
+        @if (Model.IsCurrentUserProgenyAdmin)
         {
             <div class="btn-group" style="float: right;">
                 <a asp-controller="Sleep" asp-action="AddSleep" class="btn btn-success btn-round leavePage">
@@ -36,7 +36,7 @@ else
             </div>
         }
         <div class="btn-group" style="float: right; clear: right">
-            <a asp-controller="Sleep" asp-action="SleepCalendar" asp-route-childId="@Model.ProgenyId" class="btn btn-primary leavePage">
+            <a asp-controller="Sleep" asp-action="SleepCalendar" asp-route-childId="@Model.CurrentProgenyId" class="btn btn-primary leavePage">
                 <i class="far fa-calendar-alt"></i> @await LocaleManager.GetTranslation("View sleep calendar", PageNames.Sleep, Model.LanguageId)
             </a>
         </div>
@@ -51,7 +51,7 @@ else
                 <th style="font-weight: bold">@await LocaleManager.GetTranslation("Duration", PageNames.Sleep, Model.LanguageId)</th>
                 <th style="font-weight: bold">@await LocaleManager.GetTranslation("Rating", PageNames.Sleep, Model.LanguageId)</th>
                 <th style="font-weight: bold">@await LocaleManager.GetTranslation("Notes", PageNames.Sleep, Model.LanguageId)</th>
-                @if (Model.IsAdmin)
+                @if (Model.IsCurrentUserProgenyAdmin)
                 {
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Sleep, Model.LanguageId)</th>
                 }
@@ -70,7 +70,7 @@ else
                     <td>@sleepItem.SleepDuration</td>
                     <td>@sleepItem.SleepRating</td>
                     <td>@sleepItem.SleepNotes</td>
-                    @if (Model.IsAdmin)
+                    @if (Model.IsCurrentUserProgenyAdmin)
                     {
                         <td style="min-width: 120px;">
                             <div>

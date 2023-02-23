@@ -23,10 +23,11 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly ILocationService _locationService;
         private readonly ITimelineService _timelineService;
         private readonly IProgenyService _progenyService;
-        private readonly AzureNotifications _azureNotifications;
+        private readonly IAzureNotifications _azureNotifications;
+        private readonly IWebNotificationsService _webNotificationsService;
 
-        public LocationsController(AzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService, ILocationService locationService,
-            ITimelineService timelineService, IProgenyService progenyService)
+        public LocationsController(IAzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService, ILocationService locationService,
+            ITimelineService timelineService, IProgenyService progenyService, IWebNotificationsService webNotificationsService)
         {
             _azureNotifications = azureNotifications;
             _userInfoService = userInfoService;
@@ -34,6 +35,7 @@ namespace KinaUnaProgenyApi.Controllers
             _locationService = locationService;
             _timelineService = timelineService;
             _progenyService = progenyService;
+            _webNotificationsService = webNotificationsService;
         }
 
         // GET api/locations/progeny/[id]
@@ -110,6 +112,7 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "Location added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new location for " + progeny.NickName;
             await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, tItem, userInfo.ProfilePicture);
+            await _webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
 
             return Ok(location);
         }
@@ -118,13 +121,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Location value)
         {
-            // Check if child exists.
-            Progeny prog = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            if (progeny != null)
             {
-                // Check if user is allowed to edit locations for this child.
-                if (!prog.IsInAdminList(userEmail))
+                if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
                 }
@@ -149,10 +150,14 @@ namespace KinaUnaProgenyApi.Controllers
                 await _timelineService.UpdateTimeLineItem(timeLineItem);
             }
 
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            string notificationTitle = "Location edited for " + prog.NickName;
-            string notificationMessage = userinfo.FullName() + " edited a location for " + prog.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
+            location.Author = User.GetUserId();
+            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+            
+            string notificationTitle = "Location edited for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " edited a location for " + progeny.NickName;
+            
+            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await _webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
 
             return Ok(location);
         }
@@ -168,7 +173,6 @@ namespace KinaUnaProgenyApi.Controllers
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 if (progeny != null)
                 {
-                    // Check if user is allowed to delete locations for this child.
                     if (!progeny.IsInAdminList(userEmail))
                     {
                         return Unauthorized();
@@ -186,13 +190,18 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 _ = await _locationService.DeleteLocation(location);
-                UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                string notificationTitle = "Location deleted for " + progeny.NickName;
-                string notificationMessage = userinfo.FullName() + " deleted a location for " + progeny.NickName + ". Location: " + location.Name;
+                
                 if (timeLineItem != null)
                 {
-                    timeLineItem.AccessLevel = 0;
-                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
+                    location.Author = User.GetUserId();
+                    UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+
+                    string notificationTitle = "Location deleted for " + progeny.NickName;
+                    string notificationMessage = userInfo.FullName() + " deleted a location for " + progeny.NickName + ". Location: " + location.Name;
+                    location.AccessLevel = timeLineItem.AccessLevel = 0;
+                    
+                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                    await _webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
                 }
 
                 return NoContent();

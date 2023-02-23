@@ -19,17 +19,15 @@ namespace KinaUnaWeb.Controllers
         private readonly INotesHttpClient _notesHttpClient;
         private readonly ImageStore _imageStore;
         private readonly IViewModelSetupService _viewModelSetupService;
-        private readonly INotificationsService _notificationsService;
-
+        
         public NotesController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, INotesHttpClient notesHttpClient, ImageStore imageStore,
-            IViewModelSetupService viewModelSetupService, INotificationsService notificationsService)
+            IViewModelSetupService viewModelSetupService)
         {
             _progenyHttpClient = progenyHttpClient;
             _userInfosHttpClient = userInfosHttpClient;
             _notesHttpClient = notesHttpClient;
             _imageStore = imageStore;
             _viewModelSetupService = viewModelSetupService;
-            _notificationsService = notificationsService;
         }
 
         [AllowAnonymous]
@@ -110,9 +108,7 @@ namespace KinaUnaWeb.Controllers
 
             Note noteItem = model.CreateNote();
 
-            noteItem = await _notesHttpClient.AddNote(noteItem);
-
-            await _notificationsService.SendNoteNotification(noteItem, model.CurrentUser);
+            _ = await _notesHttpClient.AddNote(noteItem);
             
             return RedirectToAction("Index", "Notes");
         }
@@ -152,13 +148,11 @@ namespace KinaUnaWeb.Controllers
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
+            
+            Note editedNote = model.CreateNote();
 
-            if (ModelState.IsValid)
-            {
-                Note editedNote = model.CreateNote();
-                
-                await _notesHttpClient.UpdateNote(editedNote);
-            }
+            _ = await _notesHttpClient.UpdateNote(editedNote);
+            
             return RedirectToAction("Index", "Notes");
         }
 
@@ -195,7 +189,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            await _notesHttpClient.DeleteNote(note.NoteId);
+            _ = await _notesHttpClient.DeleteNote(note.NoteId);
             return RedirectToAction("Index", "Notes");
         }
     }

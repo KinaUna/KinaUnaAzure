@@ -14,17 +14,13 @@
 <h2>@ViewData["Title"]</h2>
 <form asp-action="EditSleep" role="form" method="post">
     <div class="form-group">
-        <label asp-for="SleepStart" class="col-3 control-label">@await LocaleManager.GetTranslation("Start", PageNames.Sleep, Model.LanguageId)</label>
+        <label asp-for="SleepItem.SleepStart" class="col-3 control-label">@await LocaleManager.GetTranslation("Start", PageNames.Sleep, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 @{
-                    string sleepStartValue = "";
-                    if (Model.SleepStart.HasValue)
-                    {
-                        sleepStartValue = Model.SleepStart.Value.ToString("dd-MMM-yyyy HH:mm");
-                    }
+                    string sleepStartValue = Model.SleepItem.SleepStart.ToString("dd-MMM-yyyy HH:mm");
                 }
-                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepStart" value="@sleepStartValue" />
+                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepStart" value="@sleepStartValue" />
             </div>
         </div>
     </div>
@@ -37,17 +33,13 @@
         });
     </script>
     <div class="form-group">
-        <label asp-for="SleepEnd" class="col-3 control-label">@await LocaleManager.GetTranslation("End", PageNames.Sleep, Model.LanguageId)</label>
+        <label asp-for="SleepItem.SleepEnd" class="col-3 control-label">@await LocaleManager.GetTranslation("End", PageNames.Sleep, Model.LanguageId)</label>
         <div class="col-8 col-xs-7 col-sm-6 col-md-4">
             <div class="input-group date">
                 @{
-                    string sleepEndValue = "";
-                    if (Model.SleepEnd.HasValue)
-                    {
-                        sleepEndValue = Model.SleepEnd.Value.ToString("dd-MMM-yyyy HH:mm");
-                    }
+                    string sleepEndValue = Model.SleepItem.SleepEnd.ToString("dd-MMM-yyyy HH:mm");
                 }
-                <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepEnd" value="@sleepEndValue" />
+                <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepEnd" value="@sleepEndValue" />
             </div>
         </div>
     </div>
@@ -60,27 +52,27 @@
         });
     </script>
     <div class="form-group">
-        <label class="col-3 control-label" asp-for="SleepRating">@await LocaleManager.GetTranslation("Sleep rating", PageNames.Sleep, Model.LanguageId)</label>
+        <label class="col-3 control-label" asp-for="SleepItem.SleepRating">@await LocaleManager.GetTranslation("Sleep rating", PageNames.Sleep, Model.LanguageId)</label>
         <div class="col-6 col-xs-5 col-sm-4 col-md-3">
-            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@ViewBag.RatingList.Count" asp-for="SleepRating" asp-items="@ViewBag.RatingList"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@ViewBag.RatingList.Count" asp-for="SleepItem.SleepRating" asp-items="@Model.RatingList"></select>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="SleepNotes" class="col-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Sleep, Model.LanguageId)</label>
+        <label asp-for="SleepItem.SleepNotes" class="col-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Sleep, Model.LanguageId)</label>
         <div class="col-sm-9">
-            <textarea asp-for="SleepNotes" class="form-control" rows="4" value="@Model.SleepNotes"></textarea>
+            <textarea asp-for="SleepItem.SleepNotes" class="form-control" rows="4" value="@Model.SleepItem.SleepNotes"></textarea>
         </div>
     </div>
     <div class="form-group">
-        <label asp-for="AccessLevel" class="col-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+        <label asp-for="SleepItem.AccessLevel" class="col-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
         <div class="col-sm-9">
-            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="SleepItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
         </div>
     </div>
-    <input asp-for="ProgenyId" value="@Model.ProgenyId" type="hidden" />
-    <input asp-for="CreatedDate" value="@Model.CreatedDate" type="hidden" />
-    <input asp-for="SleepId" value="@Model.SleepId" type="hidden" />
-    <input asp-for="Author" value="@Model.Author" type="hidden" />
+    <input asp-for="SleepItem.ProgenyId" value="@Model.SleepItem.ProgenyId" type="hidden" />
+    <input asp-for="SleepItem.CreatedDate" value="@Model.SleepItem.CreatedDate" type="hidden" />
+    <input asp-for="SleepItem.SleepId" value="@Model.SleepItem.SleepId" type="hidden" />
+    <input asp-for="SleepItem.Author" value="@Model.SleepItem.Author" type="hidden" />
     <div>
         <div class="form-group">
             <div class="col-3 control-label"></div>

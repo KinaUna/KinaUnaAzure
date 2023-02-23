@@ -23,10 +23,11 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly ICalendarService _calendarService;
         private readonly ITimelineService _timelineService;
         private readonly IProgenyService _progenyService;
-        private readonly AzureNotifications _azureNotifications;
+        private readonly IAzureNotifications _azureNotifications;
+        private readonly IWebNotificationsService _webNotificationsService;
 
-        public CalendarController(AzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService,
-            ICalendarService calendarService, ITimelineService timelineService, IProgenyService progenyService)
+        public CalendarController(IAzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService,
+            ICalendarService calendarService, ITimelineService timelineService, IProgenyService progenyService, IWebNotificationsService webNotificationsService)
         {
             _azureNotifications = azureNotifications;
             _userInfoService = userInfoService;
@@ -34,6 +35,7 @@ namespace KinaUnaProgenyApi.Controllers
             _calendarService = calendarService;
             _timelineService = timelineService;
             _progenyService = progenyService;
+            _webNotificationsService = webNotificationsService;
         }
 
         // GET api/calendar/progeny/[id]
@@ -130,7 +132,9 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "Calendar item added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new calendar item for " + progeny.NickName;
             await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            
+
+            await _webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
+
             return Ok(calendarItem);
         }
 
@@ -160,18 +164,21 @@ namespace KinaUnaProgenyApi.Controllers
             }
             
             calendarItem = await _calendarService.UpdateCalendarItem(value);
-
+            
             TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(calendarItem.EventId.ToString(), (int)KinaUnaTypes.TimeLineType.Calendar);
 
             if (timeLineItem != null && timeLineItem.CopyCalendarItemPropertiesForUpdate(calendarItem))
             {
                 _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
+                
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                
+                string notificationTitle = "Calendar edited for " + progeny.NickName;
+                string notificationMessage = userInfo.FullName() + " edited a calendar item for " + progeny.NickName;
+                
+                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await _webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
             }
-            
-            UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            string title = "Calendar edited for " + progeny.NickName;
-            string message = userinfo.FullName() + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a calendar item for " + progeny.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(title, message, timeLineItem, userinfo.ProfilePicture);
 
             return Ok(calendarItem);
         }
@@ -206,14 +213,17 @@ namespace KinaUnaProgenyApi.Controllers
 
                 await _calendarService.DeleteCalendarItem(calendarItem);
                 
-                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                string title = "Calendar item deleted for " + progeny.NickName;
-                string message = userInfo.FullName() + " deleted a calendar item for " + progeny.NickName + ". Event: " + calendarItem.Title;
-
                 if (timeLineItem != null)
                 {
-                    timeLineItem.AccessLevel = 0;
-                    await _azureNotifications.ProgenyUpdateNotification(title, message, timeLineItem, userInfo.ProfilePicture);
+                    UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+
+                    string notificationTitle = "Calendar item deleted for " + progeny.NickName;
+                    string notificationMessage = userInfo.FullName() + " deleted a calendar item for " + progeny.NickName + ". Event: " + calendarItem.Title;
+
+                    calendarItem.AccessLevel = timeLineItem.AccessLevel = 0;
+                    
+                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                    await _webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
                 }
 
                 return NoContent();

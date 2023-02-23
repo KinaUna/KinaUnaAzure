@@ -44,7 +44,6 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCategoryAutoSuggestList(int id, int accessLevel)
         {
-            // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
@@ -81,6 +80,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             autoSuggestList.Sort();
+
             return Ok(autoSuggestList);
         }
 
@@ -88,7 +88,6 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetContextAutoSuggestList(int id, int accessLevel)
         {
-            // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
@@ -138,6 +137,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
             autoSuggestList.Sort();
+
             return Ok(autoSuggestList);
         }
 
@@ -145,7 +145,6 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetLocationAutoSuggestList(int id, int accessLevel)
         {
-            // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
@@ -153,12 +152,11 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
-
-
-            List<Picture> allItems = await _picturesService.GetPicturesList(id);
-            allItems = allItems.Where(p => p.AccessLevel >= accessLevel).ToList();
+            
+            List<Picture> allPictures = await _picturesService.GetPicturesList(id);
+            allPictures = allPictures.Where(p => p.AccessLevel >= accessLevel).ToList();
             List<string> autoSuggestList = new List<string>();
-            foreach (Picture picture in allItems)
+            foreach (Picture picture in allPictures)
             {
                 if (!string.IsNullOrEmpty(picture.Location))
                 {
@@ -210,6 +208,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             autoSuggestList = autoSuggestList.Distinct().ToList();
             autoSuggestList.Sort();
+
             return Ok(autoSuggestList);
         }
 
@@ -217,7 +216,6 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetTagsAutoSuggestList(int id, int accessLevel)
         {
-            // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
@@ -225,12 +223,11 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
-
-
-            List<Picture> allItems = await _picturesService.GetPicturesList(id);
-            allItems = allItems.Where(p => p.AccessLevel >= accessLevel).ToList();
+            
+            List<Picture> allPictures = await _picturesService.GetPicturesList(id);
+            allPictures = allPictures.Where(p => p.AccessLevel >= accessLevel).ToList();
             List<string> autoSuggestList = new List<string>();
-            foreach (Picture picture in allItems)
+            foreach (Picture picture in allPictures)
             {
                 if (!string.IsNullOrEmpty(picture.Tags))
                 {
@@ -315,6 +312,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             autoSuggestList = autoSuggestList.Distinct().ToList();
             autoSuggestList.Sort();
+
             return Ok(autoSuggestList);
         }
     }
