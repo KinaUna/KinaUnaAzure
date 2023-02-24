@@ -165,7 +165,7 @@
             }
             durTime = durTime + item.DurationMinutes + ":" + item.DurationSeconds;
             <a class="leavePage" asp-area="" asp-controller="Videos" asp-action="Video" asp-route-id="@item.VideoId" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@Model.TagFilter">
-                <div align="center" class="img-rounded" style="margin: 2px; padding: 1px; float: left; width: 270px; height: 270px; background-color: #000000; text-align: center; line-height: 271px; display: inline-block; position: relative;">
+                <div align="center" class="img-rounded" style="margin: 2px; padding: 1px; float: left; width: 260px; height: 260px; background-color: #000000; text-align: center; line-height: 271px; display: inline-block; position: relative;">
                     <img src="@item.ThumbLink" class="img-rounded" style="max-width: 97%; max-height: 97%; vertical-align: middle; display: inline-block; margin: auto; padding: auto;" />
 
                     <div class="nav-pills" style="position: absolute; height: 35px; width: 60px; top: 5px; left: 5px; font-size: 5px; background-color: @bgColor; display: inline-block;">

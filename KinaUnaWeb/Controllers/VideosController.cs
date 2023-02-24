@@ -124,6 +124,7 @@ namespace KinaUnaWeb.Controllers
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
                 model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.SetProgenyList();
                 model.Video.Owners = model.CurrentUser.UserEmail;
                 model.Video.Author = model.CurrentUser.UserId;
                 model.Video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));

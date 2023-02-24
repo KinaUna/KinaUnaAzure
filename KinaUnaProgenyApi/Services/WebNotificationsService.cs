@@ -29,8 +29,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel <= eventItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         if (eventItem.StartTime != null)
                         {
@@ -73,8 +73,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel <= contactItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification webNotification = new WebNotification();
                         webNotification.To = uaUserInfo.UserId;
@@ -103,8 +103,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel <= friendItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
@@ -133,8 +133,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel <= locationItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         DateTime tempDate = DateTime.UtcNow;
                         if (locationItem.Date.HasValue)
@@ -170,8 +170,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel <= measurementItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
@@ -200,8 +200,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel <= noteItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
@@ -230,8 +230,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel <= pictureItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         string picTimeString;
                         if (pictureItem.PictureTime.HasValue)
@@ -271,19 +271,19 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel <= videoItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         string picTimeString;
                         if (videoItem.VideoTime.HasValue)
                         {
                             DateTime picTime = TimeZoneInfo.ConvertTimeFromUtc(videoItem.VideoTime.Value,
                                 TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
-                            picTimeString = "Photo taken: " + picTime.ToString("dd-MMM-yyyy HH:mm");
+                            picTimeString = "Video recorded: " + picTime.ToString("dd-MMM-yyyy HH:mm");
                         }
                         else
                         {
-                            picTimeString = "Photo taken: Unknown";
+                            picTimeString = "Video recorded: Unknown";
                         }
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
@@ -312,8 +312,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel <= skillItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         if (!skillItem.SkillFirstObservation.HasValue)
                         {
@@ -349,8 +349,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel <= commentItem.Progeny.Id)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification webNotification = new WebNotification();
                         webNotification.To = uaUserInfo.UserId;
@@ -390,8 +390,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel <= sleepItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         DateTime sleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
                         DateTime sleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
@@ -422,8 +422,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel <= vaccinationItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
@@ -451,8 +451,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel <= vocabularyItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         string vocabTimeString = String.Empty;
                         if (vocabularyItem.Date.HasValue)
@@ -488,8 +488,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (userAccess.AccessLevel == 0)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByUserId(userAccess.UserId);
-                    if (uaUserInfo.UserId != "Unknown")
+                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;

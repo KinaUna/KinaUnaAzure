@@ -18,6 +18,17 @@
         viewNextText = @olderString;
     }
 }
+@section Scripts{
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
+    <link href="/css/amsify.suggestags.css" rel="stylesheet"/>
+    <script src="/lib/jquery.amsify.suggestags.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
+    <script src="https://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://js.api.here.com/v3/3.0/mapsjs-ui.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css"/>
+}
 <h2>@ViewData["Title"] - @Model.PictureNumber @await LocaleManager.GetTranslation("of", PageNames.Pictures, Model.LanguageId) @Model.PictureCount</h2>
 <div id="photoDiv">
     @if (!string.IsNullOrEmpty(Model.TagFilter))
@@ -86,8 +97,7 @@
                 let iconHeight = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
                 let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: iconWidth, h: iconHeight } });
                 let platform = new H.service.Platform({
-                    'app_id': '@Constants.HereMapsId',
-                    'app_code': '@Constants.HereMapsCode',
+                    'apikey': '@Constants.HereMapsApiKey',
                     'useHTTPS': true
                 });
 
@@ -244,18 +254,6 @@
 
 @if (Model.IsCurrentUserProgenyAdmin)
 {
-    @section Scripts{
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
-        <link href="/css/amsify.suggestags.css" rel="stylesheet" />
-        <script src="/lib/jquery.amsify.suggestags.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
-        <script src="https://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
-        <script src="https://js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
-        <script src="https://js.api.here.com/v3/3.0/mapsjs-ui.js" type="text/javascript" charset="utf-8"></script>
-        <script type="text/javascript" src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
-        <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
-    }
-
     <div class="col-sm-3" style="margin-top: 35px;"></div>
     <div class="col-md-8">
         <button id="toggleEditBtn" class="btn btn-info">Edit Photo</button>
@@ -360,7 +358,7 @@
                     <button class="btn btn-danger leavePage" type="submit">@await LocaleManager.GetTranslation("Delete picture", PageNames.Pictures, Model.LanguageId)</button>
                 </div>
             </div>
-            <input asp-for="Picture.PictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden" />
+            <input name="pictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden" />
         </form>
     </div>
     <script type="text/javascript">

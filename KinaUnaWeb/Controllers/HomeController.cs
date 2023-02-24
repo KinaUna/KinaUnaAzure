@@ -39,9 +39,9 @@ namespace KinaUnaWeb.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int id = 0)
+        public async Task<IActionResult> Index(int childId = 0)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), id);
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             HomeFeedViewModel model = new HomeFeedViewModel(baseModel);
             
             if (model.CurrentProgeny.Name == "401")
@@ -95,7 +95,7 @@ namespace KinaUnaWeb.Controllers
 
             model.SetPictureTimeData();
             
-            model.EventsList = await _calendarsHttpClient.GetUpcomingEvents(id, model.CurrentAccessLevel);
+            model.EventsList = await _calendarsHttpClient.GetUpcomingEvents(model.CurrentProgenyId, model.CurrentAccessLevel);
             
             foreach (CalendarItem eventItem in model.EventsList)
             {

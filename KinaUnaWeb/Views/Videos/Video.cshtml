@@ -16,6 +16,19 @@
         viewNextText = "Older";
     }
 }
+
+@section Scripts{
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
+    <link href="/css/amsify.suggestags.css" rel="stylesheet"/>
+    <script src="/lib/jquery.amsify.suggestags.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
+    <script src="https://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://js.api.here.com/v3/3.0/mapsjs-ui.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css"/>
+}
+
 <h3 class="title">@ViewData["Title"] - @Model.Video.VideoNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.VideoCount</h3>
 <div id="photoDiv">
     @if (!String.IsNullOrEmpty(Model.TagFilter))
@@ -35,22 +48,6 @@
     </div>
     <br />
     <div align="center" style="max-width: 100%">
-        @*@if (Model.VideoType == 0)
-            {
-                Html.Kendo().MediaPlayer()
-                    .Name("mediaplayer")
-                    .AutoPlay(true)
-                    .HtmlAttributes(new { style = "width: 90%;" })
-                    .Media(m => m
-                        .Title(Model.Progeny.NickName + "'s Video").Source(new[]
-                        {
-                            new {quality = "240p", url = Model.VideoLink.Replace("kinauna/video/upload", "kinauna/video/upload/c_scale,h_240")},
-                            new {quality = "540p", url = Model.VideoLink.Replace("kinauna/video/upload", "kinauna/video/upload/c_scale,h_540")},
-                            new {quality = "720p", url = Model.VideoLink.Replace("kinauna/video/upload", "kinauna/video/upload/c_scale,h_720")},
-                            new {quality = "1080p", url = Model.VideoLink.Replace("kinauna/video/upload", "kinauna/video/upload/c_scale,h_1080")}
-                        })
-                    );
-            }*@
         @if (Model.Video.VideoType == 1)
         {
             <iframe src="@Model.Video.VideoLink" style="width: 90%; height: 80vh; border: none;" scrolling="no" allowfullscreen></iframe>
@@ -97,7 +94,7 @@
 
         @if (!string.IsNullOrEmpty(Model.Video.Latitude))
         {
-            <p>@await LocaleManager.GetTranslation("Latitude:", PageNames.Videos, Model.LanguageId) @Model.Video.Latitude @await LocaleManager.GetTranslation("Longitude", PageNames.Videos, Model.LanguageId) @Model.Video.Longtitude @await LocaleManager.GetTranslation("Altitude:", PageNames.Videos, Model.LanguageId): @Model.Video.Altitude</p>
+            <p>@await LocaleManager.GetTranslation("Latitude:", PageNames.Videos, Model.LanguageId) @Model.Video.Latitude @await LocaleManager.GetTranslation("Longitude:", PageNames.Videos, Model.LanguageId) @Model.Video.Longtitude @await LocaleManager.GetTranslation("Altitude:", PageNames.Videos, Model.LanguageId): @Model.Video.Altitude</p>
             <div style="width: 100%; height: 300px" id="mapContainer"></div>
             <script>
                 let pixelRatio = window.devicePixelRatio || 1;
@@ -105,8 +102,7 @@
                 let iconHeight = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
                 let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: iconWidth, h: iconHeight } });
                 let platform = new H.service.Platform({
-                    'app_id': '@Constants.HereMapsId',
-                    'app_code': '@Constants.HereMapsCode',
+                    'apikey': '@Constants.HereMapsApiKey',
                     'useHTTPS': true
                 });
 
@@ -260,18 +256,6 @@
 
 @if (Model.IsCurrentUserProgenyAdmin)
 {
-    @section Scripts{
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
-        <link href="/css/amsify.suggestags.css" rel="stylesheet" />
-        <script src="/lib/jquery.amsify.suggestags.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
-        <script src="https://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
-        <script src="https://js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
-        <script src="https://js.api.here.com/v3/3.0/mapsjs-ui.js" type="text/javascript" charset="utf-8"></script>
-        <script type="text/javascript" src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
-        <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
-    }
-
     <div class="col-sm-3" style="margin-top: 35px;"></div>
     <div class="col-md-8">
         <button id="toggleEditBtn" class="btn btn-info">@await LocaleManager.GetTranslation("Edit video", PageNames.Videos, Model.LanguageId)</button>
@@ -282,7 +266,7 @@
             <div class="form-group">
                 <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Videos, Model.LanguageId)</label>
                 <div class="col-lg-10 col-md-10 col-sm-10">
-                    <input id="tagList" type="text" asp-for="Tags" value="@Model.Video.Tags" placeholder="Add tag..." class="form-control" />
+                    <input id="tagList" type="text" asp-for="Video.Tags" value="@Model.Video.Tags" placeholder="Add tag..." class="form-control" />
                 </div>
                 <script>
                     $('input[id="tagList"').amsifySuggestags({
@@ -406,7 +390,7 @@
                     <button class="btn btn-danger leavePage" type="submit">@await LocaleManager.GetTranslation("Delete video", PageNames.Videos, Model.LanguageId)</button>
                 </div>
             </div>
-            <input asp-for="Video.VideoId" class="form-control" value="@Model.Video.VideoId" type="hidden" />
+            <input name="videoId" class="form-control" value="@Model.Video.VideoId" type="hidden" />
         </form>
     </div>
     <script type="text/javascript">
@@ -451,60 +435,3 @@ else
         <a class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.NextVideo" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText @videosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
     </div>
 </div>
-@*<script>
-        var myElement = document.querySelector('#photoDiv');
-        myElement.addEventListener("touchstart", startTouch, false);
-        myElement.addEventListener("touchmove", moveTouch, false);
-
-        // Swipe Up / Down / Left / Right
-        var initialX = null;
-        var initialY = null;
-
-        function startTouch(e) {
-            initialX = e.touches[0].clientX;
-            initialY = e.touches[0].clientY;
-        };
-
-        function moveTouch(e) {
-            if (initialX === null) {
-                return;
-            }
-
-            if (initialY === null) {
-                return;
-            }
-
-            var currentX = e.touches[0].clientX;
-            var currentY = e.touches[0].clientY;
-
-            var diffX = initialX - currentX;
-            var diffY = initialY - currentY;
-
-            if (Math.abs(diffX) > Math.abs(diffY)) {
-                // sliding horizontally
-                if (diffX > 0) {
-                    // swiped left
-                    console.log("swiped left");
-                    document.getElementById('nextPhotoLink').click();
-                } else {
-                    // swiped right
-                    console.log("swiped right");
-                    document.getElementById('previousPhotoLink').click();
-                }
-            } else {
-                // sliding vertically
-                if (diffY > 0) {
-                    // swiped up
-                    console.log("swiped up");
-                } else {
-                    // swiped down
-                    console.log("swiped down");
-                }
-            }
-
-            initialX = null;
-            initialY = null;
-
-            e.preventDefault();
-        };
-    </script>*@

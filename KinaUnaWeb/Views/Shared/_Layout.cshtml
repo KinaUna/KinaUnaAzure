@@ -83,17 +83,14 @@
     <link href="~/lib/fa5_2_0/css/all.min.css" rel="stylesheet" />
     <link href="~/css/waitMe.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/css/bootstrap-select.min.css">
-    @*<link href="~/lib/material-kit-205/css/material-kit.min.css?v=2.0.5" rel="stylesheet" />*@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <script src="https://code.jquery.com/jquery-3.4.0.min.js"></script>
     <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
     <script src="~/lib/popper.min.js"></script>
     <script src="~/js/bootstrap.min.js" asp-append-version="true"></script>
-    @*<script src="~/lib/material-kit-205/js/core/bootstrap-material-design.min.js"></script>*@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/js/bootstrap-select.min.js"></script>
-    @*<script src="~/lib/material-kit-205/js/material-kit.min.js"></script>*@
-    <script src="~/js/waitMe.min.js"></script>
+   <script src="~/js/waitMe.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
     <meta name="theme-color" content="#3a2051" />
     <link rel="manifest" href="~/manifest.json">
@@ -251,7 +248,7 @@
                     </li>
                 }
 				<li class="nav-item dropdown mb-2 mb-lg-0">
-                    <a class="dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                         <i class="material-icons icon_medium ml-2 mr-1">favorite</i><span class="d-sm-inline d-md-inline d-lg-inline"> @await LocaleManager.GetTranslation("Menu", PageNames.Layout, languageId) </span>
                     </a>
                     <div class="dropdown-menu">

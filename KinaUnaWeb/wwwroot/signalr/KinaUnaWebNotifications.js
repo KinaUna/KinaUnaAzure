@@ -183,7 +183,6 @@ connection.onclose(function () {
     checkConnectionInterval = setInterval(function() {
         connection.start().catch(err => console.error(err.toString()));
     }, 30000);
-    
 });
 
 connection.on('UserInfo',
@@ -218,8 +217,6 @@ connection.on('ReceiveMessage',
                     console.log(textStatus, errorThrown);
                 }
             });
-        
-        
     }
 );
 
