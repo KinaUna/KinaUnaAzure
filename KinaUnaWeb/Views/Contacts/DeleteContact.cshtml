@@ -5,15 +5,19 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Delete contact", PageNames.Contacts, Model.LanguageId);
 }
-<h2>@ViewData["Title"] - @Model.ContactItem.DisplayName</h2>
-<form asp-action="DeleteContact" role="form" method="post">
-    <div>@await LocaleManager.GetTranslation("Are you sure you want to delete this contact?", PageNames.Contacts, Model.LanguageId) @Model.ContactItem.FirstName @Model.ContactItem.MiddleName @Model.ContactItem.LastName?</div>
-    <br/>
-    <div>
-        <img src="@Model.ContactItem.PictureLink" />
-    </div>
-    <br />
-    <input asp-for="ContactItem.ContactId" class="form-control" value="@Model.ContactItem.ContactId" type="hidden" />
-    <div><Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes, delete contact", PageNames.Contacts, Model.LanguageId)</Button>
-        <a class="btn btn-danger leavePage" asp-controller="Contacts" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a></div>
-</form>
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h2>@ViewData["Title"] - @Model.ContactItem.DisplayName</h2>
+    <form asp-action="DeleteContact" role="form" method="post">
+        <div>@await LocaleManager.GetTranslation("Are you sure you want to delete this contact?", PageNames.Contacts, Model.LanguageId) @Model.ContactItem.FirstName @Model.ContactItem.MiddleName @Model.ContactItem.LastName?</div>
+        <br />
+        <div>
+            <img src="@Model.ContactItem.PictureLink" />
+        </div>
+        <br />
+        <input asp-for="ContactItem.ContactId" class="form-control" value="@Model.ContactItem.ContactId" type="hidden" />
+        <div>
+            <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes, delete contact", PageNames.Contacts, Model.LanguageId)</Button>
+            <a class="btn btn-danger leavePage" asp-controller="Contacts" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+        </div>
+    </form>
+</div>

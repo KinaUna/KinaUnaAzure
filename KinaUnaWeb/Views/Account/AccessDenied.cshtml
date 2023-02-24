@@ -5,15 +5,16 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
     ViewData["Title"] = await LocaleManager.GetTranslation("Access denied", PageNames.Account, languageId);
 }
-<h2>@ViewData["Title"]</h2>
-@{
-    if (User.Identity != null && User.Identity.IsAuthenticated)
-    {
-        <div>@await LocaleManager.GetTranslation("You are not authorized to view this content.", PageNames.Account, languageId) </div>
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h2>@ViewData["Title"]</h2>
+    @{
+        if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <div>@await LocaleManager.GetTranslation("You are not authorized to view this content.", PageNames.Account, languageId) </div>
+        }
+        else
+        {
+            <div>@await LocaleManager.GetTranslation("Log in to get access to more content.", PageNames.Account, languageId)</div>
+        }
     }
-    else{
-        <div>@await LocaleManager.GetTranslation("Log in to get access to more content.", PageNames.Account, languageId)</div>
-    }
-}
-
-
+</div>

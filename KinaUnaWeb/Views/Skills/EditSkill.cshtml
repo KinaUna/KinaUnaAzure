@@ -10,64 +10,65 @@
     <script src="/lib/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
-
-<h2>@ViewData["Title"] - @Model.SkillItem.Name</h2>
-<form asp-action="EditSkill" role="form" method="post">
-    <div class="form-group">
-        <label asp-for="SkillItem.Name" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Skill name", PageNames.Skills, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input asp-for="SkillItem.Name" class="form-control" value="@Model.SkillItem.Name" />
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h2>@ViewData["Title"] - @Model.SkillItem.Name</h2>
+    <form asp-action="EditSkill" role="form" method="post">
+        <div class="form-group">
+            <label asp-for="SkillItem.Name" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Skill name", PageNames.Skills, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <input asp-for="SkillItem.Name" class="form-control" value="@Model.SkillItem.Name" />
+            </div>
         </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="SkillItem.Description" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Description", PageNames.Skills, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <textarea asp-for="SkillItem.Description" class="form-control" rows="4" value="@Model.SkillItem.Description"></textarea>
+        <div class="form-group">
+            <label asp-for="SkillItem.Description" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Description", PageNames.Skills, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <textarea asp-for="SkillItem.Description" class="form-control" rows="4" value="@Model.SkillItem.Description"></textarea>
+            </div>
         </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="SkillItem.Category" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Category", PageNames.Skills, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input asp-for="SkillItem.Category" class="form-control" value="@Model.SkillItem.Category" />
+        <div class="form-group">
+            <label asp-for="SkillItem.Category" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Category", PageNames.Skills, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <input asp-for="SkillItem.Category" class="form-control" value="@Model.SkillItem.Category" />
+            </div>
         </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="SkillItem.SkillFirstObservation" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("First observed", PageNames.Skills, Model.LanguageId)</label>
-        <div class="col-8 col-xs-7 col-sm-6 col-md-4">
-            <div class="input-group date">
-                <input id="datetimepicker1" data-format="dd-MMM-yyyy" type="text"
-                       class="form-control" data-zdp_readonly_element="false" asp-for="SkillItem.SkillFirstObservation"
-                       value="@{
+        <div class="form-group">
+            <label asp-for="SkillItem.SkillFirstObservation" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("First observed", PageNames.Skills, Model.LanguageId)</label>
+            <div class="col-8 col-xs-7 col-sm-6 col-md-4">
+                <div class="input-group date">
+                    <input id="datetimepicker1" data-format="dd-MMM-yyyy" type="text"
+                           class="form-control" data-zdp_readonly_element="false" asp-for="SkillItem.SkillFirstObservation"
+                           value="@{
                                   System.Diagnostics.Debug.Assert(Model.SkillItem.SkillFirstObservation != null, "Model.SkillFirstObservation != null");
                               }@Model.SkillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy")" />
+                </div>
             </div>
         </div>
-    </div>
-    <script type="text/javascript">
-        $(function () {
-            $('#datetimepicker1').Zebra_DatePicker({
-                format: 'd-M-Y',
-                open_icon_only: true
+        <script type="text/javascript">
+            $(function () {
+                $('#datetimepicker1').Zebra_DatePicker({
+                    format: 'd-M-Y',
+                    open_icon_only: true
+                });
             });
-        });
-    </script>
-    <div class="form-group">
-        <label asp-for="SkillItem.AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="SkillItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-        </div>
-    </div>
-    <input asp-for="SkillItem.ProgenyId" value="@Model.SkillItem.ProgenyId" type="hidden" />
-    <input asp-for="SkillItem.SkillAddedDate" value="@Model.SkillItem.SkillAddedDate" type="hidden" />
-    <input asp-for="SkillItem.SkillId" value="@Model.SkillItem.SkillId" type="hidden" />
-    <input asp-for="SkillItem.Author" value="@Model.SkillItem.Author" type="hidden" />
-    <div>
+        </script>
         <div class="form-group">
-            <div class="col-lg-3 col-sm-3 control-label"></div>
+            <label asp-for="SkillItem.AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
             <div class="col-lg-9">
-                <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                <a class="btn btn-danger leavePage" asp-controller="Skills" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="SkillItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
             </div>
         </div>
-    </div>
-</form>
+        <input asp-for="SkillItem.ProgenyId" value="@Model.SkillItem.ProgenyId" type="hidden" />
+        <input asp-for="SkillItem.SkillAddedDate" value="@Model.SkillItem.SkillAddedDate" type="hidden" />
+        <input asp-for="SkillItem.SkillId" value="@Model.SkillItem.SkillId" type="hidden" />
+        <input asp-for="SkillItem.Author" value="@Model.SkillItem.Author" type="hidden" />
+        <div>
+            <div class="form-group">
+                <div class="col-lg-3 col-sm-3 control-label"></div>
+                <div class="col-lg-9">
+                    <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <a class="btn btn-danger leavePage" asp-controller="Skills" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

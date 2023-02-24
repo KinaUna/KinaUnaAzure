@@ -6,58 +6,61 @@
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Notes", PageNames.Notes, Model.LanguageId);
 }
-@if (Model.NotesList == null || !Model.NotesList.Any())
-{
-    <h2>@ViewData["Title"]</h2>
-    <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
-}
-else
-{
-    if (Model.IsCurrentUserProgenyAdmin)
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    @if (Model.NotesList == null || !Model.NotesList.Any())
     {
-        <div class="btn-group" style="float: right;">
-            <a asp-controller="Notes" asp-action="AddNote" class="btn btn-success btn-round leavePage">
-                <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add note", PageNames.Notes, Model.LanguageId)
-            </a>
-        </div>
+        <h2>@ViewData["Title"]</h2>
+        <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
     }
-    <h2>@ViewData["Title"]</h2>
-    <div class="row" style="clear: both; margin-top: 25px;">
-        @foreach (NoteViewModel noteViewModel in Model.NotesList)
+    else
+    {
+        if (Model.IsCurrentUserProgenyAdmin)
         {
-            <div class="card text-white bg-notes" align="left" style="margin: 15px; margin-bottom: 25px; padding: 1px; float: left; min-width: 49%;">
-                <div class="card-header rounded" style="padding-left: 15px; padding-right: 5px; margin-bottom: 0;">
-                    @if (Model.IsCurrentUserProgenyAdmin)
-                    {
-                        <div style="float: right;">
-
-                            <a asp-controller="Notes" asp-action="EditNote" asp-route-itemId="@noteViewModel.NoteItem.NoteId" class="btn btn-info btn-sm leavePage">
-                                <i class="fas fa-pencil-alt"></i>
-                            </a>
-                            <a asp-controller="Notes" asp-action="DeleteNote" asp-route-itemId="@noteViewModel.NoteItem.NoteId" class="btn btn-danger btn-sm leavePage">
-                                <i class="fas fa-trash-alt"></i>
-                            </a>
-                        </div>
-                    }
-                    <h4 class="card-title">@noteViewModel.NoteItem.Title</h4>
-                </div>
-                <div class="card-body">
-                    <div class="card-text">
-                        <div class="rounded text-dark card-body bg-white" style="overflow-x: hidden;" align="left">@Html.Raw(System.Web.HttpUtility.HtmlDecode(noteViewModel.NoteItem.Content))</div>
-                    </div>
-                </div>
-                <div class="card-footer bg-opacity-50 ">
-                    @if (!string.IsNullOrEmpty(noteViewModel.NoteItem.Category))
-                    {
-                        <div class="card-category text-white-50" style="margin: 0; padding: 0;">
-                            <div> @await LocaleManager.GetTranslation("Category:", PageNames.Notes, Model.LanguageId) @noteViewModel.NoteItem.Category</div>
-                        </div>
-                    }
-                    <div class="card-category text-right text-white-50 float-right" style="margin-top: 0;">@noteViewModel.NoteItem.CreatedDate.ToString("dd-MMM-yyyy HH:mm")</div>
-                    <div class="card-category text-white-50" style="margin-top: 0;">@noteViewModel.NoteItem.Owner</div>
-                    
-                </div>
+            <div class="btn-group" style="float: right;">
+                <a asp-controller="Notes" asp-action="AddNote" class="btn btn-success btn-round leavePage">
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add note", PageNames.Notes, Model.LanguageId)
+                </a>
             </div>
         }
-    </div>
-}
+        <h2>@ViewData["Title"]</h2>
+        <div class="row" style="clear: both; margin-top: 25px;">
+            @foreach (NoteViewModel noteViewModel in Model.NotesList)
+            {
+                <div class="card text-white bg-notes" align="left" style="margin: 15px; margin-bottom: 25px; padding: 1px; float: left; min-width: 49%;">
+                    <div class="card-header rounded" style="padding-left: 15px; padding-right: 5px; margin-bottom: 0;">
+                        @if (Model.IsCurrentUserProgenyAdmin)
+                        {
+                            <div style="float: right;">
+
+                                <a asp-controller="Notes" asp-action="EditNote" asp-route-itemId="@noteViewModel.NoteItem.NoteId" class="btn btn-info btn-sm leavePage">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </a>
+                                <a asp-controller="Notes" asp-action="DeleteNote" asp-route-itemId="@noteViewModel.NoteItem.NoteId" class="btn btn-danger btn-sm leavePage">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </div>
+                        }
+                        <h4 class="card-title">@noteViewModel.NoteItem.Title</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-text">
+                            <div class="rounded text-dark card-body bg-white" style="overflow-x: hidden;" align="left">@Html.Raw(System.Web.HttpUtility.HtmlDecode(noteViewModel.NoteItem.Content))</div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-opacity-50 ">
+                        @if (!string.IsNullOrEmpty(noteViewModel.NoteItem.Category))
+                        {
+                            <div class="card-category text-white-50" style="margin: 0; padding: 0;">
+                                <div> @await LocaleManager.GetTranslation("Category:", PageNames.Notes, Model.LanguageId) @noteViewModel.NoteItem.Category</div>
+                            </div>
+                        }
+                        <div class="card-category text-right text-white-50 float-right" style="margin-top: 0;">@noteViewModel.NoteItem.CreatedDate.ToString("dd-MMM-yyyy HH:mm")</div>
+                        <div class="card-category text-white-50" style="margin-top: 0;">@noteViewModel.NoteItem.Owner</div>
+
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+

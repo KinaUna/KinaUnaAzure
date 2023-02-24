@@ -15,7 +15,7 @@
             <span class="material-icons icon_medium kinauna_yellow_text">language</span>
             <span class="font-weight-bold kinauna_yellow_text" style="font-size: 15px; margin-left: 10px;">@currentLanguage</span>
         </a>
-        <div class="dropdown-menu" style="background: #662d91;" aria-labelledby="navbarDropdown">
+        <div class="dropdown-menu dropdown-menu-right" style="background: #662d91;" aria-labelledby="navbarDropdown">
             @foreach (KinaUnaLanguage language in Model.LanguageList)
             {
                 string returnUrl = Model.ReturnUrl;

@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUnaWeb.Models.HomeViewModels
 @using Microsoft.AspNetCore.Http.Extensions
 @using KinaUnaWeb.Services
 @using Microsoft.AspNetCore.Http
@@ -143,7 +144,7 @@
             canUserAddItems = userinfo.CanUserAddItems;
             child = userinfo.ProgenyList.SingleOrDefault(p => p.Id == userinfo.ViewChild);
             usrName = userinfo.UserName;
-            if (String.IsNullOrEmpty(userinfo.UserName))
+            if (string.IsNullOrEmpty(userinfo.UserName))
             {
                 usrName = userinfo.UserEmail;
             }
@@ -177,276 +178,107 @@
 </div>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top" id="navMain">
 <div id="topMainMenuContainer" class="container">
-    @if (User.Identity != null && User.Identity.IsAuthenticated)
-    {
-        <a asp-area="" asp-controller="Home" asp-action="Index" asp-route-childId="@userinfo.ViewChild" class="navbar-brand leavePage" aria-label="Home">
-            <img src="/images/Square44x44Logo.scale-100.png" class="kinauna-logo"/>
-        </a>
-    }
-    else
-    {
-        <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage" aria-label="Home">
-            <img src="/images/Square44x44Logo.scale-100_bw.png" class="kinauna-logo"/>
-        </a>
-    }
 
-	@if (canUserAddItems)
+@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    <a asp-area="" asp-controller="Home" asp-action="Index" asp-route-childId="@userinfo.ViewChild" class="navbar-brand leavePage" aria-label="Home">
+        <img src="/images/Square44x44Logo.scale-100.png" class="kinauna-logo"/>
+    </a>
+}
+else
+{
+    <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage" aria-label="Home">
+        <img src="/images/Square44x44Logo.scale-100_bw.png" class="kinauna-logo"/>
+    </a>
+}
+
+@if (canUserAddItems)
+{
+    <div class="navbar-nav nav-item ml-3 ml-lg-1">
+        <a class="nav-link kinauna_yellow_text leavePage" style="margin-left: 60px; margin-right: 12px; margin-top: 4px" asp-area="" asp-controller="AddItem" asp-action="Index" aria-label="Add item">
+            <i class="material-icons kinauna_yellow_text" aria-hidden="true">add</i>
+        </a>
+    </div>
+}
+@{
+    if (child != null)
     {
-        <div class="navbar-nav nav-item ml-3 ml-lg-1">
-            <a class="nav-link kinauna_yellow_text leavePage" style="margin-left: 60px; margin-right: 12px; margin-top: 4px" asp-area="" asp-controller="AddItem" asp-action="Index" aria-label="Add item">
-                <i class="material-icons kinauna_yellow_text" aria-hidden="true">add</i>
-            </a>
-        </div>
-    }
-    @{
-        if (child != null)
+        string childprofilePic = "<i class=\"material-icons kinauna_yellow_text\" style=\"color: #8bda8b;\">child_care</i>";
+        if (!string.IsNullOrWhiteSpace(child.PictureLink))
         {
-            string childprofilePic = "<i class=\"material-icons kinauna_yellow_text\" style=\"color: #8bda8b;\">child_care</i>";
-            if (!string.IsNullOrWhiteSpace(child.PictureLink))
-            {
-                string picLink = ChildManager.GetImageUrl(child.PictureLink, "progeny");
-                childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 40px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 40px;\" /img> ";
-            }
-                @Html.Raw(childprofilePic)
+            string picLink = ChildManager.GetImageUrl(child.PictureLink, "progeny");
+            childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 40px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 40px;\" /img> ";
         }
+        @Html.Raw(childprofilePic)
     }
-    <span id="togglerNotificationsCounter" class="badge badge-danger ml-auto mr-2 d-block d-lg-none" style="position: relative; display: none; font-size: 12px;">0</span>
-    <button id="navMainMenuButton" class="navbar-toggler d-block d-lg-none" style="height: 52px; border-color: transparent; outline: none" type="button" data-toggle="collapse" data-target="#navbarMainContent" aria-controls="navbarMainContent" aria-expanded="false" aria-label="Toggle navigation">
-		<span class="navbar-toggler-icon kinauna_yellow_text"></span>
-	</button>
-        <div class="collapse navbar-collapse mt-5 mt-lg-1" id="navbarMainContent" style="min-height: 52px;">
-			<ul class="navbar-nav ml-1 ml-lg-2 w-100">
-				@if (childList.Count > 1 && child != null)
+}
+<span id="togglerNotificationsCounter" class="badge badge-danger ml-auto mr-2 d-block d-lg-none" style="position: relative; display: none; font-size: 12px;">0</span>
+<button id="navMainMenuButton" class="navbar-toggler d-block d-lg-none" style="height: 52px; border-color: transparent; outline: none" type="button" data-toggle="collapse" data-target="#navbarMainContent" aria-controls="navbarMainContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon kinauna_yellow_text"></span>
+</button>
+<div class="collapse navbar-collapse mt-5 mt-lg-1" id="navbarMainContent" style="min-height: 52px;">
+<ul class="navbar-nav ml-1 ml-lg-2 w-100 top-menu-max-height">
+@if (childList.Count > 1 && child != null)
+{
+    <li class="nav-item dropdown mb-2 mb-lg-0">
+        <a class="nav-link dropdown-toggle kinauna_yellow_text" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+            <i class="material-icons icon_medium ml-2 mr-1">face</i><span class="d-sm-inline d-md-inline d-lg-inline"> @child.NickName </span>
+        </a>
+        <div class="dropdown-menu">
+            @foreach (Progeny prog in childList)
+            {
+                if (prog.Id != child.Id)
                 {
-                    <li class="nav-item dropdown mb-2 mb-lg-0">
-                        <a class="nav-link dropdown-toggle kinauna_yellow_text" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                            <i class="material-icons icon_medium ml-2 mr-1">face</i><span class="d-sm-inline d-md-inline d-lg-inline"> @child.NickName </span>
-                        </a>
-                        <div class="dropdown-menu">
-                            @foreach (Progeny prog in childList)
-                            {
-                                if (prog.Id != child.Id)
-                                {
-                                    <div class="dropdown-item">
-                                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-userId="@userinfo.UserId" asp-route-userEmail="@userinfo.UserEmail" asp-route-returnUrl="@returnUrl" method="post">
-                                            <button type="submit" class="btn btn-link btn-block text-white text-left leavePage">
-                                                @{
-                                                    string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
-                                                    if (!string.IsNullOrWhiteSpace(prog.PictureLink))
-                                                    {
-                                                        string picLink2 = ChildManager.GetImageUrl(prog.PictureLink, "progeny");
-                                                        profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px;\" /img> ";
-                                                    }
-                                                }
-                                                @Html.Raw(profilePic2) @prog.NickName
-                                            </button>
-                                        </form>
-                                    </div>
+                    <div class="dropdown-item">
+                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-userId="@userinfo.UserId" asp-route-userEmail="@userinfo.UserEmail" asp-route-returnUrl="@returnUrl" method="post">
+                            <button type="submit" class="btn btn-link btn-block text-white text-left leavePage">
+                                @{
+                                    string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
+                                    if (!string.IsNullOrWhiteSpace(prog.PictureLink))
+                                    {
+                                        string picLink2 = ChildManager.GetImageUrl(prog.PictureLink, "progeny");
+                                        profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px;\" /img> ";
+                                    }
                                 }
-                            }
-                        </div>
-                    </li>
-                }
-				<li class="nav-item dropdown mb-2 mb-lg-0">
-                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                        <i class="material-icons icon_medium ml-2 mr-1">favorite</i><span class="d-sm-inline d-md-inline d-lg-inline"> @await LocaleManager.GetTranslation("Menu", PageNames.Layout, languageId) </span>
-                    </a>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="TimeLine" asp-action="Index" method="get">
-                                <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">update</i> @await LocaleManager.GetTranslation("Timeline", PageNames.Layout, languageId)</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Pictures" asp-action="Index" method="get">
-                                <input type="number" name="id" value="1" hidden="hidden" />
-                                <input type="number" name="pageSize" value="8" hidden="hidden" />
-                                <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <input type="number" name="sortBy" value="1" hidden="hidden" />
-                                <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
-                                    <i class="material-icons">photo_library</i><span> @await LocaleManager.GetTranslation("Photos", PageNames.Layout, languageId)</span>
-                                </button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Videos" asp-action="Index" asp-route-id="1" method="get">
-                                <input type="number" name="id" value="1" hidden="hidden" />
-                                <input type="number" name="pageSize" value="8" hidden="hidden" />
-                                <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <input type="number" name="sortBy" value="1" hidden="hidden" />
-                                <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
-                                    <i class="material-icons">videocam</i><span> @await LocaleManager.GetTranslation("Videos", PageNames.Layout, languageId)</span>
-                                </button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Calendar" asp-action="Index" method="get">
-                                <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">event_note</i> @await LocaleManager.GetTranslation("Calendar", PageNames.Layout, languageId)</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Notes" asp-action="Index" method="get">
-                                <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">note</i> @await LocaleManager.GetTranslation("Notes", PageNames.Layout, languageId)</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Sleep" asp-action="Index" method="get">
-                                <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">hotel</i> @await LocaleManager.GetTranslation("Sleep", PageNames.Layout, languageId)</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Friends" asp-action="Index" method="get">
-                                <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">face</i> @await LocaleManager.GetTranslation("Friends", PageNames.Layout, languageId)</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Contacts" asp-action="Index" method="get">
-                                <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">contact_phone</i> @await LocaleManager.GetTranslation("Contacts", PageNames.Layout, languageId)</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Locations" asp-action="Index" method="get">
-                                <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">person_pin</i> @await LocaleManager.GetTranslation("Locations", PageNames.Layout, languageId)</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Measurements" asp-action="Index" method="get">
-                                <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">straighten</i> @await LocaleManager.GetTranslation("Measurements", PageNames.Layout, languageId)</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Skills" asp-action="Index" method="get">
-                                <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">school</i> @await LocaleManager.GetTranslation("Skillz", PageNames.Layout, languageId)</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Vocabulary" asp-action="Index" method="get">
-                                <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">forum</i> @await LocaleManager.GetTranslation("Vocabulary", PageNames.Layout, languageId)</button>
-                            </form>
-                        </div>
-                        <div class="dropdown-item">
-                            <form class="form-inline-fullwidth" asp-area="" asp-controller="Vaccinations" asp-action="Index" method="get">
-                                <input type="number" name="childId" value="@userinfo.ViewChild" hidden="hidden" />
-                                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">local_pharmacy</i> @await LocaleManager.GetTranslation("Vaccinations", PageNames.Layout, languageId)</button>
-                            </form>
-                        </div>
+                                @Html.Raw(profilePic2) @prog.NickName
+                            </button>
+                        </form>
                     </div>
-                </li>
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <li id="notificationsIcon" class="nav-item dropdown mb-2 mb-lg-0">
-                        <a id="notificationsButton" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                            <i id="notificationBellIcon" class="material-icons icon_medium ml-2 mr-1">notifications</i> @await LocaleManager.GetTranslation("Notifications", PageNames.Layout, languageId) <span id="notificationsCounter" class="badge badge-pill badge-secondary"></span> <span class="caret"></span>
-                        </a>
-                        <div id="notificationsMenu" class="dropdown-menu">
-                            <div id="notificationsList" class="notifications-List"></div>
-                            <div class="dropdown-item w-100">
-                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Notifications" asp-action="Index" method="get">
-                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">assignment</i> @await LocaleManager.GetTranslation("See all notifications", PageNames.Layout, languageId)</button>
-                                </form>
-                            </div>
-                        </div>
-                    </li>
                 }
-            @if (User.Identity.IsAuthenticated)
-            {
-                <li class="nav-item dropdown ml-lg-auto">
-                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                            @{
-                                string userprofilePic = "<i class=\"material-icons ml-2 mr-1\" >person</i>";
-                                if (!String.IsNullOrWhiteSpace(userinfo.ProfilePicture))
-                                {
-                                    string picLink = ChildManager.GetImageUrl(userinfo.ProfilePicture, "profiles");
-                                    userprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 32px; margin-top: -2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;\" /img> ";
-                                }
-                            }
-                            @Html.Raw(userprofilePic) @usrName
-                    </a>
-                        <div class="dropdown-menu">
-                            @if (User.Identity.IsAuthenticated)
-                            {
-                                <div class="dropdown-item">
-                                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Family" asp-action="Index" method="get">
-                                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">people</i> @await LocaleManager.GetTranslation("My Family", PageNames.Layout, languageId)</button>
-                                    </form>
-                                </div>
-                            }
-                            @if (User.IsInRole("SiteAdmin") || userinfo.UserEmail.ToUpper() == Constants.AdminEmail.ToUpper())
-                            {
-                                <div class="dropdown-item">
-                                    <form class="form-inline-fullwidth" asp-area="" asp-controller="PushDevices" asp-action="Index" method="get">
-                                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">notification_important</i> Push Notifications</button>
-                                    </form>
-                                </div>
-                            }
-                            @if (User.IsInRole("SiteAdmin") || userinfo.UserEmail.ToUpper() == Constants.AdminEmail.ToUpper())
-                            {
-                                <div class="dropdown-item">
-                                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Admin" asp-action="Index" method="get">
-                                        <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">security</i> Admin</button>
-                                    </form>
-                                </div>
-                            }
-                            <div class="dropdown-item">
-                                <form class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="MyAccount" method="get">
-                                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">tune</i> @await LocaleManager.GetTranslation("My Account", PageNames.Layout, languageId)</button>
-                                </form>
-                            </div>
-                            <div class="dropdown-item">
-                                <form id="logOutForm" class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Logout" method="post" target="loginFrame">
-                                    <button id="logOutButton" type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">power_settings_new</i> @await LocaleManager.GetTranslation("Log Out", PageNames.Layout, languageId)</button>
-                                </form>
-                            </div>
-                        </div>
-                </li>
             }
-            else
-            {
-                <li class="nav-item ml-lg-auto">
-                    <form id="loginForm" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post">
-                        <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block"><i class="material-icons ml-2 mr-1">exit_to_app</i> @await LocaleManager.GetTranslation("Log in or register", PageNames.Layout, languageId)</button>
-                    </form>
-                </li>
-            }
-			</ul>
-		</div>
-	</div>
+        </div>
+    </li>
+}
+@{
+    UserMenuViewModel userMenuViewModel = new UserMenuViewModel { LanguageId = languageId, UserInfo = userinfo };
+    @await Html.PartialAsync("_MainMenuPartial", userMenuViewModel)
+}
+@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    @await Html.PartialAsync("_NotificationsMenuPartial", languageId)
+}
+@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    @await Html.PartialAsync("_AccountMenuPartial", userMenuViewModel)
+}
+else
+{
+    <li class="nav-item ml-lg-auto">
+        <form id="loginForm" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post">
+            <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block"><i class="material-icons ml-2 mr-1">exit_to_app</i> @await LocaleManager.GetTranslation("Log in or register", PageNames.Layout, languageId)</button>
+        </form>
+    </li>
+}
+</ul>
+</div>
+</div>
 </nav>
 <div class="container body-content">
     <div class="main main-raised" style="margin-top: 10px; margin-left: 5px; margin-right: 5px; padding: 5px; padding-left: 10px; padding-top: 10px;">
         <partial name="_CookieConsentPartial", model="@languageId"/>
         @if (showUndelete)
         {
-            <div class="container">
-                <div class="row">
-                    <div class="col">
-                        <div class="bg-danger text-white p-3">
-                            <div class="space-20"></div>
-                            <span>
-                                @await LocaleManager.GetTranslation("Deletion of your account was initiated, but not completed by clicking the link sent to you.", PageNames.Layout, languageId)
-                            </span>
-                            <div class="space-20"></div>
-                            <span>
-                                <a class="btn-link-yellow" asp-action="DeleteAccount" asp-controller="Account">@await LocaleManager.GetTranslation("Click here to complete the deletion.", PageNames.Layout, languageId)</a>
-                            </span>
-                            <div class="space-20"></div>
-                            <span>
-                                <a class="btn-link-yellow" asp-action="UnDeleteAccount" asp-controller="Account">@await LocaleManager.GetTranslation("Click here to undo the deletion.", PageNames.Layout, languageId)</a>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                @await Html.PartialAsync("_UndeleteAccountPartial", languageId)
         }
         @RenderBody()
     </div>

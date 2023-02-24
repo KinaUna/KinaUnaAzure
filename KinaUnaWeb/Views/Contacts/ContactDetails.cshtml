@@ -5,53 +5,55 @@
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Contact:", PageNames.Contacts, Model.LanguageId) + Model.ContactItem.DisplayName;
 }
-<h2>@ViewData["Title"]</h2>
-<div class="card bg-light" style="clear: both; margin-top: 25px; max-width: 710px;">
-    <div class="card-header card-header-warning"><h5>@Model.ContactItem.DisplayName</h5></div>
-    <div class="card-body text-dark">
-        <div class="card-text" style="max-width: 705px;">
-            <img class="img-thumbnail mx-auto d-block" style="max-height: 600px; max-width: 100%; background: black;" src="@Model.ContactItem.PictureLink" />
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("First name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.FirstName</div>
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Middle name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.MiddleName</div>
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Last name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.LastName</div>
-            <div align="left" style="margin: 15px;">
-                <strong>@await LocaleManager.GetTranslation("Address:", PageNames.Contacts, Model.LanguageId)</strong><br />
-                @Model.AddressItem.AddressLine1<br />
-                @Model.AddressItem.AddressLine2<br />
-                @Model.AddressItem.City<br />
-                @Model.AddressItem.State<br />
-                @Model.AddressItem.PostalCode<br />
-                @Model.AddressItem.Country<br />
-            </div>
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Phone:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.PhoneNumber</div>
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.MobileNumber</div>
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.Email1 @Model.ContactItem.Email2</div>
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)</strong> <a href="@Model.ContactItem.Website">@Model.ContactItem.Website</a></div>
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.Context</div>
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.Notes</div>
-            <div>
-                @{
-                    if (!string.IsNullOrEmpty(Model.Tags))
-                    {
-                        List<string> tagsList = Model.Tags.Split(',').ToList();
-                        foreach (string tagString in tagsList)
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h2>@ViewData["Title"]</h2>
+    <div class="card bg-light" style="clear: both; margin-top: 25px; max-width: 710px;">
+        <div class="card-header card-header-warning"><h5>@Model.ContactItem.DisplayName</h5></div>
+        <div class="card-body text-dark">
+            <div class="card-text" style="max-width: 705px;">
+                <img class="img-thumbnail mx-auto d-block" style="max-height: 600px; max-width: 100%; background: black;" src="@Model.ContactItem.PictureLink" />
+                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("First name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.FirstName</div>
+                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Middle name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.MiddleName</div>
+                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Last name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.LastName</div>
+                <div align="left" style="margin: 15px;">
+                    <strong>@await LocaleManager.GetTranslation("Address:", PageNames.Contacts, Model.LanguageId)</strong><br />
+                    @Model.AddressItem.AddressLine1<br />
+                    @Model.AddressItem.AddressLine2<br />
+                    @Model.AddressItem.City<br />
+                    @Model.AddressItem.State<br />
+                    @Model.AddressItem.PostalCode<br />
+                    @Model.AddressItem.Country<br />
+                </div>
+                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Phone:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.PhoneNumber</div>
+                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.MobileNumber</div>
+                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.Email1 @Model.ContactItem.Email2</div>
+                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)</strong> <a href="@Model.ContactItem.Website">@Model.ContactItem.Website</a></div>
+                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.Context</div>
+                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.Notes</div>
+                <div>
+                    @{
+                        if (!string.IsNullOrEmpty(Model.Tags))
                         {
-                            <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                            List<string> tagsList = Model.Tags.Split(',').ToList();
+                            foreach (string tagString in tagsList)
+                            {
+                                <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                            }
                         }
                     }
+                </div>
+                @if (Model.IsCurrentUserProgenyAdmin)
+                {
+                    <div style="margin: 15px;">
+                        <a asp-controller="Contacts" asp-action="EditContact" asp-route-itemId="@Model.ContactItem.ContactId" class="btn btn-info leavePage">
+                            <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
+                        </a>
+                        <a asp-controller="Contacts" asp-action="DeleteContact" asp-route-itemId="@Model.ContactItem.ContactId" class="btn btn-danger leavePage">
+                            <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
+                        </a>
+                    </div>
                 }
             </div>
-            @if (Model.IsCurrentUserProgenyAdmin)
-            {
-                <div style="margin: 15px;">
-                    <a asp-controller="Contacts" asp-action="EditContact" asp-route-itemId="@Model.ContactItem.ContactId" class="btn btn-info leavePage">
-                        <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
-                    </a>
-                    <a asp-controller="Contacts" asp-action="DeleteContact" asp-route-itemId="@Model.ContactItem.ContactId" class="btn btn-danger leavePage">
-                        <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
-                    </a>
-                </div>
-            }
         </div>
     </div>
 </div>

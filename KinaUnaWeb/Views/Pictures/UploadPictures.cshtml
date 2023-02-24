@@ -5,18 +5,24 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Photo upload", PageNames.Pictures, Model.LanguageId);
 }
-<br />
-@{ int fileCounter = 0;}
-@foreach (string file in Model.FileNames)
-{
-    <div style="margin: 20px;">
-        <H4>@await LocaleManager.GetTranslation("The photo has been uploaded", PageNames.Pictures, Model.LanguageId)</H4>
-        <div><img width="80%" src="@Model.FileLinks[fileCounter]" /></div>
-        <div style="opacity: 0.1; overflow: hidden;">ID: @file</div>
-        @{ fileCounter++; }
-    </div>
-}
-<br />
-<div><a class="leavePage" asp-controller="Pictures" asp-action="AddPicture">@await LocaleManager.GetTranslation("Return to photo upload", PageNames.Pictures, Model.LanguageId)</a></div>
-<br />
-<div><a class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-childId="@Model.Picture.ProgenyId">@await LocaleManager.GetTranslation("Go to photo gallery", PageNames.Pictures, Model.LanguageId)</a></div>
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <br />
+    @{
+        int fileCounter = 0;
+    }
+    @foreach (string file in Model.FileNames)
+    {
+        <div style="margin: 20px;">
+            <H4>@await LocaleManager.GetTranslation("The photo has been uploaded", PageNames.Pictures, Model.LanguageId)</H4>
+            <div><img width="80%" src="@Model.FileLinks[fileCounter]" /></div>
+            <div style="opacity: 0.1; overflow: hidden;">ID: @file</div>
+            @{
+                fileCounter++;
+            }
+        </div>
+    }
+    <br />
+    <div><a class="leavePage" asp-controller="Pictures" asp-action="AddPicture">@await LocaleManager.GetTranslation("Return to photo upload", PageNames.Pictures, Model.LanguageId)</a></div>
+    <br />
+    <div><a class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-childId="@Model.Picture.ProgenyId">@await LocaleManager.GetTranslation("Go to photo gallery", PageNames.Pictures, Model.LanguageId)</a></div>
+</div>

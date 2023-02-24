@@ -6,40 +6,42 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Delete account", PageNames.Account, Model.LanguageId);
 }
-<h2>@ViewData["Title"]</h2>
-<div class="row">
-    <div class="col-md-10">
-        <form method="post" enctype="multipart/form-data">
-            <h2>@await LocaleManager.GetTranslation("Are you sure you want to delete your account?", PageNames.Account, Model.LanguageId)</h2>
-            <div class="form-group">
-                <label>@await LocaleManager.GetTranslation("Username", PageNames.Account, Model.LanguageId)</label>
-                <input asp-for="UserName" class="form-control" readonly="readonly" />
-            </div>
-            <div class="form-group">
-                <label>@await LocaleManager.GetTranslation("First Name", PageNames.Account, Model.LanguageId)</label>
-                <input asp-for="FirstName" class="form-control" readonly="readonly" />
-            </div>
-            <div class="form-group">
-                <label>@await LocaleManager.GetTranslation("Middle Name", PageNames.Account, Model.LanguageId)</label>
-                <input asp-for="MiddleName" class="form-control" readonly="readonly" />
-            </div>
-            <div class="form-group">
-                <label>@await LocaleManager.GetTranslation("Last Name", PageNames.Account, Model.LanguageId)</label>
-                <input asp-for="LastName" class="form-control" readonly />
-            </div>
-            <div class="form-group">
-                <label>@await LocaleManager.GetTranslation("Email", PageNames.Account, Model.LanguageId)</label>
-                <div class="input-group">
-                    <input asp-for="UserEmail" class="form-control" readonly="readonly"/>
-                    <div class="input-group-append" aria-hidden="true">
-                        <div class="input-group-text">
-                            <i class="fas fa-check text-success"></i>
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h2>@ViewData["Title"]</h2>
+    <div class="row">
+        <div class="col-md-10">
+            <form method="post" enctype="multipart/form-data">
+                <h2>@await LocaleManager.GetTranslation("Are you sure you want to delete your account?", PageNames.Account, Model.LanguageId)</h2>
+                <div class="form-group">
+                    <label>@await LocaleManager.GetTranslation("Username", PageNames.Account, Model.LanguageId)</label>
+                    <input asp-for="UserName" class="form-control" readonly="readonly" />
+                </div>
+                <div class="form-group">
+                    <label>@await LocaleManager.GetTranslation("First Name", PageNames.Account, Model.LanguageId)</label>
+                    <input asp-for="FirstName" class="form-control" readonly="readonly" />
+                </div>
+                <div class="form-group">
+                    <label>@await LocaleManager.GetTranslation("Middle Name", PageNames.Account, Model.LanguageId)</label>
+                    <input asp-for="MiddleName" class="form-control" readonly="readonly" />
+                </div>
+                <div class="form-group">
+                    <label>@await LocaleManager.GetTranslation("Last Name", PageNames.Account, Model.LanguageId)</label>
+                    <input asp-for="LastName" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label>@await LocaleManager.GetTranslation("Email", PageNames.Account, Model.LanguageId)</label>
+                    <div class="input-group">
+                        <input asp-for="UserEmail" class="form-control" readonly="readonly" />
+                        <div class="input-group-append" aria-hidden="true">
+                            <div class="input-group-text">
+                                <i class="fas fa-check text-success"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Delete my account", PageNames.Account, Model.LanguageId)</button>
-        </form>
+                <button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Delete my account", PageNames.Account, Model.LanguageId)</button>
+            </form>
+        </div>
     </div>
+    <br />
 </div>
-<br />

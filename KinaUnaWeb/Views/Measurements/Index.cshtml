@@ -14,157 +14,160 @@
     <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
     <script src="/lib/datatables/sorting/datetime-moment.js"></script>
 }
-@if (Model.MeasurementsList == null || !Model.MeasurementsList.Any())
-{
-    <h2>@ViewData["Title"]</h2>
-    <div>
-        @await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Measurements, Model.LanguageId)
-    </div>
-}
-else
-{
-    if (Model.IsCurrentUserProgenyAdmin)
+
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    @if (Model.MeasurementsList == null || !Model.MeasurementsList.Any())
     {
-        <div class="btn-group" style="float: right;">
-            <a asp-controller="Measurements" asp-action="AddMeasurement" class="btn btn-success btn-round leavePage">
-                <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add measurement", PageNames.Measurements, Model.LanguageId)
-            </a>
+        <h2>@ViewData["Title"]</h2>
+        <div>
+            @await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Measurements, Model.LanguageId)
         </div>
     }
-    <h2>@ViewData["Title"]</h2>
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped" style="margin-top: 15px;">
-            <thead>
-                <tr>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Date", PageNames.Measurements, Model.LanguageId)</th>
-                    <th style="font-weight: bold">@heightString</th>
-                    <th style="font-weight: bold">@weightString</th>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Head size", PageNames.Measurements, Model.LanguageId)</th>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Eye color", PageNames.Measurements, Model.LanguageId)</th>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Hair color", PageNames.Measurements, Model.LanguageId)</th>
-                    @if (Model.IsCurrentUserProgenyAdmin)
-                    {
-                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Measurements, Model.LanguageId)</th>
-                    }
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (Measurement measurementItem in Model.MeasurementsList)
-                {
+    else
+    {
+        if (Model.IsCurrentUserProgenyAdmin)
+        {
+            <div class="btn-group" style="float: right;">
+                <a asp-controller="Measurements" asp-action="AddMeasurement" class="btn btn-success btn-round leavePage">
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add measurement", PageNames.Measurements, Model.LanguageId)
+                </a>
+            </div>
+        }
+        <h2>@ViewData["Title"]</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" style="margin-top: 15px;">
+                <thead>
                     <tr>
-                        <td style="min-width: 100px;">@measurementItem.Date.ToString("dd-MMM-yyyy")</td>
-                        <td>@measurementItem.Height</td>
-                        <td>@measurementItem.Weight</td>
-                        <td>@measurementItem.Circumference</td>
-                        <td>@measurementItem.EyeColor</td>
-                        <td>@measurementItem.HairColor</td>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Date", PageNames.Measurements, Model.LanguageId)</th>
+                        <th style="font-weight: bold">@heightString</th>
+                        <th style="font-weight: bold">@weightString</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Head size", PageNames.Measurements, Model.LanguageId)</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Eye color", PageNames.Measurements, Model.LanguageId)</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Hair color", PageNames.Measurements, Model.LanguageId)</th>
                         @if (Model.IsCurrentUserProgenyAdmin)
                         {
-                            <td>
-                                <div>
-                                    <a asp-controller="Measurements" asp-action="EditMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-info btn-round btn-sm leavePage">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </a>
-                                    <a asp-controller="Measurements" asp-action="DeleteMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-danger btn-round btn-sm leavePage">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </a>
-                                </div>
-                            </td>
+                            <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Measurements, Model.LanguageId)</th>
                         }
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <canvas id="chartContainer" style="clear: both; height: 380px;"></canvas>
-    <br />
-    <canvas id="chartContainer2" style="clear: both; height: 380px;"></canvas>
-    <script src="~/lib/chart.js/dist/Chart.js"></script>
-    <script type="text/javascript">
-        let ctx = document.getElementById("chartContainer");
-        let myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                datasets: [{
-                    label: '@heightString',
-                    data: [@foreach (Measurement heightItem in Model.MeasurementsList)
-                                {
-                                    if (heightItem.Height > 0.0)
-                                    {
-                                        string chartYear = heightItem.Date.Year.ToString();
-                                        string chartMonth = (heightItem.Date.Month - 1).ToString();
-                                        string chartDay = heightItem.Date.Day.ToString();
-                                        @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + heightItem.Height + "},")
-                                    }
-                                }],
-                    borderColor: [
-                        'rgba(255,99,132,1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    xAxes: [{
-                        type: 'time',
-                        time: {
-                            displayFormats: {
-                                quarter: 'MMM YYYY'
+                </thead>
+                <tbody>
+                    @foreach (Measurement measurementItem in Model.MeasurementsList)
+                    {
+                        <tr>
+                            <td style="min-width: 100px;">@measurementItem.Date.ToString("dd-MMM-yyyy")</td>
+                            <td>@measurementItem.Height</td>
+                            <td>@measurementItem.Weight</td>
+                            <td>@measurementItem.Circumference</td>
+                            <td>@measurementItem.EyeColor</td>
+                            <td>@measurementItem.HairColor</td>
+                            @if (Model.IsCurrentUserProgenyAdmin)
+                            {
+                                <td>
+                                    <div>
+                                        <a asp-controller="Measurements" asp-action="EditMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-info btn-round btn-sm leavePage">
+                                            <i class="fas fa-pencil-alt"></i>
+                                        </a>
+                                        <a asp-controller="Measurements" asp-action="DeleteMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-danger btn-round btn-sm leavePage">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
                             }
-                        }
-                    }],
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero:false
-                        }
-                    }]
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <canvas id="chartContainer" style="clear: both; height: 380px;"></canvas>
+        <br />
+        <canvas id="chartContainer2" style="clear: both; height: 380px;"></canvas>
+        <script src="~/lib/chart.js/dist/Chart.js"></script>
+        <script type="text/javascript">
+            let ctx = document.getElementById("chartContainer");
+            let myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: '@heightString',
+                        data: [@foreach (Measurement heightItem in Model.MeasurementsList)
+            {
+                if (heightItem.Height > 0.0)
+                {
+                    string chartYear = heightItem.Date.Year.ToString();
+                    string chartMonth = (heightItem.Date.Month - 1).ToString();
+                    string chartDay = heightItem.Date.Day.ToString();
+                    @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + heightItem.Height + "},")
                 }
-            }
-        });
-
-        var ctx2 = document.getElementById("chartContainer2");
-        var myChart2 = new Chart(ctx2, {
-            type: 'line',
-            data: {
-
-                datasets: [{
-                    label: '@weightString',
-                    data: [@foreach (Measurement weightItem in Model.MeasurementsList)
-                                {
-                                    if (weightItem.Weight > 0.0)
-                                    {
-                                        string chartYear = weightItem.Date.Year.ToString();
-                                        string chartMonth = (weightItem.Date.Month - 1).ToString();
-                                        string chartDay = weightItem.Date.Day.ToString();
-                                        @Html.Raw("{ x: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + weightItem.Weight + "},")
-                                    }
-                                }],
-                    borderColor: 'rgb(75, 192, 192)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    xAxes: [{
-                        type: 'time',
-                        time: {
-                            displayFormats: {
-                                quarter: 'MMM YYYY'
+            }],
+                        borderColor: [
+                            'rgba(255,99,132,1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'time',
+                            time: {
+                                displayFormats: {
+                                    quarter: 'MMM YYYY'
+                                }
                             }
-                        }
-                    }],
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero:false
-                        }
-                    }]
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: false
+                            }
+                        }]
+                    }
                 }
-            }
-        });
-    </script>
-}
+            });
+
+            var ctx2 = document.getElementById("chartContainer2");
+            var myChart2 = new Chart(ctx2, {
+                type: 'line',
+                data: {
+
+                    datasets: [{
+                        label: '@weightString',
+                        data: [@foreach (Measurement weightItem in Model.MeasurementsList)
+            {
+                if (weightItem.Weight > 0.0)
+                {
+                    string chartYear = weightItem.Date.Year.ToString();
+                    string chartMonth = (weightItem.Date.Month - 1).ToString();
+                    string chartDay = weightItem.Date.Day.ToString();
+                    @Html.Raw("{ x: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + weightItem.Weight + "},")
+                }
+            }],
+                        borderColor: 'rgb(75, 192, 192)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'time',
+                            time: {
+                                displayFormats: {
+                                    quarter: 'MMM YYYY'
+                                }
+                            }
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: false
+                            }
+                        }]
+                    }
+                }
+            });
+        </script>
+    }
+</div>

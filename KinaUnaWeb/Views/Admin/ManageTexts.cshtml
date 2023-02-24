@@ -4,45 +4,48 @@
 @{
     ViewData["Title"] = "Manage Texts";
 }
-<div class="pivoq_space20"></div>
-<div class="pivoq_section ">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="pivoq_space20"></div>
-                <h2>@ViewData["Title"]</h2>
-                <div class="pivoq_space20"></div>
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <div class="pivoq_space20"></div>
+    <div class="pivoq_section ">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="pivoq_space20"></div>
+                    <h2>@ViewData["Title"]</h2>
+                    <div class="pivoq_space20"></div>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                @foreach (KinaUnaText pivoqText in Model.Texts)
-                {
-                    <div class="row">
-                        <div class="col-12">
-                            <div><a class="btn btn-primary" onclick="editModal('@pivoqText.TextId', 'Edit @pivoqText.Title', '@Model.LanguageId')">Edit @pivoqText.Title</a></div>
+            <div class="row">
+                <div class="col-12">
+                    @foreach (KinaUnaText pivoqText in Model.Texts)
+                    {
+                        <div class="row">
+                            <div class="col-12">
+                                <div><a class="btn btn-primary" onclick="editModal('@pivoqText.TextId', 'Edit @pivoqText.Title', '@Model.LanguageId')">Edit @pivoqText.Title</a></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="space-20"></div>
-                }
+                        <div class="space-20"></div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editTextModal">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
             </div>
         </div>
     </div>
 </div>
-<div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editTextModal">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">
-            </div>
-        </div>
-    </div>
-</div>
+
 <style>
     .e-rte-image-popup.e-rte-quick-popup {
         z-index: 20001 !important;

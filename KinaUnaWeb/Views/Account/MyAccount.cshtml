@@ -9,101 +9,103 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("My profile", PageNames.Account, Model.LanguageId);
 }
-<h2>@ViewData["Title"]</h2>
-<div class="row">
-    <div class="col-md-10">
-        <form method="post" enctype="multipart/form-data">
-            <div asp-validation-summary="All" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="UserName">@await LocaleManager.GetTranslation("User name", PageNames.Account, Model.LanguageId)</label>
-                <input asp-for="UserName" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label asp-for="FirstName">@await LocaleManager.GetTranslation("First name", PageNames.Account, Model.LanguageId)</label>
-                <input asp-for="FirstName" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label asp-for="MiddleName">@await LocaleManager.GetTranslation("Middle name", PageNames.Account, Model.LanguageId)</label>
-                <input asp-for="MiddleName" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label asp-for="LastName">@await LocaleManager.GetTranslation("Last name", PageNames.Account, Model.LanguageId)</label>
-                <input asp-for="LastName" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label asp-for="Timezone" class="control-label">@await LocaleManager.GetTranslation("Time zone", PageNames.Account, Model.LanguageId)</label>
-                <div>
-                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="8" asp-for="Timezone" asp-items="@Model.TimezoneList"></select>
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h2>@ViewData["Title"]</h2>
+    <div class="row">
+        <div class="col-md-10">
+            <form method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="UserName">@await LocaleManager.GetTranslation("User name", PageNames.Account, Model.LanguageId)</label>
+                    <input asp-for="UserName" class="form-control" />
                 </div>
-            </div>
-            <div class="form-group">
-                <label asp-for="UserEmail">@await LocaleManager.GetTranslation("Email", PageNames.Account, Model.LanguageId)</label>
-                @if (Model.IsEmailConfirmed)
-                {
-                    <div class="input-group">
+                <div class="form-group">
+                    <label asp-for="FirstName">@await LocaleManager.GetTranslation("First name", PageNames.Account, Model.LanguageId)</label>
+                    <input asp-for="FirstName" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="MiddleName">@await LocaleManager.GetTranslation("Middle name", PageNames.Account, Model.LanguageId)</label>
+                    <input asp-for="MiddleName" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="LastName">@await LocaleManager.GetTranslation("Last name", PageNames.Account, Model.LanguageId)</label>
+                    <input asp-for="LastName" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="Timezone" class="control-label">@await LocaleManager.GetTranslation("Time zone", PageNames.Account, Model.LanguageId)</label>
+                    <div>
+                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="8" asp-for="Timezone" asp-items="@Model.TimezoneList"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="UserEmail">@await LocaleManager.GetTranslation("Email", PageNames.Account, Model.LanguageId)</label>
+                    @if (Model.IsEmailConfirmed)
+                    {
+                        <div class="input-group">
+                            <input asp-for="UserEmail" class="form-control" />
+                            <div class="input-group-append" aria-hidden="true">
+                                <div class="input-group-text">
+                                    <i class="fas fa-check text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
                         <input asp-for="UserEmail" class="form-control" />
-                        <div class="input-group-append" aria-hidden="true">
-                            <div class="input-group-text">
-                                <i class="fas fa-check text-success"></i>
+                        <button id="sendVerificationEmail" asp-action="ChangeEmail" asp-route-OldEmail="@Model.UserEmail" asp-route-NewEmail="" class="btn btn-link">@await LocaleManager.GetTranslation("Change/confirm email", PageNames.Account, Model.LanguageId)</button>
+                    }
+                    <span asp-validation-for="UserEmail" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="PhoneNumber">@await LocaleManager.GetTranslation("Phone number", PageNames.Account, Model.LanguageId)</label>
+                    <input asp-for="PhoneNumber" class="form-control" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="col-lg-3 col-sm3 control-label">@await LocaleManager.GetTranslation("Profile picture", PageNames.Account, Model.LanguageId)</label>
+                    <div class="col-lg-9">
+                        <div class="fileinput fileinput-new text-center" data-provides="fileinput">
+                            <div class="fileinput-new thumbnail img-raised">
+                                <img src="@Model.ProfilePicture" alt="...">
                             </div>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <input asp-for="UserEmail" class="form-control" />
-                    <button id="sendVerificationEmail" asp-action="ChangeEmail" asp-route-OldEmail="@Model.UserEmail" asp-route-NewEmail="" class="btn btn-link">@await LocaleManager.GetTranslation("Change/confirm email", PageNames.Account, Model.LanguageId)</button>
-                }
-                <span asp-validation-for="UserEmail" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PhoneNumber">@await LocaleManager.GetTranslation("Phone number", PageNames.Account, Model.LanguageId)</label>
-                <input asp-for="PhoneNumber" class="form-control" />
-                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label class="col-lg-3 col-sm3 control-label">@await LocaleManager.GetTranslation("Profile picture", PageNames.Account, Model.LanguageId)</label>
-                <div class="col-lg-9">
-                    <div class="fileinput fileinput-new text-center" data-provides="fileinput">
-                        <div class="fileinput-new thumbnail img-raised">
-                            <img src="@Model.ProfilePicture" alt="...">
-                        </div>
-                        <div class="fileinput-preview fileinput-exists thumbnail img-raised"></div>
-                        <div>
-                            <div class="btn btn-primary btn-round btn-file ">
-                                <span data-trigger="fileinput" class="fileinput-new">@await LocaleManager.GetTranslation("New picture", PageNames.Account, Model.LanguageId)</span>
-                                <span class="fileinput-exists">@await LocaleManager.GetTranslation("Change", PageNames.Account, Model.LanguageId)</span>
-                                <input type="file" asp-for="File" accept="image/*" />
+                            <div class="fileinput-preview fileinput-exists thumbnail img-raised"></div>
+                            <div>
+                                <div class="btn btn-primary btn-round btn-file ">
+                                    <span data-trigger="fileinput" class="fileinput-new">@await LocaleManager.GetTranslation("New picture", PageNames.Account, Model.LanguageId)</span>
+                                    <span class="fileinput-exists">@await LocaleManager.GetTranslation("Change", PageNames.Account, Model.LanguageId)</span>
+                                    <input type="file" asp-for="File" accept="image/*" />
+                                </div>
+                                <br />
+                                <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
+                                    <i class="fa fa-times"></i>@await LocaleManager.GetTranslation("Remove", PageNames.Account, Model.LanguageId)
+                                </a>
                             </div>
-                            <br />
-                            <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
-                                <i class="fa fa-times"></i>@await LocaleManager.GetTranslation("Remove", PageNames.Account, Model.LanguageId) 
-                            </a>
                         </div>
                     </div>
                 </div>
-            </div>
-            <button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Save", PageNames.Account, Model.LanguageId)</button>
-        </form>
+                <button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Save", PageNames.Account, Model.LanguageId)</button>
+            </form>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="col-md-10">
-        <form id="loginForm" action="@Model.ChangeLink" method="get" target="loginFrame" style="float: right;">
-            <button id="changePasswordButton" type="submit" class="btn btn-info" data-toggle="modal" data-target="#loginModal" style="float: right;"><span class="fas fa-sign-in-alt"></span>@await LocaleManager.GetTranslation("Change Password", PageNames.Account, Model.LanguageId) </button>
-        </form>
-        <a id="enablePushButton" class="btn btn-info leavePage" style="display: none;" asp-action="EnablePush">@await LocaleManager.GetTranslation("Enable Push Notifications", PageNames.Account, Model.LanguageId)</a>
-        <a id="disablePushButton" class="btn btn-warning leavePage" style="display: none;" asp-action="DisablePush">@await LocaleManager.GetTranslation("Disable Push Notifications", PageNames.Account, Model.LanguageId)</a>
+    <div class="row">
+        <div class="col-md-10">
+            <form id="loginForm" action="@Model.ChangeLink" method="get" target="loginFrame" style="float: right;">
+                <button id="changePasswordButton" type="submit" class="btn btn-info" data-toggle="modal" data-target="#loginModal" style="float: right;"><span class="fas fa-sign-in-alt"></span>@await LocaleManager.GetTranslation("Change Password", PageNames.Account, Model.LanguageId) </button>
+            </form>
+            <a id="enablePushButton" class="btn btn-info leavePage" style="display: none;" asp-action="EnablePush">@await LocaleManager.GetTranslation("Enable Push Notifications", PageNames.Account, Model.LanguageId)</a>
+            <a id="disablePushButton" class="btn btn-warning leavePage" style="display: none;" asp-action="DisablePush">@await LocaleManager.GetTranslation("Disable Push Notifications", PageNames.Account, Model.LanguageId)</a>
+        </div>
     </div>
-</div>
-<div class="row">
-    <div class="col-12">
-        <form id="deleteAccountForm" asp-action="DeleteAccount" method="get">
-            <button id="deleteAccountButton" type="submit" class="btn btn-secondary float-left"><span class="fas fa-sign-in-alt"></span>@await LocaleManager.GetTranslation("Delete account", PageNames.Account, Model.LanguageId)</button>
-        </form>
+    <div class="row">
+        <div class="col-12">
+            <form id="deleteAccountForm" asp-action="DeleteAccount" method="get">
+                <button id="deleteAccountButton" type="submit" class="btn btn-secondary float-left"><span class="fas fa-sign-in-alt"></span>@await LocaleManager.GetTranslation("Delete account", PageNames.Account, Model.LanguageId)</button>
+            </form>
+        </div>
     </div>
+    <br />
 </div>
-<br />
 <script>
     navigator.serviceWorker.ready.then(function (reg) {
         // Do we already have a push message subscription?

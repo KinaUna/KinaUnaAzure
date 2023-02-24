@@ -9,176 +9,176 @@
     <script src="/lib/moment.min.js"></script>
     <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
-    <script src="https://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
-    <script src="https://js.api.here.com/v3/3.0/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
-    <script src="https://js.api.here.com/v3/3.0/mapsjs-ui.js" type="text/javascript" charset="utf-8"></script>
-    <script type="text/javascript" src="https://js.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.0/mapsjs-ui.css" />
+    <script src="https://js.api.here.com/v3/3.1/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://js.api.here.com/v3/3.1/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://js.api.here.com/v3/3.1/mapsjs-ui.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css"/>
 }
-
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Add location", PageNames.Locations, Model.LanguageId);
     string addLocationForString = await LocaleManager.GetTranslation("Add location for:", PageNames.Locations, Model.LanguageId);
 }
-<button onclick="geoFindMe()" class="btn btn-info" style="float: right;" id="getLocation">Copy my current location</button>
-<h2>@ViewData["Title"]</h2>
-<div id="out"></div>
-<form asp-action="AddLocation" role="form" method="post" enctype="multipart/form-data">
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <button onclick="geoFindMe()" class="btn btn-info" style="float: right;" id="getLocation">Copy my current location</button>
+    <h2>@ViewData["Title"]</h2>
+    <div id="out"></div>
+    <form asp-action="AddLocation" role="form" method="post" enctype="multipart/form-data">
 
-    @if (Model.ProgenyList.Count > 1)
-    {
+        @if (Model.ProgenyList.Count > 1)
+        {
+            <div class="form-group">
+                <label asp-for="LocationItem.ProgenyId" class="control-label col-sm-3">@addLocationForString</label>
+                <div class="col-lg-9">
+                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="LocationItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="form-group">
+                <label class="control-label col-sm-3">@addLocationForString</label>
+                <div class="col-lg-9">
+                    <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+                </div>
+                <input asp-for="LocationItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+            </div>
+        }
         <div class="form-group">
-            <label asp-for="LocationItem.ProgenyId" class="control-label col-sm-3">@addLocationForString</label>
+            <label asp-for="LocationItem.Name" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Name or label", PageNames.Locations, Model.LanguageId)</label>
             <div class="col-lg-9">
-                <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="LocationItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                <input id="nameText" asp-for="LocationItem.Name" class="form-control" />
             </div>
         </div>
-    }
-    else
-    {
         <div class="form-group">
-            <label class="control-label col-sm-3">@addLocationForString</label>
+            <label asp-for="LocationItem.StreetName" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Street", PageNames.Locations, Model.LanguageId)</label>
             <div class="col-lg-9">
-                <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
-            </div>
-            <input asp-for="LocationItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
-        </div>
-    }
-    <div class="form-group">
-        <label asp-for="LocationItem.Name" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Name or label", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input id="nameText" asp-for="LocationItem.Name" class="form-control" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="LocationItem.StreetName" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Street", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input id="streetText" asp-for="LocationItem.StreetName" class="form-control" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="LocationItem.HouseNumber" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("House number", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input id="houseNumberText" asp-for="LocationItem.HouseNumber" class="form-control" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="LocationItem.District" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("District", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input id="disctrictText" asp-for="LocationItem.District" class="form-control" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="LocationItem.City" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("City", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input id="cityText" asp-for="LocationItem.City" class="form-control" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="LocationItem.PostalCode" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Postal code", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input id="postalCodeText" asp-for="LocationItem.PostalCode" class="form-control" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="LocationItem.County" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("County", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input id="countyText" asp-for="LocationItem.County" class="form-control" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="LocationItem.State" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("State", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input id="stateText" asp-for="LocationItem.State" class="form-control" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="LocationItem.Country" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Country", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input id="countryText" asp-for="LocationItem.Country" class="form-control" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="LocationItem.Latitude" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Latitude", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input id="latitudeText" asp-for="LocationItem.Latitude" class="form-control" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="LocationItem.Longitude" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Longitude", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input id="longitudeText" asp-for="LocationItem.Longitude" class="form-control" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="LocationItem.Date" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Date", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-8 col-xs-7 col-sm-6 col-md-4">
-            <div class="input-group date">
-                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text"
-                       class="form-control" data-zdp_readonly_element="false" asp-for="LocationItem.Date" value="@Model.LocationItem.Date!.Value.ToString("dd-MMM-yyyy HH:mm")" />
+                <input id="streetText" asp-for="LocationItem.StreetName" class="form-control" />
             </div>
         </div>
-    </div>
-    <script type="text/javascript">
-        $(function () {
-            $('#datetimepicker1').Zebra_DatePicker({
-                format: 'd-M-Y H:i',
-                open_icon_only: true
+        <div class="form-group">
+            <label asp-for="LocationItem.HouseNumber" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("House number", PageNames.Locations, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <input id="houseNumberText" asp-for="LocationItem.HouseNumber" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="LocationItem.District" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("District", PageNames.Locations, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <input id="disctrictText" asp-for="LocationItem.District" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="LocationItem.City" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("City", PageNames.Locations, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <input id="cityText" asp-for="LocationItem.City" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="LocationItem.PostalCode" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Postal code", PageNames.Locations, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <input id="postalCodeText" asp-for="LocationItem.PostalCode" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="LocationItem.County" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("County", PageNames.Locations, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <input id="countyText" asp-for="LocationItem.County" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="LocationItem.State" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("State", PageNames.Locations, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <input id="stateText" asp-for="LocationItem.State" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="LocationItem.Country" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Country", PageNames.Locations, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <input id="countryText" asp-for="LocationItem.Country" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="LocationItem.Latitude" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Latitude", PageNames.Locations, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <input id="latitudeText" asp-for="LocationItem.Latitude" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="LocationItem.Longitude" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Longitude", PageNames.Locations, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <input id="longitudeText" asp-for="LocationItem.Longitude" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="LocationItem.Date" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Date", PageNames.Locations, Model.LanguageId)</label>
+            <div class="col-8 col-xs-7 col-sm-6 col-md-4">
+                <div class="input-group date">
+                    <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text"
+                           class="form-control" data-zdp_readonly_element="false" asp-for="LocationItem.Date" value="@Model.LocationItem.Date!.Value.ToString("dd-MMM-yyyy HH:mm")" />
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                $('#datetimepicker1').Zebra_DatePicker({
+                    format: 'd-M-Y H:i',
+                    open_icon_only: true
+                });
             });
-        });
-    </script>
-    <div class="form-group">
-        <label asp-for="LocationItem.Notes" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input asp-for="LocationItem.Notes" class="form-control" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Locations, Model.LanguageId)</label>
-        <div class="col-lg-10 col-md-10 col-sm-10">
-            <input id="tagList" type="text" asp-for="LocationItem.Tags" value="@Model.LocationItem.Tags" placeholder="Add tag..." class="form-control" />
-        </div>
-        <script>
-            $('input[id="tagList"').amsifySuggestags({
-                suggestions: @Html.Raw(Model.TagsList)
-                        });
         </script>
-    </div>
-    <div class="form-group">
-        <label asp-for="LocationItem.AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="LocationItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-        </div>
-    </div>
-    <div>
         <div class="form-group">
-            <div class="col-lg-3 col-sm-3 control-label"></div>
+            <label asp-for="LocationItem.Notes" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Locations, Model.LanguageId)</label>
             <div class="col-lg-9">
-                <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                <a class="btn btn-danger leavePage" asp-controller="Locations" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                <input asp-for="LocationItem.Notes" class="form-control" />
             </div>
         </div>
-    </div>
-</form>
-<div>@await LocaleManager.GetTranslation("Click on the map below to get location information.", PageNames.Locations, Model.LanguageId)</div>
-<div style="width: 100%; height: 480px" id="mapContainer"></div>
+        <div class="form-group">
+            <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Locations, Model.LanguageId)</label>
+            <div class="col-lg-10 col-md-10 col-sm-10">
+                <input id="tagList" type="text" asp-for="LocationItem.Tags" value="@Model.LocationItem.Tags" placeholder="Add tag..." class="form-control" />
+            </div>
+            <script>
+                $('input[id="tagList"').amsifySuggestags({
+                    suggestions: @Html.Raw(Model.TagsList)
+                                        });
+            </script>
+        </div>
+        <div class="form-group">
+            <label asp-for="LocationItem.AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="LocationItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+            </div>
+        </div>
+        <div>
+            <div class="form-group">
+                <div class="col-lg-3 col-sm-3 control-label"></div>
+                <div class="col-lg-9">
+                    <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <a class="btn btn-danger leavePage" asp-controller="Locations" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div>@await LocaleManager.GetTranslation("Click on the map below to get location information.", PageNames.Locations, Model.LanguageId)</div>
+    <div style="width: 100%; height: 480px" id="mapContainer"></div>
+</div>
+
 <script>
     function setUpClickListener(map) {
-        // Attach an event listener to map display
-        // obtain the coordinates and display in an alert box.
-        map.addEventListener('tap', function (evt) {
-            var zoomLevel = map.getZoom() + 1;
+                map.addEventListener('tap', function (evt) {
+            let zoomLevel = map.getZoom() + 1;
             if (zoomLevel > 20) {
                 zoomLevel = 20;
             }
             map.setZoom(zoomLevel, true);
-            var coord = map.screenToGeo(evt.currentPointer.viewportX,
+            let coord = map.screenToGeo(evt.currentPointer.viewportX,
                 evt.currentPointer.viewportY);
             map.setCenter(coord, true);
             
-            var geocoder = platform.getGeocodingService();
-            var reverseGeocodingParameters = {
+            let geocoder = platform.getGeocodingService();
+            let reverseGeocodingParameters = {
                 prox: coord.lat +', ' + coord.lng + ', 32',
                 mode: 'retrieveAddresses',
                 maxresults: 1
@@ -190,48 +190,43 @@
             );
             $("#latitudeText").val(coord.lat);
             $("#longitudeText").val(coord.lng);
-            //alert('Clicked at ' + Math.abs(coord.lat.toFixed(4)) +
-            //    ((coord.lat > 0) ? 'N' : 'S') +
-            //    ' ' + Math.abs(coord.lng.toFixed(4)) +
-            //    ((coord.lng > 0) ? 'E' : 'W'));
         });
     }
-
-    var platform = new H.service.Platform({
-        'app_id': 'bJjORf0UVOc5U4LjADgX',
-        'app_code': 'GNDm65qsmujcmIK9-2X_Uw',
+    
+    let platform = new H.service.Platform({
+        'apikey': '@Constants.HereMapsApiKey',
         'useHTTPS': true
     });
-    var pixelRatio = window.devicePixelRatio || 1;
-    var maptypes = platform.createDefaultLayers({
+
+    let pixelRatio = window.devicePixelRatio || 1;
+    let maptypes = platform.createDefaultLayers({
         tileSize: pixelRatio === 1 ? 256 : 512,
         ppi: pixelRatio === 1 ? undefined : 320
     });
-    
-    var map = new H.Map(document.getElementById('mapContainer'),
-        maptypes.normal.map,
+
+    let map = new H.Map(document.getElementById('mapContainer'),
+        maptypes.vector.normal.map,
         {
             zoom: 3,
             center: { lng: @Model.LocationItem.Longitude, lat: @Model.LocationItem.Latitude },
             pixelRatio: pixelRatio
         });
-    @*map.addObject(new H.map.Marker({ lng: @Model.Longtitude, lat: @Model.Latitude}));*@
-    var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+
+    let mapEvents = new H.mapevents.MapEvents(map);
+    let ui = H.ui.UI.createDefault(map, maptypes);
 
     setUpClickListener(map);
-
-    var ui = H.ui.UI.createDefault(map, maptypes);
-    
+        
     function onGeoSuccess(result) {
-        var location = result.Response.View[0].Result[0];
-        var contextText = "";
-        var streetName = "";
-        var houseNumber = "";
-        var districtName = "";
-        var cityName = "";
-        var postalCode = "";
-        var countyName = "";
-        var stateName = "";
+        let location = result.Response.View[0].Result[0];
+        let contextText = "";
+        let streetName = "";
+        let houseNumber = "";
+        let districtName = "";
+        let cityName = "";
+        let postalCode = "";
+        let countyName = "";
+        let stateName = "";
         if (location.Location.Address.Street !== undefined) {
             streetName = location.Location.Address.Street;
             contextText = contextText + location.Location.Address.Street;
@@ -287,7 +282,7 @@
     };
 
     function geoFindMe() {
-        var output = document.getElementById("out");
+        let output = document.getElementById("out");
 
         if (!navigator.geolocation){
             output.innerHTML = "<p>Geolocation is not supported by your browser</p>";
@@ -295,14 +290,14 @@
         }
 
         function success(position) {
-            var latitude  = position.coords.latitude;
-            var longitude = position.coords.longitude;
+            let latitude  = position.coords.latitude;
+            let longitude = position.coords.longitude;
             output.innerHTML = '<p>Latitude: ' + latitude + '°, Longitude: ' + longitude + '° copied to the form below.</p>';
-            var zoomLevel = 14;
+            let zoomLevel = 14;
             map.setZoom(zoomLevel, true);
             map.setCenter({lat: latitude, lng: longitude}, true);
-            var geocoder = platform.getGeocodingService();
-            var reverseGeocodingParameters = {
+            let geocoder = platform.getGeocodingService();
+            let reverseGeocodingParameters = {
                 prox: latitude + ', ' + longitude + ', 32',
                 mode: 'retrieveAddresses',
                 maxresults: 1

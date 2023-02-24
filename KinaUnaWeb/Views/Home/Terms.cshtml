@@ -8,18 +8,19 @@
     ViewData["Title"] = await LocaleManager.GetTranslation("Terms", PageNames.Layout, Model.LanguageId);
     Model.KinaUnaText = await LocaleManager.GetPageTextByTitle("__Terms", "Terms", Model.LanguageId);
 }
-<h3 class="title">@ViewData["Title"]</h3>
-<div>
-    <H4>
-        <img src="~/images/KinaUnaLogo_246x80.png"/>
-    </H4>
-    <br/>
-    <div style="max-width: 600px;" id="impressumTextDiv">
-        @Html.Raw(Model.KinaUnaText.Text ?? "")
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h3 class="title">@ViewData["Title"]</h3>
+    <div>
+        <H4>
+            <img src="~/images/KinaUnaLogo_246x80.png"/>
+        </H4>
+        <br/>
+        <div style="max-width: 600px;" id="impressumTextDiv">
+            @Html.Raw(Model.KinaUnaText.Text ?? "")
+        </div>
     </div>
+    <br/>
 </div>
-<br/>
-
 @if (Model.CurrentUser.IsKinaUnaAdmin && Model.KinaUnaText != null)
 {
     <div class="space-20"></div>

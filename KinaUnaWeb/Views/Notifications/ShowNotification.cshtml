@@ -22,24 +22,24 @@
     }
 }
 <div class="@topDivClass" data-notificationTime="@timeStamp">
-    <div onClick="notificationItemClick(this, event)" class="@topBtnClass @isReadClass text-left" data-notificationid="@Model.WebNotification.Id" data-notificationLink="@Model.WebNotification.Link">
-        <div class="media-area" style="width: 100%; margin: 0; padding-bottom: 4px; min-width: 360px;">
+    <div onClick="notificationItemClick(this, event)" class="@topBtnClass @isReadClass text-left notification-frame" data-notificationid="@Model.WebNotification.Id" data-notificationLink="@Model.WebNotification.Link">
+        <div class="notification-card">
             <div class="media text-left">
                 <div class="float-left">
                     <div class="img-circle" style="height: 46px; width: 46px;">
-                        <img height="40" width="40" class="media-object rounded img-fluid" src="@Model.WebNotification.Icon" />
+                        <img height="40" width="40" class="rounded img-fluid" src="@Model.WebNotification.Icon" />
                     </div>
                 </div>
                 <div class="media-body">
                     <span class="text-warning"><span class="info-title text-warning">@Model.WebNotification.From</span> <span class="text-warning"> · @Model.WebNotification.DateTimeString</span></span>
-                    <h6 class="media-heading text-white">@Model.WebNotification.Title</h6>
-                    <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@Model.WebNotification.Message</p>
-                    <div class="media-footer">
-                        <span  id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(this, event)" data-notificationid="@Model.WebNotification.Id">
-                            <i class="material-icons">delete_forever</i> @await LocaleManager.GetTranslation("Delete", PageNames.Notifications, Model.LanguageId)
-                        </span>
-                        <span id="@readId" class="btn btn-info btn-link btn-sm float-right @isReadClass @idClass" onClick="markRead(this, event)" data-notificationid="@Model.WebNotification.Id">
+                    <div class="notification-title text-white">@Model.WebNotification.Title</div>
+                    <p class="text-light notification-message" style="">@Model.WebNotification.Message</p>
+                    <div>
+                        <span id="@readId" class="btn btn-info btn-link btn-sm @isReadClass @idClass" onClick="markRead(this, event)" data-notificationid="@Model.WebNotification.Id">
                             <i class="material-icons">@markAsReadIcon</i> @markAsRead
+                        </span>
+                        <span id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(this, event)" data-notificationid="@Model.WebNotification.Id">
+                            <i class="material-icons">delete_forever</i> @await LocaleManager.GetTranslation("Delete", PageNames.Notifications, Model.LanguageId)
                         </span>
                     </div>
                 </div>

@@ -10,110 +10,111 @@
     <script src="/lib/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
-<h2>@ViewData["Title"]</h2>
-<form asp-action="EditEvent" role="form" method="post">
-    <div class="form-group">
-        <label asp-for="CalendarItem.Title" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Title", PageNames.Calendar, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input asp-for="CalendarItem.Title" class="form-control" value="@Model.CalendarItem.Title" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="CalendarItem.StartTime" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Start", PageNames.Calendar, Model.LanguageId)</label>
-        <div class="col-8 col-xs-7 col-sm-6 col-md-4">
-            <div class="input-group date">
-                @{
-                    string startTimeValue = "";
-                    if (Model.CalendarItem.StartTime.HasValue)
-                    {
-                        startTimeValue = Model.CalendarItem.StartTime.Value.ToString("dd-MMM-yyyy HH:mm");
-                    }
-                }
-                <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CalendarItem.StartTime" value="@startTimeValue" />
-            </div>
-        </div>
-    </div>
-    <script type="text/javascript">
-        $(function () {
-            $('#datetimepicker1').Zebra_DatePicker({
-                format: 'd-M-Y H:i',
-                open_icon_only: true
-            });
-        });
-    </script>
-    <div class="form-group">
-        <label asp-for="CalendarItem.EndTime" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("End", PageNames.Calendar, Model.LanguageId)</label>
-        <div class="col-8 col-xs-7 col-sm-6 col-md-4">
-            <div class="input-group date">
-                @{
-                    string endTimeValue = "";
-                    if (Model.CalendarItem.EndTime.HasValue)
-                    {
-                        endTimeValue = Model.CalendarItem.EndTime.Value.ToString("dd-MMM-yyyy HH:mm");
-                    }
-                }
-                <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CalendarItem.EndTime" value="@endTimeValue" />
-            </div>
-        </div>
-    </div>
-    <script type="text/javascript">
-        $(function () {
-            $('#datetimepicker2').Zebra_DatePicker({
-                format: 'd-M-Y H:i',
-                open_icon_only: true
-            });
-        });
-    </script>
-    <div class="form-group">
-        <label asp-for="CalendarItem.Notes" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Calendar, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <textarea asp-for="CalendarItem.Notes" class="form-control" rows="4" value="@Model.CalendarItem.Notes"></textarea>
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="CalendarItem.Location" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Location", PageNames.Calendar, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input asp-for="CalendarItem.Location" class="form-control" value="@Model.CalendarItem.Location" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="CalendarItem.Context" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Context", PageNames.Calendar, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <input asp-for="CalendarItem.Context" class="form-control" value="@Model.CalendarItem.Context" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="CalendarItem.AllDay" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("All day", PageNames.Calendar, Model.LanguageId)</label>
-        <div class="col-lg-1">
-            <input type="checkbox" asp-for="CalendarItem.AllDay" class="form-control" checked="@Model.CalendarItem.AllDay" value="@Model.CalendarItem.AllDay" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="CalendarItem.AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-        <div class="col-lg-9">
-            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="CalendarItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-        </div>
-    </div>
-    <input asp-for="CalendarItem.ProgenyId" value="@Model.CalendarItem.ProgenyId" type="hidden" />
-    <input asp-for="CalendarItem.EventId" value="@Model.CalendarItem.EventId" type="hidden" />
-    <input asp-for="CalendarItem.Author" value="@Model.CalendarItem.Author" type="hidden" />
-    <div>
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h2>@ViewData["Title"]</h2>
+    <form asp-action="EditEvent" role="form" method="post">
         <div class="form-group">
-            <div class="col-lg-3 col-sm-3 control-label"></div>
+            <label asp-for="CalendarItem.Title" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Title", PageNames.Calendar, Model.LanguageId)</label>
             <div class="col-lg-9">
-                <button id="submitBtn" class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                <a class="btn btn-danger leavePage" asp-controller="Calendar" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                <input asp-for="CalendarItem.Title" class="form-control" value="@Model.CalendarItem.Title" />
             </div>
         </div>
-    </div>
-    <div>
-        <div class="col-lg-3 col-sm-3 control-label"></div>
-        <div class="col-lg-9 col-md-9 col-sm-9">
-            <div id="notification" style="color: orangered"></div>
+        <div class="form-group">
+            <label asp-for="CalendarItem.StartTime" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Start", PageNames.Calendar, Model.LanguageId)</label>
+            <div class="col-8 col-xs-7 col-sm-6 col-md-4">
+                <div class="input-group date">
+                    @{
+                        string startTimeValue = "";
+                        if (Model.CalendarItem.StartTime.HasValue)
+                        {
+                            startTimeValue = Model.CalendarItem.StartTime.Value.ToString("dd-MMM-yyyy HH:mm");
+                        }
+                    }
+                    <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CalendarItem.StartTime" value="@startTimeValue" />
+                </div>
+            </div>
         </div>
-    </div>
-</form>
-
+        <script type="text/javascript">
+            $(function () {
+                $('#datetimepicker1').Zebra_DatePicker({
+                    format: 'd-M-Y H:i',
+                    open_icon_only: true
+                });
+            });
+        </script>
+        <div class="form-group">
+            <label asp-for="CalendarItem.EndTime" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("End", PageNames.Calendar, Model.LanguageId)</label>
+            <div class="col-8 col-xs-7 col-sm-6 col-md-4">
+                <div class="input-group date">
+                    @{
+                        string endTimeValue = "";
+                        if (Model.CalendarItem.EndTime.HasValue)
+                        {
+                            endTimeValue = Model.CalendarItem.EndTime.Value.ToString("dd-MMM-yyyy HH:mm");
+                        }
+                    }
+                    <input id="datetimepicker2" data-format="dd-MMM-yyyy HH:mm" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="CalendarItem.EndTime" value="@endTimeValue" />
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                $('#datetimepicker2').Zebra_DatePicker({
+                    format: 'd-M-Y H:i',
+                    open_icon_only: true
+                });
+            });
+        </script>
+        <div class="form-group">
+            <label asp-for="CalendarItem.Notes" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Calendar, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <textarea asp-for="CalendarItem.Notes" class="form-control" rows="4" value="@Model.CalendarItem.Notes"></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="CalendarItem.Location" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Location", PageNames.Calendar, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <input asp-for="CalendarItem.Location" class="form-control" value="@Model.CalendarItem.Location" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="CalendarItem.Context" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Context", PageNames.Calendar, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <input asp-for="CalendarItem.Context" class="form-control" value="@Model.CalendarItem.Context" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="CalendarItem.AllDay" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("All day", PageNames.Calendar, Model.LanguageId)</label>
+            <div class="col-lg-1">
+                <input type="checkbox" asp-for="CalendarItem.AllDay" class="form-control" checked="@Model.CalendarItem.AllDay" value="@Model.CalendarItem.AllDay" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="CalendarItem.AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+            <div class="col-lg-9">
+                <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="CalendarItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+            </div>
+        </div>
+        <input asp-for="CalendarItem.ProgenyId" value="@Model.CalendarItem.ProgenyId" type="hidden" />
+        <input asp-for="CalendarItem.EventId" value="@Model.CalendarItem.EventId" type="hidden" />
+        <input asp-for="CalendarItem.Author" value="@Model.CalendarItem.Author" type="hidden" />
+        <div>
+            <div class="form-group">
+                <div class="col-lg-3 col-sm-3 control-label"></div>
+                <div class="col-lg-9">
+                    <button id="submitBtn" class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <a class="btn btn-danger leavePage" asp-controller="Calendar" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="col-lg-3 col-sm-3 control-label"></div>
+            <div class="col-lg-9 col-md-9 col-sm-9">
+                <div id="notification" style="color: orangered"></div>
+            </div>
+        </div>
+    </form>
+</div>
 <script type="text/javascript">
         $(document).ready(function () {
             checkTimes();

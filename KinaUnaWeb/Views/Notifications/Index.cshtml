@@ -6,99 +6,47 @@
     ViewData["Title"] = await LocaleManager.GetTranslation("Notifications", PageNames.Notifications, Model.LanguageId);
     string deleteString = await LocaleManager.GetTranslation("Delete", PageNames.Notifications, Model.LanguageId);
 }
-<h2>@ViewData["Title"]</h2>
+<div class="ml-xl-auto mr-xl-auto col-xl-6 col-xxl-4">
+    <h2>@ViewData["Title"]</h2>
 
-<div class="card" style="background: #3a2051">
-    @if (Model.SelectedNotification != null)
-    {
-        string topDivClass = "notification-item";
-        string idClass = "notifId" + Model.SelectedNotification.Id;
-        string isReadClass = "notificationUnread";
-        string markAsRead = "Mark as read";
-        string deleteId = "notificationDeleteId" + Model.SelectedNotification.Id;
-        string topBtnClass = "btn btn-link notification-button leavePage";
-        string markAsReadIcon = "drafts";
-        if (Model.SelectedNotification.IsRead)
-        {
-            topDivClass = topDivClass + " bg-dark";
-            isReadClass = "notificationRead";
-            markAsRead = "Mark as unread";
-            topBtnClass = "btn btn-link bg-dark notification-button leavePage";
-            markAsReadIcon = "markunread";
-        }
-
-        <div class="@topDivClass">
-            <hr />
-            <div class="@topBtnClass @isReadClass text-left" data-notificationid="@Model.SelectedNotification.Id" data-notificationLink="@Model.SelectedNotification.Link">
-                <div class="media-area" style="width: 100%; margin: 0; padding-bottom: 4px; min-width: 300px;">
-                    <div class="media text-left">
-                        <div class="float-left">
-                            <div class="img-circle" style="height: 46px; width: 46px;">
-                                <img height="40" width="40" class="media-object rounded img-fluid" src="@Model.SelectedNotification.Icon" />
-                            </div>
-                        </div>
-                        <div class="media-body">
-                            <span class="text-warning"><span class="info-title text-warning">@Model.SelectedNotification.From</span> <span class="text-warning"> · @Model.SelectedNotification.DateTimeString</span></span>
-                            <h6 class="media-heading text-white">@Model.SelectedNotification.Title</h6>
-                            <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@Model.SelectedNotification.Message</p>
-                            <div class="media-footer">
-                                <span id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(event, this)" data-notificationid="@Model.SelectedNotification.Id">
-                                    <i class="material-icons">delete_forever</i> @deleteString
-                                </span>
-                                <span class="btn btn-info btn-link btn-sm float-right @isReadClass @idClass" onClick="markRead(event, this)" data-notificationid="@Model.SelectedNotification.Id">
-                                    <i class="material-icons">@markAsReadIcon</i> @markAsRead
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-</div>
-<br />
-Most recent notifications:
-<div id="recentNotifications" class="card" style="background: #3a2051; margin-top: 5px;">
-
-    @if (Model.NotificationsList.Any())
-    {
-        foreach (WebNotification notif in Model.NotificationsList)
+    <div class="card" style="background: #3a2051">
+        @if (Model.SelectedNotification != null)
         {
             string topDivClass = "notification-item";
-            string idClass = "notifId" + notif.Id;
+            string idClass = "notifId" + Model.SelectedNotification.Id;
             string isReadClass = "notificationUnread";
-            string markAsRead = await LocaleManager.GetTranslation("Mark as read", PageNames.Notifications, Model.LanguageId);
-            string deleteId = "notificationDeleteId" + notif.Id;
+            string markAsRead = "Mark as read";
+            string deleteId = "notificationDeleteId" + Model.SelectedNotification.Id;
             string topBtnClass = "btn btn-link notification-button leavePage";
             string markAsReadIcon = "drafts";
-            string timeStamp = notif.DateTime.Ticks.ToString();
-            if (notif.IsRead)
+            if (Model.SelectedNotification.IsRead)
             {
                 topDivClass = topDivClass + " bg-dark";
                 isReadClass = "notificationRead";
-                markAsRead = await LocaleManager.GetTranslation("Mark as unread", PageNames.Notifications, Model.LanguageId);
+                markAsRead = "Mark as unread";
                 topBtnClass = "btn btn-link bg-dark notification-button leavePage";
                 markAsReadIcon = "markunread";
             }
 
-            <div class="@topDivClass" data-notificationTime="@timeStamp">
-                <div onClick="notificationItemClick(this, event)" class="@topBtnClass @isReadClass text-left" data-notificationid="@notif.Id" data-notificationLink="@notif.Link">
-                    <div class="media-area" style="width: 100%; margin: 0; padding-bottom: 4px; min-width: 300px;">
+            <div class="@topDivClass">
+                <hr />
+                <div class="@topBtnClass @isReadClass text-left" data-notificationid="@Model.SelectedNotification.Id" data-notificationLink="@Model.SelectedNotification.Link">
+                    <div class="notification-card">
                         <div class="media text-left">
                             <div class="float-left">
                                 <div class="img-circle" style="height: 46px; width: 46px;">
-                                    <img height="40" width="40" class="media-object rounded img-fluid" src="@notif.Icon" />
+                                    <img height="40" width="40" class="media-object rounded img-fluid" src="@Model.SelectedNotification.Icon" />
                                 </div>
                             </div>
                             <div class="media-body">
-                                <span class="text-warning"><span class="info-title text-warning">@notif.From</span> <span class="text-warning"> · @notif.DateTimeString</span></span>
-                                <h6 class="media-heading text-white">@notif.Title</h6>
-                                <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@notif.Message</p>
+                                <span class="text-warning"><span class="info-title text-warning">@Model.SelectedNotification.From</span> <span class="text-warning"> · @Model.SelectedNotification.DateTimeString</span></span>
+                                <h6 class="media-heading text-white">@Model.SelectedNotification.Title</h6>
+                                <p class="text-light" style="font-size: 0.9rem; white-space: pre-wrap;">@Model.SelectedNotification.Message</p>
                                 <div class="media-footer">
-                                    <span id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(this, event)" data-notificationid="@notif.Id">
+                                    <span id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(event, this)" data-notificationid="@Model.SelectedNotification.Id">
                                         <i class="material-icons">delete_forever</i> @deleteString
                                     </span>
-                                    <span class="btn btn-info btn-link btn-sm float-right @isReadClass @idClass" onClick="markRead(this, event)" data-notificationid="@notif.Id">
+                                    <span class="btn btn-info btn-link btn-sm float-right @isReadClass @idClass" onClick="markRead(event, this)" data-notificationid="@Model.SelectedNotification.Id">
                                         <i class="material-icons">@markAsReadIcon</i> @markAsRead
                                     </span>
                                 </div>
@@ -108,5 +56,59 @@ Most recent notifications:
                 </div>
             </div>
         }
-    }
+    </div>
+    <br />
+    Most recent notifications:
+    <div id="recentNotifications" class="card" style="background: #3a2051; margin-top: 5px;">
+
+        @if (Model.NotificationsList.Any())
+        {
+            foreach (WebNotification notif in Model.NotificationsList)
+            {
+                string topDivClass = "notification-item";
+                string idClass = "notifId" + notif.Id;
+                string isReadClass = "notificationUnread";
+                string markAsRead = await LocaleManager.GetTranslation("Mark as read", PageNames.Notifications, Model.LanguageId);
+                string deleteId = "notificationDeleteId" + notif.Id;
+                string topBtnClass = "btn btn-link notification-button leavePage";
+                string markAsReadIcon = "drafts";
+                string timeStamp = notif.DateTime.Ticks.ToString();
+                if (notif.IsRead)
+                {
+                    topDivClass = topDivClass + " bg-dark";
+                    isReadClass = "notificationRead";
+                    markAsRead = await LocaleManager.GetTranslation("Mark as unread", PageNames.Notifications, Model.LanguageId);
+                    topBtnClass = "btn btn-link bg-dark notification-button leavePage";
+                    markAsReadIcon = "markunread";
+                }
+
+                <div class="@topDivClass" data-notificationTime="@timeStamp">
+                    <div onClick="notificationItemClick(this, event)" class="@topBtnClass @isReadClass text-left notification-frame" data-notificationid="@notif.Id" data-notificationLink="@notif.Link">
+                        <div class="notification-card">
+                            <div class="media text-left">
+                                <div class="float-left">
+                                    <div class="img-circle" style="height: 46px; width: 46px;">
+                                        <img height="40" width="40" class="rounded img-fluid" src="@notif.Icon" />
+                                    </div>
+                                </div>
+                                <div class="media-body">
+                                    <span class="text-warning"><span class="info-title text-warning">@notif.From</span> <span class="text-warning"> · @notif.DateTimeString</span></span>
+                                    <h6 class="text-white notification-title">@notif.Title</h6>
+                                    <p class="text-light notification-message">@notif.Message</p>
+                                    <div>
+                                        <span class="btn btn-info btn-link btn-sm @isReadClass @idClass" onClick="markRead(this, event)" data-notificationid="@notif.Id">
+                                            <i class="material-icons">@markAsReadIcon</i> @markAsRead
+                                        </span>
+                                        <span id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(this, event)" data-notificationid="@notif.Id">
+                                            <i class="material-icons">delete_forever</i> @deleteString
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
 </div>

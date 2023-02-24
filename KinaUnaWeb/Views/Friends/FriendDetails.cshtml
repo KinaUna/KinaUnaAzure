@@ -18,62 +18,64 @@
     typeList.Add(familyFriend);
     typeList.Add(caretakerFriend);
 }
-<h3 class="title">@ViewData["Title"]</h3>
-<div class="card" style="clear: both; margin-top: 25px; max-width: 610px;">
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h3 class="title">@ViewData["Title"]</h3>
+    <div class="card" style="clear: both; margin-top: 25px; max-width: 610px;">
 
-    <div class="card-header card-header-rose text-white">
-        <h5 class="title">@Model.FriendItem.Name</h5>
-    </div>
-    <div class="card-body">
-        <img class="img-thumbnail mx-auto d-block" style="max-height: 600px; max-width: 600px; background: black;" src="@Model.FriendItem.PictureLink" />
-        <br />
-        <div align="left" style="margin: 15px;">
-            <strong>@await LocaleManager.GetTranslation("Description:", PageNames.Friends, Model.LanguageId)</strong> @Model.FriendItem.Description
+        <div class="card-header card-header-rose text-white">
+            <h5 class="title">@Model.FriendItem.Name</h5>
         </div>
-        <div align="left" style="margin: 15px;">
-            <strong>@await LocaleManager.GetTranslation("Friends since:", PageNames.Friends, Model.LanguageId)</strong>
-            <span align="left">
-                @if (Model.FriendItem.FriendSince != null)
-                {
-                    @Model.FriendItem.FriendSince.Value.ToString("dd-MMM-yyyy")
-                }
-                else
-                {
-                    <span>@await LocaleManager.GetTranslation("N/A", PageNames.Friends, Model.LanguageId)</span>
-                }
-            </span>
-        </div>
-        <div align="left" style="margin: 15px;">
-            <strong>@await LocaleManager.GetTranslation("Type:", PageNames.Friends, Model.LanguageId)</strong> @typeList[Model.FriendItem.Type]
-        </div>
-        <div align="left" style="margin: 15px;">
-            <strong>@await LocaleManager.GetTranslation("Context:", PageNames.Friends, Model.LanguageId)</strong> @Model.FriendItem.Context
-        </div>
-        <div align="left" style="margin: 15px;">
-            <strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Friends, Model.LanguageId)</strong> @Model.FriendItem.Notes
-        </div>
-        <div>
-            @{
-                if (!string.IsNullOrEmpty(Model.Tags))
-                {
-                    List<string> tagsList = Model.Tags.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+        <div class="card-body">
+            <img class="img-thumbnail mx-auto d-block" style="max-height: 600px; max-width: 600px; background: black;" src="@Model.FriendItem.PictureLink" />
+            <br />
+            <div align="left" style="margin: 15px;">
+                <strong>@await LocaleManager.GetTranslation("Description:", PageNames.Friends, Model.LanguageId)</strong> @Model.FriendItem.Description
+            </div>
+            <div align="left" style="margin: 15px;">
+                <strong>@await LocaleManager.GetTranslation("Friends since:", PageNames.Friends, Model.LanguageId)</strong>
+                <span align="left">
+                    @if (Model.FriendItem.FriendSince != null)
                     {
-                        <a asp-action="Index" asp-route-childId="@Model.FriendItem.ProgenyId" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                        @Model.FriendItem.FriendSince.Value.ToString("dd-MMM-yyyy")
+                    }
+                    else
+                    {
+                        <span>@await LocaleManager.GetTranslation("N/A", PageNames.Friends, Model.LanguageId)</span>
+                    }
+                </span>
+            </div>
+            <div align="left" style="margin: 15px;">
+                <strong>@await LocaleManager.GetTranslation("Type:", PageNames.Friends, Model.LanguageId)</strong> @typeList[Model.FriendItem.Type]
+            </div>
+            <div align="left" style="margin: 15px;">
+                <strong>@await LocaleManager.GetTranslation("Context:", PageNames.Friends, Model.LanguageId)</strong> @Model.FriendItem.Context
+            </div>
+            <div align="left" style="margin: 15px;">
+                <strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Friends, Model.LanguageId)</strong> @Model.FriendItem.Notes
+            </div>
+            <div>
+                @{
+                    if (!string.IsNullOrEmpty(Model.Tags))
+                    {
+                        List<string> tagsList = Model.Tags.Split(',').ToList();
+                        foreach (string tagString in tagsList)
+                        {
+                            <a asp-action="Index" asp-route-childId="@Model.FriendItem.ProgenyId" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                        }
                     }
                 }
+            </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div style="margin: 15px;">
+                    <a asp-controller="Friends" asp-action="EditFriend" asp-route-itemId="@Model.FriendItem.FriendId" class="btn btn-info leavePage">
+                        <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
+                    </a>
+                    <a asp-controller="Friends" asp-action="DeleteFriend" asp-route-itemId="@Model.FriendItem.FriendId" class="btn btn-danger leavePage">
+                        <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
+                    </a>
+                </div>
             }
         </div>
-        @if (Model.IsCurrentUserProgenyAdmin)
-        {
-            <div style="margin: 15px;">
-                <a asp-controller="Friends" asp-action="EditFriend" asp-route-itemId="@Model.FriendItem.FriendId" class="btn btn-info leavePage">
-                    <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
-                </a>
-                <a asp-controller="Friends" asp-action="DeleteFriend" asp-route-itemId="@Model.FriendItem.FriendId" class="btn btn-danger leavePage">
-                    <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
-                </a>
-            </div>
-        }
     </div>
 </div>

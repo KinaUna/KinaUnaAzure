@@ -9,4 +9,10 @@ namespace KinaUnaWeb.Models.HomeViewModels
         public int SelectedId { get; set; }
         public string ReturnUrl { get; set; } = string.Empty;
     }
+
+    public class UserMenuViewModel
+    {
+        public int LanguageId { get; set; }
+        public UserInfo UserInfo { get; set; }
+    }
 }

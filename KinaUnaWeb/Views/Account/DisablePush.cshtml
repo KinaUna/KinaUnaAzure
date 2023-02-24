@@ -11,53 +11,52 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
     ViewData["Title"] = await LocaleManager.GetTranslation("Disable Push Notifications", PageNames.Account, languageId);
 }
-<h2>@ViewData["Title"]</h2>
-<hr />
-<div class="row">
-    <div class="alert alert-danger" style="display: none;">
-        <strong>@await LocaleManager.GetTranslation("Error:", PageNames.Account, languageId) </strong>
-        <ul id="errorMessage"></ul>
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+    <div class="row">
+        <div class="alert alert-danger" style="display: none;">
+            <strong>@await LocaleManager.GetTranslation("Error:", PageNames.Account, languageId) </strong>
+            <ul id="errorMessage"></ul>
+        </div>
+        <div class="col-md-4">
+            <form asp-controller="PushDevices" asp-action="RemovePushDevice" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group" style="width: 500px;">
+                    <label asp-for="Name" class="control-label">@await LocaleManager.GetTranslation("User ID", PageNames.Account, languageId)</label>
+                    <input asp-for="Name" class="form-control" readonly="readonly" value="user" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="well" style="width: 500px;">
+                    <h4>@await LocaleManager.GetTranslation("Web Push details", PageNames.Account, languageId)</h4>
+                    <span style="font-size: 12px;"></span>
+                    <hr />
+                    <div class="form-group">
+                        <label asp-for="PushEndpoint" class="control-label"></label>
+                        <input asp-for="PushEndpoint" class="form-control" readonly required />
+                        <span asp-validation-for="PushEndpoint" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PushP256DH" class="control-label"></label>
+                        <input asp-for="PushP256DH" class="form-control" readonly required />
+                        <span asp-validation-for="PushP256DH" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PushAuth" class="control-label"></label>
+                        <input asp-for="PushAuth" class="form-control" readonly required />
+                        <span asp-validation-for="PushAuth" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="@await LocaleManager.GetTranslation("Disable Push Notifications", PageNames.Account, languageId)" class="btn btn-warning leavePage" onclick="unsubscribe()" />
+                </div>
+            </form>
+        </div>
     </div>
-
-    <div class="col-md-4">
-        <form asp-controller="PushDevices" asp-action="RemovePushDevice" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group" style="width: 500px;">
-                <label asp-for="Name" class="control-label">@await LocaleManager.GetTranslation("User ID", PageNames.Account, languageId)</label>
-                <input asp-for="Name" class="form-control" readonly="readonly" value="user"/>
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="well" style="width: 500px;">
-                <h4>@await LocaleManager.GetTranslation("Web Push details", PageNames.Account, languageId)</h4>
-                <span style="font-size: 12px;"></span>
-                <hr />
-                <div class="form-group">
-                    <label asp-for="PushEndpoint" class="control-label"></label>
-                    <input asp-for="PushEndpoint" class="form-control" readonly required />
-                    <span asp-validation-for="PushEndpoint" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="PushP256DH" class="control-label"></label>
-                    <input asp-for="PushP256DH" class="form-control" readonly required />
-                    <span asp-validation-for="PushP256DH" class="text-danger"></span>
-                </div>
-                <div class="form-group">
-                    <label asp-for="PushAuth" class="control-label"></label>
-                    <input asp-for="PushAuth" class="form-control" readonly required />
-                    <span asp-validation-for="PushAuth" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="@await LocaleManager.GetTranslation("Disable Push Notifications", PageNames.Account, languageId)" class="btn btn-warning leavePage" onclick="unsubscribe()" />
-            </div>
-        </form>
+    <div>
+        <a class="leavePage" asp-action="MyAccount">@await LocaleManager.GetTranslation("Back to My Account", PageNames.Account, languageId)</a>
     </div>
 </div>
-
-<div>
-    <a class="leavePage" asp-action="MyAccount">@await LocaleManager.GetTranslation("Back to My Account", PageNames.Account, languageId)</a>
-</div>
-
 <script>
     //Vapid public key.
     var applicationServerPublicKey = '@ViewBag.PublicKey';

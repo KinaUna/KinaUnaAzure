@@ -5,27 +5,29 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Delete user's access", PageNames.AccessManagement, Model.LanguageId);
 }
-<h2>@ViewData["Title"]</h2>
-<form asp-action="DeleteAccess" role="form">
-    <div class="modal-body form-horizontal">
-        @await LocaleManager.GetTranslation("Are you sure you want to remove access for", PageNames.AccessManagement, Model.LanguageId) @Model.UserName ?
-    </div>
-    <div>
-        @await LocaleManager.GetTranslation("First name", PageNames.AccessManagement, Model.LanguageId): @Model.FirstName
-    </div>
-    <div>
-        @await LocaleManager.GetTranslation("Middle name", PageNames.AccessManagement, Model.LanguageId): @Model.MiddleName
-    </div>
-    <div>
-        @await LocaleManager.GetTranslation("Last name", PageNames.AccessManagement, Model.LanguageId): @Model.LastName
-    </div>
-    <div>
-        @await LocaleManager.GetTranslation("Email", PageNames.AccessManagement, Model.LanguageId): @Model.Email
-    </div>
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h2>@ViewData["Title"]</h2>
+    <form asp-action="DeleteAccess" role="form">
+        <div class="modal-body form-horizontal">
+            @await LocaleManager.GetTranslation("Are you sure you want to remove access for", PageNames.AccessManagement, Model.LanguageId) @Model.UserName ?
+        </div>
+        <div>
+            @await LocaleManager.GetTranslation("First name", PageNames.AccessManagement, Model.LanguageId): @Model.FirstName
+        </div>
+        <div>
+            @await LocaleManager.GetTranslation("Middle name", PageNames.AccessManagement, Model.LanguageId): @Model.MiddleName
+        </div>
+        <div>
+            @await LocaleManager.GetTranslation("Last name", PageNames.AccessManagement, Model.LanguageId): @Model.LastName
+        </div>
+        <div>
+            @await LocaleManager.GetTranslation("Email", PageNames.AccessManagement, Model.LanguageId): @Model.Email
+        </div>
 
-    <input asp-for="AccessId" class="form-control" value="@Model.AccessId" type="hidden" />
-    <div>
-        <Button class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes", PageNames.AccessManagement, Model.LanguageId)</Button>
-        <a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AccessManagement, Model.LanguageId)</a>
-    </div>
-</form>
+        <input asp-for="AccessId" class="form-control" value="@Model.AccessId" type="hidden"/>
+        <div>
+            <Button class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes", PageNames.AccessManagement, Model.LanguageId)</Button>
+            <a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AccessManagement, Model.LanguageId)</a>
+        </div>
+    </form>
+</div>

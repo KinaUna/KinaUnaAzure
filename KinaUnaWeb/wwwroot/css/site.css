@@ -281,7 +281,6 @@ button.Zebra_DatePicker_Icon {
 .notification-item {
     background: #3a2051;
     border-top: solid #6828a9 2px;
-    padding-left: 4px;
 }
     .notification-item:hover {
         background: #6828a9;
@@ -1193,3 +1192,51 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     .navbar-dark .navbar-nav .nav-link:focus, .navbar-dark .navbar-nav .nav-link:hover {
         color: #ffef2f;
     }
+
+@media (min-width: 1200px) {
+    .container, .container-lg, .container-md, .container-sm, .container-xl {
+        max-width: 96vw;
+    }
+}
+
+@media (min-width: 1200px) {
+    .modal-lg, .modal-xl {
+         max-width: 90vw;
+    }
+}
+.notification-card {
+    width: 95%;
+    margin: 0;
+    padding-bottom: 4px;
+    min-width: 360px;
+}
+
+.notification-frame {
+    margin: 2px;
+    padding: 2px;
+}
+
+.notification-message {
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+}
+
+.notification-title {
+    font-size: 1.0rem;
+    white-space: pre-wrap;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+
+.top-menu-max-height {
+    overflow-y: auto;
+    max-height: 90vh;
+}
+
+@media (min-width: 992px) {
+    .top-menu-max-height {
+        overflow-y: unset;
+        max-height: unset;
+    }
+}

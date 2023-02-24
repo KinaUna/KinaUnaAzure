@@ -13,75 +13,78 @@
     <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
     <script src="/lib/datatables/sorting/datetime-moment.js"></script>
 }
-@if (Model.SkillsList == null || !Model.SkillsList.Any())
-{
-    <h2>@ViewData["Title"]</h2>
-    <div>@await LocaleManager.GetTranslation("Nothing to see here yet", PageNames.Skills, Model.LanguageId)</div>
-}
-else
-{
-    <div class="container">
-        @if (Model.IsCurrentUserProgenyAdmin)
-        {
-            <div class="btn-group" style="float: right;">
-                <a asp-controller="Skills" asp-action="AddSkill" class="btn btn-success btn-round leavePage">
-                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add skill", PageNames.Skills, Model.LanguageId)
-                </a>
-            </div>
-        }
+
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    @if (Model.SkillsList == null || !Model.SkillsList.Any())
+    {
         <h2>@ViewData["Title"]</h2>
-    </div>
-    <div class="table-responsive">
-        <table id="skillzList" class="table table-bordered table-striped" style="border-spacing: 0;">
-            <thead>
-                <tr>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Name", PageNames.Skills, Model.LanguageId)</th>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Description", PageNames.Skills, Model.LanguageId)</th>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Category", PageNames.Skills, Model.LanguageId)</th>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("First observation", PageNames.Skills, Model.LanguageId)</th>
-                    @if (Model.IsCurrentUserProgenyAdmin)
-                    {
-                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Skills, Model.LanguageId)</th>
-                    }
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (SkillViewModel skillViewModel in Model.SkillsList)
-                {
+        <div>@await LocaleManager.GetTranslation("Nothing to see here yet", PageNames.Skills, Model.LanguageId)</div>
+    }
+    else
+    {
+        <div class="container">
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="btn-group" style="float: right;">
+                    <a asp-controller="Skills" asp-action="AddSkill" class="btn btn-success btn-round leavePage">
+                        <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add skill", PageNames.Skills, Model.LanguageId)
+                    </a>
+                </div>
+            }
+            <h2>@ViewData["Title"]</h2>
+        </div>
+        <div class="table-responsive">
+            <table id="skillzList" class="table table-bordered table-striped" style="border-spacing: 0;">
+                <thead>
                     <tr>
-                        <td style="min-width: 100px;">@skillViewModel.SkillItem.Name</td>
-                        <td style="min-width: 100px;">@skillViewModel.SkillItem.Description</td>
-                        <td style="min-width: 100px;">@skillViewModel.SkillItem.Category</td>
-                        @if (skillViewModel.SkillItem.SkillFirstObservation != null)
-                        {
-                            <td style="min-width: 100px;">@skillViewModel.SkillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy")</td>
-                        }
-                        else
-                        {
-                            <td>N/A</td>
-                        }
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Name", PageNames.Skills, Model.LanguageId)</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Description", PageNames.Skills, Model.LanguageId)</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Category", PageNames.Skills, Model.LanguageId)</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("First observation", PageNames.Skills, Model.LanguageId)</th>
                         @if (Model.IsCurrentUserProgenyAdmin)
                         {
-                            <td style="min-width: 135px;">
-                                <div>
-                                    <a asp-controller="Skills" asp-action="EditSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-info btn-round btn-sm leavePage">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </a>
-                                    <a asp-controller="Skills" asp-action="DeleteSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-danger btn-round btn-sm leavePage">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </a>
-                                </div>
-                            </td>
+                            <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Skills, Model.LanguageId)</th>
                         }
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <script type="text/javascript">
-        $(document).ready(function () {
-            $.fn.dataTable.moment('DD-MMM-YYYY');
-            $("#skillzList").DataTable({ "scrollX": false, "order": [[3, "desc"]] });
-        })
-    </script>
-}
+                </thead>
+                <tbody>
+                    @foreach (SkillViewModel skillViewModel in Model.SkillsList)
+                    {
+                        <tr>
+                            <td style="min-width: 100px;">@skillViewModel.SkillItem.Name</td>
+                            <td style="min-width: 100px;">@skillViewModel.SkillItem.Description</td>
+                            <td style="min-width: 100px;">@skillViewModel.SkillItem.Category</td>
+                            @if (skillViewModel.SkillItem.SkillFirstObservation != null)
+                            {
+                                <td style="min-width: 100px;">@skillViewModel.SkillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy")</td>
+                            }
+                            else
+                            {
+                                <td>N/A</td>
+                            }
+                            @if (Model.IsCurrentUserProgenyAdmin)
+                            {
+                                <td style="min-width: 135px;">
+                                    <div>
+                                        <a asp-controller="Skills" asp-action="EditSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-info btn-round btn-sm leavePage">
+                                            <i class="fas fa-pencil-alt"></i>
+                                        </a>
+                                        <a asp-controller="Skills" asp-action="DeleteSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-danger btn-round btn-sm leavePage">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $.fn.dataTable.moment('DD-MMM-YYYY');
+                $("#skillzList").DataTable({ "scrollX": false, "order": [[3, "desc"]] });
+            })
+        </script>
+    }
+</div>

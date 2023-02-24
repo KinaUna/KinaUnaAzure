@@ -1,50 +1,52 @@
 ﻿@using KinaUna.Data
 @model WebNotification
-<h4>Send Admin Message</h4>
-<form asp-action="SendAdminMessage" role="form" method="post">
-    <div class="form-group">
-        <label asp-for="From" class="col-lg-3 col-sm-3 control-label">From</label>
-        <div class="col-lg-6">
-            <input asp-for="From" class="form-control" value="@Constants.AppName" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="Icon" class="col-lg-3 col-sm-3 control-label">Icon</label>
-        <div class="col-lg-6">
-            <input asp-for="Icon" class="form-control" value="/images/kinaunalogo48x48.png" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="To" class="col-lg-3 col-sm-3 control-label">To</label>
-        <div class="col-lg-6">
-            <input asp-for="To" class="form-control" value="OnlineUsers"/>
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="Title" class="col-lg-3 col-sm-3 control-label">Title</label>
-        <div class="col-lg-6">
-            <input asp-for="Title" class="form-control" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="Message" class="col-lg-3 col-sm-3 control-label">Message</label>
-        <div class="col-lg-6">
-            <textarea asp-for="Message" class="form-control" rows="4"></textarea>
-        </div>
-    </div>
-    <div class="form-group">
-        <label asp-for="Type" class="col-lg-3 col-sm-3 control-label">Type</label>
-        <div class="col-lg-6">
-            <input asp-for="Type" class="form-control" value="Notification" />
-        </div>
-    </div>
-    <div>
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h4>Send Admin Message</h4>
+    <form asp-action="SendAdminMessage" role="form" method="post">
         <div class="form-group">
-            <div class="col-lg-3 col-sm-3 control-label"></div>
-            <div class="col-lg-9">
-                <button class="btn btn-success" type="submit">Send</button>
-                <a class="btn btn-danger" asp-controller="Admin" asp-action="Index">Cancel</a>
+            <label asp-for="From" class="col-lg-3 col-sm-3 control-label">From</label>
+            <div class="col-lg-6">
+                <input asp-for="From" class="form-control" value="@Constants.AppName" />
             </div>
         </div>
-    </div>
-</form>
+        <div class="form-group">
+            <label asp-for="Icon" class="col-lg-3 col-sm-3 control-label">Icon</label>
+            <div class="col-lg-6">
+                <input asp-for="Icon" class="form-control" value="/images/kinaunalogo48x48.png" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="To" class="col-lg-3 col-sm-3 control-label">To</label>
+            <div class="col-lg-6">
+                <input asp-for="To" class="form-control" value="OnlineUsers" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Title" class="col-lg-3 col-sm-3 control-label">Title</label>
+            <div class="col-lg-6">
+                <input asp-for="Title" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Message" class="col-lg-3 col-sm-3 control-label">Message</label>
+            <div class="col-lg-6">
+                <textarea asp-for="Message" class="form-control" rows="4"></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Type" class="col-lg-3 col-sm-3 control-label">Type</label>
+            <div class="col-lg-6">
+                <input asp-for="Type" class="form-control" value="Notification" />
+            </div>
+        </div>
+        <div>
+            <div class="form-group">
+                <div class="col-lg-3 col-sm-3 control-label"></div>
+                <div class="col-lg-9">
+                    <button class="btn btn-success" type="submit">Send</button>
+                    <a class="btn btn-danger" asp-controller="Admin" asp-action="Index">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

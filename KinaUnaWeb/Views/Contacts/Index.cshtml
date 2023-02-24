@@ -88,6 +88,7 @@
         </script>
     }
 
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
     @if (Model.ContactsList == null || !Model.ContactsList.Any())
     {
         <h3 class="title">@ViewData["Title"]</h3>
@@ -104,59 +105,63 @@
             </div>
         }
         <h2>@ViewData["Title"]</h2>
-        <br style="clear: both;"/>
+        <br style="clear: both;" />
         <div>
             <span style="color: black;">Show:</span>
             <span class="button-checkbox">
                 <button type="button" class="btn" data-color="primary">@await LocaleManager.GetTranslation("Active contacts", PageNames.Contacts, Model.LanguageId)</button>
-                <input type="checkbox" name="contactClassTrue" style="margin-right: 18px;" checked="checked" class="hidden" hidden/>
+                <input type="checkbox" name="contactClassTrue" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
             </span>
             <span class="button-checkbox">
                 <button type="button" class="btn" data-color="primary">@await LocaleManager.GetTranslation("Inactive contacts", PageNames.Contacts, Model.LanguageId)</button>
-                <input type="checkbox" name="contactClassFalse" style="margin-right: 18px;" checked="checked" class="hidden" hidden/>
+                <input type="checkbox" name="contactClassFalse" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
             </span>
 
         </div>
         @if (!string.IsNullOrEmpty(Model.TagFilter))
         {
-            <br/>
-            <div class="text-dark" style="float: right;">@await LocaleManager.GetTranslation("Tag filter:", PageNames.Contacts, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
+            <br />
+            <div class="text-dark" style="float: right;">
+                @await LocaleManager.GetTranslation("Tag filter:", PageNames.Contacts, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
                 <a class="btn btn-info btn-sm" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
-                    <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Contacts, Model.LanguageId)</a></div>
-            <br/>
+                    <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Contacts, Model.LanguageId)
+                </a>
+            </div>
+            <br />
         }
         <div class="card" style="clear: both; margin-top: 25px;">
 
             <div class="card-body" style="padding-bottom: 35px;">
-                
+
                 <div class="card-deck">
                     @foreach (ContactViewModel contactViewModel in Model.ContactsList)
                     {
-                    string chkClass = "contactClass" + contactViewModel.ContactItem.Active.ToString();
+                        string chkClass = "contactClass" + contactViewModel.ContactItem.Active.ToString();
                         <div class="@chkClass" style="margin-bottom: 15px;">
                             <div class="card text-white bg-info" style="float: left; clear: right; text-align: center; height: 100%; width: 300px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
-                            <a class="leavePage" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactItem.ContactId">
-                                <div class="card-header card-header-warning card-title">@contactViewModel.ContactItem.DisplayName</div>
+                                <a class="leavePage" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactItem.ContactId">
+                                    <div class="card-header card-header-warning card-title">@contactViewModel.ContactItem.DisplayName</div>
                                 </a>
                                 <div class="card-body">
                                     <div class="card-text">
-                                    <a class="leavePage" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactItem.ContactId">
+                                        <a class="leavePage" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactItem.ContactId">
                                             <div style="height: 253px;">
-                                            <img class="img-thumbnail mx-auto d-block" style="max-height: 250px; max-width: 270px; background: black; margin-bottom: 10px;" src="@contactViewModel.ContactItem.PictureLink" />
+                                                <img class="img-thumbnail mx-auto d-block" style="max-height: 250px; max-width: 270px; background: black; margin-bottom: 10px;" src="@contactViewModel.ContactItem.PictureLink" />
                                             </div>
                                             <br />
                                             <div class="card-title" align="left">
-                                            @contactViewModel.ContactItem.FirstName @contactViewModel.ContactItem.MiddleName @contactViewModel.ContactItem.LastName
+                                                @contactViewModel.ContactItem.FirstName @contactViewModel.ContactItem.MiddleName @contactViewModel.ContactItem.LastName
                                             </div>
-                                        <div class="text-white" align="left">@await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.Email1 @contactViewModel.ContactItem.Email2</div>
-                                        <div class="text-white" align="left">@await LocaleManager.GetTranslation("Phone:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.PhoneNumber</div>
-                                        <div class="text-white" align="left">@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.MobileNumber</div>
-                                        <div class="text-white" align="left">@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.Context</div>
+                                            <div class="text-white" align="left">@await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.Email1 @contactViewModel.ContactItem.Email2</div>
+                                            <div class="text-white" align="left">@await LocaleManager.GetTranslation("Phone:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.PhoneNumber</div>
+                                            <div class="text-white" align="left">@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.MobileNumber</div>
+                                            <div class="text-white" align="left">@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.Context</div>
                                         </a>
-                                        <div align="left">@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)
-                                        @if (!string.IsNullOrEmpty(contactViewModel.ContactItem.Website))
+                                        <div align="left">
+                                            @await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)
+                                            @if (!string.IsNullOrEmpty(contactViewModel.ContactItem.Website))
                                             {
-                                            <a class="btn-link-yellow" href="@contactViewModel.ContactItem.Website">@contactViewModel.ContactItem.Website</a>
+                                                <a class="btn-link-yellow" href="@contactViewModel.ContactItem.Website">@contactViewModel.ContactItem.Website</a>
                                             }
                                         </div>
                                     </div>
@@ -181,14 +186,14 @@
             </div>
         </div>
     }
-    <script type="text/javascript">
-        $("input:checkbox:not(:checked)").each(function() {
-            let anchor = document.getElementsByClassName($(this).attr("name"));
-            $(anchor).hide();
-        });
-
-        $("input:checkbox").change(function() {
-            let anchor = document.getElementsByClassName($(this).attr("name"));
-            $(anchor).toggle();
-        });
-    </script>
+</div>
+<script type="text/javascript">
+    $("input:checkbox:not(:checked)").each(function() {
+        let anchor = document.getElementsByClassName($(this).attr("name"));
+        $(anchor).hide();
+    });
+    $("input:checkbox").change(function() {
+        let anchor = document.getElementsByClassName($(this).attr("name"));
+        $(anchor).toggle();
+    });
+</script>

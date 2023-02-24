@@ -13,110 +13,113 @@
     <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
     <script src="/lib/datatables/sorting/datetime-moment.js"></script>
 }
-@if (!Model.VocabularyList.Any())
-{
-    <h2>@ViewData["Title"]</h2>
-    <div>
-        @await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Vocabulary, Model.LanguageId)
-    </div>
-}
-else
-{
-    <div class="container">
-        @if (Model.IsCurrentUserProgenyAdmin)
-        {
-            <div class="btn-group" style="float: right;">
-                <a asp-controller="Vocabulary" asp-action="AddVocabulary" class="btn btn-success btn-round leavePage">
-                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add word", PageNames.Vocabulary, Model.LanguageId)
-                </a>
-            </div>
-        }
+
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    @if (!Model.VocabularyList.Any())
+    {
         <h2>@ViewData["Title"]</h2>
-    </div>
-    <div class="table-responsive">
-        <table id="wordList" class="table table-bordered table-striped" style="border-spacing: 0;">
-            <thead>
-                <tr>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Word", PageNames.Vocabulary, Model.LanguageId)</th>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Sounds like", PageNames.Vocabulary, Model.LanguageId)</th>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Description", PageNames.Vocabulary, Model.LanguageId)</th>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Language", PageNames.Vocabulary, Model.LanguageId)</th>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Date", PageNames.Vocabulary, Model.LanguageId)</th>
-                    @if (Model.IsCurrentUserProgenyAdmin)
-                    {
-                        <th style="font-weight: bold">Action</th>
-                    }
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (VocabularyItemViewModel wordItem in Model.VocabularyList)
-                {
+        <div>
+            @await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Vocabulary, Model.LanguageId)
+        </div>
+    }
+    else
+    {
+        <div class="container">
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="btn-group" style="float: right;">
+                    <a asp-controller="Vocabulary" asp-action="AddVocabulary" class="btn btn-success btn-round leavePage">
+                        <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add word", PageNames.Vocabulary, Model.LanguageId)
+                    </a>
+                </div>
+            }
+            <h2>@ViewData["Title"]</h2>
+        </div>
+        <div class="table-responsive">
+            <table id="wordList" class="table table-bordered table-striped" style="border-spacing: 0;">
+                <thead>
                     <tr>
-                        <td style="min-width: 135px">@wordItem.VocabularyItem.Word</td>
-                        <td style="min-width: 135px">@wordItem.VocabularyItem.SoundsLike</td>
-                        <td style="min-width: 135px">@wordItem.VocabularyItem.Description</td>
-                        <td>@wordItem.VocabularyItem.Language</td>
-                        @if (wordItem.VocabularyItem.Date != null)
-                        {
-                            <td style="min-width: 100px">@wordItem.VocabularyItem.Date.Value.ToString("dd-MMM-yyyy")</td>
-                        }
-                        else
-                        {
-                            <td></td>
-                        }
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Word", PageNames.Vocabulary, Model.LanguageId)</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Sounds like", PageNames.Vocabulary, Model.LanguageId)</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Description", PageNames.Vocabulary, Model.LanguageId)</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Language", PageNames.Vocabulary, Model.LanguageId)</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Date", PageNames.Vocabulary, Model.LanguageId)</th>
                         @if (Model.IsCurrentUserProgenyAdmin)
                         {
-                            <td style="min-width: 135px">
-                                <div>
-                                    <a asp-controller="Vocabulary" asp-action="EditVocabulary" asp-route-itemId="@wordItem.VocabularyItem.WordId" class="btn btn-info btn-round btn-sm leavePage">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </a>
-                                    <a asp-controller="Vocabulary" asp-action="DeleteVocabulary" asp-route-itemId="@wordItem.VocabularyItem.WordId" class="btn btn-danger btn-round btn-sm leavePage">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </a>
-                                </div>
-                            </td>
+                            <th style="font-weight: bold">Action</th>
                         }
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <div id="chartDiv">
-        <canvas id="chartContainer" style="clear: both; height: 380px;"></canvas>
-    </div>
-    <script src="~/lib/chart.js/dist/Chart.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function () {
-            $.fn.dataTable.moment('DD-MMM-YYYY');
-            $("#wordList").DataTable({
-                "scrollX": false,
-                "order": [[4, "desc"]]
-            });
-        })
-    </script>
-    <script type="text/javascript">
-        let ctx = document.getElementById("chartContainer");
+                </thead>
+                <tbody>
+                    @foreach (VocabularyItemViewModel wordItem in Model.VocabularyList)
+                    {
+                        <tr>
+                            <td style="min-width: 135px">@wordItem.VocabularyItem.Word</td>
+                            <td style="min-width: 135px">@wordItem.VocabularyItem.SoundsLike</td>
+                            <td style="min-width: 135px">@wordItem.VocabularyItem.Description</td>
+                            <td>@wordItem.VocabularyItem.Language</td>
+                            @if (wordItem.VocabularyItem.Date != null)
+                            {
+                                <td style="min-width: 100px">@wordItem.VocabularyItem.Date.Value.ToString("dd-MMM-yyyy")</td>
+                            }
+                            else
+                            {
+                                <td></td>
+                            }
+                            @if (Model.IsCurrentUserProgenyAdmin)
+                            {
+                                <td style="min-width: 135px">
+                                    <div>
+                                        <a asp-controller="Vocabulary" asp-action="EditVocabulary" asp-route-itemId="@wordItem.VocabularyItem.WordId" class="btn btn-info btn-round btn-sm leavePage">
+                                            <i class="fas fa-pencil-alt"></i>
+                                        </a>
+                                        <a asp-controller="Vocabulary" asp-action="DeleteVocabulary" asp-route-itemId="@wordItem.VocabularyItem.WordId" class="btn btn-danger btn-round btn-sm leavePage">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div id="chartDiv">
+            <canvas id="chartContainer" style="clear: both; height: 380px;"></canvas>
+        </div>
+        <script src="~/lib/chart.js/dist/Chart.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $.fn.dataTable.moment('DD-MMM-YYYY');
+                $("#wordList").DataTable({
+                    "scrollX": false,
+                    "order": [[4, "desc"]]
+                });
+            })
+        </script>
+        <script type="text/javascript">
+            let ctx = document.getElementById("chartContainer");
             let myChart = new Chart(ctx,
                 {
                     type: 'line',
                     data: {
                         datasets: [
-                            {
-                                label: 'Words',
-                                data: [@foreach (WordDateCount wordItem in Model.ChartData)
+                        {
+                            label: 'Words',
+                            data: [@foreach (WordDateCount wordItem in Model.ChartData)
+                                   {
+                                       if (wordItem.WordCount > 0)
                                        {
-                                           if (wordItem.WordCount > 0)
-                                           {
-                                               string chartYear = wordItem.WordDate.Year.ToString();
-                                               string chartMonth = (wordItem.WordDate.Month - 1).ToString();
-                                               string chartDay = wordItem.WordDate.Day.ToString();
-                                               @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + wordItem.WordCount + "},")
-                                           }
-                                       }],
-                                borderColor: 'rgb(75, 192, 192)',
-                                borderWidth: 1
-                            }
+                                           string chartYear = wordItem.WordDate.Year.ToString();
+                                           string chartMonth = (wordItem.WordDate.Month - 1).ToString();
+                                           string chartDay = wordItem.WordDate.Day.ToString();
+                                           @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + wordItem.WordCount + "},")
+                                       }
+
+                                   }],
+                                   borderColor: 'rgb(75, 192, 192)',
+                                   borderWidth: 1
+                        }
                         ]
                     },
                     options: {
@@ -146,5 +149,6 @@ else
                         }
                     }
                 });
-    </script>
-}
+        </script>
+    }
+</div>

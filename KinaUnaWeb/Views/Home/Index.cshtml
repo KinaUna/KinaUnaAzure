@@ -18,22 +18,23 @@
     string minutesString = await LocaleManager.GetTranslation("minutes", PageNames.Home, Model.LanguageId);
     string weeksAndString = await LocaleManager.GetTranslation("weeks and", PageNames.Home, Model.LanguageId);
 }
-<div class="container">
+<div class="ml-xl-auto mr-xl-auto col-xl-10">
     <div class="row">
-        <div class="col-12 col-md-8" style="margin-bottom: 10px; float: left; padding-left: 25px;">
+        <div class="col-12 col-md-12 col-lg-8 col-xl-8" style="margin-bottom: 10px; float: left; padding-left: 25px;">
             <H4>
-                <img src="~/images/KinaUnaLogo_246x80.png" />
+                <img src="~/images/KinaUnaLogo_246x80.png"/>
             </H4>
-            <br />
+            <br/>
             <div class="row">
                 <div style="margin-left: 10px;">
                     @if (User.Identity != null && User.Identity.IsAuthenticated && ViewBag.OriginalProgeny != null)
                     {
-                        <div>@await LocaleManager.GetTranslation("You don't have access to data for", PageNames.Home, Model.LanguageId) @ViewBag.OriginalProgeny.NickName<br />
-                            
-                            @await LocaleManager.GetTranslation("To request access click here:", PageNames.Home, Model.LanguageId)  <a asp-controller="Home" asp-action="RequestAccess" asp-route-childId="@ViewBag.OriginalProgeny.Id" class="btn btn-success btn-round leavePage">
+                        <div>@await LocaleManager.GetTranslation("You don't have access to data for", PageNames.Home, Model.LanguageId) @ViewBag.OriginalProgeny.NickName<br/>
+
+                            @await LocaleManager.GetTranslation("To request access click here:", PageNames.Home, Model.LanguageId)
+                            <a asp-controller="Home" asp-action="RequestAccess" asp-route-childId="@ViewBag.OriginalProgeny.Id" class="btn btn-success btn-round leavePage">
                                 <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Request access", PageNames.Home, Model.LanguageId)
-                            </a><br />
+                            </a><br/>
                             @await LocaleManager.GetTranslation("Displaying data for KinaUna.com instead.", PageNames.Home, Model.LanguageId)<br/>
                         </div>
                     }
@@ -95,28 +96,28 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-12 col-md-12 col-lg-4" style="float: right; margin-top: 10px; padding-left: 25px;">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-4 col-xl-4" style="float: right; margin-top: 10px; padding-left: 25px;">
             @if (Model.EventsList.Any())
             {
-            <div>
-                Current and upcoming events:
-            </div>
+                <div>
+                    Current and upcoming events:
+                </div>
                 await Html.RenderPartialAsync("EventsPartial", Model.EventsList);
-            <br />
+                <br/>
             }
             @if (Model.LatestPosts.TimeLineItems.Any())
             {
-            <div>
-                Latest posts:
-            </div>
+                <div>
+                    Latest posts:
+                </div>
                 await Html.RenderPartialAsync("LatestPostsPartial", Model.LatestPosts);
-            <br />
+                <br/>
             }
             @if (Model.YearAgoPosts.TimeLineItems.Any())
             {
-            <div>
-                On this day a year ago:
-            </div>
+                <div>
+                    On this day a year ago:
+                </div>
                 await Html.RenderPartialAsync("YearAgoPartial", Model.YearAgoPosts);
             }
         </div>

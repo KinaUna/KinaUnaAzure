@@ -1,0 +1,25 @@
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model int
+@inject ILocaleManager LocaleManager
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <div class="bg-danger text-white p-3">
+                <div class="space-20"></div>
+                <span>
+                    @await LocaleManager.GetTranslation("Deletion of your account was initiated, but not completed by clicking the link sent to you.", PageNames.Layout, Model)
+                </span>
+                <div class="space-20"></div>
+                <span>
+                    <a class="btn-link-yellow" asp-action="DeleteAccount" asp-controller="Account">@await LocaleManager.GetTranslation("Click here to complete the deletion.", PageNames.Layout, Model)</a>
+                </span>
+                <div class="space-20"></div>
+                <span>
+                    <a class="btn-link-yellow" asp-action="UnDeleteAccount" asp-controller="Account">@await LocaleManager.GetTranslation("Click here to undo the deletion.", PageNames.Layout, Model)</a>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

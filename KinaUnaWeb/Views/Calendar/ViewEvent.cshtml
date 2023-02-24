@@ -5,37 +5,42 @@
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Event:", PageNames.Calendar, Model.LanguageId) + Model.CalendarItem.Title;
 }
-<h2>@ViewData["Title"]</h2>
-<br />
-<div class="card" style="clear: both; margin-top: 25px; max-width: 710px;">
-    <div class="card-body">
-        <div class="card-title"><h5>@Model.CalendarItem.Title</h5></div>
-        <div style="max-width: 705px;">
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Start:", PageNames.Calendar, Model.LanguageId)</strong>
-                @{
-                    System.Diagnostics.Debug.Assert(Model.CalendarItem.StartTime != null, "Model.StartTime != null");
-                }
-                @Model.CalendarItem.StartTime.Value.ToString("dd-MMM-yyyy HH:mm")
-            </div>
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("End:", PageNames.Calendar, Model.LanguageId)</strong>
-                @{
-                    System.Diagnostics.Debug.Assert(Model.CalendarItem.EndTime != null, "Model.EndTime != null");
-                }
-                @Model.CalendarItem.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")</div>
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, Model.LanguageId)</strong> @Model.CalendarItem.Location</div>
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Context:", PageNames.Calendar, Model.LanguageId)</strong> @Model.CalendarItem.Context</div>
-            <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, Model.LanguageId)</strong> @Model.CalendarItem.Notes</div>
-            @if (Model.IsCurrentUserProgenyAdmin)
-            {
-                <div style="margin: 15px;">
-                    <a asp-controller="Calendar" asp-action="EditEvent" asp-route-itemId="@Model.CalendarItem.EventId" class="btn btn-info leavePage">
-                        <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
-                    </a>
-                    <a asp-controller="Calendar" asp-action="DeleteEvent" asp-route-itemId="@Model.CalendarItem.EventId" class="btn btn-danger leavePage">
-                        <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
-                    </a>
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h2>@ViewData["Title"]</h2>
+    <br />
+    <div class="card" style="clear: both; margin-top: 25px; max-width: 710px;">
+        <div class="card-body">
+            <div class="card-title"><h5>@Model.CalendarItem.Title</h5></div>
+            <div style="max-width: 705px;">
+                <div align="left" style="margin: 15px;">
+                    <strong>@await LocaleManager.GetTranslation("Start:", PageNames.Calendar, Model.LanguageId)</strong>
+                    @{
+                        System.Diagnostics.Debug.Assert(Model.CalendarItem.StartTime != null, "Model.StartTime != null");
+                    }
+                    @Model.CalendarItem.StartTime.Value.ToString("dd-MMM-yyyy HH:mm")
                 </div>
-            }
+                <div align="left" style="margin: 15px;">
+                    <strong>@await LocaleManager.GetTranslation("End:", PageNames.Calendar, Model.LanguageId)</strong>
+                    @{
+                        System.Diagnostics.Debug.Assert(Model.CalendarItem.EndTime != null, "Model.EndTime != null");
+                    }
+                    @Model.CalendarItem.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")
+                </div>
+                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, Model.LanguageId)</strong> @Model.CalendarItem.Location</div>
+                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Context:", PageNames.Calendar, Model.LanguageId)</strong> @Model.CalendarItem.Context</div>
+                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, Model.LanguageId)</strong> @Model.CalendarItem.Notes</div>
+                @if (Model.IsCurrentUserProgenyAdmin)
+                {
+                    <div style="margin: 15px;">
+                        <a asp-controller="Calendar" asp-action="EditEvent" asp-route-itemId="@Model.CalendarItem.EventId" class="btn btn-info leavePage">
+                            <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
+                        </a>
+                        <a asp-controller="Calendar" asp-action="DeleteEvent" asp-route-itemId="@Model.CalendarItem.EventId" class="btn btn-danger leavePage">
+                            <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
+                        </a>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </div>

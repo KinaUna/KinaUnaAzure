@@ -101,111 +101,113 @@
     </script>
 }
 
-<br />
-@if (Model.FriendViewModelsList == null || !Model.FriendViewModelsList.Any())
-{
-    <h2>@ViewData["Title"]</h2>
-    <div>@await LocaleManager.GetTranslation("Nothing to see here yet", PageNames.Friends, Model.LanguageId)</div>
-}
-else
-{
-    @if (Model.IsCurrentUserProgenyAdmin)
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    @if (Model.FriendViewModelsList == null || !Model.FriendViewModelsList.Any())
     {
-        <div class="btn-group" style="float: right;">
-            <a asp-controller="Friends" asp-action="AddFriend" class="btn btn-info btn-round leavePage">
-                <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add friend", PageNames.Friends, Model.LanguageId)
-            </a>
-        </div>
+        <h2>@ViewData["Title"]</h2>
+        <div>@await LocaleManager.GetTranslation("Nothing to see here yet", PageNames.Friends, Model.LanguageId)</div>
     }
-    <h2 class="title">@ViewData["Title"]</h2>
-    <div>
-        <span style="color: black">Show:</span>
-        <span class="button-checkbox">
-            <button type="button" class="btn" data-color="primary">@personalFriend</button>
-            <input type="checkbox" name="friendClass0" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
-        </span>
-        <span class="button-checkbox">
-            <button type="button" class="btn" data-color="primary">@toyFriend</button>
-            <input type="checkbox" name="friendClass1" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
-        </span>
-        <span class="button-checkbox">
-            <button type="button" class="btn" data-color="primary">@parentFriend</button>
-            <input type="checkbox" name="friendClass2" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
-        </span>
-        <span class="button-checkbox">
-            <button type="button" class="btn" data-color="primary">@familyFriend</button>
-            <input type="checkbox" name="friendClass3" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
-        </span>
-        <span class="button-checkbox">
-            <button type="button" class="btn" data-color="primary">@caretakerFriend</button>
-            <input type="checkbox" name="friendClass4" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
-        </span>
-    </div>
-    @if (!string.IsNullOrEmpty(Model.TagFilter))
+    else
     {
-        <br />
-        <div class="text-dark" style="float: right;">
-            @await LocaleManager.GetTranslation("Tag filter:", PageNames.Friends, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
-                <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Friends, Model.LanguageId)
-            </a>
+        @if (Model.IsCurrentUserProgenyAdmin)
+        {
+            <div class="btn-group" style="float: right;">
+                <a asp-controller="Friends" asp-action="AddFriend" class="btn btn-info btn-round leavePage">
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add friend", PageNames.Friends, Model.LanguageId)
+                </a>
+            </div>
+        }
+        <h2 class="title">@ViewData["Title"]</h2>
+        <div>
+            <span style="color: black">Show:</span>
+            <span class="button-checkbox">
+                <button type="button" class="btn" data-color="primary">@personalFriend</button>
+                <input type="checkbox" name="friendClass0" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
+            </span>
+            <span class="button-checkbox">
+                <button type="button" class="btn" data-color="primary">@toyFriend</button>
+                <input type="checkbox" name="friendClass1" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
+            </span>
+            <span class="button-checkbox">
+                <button type="button" class="btn" data-color="primary">@parentFriend</button>
+                <input type="checkbox" name="friendClass2" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
+            </span>
+            <span class="button-checkbox">
+                <button type="button" class="btn" data-color="primary">@familyFriend</button>
+                <input type="checkbox" name="friendClass3" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
+            </span>
+            <span class="button-checkbox">
+                <button type="button" class="btn" data-color="primary">@caretakerFriend</button>
+                <input type="checkbox" name="friendClass4" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
+            </span>
         </div>
-        <br />
-    }
-    <br/>
-    <br/>
-    <div class="card bg-light" style="clear: both; margin-top: 0;">
-        <div class="card-body mx-auto d-block" style="padding-bottom: 35px;">
-            <div class="card-deck" style="clear: both;">
-                @foreach (FriendViewModel friendViewModel in Model.FriendViewModelsList)
-                {
-                    string chkClass = "friendClass" + friendViewModel.FriendItem.Type.ToString();
-                    <a class="@chkClass leavePage" style="margin-bottom: 15px;" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@friendViewModel.FriendItem.FriendId">
-                        <div class="card text-white bg-primary" style="padding: 3px; float: left; clear: right; text-align: center; height: 100%; width: 305px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
-                            <div class="card-header card-header-rose card-title h4">@friendViewModel.FriendItem.Name</div>
-                            <div style="height: 305px;">
-                                <img class="img-thumbnail mx-auto d-block" style="max-height: 300px; max-width: 280px; background: black; margin-bottom: 10px;" src="@friendViewModel.FriendItem.PictureLink" />
-                            </div>
-                            <div class="card-body">
-                                <div align="left">
-                                    <strong>@await LocaleManager.GetTranslation("Friends since:", PageNames.Friends, Model.LanguageId) </strong>
-                                    <span align="left">
-                                        @if (friendViewModel.FriendItem.FriendSince != null)
-                                        {
-                                            @friendViewModel.FriendItem.FriendSince.Value.ToString("dd-MMM-yyyy")
-                                        }
-                                        else
-                                        {
-                                            <span>@await LocaleManager.GetTranslation("N/A", PageNames.Friends, Model.LanguageId)</span>
-                                        }
-                                    </span>
-                                </div>
-                                <div align="left">
-                                    <strong>@await LocaleManager.GetTranslation("Type:", PageNames.Friends, Model.LanguageId)</strong> @typeList[friendViewModel.FriendItem.Type]
-                                </div>
-                                <div align="left">
-                                    <strong>@await LocaleManager.GetTranslation("Context:", PageNames.Friends, Model.LanguageId)</strong> @friendViewModel.FriendItem.Context
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                }
+        @if (!string.IsNullOrEmpty(Model.TagFilter))
+        {
+            <br />
+            <div class="text-dark" style="float: right;">
+                @await LocaleManager.GetTranslation("Tag filter:", PageNames.Friends, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
+                    <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Friends, Model.LanguageId)
+                </a>
             </div>
             <br />
-            <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
-                @{
-                    if (!string.IsNullOrEmpty(Model.Tags))
+        }
+        <br />
+        <br />
+        <div class="card bg-light" style="clear: both; margin-top: 0;">
+            <div class="card-body mx-auto d-block" style="padding-bottom: 35px;">
+                <div class="card-deck" style="clear: both;">
+                    @foreach (FriendViewModel friendViewModel in Model.FriendViewModelsList)
                     {
-                        string[] tagsList = Model.Tags.Split(',');
-                        foreach (string tagString in tagsList)
+                        string chkClass = "friendClass" + friendViewModel.FriendItem.Type.ToString();
+                        <a class="@chkClass leavePage" style="margin-bottom: 15px;" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@friendViewModel.FriendItem.FriendId">
+                            <div class="card text-white bg-primary" style="padding: 3px; float: left; clear: right; text-align: center; height: 100%; width: 305px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
+                                <div class="card-header card-header-rose card-title h4">@friendViewModel.FriendItem.Name</div>
+                                <div style="height: 305px;">
+                                    <img class="img-thumbnail mx-auto d-block" style="max-height: 300px; max-width: 280px; background: black; margin-bottom: 10px;" src="@friendViewModel.FriendItem.PictureLink" />
+                                </div>
+                                <div class="card-body">
+                                    <div align="left">
+                                        <strong>@await LocaleManager.GetTranslation("Friends since:", PageNames.Friends, Model.LanguageId) </strong>
+                                        <span align="left">
+                                            @if (friendViewModel.FriendItem.FriendSince != null)
+                                            {
+                                                @friendViewModel.FriendItem.FriendSince.Value.ToString("dd-MMM-yyyy")
+                                            }
+                                            else
+                                            {
+                                                <span>@await LocaleManager.GetTranslation("N/A", PageNames.Friends, Model.LanguageId)</span>
+                                            }
+                                        </span>
+                                    </div>
+                                    <div align="left">
+                                        <strong>@await LocaleManager.GetTranslation("Type:", PageNames.Friends, Model.LanguageId)</strong> @typeList[friendViewModel.FriendItem.Type]
+                                    </div>
+                                    <div align="left">
+                                        <strong>@await LocaleManager.GetTranslation("Context:", PageNames.Friends, Model.LanguageId)</strong> @friendViewModel.FriendItem.Context
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+                <br />
+                <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
+                    @{
+                        if (!string.IsNullOrEmpty(Model.Tags))
                         {
-                            <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                            string[] tagsList = Model.Tags.Split(',');
+                            foreach (string tagString in tagsList)
+                            {
+                                <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                            }
                         }
                     }
-                }
+                </div>
             </div>
         </div>
-    </div>
-}
+    }
+</div>
+<br />
 <script type="text/javascript">
     $("input:checkbox:not(:checked)").each(function() {
         const anchor = document.getElementsByClassName($(this).attr("name"));

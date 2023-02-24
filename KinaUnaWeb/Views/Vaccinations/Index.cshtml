@@ -5,60 +5,62 @@
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Vaccinations", PageNames.Vaccinations, Model.LanguageId);
 }
-@if (!Model.VaccinationList.Any())
-{
-    <h2>@ViewData["Title"]</h2>
-    <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Vaccinations, Model.LanguageId)</div>
-}
-else
-{
-    if (Model.IsCurrentUserProgenyAdmin)
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    @if (!Model.VaccinationList.Any())
     {
-        <div class="btn-group" style="float: right;">
-            <a asp-controller="Vaccinations" asp-action="AddVaccination" class="btn btn-success btn-round leavePage">
-                <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add vaccination", PageNames.Vaccinations, Model.LanguageId)
-            </a>
-        </div>
+        <h2>@ViewData["Title"]</h2>
+        <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Vaccinations, Model.LanguageId)</div>
     }
-    <h2>@ViewData["Title"]</h2>
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Date", PageNames.Vaccinations, Model.LanguageId)</th>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Name", PageNames.Vaccinations, Model.LanguageId)</th>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Description", PageNames.Vaccinations, Model.LanguageId)</th>
-                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Notes", PageNames.Vaccinations, Model.LanguageId)</th>
-                    @if (Model.IsCurrentUserProgenyAdmin)
-                    {
-                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Vaccinations, Model.LanguageId)</th>
-                    }
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (Vaccination vaccinationViewModel in Model.VaccinationList)
-                {
+    else
+    {
+        if (Model.IsCurrentUserProgenyAdmin)
+        {
+            <div class="btn-group" style="float: right;">
+                <a asp-controller="Vaccinations" asp-action="AddVaccination" class="btn btn-success btn-round leavePage">
+                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add vaccination", PageNames.Vaccinations, Model.LanguageId)
+                </a>
+            </div>
+        }
+        <h2>@ViewData["Title"]</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
                     <tr>
-                        <td style="min-width: 100px;">@vaccinationViewModel.VaccinationDate.ToString("dd-MMM-yyyy")</td>
-                        <td style="min-width: 225px;">@vaccinationViewModel.VaccinationName</td>
-                        <td style="min-width: 180px;">@vaccinationViewModel.VaccinationDescription</td>
-                        <td>@vaccinationViewModel.Notes</td>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Date", PageNames.Vaccinations, Model.LanguageId)</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Name", PageNames.Vaccinations, Model.LanguageId)</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Description", PageNames.Vaccinations, Model.LanguageId)</th>
+                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Notes", PageNames.Vaccinations, Model.LanguageId)</th>
                         @if (Model.IsCurrentUserProgenyAdmin)
                         {
-                            <td style="min-width: 135px;">
-                                <div>
-                                    <a asp-controller="Vaccinations" asp-action="EditVaccination" asp-route-itemId="@vaccinationViewModel.VaccinationId" class="btn btn-info btn-round btn-sm leavePage">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </a>
-                                    <a asp-controller="Vaccinations" asp-action="DeleteVaccination" asp-route-itemId="@vaccinationViewModel.VaccinationId" class="btn btn-danger btn-round btn-sm leavePage">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </a>
-                                </div>
-                            </td>
+                            <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Vaccinations, Model.LanguageId)</th>
                         }
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
+                </thead>
+                <tbody>
+                    @foreach (Vaccination vaccinationViewModel in Model.VaccinationList)
+                    {
+                        <tr>
+                            <td style="min-width: 100px;">@vaccinationViewModel.VaccinationDate.ToString("dd-MMM-yyyy")</td>
+                            <td style="min-width: 225px;">@vaccinationViewModel.VaccinationName</td>
+                            <td style="min-width: 180px;">@vaccinationViewModel.VaccinationDescription</td>
+                            <td>@vaccinationViewModel.Notes</td>
+                            @if (Model.IsCurrentUserProgenyAdmin)
+                            {
+                                <td style="min-width: 135px;">
+                                    <div>
+                                        <a asp-controller="Vaccinations" asp-action="EditVaccination" asp-route-itemId="@vaccinationViewModel.VaccinationId" class="btn btn-info btn-round btn-sm leavePage">
+                                            <i class="fas fa-pencil-alt"></i>
+                                        </a>
+                                        <a asp-controller="Vaccinations" asp-action="DeleteVaccination" asp-route-itemId="@vaccinationViewModel.VaccinationId" class="btn btn-danger btn-round btn-sm leavePage">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

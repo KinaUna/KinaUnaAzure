@@ -8,49 +8,56 @@
     string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Timeline, Model.LanguageId);
     string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Timeline, Model.LanguageId);
 }
-<h2>@ViewData["Title"]</h2>
-<br style="clear: both;" />
-@{
-    string sortOldest = "btn btn-primary btn-sm";
-    string sortNewest = "btn btn-info btn-sm";
-}
-@if (Model.SortBy == 1)
-{
-    sortOldest = "btn btn-info btn-sm";
-    sortNewest = "btn btn-primary btn-sm";
-    <div>
-        @sortString <span class="@sortNewest"><i class="fas fa-check-circle"></i> @newestFirstString</span>
-        <a class="@sortOldest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="0">@oldestFirstString</a>
-    </div>
-}
-else
-{
-    <div>
-        @sortString <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> @oldestFirstString</span>
-        <a class="@sortNewest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="1">@newestFirstString</a>
-    </div>
-}
-<br />
-<div id="tlineItems">
+<div class="ml-xl-auto mr-xl-auto col-xl-6 col-xxl-4">
+    <h2>@ViewData["Title"]</h2>
+    <br style="clear: both;"/>
+    @{
+        string sortOldest = "btn btn-primary btn-sm";
+        string sortNewest = "btn btn-info btn-sm";
+    }
+    @if (Model.SortBy == 1)
+    {
+        sortOldest = "btn btn-info btn-sm";
+        sortNewest = "btn btn-primary btn-sm";
+        <div>
+            @sortString <span class="@sortNewest"><i class="fas fa-check-circle"></i> @newestFirstString</span>
+            <a class="@sortOldest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="0">@oldestFirstString</a>
+        </div>
+    }
+    else
+    {
+        <div>
+            @sortString <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> @oldestFirstString</span>
+            <a class="@sortNewest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="1">@newestFirstString</a>
+        </div>
+    }
+    <br/>
+    <div id="tlineItems">
 
-</div>
-<div id="moreButtonDiv" style="clear: both;">
-    <button class="btn btn-success" id="moreTimeLineItems" style="float: left; margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
-    <br />
-    <div class="col-md-3 col-lg-2" style="float: right; font-size: small;">
-        @await LocaleManager.GetTranslation("Number of items to get:", PageNames.Timeline, Model.LanguageId)
-        <select id="nextItemsCount" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
-            <option value="5">5</option>
-            <option value="10" selected="selected">10</option>
-            <option value="15">15</option>
-            <option value="20">20</option>
-            <option value="30">30</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-        </select>
     </div>
-    <br style="clear: both;" />
+    <div id="moreButtonDiv" class="row mt-4 mb-2">
+        <div class="col-12">
+            @await LocaleManager.GetTranslation("Number of items to get:", PageNames.Timeline, Model.LanguageId)
+        </div>
+        <div class="col" style="font-size: small; margin-top: 5px;">
+            <select id="nextItemsCount" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
+                <option value="5">5</option>
+                <option value="10" selected="selected">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+        <div class="col">
+            <button class="btn btn-success" id="moreTimeLineItems">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
+        </div>
+
+        <br/>
+    </div>
 </div>
+
 <script type="text/javascript">
     let current_effect = 'roundBounce';
 

@@ -3,38 +3,40 @@
     ViewData["Title"] = "Manage Translations";
 
 }
-<div class="space-20"></div>
-<div class="container">
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
     <div class="space-20"></div>
-    <h2>@ViewData["Title"]</h2>
-    <div class="space-20"></div>
+    <div class="container">
+        <div class="space-20"></div>
+        <h2>@ViewData["Title"]</h2>
+        <div class="space-20"></div>
 
-    @if (Model.Translations.Any())
-    {
-        if (Model.PagesList.Any())
+        @if (Model.Translations.Any())
         {
-            <ul id="view-ul" class="select-view-ul" style="flex-wrap: wrap; justify-content: center;">
-                @foreach (string pageItem in Model.PagesList)
-                {
-                    <li class="select-view-item" data-viewid="@pageItem">@pageItem</li>
-                }
-            </ul>
+            if (Model.PagesList.Any())
+            {
+                <ul id="view-ul" class="select-view-ul" style="flex-wrap: wrap; justify-content: center;">
+                    @foreach (string pageItem in Model.PagesList)
+                    {
+                        <li class="select-view-item" data-viewid="@pageItem">@pageItem</li>
+                    }
+                </ul>
 
+            }
         }
-    }
-    <div class="space-20"></div>
-    <div id="translationsList"></div>
-</div>
-<div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editTranslationModal">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">
+        <div class="space-20"></div>
+        <div id="translationsList"></div>
+    </div>
+    <div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editTranslationModal">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
             </div>
         </div>
     </div>
@@ -78,7 +80,6 @@
         viewSelected(event.target);
 
     }
-
     // prevent unneeded selection of list elements on clicks
     viewUl.onmousedown = function () {
         return false;

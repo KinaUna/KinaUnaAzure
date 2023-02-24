@@ -1,0 +1,18 @@
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model int
+@inject ILocaleManager LocaleManager
+<li id="notificationsIcon" class="nav-item dropdown mb-2 mb-lg-0 ml-lg-auto">
+    <a id="notificationsButton" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+        <i id="notificationBellIcon" class="material-icons icon_medium ml-2 mr-1">notifications</i> @await LocaleManager.GetTranslation("Notifications", PageNames.Layout, Model) <span id="notificationsCounter" class="badge badge-pill badge-secondary"></span> <span class="caret"></span>
+    </a>
+    <div id="notificationsMenu" class="dropdown-menu dropdown-menu-right">
+        <div id="notificationsList" class="notifications-List"></div>
+        <div class="dropdown-item w-100">
+            <form class="form-inline-fullwidth" asp-area="" asp-controller="Notifications" asp-action="Index" method="get">
+                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">assignment</i> @await LocaleManager.GetTranslation("See all notifications", PageNames.Layout, Model)</button>
+            </form>
+        </div>
+    </div>
+</li>

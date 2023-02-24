@@ -6,15 +6,17 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
     ViewData["Title"] = await LocaleManager.GetTranslation("Remove child", PageNames.Progeny, languageId) + Model.NickName;
 }
-<h2>@ViewData["Title"]</h2>
-<form asp-action="DeleteProgeny" role="form">
-    <div class="modal-body form-horizontal">
-        @await LocaleManager.GetTranslation("Are you sure you want to remove this child?", PageNames.Progeny, languageId) @Model.Name?
-    </div>
-    <div>
-        @await LocaleManager.GetTranslation("Birthday:", PageNames.Progeny, languageId) @Model.BirthDay
-    </div>
-    <div>@await LocaleManager.GetTranslation("All data for this child will be deleted, including pictures, videos, calendar events, vocabulary, skills, friends, notes, measurements, sleep, notes, contacts, and vaccinations.", PageNames.Progeny, languageId) </div>
-    <input asp-for="Id" class="form-control" value="@Model.Id" type="hidden" />
-    <div><Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - remove child", PageNames.Progeny, languageId)</Button><a class="btn btn-danger leavePage" asp-controller="Family" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, languageId)</a></div>
-</form>
+<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+    <h2>@ViewData["Title"]</h2>
+    <form asp-action="DeleteProgeny" role="form">
+        <div class="modal-body form-horizontal">
+            @await LocaleManager.GetTranslation("Are you sure you want to remove this child?", PageNames.Progeny, languageId) @Model.Name?
+        </div>
+        <div>
+            @await LocaleManager.GetTranslation("Birthday:", PageNames.Progeny, languageId) @Model.BirthDay
+        </div>
+        <div>@await LocaleManager.GetTranslation("All data for this child will be deleted, including pictures, videos, calendar events, vocabulary, skills, friends, notes, measurements, sleep, notes, contacts, and vaccinations.", PageNames.Progeny, languageId) </div>
+        <input asp-for="Id" class="form-control" value="@Model.Id" type="hidden" />
+        <div><Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - remove child", PageNames.Progeny, languageId)</Button><a class="btn btn-danger leavePage" asp-controller="Family" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, languageId)</a></div>
+    </form>
+</div>
