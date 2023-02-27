@@ -5,74 +5,12 @@
 @using KinaUnaWeb.Models.HomeViewModels
 @using Microsoft.AspNetCore.Http.Extensions
 @using KinaUnaWeb.Services
-@using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @using Syncfusion.EJ2
 @{
-    int languageId = 1;
-    string languageCode = "en";
-
-    if (Context.Request.Query.ContainsKey("languageId"))
-    {
-        if (int.TryParse(Context.Request.Query["languageId"], out int queryValue))
-        {
-            languageId = queryValue;
-        }
-    }
-    else
-    {
-        if (Context.Request.Cookies.TryGetValue("languageId", out string languageIdText))
-        {
-            if (!int.TryParse(languageIdText, out languageId))
-            {
-                languageId = 1;
-            }
-        }
-        else
-        {
-            try
-            {
-                string[] userLanguages = Context.Request.GetTypedHeaders().AcceptLanguage.OrderByDescending(x => x.Quality ?? 1).Select(x => x.Value.ToString()).ToArray();
-                string firstLang = userLanguages.FirstOrDefault();
-
-                if (firstLang != null && firstLang.StartsWith("de"))
-                {
-                    languageId = 2;
-                }
-                if (firstLang != null && firstLang.StartsWith("da"))
-                {
-                    languageId = 3;
-                }
-                if (firstLang != null && firstLang.StartsWith("tr"))
-                {
-                    languageId = 4;
-                }
-                if (firstLang != null && firstLang.StartsWith("sr"))
-                {
-                    languageId = 5;
-                }
-            }
-            catch (NullReferenceException)
-            {
-                languageId = 1;
-            }
-        }
-    }
-
-    if (languageId == 1)
-    {
-        languageCode = "en";
-    }
-
-    if (languageId == 2)
-    {
-        languageCode = "de";
-    }
-
-    if (languageId == 3)
-    {
-        languageCode = "da";
-    }
+    KinaUnaLanguage kinaUnaLanguage = Context.Request.GetKinaUnaLanguage();
+    int languageId = kinaUnaLanguage.Id;
+    string languageCode = kinaUnaLanguage.Code;
 }
 <html lang="@languageCode">
 <head>
@@ -116,45 +54,36 @@
 @{
     List<Progeny> childList = new List<Progeny>();
     Progeny child = new Progeny();
-    bool canUserAddItems = false;
-    string usrName = "";
-    UserInfo userinfo = new UserInfo();
+    UserInfo userInfo = new UserInfo();
     bool showUndelete = false;
 }
 
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
     string userId = User.GetUserId();
-    string userEmail = User.FindFirst("email")?.Value ?? Constants.DefaultUserEmail;
-    userinfo = await ChildManager.GetInfo(userEmail);
-    bool isAccountDeleted = userinfo.Deleted && userinfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30);
+    userInfo = await ChildManager.GetInfo(User.GetEmail());
+    bool isAccountDeleted = userInfo.Deleted && userInfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30);
     if (!isAccountDeleted && await ChildManager.IsUserLoginValid(userId))
     {
-        if (userinfo.UserId == "401")
+        if (userInfo.UserId == "401")
         {
             Context.Response.Redirect("/Account/CheckOut?returnUrl=" + returnUrl);
         }
         else
         {
-            if (userinfo.ViewChild == 0)
+            if (userInfo.ViewChild == 0)
             {
                 Context.Response.Redirect("/");
             }
-            childList = userinfo.ProgenyList;
-            canUserAddItems = userinfo.CanUserAddItems;
-            child = userinfo.ProgenyList.SingleOrDefault(p => p.Id == userinfo.ViewChild);
-            usrName = userinfo.UserName;
-            if (string.IsNullOrEmpty(userinfo.UserName))
-            {
-                usrName = userinfo.UserEmail;
-            }
+            childList = userInfo.ProgenyList;
+            child = userInfo.ProgenyList.SingleOrDefault(p => p.Id == userInfo.ViewChild);
         }
     }
     else
     {
         bool isApplicationUserValid = await ChildManager.IsApplicationUserValid(userId);
 
-        if (isApplicationUserValid && userinfo.Deleted && userinfo.DeletedTime > DateTime.UtcNow - TimeSpan.FromDays(30))
+        if (isApplicationUserValid && userInfo.Deleted && userInfo.DeletedTime > DateTime.UtcNow - TimeSpan.FromDays(30))
         {
 
             showUndelete = true;
@@ -181,24 +110,23 @@
 
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
-    <a asp-area="" asp-controller="Home" asp-action="Index" asp-route-childId="@userinfo.ViewChild" class="navbar-brand leavePage" aria-label="Home">
+    <a asp-area="" asp-controller="Home" asp-action="Index" asp-route-childId="@userInfo.ViewChild" class="navbar-brand leavePage" aria-label="Home" style="margin-right: 80px;">
         <img src="/images/Square44x44Logo.scale-100.png" class="kinauna-logo"/>
     </a>
+    @if (userInfo.CanUserAddItems)
+    {
+        <div class="navbar-nav nav-item ml-3 ml-lg-1">
+            <a class="nav-link kinauna_yellow_text leavePage" style="margin-right: 12px; margin-top: 4px" asp-area="" asp-controller="AddItem" asp-action="Index" aria-label="Add item">
+                <i class="material-icons kinauna_yellow_text" aria-hidden="true">add</i>
+            </a>
+        </div>
+    }
 }
 else
 {
-    <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage" aria-label="Home">
+    <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage" aria-label="Home" style="margin-right: 80px;">
         <img src="/images/Square44x44Logo.scale-100_bw.png" class="kinauna-logo"/>
     </a>
-}
-
-@if (canUserAddItems)
-{
-    <div class="navbar-nav nav-item ml-3 ml-lg-1">
-        <a class="nav-link kinauna_yellow_text leavePage" style="margin-left: 60px; margin-right: 12px; margin-top: 4px" asp-area="" asp-controller="AddItem" asp-action="Index" aria-label="Add item">
-            <i class="material-icons kinauna_yellow_text" aria-hidden="true">add</i>
-        </a>
-    </div>
 }
 @{
     if (child != null)
@@ -230,7 +158,7 @@ else
                 if (prog.Id != child.Id)
                 {
                     <div class="dropdown-item">
-                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-userId="@userinfo.UserId" asp-route-userEmail="@userinfo.UserEmail" asp-route-returnUrl="@returnUrl" method="post">
+                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-userId="@userInfo.UserId" asp-route-userEmail="@userInfo.UserEmail" asp-route-returnUrl="@returnUrl" method="post">
                             <button type="submit" class="btn btn-link btn-block text-white text-left leavePage">
                                 @{
                                     string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
@@ -250,15 +178,12 @@ else
     </li>
 }
 @{
-    UserMenuViewModel userMenuViewModel = new UserMenuViewModel { LanguageId = languageId, UserInfo = userinfo };
+    UserMenuViewModel userMenuViewModel = new UserMenuViewModel { LanguageId = languageId, UserInfo = userInfo };
     @await Html.PartialAsync("_MainMenuPartial", userMenuViewModel)
 }
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
     @await Html.PartialAsync("_NotificationsMenuPartial", languageId)
-}
-@if (User.Identity != null && User.Identity.IsAuthenticated)
-{
     @await Html.PartialAsync("_AccountMenuPartial", userMenuViewModel)
 }
 else
@@ -285,7 +210,7 @@ else
     <br/>
 </div>
 <script src="~/js/site.js" asp-append-version="true"></script>
-@if (User.Identity.IsAuthenticated)
+@if (User.Identity != null && User.Identity.IsAuthenticated)
 {
     <script src="~/signalr/signalr.min.js"></script>
     <script src="~/signalr/msgpack5.min.js"></script>

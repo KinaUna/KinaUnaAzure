@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace KinaUna.Data.Extensions
@@ -119,6 +120,75 @@ namespace KinaUna.Data.Extensions
             option.Domain = "";
 #endif
             response.Cookies.Append("cookieconsent", gdprId, option);
+        }
+
+        public static KinaUnaLanguage GetKinaUnaLanguage(this HttpRequest request)
+        {
+            KinaUnaLanguage kinaUnaLanguage = new KinaUnaLanguage();
+            kinaUnaLanguage.Id = 1;
+            kinaUnaLanguage.Code = "en";
+
+            if (request.Query.ContainsKey("languageId"))
+            {
+                if (int.TryParse(request.Query["languageId"], out int queryValue))
+                {
+                    kinaUnaLanguage.Id = queryValue;
+                }
+            }
+            else
+            {
+                if (request.Cookies.TryGetValue("languageId", out string languageIdText))
+                {
+                    int languageId = 1;
+                    if (!int.TryParse(languageIdText, out languageId))
+                    {
+                        kinaUnaLanguage.Id = 1;
+                    }
+                    else
+                    {
+                        kinaUnaLanguage.Id = languageId;
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        string[] userLanguages = request.GetTypedHeaders().AcceptLanguage.OrderByDescending(x => x.Quality ?? 1).Select(x => x.Value.ToString()).ToArray();
+                        string firstLang = userLanguages.FirstOrDefault();
+
+                        if (firstLang != null && firstLang.StartsWith("de"))
+                        {
+                            kinaUnaLanguage.Id = 2;
+                        }
+
+                        if (firstLang != null && firstLang.StartsWith("da"))
+                        {
+                            kinaUnaLanguage.Id = 3;
+                        }
+                    }
+                    catch (NullReferenceException)
+                    {
+                        kinaUnaLanguage.Id = 1;
+                    }
+                }
+            }
+
+            if (kinaUnaLanguage.Id == 1)
+            {
+                kinaUnaLanguage.Code = "en";
+            }
+
+            if (kinaUnaLanguage.Id == 2)
+            {
+                kinaUnaLanguage.Code = "de";
+            }
+
+            if (kinaUnaLanguage.Id == 3)
+            {
+                kinaUnaLanguage.Code = "da";
+            }
+
+            return kinaUnaLanguage;
         }
     }
 }
