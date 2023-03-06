@@ -91,17 +91,13 @@ namespace KinaUna.IDP.Controllers
             LoginViewModel vm = BuildLoginViewModel(returnUrl, context);
 
             ViewData["ReturnUrl"] = returnUrl;
-            if (context != null && context.Client.ClientId.ToLower().Contains("pivoq"))
+            if (context != null && context.Client.ClientId.ToLower().Contains("maui"))
             {
-                ViewData["AccountType"] = "Pivoq + KinaUna";
+                ViewData["AccountType"] = "KinaUna MAUI";
             }
             else
             {
-                if (context != null && context.Client.ClientId.ToLower().Contains("maui"))
-                {
-                    ViewData["AccountType"] = "KinaUna MAUI";
-                }
-                ViewData["AccountType"] = "KinaUna + Pivoq";
+                ViewData["AccountType"] = "KinaUna";
             }
 
             return View(vm);
@@ -186,43 +182,20 @@ namespace KinaUna.IDP.Controllers
                 string logoutRedirectUri;
                 if (_env.IsDevelopment())
                 {
-                    if (context != null && context.ClientId != null && context.ClientId.ToLower().Contains("pivoq"))
-                    {
-                        logoutRedirectUri = _configuration.GetValue<string>("PivoqWebServerLocal");
-                    }
-                    else
-                    {
-                        logoutRedirectUri = _configuration.GetValue<string>("WebServerLocal");
-                    }
-                    
+                    logoutRedirectUri = _configuration.GetValue<string>("WebServerLocal");
+
                 }
                 else
                 {
-                    if (context != null && context.ClientId.ToLower().Contains("pivoq"))
+                    if (context != null && context.ClientId.ToLower().Contains("maui"))
                     {
-                        if (context.ClientId.ToLower().Contains("core"))
-                        {
-                            logoutRedirectUri = _configuration.GetValue<string>("PivoqCoreWebServer");
-                        }
-                        else
-                        {
-                            logoutRedirectUri = _configuration.GetValue<string>("PivoqWebServer");
-                        }
-                        
+                        logoutRedirectUri = "kinaunamaui://callback";
                     }
                     else
                     {
-                        if (context != null && context.ClientId.ToLower().Contains("maui"))
-                        {
-                            logoutRedirectUri = "kinaunamaui://callback";
-                        }
-                        else
-                        { 
-                            logoutRedirectUri = _configuration.GetValue<string>("WebServer");
-                        }
-                        
+                        logoutRedirectUri = _configuration.GetValue<string>("WebServer");
                     }
-                   
+
                 }
                 return Redirect(logoutRedirectUri!);
             }
@@ -245,22 +218,16 @@ namespace KinaUna.IDP.Controllers
                 LogoutId = logoutId
             };
 
-            if (context != null && context.ClientId != null && context.ClientId.ToLower().Contains("pivoq"))
+            if (context != null && context.ClientId != null && context.ClientId.ToLower().Contains("maui"))
             {
-                ViewData["AccountType"] = "Pivoq";
+                ViewData["AccountType"] = "KinaUna MAUI";
+
             }
             else
             {
-                if (context != null && context.ClientId != null && context.ClientId.ToLower().Contains("kinaunaweb"))
-                {
-                    ViewData["AccountType"] = "KinaUna";
-                }
-                else
-                {
-                    ViewData["AccountType"] = "KinaUna MAUI";
-                }
+                ViewData["AccountType"] = "KinaUna";
             }
-            
+
             return View(vm);
         }
 
@@ -312,49 +279,34 @@ namespace KinaUna.IDP.Controllers
             {
                 if (_env.IsDevelopment())
                 {
-                    if (logout.ClientId != null && logout.ClientId.ToLower().Contains("pivoq"))
+                    if (logout.ClientId != null && logout.ClientId.ToLower().Contains("blazor"))
                     {
-                        logout.PostLogoutRedirectUri = _configuration.GetValue<string>("PivoqWebServerLocal");
+                        logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebBlazorServerLocal");
+                    }
+                    else
+                    {
+                        logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServerLocal");
+                    }
+
+                }
+                else
+                {
+                    if (logout.ClientId != null && logout.ClientId.ToLower().Contains("maui"))
+                    {
+                        logout.PostLogoutRedirectUri = "kinaunamaui://callback";
                     }
                     else
                     {
                         if (logout.ClientId != null && logout.ClientId.ToLower().Contains("blazor"))
                         {
-                            logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebBlazorServerLocal");
+                            logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebBlazorServer");
                         }
                         else
                         {
-                            logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServerLocal");
-                        }
-                        
-                    }
-                    
-                }
-                else
-                {
-                    if ( logout.ClientId != null && logout.ClientId.ToLower().Contains("pivoq"))
-                    {
-                        logout.PostLogoutRedirectUri = _configuration.GetValue<string>("PivoqWebServer");
-                    }
-                    else
-                    {
-                        if (logout.ClientId != null && logout.ClientId.ToLower().Contains("maui"))
-                        {
-                            logout.PostLogoutRedirectUri = "kinaunamaui://callback";
-                        }
-                        else
-                        {
-                            if (logout.ClientId != null && logout.ClientId.ToLower().Contains("blazor"))
-                            {
-                                logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebBlazorServer");
-                            }
-                            else
-                            {
-                                logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServer");
-                            }
+                            logout.PostLogoutRedirectUri = _configuration.GetValue<string>("WebServer");
                         }
                     }
-                   
+
                 }
             }
 
@@ -384,14 +336,8 @@ namespace KinaUna.IDP.Controllers
         {
             ViewData["ReturnUrl"] = returnUrl;
             RegisterViewModel model = new RegisterViewModel();
-            if (returnUrl != null && returnUrl.ToLower().Contains("pivoq"))
-            {
-                ViewData["AccountType"] = "Pivoq / KinaUna";
-            }
-            else
-            {
-                ViewData["AccountType"] = "KinaUna / Pivoq";
-            }
+            ViewData["AccountType"] = "KinaUna";
+            
             return View(model);
         }
 
@@ -416,7 +362,7 @@ namespace KinaUna.IDP.Controllers
 
                 if (user.TimeZone == null)
                 {
-                    user.TimeZone = ((await _userManager.FindByEmailAsync(Constants.AdminEmail))!).TimeZone;
+                    user.TimeZone = ((await _userManager.FindByEmailAsync(Constants.DefaultUserEmail))!).TimeZone;
                 }
                 
                 IdentityResult result = await _userManager.CreateAsync(user, model.Password);
@@ -428,11 +374,6 @@ namespace KinaUna.IDP.Controllers
                 }
 
                 string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                
-                if (returnUrl != null && returnUrl.ToLower().Contains("pivoq"))
-                {
-                    clientId = "Pivoq";
-                }
                 string callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, clientId, model.Language);
                 await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl, clientId, model.Language);
                 await _emailSender.SendEmailAsync(Constants.AdminEmail, "New User Registered",
@@ -444,14 +385,7 @@ namespace KinaUna.IDP.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    if (clientId == "Pivoq")
-                    {
-                        return Redirect(Constants.PivoqCoreUrl + "/Account/SignedUp");
-                    }
-                    else
-                    {
-                        return RedirectToAction("RegConfirm", "Account", new { returnUrl });
-                    }
+                    return RedirectToAction("RegConfirm", "Account", new { returnUrl });
                 }
                     
                 
@@ -649,30 +583,12 @@ namespace KinaUna.IDP.Controllers
                 }
                 else
                 {
-                    string clientType;
-                    if (client.ToLower() == "pivoq")
-                    {
-                        clientType = "Pivoq";
-                    }
-                    else
-                    {
-                        clientType = "KinaUna";
-                    }
-
-                    await _emailSender.SendEmailAsync(Constants.AdminEmail, "New User Confirmed Email",
-                        "A user confirmed the email with this email address: " + user.Email, clientType);
-                    await _emailSender.SendEmailAsync(Constants.AdminEmail2, "New User Confirmed Email",
-                        "A user confirmed the email with this email address: " + user.Email, clientType);
+                    string clientType = "KinaUna";
+                    await _emailSender.SendEmailAsync(Constants.AdminEmail, "New User Confirmed Email", "A user confirmed the email with this email address: " + user.Email, clientType);
                 }
 
-                if (client.ToLower() == "pivoq")
-                {
-                    ViewData["AccountType"] = "Pivoq / KinaUna";
-                }
-                else
-                {
-                    ViewData["AccountType"] = "KinaUna / KinaUna";
-                }
+                ViewData["AccountType"] = "KinaUna";
+                
                 return View();
             }
 
@@ -729,7 +645,7 @@ namespace KinaUna.IDP.Controllers
                 }
 
                 await _emailSender.SendEmailAsync(model.Email, emailTitle,
-                    emailText, "KinaUna - Pivoq");
+                    emailText, "KinaUna");
                 return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
 
@@ -1066,7 +982,7 @@ namespace KinaUna.IDP.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> CheckDeletePivoqAccount([FromBody] UserInfo userInfo)
+        public async Task<IActionResult> CheckDeleteKinaUnaAccount([FromBody] UserInfo userInfo)
         {
             UserInfo deletedUserInfo = await _progContext.DeletedUsers.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == userInfo.UserId);
             if (deletedUserInfo != null)
@@ -1095,7 +1011,7 @@ namespace KinaUna.IDP.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> RemoveDeletePivoqAccount([FromBody] UserInfo userInfo)
+        public async Task<IActionResult> RemoveDeleteKinaUnaAccount([FromBody] UserInfo userInfo)
         {
             ApplicationUser user = await _userManager.Users.SingleOrDefaultAsync(u => u.Id == User.GetUserId());
             if (user != null && user.Id != Constants.DefaultUserId && user.Id == userInfo.UserId)

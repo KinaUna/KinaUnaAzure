@@ -47,7 +47,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    PictureViewModel picture = await _mediaHttpClient.GetPictureViewModel(itemId, 0, 1, model.CurrentUser.Timezone);
+                    PictureViewModel picture = await _mediaHttpClient.GetPictureViewModel(itemId, 0, 1, model.CurrentUser.Timezone, model.TagFilter);
                     if (picture != null && picture.PictureId > 0)
                     {
                         picture.PictureLink = _imageStore.UriFor(picture.PictureLink);

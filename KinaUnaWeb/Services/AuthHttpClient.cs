@@ -3,12 +3,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using IdentityModel.Client;
-using KinaUna.Data;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 
@@ -19,13 +17,9 @@ namespace KinaUnaWeb.Services
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthHttpClient(HttpClient httpClient, IConfiguration configuration, IHostEnvironment env, IHttpContextAccessor httpContextAccessor)
+        public AuthHttpClient(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             string clientUri = configuration.GetValue<string>("AuthenticationServer");
-            if (env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugPivoqServer))
-            {
-                clientUri = configuration.GetValue<string>("AuthenticationServer" + Constants.DebugPivoqServer);
-            }
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -37,7 +31,7 @@ namespace KinaUnaWeb.Services
         
         public async Task<UserInfo> CheckDeleteUser(UserInfo userInfo)
         {
-            string deleteAccountPath = "/Account/CheckDeletePivoqAccount/";
+            string deleteAccountPath = "/Account/CheckDeleteKinaUnaAccount/";
             
             HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
             if (deleteResponse.IsSuccessStatusCode)
@@ -69,7 +63,7 @@ namespace KinaUnaWeb.Services
             }
 
             _httpClient.SetBearerToken(accessToken);
-            string deleteAccountPath = "/Account/RemoveDeletePivoqAccount/";
+            string deleteAccountPath = "/Account/RemoveDeleteKinaUnaAccount/";
 
             HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
             if (deleteResponse.IsSuccessStatusCode)

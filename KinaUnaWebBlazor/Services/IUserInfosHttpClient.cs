@@ -9,27 +9,27 @@ namespace KinaUnaWebBlazor.Services
         /// </summary>
         /// <param name="email">string: The user's email address</param>
         /// <returns>UserInfo</returns>
-        Task<UserInfo> GetUserInfo(string email);
+        Task<UserInfo?> GetUserInfo(string email);
 
         /// <summary>
         /// Gets a user's information from the UserId.
         /// </summary>
         /// <param name="userId">string: The user's UserId (ApplicationUser.Id and UserInfo.UserId).</param>
         /// <returns>UserInfo</returns>
-        Task<UserInfo> GetUserInfoByUserId(string userId);
+        Task<UserInfo?> GetUserInfoByUserId(string userId);
 
         /// <summary>
         /// Updates a UserInfo object. The UserInfo with the same Id will be updated.
         /// </summary>
         /// <param name="userinfo">UserInfo: The UserInfo object to update.</param>
         /// <returns>UserInfo: The updated UserInfo object.</returns>
-        Task<UserInfo> UpdateUserInfo(UserInfo userinfo);
+        Task<UserInfo?> UpdateUserInfo(UserInfo userinfo);
 
-        Task<UserInfo> DeleteUserInfo(UserInfo userInfo);
+        Task<UserInfo?> DeleteUserInfo(UserInfo userInfo);
 
-        Task<List<UserInfo>> GetDeletedUserInfos();
+        Task<List<UserInfo>?> GetDeletedUserInfos();
 
-        Task<UserInfo> RemoveUserInfoForGood(UserInfo userInfo);
+        Task<UserInfo?> RemoveUserInfoForGood(UserInfo userInfo);
 
         /// <summary>
         /// Sets the ViewChild for a given user.

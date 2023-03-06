@@ -11,7 +11,6 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
-using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaWeb.Services
 {
@@ -21,20 +20,14 @@ namespace KinaUnaWeb.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
 
-        public ProgenyHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
+        public ProgenyHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer);
-            }
 
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -61,10 +54,6 @@ namespace KinaUnaWeb.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer);
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(
                 authenticationServerClientId,

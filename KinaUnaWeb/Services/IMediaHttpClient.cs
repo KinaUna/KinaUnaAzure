@@ -97,8 +97,9 @@ namespace KinaUnaWeb.Services
         /// <param name="userAccessLevel">int: The user's access level.</param>
         /// <param name="sortBy">int: 0 for oldest first, 1 (default) for newest first.</param>
         /// <param name="timeZone">string: The time zone to use for PictureTime and Comment's time (TimeZoneInfo.Id or UserInfo.Timezone).</param>
+        /// <param name="tagFilter">string: Only include Pictures tagged with this string. If null or empty include all Pictures.</param>
         /// <returns></returns>
-        Task<PictureViewModel> GetPictureViewModel(int id, int userAccessLevel, int sortBy, string timeZone);
+        Task<PictureViewModel> GetPictureViewModel(int id, int userAccessLevel, int sortBy, string timeZone, string tagFilter = "");
 
         /// <summary>
         /// Gets the video with the given VideoId, with the VideoTime converted to the given time zone.

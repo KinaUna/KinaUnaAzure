@@ -7,14 +7,21 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
 <a class="leavePage" asp-controller="Sleep" asp-action="Index">
-    <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
-        <div class="card-body" style="background: #46a03c; background: rgba(70, 160, 60, 0.8)">
-            <div class="info-title">
-                <span style="font-size: 18px; color: white; margin-right: 12px;" class="fa fa-bed"></span><strong class="text-warning" style="font-size: 12px;">
-                    @Model.SleepStart.ToString("dd-MMM-yyyy HH:mm") - @Model.SleepEnd.ToString("dd-MMM-yyyy HH:mm")
-                </strong>
+    <div class="bg-primary timeline-card">
+        <div class="timeline-card-body bg-sleep">
+            <div class="row">
+                <div class="col-auto">
+                    <span class="latest-posts-icon"><i class="material-icons">hotel</i></span>
+                </div>
+                <div class="col">
+                    <div class="latest-posts-title">
+                        <strong>
+                            @Model.SleepStart.ToString("dd-MMM-yyyy HH:mm") - @Model.SleepEnd.ToString("dd-MMM-yyyy HH:mm")
+                        </strong>
+                    </div>
+                    <div class="latest-posts-text text-white">@await LocaleManager.GetTranslation("Duration:", PageNames.Sleep, languageId) @Model.SleepDuration</div>
+                </div>
             </div>
-            <div class="text-white" style="margin-left: 2px; font-size: 12px;">@await LocaleManager.GetTranslation("Duration:", PageNames.Sleep, languageId) @Model.SleepDuration</div>
         </div>
     </div>
 </a>

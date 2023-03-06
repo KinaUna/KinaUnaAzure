@@ -140,29 +140,20 @@ namespace KinaUna.IDP
             {
                 services.AddCors(options =>
                 {
-                    if (string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
+                    options.AddDefaultPolicy(builder =>
                     {
-                        options.AddPolicy("KinaUnaCors",
-                            builder =>
-                            {
-                                builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-                            });
-                    }
-                    else
-                    {
-                        options.AddDefaultPolicy(builder =>
+                        builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324", "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397", "https://nuuk2020.kinauna.io:44397",
+                                "https://nuuk2015.kinauna.io", "https://nuuk2020.kinauna.io")
+                            .SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                    });
+
+                    options.AddPolicy("KinaUnaCors",
+                        builder =>
                         {
-                            builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324", "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397", "https://nuuk2020.kinauna.io:44397", "https://nuuk2015.kinauna.io", "https://nuuk2020.kinauna.io")
+                            builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324", "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397", "https://nuuk2020.kinauna.io:44397",
+                                    "https://nuuk2015.kinauna.io", "https://nuuk2020.kinauna.io")
                                 .SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
                         });
-
-                        options.AddPolicy("KinaUnaCors",
-                            builder =>
-                            {
-                                builder.WithOrigins("https://*.kinauna.io", "https://nuuk2015.kinauna.io:44324", "https://nuuk2020.kinauna.io:44324", "https://nuuk2015.kinauna.io:44397", "https://nuuk2020.kinauna.io:44397", "https://nuuk2015.kinauna.io", "https://nuuk2020.kinauna.io")
-                                    .SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-                            });
-                    }
                 });
             }
             else
@@ -176,7 +167,7 @@ namespace KinaUna.IDP
                     options.AddPolicy("KinaUnaCors",
                         builder =>
                         {
-                            builder.WithOrigins("https://*." + Constants.AppRootDomain, "https://*.pivoq.at").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                            builder.WithOrigins("https://*." + Constants.AppRootDomain, "https://*.kinauna.com").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
                         });
                     options.AddPolicy("PivoqCors", builder => { builder.WithOrigins("https://*.pivoq.at").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials(); });
                 });
@@ -191,11 +182,6 @@ namespace KinaUna.IDP
                 {
                     x.Authentication.CookieLifetime = TimeSpan.FromDays(90);
                     x.Authentication.CookieSlidingExpiration = true;
-                    if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-                    {
-                        x.IssuerUri =
-                            Configuration.GetValue<string>("AuthenticationServer" + Constants.DebugKinaUnaServer);
-                    }
                 })
                 .AddSigningCredential(cert)
                 .AddAspNetIdentity<ApplicationUser>()
@@ -242,13 +228,6 @@ namespace KinaUna.IDP
                     {
                         options.Cookie.Domain = "web." + Constants.AppRootDomain;
 
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-                        {
-                            options.Cookie.Domain = ".kinauna.io";
-                        }
                     }
                 })
                 .AddApple(options =>

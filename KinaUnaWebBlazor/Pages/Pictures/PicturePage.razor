@@ -89,14 +89,15 @@
         {
             PictureViewModel = await MediaHttpClient.GetPictureViewModel(PictureId.Value, _sortBy, _userTimeZone);
             
-            if(PictureViewModel.ProgenyId != 0 && PictureViewModel.ProgenyId != Progeny.Id){
+            if(PictureViewModel != null && PictureViewModel.ProgenyId != 0 && PictureViewModel.ProgenyId != Progeny.Id){
                 PictureViewModel.Progeny = await ProgenyHttpClient.GetProgeny(PictureViewModel.ProgenyId);
             }
-            else{
-                PictureViewModel.Progeny = Progeny;
+            else
+            {
+                if (PictureViewModel != null) PictureViewModel.Progeny = Progeny;
             }
             
-            PictureProgeny = PictureViewModel.Progeny;
+            PictureProgeny = PictureViewModel?.Progeny;
         }
         else{
             PictureProgeny = Progeny;

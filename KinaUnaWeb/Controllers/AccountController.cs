@@ -45,7 +45,6 @@ namespace KinaUnaWeb.Controllers
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
 
             // see IdentityServer4 QuickStartUI AccountController ExternalLogin
-            // Todo: Check if returnUrl is a PivoQ address.
             await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme,
                 new AuthenticationProperties()
                 {

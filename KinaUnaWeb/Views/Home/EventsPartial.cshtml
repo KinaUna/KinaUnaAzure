@@ -1,25 +1,47 @@
-﻿@model List<CalendarItem>
-    @foreach (CalendarItem ev in Model)
-    {
-        <a class="leavePage" asp-controller="Calendar" asp-action="ViewEvent" asp-route-eventId="@ev.EventId">
-            <div class="card bg-primary" style="margin-top: 0; margin-bottom: 10px;">
-                <div class="card-body" style="background: #260333; background: rgba(38, 3, 51, 0.5)">
-                    <div class="info-title">
-                        <small class="text-warning">
-                            @if (ev.StartTime != null)
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model List<CalendarItem>
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+}
+
+@foreach (CalendarItem ev in Model)
+{
+    ev.StartTime ??= DateTime.MinValue;
+    ev.EndTime ??= DateTime.MinValue;
+    <a class="leavePage" asp-controller="Calendar" asp-action="ViewEvent" asp-route-eventId="@ev.EventId">
+        <div class="bg-primary timeline-card">
+            <div class="timeline-card-body bg-calendar">
+                <div class="row">
+                    <div class="col-auto">
+                        <span class="timeline-icon"><i class="material-icons">event_note</i></span>
+                    </div>
+                    <div class="col">
+                        <div class="timeline-title">
+                            <strong >
+                                @ev.StartTime.Value.ToString("dd-MMM-yyyy HH:mm") - @ev.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")
+                            </strong>
+                        </div>
+                        <div class="timeline-text text-white-50">
+                            <div class="text-white"><strong>@ev.Title</strong></div>
+                            @if (!string.IsNullOrEmpty(ev.Location))
                             {
-                                @ev.StartTime.Value.ToString("dd-MMM-yyyy HH:mm")
+                                <div>@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, languageId) @ev.Location</div>
                             }
-                            -
-                            @if (ev.EndTime != null)
+                            @if (!string.IsNullOrEmpty(ev.Context))
                             {
-                                @ev.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")
+                                <div>@await LocaleManager.GetTranslation("Context:", PageNames.Calendar, languageId) @ev.Context</div>
                             }
-                        </small>
+                            @if (!string.IsNullOrEmpty(ev.Notes))
+                            {
+                                <div>@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, languageId) @ev.Notes</div>
+                            }
+                        </div>
+                    </div>
                 </div>
-                <div class="text-white">@ev.Title</div>
             </div>
         </div>
     </a>
-
 }

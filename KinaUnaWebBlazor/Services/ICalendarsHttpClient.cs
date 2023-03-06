@@ -9,21 +9,21 @@ namespace KinaUnaWebBlazor.Services
         /// </summary>
         /// <param name="eventId">int: The Id of the CalendarItem object (CalendarItem.EventId).</param>
         /// <returns>CalendarItem</returns>
-        Task<CalendarItem> GetCalendarItem(int eventId);
+        Task<CalendarItem?> GetCalendarItem(int eventId);
 
         /// <summary>
         /// Adds a new CalendarItem object.
         /// </summary>
         /// <param name="eventItem">CalendarItem: The new CalendarItem object to be added.</param>
         /// <returns>CalendarItem: The CalendarItem object that was added.</returns>
-        Task<CalendarItem> AddCalendarItem(CalendarItem eventItem);
+        Task<CalendarItem?> AddCalendarItem(CalendarItem? eventItem);
 
         /// <summary>
         /// Updates a CalendarItem object. The CalendarItem with the same EventId will be updated.
         /// </summary>
         /// <param name="eventItem">CalendarItem: The CalendarItem object to be updated.</param>
         /// <returns>CalendarItem: The updated CalendarItem object.</returns>
-        Task<CalendarItem> UpdateCalendarItem(CalendarItem eventItem);
+        Task<CalendarItem?> UpdateCalendarItem(CalendarItem? eventItem);
 
         /// <summary>
         /// Removes the CalendarItem object with a given EventId.
@@ -38,7 +38,7 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="progenyId">int: The id of the progeny (Progeny.Id).</param>
         /// <param name="accessLevel">int: The user's access level.</param>
         /// <returns>List of CalendarItem objects.</returns>
-        Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel);
+        Task<List<CalendarItem>?> GetCalendarList(int progenyId, int accessLevel);
 
         /// <summary>
         /// Gets the next 5 upcoming events in the progeny's calendar.
@@ -46,6 +46,6 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="progenyId">int: The Id of the progeny (Progeny.Id).</param>
         /// <param name="accessLevel">int: The user's access level.</param>
         /// <returns>List of CalendarItem objects.</returns>
-        Task<List<CalendarItem>> GetUpcomingEvents(int progenyId, int accessLevel);
+        Task<List<CalendarItem>?> GetUpcomingEvents(int progenyId, int accessLevel);
     }
 }

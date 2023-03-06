@@ -46,8 +46,8 @@
         if (Progeny != null && UserInfo != null && string.IsNullOrEmpty(_imageUrl))
         {
 
-            Picture displayPicture = await MediaHttpClient.GetRandomPicture(Progeny.Id, 0, UserInfo.Timezone);
-            if (!string.IsNullOrEmpty(displayPicture.PictureLink600))
+            Picture? displayPicture = await MediaHttpClient.GetRandomPicture(Progeny.Id, 0, UserInfo.Timezone);
+            if (!string.IsNullOrEmpty(displayPicture?.PictureLink600))
             {
                     _imageUrl = ImageStore.UriFor(displayPicture.PictureLink600);
                     _pictureLink = "/Pictures/" + displayPicture.PictureId;

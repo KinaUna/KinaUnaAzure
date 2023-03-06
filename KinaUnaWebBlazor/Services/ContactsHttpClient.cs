@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Formatting;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using IdentityModel.Client;
 using KinaUna.Data;
 using KinaUna.Data.Models;
@@ -15,20 +14,14 @@ namespace KinaUnaWebBlazor.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
 
-        public ContactsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
+        public ContactsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration");
-            }
 
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -54,23 +47,18 @@ namespace KinaUnaWebBlazor.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId") ?? throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ??
-                                               throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
                 _configuration.GetValue<string>("AuthenticationServerClientSecret") ?? throw new InvalidOperationException("AuthenticationServerClientSecret value missing in configuration"));
             return accessToken;
         }
 
-        public async Task<Contact> GetContact(int contactId)
+        public async Task<Contact?> GetContact(int contactId)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Contact contactItem = new Contact();
+            Contact? contactItem = new Contact();
             string contactsApiPath = "/api/Contacts/" + contactId;
             HttpResponseMessage contactResponse = await _httpClient.GetAsync(contactsApiPath).ConfigureAwait(false);
             if (contactResponse.IsSuccessStatusCode)
@@ -83,7 +71,7 @@ namespace KinaUnaWebBlazor.Services
             return contactItem;
         }
 
-        public async Task<Contact> AddContact(Contact contact)
+        public async Task<Contact?> AddContact(Contact? contact)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -100,13 +88,13 @@ namespace KinaUnaWebBlazor.Services
             return new Contact();
         }
 
-        public async Task<Contact> UpdateContact(Contact contact)
+        public async Task<Contact?> UpdateContact(Contact contact)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
             
             string updateContactApiPath = "/api/Contacts/" + contact.ContactId;
-            HttpResponseMessage updateContactResponseString = await _httpClient.PutAsync(updateContactApiPath, contact, new JsonMediaTypeFormatter());
+            HttpResponseMessage updateContactResponseString = await _httpClient.PutAsync(updateContactApiPath, new StringContent(JsonConvert.SerializeObject(contact), System.Text.Encoding.UTF8, "application/json"));
             string returnString = await updateContactResponseString.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<Contact>(returnString);
         }
@@ -122,9 +110,9 @@ namespace KinaUnaWebBlazor.Services
             return true;
         }
 
-        public async Task<List<Contact>> GetContactsList(int progenyId, int accessLevel)
+        public async Task<List<Contact>?> GetContactsList(int progenyId, int accessLevel)
         {
-            List<Contact> progenyContactsList = new List<Contact>();
+            List<Contact>? progenyContactsList = new List<Contact>();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

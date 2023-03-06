@@ -8,25 +8,22 @@
     ViewData["Title"] = await LocaleManager.GetTranslation("Privacy", PageNames.Layout, Model.LanguageId);
     Model.KinaUnaText = await LocaleManager.GetPageTextByTitle("__Privacy", "Privacy", Model.LanguageId);
 }
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
-    <h2 class="title">@ViewData["Title"]</h2>
-    <div>
-        <H4>
-            <img src="~/images/KinaUnaLogo_246x80.png" />
-        </H4>
-        <br />
-        <div style="max-width: 600px;" id="impressumTextDiv">
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="add-item-container">
+        <h2 class="col-12" class="title">@ViewData["Title"]</h2>
+        <div class="col-12">
+            <img src="~/images/KinaUnaLogo_246x80.png"/>
+        </div>
+        <div class="space-50"></div>
+        <div class="col-auto" style="max-width: 600px;" id="impressumTextDiv">
             @Html.Raw(Model.KinaUnaText.Text ?? "")
         </div>
-    </div>
-    <br />
-
-    @if (Model.CurrentUser.IsKinaUnaAdmin && Model.KinaUnaText != null)
-    {
-        <div class="space-20"></div>
-        <div><a class="btn btn-outline-info" onclick="editModal('@Model.KinaUnaText.Id', 'Edit About')">Edit</a></div>
-        <div class="space-20"></div>
-        <script>
+        @if (Model.CurrentUser.IsKinaUnaAdmin && Model.KinaUnaText != null)
+        {
+            <div class="space-20"></div>
+            <div class="col-auto"><a class="btn btn-outline-info" onclick="editModal('@Model.KinaUnaText.Id', 'Edit About')">Edit</a></div>
+            <div class="space-20"></div>
+            <script>
             function onImageUploadSuccess(args) {
                 if (args.e.currentTarget.getResponseHeader('name') != null) {
                     args.file.name = args.e.currentTarget.getResponseHeader('name');
@@ -111,9 +108,9 @@
                 });
             }
         </script>
-    }
+        }
+    </div>
 </div>
-
 <div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editImpressumModal">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">

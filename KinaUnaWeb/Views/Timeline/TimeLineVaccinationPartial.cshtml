@@ -1,10 +1,27 @@
-﻿@model Vaccination
-<a class="leavePage2" asp-controller="Vaccinations" asp-action="Index">
-    <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
-
-        <div class="card-body bg-vaccination">
-            <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 12px;" class="fa fa-medkit"></span><strong class="text-warning">@Model.VaccinationDate.ToString("dd-MMM-yyyy") </strong></div>
-            <div style="margin-left: 2px;" class="text-white">@Model.VaccinationName</div>
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model Vaccination
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+}
+<a class="leavePage" asp-controller="Vaccinations" asp-action="Index">
+    <div class="bg-primary timeline-card">
+        <div class="timeline-card-body bg-vaccination">
+            <div class="row">
+                <div class="col-auto">
+                    <span class="timeline-icon"><i class="material-icons">local_pharmacy</i></span>
+                </div>
+                <div class="col">
+                    <div class="timeline-title">
+                        <strong>
+                            @Model.VaccinationName
+                        </strong>
+                    </div>
+                    <div class="timeline-text text-white">@await LocaleManager.GetTranslation("Date:", PageNames.Vaccinations, languageId) @Model.VaccinationDate.ToString("dd-MMM-yyyy")</div>
+                </div>
+            </div>
         </div>
     </div>
 </a>

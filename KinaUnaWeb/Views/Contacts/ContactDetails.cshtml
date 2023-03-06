@@ -5,7 +5,7 @@
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Contact:", PageNames.Contacts, Model.LanguageId) + Model.ContactItem.DisplayName;
 }
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <h2>@ViewData["Title"]</h2>
     <div class="card bg-light" style="clear: both; margin-top: 25px; max-width: 710px;">
         <div class="card-header card-header-warning"><h5>@Model.ContactItem.DisplayName</h5></div>

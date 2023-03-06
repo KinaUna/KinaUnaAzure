@@ -18,15 +18,15 @@
     string minutesString = await LocaleManager.GetTranslation("minutes", PageNames.Home, Model.LanguageId);
     string weeksAndString = await LocaleManager.GetTranslation("weeks and", PageNames.Home, Model.LanguageId);
 }
-<div class="ml-xl-auto mr-xl-auto col-xl-10">
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="row">
-        <div class="col-12 col-md-12 col-lg-8 col-xl-8" style="margin-bottom: 10px; float: left; padding-left: 25px;">
+        <div class="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 col-xxl-6 col-xxxl-6 col-w1900-6 col-w2500-5" style="margin-bottom: 10px; padding-left: 25px;">
             <H4>
                 <img src="~/images/KinaUnaLogo_246x80.png"/>
             </H4>
             <br/>
             <div class="row">
-                <div style="margin-left: 10px;">
+                <div style="margin-left: 10px; margin-right: 10px;">
                     @if (User.Identity != null && User.Identity.IsAuthenticated && ViewBag.OriginalProgeny != null)
                     {
                         <div>@await LocaleManager.GetTranslation("You don't have access to data for", PageNames.Home, Model.LanguageId) @ViewBag.OriginalProgeny.NickName<br/>
@@ -96,11 +96,11 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-12 col-md-12 col-lg-4 col-xl-4" style="float: right; margin-top: 10px; padding-left: 25px;">
+        <div class="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-4 col-xxl-4 col-xxxl-4 col-w1900-4 col-w2500-3" style="margin-top: 10px; padding-left: 25px;">
             @if (Model.EventsList.Any())
             {
                 <div>
-                    Current and upcoming events:
+                    @await LocaleManager.GetTranslation("Current and upcoming events:", PageNames.Home, Model.LanguageId)
                 </div>
                 await Html.RenderPartialAsync("EventsPartial", Model.EventsList);
                 <br/>
@@ -108,7 +108,7 @@
             @if (Model.LatestPosts.TimeLineItems.Any())
             {
                 <div>
-                    Latest posts:
+                    @await LocaleManager.GetTranslation("Latest posts:", PageNames.Home, Model.LanguageId)
                 </div>
                 await Html.RenderPartialAsync("LatestPostsPartial", Model.LatestPosts);
                 <br/>
@@ -116,7 +116,7 @@
             @if (Model.YearAgoPosts.TimeLineItems.Any())
             {
                 <div>
-                    On this day a year ago:
+                    @await LocaleManager.GetTranslation("On this day:", PageNames.Home, Model.LanguageId)
                 </div>
                 await Html.RenderPartialAsync("YearAgoPartial", Model.YearAgoPosts);
             }

@@ -1,4 +1,5 @@
 ﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @using KinaUna.Data
 @model VocabularyItem
 @inject ILocaleManager LocaleManager
@@ -6,16 +7,31 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
 <a class="leavePage" asp-controller="Vocabulary" asp-action="Index">
-    <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
+    <div class="bg-primary timeline-card">
+        <div class="timeline-card-body bg-vocabulary">
+            <div class="row">
+                <div class="col-auto">
+                    <span class="latest-posts-icon"><i class="material-icons">hotel</i></span>
+                </div>
+                <div class="col">
+                    <div class="latest-posts-title">
+                        <strong>
+                            @Model.Word
+                        </strong>
+                    </div>
+                    <div class="latest-posts-text text-white-50">
+                        @if (!string.IsNullOrEmpty(Model.Language))
+                        {
+                            <div>@await LocaleManager.GetTranslation("Language:", PageNames.Vocabulary, languageId) @Model.Language</div>
+                        }
+                        @if (Model.Date.HasValue)
+                        {
+                            <div>@await LocaleManager.GetTranslation("Date:", PageNames.Vocabulary, languageId) @Model.Date.Value.ToString("dd-MMM-yyyy HH:mm")</div>
+                        }
 
-        <div class="card-body" style="background: #641e1e; background: rgba(100, 30, 30, 0.8)">
-            <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 12px;" class="far fa-comment-alt"></span><strong class="text-warning">
-                @{
-                    System.Diagnostics.Debug.Assert(Model.Date != null, "Model.Date != null");
-                }
-                @Model.Date.Value.ToString("dd-MMM-yyyy HH:mm") </strong></div>
-            <div style="margin-left: 2px;" class="text-white">@Model.Word</div>
-            <div style="margin-left: 2px;" class="text-white">@await LocaleManager.GetTranslation("Language:", PageNames.Vocabulary, languageId) @Model.Language</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </a>

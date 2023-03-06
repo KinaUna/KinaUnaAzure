@@ -74,15 +74,7 @@ namespace KinaUnaWeb
                 .PersistKeysToAzureBlobStorage(container, "kukeys.xml");
 
             string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer" + Constants.DebugKinaUnaServer);
-            }
             string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer);
-            }
             string authenticationServerClientSecret = Configuration.GetValue<string>("AuthenticationServerClientSecret");
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -123,16 +115,8 @@ namespace KinaUnaWeb
             services.AddDistributedMemoryCache();
 
             string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer);
-            }
 
             string mediaServerUrl = Configuration.GetValue<string>("MediaApiServer");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                mediaServerUrl = Configuration.GetValue<string>("MediaApiServer" + Constants.DebugKinaUnaServer);
-            }
 
             services.Configure<AuthConfigurations>(config => { config.StsServer = authorityServerUrl; config.ProtectedApiUrl = progenyServerUrl + " " + mediaServerUrl;});
             
@@ -199,13 +183,6 @@ namespace KinaUnaWeb
                     {
                         options.Cookie.Domain = "web." + Constants.AppRootDomain;
 
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-                        {
-                            options.Cookie.Domain = ".kinauna.io";
-                        }
                     }
                 })
                 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>

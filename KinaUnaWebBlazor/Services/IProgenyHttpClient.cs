@@ -15,21 +15,21 @@ namespace KinaUnaWebBlazor.Services
         /// </summary>
         /// <param name="progenyId">int: The progeny's Id (Progeny.Id).</param>
         /// <returns>Progeny</returns>
-        Task<Progeny> GetProgeny(int progenyId);
+        Task<Progeny?> GetProgeny(int progenyId);
 
         /// <summary>
         /// Adds a new progeny.
         /// </summary>
         /// <param name="progeny">Progeny: The Progeny object to be added.</param>
         /// <returns>Progeny: The Progeny object that was added.</returns>
-        Task<Progeny> AddProgeny(Progeny progeny);
+        Task<Progeny?> AddProgeny(Progeny progeny);
 
         /// <summary>
         /// Updates a Progeny.
         /// </summary>
         /// <param name="progeny">Progeny: The Progeny object with updated values.</param>
         /// <returns>Progeny: The updated Progeny object.</returns>
-        Task<Progeny> UpdateProgeny(Progeny progeny);
+        Task<Progeny?> UpdateProgeny(Progeny progeny);
 
         /// <summary>
         /// Removes a progeny.
@@ -43,7 +43,7 @@ namespace KinaUnaWebBlazor.Services
         /// </summary>
         /// <param name="email">string: The user's email address.</param>
         /// <returns>List of Progeny objects.</returns>
-        Task<List<Progeny>> GetProgenyAdminList(string email);
+        Task<List<Progeny>?> GetProgenyAdminList(string email);
         
         /// <summary>
         /// Gets the latest 5 posts (progeny time, not added time) for a progeny, that the user is allowed access to.
@@ -51,7 +51,7 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="progenyId">int: The progeny's Id (Progeny.Id).</param>
         /// <param name="accessLevel">int: The user's access level.</param>
         /// <returns>List of TimeLineItem objects.</returns>
-        Task<List<TimeLineItem>> GetProgenyLatestPosts(int progenyId, int accessLevel);
+        Task<List<TimeLineItem>?> GetProgenyLatestPosts(int progenyId, int accessLevel);
 
         /// <summary>
         /// Gets all the posts from today's date last year (progeny time, not added time), that the user has access to.
@@ -59,7 +59,7 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="progenyId">int: The progeny's id.</param>
         /// <param name="accessLevel">int: The user's access level.</param>
         /// <returns>List of TimeLineItem objects.</returns>
-        Task<List<TimeLineItem>> GetProgenyYearAgo(int progenyId, int accessLevel);
+        Task<List<TimeLineItem>?> GetProgenyYearAgo(int progenyId, int accessLevel);
 
 
     }

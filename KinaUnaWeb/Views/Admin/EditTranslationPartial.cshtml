@@ -6,7 +6,7 @@
     SetLanguageIdViewModel langModel = await LocaleManager.GetLanguageModel(Model.LanguageId);
     KinaUnaLanguage language = langModel.LanguageList.SingleOrDefault(l => l.Id == Model.LanguageId);
 }
-<div>
+<div class="add-item-container">
     <div class="row">
         <div class="col-3">
             Language:

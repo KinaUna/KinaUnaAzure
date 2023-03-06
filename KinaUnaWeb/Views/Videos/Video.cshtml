@@ -29,7 +29,7 @@
     <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
 }
 
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <h3 class="title">@ViewData["Title"] - @Model.Video.VideoNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.VideoCount</h3>
     <div id="photoDiv">
         @if (!String.IsNullOrEmpty(Model.TagFilter))
@@ -99,9 +99,7 @@
                 <div style="width: 100%; height: 300px" id="mapContainer"></div>
                 <script>
                     let pixelRatio = window.devicePixelRatio || 1;
-                    let iconWidth = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
-                    let iconHeight = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
-                    let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: iconWidth, h: iconHeight } });
+                    let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: 36, h: 36 } });
                     let platform = new H.service.Platform({
                         'apikey': '@Constants.HereMapsApiKey',
                         'useHTTPS': true
@@ -120,8 +118,8 @@
                             pixelRatio: pixelRatio
                         });
 
-                    let mapEvents = new H.mapevents.MapEvents(map);
                     let ui = H.ui.UI.createDefault(map, maptypes);
+                    let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
 
                     let marker = new H.map.Marker({ lat: @Model.Video.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.'), lng: @Model.Video.Longtitude.ToString(new CultureInfo("en-US")).Replace(',', '.')}, { icon: defaultIcon });
                     map.addObject(marker);

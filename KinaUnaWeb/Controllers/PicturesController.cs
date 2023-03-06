@@ -42,12 +42,16 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             PicturesListViewModel model = new PicturesListViewModel(baseModel);
 
+            model.PageSize = pageSize;
+            model.SortBy = sortBy;
+            model.TagFilter = tagFilter;
+
             // PicturePageViewModel is used by KinaUna Xamarin and ProgenyApi, so it should not be changed in this project, instead using a different view model and copying the properties.
             PicturePageViewModel pageViewModel = await _mediaHttpClient.GetPicturePage(pageSize, id, model.CurrentProgenyId, model.CurrentAccessLevel, sortBy, tagFilter, model.CurrentUser.Timezone);
             model.SetPropertiesFromPageViewModel(pageViewModel);
 
-            model.SortBy = sortBy;
-            model.PageSize = pageSize;
+            //model.SortBy = sortBy;
+            //model.PageSize = pageSize;
             foreach (Picture pic in model.PicturesList)
             {
                 pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
@@ -67,7 +71,7 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
             PictureItemViewModel model = new PictureItemViewModel(baseModel);
-            PictureViewModel pictureViewModel = await _mediaHttpClient.GetPictureViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone);
+            PictureViewModel pictureViewModel = await _mediaHttpClient.GetPictureViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone, tagFilter);
 
             model.SetPropertiesFromPictureViewModel(pictureViewModel);
             model.Picture.PictureLink = _imageStore.UriFor(model.Picture.PictureLink);

@@ -4,14 +4,12 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.IDP.Models.HomeViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 
 namespace KinaUna.IDP.Services
@@ -22,15 +20,10 @@ namespace KinaUna.IDP.Services
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheExpirationLong = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromHours(1));
 
-        public LocaleManager(HttpClient httpClient, IConfiguration configuration, IHostEnvironment env, IDistributedCache cache)
+        public LocaleManager(HttpClient httpClient, IConfiguration configuration, IDistributedCache cache)
         {
             _cache = cache;
             string clientUri = configuration.GetValue<string>("ProgenyApiServer");
-            if (env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer);
-            }
-
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -161,8 +154,8 @@ namespace KinaUna.IDP.Services
 
             if (pageTextsResponse.IsSuccessStatusCode)
             {
-                string pivoqTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
-                text = JsonConvert.DeserializeObject<KinaUnaText>(pivoqTextAsString);
+                string kinaUnaTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
+                text = JsonConvert.DeserializeObject<KinaUnaText>(kinaUnaTextAsString);
             }
 
             return text;

@@ -17,7 +17,7 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="pictureId">int: The PictureId of the picture (Picture.PictureId).</param>
         /// <param name="timeZone">string: The time zone to use for PictureTime.(TimeZoneInfo.Id or UserInfo.Timezone).</param>
         /// <returns>Picture</returns>
-        Task<Picture> GetPicture(int pictureId, string timeZone);
+        Task<Picture?> GetPicture(int pictureId, string timeZone);
 
         /// <summary>
         /// Gets a random picture from the list of pictures a user has access to for a given progeny, with the PictureTime converted to the given time zone.
@@ -26,7 +26,7 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="accessLevel">int: The user's access level.</param>
         /// <param name="timeZone">string: The time zone to use for PictureTime.(TimeZoneInfo.Id or UserInfo.Timezone).</param>
         /// <returns>Picture</returns>
-        Task<Picture> GetRandomPicture(int progenyId, int accessLevel, string timeZone);
+        Task<Picture?> GetRandomPicture(int progenyId, int accessLevel, string timeZone);
 
         /// <summary>
         /// Gets a list of Pictures for a given progeny that a user has access to, with the PictureTime converted to the given time zone for each Picture.
@@ -35,23 +35,23 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="accessLevel">int: The user's access level.</param>
         /// <param name="timeZone">string: The time zone to use for PictureTime.(TimeZoneInfo.Id or UserInfo.Timezone).</param>
         /// <returns></returns>
-        Task<List<Picture>> GetPictureList(int progenyId, int accessLevel, string timeZone);
+        Task<List<Picture>?> GetPictureList(int progenyId, int accessLevel, string timeZone);
 
-        Task<List<Picture>> GetAllPictures();
+        Task<List<Picture>?> GetAllPictures();
 
         /// <summary>
         /// Adds a new Picture.
         /// </summary>
         /// <param name="picture">Picture: The new Picture to add.</param>
         /// <returns>Picture</returns>
-        Task<Picture> AddPicture(Picture picture);
+        Task<Picture?> AddPicture(Picture? picture);
 
         /// <summary>
         /// Updates a Picture. The Picture with the same PictureId will be updated.
         /// </summary>
         /// <param name="picture">Picture: The Picture to update.</param>
         /// <returns>Picture: The updated Picture object.</returns>
-        Task<Picture> UpdatePicture(Picture picture);
+        Task<Picture?> UpdatePicture(Picture? picture);
 
         /// <summary>
         /// Removes the Picture with the given PictureId.
@@ -84,7 +84,7 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="tagFilter">string: Only include Pictures tagged with this string. If null or empty include all Pictures.</param>
         /// <param name="timeZone">string: The time zone to use for PictureTime (TimeZoneInfo.Id or UserInfo.Timezone).</param>
         /// <returns>PicturePageViewModel</returns>
-        Task<PicturePageViewModel> GetPicturePage(int pageSize, int id, int progenyId, int sortBy, string tagFilter, string timeZone);
+        Task<PicturePageViewModel?> GetPicturePage(int pageSize, int id, int progenyId, int sortBy, string tagFilter, string timeZone);
 
         /// <summary>
         /// Gets a PictureViewModel for the Picture with a given PictureId.
@@ -93,7 +93,7 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="sortBy">int: 0 for oldest first, 1 (default) for newest first.</param>
         /// <param name="timeZone">string: The time zone to use for PictureTime and Comment's time (TimeZoneInfo.Id or UserInfo.Timezone).</param>
         /// <returns></returns>
-        Task<PictureViewModel> GetPictureViewModel(int id, int sortBy, string timeZone);
+        Task<PictureViewModel?> GetPictureViewModel(int id, int sortBy, string timeZone);
 
         /// <summary>
         /// Gets the video with the given VideoId, with the VideoTime converted to the given time zone.
@@ -101,7 +101,7 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="videoId">int: The VideoId of the video (Video.VideoId).</param>
         /// <param name="timeZone">string: The time zone to use for VideoTime.(TimeZoneInfo.Id or UserInfo.Timezone).</param>
         /// <returns>Video</returns>
-        Task<Video> GetVideo(int videoId, string timeZone);
+        Task<Video?> GetVideo(int videoId, string timeZone);
 
         /// <summary>
         /// Gets a list of Videos for a given progeny that a user has access to, with the VideoTime converted to the given time zone for each video.
@@ -110,22 +110,22 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="accessLevel">int: The user's access level.</param>
         /// <param name="timeZone">string: The time zone to use for VideoTime.(TimeZoneInfo.Id or UserInfo.Timezone).</param>
         /// <returns>List of Video objects.</returns>
-        Task<List<Video>> GetVideoList(int progenyId, int accessLevel, string timeZone);
-        Task<List<Video>> GetAllVideos();
+        Task<List<Video>?> GetVideoList(int progenyId, int accessLevel, string timeZone);
+        Task<List<Video>?> GetAllVideos();
 
         /// <summary>
         /// Adds a new Video.
         /// </summary>
         /// <param name="video">Video: The new Video to add.</param>
         /// <returns>Video</returns>
-        Task<Video> AddVideo(Video video);
+        Task<Video?> AddVideo(Video? video);
 
         /// <summary>
         /// Updates a Video. The Video with the same VideoId will be updated.
         /// </summary>
         /// <param name="video">Video: The Video to update.</param>
         /// <returns>Video: The updated Video object.</returns>
-        Task<Video> UpdateVideo(Video video);
+        Task<Video?> UpdateVideo(Video? video);
 
         /// <summary>
         /// Removes the Video with the given VideoId.
@@ -159,7 +159,7 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="tagFilter">string: Only include Videos tagged with this string. If null or empty include all Pictures.</param>
         /// <param name="timeZone">string: The time zone to use for VideoTime (TimeZoneInfo.Id or UserInfo.Timezone).</param>
         /// <returns>VideoPageViewModel</returns>
-        Task<VideoPageViewModel> GetVideoPage(int pageSize, int id, int progenyId, int userAccessLevel, int sortBy,
+        Task<VideoPageViewModel?> GetVideoPage(int pageSize, int id, int progenyId, int userAccessLevel, int sortBy,
             string tagFilter, string timeZone);
 
         /// <summary>
@@ -170,6 +170,6 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="sortBy">int: 0 for oldest first, 1 (default) for newest first.</param>
         /// <param name="timeZone">string: The time zone to use for VideoTime and Comment's time (TimeZoneInfo.Id or UserInfo.Timezone).</param>
         /// <returns></returns>
-        Task<VideoViewModel> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone);
+        Task<VideoViewModel?> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone);
     }
 }

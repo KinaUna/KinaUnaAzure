@@ -66,10 +66,9 @@ namespace KinaUnaWeb.Models.FamilyViewModels
             FirstName = "No user found";
             MiddleName = "No user found";
             LastName = "No user found";
-
+            
             if (userInfo != null)
             {
-                Email = userInfo.UserEmail;
                 UserName = userInfo.UserName;
                 FirstName = userInfo.FirstName;
                 MiddleName = userInfo.MiddleName;

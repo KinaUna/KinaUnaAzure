@@ -50,7 +50,7 @@ namespace KinaUnaProgenyApi.Controllers
         // GET api/pictures/page[?pageSize=3&pageIndex=10&progenyId=2&accessLevel=1&tagFilter=funny]
         [HttpGet]
         [Route("[action]")]
-        public async Task<IActionResult> Page([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
+        public async Task<IActionResult> Page([FromQuery]int pageSize = 16, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -144,7 +144,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{id}/{accessLevel}")]
-        public async Task<IActionResult> PictureViewModel(int id, int accessLevel, [FromQuery] int sortBy = 1)
+        public async Task<IActionResult> PictureViewModel(int id, int accessLevel, [FromQuery] int sortBy = 1, [FromQuery] string tagFilter = "")
         {
             Picture picture = await _picturesService.GetPicture(id); 
             
@@ -175,6 +175,12 @@ namespace KinaUnaProgenyApi.Controllers
                 pictureList = pictureList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToList();
                 if (pictureList.Any())
                 {
+                    if (!string.IsNullOrEmpty(tagFilter))
+                    {
+                        pictureList = pictureList.Where(p => p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper()))
+                            .OrderBy(p => p.PictureTime).ToList();
+                    }
+
                     int currentIndex = 0;
                     int indexer = 0;
                     foreach (Picture pic in pictureList)
@@ -184,6 +190,7 @@ namespace KinaUnaProgenyApi.Controllers
                             currentIndex = indexer;
                         }
                         indexer++;
+
                         if (!string.IsNullOrEmpty(pic.Tags))
                         {
                             List<string> pvmTags = pic.Tags.Split(',').ToList();
@@ -196,7 +203,9 @@ namespace KinaUnaProgenyApi.Controllers
                             }
                         }
                     }
+
                     model.PictureNumber = currentIndex + 1;
+                    
                     model.PictureCount = pictureList.Count;
                     if(currentIndex > 0)
                     {

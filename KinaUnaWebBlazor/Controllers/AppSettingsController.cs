@@ -28,7 +28,7 @@ namespace KinaUnaWebBlazor.Controllers
         {
             if (languageId > 0)
             {
-                KinaUnaLanguage language = await _languagesHttpClient.GetLanguage(languageId);
+                KinaUnaLanguage? language = await _languagesHttpClient.GetLanguage(languageId);
 
                 string cultureString = CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(language.CodeToLongFormat()));
                 if (_env.IsDevelopment())

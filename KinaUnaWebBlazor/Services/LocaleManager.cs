@@ -26,7 +26,7 @@ namespace KinaUnaWebBlazor.Services
 
         }
 
-        public async Task<List<KinaUnaLanguage>> GetAllLanguages()
+        public async Task<List<KinaUnaLanguage>?> GetAllLanguages()
         {
             return await _languagesHttpClient.GetAllLanguages();
         }
@@ -37,9 +37,9 @@ namespace KinaUnaWebBlazor.Services
             return translation;
         }
 
-        public async Task<KinaUnaText> GetPageTextByTitle(string title, string page, int languageId)
+        public async Task<KinaUnaText?> GetPageTextByTitle(string title, string page, int languageId)
         {
-            KinaUnaText text = await _pageTextsHttpClient.GetPageTextByTitle(title, page, languageId);
+            KinaUnaText? text = await _pageTextsHttpClient.GetPageTextByTitle(title, page, languageId);
             return text;
         }
 

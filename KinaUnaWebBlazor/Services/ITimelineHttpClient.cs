@@ -10,21 +10,21 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="itemId">int: The item's Id. That is PictureId, VideoId, NoteId, WordId, etc.</param>
         /// <param name="itemType">int: The type of the item. Defined in the KinaUnaTypes.TimeLineType enum.</param>
         /// <returns>TimeLineItem</returns>
-        Task<TimeLineItem> GetTimeLineItem(string itemId, int itemType);
+        Task<TimeLineItem?> GetTimeLineItem(string itemId, int itemType);
 
         /// <summary>
         /// Adds a new TimeLineItem.
         /// </summary>
         /// <param name="timeLineItem">TimeLineItem: The new TimeLineItem to add.</param>
         /// <returns>TimeLineItem</returns>
-        Task<TimeLineItem> AddTimeLineItem(TimeLineItem timeLineItem);
+        Task<TimeLineItem?> AddTimeLineItem(TimeLineItem? timeLineItem);
 
         /// <summary>
         /// Updates a TimeLineItem. The TimeLineItem with the same TimeLineId will be updated.
         /// </summary>
         /// <param name="timeLineItem">TimeLineItem: The TimeLineItem to update.</param>
         /// <returns>TimeLineItem: The updated TimeLineItem.</returns>
-        Task<TimeLineItem> UpdateTimeLineItem(TimeLineItem timeLineItem);
+        Task<TimeLineItem?> UpdateTimeLineItem(TimeLineItem? timeLineItem);
 
         /// <summary>
         /// Removes the TimeLineItem with the given TimeLineId
@@ -39,6 +39,6 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="progenyId">int: The Id of the progeny (Progeny.Id).</param>
         /// <param name="accessLevel">int: The user's access level.</param>
         /// <returns></returns>
-        Task<List<TimeLineItem>> GetTimeline(int progenyId, int accessLevel);
+        Task<List<TimeLineItem>?> GetTimeline(int progenyId, int accessLevel);
     }
 }

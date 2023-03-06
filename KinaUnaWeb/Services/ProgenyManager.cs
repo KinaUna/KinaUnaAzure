@@ -11,7 +11,6 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
-using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaWeb.Services
 {
@@ -23,22 +22,16 @@ namespace KinaUnaWeb.Services
         private readonly ImageStore _imageStore;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
         private readonly IAuthHttpClient _authHttpClient;
-        public ProgenyManager(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IIdentityParser<ApplicationUser> userManager, ImageStore imageStore, HttpClient httpClient, ApiTokenInMemoryClient apiTokenClient,
-            IHostEnvironment env, IAuthHttpClient authHttpClient)
+        public ProgenyManager(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IIdentityParser<ApplicationUser> userManager, ImageStore imageStore, HttpClient httpClient, ApiTokenInMemoryClient apiTokenClient, IAuthHttpClient authHttpClient)
         {
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _userManager = userManager;
             _imageStore = imageStore;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer);
-            }
+
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -65,10 +58,6 @@ namespace KinaUnaWeb.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer);
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(
                 authenticationServerClientId,

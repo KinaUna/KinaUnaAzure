@@ -15,23 +15,17 @@ namespace KinaUnaWebBlazor.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheExpirationLong = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromHours(22));
 
-        public LanguagesHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env, IDistributedCache cache)
+        public LanguagesHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IDistributedCache cache)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             _cache = cache;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration");
-            }
 
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -58,20 +52,15 @@ namespace KinaUnaWebBlazor.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId") ?? throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ??
-                                               throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
                 _configuration.GetValue<string>("AuthenticationServerClientSecret") ?? throw new InvalidOperationException("AuthenticationServerClientSecret value missing in configuration"));
             return accessToken;
         }
 
-        public async Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false)
+        public async Task<List<KinaUnaLanguage>?> GetAllLanguages(bool updateCache = false)
         {
-            List<KinaUnaLanguage> languageList = new List<KinaUnaLanguage>();
+            List<KinaUnaLanguage>? languageList = new List<KinaUnaLanguage>();
             string? cachedLanguagesString = await _cache.GetStringAsync("AllLanguages");
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguagesString))
             {
@@ -89,7 +78,7 @@ namespace KinaUnaWebBlazor.Services
             {
                 string languageListAsString = await admininfoResponse.Content.ReadAsStringAsync();
                 languageList = JsonConvert.DeserializeObject<List<KinaUnaLanguage>>(languageListAsString);
-                if (languageList.Any())
+                if (languageList != null && languageList.Any())
                 {
                     await _cache.SetStringAsync("AllLanguages", JsonConvert.SerializeObject(languageList));
                 }
@@ -98,9 +87,9 @@ namespace KinaUnaWebBlazor.Services
             return languageList;
         }
 
-        public async Task<KinaUnaLanguage> GetLanguage(int languageId, bool updateCache = false)
+        public async Task<KinaUnaLanguage?> GetLanguage(int languageId, bool updateCache = false)
         {
-            KinaUnaLanguage language = new KinaUnaLanguage();
+            KinaUnaLanguage? language = new KinaUnaLanguage();
             string? cachedLanguageString = await _cache.GetStringAsync("Language" + languageId);
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguageString))
             {
@@ -124,9 +113,9 @@ namespace KinaUnaWebBlazor.Services
             return language;
         }
 
-        public async Task<KinaUnaLanguage> AddLanguage(KinaUnaLanguage language)
+        public async Task<KinaUnaLanguage?> AddLanguage(KinaUnaLanguage language)
         {
-            KinaUnaLanguage addedLanguage = new KinaUnaLanguage();
+            KinaUnaLanguage? addedLanguage = new KinaUnaLanguage();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -142,9 +131,9 @@ namespace KinaUnaWebBlazor.Services
         }
 
 
-        public async Task<KinaUnaLanguage> UpdateLanguage(KinaUnaLanguage language)
+        public async Task<KinaUnaLanguage?> UpdateLanguage(KinaUnaLanguage language)
         {
-            KinaUnaLanguage updatedLanguage = new KinaUnaLanguage();
+            KinaUnaLanguage? updatedLanguage = new KinaUnaLanguage();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -159,9 +148,9 @@ namespace KinaUnaWebBlazor.Services
             return updatedLanguage;
         }
 
-        public async Task<KinaUnaLanguage> DeleteLanguage(KinaUnaLanguage language)
+        public async Task<KinaUnaLanguage?> DeleteLanguage(KinaUnaLanguage language)
         {
-            KinaUnaLanguage deletedLanguage = new KinaUnaLanguage();
+            KinaUnaLanguage? deletedLanguage = new KinaUnaLanguage();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

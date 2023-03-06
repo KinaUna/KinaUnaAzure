@@ -406,7 +406,7 @@ namespace KinaUnaWeb.Controllers
                 foreach (KinaUnaLanguage lang in languages)
                 {
                     _ = await _pageTextsHttpClient.GetPageTextByTitle(updatedText.Title, updatedText.Page, lang.Id, true);
-                    await _pageTextsHttpClient.GetAllPivoqTexts(lang.Id, true);
+                    await _pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
                 }
 
                 return PartialView("EditTextPartial", updateText);
@@ -424,7 +424,7 @@ namespace KinaUnaWeb.Controllers
                 ManageKinaUnaTextsViewModel model = new ManageKinaUnaTextsViewModel();
                 model.LanguageId = Request.GetLanguageIdFromCookie();
                 
-                List<KinaUnaText> allTexts = await _pageTextsHttpClient.GetAllPivoqTexts(languageId, true);
+                List<KinaUnaText> allTexts = await _pageTextsHttpClient.GetAllKinaUnaTexts(languageId, true);
                 model.KinaUnaText = allTexts.SingleOrDefault(t => t.TextId == textId && t.LanguageId == languageId);
 
                 model.LanguagesList = await _languagesHttpClient.GetAllLanguages();
@@ -462,7 +462,7 @@ namespace KinaUnaWeb.Controllers
                 foreach (KinaUnaLanguage lang in languages)
                 {
                     _ = await _pageTextsHttpClient.GetPageTextByTitle(updatedText.Title, updatedText.Page, lang.Id, true);
-                    await _pageTextsHttpClient.GetAllPivoqTexts(lang.Id, true);
+                    await _pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
                 }
 
                 ManageKinaUnaTextsViewModel editTranslationModel = new ManageKinaUnaTextsViewModel();
@@ -528,7 +528,7 @@ namespace KinaUnaWeb.Controllers
             {
                 ManageKinaUnaTextsViewModel model = new ManageKinaUnaTextsViewModel();
                 model.LanguageId = Request.GetLanguageIdFromCookie();
-                model.Texts = await _pageTextsHttpClient.GetAllPivoqTexts(1);
+                model.Texts = await _pageTextsHttpClient.GetAllKinaUnaTexts(1);
                 model.PagesList = new List<string>();
                 model.TitlesList = new List<string>();
                 foreach (KinaUnaText textItem in model.Texts)

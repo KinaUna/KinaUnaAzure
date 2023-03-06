@@ -14,20 +14,14 @@ namespace KinaUnaWebBlazor.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
 
-        public SkillsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
+        public SkillsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
-            }
 
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -53,11 +47,6 @@ namespace KinaUnaWebBlazor.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId") ?? throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ??
-                                               throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
                 _configuration.GetValue<string>("AuthenticationServerClientSecret") ?? throw new InvalidOperationException("AuthenticationServerClientSecret value missing in configuration."));
@@ -65,7 +54,7 @@ namespace KinaUnaWebBlazor.Services
         }
 
         
-        public async Task<Skill> GetSkill(int skillId)
+        public async Task<Skill?> GetSkill(int skillId)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -75,14 +64,14 @@ namespace KinaUnaWebBlazor.Services
             if (skillResponse.IsSuccessStatusCode)
             {
                 string skillAsString = await skillResponse.Content.ReadAsStringAsync();
-                Skill skillItem = JsonConvert.DeserializeObject<Skill>(skillAsString);
+                Skill? skillItem = JsonConvert.DeserializeObject<Skill>(skillAsString);
                 return skillItem;
             }
 
             return new Skill();
         }
 
-        public async Task<Skill> AddSkill(Skill skill)
+        public async Task<Skill?> AddSkill(Skill? skill)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -99,12 +88,12 @@ namespace KinaUnaWebBlazor.Services
             return new Skill();
         }
 
-        public async Task<Skill> UpdateSkill(Skill skill)
+        public async Task<Skill?> UpdateSkill(Skill? skill)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string updateSkillsApiPath = "/api/Skills/" + skill.SkillId;
+            string updateSkillsApiPath = "/api/Skills/" + skill?.SkillId;
             HttpResponseMessage skillResponse = await _httpClient.PutAsync(updateSkillsApiPath, new StringContent(JsonConvert.SerializeObject(skill), System.Text.Encoding.UTF8, "application/json"));
             if (!skillResponse.IsSuccessStatusCode)
             {
@@ -131,9 +120,9 @@ namespace KinaUnaWebBlazor.Services
             return false;
         }
 
-        public async Task<List<Skill>> GetSkillsList(int progenyId, int accessLevel)
+        public async Task<List<Skill>?> GetSkillsList(int progenyId, int accessLevel)
         {
-            List<Skill> progenySkillsList = new List<Skill>();
+            List<Skill>? progenySkillsList = new List<Skill>();
             
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);

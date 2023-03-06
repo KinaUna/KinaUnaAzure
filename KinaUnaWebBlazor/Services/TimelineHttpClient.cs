@@ -14,20 +14,14 @@ namespace KinaUnaWebBlazor.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
 
-        public TimelineHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
+        public TimelineHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
-            }
 
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -53,18 +47,13 @@ namespace KinaUnaWebBlazor.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId") ?? throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ??
-                                               throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
                 _configuration.GetValue<string>("AuthenticationServerClientSecret") ?? throw new InvalidOperationException("AuthenticationServerClientSecret value missing in configuration."));
             return accessToken;
         }
 
-        public async Task<TimeLineItem> GetTimeLineItem(string itemId, int itemType)
+        public async Task<TimeLineItem?> GetTimeLineItem(string itemId, int itemType)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -74,14 +63,14 @@ namespace KinaUnaWebBlazor.Services
             if (timeLineResponse.IsSuccessStatusCode)
             {
                 string timeLineItemAsString = await timeLineResponse.Content.ReadAsStringAsync();
-                TimeLineItem timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(timeLineItemAsString);
+                TimeLineItem? timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(timeLineItemAsString);
                 return timeLineItem;
             }
 
             return new TimeLineItem();
         }
 
-        public async Task<TimeLineItem> AddTimeLineItem(TimeLineItem timeLineItem)
+        public async Task<TimeLineItem?> AddTimeLineItem(TimeLineItem? timeLineItem)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -98,12 +87,12 @@ namespace KinaUnaWebBlazor.Services
             return new TimeLineItem();
         }
 
-        public async Task<TimeLineItem> UpdateTimeLineItem(TimeLineItem timeLineItem)
+        public async Task<TimeLineItem?> UpdateTimeLineItem(TimeLineItem? timeLineItem)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string updateTimeLineApiPath = "/api/Timeline/" + timeLineItem.TimeLineId;
+            string updateTimeLineApiPath = "/api/Timeline/" + timeLineItem?.TimeLineId;
             HttpResponseMessage timelineResponse = await _httpClient.PutAsync(updateTimeLineApiPath, new StringContent(JsonConvert.SerializeObject(timeLineItem), System.Text.Encoding.UTF8, "application/json"));
             if (timelineResponse.IsSuccessStatusCode)
             {
@@ -129,9 +118,9 @@ namespace KinaUnaWebBlazor.Services
             return false;
         }
 
-        public async Task<List<TimeLineItem>> GetTimeline(int progenyId, int accessLevel)
+        public async Task<List<TimeLineItem>?> GetTimeline(int progenyId, int accessLevel)
         {
-            List<TimeLineItem> progenyTimeline = new List<TimeLineItem>();
+            List<TimeLineItem>? progenyTimeline = new List<TimeLineItem>();
             
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);

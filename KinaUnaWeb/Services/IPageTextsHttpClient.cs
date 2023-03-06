@@ -12,7 +12,7 @@ namespace KinaUnaWeb.Services
     {
         Task<KinaUnaText> GetPageTextByTitle(string title, string page, int languageId, bool updateCache = false);
         Task<KinaUnaText> GetPageTextById(int id, bool updateCache = false);
-        Task<KinaUnaText> UpdatePageText(KinaUnaText pivoqText);
-        Task<List<KinaUnaText>> GetAllPivoqTexts(int languageId = 0, bool updateCache = false);
+        Task<KinaUnaText> UpdatePageText(KinaUnaText kinaUnaText);
+        Task<List<KinaUnaText>> GetAllKinaUnaTexts(int languageId = 0, bool updateCache = false);
     }
 }

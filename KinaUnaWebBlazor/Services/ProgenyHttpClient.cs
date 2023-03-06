@@ -14,20 +14,14 @@ namespace KinaUnaWebBlazor.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
 
-        public ProgenyHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
+        public ProgenyHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration");
-            }
 
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -54,11 +48,6 @@ namespace KinaUnaWebBlazor.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId") ?? throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ??
-                                               throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(
                 authenticationServerClientId,
@@ -68,7 +57,7 @@ namespace KinaUnaWebBlazor.Services
             return accessToken;
         }
         
-        public async Task<Progeny> GetProgeny(int progenyId)
+        public async Task<Progeny?> GetProgeny(int progenyId)
         {
             if (progenyId == 0)
             {
@@ -78,7 +67,7 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Progeny progeny = new Progeny();
+            Progeny? progeny = new Progeny();
             string progenyApiPath = "/api/Progeny/" + progenyId;
 
             try
@@ -98,15 +87,18 @@ namespace KinaUnaWebBlazor.Services
             }
             catch (Exception e)
             {
-                progeny.Name = "401";
-                progeny.NickName = e.Message;
-                return progeny;
+                if (progeny != null)
+                {
+                    progeny.Name = "401";
+                    progeny.NickName = e.Message;
+                    return progeny;
+                }
             }
 
             return progeny;
         }
 
-        public async Task<Progeny> AddProgeny(Progeny progeny)
+        public async Task<Progeny?> AddProgeny(Progeny progeny)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -123,7 +115,7 @@ namespace KinaUnaWebBlazor.Services
             return new Progeny();
         }
 
-        public async Task<Progeny> UpdateProgeny(Progeny progeny)
+        public async Task<Progeny?> UpdateProgeny(Progeny progeny)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -154,14 +146,14 @@ namespace KinaUnaWebBlazor.Services
             return false;
         }
 
-        public async Task<List<Progeny>> GetProgenyAdminList(string email)
+        public async Task<List<Progeny>?> GetProgenyAdminList(string email)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string accessApiPath = "/api/Access/AdminListByUserPost/";
             string id = email;
-            List <Progeny> accessList = new List<Progeny>();
+            List<Progeny>? accessList = new List<Progeny>();
             HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(id), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
             if (accessResponse.IsSuccessStatusCode)
             {
@@ -172,9 +164,9 @@ namespace KinaUnaWebBlazor.Services
             return accessList;
         }
         
-        public async Task<List<TimeLineItem>> GetProgenyLatestPosts(int progenyId, int accessLevel)
+        public async Task<List<TimeLineItem>?> GetProgenyLatestPosts(int progenyId, int accessLevel)
         {
-            List<TimeLineItem> progenyPosts = new List<TimeLineItem>();
+            List<TimeLineItem>? progenyPosts = new List<TimeLineItem>();
 
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -191,9 +183,9 @@ namespace KinaUnaWebBlazor.Services
             return progenyPosts;
         }
 
-        public async Task<List<TimeLineItem>> GetProgenyYearAgo(int progenyId, int accessLevel)
+        public async Task<List<TimeLineItem>?> GetProgenyYearAgo(int progenyId, int accessLevel)
         {
-            List<TimeLineItem> yearAgoPosts = new List<TimeLineItem>();
+            List<TimeLineItem>? yearAgoPosts = new List<TimeLineItem>();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

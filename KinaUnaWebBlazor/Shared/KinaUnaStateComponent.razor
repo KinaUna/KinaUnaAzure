@@ -25,7 +25,7 @@
             if (_languageId != value)
             {
                 _languageId = value;
-                if(LanguageList.Any()){
+                if(LanguageList != null && LanguageList.Any()){
                     KinaUnaLanguage? selectedLanguage = LanguageList.FirstOrDefault(l => l.Id == _languageId);
                     if(selectedLanguage != null){
                         LanguageName = selectedLanguage.Name;
@@ -43,7 +43,7 @@
 
     public string LanguageName { get; private set; } = "";
 
-    public List<KinaUnaLanguage> LanguageList { get; set; } = new List<KinaUnaLanguage>();
+    public List<KinaUnaLanguage>? LanguageList { get; set; } = new List<KinaUnaLanguage>();
 
     public bool ExpandSideBar { get; set; } = false;
 

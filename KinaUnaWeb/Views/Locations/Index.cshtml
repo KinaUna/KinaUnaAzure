@@ -20,7 +20,7 @@
     string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Locations, Model.LanguageId);
     string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Locations, Model.LanguageId);
     }
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     @if (Model.SortBy == 1)
     {
         sortOldest = "btn btn-info btn-sm leavePage";
@@ -92,6 +92,8 @@
                     'apikey': '@Constants.HereMapsApiKey',
                     'useHTTPS': true
                 });
+                
+                var defaultLayers = platform.createDefaultLayers();
 
                 let maptypes = platform.createDefaultLayers({
                     tileSize: pixelRatio === 1 ? 256 : 512,
@@ -99,22 +101,23 @@
                 });
 
                 let map = new H.Map(document.getElementById('mapContainer'),
-                    maptypes.vector.normal.map,
+                    defaultLayers.vector.normal.map,
                     {
                         zoom: 3,
                         center: { lng: @Model.LocationItem.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.'), lat: @Model.LocationItem.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') },
                         pixelRatio: pixelRatio
                     });
 
-                let mapEvents = new H.mapevents.MapEvents(map);
+                
                 let ui = H.ui.UI.createDefault(map, maptypes);
+                let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
                 
                 setUpClickListener(map);
                                
-                let iconWidth = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
-                let iconHeight = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
+                //let iconWidth = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
+                //let iconHeight = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
 
-                let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: iconWidth, h: iconHeight } });
+                let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: 36, h: 36 } });
                 let group = new H.map.Group();
                 @{
                     string locGroup = "[";

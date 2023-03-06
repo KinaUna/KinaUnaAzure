@@ -16,19 +16,14 @@ namespace KinaUnaWebBlazor.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
 
-        public MediaHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
+        public MediaHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             string clientUri = _configuration.GetValue<string>("MediaApiServer") ?? throw new InvalidOperationException("MediaApiServer value missing in configuration");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("MediaApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("MediaApiServer value missing in configuration");
-            }
+            
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -54,11 +49,6 @@ namespace KinaUnaWebBlazor.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId") ?? throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ??
-                                               throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(
                 authenticationServerClientId,
@@ -67,7 +57,7 @@ namespace KinaUnaWebBlazor.Services
             return accessToken;
         }
 
-        public async Task<Picture> GetPicture(int pictureId, string timeZone)
+        public async Task<Picture?> GetPicture(int pictureId, string timeZone)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -78,8 +68,8 @@ namespace KinaUnaWebBlazor.Services
             if (pictureResponse.IsSuccessStatusCode)
             {
                 string pictureAsString = await pictureResponse.Content.ReadAsStringAsync();
-                Picture picture = JsonConvert.DeserializeObject<Picture>(pictureAsString);
-                if (picture.PictureTime.HasValue)
+                Picture? picture = JsonConvert.DeserializeObject<Picture>(pictureAsString);
+                if (picture != null && picture.PictureTime.HasValue)
                 {
                     picture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(picture.PictureTime.Value,
                         TimeZoneInfo.FindSystemTimeZoneById(timeZone));
@@ -91,7 +81,7 @@ namespace KinaUnaWebBlazor.Services
             return new Picture();
         }
 
-        public async Task<Picture> GetRandomPicture(int progenyId, int accessLevel, string timeZone)
+        public async Task<Picture?> GetRandomPicture(int progenyId, int accessLevel, string timeZone)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -101,10 +91,10 @@ namespace KinaUnaWebBlazor.Services
             if (pictureResponse.IsSuccessStatusCode)
             {
                 string pictureResponseString = await pictureResponse.Content.ReadAsStringAsync();
-                Picture resultPicture = JsonConvert.DeserializeObject<Picture>(pictureResponseString);
+                Picture? resultPicture = JsonConvert.DeserializeObject<Picture>(pictureResponseString);
                 if (timeZone != "")
                 {
-                    if (resultPicture.PictureTime.HasValue)
+                    if (resultPicture != null && resultPicture.PictureTime.HasValue)
                     {
                         resultPicture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(resultPicture.PictureTime.Value,
                             TimeZoneInfo.FindSystemTimeZoneById(timeZone));
@@ -117,7 +107,7 @@ namespace KinaUnaWebBlazor.Services
             return new Picture();
         }
 
-        public async Task<List<Picture>> GetPictureList(int progenyId, int accessLevel, string timeZone)
+        public async Task<List<Picture>?> GetPictureList(int progenyId, int accessLevel, string timeZone)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -127,17 +117,18 @@ namespace KinaUnaWebBlazor.Services
             if (picturesResponse.IsSuccessStatusCode)
             {
                 string picturesListAsString = await picturesResponse.Content.ReadAsStringAsync();
-                List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(picturesListAsString);
+                List<Picture>? resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(picturesListAsString);
                 if (timeZone != "")
                 {
-                    foreach (Picture pic in resultPictureList)
-                    {
-                        if (pic.PictureTime.HasValue)
+                    if (resultPictureList != null)
+                        foreach (Picture pic in resultPictureList)
                         {
-                            pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
-                                TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                            if (pic.PictureTime.HasValue)
+                            {
+                                pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
+                                    TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                            }
                         }
-                    }
                 }
 
                 return resultPictureList;
@@ -146,7 +137,7 @@ namespace KinaUnaWebBlazor.Services
             return new List<Picture>();
         }
 
-        public async Task<List<Picture>> GetAllPictures()
+        public async Task<List<Picture>?> GetAllPictures()
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -157,7 +148,7 @@ namespace KinaUnaWebBlazor.Services
             {
                 string pictureResponseString = await picturesResponse.Content.ReadAsStringAsync();
 
-                List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(pictureResponseString);
+                List<Picture>? resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(pictureResponseString);
 
                 return resultPictureList;
             }
@@ -165,7 +156,7 @@ namespace KinaUnaWebBlazor.Services
             return new List<Picture>();
         }
 
-        public async Task<Picture> AddPicture(Picture picture)
+        public async Task<Picture?> AddPicture(Picture? picture)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -177,12 +168,12 @@ namespace KinaUnaWebBlazor.Services
             {
                 string pictureAsString = await pictureResponse.Content.ReadAsStringAsync();
                 picture = JsonConvert.DeserializeObject<Picture>(pictureAsString);
-                string newPictureUri = "/api/Pictures/ByLink/" + picture.PictureLink;
+                string newPictureUri = "/api/Pictures/ByLink/" + picture?.PictureLink;
                 HttpResponseMessage newPictureResponse = await _httpClient.GetAsync(newPictureUri);
                 if (newPictureResponse.IsSuccessStatusCode)
                 {
                     string newPictureAsString = await newPictureResponse.Content.ReadAsStringAsync();
-                    Picture newPicture = JsonConvert.DeserializeObject<Picture>(newPictureAsString);
+                    Picture? newPicture = JsonConvert.DeserializeObject<Picture>(newPictureAsString);
                     return newPicture;
                 }
             }
@@ -190,12 +181,12 @@ namespace KinaUnaWebBlazor.Services
             return new Picture();
         }
 
-        public async Task<Picture> UpdatePicture(Picture picture)
+        public async Task<Picture?> UpdatePicture(Picture? picture)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
             
-            string updatePictureApiPath = "/api/Pictures/" + picture.PictureId;
+            string updatePictureApiPath = "/api/Pictures/" + picture?.PictureId;
 
             HttpResponseMessage pictureResponse = await _httpClient.PutAsync(updatePictureApiPath, new StringContent(JsonConvert.SerializeObject(picture), Encoding.UTF8, "application/json"));
             if (pictureResponse.IsSuccessStatusCode)
@@ -256,7 +247,7 @@ namespace KinaUnaWebBlazor.Services
             return false;
         }
 
-        public async Task<PicturePageViewModel> GetPicturePage(int pageSize, int id, int progenyId, int sortBy, string tagFilter, string timeZone)
+        public async Task<PicturePageViewModel?> GetPicturePage(int pageSize, int id, int progenyId, int sortBy, string tagFilter, string timeZone)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -272,8 +263,8 @@ namespace KinaUnaWebBlazor.Services
             {
                 string pageResponseString = await picturePageResponse.Content.ReadAsStringAsync();
 
-                PicturePageViewModel model = JsonConvert.DeserializeObject<PicturePageViewModel>(pageResponseString);
-                if (timeZone != "" && model.PicturesList.Any())
+                PicturePageViewModel? model = JsonConvert.DeserializeObject<PicturePageViewModel>(pageResponseString);
+                if (model != null && timeZone != "" && model.PicturesList.Any())
                 {
                     foreach (Picture pic in model.PicturesList)
                     {
@@ -291,7 +282,7 @@ namespace KinaUnaWebBlazor.Services
             return new PicturePageViewModel();
         }
 
-        public async Task<PictureViewModel> GetPictureViewModel(int id, int sortBy, string timeZone)
+        public async Task<PictureViewModel?> GetPictureViewModel(int id, int sortBy, string timeZone)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -301,33 +292,36 @@ namespace KinaUnaWebBlazor.Services
             if (picturesResponse.IsSuccessStatusCode)
             {
                 string picturesViewModelAsString = await picturesResponse.Content.ReadAsStringAsync();
-                PictureViewModel pictureViewModel = JsonConvert.DeserializeObject<PictureViewModel>(picturesViewModelAsString);
-                pictureViewModel.Longitude = pictureViewModel.Longtitude;
-                if (timeZone != "")
+                PictureViewModel? pictureViewModel = JsonConvert.DeserializeObject<PictureViewModel>(picturesViewModelAsString);
+                if (pictureViewModel != null)
                 {
-                    if (pictureViewModel.PictureTime.HasValue)
+                    pictureViewModel.Longitude = pictureViewModel.Longtitude;
+                    if (timeZone != "")
                     {
-                        pictureViewModel.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pictureViewModel.PictureTime.Value,
-                            TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                    }
-
-                    if (pictureViewModel.CommentsList.Count > 0)
-                    {
-                        foreach (Comment cmnt in pictureViewModel.CommentsList)
+                        if (pictureViewModel.PictureTime.HasValue)
                         {
-                            cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created,
+                            pictureViewModel.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pictureViewModel.PictureTime.Value,
                                 TimeZoneInfo.FindSystemTimeZoneById(timeZone));
                         }
-                    }
-                }
 
-                return pictureViewModel;
+                        if (pictureViewModel.CommentsList.Count > 0)
+                        {
+                            foreach (Comment cmnt in pictureViewModel.CommentsList)
+                            {
+                                cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created,
+                                    TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                            }
+                        }
+                    }
+
+                    return pictureViewModel;
+                }
             }
 
             return new PictureViewModel();
         }
 
-        public async Task<VideoPageViewModel> GetVideoPage(int pageSize, int id, int progenyId, int userAccessLevel, int sortBy, string tagFilter, string timeZone)
+        public async Task<VideoPageViewModel?> GetVideoPage(int pageSize, int id, int progenyId, int userAccessLevel, int sortBy, string tagFilter, string timeZone)
         {
 
             string accessToken = await GetNewToken();
@@ -345,9 +339,9 @@ namespace KinaUnaWebBlazor.Services
             if (videoResponse.IsSuccessStatusCode)
             {
                 string videoPageAsString = await videoResponse.Content.ReadAsStringAsync();
-                VideoPageViewModel model = JsonConvert.DeserializeObject<VideoPageViewModel>(videoPageAsString);
+                VideoPageViewModel? model = JsonConvert.DeserializeObject<VideoPageViewModel>(videoPageAsString);
 
-                if (timeZone != "" && model.VideosList.Any())
+                if (model != null && timeZone != "" && model.VideosList.Any())
                 {
                     foreach (Video vid in model.VideosList)
                     {
@@ -365,7 +359,7 @@ namespace KinaUnaWebBlazor.Services
             return new VideoPageViewModel();
         }
 
-        public async Task<VideoViewModel> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone)
+        public async Task<VideoViewModel?> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -376,16 +370,16 @@ namespace KinaUnaWebBlazor.Services
             if (videoViewModelResponse.IsSuccessStatusCode)
             {
                 string videoViewModelAsString = await videoViewModelResponse.Content.ReadAsStringAsync();
-                VideoViewModel videoViewModel = JsonConvert.DeserializeObject<VideoViewModel>(videoViewModelAsString);
+                VideoViewModel? videoViewModel = JsonConvert.DeserializeObject<VideoViewModel>(videoViewModelAsString);
 
                 if (timeZone != "")
                 {
-                    if (videoViewModel.VideoTime.HasValue)
+                    if (videoViewModel != null && videoViewModel.VideoTime.HasValue)
                     {
                         videoViewModel.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(videoViewModel.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
                     }
 
-                    if (videoViewModel.CommentsList.Count > 0)
+                    if (videoViewModel != null && videoViewModel.CommentsList.Count > 0)
                     {
                         foreach (Comment cmnt in videoViewModel.CommentsList)
                         {
@@ -400,7 +394,7 @@ namespace KinaUnaWebBlazor.Services
             return new VideoViewModel();
         }
 
-        public async Task<Video> GetVideo(int videoId, string timeZone)
+        public async Task<Video?> GetVideo(int videoId, string timeZone)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -411,10 +405,10 @@ namespace KinaUnaWebBlazor.Services
             if (videoResponse.IsSuccessStatusCode)
             {
                 string videoAsString = await videoResponse.Content.ReadAsStringAsync();
-                Video resultVideo = JsonConvert.DeserializeObject<Video>(videoAsString);
+                Video? resultVideo = JsonConvert.DeserializeObject<Video>(videoAsString);
                 if (timeZone != "")
                 {
-                    if (resultVideo.VideoTime.HasValue)
+                    if (resultVideo != null && resultVideo.VideoTime.HasValue)
                     {
                         resultVideo.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(resultVideo.VideoTime.Value,
                             TimeZoneInfo.FindSystemTimeZoneById(timeZone));
@@ -427,7 +421,7 @@ namespace KinaUnaWebBlazor.Services
             return new Video();
         }
 
-        public async Task<List<Video>> GetVideoList(int progenyId, int accessLevel, string timeZone)
+        public async Task<List<Video>?> GetVideoList(int progenyId, int accessLevel, string timeZone)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -437,16 +431,17 @@ namespace KinaUnaWebBlazor.Services
             if (videosListReponse.IsSuccessStatusCode)
             {
                 string videoListAsString = await videosListReponse.Content.ReadAsStringAsync();
-                List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoListAsString);
+                List<Video>? resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoListAsString);
                 if (timeZone != "")
                 {
-                    foreach (Video vid in resultVideoList)
-                    {
-                        if (vid.VideoTime.HasValue)
+                    if (resultVideoList != null)
+                        foreach (Video vid in resultVideoList)
                         {
-                            vid.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(vid.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                            if (vid.VideoTime.HasValue)
+                            {
+                                vid.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(vid.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                            }
                         }
-                    }
                 }
 
                 return resultVideoList;
@@ -455,7 +450,7 @@ namespace KinaUnaWebBlazor.Services
             return new List<Video>();
         }
 
-        public async Task<List<Video>> GetAllVideos()
+        public async Task<List<Video>?> GetAllVideos()
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -466,13 +461,13 @@ namespace KinaUnaWebBlazor.Services
             {
                 string videoResponseString = await videosResponse.Content.ReadAsStringAsync();
 
-                List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoResponseString);
+                List<Video>? resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoResponseString);
                 return resultVideoList;
             }
 
             return new List<Video>();
         }
-        public async Task<Video> AddVideo(Video video)
+        public async Task<Video?> AddVideo(Video? video)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -490,12 +485,12 @@ namespace KinaUnaWebBlazor.Services
             return new Video();
         }
 
-        public async Task<Video> UpdateVideo(Video video)
+        public async Task<Video?> UpdateVideo(Video? video)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
             
-            string updateVideoApiPath = "/api/Videos/" + video.VideoId;
+            string updateVideoApiPath = "/api/Videos/" + video?.VideoId;
             HttpResponseMessage videoResponse = await _httpClient.PutAsync(updateVideoApiPath, new StringContent(JsonConvert.SerializeObject(video), Encoding.UTF8, "application/json"));
             if (videoResponse.IsSuccessStatusCode)
             {

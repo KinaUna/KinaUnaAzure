@@ -7,11 +7,42 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
 <a class="leavePage" asp-controller="Measurements" asp-action="Index">
-    <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
-        <div class="card-body" style="background: #b43c32; background: rgba(180, 60, 50, 0.5)">
-            <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 12px;" class="fa fa-weight"></span><strong style="font-size: 12px;" class="text-warning">@Model.Date.ToString("dd-MMM-yyyy HH:mm") </strong></div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("Height:", PageNames.Measurements, languageId) @Model.Height</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("Weight:", PageNames.Measurements, languageId) @Model.Weight</div>
+    <div class="bg-primary timeline-card">
+        <div class="timeline-card-body bg-measurement">
+            <div class="row">
+                <div class="col-auto">
+                    <span class="latest-posts-icon"><i class="material-icons">straighten</i></span>
+                </div>
+                <div class="col">
+                    <div class="latest-posts-title">
+                        <strong>
+                            @Model.Date.ToString("dd-MMM-yyyy")
+                        </strong>
+                    </div>
+                    <div class="latest-posts-text text-white-50">
+                        @if (Model.Height > 0.01)
+                        {
+                            <div>@await LocaleManager.GetTranslation("Height:", PageNames.Measurements, languageId) @Model.Height</div>
+                        }
+                        @if (Model.Weight > 0.01)
+                        {
+                            <div>@await LocaleManager.GetTranslation("Weight:", PageNames.Measurements, languageId) @Model.Weight</div>
+                        }
+                        @if (Model.Circumference > 0.01)
+                        {
+                            <div>@await LocaleManager.GetTranslation("Circumference:", PageNames.Measurements, languageId) @Model.Circumference</div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.EyeColor))
+                        {
+                            <div>@await LocaleManager.GetTranslation("Eye color:", PageNames.Measurements, languageId) @Model.EyeColor</div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.HairColor))
+                        {
+                            <div>@await LocaleManager.GetTranslation("Hair color:", PageNames.Measurements, languageId) @Model.HairColor</div>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </a>

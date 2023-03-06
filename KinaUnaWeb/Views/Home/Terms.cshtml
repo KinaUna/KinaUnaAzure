@@ -8,110 +8,109 @@
     ViewData["Title"] = await LocaleManager.GetTranslation("Terms", PageNames.Layout, Model.LanguageId);
     Model.KinaUnaText = await LocaleManager.GetPageTextByTitle("__Terms", "Terms", Model.LanguageId);
 }
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
-    <h3 class="title">@ViewData["Title"]</h3>
-    <div>
-        <H4>
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="add-item-container">
+        <h2 class="col-12">@ViewData["Title"]</h2>
+        <div class="col-12">
             <img src="~/images/KinaUnaLogo_246x80.png"/>
-        </H4>
-        <br/>
-        <div style="max-width: 600px;" id="impressumTextDiv">
+        </div>
+        <div class="space-50"></div>
+        <div class="col-auto" style="max-width: 800px;" id="impressumTextDiv">
             @Html.Raw(Model.KinaUnaText.Text ?? "")
         </div>
-    </div>
-    <br/>
-</div>
-@if (Model.CurrentUser.IsKinaUnaAdmin && Model.KinaUnaText != null)
-{
-    <div class="space-20"></div>
-    <div><a class="btn btn-outline-info" onclick="editModal('@Model.KinaUnaText.Id', 'Edit About')">Edit</a></div>
-    <div class="space-20"></div>
-    <script>
-        function onImageUploadSuccess(args) {
-            if (args.e.currentTarget.getResponseHeader('name') != null) {
-                args.file.name = args.e.currentTarget.getResponseHeader('name');
-                var filename = document.querySelectorAll(".e-file-name")[0];
-                filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
-                filename.title = args.file.name;
-            }
-        }
+        @if (Model.CurrentUser.IsKinaUnaAdmin && Model.KinaUnaText != null)
+        {
+            <div class="space-20"></div>
+            <div class="col-auto"><a class="btn btn-outline-info" onclick="editModal('@Model.KinaUnaText.Id', 'Edit About')">Edit</a></div>
+            <div class="space-20"></div>
+            <script>
+                function onImageUploadSuccess(args) {
+                    if (args.e.currentTarget.getResponseHeader('name') != null) {
+                        args.file.name = args.e.currentTarget.getResponseHeader('name');
+                        var filename = document.querySelectorAll(".e-file-name")[0];
+                        filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
+                        filename.title = args.file.name;
+                    }
+                }
 
-        let defaultRTE;
+                let defaultRTE;
 
-        function onrtecreated() {
-            setTimeout(function() {
+                function onrtecreated() {
+                    setTimeout(function () {
+                        let rteElement = document.getElementById('textTextRTE').ej2_instances[0];
+                        rteElement.refreshUI();
+                    },
+                        1000);
+                    defaultRTE = this;
+                }
+
+                function onrtefocus() {
                     let rteElement = document.getElementById('textTextRTE').ej2_instances[0];
                     rteElement.refreshUI();
-                },
-                1000);
-            defaultRTE = this;
-        }
+                }
 
-        function onrtefocus() {
-            let rteElement = document.getElementById('textTextRTE').ej2_instances[0];
-            rteElement.refreshUI();
-        }
+                function updateTitle() {
+                    let editTitleSource = document.getElementById('editTitleInput');
+                    let editTitleTarget = document.getElementById('textTitleInput');
+                    editTitleTarget.value = editTitleSource.value;
+                }
 
-        function updateTitle() {
-            let editTitleSource = document.getElementById('editTitleInput');
-            let editTitleTarget = document.getElementById('textTitleInput');
-            editTitleTarget.value = editTitleSource.value;
-        }
+                $(document).ready(function () {
+                    editModal = (textId, title) => {
+                        try {
+                            $.ajax({
+                                type: 'GET',
+                                url: "/Admin/EditText?Id=" + textId,
+                                contentType: false,
+                                datatype: "html",
+                                async: true,
+                                success: function (res) {
+                                    $('#editImpressumModal .modal-body').html(res);
+                                    $('#editImpressumModal .modal-title').html(title);
+                                    $('#editImpressumModal').modal('show');
+                                },
+                                error: function (err) {
+                                    console.log(err);
+                                }
+                            });
+                            return false;
+                        } catch (ex) {
+                            console.log(ex);
+                        }
+                        return false;
+                    }
+                });
 
-        $(document).ready(function () {
-            editModal = (textId, title) => {
-                try {
-                    $.ajax({
-                        type: 'GET',
-                        url: "/Admin/EditText?Id=" + textId,
-                        contentType: false,
+                function saveText() {
+                    let textId = document.getElementById('textIdInput').value;
+                    let textPage = document.getElementById('textPageInput').value;
+                    let textTitle = document.getElementById('textTitleInput').value;
+                    let textLanguageId = document.getElementById('textLanguageIdInput').value;
+                    let textText = defaultRTE.value;
+                    let textItem = { Id: textId, Page: textPage, Title: textTitle, LanguageId: textLanguageId, Text: textText }
+                    return $.ajax({
+                        type: "POST",
+                        beforeSend: function (request) { request.setRequestHeader("RequestVerificationToken", "@AntiForgery.GetTokens(Context).RequestToken"); },
+                        url: "/Admin/EditText",
+                        contentType: 'application/json',
+                        data: JSON.stringify(textItem),
                         datatype: "html",
                         async: true,
-                        success: function (res) {
-                            $('#editImpressumModal .modal-body').html(res);
-                            $('#editImpressumModal .modal-title').html(title);
-                            $('#editImpressumModal').modal('show');
+                        success: function (data) {
+                            $('#editImpressumModal .modal-body').html(data);
+                            let impressumDiv = document.getElementById('impressumTextDiv');
+                            impressumDiv.innerHTML = textText;
+                            $('#editImpressumModal').modal('hide');
                         },
-                        error: function (err) {
-                            console.log(err);
+                        error: function (jqXhr, textStatus, errorThrown) {
+                            console.log(textStatus, errorThrown);
                         }
                     });
-                    return false;
-                } catch (ex) {
-                    console.log(ex);
                 }
-                return false;
-            }
-        });
-
-        function saveText() {
-            let textId = document.getElementById('textIdInput').value;
-            let textPage = document.getElementById('textPageInput').value;
-            let textTitle = document.getElementById('textTitleInput').value;
-            let textLanguageId = document.getElementById('textLanguageIdInput').value;
-            let textText = defaultRTE.value;
-            let textItem = { Id: textId, Page: textPage, Title: textTitle, LanguageId: textLanguageId, Text: textText }
-            return $.ajax({
-                type: "POST",
-                beforeSend: function(request) { request.setRequestHeader("RequestVerificationToken", "@AntiForgery.GetTokens(Context).RequestToken"); },
-                url: "/Admin/EditText",
-                contentType: 'application/json',
-                data: JSON.stringify(textItem),
-                datatype: "html",
-                async: true,
-                success: function (data) {
-                    $('#editImpressumModal .modal-body').html(data);
-                    let impressumDiv = document.getElementById('impressumTextDiv');
-                    impressumDiv.innerHTML = textText;
-                    $('#editImpressumModal').modal('hide');
-                },
-                error: function (jqXhr, textStatus, errorThrown) {
-                    console.log(textStatus, errorThrown);
-                }
-            });
+            </script>
         }
-    </script>
-}
+    </div>
+</div>
 <div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editImpressumModal">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">

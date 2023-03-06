@@ -14,7 +14,7 @@
     <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css"/>
 }
 
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     @if (!string.IsNullOrEmpty(Model.TagFilter))
     {
         <br />
@@ -45,9 +45,7 @@
             <div style="width: 100%; height: 560px; max-height: 60vh; margin-left: 20px; margin-right: 20px;" id="mapContainer"></div>
             <script>
                 let pixelRatio = window.devicePixelRatio || 1;
-                let iconWidth = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
-                let iconHeight = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
-                let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: iconWidth, h: iconHeight } });
+                                let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: 36, h: 36 } });
                 let prevSelectedMarker;
                 let nearbyList = [];
                 let lastNearby = 0;
@@ -181,9 +179,9 @@
                         pixelRatio: pixelRatio
                     });
 
-                let mapEvents = new H.mapevents.MapEvents(map);
                 let ui = H.ui.UI.createDefault(map, maptypes);
-
+                let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+                
                 setUpClickListener(map);
                 
                 let group = new H.map.Group();

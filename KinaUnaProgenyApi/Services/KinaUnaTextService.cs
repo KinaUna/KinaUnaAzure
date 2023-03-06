@@ -28,14 +28,14 @@ namespace KinaUnaProgenyApi.Services
         
         public async Task<KinaUnaText> GetTextById(int id)
         {
-            KinaUnaText pivoqText = await _context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
-            return pivoqText;
+            KinaUnaText kinaUnaText = await _context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
+            return kinaUnaText;
         }
 
         public async Task<KinaUnaText> GetTextByTextId(int textId, int languageId)
         {
-            KinaUnaText pivoqText = await _context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(t => t.TextId == textId && t.LanguageId == languageId);
-            return pivoqText;
+            KinaUnaText kinaUnaText = await _context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(t => t.TextId == textId && t.LanguageId == languageId);
+            return kinaUnaText;
         }
 
         public async Task<List<KinaUnaText>> GetPageTextsList(string page, int languageId)
@@ -76,17 +76,17 @@ namespace KinaUnaProgenyApi.Services
                         KinaUnaText textItem = await _context.KinaUnaTexts.SingleOrDefaultAsync(t => t.TextId == tNumber.Id && t.LanguageId == lang.Id);
                         if (textItem == null)
                         {
-                            KinaUnaText oldPivoqText = texts.First();
+                            KinaUnaText oldKinaUnaText = texts.First();
 
-                            KinaUnaText newPivoqText = new KinaUnaText();
-                            newPivoqText.Page = oldPivoqText.Page;
-                            newPivoqText.Title = oldPivoqText.Title;
-                            newPivoqText.Text = oldPivoqText.Text;
-                            newPivoqText.Created = oldPivoqText.Created;
-                            newPivoqText.Updated = oldPivoqText.Updated;
-                            newPivoqText.LanguageId = lang.Id;
-                            newPivoqText.TextId = oldPivoqText.TextId;
-                            _ = await _context.KinaUnaTexts.AddAsync(newPivoqText);
+                            KinaUnaText newKinaUnaText = new KinaUnaText();
+                            newKinaUnaText.Page = oldKinaUnaText.Page;
+                            newKinaUnaText.Title = oldKinaUnaText.Title;
+                            newKinaUnaText.Text = oldKinaUnaText.Text;
+                            newKinaUnaText.Created = oldKinaUnaText.Created;
+                            newKinaUnaText.Updated = oldKinaUnaText.Updated;
+                            newKinaUnaText.LanguageId = lang.Id;
+                            newKinaUnaText.TextId = oldKinaUnaText.TextId;
+                            _ = await _context.KinaUnaTexts.AddAsync(newKinaUnaText);
                             _ = await _context.SaveChangesAsync();
                         }
                     }

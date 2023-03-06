@@ -104,7 +104,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.SetPropertiesFromSleepItem(sleep);
-            
+            model.SetRatingList();
             model.SetAccessLevelList();
 
             return View(model);

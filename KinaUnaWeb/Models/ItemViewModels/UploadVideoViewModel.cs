@@ -22,7 +22,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public UploadVideoViewModel()
         {
             ProgenyList = new List<SelectListItem>();
-
+            
             AccessLevelList aclList = new AccessLevelList();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;

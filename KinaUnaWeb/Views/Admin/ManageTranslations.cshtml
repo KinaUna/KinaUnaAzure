@@ -3,13 +3,12 @@
     ViewData["Title"] = "Manage Translations";
 
 }
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="space-20"></div>
-    <div class="container">
+    <div class="add-item-container-wide">
         <div class="space-20"></div>
         <h2>@ViewData["Title"]</h2>
         <div class="space-20"></div>
-
         @if (Model.Translations.Any())
         {
             if (Model.PagesList.Any())
@@ -20,7 +19,6 @@
                         <li class="select-view-item" data-viewid="@pageItem">@pageItem</li>
                     }
                 </ul>
-
             }
         }
         <div class="space-20"></div>

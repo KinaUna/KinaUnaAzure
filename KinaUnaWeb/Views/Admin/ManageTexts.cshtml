@@ -4,24 +4,24 @@
 @{
     ViewData["Title"] = "Manage Texts";
 }
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
-    <div class="pivoq_space20"></div>
-    <div class="pivoq_section ">
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="space-20"></div>
+    <div class="add-item-container">
         <div class="container">
             <div class="row">
                 <div class="col-12">
-                    <div class="pivoq_space20"></div>
+                    <div class="space-20"></div>
                     <h2>@ViewData["Title"]</h2>
-                    <div class="pivoq_space20"></div>
+                    <div class="space-20"></div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-12">
-                    @foreach (KinaUnaText pivoqText in Model.Texts)
+                    @foreach (KinaUnaText kinaUnaText in Model.Texts)
                     {
                         <div class="row">
                             <div class="col-12">
-                                <div><a class="btn btn-primary" onclick="editModal('@pivoqText.TextId', 'Edit @pivoqText.Title', '@Model.LanguageId')">Edit @pivoqText.Title</a></div>
+                                <div><a class="btn btn-primary" onclick="editModal('@kinaUnaText.TextId', 'Edit @kinaUnaText.Title', '@Model.LanguageId')">Edit @kinaUnaText.Title</a></div>
                             </div>
                         </div>
                         <div class="space-20"></div>
@@ -52,9 +52,9 @@
     }
 </style>
 <script>
-    let pivoqTextId;
-    let pivoqTextTitle;
-    let pivoqTextLanguageId;
+    let kinaUnaTextId;
+    let kinaUnaTextTitle;
+    let kinaUnaTextLanguageId;
 
     function onImageUploadSuccess(args) {
         if (args.e.currentTarget.getResponseHeader('name') != null) {
@@ -105,8 +105,8 @@
     $(document).ready(function () {
         editModal = (textId, title, languageId) => {
             run_waitMeModal();
-            pivoqTextId = textId;
-            pivoqTextTitle = title;
+            kinaUnaTextId = textId;
+            kinaUnaTextTitle = title;
             try {
                 $.ajax({
                     type: 'GET',
@@ -164,9 +164,9 @@
         let languageListObj = document.getElementById('languageList').ej2_instances[0];
         let langValTemp = languageListObj.itemData;
 
-        if (langValTemp.Id !== pivoqTextLanguageId) {
-            pivoqTextLanguageId = langValTemp.Id;
-            editModal(pivoqTextId, pivoqTextTitle, langValTemp.Id);
+        if (langValTemp.Id !== kinaUnaTextLanguageId) {
+            kinaUnaTextLanguageId = langValTemp.Id;
+            editModal(kinaUnaTextId, kinaUnaTextTitle, langValTemp.Id);
         }
     }
 </script>

@@ -4,18 +4,20 @@
     ViewData["Title"] = "Administration";
     _ = await LocaleManager.GetPageTextByTitle("__RegisterTerms", "Register", 1);
 }
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
-    <h2>@ViewData["Title"]</h2>
-    <br />
-    <div>Manage translations: <a asp-action="ManageTranslations">Manage translations</a></div>
-    <br />
-    <div>Manage texts: <a asp-action="ManageTexts">Manage texts</a></div>
-    <br />
-    <div>Manage languages: <a asp-action="ManageLanguages">Manage languages</a></div>
-    <br />
-    <div>Send admin message: <a asp-action="SendAdminMessage">Compose Message</a></div>
-    <br />
-    <div>Send push notification: <a asp-action="SendPush">Compose Push Notification</a></div>
-    <br />
-    <button type="button" class="btn btn-warning" onclick="removeServiceWorkers()">Remove Service Workers</button>
+<div class="ml-xl-auto mr-xl-auto col-xl-11 col-xxl-10">
+    <div class="add-item-container">
+        <h2>@ViewData["Title"]</h2>
+        <div class="space-20"></div>
+        <div>Manage translations: <a asp-action="ManageTranslations">Manage translations</a></div>
+        <div class="space-20"></div>
+        <div>Manage texts: <a asp-action="ManageTexts">Manage texts</a></div>
+        <div class="space-20"></div>
+        <div>Manage languages: <a asp-action="ManageLanguages">Manage languages</a></div>
+        <div class="space-20"></div>
+        <div>Send admin message: <a asp-action="SendAdminMessage">Compose Message</a></div>
+        <div class="space-20"></div>
+        <div>Send push notification: <a asp-action="SendPush">Compose Push Notification</a></div>
+        <div class="space-20"></div>
+        <button type="button" class="btn btn-warning" onclick="removeServiceWorkers()">Remove Service Workers</button>
+    </div>
 </div>

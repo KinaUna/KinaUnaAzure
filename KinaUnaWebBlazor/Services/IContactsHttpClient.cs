@@ -9,21 +9,21 @@ namespace KinaUnaWebBlazor.Services
         /// </summary>
         /// <param name="contactId">int: The Id of the Contact (Contact.ContactId).</param>
         /// <returns>Contact.</returns>
-        Task<Contact> GetContact(int contactId);
+        Task<Contact?> GetContact(int contactId);
 
         /// <summary>
         /// Adds a new Contact.
         /// </summary>
         /// <param name="contact">Contact: The Contact object to add.</param>
         /// <returns>Contact: The Contact object that was added.</returns>
-        Task<Contact> AddContact(Contact contact);
+        Task<Contact?> AddContact(Contact? contact);
 
         /// <summary>
         /// Updates a Contact. The Contact with the same ContactId will be updated.
         /// </summary>
         /// <param name="contact">Contact: The Contact object to update.</param>
         /// <returns>Contact: The updated Contact object.</returns>
-        Task<Contact> UpdateContact(Contact contact);
+        Task<Contact?> UpdateContact(Contact contact);
 
         /// <summary>
         /// Removes the Contact with the given ContactId.
@@ -38,6 +38,6 @@ namespace KinaUnaWebBlazor.Services
         /// <param name="progenyId">int: The id of the progeny (Progeny.Id).</param>
         /// <param name="accessLevel">int: The user's access level.</param>
         /// <returns>List of Contact objects.</returns>
-        Task<List<Contact>> GetContactsList(int progenyId, int accessLevel);
+        Task<List<Contact>?> GetContactsList(int progenyId, int accessLevel);
     }
 }

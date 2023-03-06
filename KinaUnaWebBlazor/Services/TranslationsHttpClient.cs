@@ -15,23 +15,17 @@ namespace KinaUnaWebBlazor.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheExpirationLong = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromHours(21));
 
-        public TranslationsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env, IDistributedCache cache)
+        public TranslationsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IDistributedCache cache)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             _cache = cache;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
-            }
 
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -58,20 +52,15 @@ namespace KinaUnaWebBlazor.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId") ?? throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ?? 
-                                               throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
                 _configuration.GetValue<string>("AuthenticationServerClientSecret") ?? throw new InvalidOperationException("AuthenticationServerClientSecret value missing in configuration."));
             return accessToken;
         }
 
-        private async Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false)
+        private async Task<List<KinaUnaLanguage>?> GetAllLanguages(bool updateCache = false)
         {
-            List<KinaUnaLanguage> languageList = new List<KinaUnaLanguage>();
+            List<KinaUnaLanguage>? languageList = new List<KinaUnaLanguage>();
             string? cachedLanguagesString = await _cache.GetStringAsync("AllLanguages");
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguagesString))
             {
@@ -91,7 +80,7 @@ namespace KinaUnaWebBlazor.Services
                 languageList = JsonConvert.DeserializeObject<List<KinaUnaLanguage>>(languageListAsString);
             }
 
-            if (languageList.Any())
+            if (languageList != null && languageList.Any())
             {
                 await _cache.SetStringAsync("AllLanguages", JsonConvert.SerializeObject(languageList));
             }
@@ -106,12 +95,12 @@ namespace KinaUnaWebBlazor.Services
                 languageId = 1;
             }
             string translation = "";
-            List<TextTranslation> translationsList;
+            List<TextTranslation>? translationsList;
             string? cachedTranslationsList = await _cache.GetStringAsync("PageTranslations" + page + "&Lang" + languageId);
             if (!updateCache && !string.IsNullOrEmpty(cachedTranslationsList))
             {
                 translationsList = JsonConvert.DeserializeObject<List<TextTranslation>>(cachedTranslationsList);
-                if (translationsList.Any())
+                if (translationsList != null && translationsList.Any())
                 {
                     translation = translationsList.FirstOrDefault(t =>t.LanguageId == languageId && t.Word== word)?.Translation ?? "";
                 }
@@ -129,7 +118,7 @@ namespace KinaUnaWebBlazor.Services
                     string translationsListAsString = await translationResponse.Content.ReadAsStringAsync();
                     translationsList = JsonConvert.DeserializeObject<List<TextTranslation>>(translationsListAsString);
                     
-                    if (translationsList.Any())
+                    if (translationsList != null && translationsList.Any())
                     {
                         await _cache.SetStringAsync("PageTranslations" + page + "&Lang" + languageId, JsonConvert.SerializeObject(translationsList), _cacheExpirationLong);
                         TextTranslation textTranslation = translationsList.FirstOrDefault(t => t.Word == word && t.Page == page && t.LanguageId == languageId) ?? new TextTranslation();
@@ -143,21 +132,21 @@ namespace KinaUnaWebBlazor.Services
 
             if (string.IsNullOrEmpty(translation))
             {
-                TextTranslation translationItem = new TextTranslation();
+                TextTranslation? translationItem = new TextTranslation();
                 translationItem.LanguageId = languageId;
                 translationItem.Translation = word;
                 translationItem.Page = page;
                 translationItem.Word = word;
                 translationItem = await AddTranslation(translationItem);
-                translation = translationItem.Translation;
+                if (translationItem != null) translation = translationItem.Translation;
             }
             return translation;
 
         }
 
-        public async Task<TextTranslation> AddTranslation(TextTranslation translation)
+        public async Task<TextTranslation?> AddTranslation(TextTranslation? translation)
         {
-            TextTranslation addedTranslation = new TextTranslation();
+            TextTranslation? addedTranslation = new TextTranslation();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -168,21 +157,22 @@ namespace KinaUnaWebBlazor.Services
                 string addResponseString = await addResponse.Content.ReadAsStringAsync();
                 addedTranslation = JsonConvert.DeserializeObject<TextTranslation>(addResponseString);
                 
-                List<KinaUnaLanguage> languages = await GetAllLanguages();
-                foreach (KinaUnaLanguage language in languages)
-                {
-                    await _cache.RemoveAsync("PageTranslations" + translation.Page + "&Lang" + language.Id);
-                    _ = await GetAllTranslations(language.Id, true);
-                }
+                List<KinaUnaLanguage>? languages = await GetAllLanguages();
+                if (languages != null)
+                    foreach (KinaUnaLanguage language in languages)
+                    {
+                        if (translation != null) await _cache.RemoveAsync("PageTranslations" + translation.Page + "&Lang" + language.Id);
+                        _ = await GetAllTranslations(language.Id, true);
+                    }
             }
             
 
             return addedTranslation;
         }
 
-        public async Task<TextTranslation> UpdateTranslation(TextTranslation translation)
+        public async Task<TextTranslation?> UpdateTranslation(TextTranslation translation)
         {
-            TextTranslation addedTranslation = new TextTranslation();
+            TextTranslation? addedTranslation = new TextTranslation();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -197,9 +187,9 @@ namespace KinaUnaWebBlazor.Services
             return addedTranslation;
         }
 
-        public async Task<TextTranslation> DeleteTranslation(TextTranslation translation)
+        public async Task<TextTranslation?> DeleteTranslation(TextTranslation translation)
         {
-            TextTranslation deletedTranslation = new TextTranslation();
+            TextTranslation? deletedTranslation = new TextTranslation();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -215,9 +205,9 @@ namespace KinaUnaWebBlazor.Services
             return deletedTranslation;
         }
 
-        public async Task<TextTranslation> DeleteSingleItemTranslation(TextTranslation translation)
+        public async Task<TextTranslation?> DeleteSingleItemTranslation(TextTranslation translation)
         {
-            TextTranslation deletedTranslation = new TextTranslation();
+            TextTranslation? deletedTranslation = new TextTranslation();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -227,20 +217,21 @@ namespace KinaUnaWebBlazor.Services
             {
                 string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
                 deletedTranslation = JsonConvert.DeserializeObject<TextTranslation>(deleteResponseString);
-                List<KinaUnaLanguage> languages = await GetAllLanguages();
-                foreach (KinaUnaLanguage language in languages)
-                {
-                    if (deletedTranslation.Id != 0) await _cache.RemoveAsync("PageTranslations" + deletedTranslation.Page + "&Lang" + language.Id);
-                    _ = await GetAllTranslations(language.Id, true).ConfigureAwait(false);
-                }
+                List<KinaUnaLanguage>? languages = await GetAllLanguages();
+                if (languages != null)
+                    foreach (KinaUnaLanguage language in languages)
+                    {
+                        if (deletedTranslation != null && deletedTranslation.Id != 0) await _cache.RemoveAsync("PageTranslations" + deletedTranslation.Page + "&Lang" + language.Id);
+                        _ = await GetAllTranslations(language.Id, true).ConfigureAwait(false);
+                    }
             }
 
             return deletedTranslation;
         }
 
-        public async Task<List<TextTranslation>> GetAllTranslations(int languageId = 0, bool updateCache = false)
+        public async Task<List<TextTranslation>?> GetAllTranslations(int languageId = 0, bool updateCache = false)
         {
-            List<TextTranslation> translationsList = new List<TextTranslation>();
+            List<TextTranslation>? translationsList = new List<TextTranslation>();
             string? cachedTranslationsList = await _cache.GetStringAsync("AllTranslations" + "&Lang" + languageId);
             if (!updateCache && languageId != 0 && !string.IsNullOrEmpty(cachedTranslationsList))
             {
@@ -265,9 +256,9 @@ namespace KinaUnaWebBlazor.Services
             return translationsList;
         }
 
-        public async Task<TextTranslation> GetTranslationById(int id, bool updateCache = false)
+        public async Task<TextTranslation?> GetTranslationById(int id, bool updateCache = false)
         {
-            TextTranslation textTranslation = new TextTranslation();
+            TextTranslation? textTranslation = new TextTranslation();
             string? cachedTranslation = await _cache.GetStringAsync("TranslationById" + id);
             if (!updateCache && !string.IsNullOrEmpty(cachedTranslation))
             {

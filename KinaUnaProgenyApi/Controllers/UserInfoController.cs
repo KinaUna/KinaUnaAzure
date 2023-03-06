@@ -325,7 +325,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
             
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            // Todo: do not allow access, unless user is a Pivoq Organizer or has been granted access otherwise.
+            
             bool allowAccess = false;
             if (userEmail.ToUpper() == userInfo.UserEmail?.ToUpper())
             {
@@ -400,7 +400,7 @@ namespace KinaUnaProgenyApi.Controllers
                 userInfo.ProgenyList = new List<Progeny>();
             }
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            // Todo: do not allow access, unless user is a Pivoq Organizer or has been granted access otherwise.
+            
             bool allowAccess = false;
             if (userEmail.ToUpper() == userInfo.UserEmail?.ToUpper())
             {
@@ -466,7 +466,7 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo currentUserInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
 
-            if (currentUserInfo.IsKinaUnaAdmin || currentUserInfo.IsPivoqAdmin)
+            if (currentUserInfo.IsKinaUnaAdmin)
             {
                 List<UserInfo> result = await _userInfoService.GetAllUserInfos();
 
@@ -566,7 +566,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                if (requester.IsKinaUnaAdmin || requester.IsPivoqAdmin)
+                if (requester.IsKinaUnaAdmin)
                 {
                     allowAccess = true;
                 }
@@ -619,10 +619,9 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (value.UpdateIsAdmin)
             {
-                if (requester.IsKinaUnaAdmin || requester.IsPivoqAdmin)
+                if (requester.IsKinaUnaAdmin)
                 {
                     userInfo.IsKinaUnaAdmin = value.IsKinaUnaAdmin;
-                    userInfo.IsPivoqAdmin = value.IsPivoqAdmin;
                 }
             }
 
@@ -689,7 +688,7 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo currentUserInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
 
-            if (currentUserInfo.IsKinaUnaAdmin || currentUserInfo.IsPivoqAdmin)
+            if (currentUserInfo.IsKinaUnaAdmin)
             {
                 List<UserInfo> deletedUsersList = await _userInfoService.GetDeletedUserInfos();
                 return Ok(deletedUsersList);

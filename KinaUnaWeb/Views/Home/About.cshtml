@@ -8,21 +8,21 @@
     ViewData["Title"] = await LocaleManager.GetTranslation("About", PageNames.Layout, Model.LanguageId);
     Model.KinaUnaText = await LocaleManager.GetPageTextByTitle("__About", "About", Model.LanguageId);
 }
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
-    <h2>@ViewData["Title"]</h2>
-    <div>
-        <H4>
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="add-item-container">
+        <h2 class="col-12">@ViewData["Title"]</h2>
+        <div class="col-12">
             <img src="~/images/KinaUnaLogo_246x80.png" />
-        </H4>
-        <br />
-        <div style="max-width: 600px;" id="impressumTextDiv">
+        </div>
+        <div class="space-50"></div>
+        <div class="col-auto" style="max-width: 800px;" id="impressumTextDiv">
             @Html.Raw(Model.KinaUnaText.Text ?? "")
         </div>
-        <br />
+        <div class="space-20"></div>
         @if (Model.CurrentUser.IsKinaUnaAdmin && Model.KinaUnaText != null)
         {
             <div class="space-20"></div>
-            <div><a class="btn btn-outline-info" onclick="editModal('@Model.KinaUnaText.Id', 'Edit About')">Edit</a></div>
+            <div class="col-auto"><a class="btn btn-outline-info" onclick="editModal('@Model.KinaUnaText.Id', 'Edit About')">Edit</a></div>
             <div class="space-20"></div>
             <script>
                 function onImageUploadSuccess(args) {

@@ -3,23 +3,27 @@
     ViewData["Title"] = "Configure Keys";
 }
 
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
-    <h2>Configure Keys</h2>
-    <div class="alert alert-warning alert-dismissable">
-        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-        <strong>Developer Notes:</strong>
-        <ul>
-            <li>Web Push notification require a public and private key to send a payload.</li>
-            <li>Newly generated keys for you to use are below.</li>
-            <li>Key generation code can be viewed in Controllers/WebPushController.cs:GenerateKeys</li>
-        </ul>
-    </div>
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="add-item-container">
+        <h2>@ViewData["Title"]</h2>
+        <div class="space-20"></div>
+        <h2>Configure Keys</h2>
+        <div class="alert alert-warning alert-dismissable">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <strong>Developer Notes:</strong>
+            <ul>
+                <li>Web Push notification require a public and private key to send a payload.</li>
+                <li>Newly generated keys for you to use are below.</li>
+                <li>Key generation code can be viewed in Controllers/WebPushController.cs:GenerateKeys</li>
+            </ul>
+        </div>
 
-    <p>Add the following keys to appsettings.json</p>
-<pre>
-  "VapidKeys" : {
-    "PublicKey": "@ViewBag.PublicKey",
-    "PrivateKey":  "@ViewBag.PrivateKey" 
-  } 
+        <p>Add the following keys to appsettings.json</p>
+        <pre>
+"VapidKeys" : {
+"PublicKey": "@ViewBag.PublicKey",
+"PrivateKey":  "@ViewBag.PrivateKey" 
+} 
 </pre>
+    </div>
 </div>

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
@@ -11,36 +10,38 @@ namespace KinaUnaWeb.Controllers
     public class MyDataController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
-        private readonly IWordsHttpClient _wordsHttpClient;
-        private readonly IVaccinationsHttpClient _vaccinationsHttpClient;
-        private readonly ISkillsHttpClient _skillsHttpClient;
-        private readonly IMeasurementsHttpClient _measurementsHttpClient;
-        private readonly ILocationsHttpClient _locationsHttpClient;
-        private readonly IFriendsHttpClient _friendsHttpClient;
-        private readonly IContactsHttpClient _contactsHttpClient;
-        private readonly ICalendarsHttpClient _calendarsHttpClient;
-        private readonly ISleepHttpClient _sleepHttpClient;
-        private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private readonly IMediaHttpClient _mediaHttpClient;
+        //private readonly IUserInfosHttpClient _userInfosHttpClient;
+        //private readonly IWordsHttpClient _wordsHttpClient;
+        //private readonly IVaccinationsHttpClient _vaccinationsHttpClient;
+        //private readonly ISkillsHttpClient _skillsHttpClient;
+        //private readonly IMeasurementsHttpClient _measurementsHttpClient;
+        //private readonly ILocationsHttpClient _locationsHttpClient;
+        //private readonly IFriendsHttpClient _friendsHttpClient;
+        //private readonly IContactsHttpClient _contactsHttpClient;
+        //private readonly ICalendarsHttpClient _calendarsHttpClient;
+        //private readonly ISleepHttpClient _sleepHttpClient;
+        //private readonly IUserAccessHttpClient _userAccessHttpClient;
+        //private readonly IMediaHttpClient _mediaHttpClient;
 
-        public MyDataController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, IUserInfosHttpClient userInfosHttpClient, IWordsHttpClient wordsHttpClient, IVaccinationsHttpClient vaccinationsHttpClient,
-            ISkillsHttpClient skillsHttpClient, IMeasurementsHttpClient measurementsHttpClient, ILocationsHttpClient locationsHttpClient, IFriendsHttpClient friendsHttpClient, IContactsHttpClient contactsHttpClient,
-            ICalendarsHttpClient calendarsHttpClient, ISleepHttpClient sleepHttpClient, IUserAccessHttpClient userAccessHttpClient)
+        public MyDataController(IProgenyHttpClient progenyHttpClient //,
+            //IMediaHttpClient mediaHttpClient, IUserInfosHttpClient userInfosHttpClient, IWordsHttpClient wordsHttpClient, IVaccinationsHttpClient vaccinationsHttpClient,
+            //ISkillsHttpClient skillsHttpClient, IMeasurementsHttpClient measurementsHttpClient, ILocationsHttpClient locationsHttpClient, IFriendsHttpClient friendsHttpClient, IContactsHttpClient contactsHttpClient,
+            //ICalendarsHttpClient calendarsHttpClient, ISleepHttpClient sleepHttpClient, IUserAccessHttpClient userAccessHttpClient
+            )
         {
             _progenyHttpClient = progenyHttpClient;
-            _mediaHttpClient = mediaHttpClient;
-            _userInfosHttpClient = userInfosHttpClient;
-            _wordsHttpClient = wordsHttpClient;
-            _vaccinationsHttpClient = vaccinationsHttpClient;
-            _skillsHttpClient = skillsHttpClient;
-            _measurementsHttpClient = measurementsHttpClient;
-            _locationsHttpClient = locationsHttpClient;
-            _friendsHttpClient = friendsHttpClient;
-            _contactsHttpClient = contactsHttpClient;
-            _calendarsHttpClient = calendarsHttpClient;
-            _sleepHttpClient = sleepHttpClient;
-            _userAccessHttpClient = userAccessHttpClient;
+            //_mediaHttpClient = mediaHttpClient;
+            //_userInfosHttpClient = userInfosHttpClient;
+            //_wordsHttpClient = wordsHttpClient;
+            //_vaccinationsHttpClient = vaccinationsHttpClient;
+            //_skillsHttpClient = skillsHttpClient;
+            //_measurementsHttpClient = measurementsHttpClient;
+            //_locationsHttpClient = locationsHttpClient;
+            //_friendsHttpClient = friendsHttpClient;
+            //_contactsHttpClient = contactsHttpClient;
+            //_calendarsHttpClient = calendarsHttpClient;
+            //_sleepHttpClient = sleepHttpClient;
+            //_userAccessHttpClient = userAccessHttpClient;
         }
         public IActionResult Index()
         {
@@ -49,14 +50,14 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<FileResult> ChildSpreadSheet(int progenyId)
         {
-            string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
-            if (string.IsNullOrEmpty(userTimeZone))
-            {
-                userTimeZone = Constants.DefaultTimezone;
-            }
+            //string userTimeZone = HttpContext.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
+            //if (string.IsNullOrEmpty(userTimeZone))
+            //{
+            //    userTimeZone = Constants.DefaultTimezone;
+            //}
 
             Progeny prog = await _progenyHttpClient.GetProgeny(progenyId);
-            Dictionary<string, string> userEmails = new Dictionary<string, string>();
+            //Dictionary<string, string> userEmails = new Dictionary<string, string>();
 
             MemoryStream stream = new MemoryStream();
 

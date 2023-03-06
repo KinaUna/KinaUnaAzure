@@ -17,22 +17,15 @@ namespace KinaUnaWebBlazor.Services
         private readonly ImageStore _imageStore;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
         private readonly IAuthHttpClient _authHttpClient;
-        public ProgenyManager(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IIdentityParser<ApplicationUser> userManager, ImageStore imageStore, HttpClient httpClient, ApiTokenInMemoryClient apiTokenClient,
-            IHostEnvironment env, IAuthHttpClient authHttpClient)
+        public ProgenyManager(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IIdentityParser<ApplicationUser> userManager, ImageStore imageStore, HttpClient httpClient, ApiTokenInMemoryClient apiTokenClient, IAuthHttpClient authHttpClient)
         {
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _userManager = userManager;
             _imageStore = imageStore;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
-            }
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -59,11 +52,6 @@ namespace KinaUnaWebBlazor.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId") ?? throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ??
-                                               throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(
                 authenticationServerClientId,
@@ -73,18 +61,18 @@ namespace KinaUnaWebBlazor.Services
         }
 
 
-        public async Task<UserInfo> GetInfo(string userEmail)
+        public async Task<UserInfo?> GetInfo(string userEmail)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
             
             string userInfoApiPath = "/api/UserInfo/ByEmail/" + userEmail;
-            UserInfo userInfo = new UserInfo();
+            UserInfo? userInfo = new UserInfo();
             try
             {
                 string userInfoResponseString = await _httpClient.GetStringAsync(userInfoApiPath);
                 userInfo = JsonConvert.DeserializeObject<UserInfo>(userInfoResponseString);
-                if (!userInfo.IsKinaUnaUser)
+                if (userInfo != null && !userInfo.IsKinaUnaUser)
                 {
                     if (userInfo.UserEmail != "Unknown")
                     {
@@ -95,15 +83,18 @@ namespace KinaUnaWebBlazor.Services
             }
             catch (Exception e)
             {
-                userInfo.UserId = "401";
-                userInfo.UserName = e.Message;
-                userInfo.UserEmail = Constants.DefaultUserEmail;
-                userInfo.CanUserAddItems = false;
-                userInfo.ViewChild = Constants.DefaultChildId;
-                return userInfo;
+                if (userInfo != null)
+                {
+                    userInfo.UserId = "401";
+                    userInfo.UserName = e.Message;
+                    userInfo.UserEmail = Constants.DefaultUserEmail;
+                    userInfo.CanUserAddItems = false;
+                    userInfo.ViewChild = Constants.DefaultChildId;
+                    return userInfo;
+                }
             }
 
-            if (userInfo.UserEmail == "Unknown")
+            if (userInfo != null && userInfo.UserEmail == "Unknown")
             {
                 ApplicationUser applicationUser = _userManager.Parse(_httpContextAccessor.HttpContext?.User ?? new ClaimsPrincipal());
                 if (!string.IsNullOrEmpty(applicationUser.Email))
@@ -135,7 +126,7 @@ namespace KinaUnaWebBlazor.Services
                 }
             }
 
-            if (userInfo.ViewChild == 0)
+            if (userInfo != null && userInfo.ViewChild == 0)
             {
                 if (userInfo.ProgenyList.Any())
                 {
@@ -160,38 +151,38 @@ namespace KinaUnaWebBlazor.Services
             return returnString;
         }
 
-        public async Task<UserInfo> UpdateUserInfo(UserInfo userinfo)
+        public async Task<UserInfo?> UpdateUserInfo(UserInfo? userinfo)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
             
             // Todo: ProfilePicture
-            string newUserinfoApiPath = "/api/UserInfo/" + userinfo.UserId;
+            string newUserinfoApiPath = "/api/UserInfo/" + userinfo?.UserId;
             HttpResponseMessage userInfoResponse = await _httpClient.PutAsync(newUserinfoApiPath, new StringContent(JsonConvert.SerializeObject(userinfo), System.Text.Encoding.UTF8, "application/json"));
             if (userInfoResponse.IsSuccessStatusCode)
             {
                 string userInfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-                UserInfo updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(userInfoAsString);
+                UserInfo? updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(userInfoAsString);
                 return updatedUserinfo;
             }
 
             return new UserInfo();
         }
 
-        public async Task<Progeny> CurrentChildAsync(int progenyId, string userId)
+        public async Task<Progeny?> CurrentChildAsync(int progenyId, string userId)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
             
             string progenyApiPath = "/api/Progeny/" + progenyId;
             string progenyResponseString = await _httpClient.GetStringAsync(progenyApiPath);
-            Progeny child = JsonConvert.DeserializeObject<Progeny>(progenyResponseString);
+            Progeny? child = JsonConvert.DeserializeObject<Progeny>(progenyResponseString);
             bool hasAccess = false;
             string accessApiPath = "/api/Access/Progeny/" + progenyId;
             string accessResponseString = await _httpClient.GetStringAsync(accessApiPath);
-            List<UserAccess> accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessResponseString);
+            List<UserAccess>? accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessResponseString);
 
-            if (accessList.Any())
+            if (accessList != null && accessList.Any())
             {
                 foreach (UserAccess accessItem in accessList)
                 {
@@ -204,14 +195,16 @@ namespace KinaUnaWebBlazor.Services
             
             if (!hasAccess)
             {
-                child.Name = "Test Child";
-                child.NickName = "Tester";
-                child.Id = -1;
-                child.Admins = "per.mogensen@live.com";
-                child.BirthDay = DateTime.Now;
-                child.TimeZone = TimeZoneInfo.Utc.Id;
-                child.PictureLink = "/images/images_placeholder.png";
-
+                if (child != null)
+                {
+                    child.Name = "Test Child";
+                    child.NickName = "Tester";
+                    child.Id = -1;
+                    child.Admins = "per.mogensen@live.com";
+                    child.BirthDay = DateTime.Now;
+                    child.TimeZone = TimeZoneInfo.Utc.Id;
+                    child.PictureLink = "/images/images_placeholder.png";
+                }
             }
             
             return child;
@@ -227,9 +220,9 @@ namespace KinaUnaWebBlazor.Services
             if (accessResponse.IsSuccessStatusCode)
             {
                 string accessAsString = await accessResponse.Content.ReadAsStringAsync();
-                List<UserAccess> accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessAsString);
+                List<UserAccess>? accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessAsString);
 
-                if (accessList.Any())
+                if (accessList != null && accessList.Any())
                 {
                     foreach (UserAccess ua in accessList)
                     {
@@ -285,8 +278,8 @@ namespace KinaUnaWebBlazor.Services
                         if (userInfoResponse.IsSuccessStatusCode)
                         {
                             string userInfoResponseAsString = await userInfoResponse.Content.ReadAsStringAsync();
-                            UserInfo userinfo = JsonConvert.DeserializeObject<UserInfo>(userInfoResponseAsString);
-                            if (userinfo.UserId.ToUpper() == userId.ToUpper())
+                            UserInfo? userinfo = JsonConvert.DeserializeObject<UserInfo>(userInfoResponseAsString);
+                            if (userinfo?.UserId.ToUpper() == userId.ToUpper())
                             {
                                 return true;
                             }

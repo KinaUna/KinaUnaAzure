@@ -1,14 +1,31 @@
-﻿@model Skill
-<a class="leavePage2" asp-controller="Skills" asp-action="Index">
-    <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
-
-        <div class="card-body bg-skill">
-            <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 12px;" class="fa fa-graduation-cap"></span><strong style="font-size: 12px;" class="text-warning">
-                @{
-                    System.Diagnostics.Debug.Assert(Model.SkillFirstObservation != null, "Model.SkillFirstObservation != null");
-                }
-                @Model.SkillFirstObservation.Value.ToString("dd-MMM-yyyy HH:mm") </strong></div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@Model.Name</div>
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model Skill
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+}
+<a class="leavePage" asp-controller="Skills" asp-action="Index">
+    <div class="bg-primary timeline-card">
+        <div class="timeline-card-body bg-skill">
+            <div class="row">
+                <div class="col-auto">
+                    <span class="timeline-icon"><i class="material-icons">school</i></span>
+                </div>
+                <div class="col">
+                    <div class="timeline-title">
+                        <strong>
+                            @Model.Name
+                        </strong>
+                    </div>
+                    <div class="timeline-text text-white-50">
+                        @if (Model.SkillFirstObservation.HasValue)
+                        {
+                            <div>@await LocaleManager.GetTranslation("Date:", PageNames.Skills, languageId) @Model.SkillFirstObservation.Value.ToString("dd-MMM-yyyy")</div>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </a>

@@ -4,29 +4,40 @@
 @inject ILocaleManager LocaleManager
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
+    Model.StartTime ??= DateTime.MinValue;
+    Model.EndTime ??= DateTime.MinValue;
 }
 <a class="leavePage" asp-controller="Calendar" asp-action="ViewEvent" asp-route-eventId="@Model.EventId">
-    <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
-
-        <div class="card-body" style="background: #260333; background: rgba(38, 3, 51, 0.5)">
-            <div class="info-title">
-                <span style="font-size: 18px; color: white; margin-right: 12px;" class="fa fa-calendar"></span><strong style="font-size: 12px;" class="text-warning">
-
-                    @{
-                        System.Diagnostics.Debug.Assert(Model.StartTime != null, "Model.StartTime != null");
-                    }
-                    @Model.StartTime.Value.ToString("dd-MMM-yyyy HH:mm") -
-
-                    @{
-                        System.Diagnostics.Debug.Assert(Model.EndTime != null, "Model.EndTime != null");
-                    }
-                    @Model.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")
-                </strong>
+    <div class="bg-primary timeline-card">
+        <div class="timeline-card-body bg-calendar">
+            <div class="row">
+                <div class="col-auto">
+                    <span class="latest-posts-icon"><i class="material-icons">event_note</i></span>
+                </div>
+                <div class="col">
+                    <div class="latest-posts-title">
+                        <strong>
+                            @Model.StartTime.Value.ToString("dd-MMM-yyyy HH:mm") - @Model.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")
+                        </strong>
+                    </div>
+                    <div class="latest-posts-text text-white-50">
+                        <div class="text-white"><strong>@Model.Title</strong></div>
+                        <br />
+                        @if (!string.IsNullOrEmpty(Model.Location))
+                        {
+                            <div>@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, languageId) @Model.Location</div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Context))
+                        {
+                            <div>@await LocaleManager.GetTranslation("Context:", PageNames.Calendar, languageId) @Model.Context</div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Notes))
+                        {
+                            <div>@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, languageId) @Model.Notes</div>
+                        }
+                    </div>
+                </div>
             </div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@Model.Title</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, languageId) @Model.Location</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("Context:", PageNames.Calendar, languageId) @Model.Context</div>
-            <div style="margin-left: 2px; font-size: 12px;" class="text-white">@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, languageId) @Model.Notes</div>
         </div>
     </div>
 </a>

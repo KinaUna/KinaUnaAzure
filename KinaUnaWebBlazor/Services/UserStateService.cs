@@ -64,7 +64,7 @@ namespace KinaUnaWebBlazor.Services
         public async Task SetUser(string userEmail)
         {
             CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-            await SetProgeny(CurrentUser.ViewChild);
+            if (CurrentUser != null) await SetProgeny(CurrentUser.ViewChild);
         }
 
         private async Task SetProgeny(int progenyId)

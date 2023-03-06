@@ -17,16 +17,14 @@ namespace KinaUnaWeb.Controllers
         private readonly IProgenyHttpClient _progenyHttpClient;
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly INotesHttpClient _notesHttpClient;
-        private readonly ImageStore _imageStore;
         private readonly IViewModelSetupService _viewModelSetupService;
         
-        public NotesController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, INotesHttpClient notesHttpClient, ImageStore imageStore,
+        public NotesController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, INotesHttpClient notesHttpClient,
             IViewModelSetupService viewModelSetupService)
         {
             _progenyHttpClient = progenyHttpClient;
             _userInfosHttpClient = userInfosHttpClient;
             _notesHttpClient = notesHttpClient;
-            _imageStore = imageStore;
             _viewModelSetupService = viewModelSetupService;
         }
 
@@ -127,8 +125,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.SetPropertiesFromNote(note);
-            model.NoteItem.Content = _imageStore.UpdateBlobLinks(model.NoteItem.Content);
-
+            
             model.SetAccessLevelList();
 
             model.PathName = model.CurrentUser.UserId;
@@ -170,7 +167,6 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.NoteItem = note; 
-            model.NoteItem.Content = _imageStore.UpdateBlobLinks(model.NoteItem.Content);
             
             return View(model);
         }

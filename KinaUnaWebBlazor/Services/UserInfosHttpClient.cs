@@ -14,20 +14,14 @@ namespace KinaUnaWebBlazor.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
 
-        public UserInfosHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
+        public UserInfosHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
-            }
 
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -53,18 +47,13 @@ namespace KinaUnaWebBlazor.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId") ?? throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ??
-                                               throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
                 _configuration.GetValue<string>("AuthenticationServerClientSecret") ?? throw new InvalidOperationException("AuthenticationServerClientSecret value missing in configuration."));
             return accessToken;
         }
 
-        public async Task<UserInfo> GetUserInfo(string email)
+        public async Task<UserInfo?> GetUserInfo(string email)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -73,7 +62,7 @@ namespace KinaUnaWebBlazor.Services
             string id = email;
             HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(id), System.Text.Encoding.UTF8, "application/json"));
 
-            UserInfo userInfo = new UserInfo();
+            UserInfo? userInfo = new UserInfo();
             if (userInfoResponse.IsSuccessStatusCode)
             {
                 string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
@@ -84,7 +73,7 @@ namespace KinaUnaWebBlazor.Services
             return userInfo;
         }
 
-        public async Task<UserInfo> GetUserInfoByUserId(string userId)
+        public async Task<UserInfo?> GetUserInfoByUserId(string userId)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -96,13 +85,13 @@ namespace KinaUnaWebBlazor.Services
             if (userInfoResponse.IsSuccessStatusCode)
             {
                 string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-                UserInfo userInfo = JsonConvert.DeserializeObject<UserInfo>(userinfoAsString);
+                UserInfo? userInfo = JsonConvert.DeserializeObject<UserInfo>(userinfoAsString);
                 return userInfo;
             }
 
             return new UserInfo();
         }
-        public async Task<UserInfo> UpdateUserInfo(UserInfo userInfo)
+        public async Task<UserInfo?> UpdateUserInfo(UserInfo userInfo)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -113,14 +102,14 @@ namespace KinaUnaWebBlazor.Services
             if (newUserInfoResponse.IsSuccessStatusCode)
             {
                 string newUserResponseString = await newUserInfoResponse.Content.ReadAsStringAsync();
-                UserInfo updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
+                UserInfo? updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
                 return updatedUserinfo;
             }
             
             return new UserInfo();
         }
 
-        public async Task<UserInfo> DeleteUserInfo(UserInfo userInfo)
+        public async Task<UserInfo?> DeleteUserInfo(UserInfo userInfo)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -133,21 +122,21 @@ namespace KinaUnaWebBlazor.Services
             if (deleteResponse.IsSuccessStatusCode)
             {
                 string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
-                UserInfo deletedUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseString);
+                UserInfo? deletedUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseString);
                 return deletedUserInfo;
             }
 
             return new UserInfo();
         }
 
-        public async Task<List<UserInfo>> GetDeletedUserInfos()
+        public async Task<List<UserInfo>?> GetDeletedUserInfos()
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string userInfoApiPath = "/api/UserInfo/GetDeletedUserInfos/";
             HttpResponseMessage userInfoResponse = await _httpClient.GetAsync(userInfoApiPath);
-            List<UserInfo> userInfosList = new List<UserInfo>();
+            List<UserInfo>? userInfosList = new List<UserInfo>();
             if (userInfoResponse.IsSuccessStatusCode)
             {
                 string userInfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
@@ -157,9 +146,9 @@ namespace KinaUnaWebBlazor.Services
             return userInfosList;
         }
 
-        public async Task<UserInfo> RemoveUserInfoForGood(UserInfo userInfo)
+        public async Task<UserInfo?> RemoveUserInfoForGood(UserInfo userInfo)
         {
-            UserInfo deletedUserInfo = new UserInfo();
+            UserInfo? deletedUserInfo = new UserInfo();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

@@ -1,22 +1,4 @@
 ﻿document.domain = document.domain;
-window.addEventListener('message', function (event) {
-    if (~event.origin.indexOf('https://web.kinauna.com')) {
-        window.parent.postMessage("auth", '*');
-    }
-    if (~event.origin.indexOf('https://pivoq.kinauna.com')) {
-        window.parent.postMessage("auth", '*');
-    }
-    if (~event.origin.indexOf('https://localhost:44324')) {
-        window.parent.postMessage("auth", '*');
-    }
-    else {
-        if (~event.origin.indexOf('https://localhost:44349')) {
-            window.parent.postMessage("auth", '*');
-        } else {
-            return;
-        }
-    }
-});
 $(document).ready(function () {
     $(".closeModal").click(function () {
         window.parent.postMessage("closeModal", '*');

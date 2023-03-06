@@ -1,6 +1,5 @@
 ﻿using System;
 using IdentityServer4.AccessTokenValidation;
-using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUnaMediaApi.Services;
 using Microsoft.AspNetCore.Builder;
@@ -15,12 +14,9 @@ namespace KinaUnaMediaApi
 {
     public class Startup
     {
-        private readonly IWebHostEnvironment _env;
-
-        public Startup(IConfiguration configuration, IWebHostEnvironment env)
+        public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            _env = env;
         }
 
         public IConfiguration Configuration { get; }
@@ -29,10 +25,6 @@ namespace KinaUnaMediaApi
         public void ConfigureServices(IServiceCollection services)
         {
             string authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authorityServerUrl = Configuration.GetValue<string>("AuthenticationServer" + Constants.DebugKinaUnaServer);
-            }
             string authenticationServerClientId = Configuration.GetValue<string>("AuthenticationServerClientId");
             string authenticationServerClientSecret = Configuration["AuthenticationServerClientSecret"];
 

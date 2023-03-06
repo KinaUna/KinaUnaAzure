@@ -5,21 +5,28 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Delete word", PageNames.Vocabulary, Model.LanguageId);
 }
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
-    <h2>@ViewData["Title"] - @Model.VocabularyItem.Word</h2>
-    <form asp-action="DeleteVocabulary" role="form" method="post">
-        <div>
-            @await LocaleManager.GetTranslation("Are you sure you want to delete this word?", PageNames.Vocabulary, Model.LanguageId) @Model.VocabularyItem.Word
-        </div>
-        <br />
-        <div>
-            @await LocaleManager.GetTranslation("Description:", PageNames.Vocabulary, Model.LanguageId) @Model.VocabularyItem.Description
-        </div>
-        <br />
-        <input asp-for="VocabularyItem.WordId" class="form-control" value="@Model.VocabularyItem.WordId" type="hidden" />
-        <div>
-            <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - delete this word", PageNames.Vocabulary, Model.LanguageId)</Button>
-            <a class="btn btn-danger leavePage" asp-controller="Vocabulary" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
-        </div>
-    </form>
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="add-item-container">
+        <h2 class="col-12">@ViewData["Title"]</h2>
+        <div class="space-20"></div>
+        <form asp-action="DeleteVocabulary" role="form" method="post">
+            <div class="col-auto">
+                @await LocaleManager.GetTranslation("Are you sure you want to delete this word?", PageNames.Vocabulary, Model.LanguageId)
+            </div>
+            <div class="space-20"></div>
+            <div class="col-auto">
+                <h4>@Model.VocabularyItem.Word</h4>
+            </div>
+            <div class="space-20"></div>
+            <div class="col-auto">
+                @await LocaleManager.GetTranslation("Description:", PageNames.Vocabulary, Model.LanguageId) @Model.VocabularyItem.Description
+            </div>
+            <div class="space-20"></div>
+            <input asp-for="VocabularyItem.WordId" class="form-control" value="@Model.VocabularyItem.WordId" type="hidden" />
+            <div class="col-auto">
+                <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - delete this word", PageNames.Vocabulary, Model.LanguageId)</Button>
+                <a class="btn btn-danger leavePage" asp-controller="Vocabulary" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+            </div>
+        </form>
+    </div>
 </div>

@@ -113,7 +113,7 @@ namespace KinaUnaProgenyApi.Services
 
             while (linkFound > 0)
             {
-                linkFound = originalText.IndexOf("https://kinaunastorage.blob.core.windows.net", lastIndex, StringComparison.Ordinal);
+                linkFound = originalText.IndexOf(Constants.CloudBlobBase, lastIndex, StringComparison.Ordinal);
                 if (linkFound > 0)
                 {
                     int linkEnd = originalText.IndexOf("sp=r", linkFound, StringComparison.Ordinal) + 4;

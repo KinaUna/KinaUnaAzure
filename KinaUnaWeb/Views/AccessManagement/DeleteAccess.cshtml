@@ -5,29 +5,32 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Delete user's access", PageNames.AccessManagement, Model.LanguageId);
 }
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
-    <h2>@ViewData["Title"]</h2>
-    <form asp-action="DeleteAccess" role="form">
-        <div class="modal-body form-horizontal">
-            @await LocaleManager.GetTranslation("Are you sure you want to remove access for", PageNames.AccessManagement, Model.LanguageId) @Model.UserName ?
-        </div>
-        <div>
-            @await LocaleManager.GetTranslation("First name", PageNames.AccessManagement, Model.LanguageId): @Model.FirstName
-        </div>
-        <div>
-            @await LocaleManager.GetTranslation("Middle name", PageNames.AccessManagement, Model.LanguageId): @Model.MiddleName
-        </div>
-        <div>
-            @await LocaleManager.GetTranslation("Last name", PageNames.AccessManagement, Model.LanguageId): @Model.LastName
-        </div>
-        <div>
-            @await LocaleManager.GetTranslation("Email", PageNames.AccessManagement, Model.LanguageId): @Model.Email
-        </div>
-
-        <input asp-for="AccessId" class="form-control" value="@Model.AccessId" type="hidden"/>
-        <div>
-            <Button class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes", PageNames.AccessManagement, Model.LanguageId)</Button>
-            <a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AccessManagement, Model.LanguageId)</a>
-        </div>
-    </form>
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="add-item-container">
+        <h2 class="col-12">@ViewData["Title"]</h2>
+        <div class="space-20"></div>
+        <form asp-action="DeleteAccess" role="form">
+            <div class="col-auto">
+                @await LocaleManager.GetTranslation("Are you sure you want to remove access for", PageNames.AccessManagement, Model.LanguageId) @Model.UserName ?
+            </div>
+            <div class="col-auto">
+                @await LocaleManager.GetTranslation("First name", PageNames.AccessManagement, Model.LanguageId): @Model.FirstName
+            </div>
+            <div class="col-auto">
+                @await LocaleManager.GetTranslation("Middle name", PageNames.AccessManagement, Model.LanguageId): @Model.MiddleName
+            </div>
+            <div col-auto class="col-auto">
+                @await LocaleManager.GetTranslation("Last name", PageNames.AccessManagement, Model.LanguageId): @Model.LastName
+            </div>
+            <div class="col-auto">
+                @await LocaleManager.GetTranslation("Email", PageNames.AccessManagement, Model.LanguageId): @Model.Email
+            </div>
+            <div class="space-20"></div>
+            <input asp-for="AccessId" class="form-control" value="@Model.AccessId" type="hidden"/>
+            <div class="col-auto">
+                <Button class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes", PageNames.AccessManagement, Model.LanguageId)</Button>
+                <a class="btn btn-danger leavePage" asp-controller="AccessManagement" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AccessManagement, Model.LanguageId)</a>
+            </div>
+        </form>
+    </div>
 </div>

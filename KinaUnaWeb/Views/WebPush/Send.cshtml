@@ -4,26 +4,27 @@
     <script src="@Url.Content("~/js/SendDevice.js")"></script>
 }
 @{
-    ViewData["Title"] = "Send";
+    ViewData["Title"] = "Send Push Message";
 }
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
-    <h2>Send Push Message</h2>
-    <hr />
-    <div class="row">
-        <div class="alert alert-info">
-            <strong>Developer Notes:</strong>
-            <ul>
-                <li>You can find the logic for sending a web push notification in Controllers/WebPushController.cs:Send</li>
-                <li>The Payload Generation Helper fields below are not sent to the web push api. They are simply used to generate the json payload which will be sent.</li>
-                <li>Client side code for handling push notifications can be found at wwwroot/sw.js</li>
-                <li>You can include any data in your payload, as long as your sw.js handles it.</li>
-            </ul>
-        </div>
-        <div class="col-md-4">
-            <div class="well" style="width: 500px;">
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="add-item-container">
+        <h2 class="col-12">@ViewData["Title"]</h2>
+        <div class="space-20"></div>
+        <hr />
+        <div class="col-auto">
+            <div class="alert alert-info">
+                <strong>Developer Notes:</strong>
+                <ul>
+                    <li>You can find the logic for sending a web push notification in Controllers/WebPushController.cs:Send</li>
+                    <li>The Payload Generation Helper fields below are not sent to the web push api. They are simply used to generate the json payload which will be sent.</li>
+                    <li>Client side code for handling push notifications can be found at wwwroot/sw.js</li>
+                    <li>You can include any data in your payload, as long as your sw.js handles it.</li>
+                </ul>
+            </div>
+            <div>
                 <h4>Payload Generation Helper</h4>
                 <span style="font-size: 12px;">Type your Title and Message and your payload will be generated below.</span>
-                <hr />
+                <hr/>
                 <div class="form-group">
                     <label class="control-label" for="Title">Title</label>
                     <input class="form-control" type="text" id="Title" name="Title" value="">
@@ -35,20 +36,18 @@
             </div>
 
             <form asp-action="Send">
-                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="Id"/>
                 <div class="form-group">
                     <label class="control-label" for="Payload">Payload</label>
-
                     <textarea class="form-control" id="Payload" name="Payload" style="width: 500px; height: 200px;"></textarea>
                 </div>
                 <div class="form-group">
-                    <input type="submit" value="Send Push" class="btn btn-primary" />
+                    <input type="submit" value="Send Push" class="btn btn-primary"/>
                 </div>
             </form>
         </div>
-    </div>
-
-    <div>
-        <a asp-controller="PushDevices" asp-action="Index">Back to List</a>
+        <div class="col-auto">
+            <a asp-controller="PushDevices" asp-action="Index">Back to List</a>
+        </div>
     </div>
 </div>

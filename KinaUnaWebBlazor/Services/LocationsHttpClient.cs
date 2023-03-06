@@ -14,20 +14,14 @@ namespace KinaUnaWebBlazor.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
 
-        public LocationsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
+        public LocationsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration");
-            }
 
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -53,23 +47,18 @@ namespace KinaUnaWebBlazor.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId") ?? throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ??
-                                               throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
                 _configuration.GetValue<string>("AuthenticationServerClientSecret") ?? throw new InvalidOperationException("AuthenticationServerClientSecret value missing in configuration"));
             return accessToken;
         }
 
-        public async Task<Location> GetLocation(int locationId)
+        public async Task<Location?> GetLocation(int locationId)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Location locationItem = new Location();
+            Location? locationItem = new Location();
             string locationsApiPath = "/api/Locations/" + locationId;
             HttpResponseMessage locationResponse = await _httpClient.GetAsync(locationsApiPath);
             if (locationResponse.IsSuccessStatusCode)
@@ -81,7 +70,7 @@ namespace KinaUnaWebBlazor.Services
             return locationItem;
         }
 
-        public async Task<Location> AddLocation(Location location)
+        public async Task<Location?> AddLocation(Location? location)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -98,12 +87,12 @@ namespace KinaUnaWebBlazor.Services
             return new Location();
         }
 
-        public async Task<Location> UpdateLocation(Location location)
+        public async Task<Location?> UpdateLocation(Location? location)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
             
-            string updateApiPath = "/api/Locations/" + location.LocationId;
+            string updateApiPath = "/api/Locations/" + location?.LocationId;
             HttpResponseMessage locationResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonConvert.SerializeObject(location), System.Text.Encoding.UTF8, "application/json"));
             if (locationResponse.IsSuccessStatusCode)
             {
@@ -130,9 +119,9 @@ namespace KinaUnaWebBlazor.Services
             return false;
         }
 
-        public async Task<List<Location>> GetProgenyLocations(int progenyId, int accessLevel)
+        public async Task<List<Location>?> GetProgenyLocations(int progenyId, int accessLevel)
         {
-            List<Location> progenyLocations = new List<Location>();
+            List<Location>? progenyLocations = new List<Location>();
 
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -149,9 +138,9 @@ namespace KinaUnaWebBlazor.Services
             return progenyLocations;
         }
 
-        public async Task<List<Location>> GetLocationsList(int progenyId, int accessLevel)
+        public async Task<List<Location>?> GetLocationsList(int progenyId, int accessLevel)
         {
-            List<Location> progenyLocationsList = new List<Location>();
+            List<Location>? progenyLocationsList = new List<Location>();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -167,12 +156,12 @@ namespace KinaUnaWebBlazor.Services
             return progenyLocationsList;
         }
 
-        public async Task<Address> GetAddress(int addressId)
+        public async Task<Address?> GetAddress(int addressId)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Address addressItem = new Address();
+            Address? addressItem = new Address();
             string addressApiPath = "/api/Addresses/" + addressId;
             HttpResponseMessage addressResponse = await _httpClient.GetAsync(addressApiPath);
             if (addressResponse.IsSuccessStatusCode)
@@ -185,7 +174,7 @@ namespace KinaUnaWebBlazor.Services
             return addressItem;
         }
 
-        public async Task<Address> AddAddress(Address address)
+        public async Task<Address?> AddAddress(Address address)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -195,14 +184,14 @@ namespace KinaUnaWebBlazor.Services
             if (addressResponse.IsSuccessStatusCode)
             {
                 string addressAsString = await addressResponse.Content.ReadAsStringAsync();
-                Address addressResult = JsonConvert.DeserializeObject<Address>(addressAsString);
+                Address? addressResult = JsonConvert.DeserializeObject<Address>(addressAsString);
                 return addressResult;
             }
 
             return new Address();
         }
 
-        public async Task<Address> UpdateAddress(Address address)
+        public async Task<Address?> UpdateAddress(Address address)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -212,7 +201,7 @@ namespace KinaUnaWebBlazor.Services
             if (addressResponse.IsSuccessStatusCode)
             {
                 string addressAsString = await addressResponse.Content.ReadAsStringAsync();
-                Address resultAddress = JsonConvert.DeserializeObject<Address>(addressAsString);
+                Address? resultAddress = JsonConvert.DeserializeObject<Address>(addressAsString);
                 return resultAddress;
             }
 

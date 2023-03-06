@@ -101,7 +101,7 @@
     </script>
 }
 
-<div class="ml-xl-auto mr-xl-auto col-xl-10 col-xxl-9">
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     @if (Model.FriendViewModelsList == null || !Model.FriendViewModelsList.Any())
     {
         <h2>@ViewData["Title"]</h2>
@@ -154,7 +154,7 @@
         <br />
         <br />
         <div class="card bg-light" style="clear: both; margin-top: 0;">
-            <div class="card-body mx-auto d-block" style="padding-bottom: 35px;">
+            <div class="card-body d-block" style="padding-bottom: 35px;">
                 <div class="card-deck" style="clear: both;">
                     @foreach (FriendViewModel friendViewModel in Model.FriendViewModelsList)
                     {

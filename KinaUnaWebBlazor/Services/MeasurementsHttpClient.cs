@@ -14,20 +14,14 @@ namespace KinaUnaWebBlazor.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
 
-        public MeasurementsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
+        public MeasurementsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration");
-            }
 
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -53,23 +47,18 @@ namespace KinaUnaWebBlazor.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId") ?? throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ??
-                                               throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration");
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
                 _configuration.GetValue<string>("AuthenticationServerClientSecret") ?? throw new InvalidOperationException("AuthenticationServerClientSecret value missing in configuration"));
             return accessToken;
         }
 
-        public async Task<Measurement> GetMeasurement(int measurementId)
+        public async Task<Measurement?> GetMeasurement(int measurementId)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Measurement measurementItem = new Measurement();
+            Measurement? measurementItem = new Measurement();
             string measurementsApiPath = "/api/Measurements/" + measurementId;
             HttpResponseMessage measurementResponse = await _httpClient.GetAsync(measurementsApiPath);
             if (measurementResponse.IsSuccessStatusCode)
@@ -82,7 +71,7 @@ namespace KinaUnaWebBlazor.Services
             return measurementItem;
         }
 
-        public async Task<Measurement> AddMeasurement(Measurement measurement)
+        public async Task<Measurement?> AddMeasurement(Measurement? measurement)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -99,12 +88,12 @@ namespace KinaUnaWebBlazor.Services
             return new Measurement();
         }
 
-        public async Task<Measurement> UpdateMeasurement(Measurement measurement)
+        public async Task<Measurement?> UpdateMeasurement(Measurement? measurement)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string updateMeasurementsApiPath = "/api/Measurements/" + measurement.MeasurementId;
+            string updateMeasurementsApiPath = "/api/Measurements/" + measurement?.MeasurementId;
             HttpResponseMessage measurementResponse = await _httpClient.PutAsync(updateMeasurementsApiPath, new StringContent(JsonConvert.SerializeObject(measurement), System.Text.Encoding.UTF8, "application/json"));
             if (measurementResponse.IsSuccessStatusCode)
             {
@@ -131,9 +120,9 @@ namespace KinaUnaWebBlazor.Services
             return false;
         }
 
-        public async Task<List<Measurement>> GetMeasurementsList(int progenyId, int accessLevel)
+        public async Task<List<Measurement>?> GetMeasurementsList(int progenyId, int accessLevel)
         {
-            List<Measurement> progenyMeasurementsList = new List<Measurement>();
+            List<Measurement>? progenyMeasurementsList = new List<Measurement>();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

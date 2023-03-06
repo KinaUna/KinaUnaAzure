@@ -199,7 +199,7 @@ else
 </div>
 </nav>
 <div class="container body-content">
-    <div class="main main-raised" style="margin-top: 10px; margin-left: 5px; margin-right: 5px; padding: 5px; padding-left: 10px; padding-top: 10px;">
+    <div class="main" style="margin-top: 10px; padding-top: 10px;">
         <partial name="_CookieConsentPartial", model="@languageId"/>
         @if (showUndelete)
         {
@@ -207,7 +207,8 @@ else
         }
         @RenderBody()
     </div>
-    <br/>
+    <div class="space-20"></div>
+    @await Html.PartialAsync("_FooterPartial", languageId)
 </div>
 <script src="~/js/site.js" asp-append-version="true"></script>
 @if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -217,7 +218,7 @@ else
     <script src="~/signalr/signalr-protocol-msgpack.min.js"></script>
     <script src="~/signalr/KinaUnaWebNotifications.js" asp-append-version="true"></script>
 }
-@await Html.PartialAsync("_FooterPartial", languageId)
+
 <ejs-scripts></ejs-scripts>
 </body>
 </html>

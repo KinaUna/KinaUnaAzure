@@ -32,7 +32,7 @@
                                                 <div class="ml-3" id="@translationIdDiv">
                                                     <span>@language.Name</span><span> : </span>
                                                     <span id="@translationId">@translation.Translation</span>
-                                                    <a class="btn btn-sm btn-outline" onclick="jQueryModalGet('@translation.Id', 'Edit translation')">Edit</a>
+                                                    <a class="btn btn-link btn-link-edit" onclick="jQueryModalGet('@translation.Id', 'Edit translation')">Edit</a>
                                                     @if (translations.Count > 1)
                                                     {
                                                         <a class="btn btn-sm btn-outline ml-5" onclick="jQueryModalDelete('@translation.Id', 'Delete translation')">Delete this translation</a>

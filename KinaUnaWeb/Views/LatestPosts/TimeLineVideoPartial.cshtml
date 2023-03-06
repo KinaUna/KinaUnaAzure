@@ -1,57 +1,76 @@
-﻿@model KinaUnaWeb.Models.ItemViewModels.VideoViewModel
-@{ string durTime = ""; }
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.VideoViewModel
+@inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+    string durTime = "";
+}
 <a class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-Id="@Model.VideoId">
-    <div class="card bg-primary" style="margin-top: 0; margin-bottom: 8px;">
-        <div class="card-body" style="background: #983151; background: rgba(152, 49, 81, 0.8)">
-            <div class="info-title"><span style="font-size: 18px; color: white; margin-right: 12px;" class="fas fa-video"></span><strong class="text-warning">@Model.VideoTime?.ToString("dd-MMM-yyyy HH:mm")</strong>
-                @if (!string.IsNullOrEmpty(Model.Location))
-                {
-                    <br /><span style="margin-left: 2px; color: pink; font-size: 12px;">@Model.Location</span>
-                }
+    <div class="bg-primary timeline-card">
+        <div class="timeline-card-body bg-video">
+            <div class="row">
+                <div class="col-auto">
+                    <span class="latest-posts-icon"><i class="material-icons">videocam</i></span>
                 </div>
-            <div align="center" class="img-rounded" style="overflow: hidden; max-width: 60vw; margin: 2px; margin-left: 2px; padding: 1px; width: 216px; height: 216px; background-color: #000000; text-align: center; line-height: 217px; display: inline-block; position: relative;">
-                <img src="@Model.ThumbLink" style="max-height: 208px; max-width: 208px;" />
-                <div class="img-rounded" style="position: absolute; height: 25px; width: 50px; bottom: 2px; right: 2px; font-size: 5px; background-color: forestgreen; display: inline-block;">
-                    <p style="width: 40px; height: 20px; font-size: 12px; position: absolute; color: lightgoldenrodyellow; text-align:center; transform: translate(6px, -96px);"><i class="far fa-comment-alt"></i> @Model.CommentsCount</p>
-                </div>
-            </div>
-            @{
-                if (Model.Duration != null)
-                {
-                    string durationHours = Model.Duration.Value.Hours.ToString();
-                    string durationMinutes = Model.Duration.Value.Minutes.ToString();
-                    string durationSeconds = Model.Duration.Value.Seconds.ToString();
-                    if (durationSeconds.Length == 1)
-                    {
-                        durationSeconds = "0" + durationSeconds;
-                    }
-                    if (Model.Duration.Value.Hours != 0)
-                    {
-                        if (durationMinutes.Length == 1)
+                <div class="col">
+                    <div class="latest-posts-title">
+                        <strong>
+                            @Model.VideoTime?.ToString("dd-MMM-yyyy HH:mm")
+                        </strong>
+                    </div>
+                    <div class="latest-posts-text text-white-50">
+                        @if (!string.IsNullOrEmpty(Model.Location))
                         {
-                            durationMinutes = "0" + durationMinutes;
+                                <div style="color: lightblue;">@Model.Location</div>
                         }
+                        <div class="img-rounded" style="overflow: hidden; margin: 2px; margin-left: 2px; padding: 1px; width: 216px; height: 216px; background-color: #000000; text-align: center; line-height: 217px; display: inline-block; position: relative;">
+                            <img src="@Model.ThumbLink" style="max-height: 208px; max-width: 208px;" />
+                            <div class="img-rounded" style="position: absolute; height: 25px; width: 50px; bottom: 2px; right: 2px; font-size: 5px; background-color: forestgreen; display: inline-block;">
+                                <p style="width: 40px; height: 20px; font-size: 12px; position: absolute; color: lightgoldenrodyellow; text-align: center; transform: translate(6px, -96px);"><i class="far fa-comment-alt"></i> @Model.CommentsCount</p>
+                            </div>
+                        </div>
+                        @{
+                            if (Model.Duration != null)
+                            {
+                                string durationHours = Model.Duration.Value.Hours.ToString();
+                                string durationMinutes = Model.Duration.Value.Minutes.ToString();
+                                string durationSeconds = Model.Duration.Value.Seconds.ToString();
+                                if (durationSeconds.Length == 1)
+                                {
+                                    durationSeconds = "0" + durationSeconds;
+                                }
+                                if (Model.Duration.Value.Hours != 0)
+                                {
+                                    if (durationMinutes.Length == 1)
+                                    {
+                                        durationMinutes = "0" + durationMinutes;
+                                    }
 
-                    }
-                    if (durationHours != "0")
-                    {
-                        durTime = durationHours + ":";
-                    }
-                    durTime = durTime + durationMinutes + ":" + durationSeconds;
-                }
-            }
-            <div style="margin-left: 2px;">Duration: @durTime</div>
-            <div style="margin-left: 2px;">
-                @{
-                    if (!string.IsNullOrEmpty(Model.Tags))
-                    {
-                        List<string> tagsList = Model.Tags.Split(',').ToList();
-                        foreach (string tagString in tagsList)
-                        {
-                            <span asp-controller="Videos" asp-action="Index" asp-route-id="1" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage2">@tagString</span>
+                                }
+                                if (durationHours != "0")
+                                {
+                                    durTime = durationHours + ":";
+                                }
+                                durTime = durTime + durationMinutes + ":" + durationSeconds;
+
+                                        <div>@await LocaleManager.GetTranslation("Duration:", PageNames.Videos, languageId) @durTime</div>
+                            }
                         }
-                    }
-                }
+                        @if (!string.IsNullOrEmpty(Model.Tags))
+                        {
+                            List<string> tagsList = Model.Tags.Split(',').ToList();
+                                <div>
+                                @foreach (string tagString in tagsList)
+                                {
+                                    <span class="badge badge-pill badge-rose leavePage">@tagString</span>
+                                }
+                                </div>
+
+                        }
+                    </div>
+                </div>
             </div>
         </div>
     </div>

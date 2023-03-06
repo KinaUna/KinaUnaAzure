@@ -11,7 +11,7 @@ namespace KinaUnaWebBlazor.Models.ItemViewModels
         public int PictureWidth { get; set; } = 0;
         public int PictureHeight { get; set; } = 0;
         public int ProgenyId { get; set; } = 0;
-        public Progeny Progeny { get; set; } = new Progeny();
+        public Progeny? Progeny { get; set; } = new Progeny();
         public string Owners { get; set; } = ""; // Comma separated list of emails.
         public int AccessLevel { get; set; } = 5;// 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUSers, 4= public.
         public string Author { get; set; } = "";

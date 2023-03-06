@@ -8,7 +8,7 @@
     string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Timeline, Model.LanguageId);
     string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Timeline, Model.LanguageId);
 }
-<div class="ml-xl-auto mr-xl-auto col-xl-6 col-xxl-4">
+<div class="ml-md-auto mr-md-auto col-md-8 col-lg-7 col-xl-6 col-xxl-4">
     <h2>@ViewData["Title"]</h2>
     <br style="clear: both;"/>
     @{
@@ -31,7 +31,7 @@
             <a class="@sortNewest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="1">@newestFirstString</a>
         </div>
     }
-    <br/>
+    <div class="space-20"></div>
     <div id="tlineItems">
 
     </div>
@@ -53,8 +53,7 @@
         <div class="col">
             <button class="btn btn-success" id="moreTimeLineItems">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
         </div>
-
-        <br/>
+        <div class="space-20"></div>
     </div>
 </div>
 

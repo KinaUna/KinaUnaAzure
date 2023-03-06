@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 
@@ -23,24 +22,18 @@ namespace KinaUnaWeb.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheExpirationLong = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromHours(20));
 
-        public PageTextsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env, IDistributedCache cache)
+        public PageTextsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IDistributedCache cache)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             _cache = cache;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer);
-            }
-
+            
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -65,10 +58,6 @@ namespace KinaUnaWeb.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer);
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
                 _configuration.GetValue<string>("AuthenticationServerClientSecret"));
@@ -122,16 +111,16 @@ namespace KinaUnaWeb.Services
 
                 if (pageTextsResponse.IsSuccessStatusCode)
                 {
-                    string pivoqTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
-                    text = JsonConvert.DeserializeObject<KinaUnaText>(pivoqTextAsString);
+                    string kinaUnaTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
+                    text = JsonConvert.DeserializeObject<KinaUnaText>(kinaUnaTextAsString);
                     if (text == null || text.Id == 0)
                     {
-                        KinaUnaText newPivoqText = new KinaUnaText();
-                        newPivoqText.Title = title;
-                        newPivoqText.Page = page;
-                        newPivoqText.LanguageId = languageId;
-                        newPivoqText.Text = "";
-                        text = await AddPageText(newPivoqText);
+                        KinaUnaText newKinaUnaText = new KinaUnaText();
+                        newKinaUnaText.Title = title;
+                        newKinaUnaText.Page = page;
+                        newKinaUnaText.LanguageId = languageId;
+                        newKinaUnaText.Text = "";
+                        text = await AddPageText(newKinaUnaText);
                     }
 
                     if (text != null)
@@ -192,8 +181,8 @@ namespace KinaUnaWeb.Services
 
                 if (pageTextsResponse.IsSuccessStatusCode)
                 {
-                    string pivoqTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
-                    text = JsonConvert.DeserializeObject<KinaUnaText>(pivoqTextAsString);
+                    string kinaUnaTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
+                    text = JsonConvert.DeserializeObject<KinaUnaText>(kinaUnaTextAsString);
                     await _cache.SetStringAsync("PageText&Id" + id, JsonConvert.SerializeObject(text), _cacheExpirationLong);
                 }
             }
@@ -219,8 +208,8 @@ namespace KinaUnaWeb.Services
 
                 if (pageTextsResponse.IsSuccessStatusCode)
                 {
-                    string pivoqTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
-                    text = JsonConvert.DeserializeObject<KinaUnaText>(pivoqTextAsString);
+                    string kinaUnaTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
+                    text = JsonConvert.DeserializeObject<KinaUnaText>(kinaUnaTextAsString);
                     await _cache.SetStringAsync("PageText&TextId" + textId + "&Language" + languageId, JsonConvert.SerializeObject(text), _cacheExpirationLong);
                 }
             }
@@ -228,14 +217,14 @@ namespace KinaUnaWeb.Services
             return text;
         }
 
-        public async Task<KinaUnaText> UpdatePageText(KinaUnaText pivoqText)
+        public async Task<KinaUnaText> UpdatePageText(KinaUnaText kinaUnaText)
         {
             KinaUnaText updatedTextItem = new KinaUnaText();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string textsApiPath = "/api/PageTexts/" + pivoqText.Id;
-            HttpResponseMessage updateResponse = await _httpClient.PutAsync(textsApiPath, new StringContent(JsonConvert.SerializeObject(pivoqText), System.Text.Encoding.UTF8, "application/json"));
+            string textsApiPath = "/api/PageTexts/" + kinaUnaText.Id;
+            HttpResponseMessage updateResponse = await _httpClient.PutAsync(textsApiPath, new StringContent(JsonConvert.SerializeObject(kinaUnaText), System.Text.Encoding.UTF8, "application/json"));
             if (updateResponse.IsSuccessStatusCode)
             {
                 string updateResponseString = await updateResponse.Content.ReadAsStringAsync();
@@ -245,13 +234,13 @@ namespace KinaUnaWeb.Services
             return updatedTextItem;
         }
 
-        public async Task<List<KinaUnaText>> GetAllPivoqTexts(int languageId = 0, bool updateCache = false)
+        public async Task<List<KinaUnaText>> GetAllKinaUnaTexts(int languageId = 0, bool updateCache = false)
         {
-            List<KinaUnaText> allPivoqTexts = new List<KinaUnaText>();
-            string cachedTextsList = await _cache.GetStringAsync("AllPivoqTexts" + "&Lang" + languageId);
+            List<KinaUnaText> allKinaUnaTexts = new List<KinaUnaText>();
+            string cachedTextsList = await _cache.GetStringAsync("AllKinaUnaTexts" + "&Lang" + languageId);
             if (!updateCache && languageId != 0 && !string.IsNullOrEmpty(cachedTextsList))
             {
-                allPivoqTexts = JsonConvert.DeserializeObject<List<KinaUnaText>>(cachedTextsList);
+                allKinaUnaTexts = JsonConvert.DeserializeObject<List<KinaUnaText>>(cachedTextsList);
             }
             else
             {
@@ -264,12 +253,12 @@ namespace KinaUnaWeb.Services
                 if (admininfoResponse.IsSuccessStatusCode)
                 {
                     string textsListAsString = await admininfoResponse.Content.ReadAsStringAsync();
-                    allPivoqTexts = JsonConvert.DeserializeObject<List<KinaUnaText>>(textsListAsString);
-                    await _cache.SetStringAsync("AllPivoqTexts" + "&Lang" + languageId, JsonConvert.SerializeObject(allPivoqTexts), _cacheExpirationLong);
+                    allKinaUnaTexts = JsonConvert.DeserializeObject<List<KinaUnaText>>(textsListAsString);
+                    await _cache.SetStringAsync("AllKinaUnaTexts" + "&Lang" + languageId, JsonConvert.SerializeObject(allKinaUnaTexts), _cacheExpirationLong);
                 }
             }
 
-            return allPivoqTexts;
+            return allKinaUnaTexts;
         }
     }
 }

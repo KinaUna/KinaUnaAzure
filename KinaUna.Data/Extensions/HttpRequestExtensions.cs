@@ -2,6 +2,7 @@
 using System.Linq;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 
 namespace KinaUna.Data.Extensions
 {
@@ -50,7 +51,9 @@ namespace KinaUna.Data.Extensions
 
             try
             {
-                string[] userLanguages = request.GetTypedHeaders().AcceptLanguage.OrderByDescending(x => x.Quality ?? 1).Select(x => x.Value.ToString()).ToArray();
+                request.Headers.TryGetValue("Accept-Language", out StringValues headerLanguages);
+                string[] userLanguages = headerLanguages.ToArray();// .OrderByDescending(x => x.Quality ?? 1).Select(x => x.Value.ToString()).ToArray();
+                
                 if (userLanguages.Any())
                 {
                     string firstLang = userLanguages.FirstOrDefault();
@@ -139,8 +142,7 @@ namespace KinaUna.Data.Extensions
             {
                 if (request.Cookies.TryGetValue("languageId", out string languageIdText))
                 {
-                    int languageId = 1;
-                    if (!int.TryParse(languageIdText, out languageId))
+                    if (!int.TryParse(languageIdText, out int languageId))
                     {
                         kinaUnaLanguage.Id = 1;
                     }

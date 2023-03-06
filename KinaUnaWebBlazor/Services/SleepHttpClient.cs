@@ -14,20 +14,14 @@ namespace KinaUnaWebBlazor.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
-        private readonly IHostEnvironment _env;
 
-        public SleepHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IHostEnvironment env)
+        public SleepHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            _env = env;
             string clientUri = _configuration.GetValue<string>("ProgenyApiServer") ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                clientUri = _configuration.GetValue<string>("ProgenyApiServer" + Constants.DebugKinaUnaServer) ?? throw new InvalidOperationException("ProgenyApiServer value missing in configuration.");
-            }
 
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -53,18 +47,13 @@ namespace KinaUnaWebBlazor.Services
             }
 
             string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId") ?? throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
-            if (_env.IsDevelopment() && !string.IsNullOrEmpty(Constants.DebugKinaUnaServer))
-            {
-                authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId" + Constants.DebugKinaUnaServer) ??
-                                               throw new InvalidOperationException("AuthenticationServerClientId value missing in configuration.");
-            }
 
             string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
                 _configuration.GetValue<string>("AuthenticationServerClientSecret") ?? throw new InvalidOperationException("AuthenticationServerClientSecret value missing in configuration."));
             return accessToken;
         }
 
-        public async Task<Sleep> GetSleepItem(int sleepId)
+        public async Task<Sleep?> GetSleepItem(int sleepId)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -74,14 +63,14 @@ namespace KinaUnaWebBlazor.Services
             if (sleepResponse.IsSuccessStatusCode)
             {
                 string sleepAsString = await sleepResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                Sleep sleepItem = JsonConvert.DeserializeObject<Sleep>(sleepAsString);
+                Sleep? sleepItem = JsonConvert.DeserializeObject<Sleep>(sleepAsString);
                 return sleepItem;
             }
 
             return new Sleep();
         }
 
-        public async Task<Sleep> AddSleep(Sleep sleep)
+        public async Task<Sleep?> AddSleep(Sleep? sleep)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -98,12 +87,12 @@ namespace KinaUnaWebBlazor.Services
             return new Sleep();
         }
 
-        public async Task<Sleep> UpdateSleep(Sleep sleep)
+        public async Task<Sleep?> UpdateSleep(Sleep? sleep)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string updateSleepApiPath = "/api/Sleep/" + sleep.SleepId;
+            string updateSleepApiPath = "/api/Sleep/" + sleep?.SleepId;
             HttpResponseMessage sleepResponse = await _httpClient.PutAsync(updateSleepApiPath, new StringContent(JsonConvert.SerializeObject(sleep), System.Text.Encoding.UTF8, "application/json"));
             if (sleepResponse.IsSuccessStatusCode)
             {
@@ -130,9 +119,9 @@ namespace KinaUnaWebBlazor.Services
             return false;
         }
 
-        public async Task<List<Sleep>> GetSleepList(int progenyId, int accessLevel)
+        public async Task<List<Sleep>?> GetSleepList(int progenyId, int accessLevel)
         {
-            List<Sleep> progenySleepList = new List<Sleep>();
+            List<Sleep>? progenySleepList = new List<Sleep>();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

@@ -6,14 +6,14 @@
 @model KinaUnaWeb.Models.AdminViewModels.ManageKinaUnaTextsViewModel 
 @inject ILocaleManager LocaleManager
 <div class="space-20"></div>
-<div class="container" style="min-height: 90vh;">
+<div class="add-item-container" style="min-height: 90vh;">
     <div class="row">
         <div class="col-12">
             @if (Model.MessageId == 1)
             {
                 <div class="card bg-childinfo" style="margin-bottom: 50px;">
                     <div class="text-center text-success pt-2">
-                        <h3 class="text-success">Text saved</h3>
+                        <h3 class="text-success">@await LocaleManager.GetTranslation("Text saved", PageNames.TextEditor, Model.LanguageId)</h3>
                     </div>
                 </div>
             }
@@ -33,7 +33,7 @@
             </div>
         </div>
     </div>
-    <div class="pivoq_space20"></div>
+    <div class="space-20"></div>
     <div class="row">
         <div class="col-3">Title:</div>
         @if (Model.KinaUnaText.Title.StartsWith("__"))
