@@ -149,7 +149,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
         [HttpGet]
         [Route("[action]/{id}/{accessLevel}")]
-        public async Task<IActionResult> VideoViewModel(int id, int accessLevel, [FromQuery] int sortBy = 1)
+        public async Task<IActionResult> VideoViewModel(int id, int accessLevel, [FromQuery] int sortBy=1, [FromQuery] string tagFilter="")
         {
             Video video = await _videosService.GetVideo(id); 
             if (video != null)
@@ -190,6 +190,11 @@ namespace KinaUnaProgenyApi.Controllers
                 videosList = videosList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToList();
                 if (videosList.Any())
                 {
+                    if (!string.IsNullOrEmpty(tagFilter))
+                    {
+                        videosList = videosList.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToList();
+                    }
+
                     int currentIndex = 0;
                     int indexer = 0;
                     foreach (Video vid in videosList)

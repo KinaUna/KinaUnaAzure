@@ -72,12 +72,12 @@
     background-size: 0 100%, 100% 100%;
     border: 1px solid #146414;
     border: 1px solid rgba(20, 100, 20, 0.6);
-    height: 36px;
+    height: 42px;
     transition: background 0 ease-out;
-    padding-left: 14px;
-    padding-right: 14px;
+    padding-left: 18px;
+    padding-right: 18px;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 1rem;
 }
 
 .form-control-noline {
@@ -90,7 +90,7 @@
     height: 42px;
     transition: background 0 ease-out;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 1rem;
 }
 
 .form-control:focus {
@@ -192,24 +192,6 @@
     background: #fff;
     box-shadow: 0 2px 2px 0 #000000, 0 3px 1px -2px #000000, 0 1px 5px 0 #000000;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0.2);
-}
-
-button.Zebra_DatePicker_Icon.Zebra_DatePicker_Icon_Inside_Right {
-    margin: 3px 0 0 0;
-}
-
-button.Zebra_DatePicker_Icon {
-    background: url("https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/icons.png") no-repeat center 6px;
-    border: none;
-    cursor: pointer;
-    display: block;
-    height: 32px;
-    line-height: 0;
-    margin: 3px 0 0 0;
-    padding: 6px 6px 6px 6px;
-    position: absolute;
-    text-indent: -9000px;
-    width: 48px;
 }
 
 .navbar .navbar-nav .nav-item .nav-link .fa, .navbar .navbar-nav .nav-item .nav-link .material-icons {
@@ -527,7 +509,7 @@ button.Zebra_DatePicker_Icon {
     position: relative;
     padding: 12px 30px;
     margin: .3125rem 1px;
-    font-size: .75rem;
+    font-size: .85rem;
     font-weight: 400;
     line-height: 1.428571;
     text-decoration: none;
@@ -630,6 +612,7 @@ button.Zebra_DatePicker_Icon {
     color: inherit !important;
     box-shadow: none !important;
     margin: 0;
+    padding: 12px 18px;
 }
 
 .btn.btn-add-note {
@@ -2086,6 +2069,85 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     margin-top: 6px;
 }
 
+.photo-gallery-frame {
+    margin: 2px;
+    padding: 1px;
+    width: 260px;
+    height: 260px;
+    background-color: #000000;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.photo-gallery-picture {
+    max-width: 258px;
+    max-height: 258px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    transition: all .2s ease-in-out;
+}
+
+.photo-gallery-picture:hover {
+    transform: scale(1.25);
+}
+
+.photo-picture-number-frame {
+    position: absolute;
+    height: 35px;
+    width: 60px;
+    top: 2px;
+    left: 2px;
+    display: flex;
+    justify-content: center;
+}
+
+.photo-picture-number-text {
+    font-size: 16px;
+    color: #EEEEFF;
+    text-align: center;
+    margin: auto;
+}
+
+.photo-picture-time-frame {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    font-size: 5px;
+    background-color: dimgray;
+    display: flex;
+    justify-content: center;
+    padding: 3px;
+}
+
+.photo-picture-time-text {
+    font-size: 11px;
+    color: #EEEEFF;
+    margin: auto;
+}
+
+.photo-comments-frame {
+    position: absolute;
+    height: 25px;
+    width: 50px;
+    bottom: 2px;
+    right: 2px;
+    font-size: 5px;
+    background-color: forestgreen;
+    display: flex;
+    justify-content: center;
+}
+
+.photo-comments-text {
+    font-size: 12px;
+    color: lightgoldenrodyellow;
+    text-align: center;
+    margin: auto;
+}
+
 .text-end {
     text-align: end !important;
 }
@@ -2111,4 +2173,13 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     margin-top: 130px;
     background: #ffffff;
     height: 85vh;
+}
+
+button.Zebra_DatePicker_Icon {
+    width: 32px !important;
+    transform: scale(1.25);
+}
+
+.control-label {
+    font-size: 14px;
 }

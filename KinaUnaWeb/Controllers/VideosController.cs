@@ -35,7 +35,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int id = 1, int pageSize = 8, int childId = 0, int sortBy = 1, string tagFilter = "")
+        public async Task<IActionResult> Index(int id = 1, int pageSize = 16, int childId = 0, int sortBy = 1, string tagFilter = "")
         {
             if (id < 1)
             {
@@ -45,10 +45,13 @@ namespace KinaUnaWeb.Controllers
             // VideoPageViewModel is used by KinaUna Xamarin and ProgenyApi, so it should not be changed in this project, instead using a different view model and copying the properties.
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             VideoListViewModel model = new VideoListViewModel(baseModel);
-            
+            model.PageSize = pageSize;
+            model.SortBy = sortBy;
+            model.TagFilter = tagFilter;
+
             VideoPageViewModel pageViewModel = await _mediaHttpClient.GetVideoPage(pageSize, id, model.CurrentProgenyId, model.CurrentAccessLevel, sortBy, tagFilter, model.CurrentUser.Timezone);
             model.SetPropertiesFromPageViewModel(pageViewModel);
-            model.SortBy = sortBy;
+            
             
             return View(model);
         }
@@ -64,7 +67,7 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), video.ProgenyId);
             VideoItemViewModel model = new VideoItemViewModel(baseModel);
-            VideoViewModel videoViewModel = await _mediaHttpClient.GetVideoViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone);
+            VideoViewModel videoViewModel = await _mediaHttpClient.GetVideoViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone, tagFilter);
             
             model.SetPropertiesFromVideoViewModel(videoViewModel);
             

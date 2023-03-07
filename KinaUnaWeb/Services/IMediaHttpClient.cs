@@ -11,8 +11,6 @@ namespace KinaUnaWeb.Services
     /// </summary>
     public interface IMediaHttpClient
     {
-        //Task<HttpClient> GetClient();
-
         /// <summary>
         /// Gets the picture with the given PictureId, with the PictureTime converted to the given time zone.
         /// </summary>
@@ -175,7 +173,8 @@ namespace KinaUnaWeb.Services
         /// <param name="userAccessLevel">int: The user's access level.</param>
         /// <param name="sortBy">int: 0 for oldest first, 1 (default) for newest first.</param>
         /// <param name="timeZone">string: The time zone to use for VideoTime and Comment's time (TimeZoneInfo.Id or UserInfo.Timezone).</param>
+        /// <param name="tagFilter">string: Only include Videos tagged with this string. If null or empty include all Pictures.</param>
         /// <returns></returns>
-        Task<VideoViewModel> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone);
+        Task<VideoViewModel> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone, string tagFilter = "");
     }
 }

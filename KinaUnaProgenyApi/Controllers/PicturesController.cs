@@ -163,7 +163,7 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     accessLevel = userAccess.AccessLevel;
                 }
-
+                
                 PictureViewModel model = new PictureViewModel();
                 model.SetPicturePropertiesFromPictureItem(picture);
                 model.PictureNumber = 1;
@@ -317,6 +317,11 @@ namespace KinaUnaProgenyApi.Controllers
                 if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
                 {
                     return Unauthorized();
+                }
+
+                if (result.Tags.EndsWith(','))
+                {
+                    result.Tags = result.Tags.TrimEnd(',');
                 }
                 return Ok(result);
             }

@@ -78,7 +78,7 @@ namespace KinaUnaProgenyApi.Controllers
             Progeny progeny = await _progenyService.GetProgeny(model.Progeny.Id);
 
             string userId = User.GetUserId();
-            if (progeny != null)
+            if (progeny != null && model.CommentThreadNumber != 0)
             {
                 if (userId != model.Author)
                 {

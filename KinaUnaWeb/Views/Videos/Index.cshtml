@@ -55,35 +55,7 @@
             }
             string sortOldest = "btn btn-primary btn-sm";
             string sortNewest = "btn btn-info btn-sm leavePage";
-            int prevPage = Model.PageNumber - 1;
-            int nextPage = Model.PageNumber + 1;
-            if (prevPage < 1)
-            {
-                prevPage = Model.TotalPages;
-            }
-            if (nextPage > Model.TotalPages)
-            {
-                nextPage = 1;
-            }
-            int prev5Page = Model.PageNumber - 5;
-            int next5Page = Model.PageNumber + 5;
-            if (prev5Page < 1)
-            {
-                prev5Page = Model.TotalPages;
-            }
-            if (next5Page > Model.TotalPages)
-            {
-                next5Page = 1;
-            }
-            int newPage = Model.TotalPages - Model.PageNumber;
-            if (newPage < 1)
-            {
-                newPage = 1;
-            }
-            if (Model.PageNumber == 1)
-            {
-                newPage = 1;
-            }
+           
         }
         @if (Model.SortBy == 1)
         {
@@ -91,14 +63,14 @@
             sortNewest = "btn btn-primary btn-sm";
             <div>
                 @sortString <span class="@sortNewest"><i class="fas fa-check-circle"></i> @newestFirstString</span>
-                <a class="@sortOldest" asp-controller="Videos" asp-action="Index" asp-route-id="@newPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">@oldestFirstString</a>
+                <a class="@sortOldest" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.PageNumberIfSortChanges" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">@oldestFirstString</a>
             </div>
         }
         else
         {
             <div>
                 @sortString <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> @oldestFirstString</span>
-                <a class="@sortNewest" asp-controller="Videos" asp-action="Index" asp-route-id="@newPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@Model.TagFilter">@newestFirstString</a>
+                <a class="@sortNewest" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.PageNumberIfSortChanges" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@Model.TagFilter">@newestFirstString</a>
             </div>
         }
         @if (!String.IsNullOrEmpty(Model.TagFilter))
@@ -114,21 +86,21 @@
         {
             <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
                 <div style="float:left">
-                    <a id="previousPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@prevPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
+                    <a id="previousPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.PreviousPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
                    asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @videosString</a>
                     @if (Model.TotalPages > 5)
                     {
-                        <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@prev5Page" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
+                        <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.Back5Pages" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
                    asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> @go5PagesBackString</a>
                     }
                 </div>
                 <div style="float: right">
                     @if (Model.TotalPages > 5)
                     {
-                        <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@next5Page" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
+                        <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.Forward5Pages" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
                    asp-route-tagFilter="@Model.TagFilter">@go5PagesForwardString <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
                     }
-                    <a id="nextPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@nextPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
+                    <a id="nextPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.NextPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
                    asp-route-tagFilter="@Model.TagFilter">@viewNextText @videosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
                 </div>
             </div>
@@ -194,21 +166,21 @@
         {
             <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
                 <div style="float:left">
-                    <a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@prevPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
+                    <a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.PreviousPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
                    asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @videosString</a>
                     @if (Model.TotalPages > 5)
                     {
-                        <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@prev5Page" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
+                        <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.Back5Pages" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
                    asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> @go5PagesBackString</a>
                     }
                 </div>
                 <div style="float: right">
                     @if (Model.TotalPages > 5)
                     {
-                        <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@next5Page" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
+                        <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.Forward5Pages" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
                    asp-route-tagFilter="@Model.TagFilter">@go5PagesForwardString <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
                     }
-                    <a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@nextPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
+                    <a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.NextPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
                    asp-route-tagFilter="@Model.TagFilter">@viewNextText @videosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
                 </div>
             </div>

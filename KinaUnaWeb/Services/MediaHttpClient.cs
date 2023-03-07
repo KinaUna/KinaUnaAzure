@@ -387,12 +387,12 @@ namespace KinaUnaWeb.Services
             return new VideoPageViewModel();
         }
 
-        public async Task<VideoViewModel> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone)
+        public async Task<VideoViewModel> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone, string tagFilter = "")
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
             
-            string pageApiPath = "/api/Videos/VideoViewModel/" + id + "/" + userAccessLevel + "?sortBy=" + sortBy;
+            string pageApiPath = "/api/Videos/VideoViewModel/" + id + "/" + userAccessLevel + "?sortBy=" + sortBy + "&tagFilter=" + tagFilter;
             
             HttpResponseMessage videoViewModelResponse = await _httpClient.GetAsync(pageApiPath);
             if (videoViewModelResponse.IsSuccessStatusCode)

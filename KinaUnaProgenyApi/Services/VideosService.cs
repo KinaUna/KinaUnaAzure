@@ -58,9 +58,17 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Video> SetVideoInCache(int id)
         {
             Video video = await _mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(v => v.VideoId == id);
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
+            
             if (video != null)
             {
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
+                
+                if (video.Tags != null && video.Tags.Trim().EndsWith(','))
+                {
+                    video.Tags = video.Tags.Trim().TrimEnd(',');
+                    _ = await UpdateVideo(video);
+                }
+
                 await SetVideosListInCache(video.ProgenyId);
             }
 

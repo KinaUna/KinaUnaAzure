@@ -1,0 +1,107 @@
+﻿@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.PicturesListViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Pictures, Model.LanguageId);
+    string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Pictures, Model.LanguageId);
+    string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Pictures, Model.LanguageId);
+    string sortOldest = "btn btn-primary btn-sm";
+    string sortNewest = "btn btn-info btn-sm leavePage";
+    string picPerPageStyle4 = "leavePage btn btn-info btn-sm";
+    string picPerPageStyle8 = "leavePage btn btn-info btn-sm";
+    string picPerPageStyle16 = "leavePage btn btn-info btn-sm";
+    string picPerPageStyle32 = "leavePage btn btn-info btn-sm";
+    string picPerPageStyle64 = "leavePage btn btn-info btn-sm";
+    string picPerPageSelected = "leavePage btn btn-primary btn-sm";
+    if (Model.PageSize == 4)
+    {
+        picPerPageStyle4 = picPerPageSelected;
+    }
+    if (Model.PageSize == 8)
+    {
+        picPerPageStyle8 = picPerPageSelected;
+    }
+    if (Model.PageSize == 16)
+    {
+        picPerPageStyle16 = picPerPageSelected;
+    }
+    if (Model.PageSize == 32)
+    {
+        picPerPageStyle32 = picPerPageSelected;
+    }
+    if (Model.PageSize == 64)
+    {
+        picPerPageStyle64 = picPerPageSelected;
+    }
+}
+<div class="row">
+    <div class="col-auto">
+        <div class="row">
+            @if (Model.SortBy == 1)
+            {
+                sortOldest = "btn btn-info btn-sm leavePage";
+                sortNewest = "btn btn-primary btn-sm";
+                <div class="col-auto">
+                    <div class="row">
+                        <div class="col-auto" style="align-self: center;">
+                            @sortString
+                        </div>
+                        <div class="col">
+                            <span class="@sortNewest"><i class="fas fa-check-circle"></i> @newestFirstString</span>
+                        </div>
+                        <div class="col">
+                            <a class="@sortOldest" asp-controller="Pictures" asp-action="Index" asp-route-id="@Model.PageNumberIfSortChanges" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">@oldestFirstString</a>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="col-auto">
+                    <div class="row row-cols-auto">
+                        <div class="col">
+                            @sortString
+                        </div>
+                        <div class="col">
+                            <div class="@sortOldest" disabled><i class="fas fa-check-circle"></i> @oldestFirstString</div>
+                        </div>
+                        <div class="col">
+                            <a class="@sortNewest" asp-controller="Pictures" asp-action="Index" asp-route-id="@Model.PageNumberIfSortChanges" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@Model.TagFilter">@newestFirstString</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-auto ml-auto">
+        <div class="row">
+            <div class="col-auto" style="align-self: center;">@await LocaleManager.GetTranslation("Photos per page:", PageNames.Pictures, Model.LanguageId)</div>
+            <div class="col-auto">
+                <div class="row row-cols-auto">
+                    <div class="col">
+                        <a class="@picPerPageStyle4" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="4" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">4</a>
+                    </div>
+                    <div class="col">
+                        <a class="@picPerPageStyle8" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="8" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">8</a>
+                    </div>
+                    <div class="col">
+                        <a class="@picPerPageStyle16" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="16" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">16</a>
+                    </div>
+                    <div class="col">
+                        <a class="@picPerPageStyle32" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="32" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">32</a>
+                    </div>
+                    <div class="col">
+                        <a class="@picPerPageStyle64" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="64" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">64</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@if (!string.IsNullOrEmpty(Model.TagFilter))
+{
+    <div class="space-20"></div>
+    <div style="float: right;">@await LocaleManager.GetTranslation("Tag filter:", PageNames.Pictures, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-id="1" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Pictures, Model.LanguageId)</a></div>
+}

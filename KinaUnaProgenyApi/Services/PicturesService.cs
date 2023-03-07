@@ -585,9 +585,16 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Picture> SetPictureInCache(int id)
         {
             Picture picture = await _mediaContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == id);
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id, JsonConvert.SerializeObject(picture), _cacheOptionsSliding);
             if (picture != null)
             {
+                if (picture.Tags != null && picture.Tags.Trim().EndsWith(','))
+                {
+                    picture.Tags = picture.Tags.Trim().TrimEnd(',');
+                    _ = await UpdatePicture(picture);
+                }
+
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id, JsonConvert.SerializeObject(picture), _cacheOptionsSliding);
+
                 _ = await SetPicturesListInCache(picture.ProgenyId);
             }
 

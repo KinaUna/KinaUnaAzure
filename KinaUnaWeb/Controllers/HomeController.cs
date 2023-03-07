@@ -187,13 +187,13 @@ namespace KinaUnaWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetViewChild(int childId, string userId, string userEmail, string returnUrl)
+        public async Task<IActionResult> SetViewChild(int childId, string returnUrl)
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
+                UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(User.GetEmail());
                 userinfo.ViewChild = childId;
-                await _userInfosHttpClient.SetViewChild(userId, userinfo);
+                await _userInfosHttpClient.SetViewChild(User.GetUserId(), userinfo);
             }
 
             // return Redirect(returnUrl);

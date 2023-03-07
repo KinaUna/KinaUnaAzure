@@ -23,9 +23,9 @@ namespace KinaUnaWeb.Services
         /// <summary>
         /// Updates a UserInfo object. The UserInfo with the same Id will be updated.
         /// </summary>
-        /// <param name="userinfo">UserInfo: The UserInfo object to update.</param>
+        /// <param name="userInfo">UserInfo: The UserInfo object to update.</param>
         /// <returns>UserInfo: The updated UserInfo object.</returns>
-        Task<UserInfo> UpdateUserInfo(UserInfo userinfo);
+        Task<UserInfo> UpdateUserInfo(UserInfo userInfo);
 
         Task<UserInfo> DeleteUserInfo(UserInfo userInfo);
 
@@ -37,8 +37,8 @@ namespace KinaUnaWeb.Services
         /// Sets the ViewChild for a given user.
         /// </summary>
         /// <param name="userId">string: The user's UserId (UserInfo.UserId or ApplicationUser.Id).</param>
-        /// <param name="userinfo">UserInfo: The user's UserInfo.</param>
+        /// <param name="userInfo">UserInfo: The user's UserInfo.</param>
         /// <returns></returns>
-        Task SetViewChild(string userId, UserInfo userinfo);
+        Task SetViewChild(string userId, UserInfo userInfo);
     }
 }
