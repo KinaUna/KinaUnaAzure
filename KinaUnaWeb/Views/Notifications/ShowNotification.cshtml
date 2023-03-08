@@ -31,14 +31,17 @@
                     </div>
                 </div>
                 <div class="media-body">
-                    <span class="text-warning"><span class="info-title text-warning">@Model.WebNotification.From</span> <span class="text-warning"> · @Model.WebNotification.DateTimeString</span></span>
+                    <div>
+                        <span class="info-title text-warning">@Model.WebNotification.From</span>
+                        <span class="text-warning" style="white-space: nowrap;"> · @Model.WebNotification.DateTimeString</span>
+                    </div>
                     <div class="notification-title text-white">@Model.WebNotification.Title</div>
                     <p class="text-light notification-message" style="">@Model.WebNotification.Message</p>
                     <div>
                         <span id="@readId" class="btn btn-info btn-link btn-sm @isReadClass @idClass" onClick="markRead(this, event)" data-notificationid="@Model.WebNotification.Id">
                             <i class="material-icons">@markAsReadIcon</i> @markAsRead
                         </span>
-                        <span id="@deleteId" class="btn btn-danger btn-link btn-sm float-right" onClick="removeNotification(this, event)" data-notificationid="@Model.WebNotification.Id">
+                        <span id="@deleteId" class="btn btn-danger btn-link btn-sm" onClick="removeNotification(this, event)" data-notificationid="@Model.WebNotification.Id">
                             <i class="material-icons">delete_forever</i> @await LocaleManager.GetTranslation("Delete", PageNames.Notifications, Model.LanguageId)
                         </span>
                     </div>

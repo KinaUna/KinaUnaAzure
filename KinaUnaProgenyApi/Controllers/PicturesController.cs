@@ -318,11 +318,7 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     return Unauthorized();
                 }
-
-                if (result.Tags.EndsWith(','))
-                {
-                    result.Tags = result.Tags.TrimEnd(',');
-                }
+                
                 return Ok(result);
             }
 

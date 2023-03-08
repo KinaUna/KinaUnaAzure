@@ -3,7 +3,7 @@
 @using KinaUna.Data
 @model int
 @inject ILocaleManager LocaleManager
-<li id="notificationsIcon" class="nav-item dropdown mb-2 mb-lg-0 ml-lg-auto">
+<li id="notificationsIcon" class="nav-item dropdown mb-2 mb-lg-0 ml-lg-auto mr-auto mr-lg-2">
     <a id="notificationsButton" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
         <i id="notificationBellIcon" class="material-icons icon_medium ml-2 mr-1">notifications</i> @await LocaleManager.GetTranslation("Notifications", PageNames.Layout, Model) <span id="notificationsCounter" class="badge badge-pill badge-secondary"></span> <span class="caret"></span>
     </a>

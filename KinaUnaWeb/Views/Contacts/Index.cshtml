@@ -89,51 +89,49 @@
     }
 
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
-    @if (Model.ContactsList == null || !Model.ContactsList.Any())
-    {
-        <h3 class="title">@ViewData["Title"]</h3>
-        <div>Nothing to see here yet.</div>
-    }
-    else
-    {
-        @if (Model.IsCurrentUserProgenyAdmin)
-        {
-            <div class="btn-group" style="float: right;">
-                <a asp-controller="Contacts" asp-action="AddContact" class="btn btn-info btn-round leavePage">
-                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add contact", PageNames.Contacts, Model.LanguageId)
-                </a>
-            </div>
-        }
-        <h2>@ViewData["Title"]</h2>
-        <br style="clear: both;" />
-        <div>
-            <span style="color: black;">Show:</span>
-            <span class="button-checkbox">
-                <button type="button" class="btn" data-color="primary">@await LocaleManager.GetTranslation("Active contacts", PageNames.Contacts, Model.LanguageId)</button>
-                <input type="checkbox" name="contactClassTrue" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
-            </span>
-            <span class="button-checkbox">
-                <button type="button" class="btn" data-color="primary">@await LocaleManager.GetTranslation("Inactive contacts", PageNames.Contacts, Model.LanguageId)</button>
-                <input type="checkbox" name="contactClassFalse" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
-            </span>
+    <div class="row">
+        <div class="col-12">
+            @if (Model.ContactsList == null || !Model.ContactsList.Any())
+            {
+                <h3 class="title">@ViewData["Title"]</h3>
+                <div>Nothing to see here yet.</div>
+            }
+            else
+            {
+                @if (Model.IsCurrentUserProgenyAdmin)
+                {
+                    <div class="btn-group" style="float: right;">
+                        <a asp-controller="Contacts" asp-action="AddContact" class="btn btn-info btn-round leavePage">
+                            <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add contact", PageNames.Contacts, Model.LanguageId)
+                        </a>
+                    </div>
+                }
+                <h2>@ViewData["Title"]</h2>
+                <div class="space-20"></div>
+                <div>
+                    <span style="color: black;">Show:</span>
+                    <span class="button-checkbox">
+                        <button type="button" class="btn" data-color="primary">@await LocaleManager.GetTranslation("Active contacts", PageNames.Contacts, Model.LanguageId)</button>
+                        <input type="checkbox" name="contactClassTrue" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
+                    </span>
+                    <span class="button-checkbox">
+                        <button type="button" class="btn" data-color="primary">@await LocaleManager.GetTranslation("Inactive contacts", PageNames.Contacts, Model.LanguageId)</button>
+                        <input type="checkbox" name="contactClassFalse" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
+                    </span>
 
-        </div>
-        @if (!string.IsNullOrEmpty(Model.TagFilter))
-        {
-            <br />
-            <div class="text-dark" style="float: right;">
-                @await LocaleManager.GetTranslation("Tag filter:", PageNames.Contacts, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
-                <a class="btn btn-info btn-sm" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
-                    <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Contacts, Model.LanguageId)
-                </a>
-            </div>
-            <br />
-        }
-        <div class="card" style="clear: both; margin-top: 25px;">
-
-            <div class="card-body" style="padding-bottom: 35px;">
-
-                <div class="card-deck">
+                </div>
+                @if (!string.IsNullOrEmpty(Model.TagFilter))
+                {
+                    <div class="space-20"></div>
+                    <div class="text-dark" style="float: right;">
+                        @await LocaleManager.GetTranslation("Tag filter:", PageNames.Contacts, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
+                        <a class="btn btn-info btn-sm" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
+                            <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Contacts, Model.LanguageId)
+                        </a>
+                    </div>
+                    <div class="space-20"></div>
+                }
+                <div>
                     @foreach (ContactViewModel contactViewModel in Model.ContactsList)
                     {
                         string chkClass = "contactClass" + contactViewModel.ContactItem.Active.ToString();
@@ -148,7 +146,7 @@
                                             <div style="height: 253px;">
                                                 <img class="img-thumbnail mx-auto d-block" style="max-height: 250px; max-width: 270px; background: black; margin-bottom: 10px;" src="@contactViewModel.ContactItem.PictureLink" />
                                             </div>
-                                            <br />
+                                            <div class="space-20"></div>
                                             <div class="card-title" align="left">
                                                 @contactViewModel.ContactItem.FirstName @contactViewModel.ContactItem.MiddleName @contactViewModel.ContactItem.LastName
                                             </div>
@@ -170,22 +168,24 @@
                         </div>
                     }
                 </div>
-                <br />
-                <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
-                    @{
-                        if (!string.IsNullOrEmpty(Model.Tags))
-                        {
-                            string[] tagsList = Model.Tags.Split(',');
-                            foreach (string tagString in tagsList)
-                            {
-                                <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
-                            }
-                        }
-                    }
-                </div>
-            </div>
+                <div class="space-20"></div>
+            }
         </div>
-    }
+    </div>
+    <div class="row">
+        <div class="col-12">
+            @{
+                if (!string.IsNullOrEmpty(Model.Tags))
+                {
+                    string[] tagsList = Model.Tags.Split(',');
+                    foreach (string tagString in tagsList)
+                    {
+                        <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                    }
+                }
+            }
+        </div>
+    </div>
 </div>
 <script type="text/javascript">
     $("input:checkbox:not(:checked)").each(function() {

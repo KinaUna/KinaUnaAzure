@@ -2,7 +2,7 @@
 @using KinaUna.Data
 @model KinaUnaWeb.Models.HomeViewModels.UserMenuViewModel
 @inject ILocaleManager LocaleManager
-<li class="nav-item dropdown mb-2 mb-lg-0">
+<li class="nav-item dropdown mb-2 mb-lg-0 mr-auto mr-lg-2">
     <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
         <i class="material-icons icon_medium ml-2 mr-1">favorite</i><span class="d-sm-inline d-md-inline d-lg-inline"> @await LocaleManager.GetTranslation("Menu", PageNames.Layout, Model.LanguageId) </span>
     </a>

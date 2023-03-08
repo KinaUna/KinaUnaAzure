@@ -1,7 +1,4 @@
-﻿var checkFrame;
-var isAuthPage = false;
-var checkFrameCount = 0;
-function runWaitMeLeave() {
+﻿function runWaitMeLeave() {
     $('.body-content').waitMe({
         effect: 'roundBounce',
         text: '',

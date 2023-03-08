@@ -9,9 +9,9 @@ let togglerCounter = document.getElementById('togglerNotificationsCounter');
 let navMain = document.getElementById('navMain');
 
 function notificationItemClick(btn, event) {
-    console.log("NotificationItemClick.Event.Target: " + event.target);
-    console.log("NotificationItemClick.Event.Type: " + event.type);
-    console.log("NotificationItemClick.Event.CurrentTarget: " + event.currentTarget);
+    //console.log("NotificationItemClick.Event.Target: " + event.target);
+    //console.log("NotificationItemClick.Event.Type: " + event.type);
+    //console.log("NotificationItemClick.Event.CurrentTarget: " + event.currentTarget);
     let notifId = btn.getAttribute('data-notificationid');
     if (btn.classList.contains('notificationUnread')) {
         $.ajax({

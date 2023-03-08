@@ -116,8 +116,8 @@
     @if (userInfo.CanUserAddItems)
     {
         <div class="navbar-nav nav-item ml-3 ml-lg-1">
-            <a class="nav-link kinauna_yellow_text leavePage" style="margin-right: 12px; margin-top: 4px" asp-area="" asp-controller="AddItem" asp-action="Index" aria-label="Add item">
-                <i class="material-icons kinauna_yellow_text" aria-hidden="true">add</i>
+            <a class="nav-link kinauna_yellow_text leavePage" style="margin-right: 12px;" asp-area="" asp-controller="AddItem" asp-action="Index" aria-label="Add item">
+                <i class="material-icons icon_medium kinauna_yellow_text" aria-hidden="true">add</i>
             </a>
         </div>
     }
@@ -129,15 +129,16 @@ else
     </a>
 }
 @{
+    string childprofilePic = "<i class=\"material-icons d-none\" style=\"color: #8bda8b;\">child_care</i>";
     if (child != null)
     {
-        string childprofilePic = "<i class=\"material-icons kinauna_yellow_text d-none\" style=\"color: #8bda8b;\">child_care</i>";
+        
         if (!string.IsNullOrWhiteSpace(child.PictureLink))
         {
             string picLink = ChildManager.GetImageUrl(child.PictureLink, "progeny");
-            childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 40px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 40px;\" /img> ";
+            childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 48px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 48px;\" /img> ";
         }
-        @Html.Raw(childprofilePic)
+        <span class="d-lg-none">@Html.Raw(childprofilePic)</span>
     }
 }
 <span id="togglerNotificationsCounter" class="badge badge-danger ml-auto mr-2 d-block d-lg-none" style="position: relative; display: none; font-size: 12px;">0</span>
@@ -148,9 +149,9 @@ else
 <ul class="navbar-nav ml-1 ml-lg-2 w-100 top-menu-max-height">
 @if (childList.Count > 1 && child != null)
 {
-    <li class="nav-item dropdown mb-2 mb-lg-0">
-        <a class="nav-link dropdown-toggle kinauna_yellow_text" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-            <i class="material-icons icon_medium ml-2 mr-1">face</i><span class="d-sm-inline d-md-inline d-lg-inline"> @child.NickName </span>
+    <li class="nav-item dropdown mb-2 mb-lg-0 mr-auto mr-lg-2">
+        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+            <span style="max-height:40px;">@Html.Raw(childprofilePic)</span><span> @child.NickName </span>
         </a>
         <div class="dropdown-menu">
             @foreach (Progeny prog in childList)
@@ -198,7 +199,7 @@ else
 </div>
 </div>
 </nav>
-<div class="container body-content">
+<div class="main-container body-content">
     <div class="main" style="margin-top: 10px; padding-top: 10px;">
         <partial name="_CookieConsentPartial", model="@languageId"/>
         @if (showUndelete)
