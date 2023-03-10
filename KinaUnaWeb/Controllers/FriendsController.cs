@@ -2,7 +2,6 @@
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -66,18 +65,7 @@ namespace KinaUnaWeb.Controllers
                 model.SetTags(tagsList);
                 model.TagFilter = tagFilter;
             }
-            else
-            {
-                FriendViewModel friendViewModel = new FriendViewModel();
-                friendViewModel.FriendItem.ProgenyId = model.CurrentProgenyId;
-                friendViewModel.FriendItem.Name = "No friends found.";
-                friendViewModel.FriendItem.FriendAddedDate = DateTime.UtcNow;
-                friendViewModel.FriendItem.FriendSince = DateTime.UtcNow;
-                friendViewModel.FriendItem.Description = "The friends list is empty.";
-                friendViewModel.IsCurrentUserProgenyAdmin = model.IsCurrentUserProgenyAdmin;
-                model.FriendViewModelsList.Add(friendViewModel);
-            }
-
+            
             return View(model);
 
         }

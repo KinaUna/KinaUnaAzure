@@ -71,17 +71,7 @@ namespace KinaUnaWeb.Controllers
 
                 model.SetTags(tagsList);
             }
-            else
-            {
-                ContactViewModel notfoundContactViewModel = new ContactViewModel();
-                notfoundContactViewModel.CurrentProgenyId = model.CurrentProgenyId;
-                notfoundContactViewModel.ContactItem.ProgenyId = model.CurrentProgenyId;
-                notfoundContactViewModel.ContactItem.DisplayName = "No friends found.";
-                notfoundContactViewModel.ContactItem.PictureLink = Constants.ProfilePictureUrl;
-                notfoundContactViewModel.IsCurrentUserProgenyAdmin = model.IsCurrentUserProgenyAdmin;
-                model.ContactsList.Add(notfoundContactViewModel);
-            }
-
+            
             model.TagFilter = tagFilter;
             
             return View(model);
