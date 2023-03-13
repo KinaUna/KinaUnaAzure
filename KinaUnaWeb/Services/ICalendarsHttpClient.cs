@@ -47,7 +47,8 @@ namespace KinaUnaWeb.Services
         /// </summary>
         /// <param name="progenyId">int: The Id of the progeny (Progeny.Id).</param>
         /// <param name="accessLevel">int: The user's access level.</param>
+        /// <param name="timeZone">int: The user's time zone.</param>
         /// <returns>List of CalendarItem objects.</returns>
-        Task<List<CalendarItem>> GetUpcomingEvents(int progenyId, int accessLevel);
+        Task<List<CalendarItem>> GetUpcomingEvents(int progenyId, int accessLevel, string timeZone);
     }
 }

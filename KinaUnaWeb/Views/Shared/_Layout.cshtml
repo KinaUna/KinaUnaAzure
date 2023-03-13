@@ -16,9 +16,11 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark">
     <title>@ViewData["Title"] : Kina Una Web</title>
     <link rel="stylesheet" href="~/css/bootstrap.min.css" asp-append-version="true">
     <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/bootstrap5.css"/>
+    <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/bootstrap5-dark.css" media="(prefers-color-scheme: dark)">
     <link href="~/lib/fa5_2_0/css/all.min.css" rel="stylesheet" />
     <link href="~/css/waitMe.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/css/bootstrap-select.min.css">
@@ -93,118 +95,119 @@
             Context.Response.Redirect("/Account/SignIn?returnUrl=" + returnUrl);
         }
     }
-
 }
 <body>
+@{
+        UserMenuViewModel userMenuViewModel = new UserMenuViewModel { LanguageId = languageId, UserInfo = userInfo };
+}
+    @await Html.PartialAsync("_SideMenuPartial", userMenuViewModel)
 <div id="topLanguageDiv" class="kinauna_purple_bg">
-	<div class="container">
-		<div class="row">
-			<div class="col ml-3 mt-0 mb-1 w-100">
-				@await Html.PartialAsync("_LanguagePartial", await LocaleManager.GetLanguageModel(languageId))
-			</div>
-		</div>
-	</div>
+    <div class="container">
+        <div class="row">
+            <div class="col ml-3 mt-0 mb-1 w-100">
+                @await Html.PartialAsync("_LanguagePartial", await LocaleManager.GetLanguageModel(languageId))
+            </div>
+        </div>
+    </div>
 </div>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top" id="navMain">
-<div id="topMainMenuContainer" class="container">
+    <div id="topMainMenuContainer" class="container">
 
-@if (User.Identity != null && User.Identity.IsAuthenticated)
-{
-    <a asp-area="" asp-controller="Home" asp-action="Index" asp-route-childId="@userInfo.ViewChild" class="navbar-brand leavePage" aria-label="Home" style="margin-right: 80px;">
-        <img src="/images/Square44x44Logo.scale-100.png" class="kinauna-logo"/>
-    </a>
-    @if (userInfo.CanUserAddItems)
-    {
-        <div class="navbar-nav nav-item ml-3 ml-lg-1">
-            <a class="nav-link kinauna_yellow_text leavePage" style="margin-right: 12px;" asp-area="" asp-controller="AddItem" asp-action="Index" aria-label="Add item">
-                <i class="material-icons icon_medium kinauna_yellow_text" aria-hidden="true">add</i>
-            </a>
-        </div>
-    }
-}
-else
-{
-    <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage" aria-label="Home" style="margin-right: 80px;">
-        <img src="/images/Square44x44Logo.scale-100_bw.png" class="kinauna-logo"/>
-    </a>
-}
-@{
-    string childprofilePic = "<i class=\"material-icons d-none\" style=\"color: #8bda8b;\">child_care</i>";
-    if (child != null)
-    {
-        
-        if (!string.IsNullOrWhiteSpace(child.PictureLink))
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
         {
-            string picLink = ChildManager.GetImageUrl(child.PictureLink, "progeny");
-            childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 48px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 48px;\" /img> ";
-        }
-        <span class="d-lg-none">@Html.Raw(childprofilePic)</span>
-    }
-}
-<span id="togglerNotificationsCounter" class="badge badge-danger ml-auto mr-2 d-block d-lg-none" style="position: relative; display: none; font-size: 12px;">0</span>
-<button id="navMainMenuButton" class="navbar-toggler d-block d-lg-none" style="height: 52px; border-color: transparent; outline: none" type="button" data-toggle="collapse" data-target="#navbarMainContent" aria-controls="navbarMainContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon kinauna_yellow_text"></span>
-</button>
-<div class="collapse navbar-collapse mt-5 mt-lg-1" id="navbarMainContent" style="min-height: 52px;">
-<ul class="navbar-nav ml-1 ml-lg-2 w-100 top-menu-max-height">
-@if (childList.Count > 1 && child != null)
-{
-    <li class="nav-item dropdown mb-2 mb-lg-0 mr-auto mr-lg-2">
-        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-            <span style="max-height:40px;">@Html.Raw(childprofilePic)</span><span> @child.NickName </span>
-        </a>
-        <div class="dropdown-menu">
-            @foreach (Progeny prog in childList)
+            <a asp-area="" asp-controller="Home" asp-action="Index" asp-route-childId="@userInfo.ViewChild" class="navbar-brand leavePage" aria-label="Home" style="margin-right: 80px;">
+                <img src="/images/Square44x44Logo.scale-100.png" class="kinauna-logo"/>
+            </a>
+            @if (userInfo.CanUserAddItems)
             {
-                if (prog.Id != child.Id)
-                {
-                    <div class="dropdown-item">
-                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-returnUrl="@returnUrl" method="post">
-                            <button type="submit" class="btn btn-link btn-block text-white text-left leavePage">
-                                @{
-                                    string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
-                                    if (!string.IsNullOrWhiteSpace(prog.PictureLink))
-                                    {
-                                        string picLink2 = ChildManager.GetImageUrl(prog.PictureLink, "progeny");
-                                        profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px;\" /img> ";
-                                    }
-                                }
-                                @Html.Raw(profilePic2) @prog.NickName
-                            </button>
-                        </form>
-                    </div>
-                }
+                <div class="navbar-nav nav-item ml-3 ml-lg-1">
+                    <a class="nav-link kinauna_yellow_text leavePage" style="margin-right: 12px;" asp-area="" asp-controller="AddItem" asp-action="Index" aria-label="Add item">
+                        <i class="material-icons icon_medium kinauna_yellow_text" aria-hidden="true">add</i>
+                    </a>
+                </div>
             }
+        }
+        else
+        {
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage" aria-label="Home" style="margin-right: 80px;">
+                <img src="/images/Square44x44Logo.scale-100_bw.png" class="kinauna-logo"/>
+            </a>
+        }
+        @{
+            string childprofilePic = "<i class=\"material-icons d-none\" style=\"color: #8bda8b;\">child_care</i>";
+            if (child != null)
+            {
+
+                if (!string.IsNullOrWhiteSpace(child.PictureLink))
+                {
+                    string picLink = ChildManager.GetImageUrl(child.PictureLink, "progeny");
+                    childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 48px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 48px;\" /img> ";
+                }
+                <span class="d-lg-none">@Html.Raw(childprofilePic)</span>
+            }
+        }
+        <span id="togglerNotificationsCounter" class="badge badge-danger ml-auto mr-2 d-block d-lg-none" style="position: relative; display: none; font-size: 12px;">0</span>
+        <button id="navMainMenuButton" class="navbar-toggler d-block d-lg-none" style="height: 52px; border-color: transparent; outline: none" type="button" data-toggle="collapse" data-target="#navbarMainContent" aria-controls="navbarMainContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon kinauna_yellow_text"></span>
+        </button>
+        <div class="collapse navbar-collapse mt-5 mt-lg-1" id="navbarMainContent" style="min-height: 52px;">
+            <ul class="navbar-nav ml-1 ml-lg-2 w-100 top-menu-max-height">
+                @if (childList.Count > 1 && child != null)
+                {
+                    <li class="nav-item dropdown mb-2 mb-lg-0 mr-auto mr-lg-2">
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                            <span style="max-height: 40px;">@Html.Raw(childprofilePic)</span><span> @child.NickName </span>
+                        </a>
+                        <div class="dropdown-menu">
+                            @foreach (Progeny prog in childList)
+                            {
+                                if (prog.Id != child.Id)
+                                {
+                                    <div class="dropdown-item">
+                                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-returnUrl="@returnUrl" method="post">
+                                            <button type="submit" class="btn btn-link btn-block text-white text-left leavePage">
+                                                @{
+                                                    string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
+                                                    if (!string.IsNullOrWhiteSpace(prog.PictureLink))
+                                                    {
+                                                        string picLink2 = ChildManager.GetImageUrl(prog.PictureLink, "progeny");
+                                                        profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px;\" /img> ";
+                                                    }
+                                                }
+                                                @Html.Raw(profilePic2) @prog.NickName
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </li>
+                }
+                @await Html.PartialAsync("_MainMenuPartial", userMenuViewModel)
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    @await Html.PartialAsync("_NotificationsMenuPartial", languageId)
+                    @await Html.PartialAsync("_AccountMenuPartial", userMenuViewModel)
+                }
+                else
+                {
+                    <li class="nav-item ml-lg-auto">
+                        <form id="loginForm" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post">
+                            <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block"><i class="material-icons ml-2 mr-1">exit_to_app</i> @await LocaleManager.GetTranslation("Log in or register", PageNames.Layout, languageId)</button>
+                        </form>
+                    </li>
+                }
+            </ul>
         </div>
-    </li>
-}
-@{
-    UserMenuViewModel userMenuViewModel = new UserMenuViewModel { LanguageId = languageId, UserInfo = userInfo };
-    @await Html.PartialAsync("_MainMenuPartial", userMenuViewModel)
-}
-@if (User.Identity != null && User.Identity.IsAuthenticated)
-{
-    @await Html.PartialAsync("_NotificationsMenuPartial", languageId)
-    @await Html.PartialAsync("_AccountMenuPartial", userMenuViewModel)
-}
-else
-{
-    <li class="nav-item ml-lg-auto">
-        <form id="loginForm" class="form-inline-fullwidth" asp-controller="Account" asp-action="Login" method="post">
-            <button id="loginButton" type="submit" class="btn btn-link nav-link text-left btn-block"><i class="material-icons ml-2 mr-1">exit_to_app</i> @await LocaleManager.GetTranslation("Log in or register", PageNames.Layout, languageId)</button>
-        </form>
-    </li>
-}
-</ul>
-</div>
-</div>
+    </div>
 </nav>
 <div class="main-container body-content">
-    <div class="main" style="margin-top: 10px; padding-top: 10px;">
+    
+    <div id="kinaunaMainDiv" class="main kinauna-main" style="margin-top: 10px; padding-top: 10px;">
         <partial name="_CookieConsentPartial", model="@languageId"/>
         @if (showUndelete)
         {
-                @await Html.PartialAsync("_UndeleteAccountPartial", languageId)
+            @await Html.PartialAsync("_UndeleteAccountPartial", languageId)
         }
         @RenderBody()
     </div>

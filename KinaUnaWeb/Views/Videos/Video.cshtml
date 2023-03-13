@@ -30,7 +30,7 @@
 }
 
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
-    <h3 class="title">@ViewData["Title"] - @Model.Video.VideoNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.VideoCount</h3>
+    <h2>@ViewData["Title"] - @Model.Video.VideoNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.VideoCount</h2>
     <div id="photoDiv">
         @if (!String.IsNullOrEmpty(Model.TagFilter))
         {
@@ -47,7 +47,7 @@
                    asp-route-tagFilter="@Model.TagFilter">@viewNextText @videosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
             </div>
         </div>
-        <br />
+        <div class="space-20"></div>
         <div align="center" style="max-width: 100%">
             @if (Model.Video.VideoType == 1)
             {
@@ -58,7 +58,6 @@
                 <iframe src="@Model.Video.VideoLink?rel=0" style="width: 90%; height: 80vh; border: none;" allow="encrypted-media" allowfullscreen></iframe>
             }
         </div>
-
         <div>
             @{
                 if (!string.IsNullOrEmpty(Model.Tags))
@@ -66,12 +65,12 @@
                     List<string> tagsList = Model.Tags.Split(',').ToList();
                     foreach (string tagString in tagsList)
                     {
-                        <a asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                        <a asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
                     }
                 }
             }
         </div>
-        <br />
+        <div class="space-20"></div>
         @if (Model.VidTimeValid)
         {
             string wasString = await LocaleManager.GetTranslation("was", PageNames.Videos, Model.LanguageId);
@@ -85,7 +84,7 @@
                 <p>@Model.CurrentProgeny.NickName @wasString @Model.VidHours @await LocaleManager.GetTranslation("hours old.", PageNames.Videos, Model.LanguageId)</p>
                 <p>@Model.CurrentProgeny.NickName @wasString @Model.VidMinutes @await LocaleManager.GetTranslation("minutes old.", PageNames.Videos, Model.LanguageId)</p>
             </div>
-            <br />
+            <div class="space-20"></div>
         }
     </div>
     @if (User.Identity != null && User.Identity.IsAuthenticated && !string.IsNullOrEmpty(Model.Video.Longtitude))
@@ -184,7 +183,7 @@
                 </script>
             }
         </div>
-        <br />
+        <div class="space-20"></div>
     }
     @if (Model.CommentsList.Count > 0)
     {
@@ -209,7 +208,7 @@
                                 <p>
                                     @cmnt.CommentText
                                 </p>
-                                <br />
+                                <div class="space-20"></div>
                                 @if (cmnt.Author == Model.CurrentUser.UserId)
                                 {
                                     <div class="media-footer">
@@ -251,9 +250,8 @@
             <input asp-for="CurrentProgenyId" class="form-control" value="@Model.CurrentProgenyId" type="hidden" />
         </form>
     }
-    <br />
-
-    @if (Model.IsCurrentUserProgenyAdmin)
+<div class="space-20"></div>
+@if (Model.IsCurrentUserProgenyAdmin)
     {
         <div class="col-sm-3" style="margin-top: 35px;"></div>
         <div class="col-md-8">
@@ -367,7 +365,7 @@
                         </div>
                     </div>
                 }
-                <br />
+                <div class="space-20"></div>
                 <input asp-for="Video.VideoId" class="form-control" value="@Model.Video.VideoId" type="hidden" />
                 <input asp-for="Video.ProgenyId" class="form-control" value="@Model.CurrentProgenyId" type="hidden" />
                 <input asp-for="TagFilter" class="form-control" value="@ViewBag.TagFilter" type="hidden" />
@@ -417,8 +415,8 @@
             });
         </script>
     }
-    <br />
-    <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px;">
+<div class="space-20"></div>
+<div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px;">
         <div style="float: left">
             <a class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.PrevVideo" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @videosString</a>
         </div>

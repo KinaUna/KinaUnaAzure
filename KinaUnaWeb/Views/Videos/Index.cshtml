@@ -16,7 +16,7 @@
             </div>
         </div>
     }
-    <h3 class="title">@Model.CurrentProgeny.NickName @await LocaleManager.GetTranslation("Video gallery", PageNames.Videos, Model.LanguageId) - @await LocaleManager.GetTranslation("Page", PageNames.Videos, Model.LanguageId) @Model.PageNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.TotalPages</h3>
+    <h2>@Model.CurrentProgeny.NickName @await LocaleManager.GetTranslation("Video gallery", PageNames.Videos, Model.LanguageId) - @await LocaleManager.GetTranslation("Page", PageNames.Videos, Model.LanguageId) @Model.PageNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.TotalPages</h2>
     <br style="clear: both;" />
     <div id="photoListDiv">
         @{
@@ -73,15 +73,17 @@
                 <a class="@sortNewest" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.PageNumberIfSortChanges" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@Model.TagFilter">@newestFirstString</a>
             </div>
         }
-        @if (!String.IsNullOrEmpty(Model.TagFilter))
+        @if (!string.IsNullOrEmpty(Model.TagFilter))
         {
-            <br />
+            <div class="space-20"></div>
             <div style="float: right;">
-                @await LocaleManager.GetTranslation("Tag filter:", PageNames.Videos, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage"
-                                                                                                                                                                        asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Videos, Model.LanguageId)</a>
+                @await LocaleManager.GetTranslation("Tag filter:", PageNames.Videos, Model.LanguageId) <span class="btn tag-item">@Model.TagFilter</span>
+                <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy">
+                    <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Videos, Model.LanguageId)
+                </a>
             </div>
         }
-        <br />
+        <div class="space-20"></div>
         @if (Model.TotalPages > 1)
         {
             <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
@@ -97,16 +99,17 @@
                 <div style="float: right">
                     @if (Model.TotalPages > 5)
                     {
-                        <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.Forward5Pages" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
-                   asp-route-tagFilter="@Model.TagFilter">@go5PagesForwardString <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                        <a class="leavePage" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.Forward5Pages" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">
+                            @go5PagesForwardString <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i>
+                        </a>
                     }
-                    <a id="nextPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.NextPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
-                   asp-route-tagFilter="@Model.TagFilter">@viewNextText @videosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                    <a id="nextPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.NextPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">
+                        @viewNextText @videosString <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                    </a>
                 </div>
             </div>
         }
-
-        <br style="clear: both;" />
+        <div class="space-20"></div>
         <div align="center" style="width: 100%; clear: both;">
             @foreach (Video item in Model.VideosList)
             {
@@ -161,7 +164,6 @@
                 </a>
             }
         </div>
-
         @if (Model.TotalPages > 1)
         {
             <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
@@ -185,7 +187,7 @@
                 </div>
             </div>
         }
-        <br />
+        <div class="space-20"></div>
         <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
             @{
                 if (!string.IsNullOrEmpty(Model.TagsList))
@@ -193,18 +195,15 @@
                     string[] tagsList = Model.TagsList.Split(',');
                     foreach (string tagString in tagsList)
                     {
-                        <a asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                        <a asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
                     }
                 }
             }
         </div>
     </div>
-
     @if (Model.IsCurrentUserProgenyAdmin)
     {
-        <br />
-
-        <br />
+        <div class="space-50"></div>
         <div>
             @await LocaleManager.GetTranslation("Video access levels are displayed as the video number background color.", PageNames.Videos, Model.LanguageId)
             <br /><br />
@@ -230,9 +229,9 @@
             @await LocaleManager.GetTranslation("Registered Users or Public", PageNames.Videos, Model.LanguageId)
             <br /><br />
             @await LocaleManager.GetTranslation("Only administrators see this, others just see a dark blue color for all videos.", PageNames.Videos, Model.LanguageId)
-            <br />
+            <div class="space-20"></div>
         </div>
     }
     <div style="clear: left; max-width: 100%; padding-top: 10px; padding-bottom: 20px;"></div>
-    <br />
+<div class="space-20"></div>
 </div>

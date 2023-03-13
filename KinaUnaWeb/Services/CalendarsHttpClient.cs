@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -142,7 +143,7 @@ namespace KinaUnaWeb.Services
             return progenyCalendarList;
         }
 
-        public async Task<List<CalendarItem>> GetUpcomingEvents(int progenyId, int accessLevel)
+        public async Task<List<CalendarItem>> GetUpcomingEvents(int progenyId, int accessLevel, string timeZone)
         {
             List<CalendarItem> progenyCalendarList = new List<CalendarItem>();
             string accessToken = await GetNewToken();
@@ -155,6 +156,18 @@ namespace KinaUnaWeb.Services
                 string calendarAsString = await calendarResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                 progenyCalendarList = JsonConvert.DeserializeObject<List<CalendarItem>>(calendarAsString);
+
+                if (progenyCalendarList.Any())
+                {
+                    foreach (CalendarItem eventItem in progenyCalendarList)
+                    {
+                        if (eventItem.StartTime.HasValue && eventItem.EndTime.HasValue)
+                        {
+                            eventItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                            eventItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+                        }
+                    }
+                }
             }
 
             return progenyCalendarList;

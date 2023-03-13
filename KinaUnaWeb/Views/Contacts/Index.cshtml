@@ -109,7 +109,7 @@
                 <h2>@ViewData["Title"]</h2>
                 <div class="space-20"></div>
                 <div>
-                    <span style="color: black;">Show:</span>
+                    <span>Show:</span>
                     <span class="button-checkbox">
                         <button type="button" class="btn" data-color="primary">@await LocaleManager.GetTranslation("Active contacts", PageNames.Contacts, Model.LanguageId)</button>
                         <input type="checkbox" name="contactClassTrue" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
@@ -180,7 +180,7 @@
                     string[] tagsList = Model.Tags.Split(',');
                     foreach (string tagString in tagsList)
                     {
-                        <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                        <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
                     }
                 }
             }

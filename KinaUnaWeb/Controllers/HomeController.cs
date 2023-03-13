@@ -49,33 +49,20 @@ namespace KinaUnaWeb.Controllers
                 string returnUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
                 return RedirectToAction("CheckOut", "Account", new{returnUrl});
             }
-            
-            if (model.CurrentProgeny.BirthDay.HasValue)
-            {
-                model.CurrentProgeny.BirthDay = DateTime.SpecifyKind(model.CurrentProgeny.BirthDay.Value, DateTimeKind.Unspecified);
-            }
-            
+
             model.SetBirthTimeData();
-
             
-            Picture tempPicture = model.CreateTempPicture($"https://{Request.Host}{Request.PathBase}");
-
-            model.DisplayPicture = tempPicture;
-
             if (model.CurrentAccessLevel < (int)AccessLevel.Public)
             {
                 model.DisplayPicture = await _mediaHttpClient.GetRandomPicture(model.CurrentProgeny.Id, model.CurrentAccessLevel, model.CurrentUser.Timezone);
             }
 
-            model.PictureTime = new PictureTime(new DateTime(2018, 02, 18, 20, 18, 00),
-                new DateTime(2018, 02, 18, 20, 18, 00), TimeZoneInfo.FindSystemTimeZoneById(model.CurrentProgeny.TimeZone));
-            
             if (model.CurrentAccessLevel == (int)AccessLevel.Public || model.DisplayPicture == null)
             {
                 model.DisplayPicture = await _mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, model.CurrentAccessLevel, model.CurrentUser.Timezone);
                 if(model.DisplayPicture == null)
                 {
-                    model.DisplayPicture = tempPicture;
+                    model.DisplayPicture = model.CreateTempPicture($"https://{Request.Host}{Request.PathBase}");
                 }
                 
                 model.PicTimeValid = false;
@@ -89,23 +76,13 @@ namespace KinaUnaWeb.Controllers
 
             }
 
-            model.SetDisplayPictureData();
             model.DisplayPicture.PictureLink600 = _imageStore.UriFor(model.DisplayPicture.PictureLink600);
-            model.ImageLink600 = model.DisplayPicture.PictureLink600;
-
+            model.SetDisplayPictureData();
+            
             model.SetPictureTimeData();
             
-            model.EventsList = await _calendarsHttpClient.GetUpcomingEvents(model.CurrentProgenyId, model.CurrentAccessLevel);
+            model.EventsList = await _calendarsHttpClient.GetUpcomingEvents(model.CurrentProgenyId, model.CurrentAccessLevel, model.CurrentUser.Timezone);
             
-            foreach (CalendarItem eventItem in model.EventsList)
-            {
-                if (eventItem.StartTime.HasValue && eventItem.EndTime.HasValue)
-                {
-                    eventItem.StartTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                    eventItem.EndTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                }
-            }
-
             model.LatestPosts = await _viewModelSetupService.GetLatestPostTimeLineModel(model.CurrentProgenyId, model.CurrentAccessLevel, model.LanguageId);
 
             model.YearAgoPosts = await _viewModelSetupService.GetYearAgoPostsTimeLineModel(model.CurrentProgenyId, model.CurrentAccessLevel, model.LanguageId);

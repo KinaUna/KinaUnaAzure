@@ -188,8 +188,8 @@ self.addEventListener('push', function (event) {
     const title = notification.Title;
     const message = notification.Message;
     const link = notification.Link;
-    const icon = "https://web.kinauna.com/images/kinaunalogo192x192_rounded.png";
-    const badge = "https://web.kinauna.com/images/kinaunalogo_badge3.png";
+    const icon = "https://web.kinauna.com/images/kinaunalogo192x192_round.png";
+    const badge = "https://web.kinauna.com/images/kinaunalogo_badge4.png";
     const tag = notification.Tag;
     event.waitUntil(self.registration.showNotification(title, {
         body: message,
@@ -225,8 +225,8 @@ function displayNotification() {
         navigator.serviceWorker.getRegistration().then(function (reg) {
             const options = {
                 body: 'KinaUna Message',
-                icon: 'https://web.kinauna.com/images/kinaunalogo192x192.png',
-                badge: "https://web.kinauna.com/images/kinaunalogo_badge3.png",
+                icon: 'https://web.kinauna.com/images/kinaunalogo192x192_round.png',
+                badge: "https://web.kinauna.com/images/kinaunalogo_badge4.png",
                 vibrate: [100, 50, 100],
                 data: { notificationId: 1 },
                 actions: [

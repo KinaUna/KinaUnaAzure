@@ -18,7 +18,7 @@
     @if (!string.IsNullOrEmpty(Model.TagFilter))
     {
         <br />
-        <div style="float: right;">Tag filter: <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Reset Filter</a></div>
+        <div style="float: right;">Tag filter: <span class="btn tag-item">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Reset Filter</a></div>
     }
     @if (Model.IsCurrentUserProgenyAdmin)
     {

@@ -118,6 +118,8 @@ namespace KinaUnaWeb.Models.HomeViewModels
             ImageId = DisplayPicture.PictureId;
             Tags = DisplayPicture.Tags;
             Location = DisplayPicture.Location;
+            
+            ImageLink600 = DisplayPicture.PictureLink600;
         }
     }
 }

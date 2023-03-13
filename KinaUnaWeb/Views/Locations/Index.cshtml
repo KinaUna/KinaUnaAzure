@@ -39,7 +39,7 @@
     }
     @if (!string.IsNullOrEmpty(Model.TagFilter))
     {
-        <br />
+        <div class="space-20"></div>
         <div style="float: right;">@await LocaleManager.GetTranslation("Tag filter:", PageNames.Locations, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Locations, Model.LanguageId)</a></div>
     }
     @if (Model.IsCurrentUserProgenyAdmin)
@@ -52,7 +52,7 @@
     }
     @if (Model.LocationsList == null)
     {
-        <h3 class="title">@ViewData["Title"]</h3>
+        <h2>@ViewData["Title"]</h2>
         <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Locations, Model.LanguageId)</div>
     }
     else
@@ -62,7 +62,7 @@
                 <i class="fas fa-map-marked-alt"></i> @await LocaleManager.GetTranslation("Photo locations", PageNames.Locations, Model.LanguageId)
             </a>
         </div>
-        <h3 class="title">@ViewData["Title"]</h3>
+        <h2>@ViewData["Title"]</h2>
         <div class="row" style="clear: both; margin-top: 25px;">
             <div style="width: 100%; height: 480px; max-height: 60vh; margin-left: 20px; margin-right: 20px;" id="mapContainer"></div>
             <script>
@@ -157,8 +157,8 @@
             @foreach (Location locationModel in Model.LocationsList)
             {
                 string locId = "loc" + locationModel.LocationId;
-                <div id="@locId" class="card text-black bg-light" align="left" style="margin: 15px; margin-bottom: 25px; padding: 1px; float: left; min-width: 49%;">
-                    <div class="card-header bg-primary rounded" style="padding-left: 15px; padding-right: 5px;">
+                <div id="@locId" class="card bg-location" align="left" style="margin: 15px; margin-bottom: 25px; padding: 1px; float: left; min-width: 49%;">
+                    <div class="card-header bg-location-header rounded" style="padding-left: 15px; padding-right: 5px;">
                         @if (Model.IsCurrentUserProgenyAdmin)
                         {
                             <div style="float: right;">
@@ -171,11 +171,11 @@
                                 </a>
                             </div>
                         }
-                        <h4 class="card-title">@locationModel.Name</h4>
+                        <h4>@locationModel.Name</h4>
                     </div>
                     <div class="card-body">
                         <div class="card-text">
-                            <div class="rounded text-dark card-body bg-white" align="left">
+                            <div class="rounded card-body" align="left">
                                 <div>
                                     @await LocaleManager.GetTranslation("Street:", PageNames.Locations, Model.LanguageId) @locationModel.StreetName
                                 </div>
@@ -219,14 +219,12 @@
                                     List<string> tagsList = locationModel.Tags.Split(',').ToList();
                                     foreach (string tagString in tagsList)
                                     {
-                                        <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                                        <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
                                     }
                                 }
                             }
                         </div>
-                        @*<div class="container card-category text-right text-primary" style="margin-top: 0;">@noteViewModel.CreatedDate.ToString("dd-MMM-yyyy HH:mm")</div>*@
                     </div>
-
                 </div>
             }
             <div class="container">
@@ -238,7 +236,7 @@
                                 string[] tagsList = Model.Tags.Split(',');
                                 foreach (string tagString in tagsList)
                                 {
-                                    <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                                    <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
                                 }
                             }
                         }
