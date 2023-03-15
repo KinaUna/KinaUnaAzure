@@ -183,7 +183,6 @@
                         </div>
                     </li>
                 }
-                @await Html.PartialAsync("_MainMenuPartial", userMenuViewModel)
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
                     @await Html.PartialAsync("_NotificationsMenuPartial", languageId)

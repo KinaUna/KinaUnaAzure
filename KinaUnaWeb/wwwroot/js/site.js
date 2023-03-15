@@ -41,9 +41,45 @@ function removeServiceWorkers() {
         });
 }
 
-let showSidebar = true;
-let firstRun = true;
+function sidebarMenuDelay(milliseconds) {
+    return new Promise(resolve => {
+        setTimeout(resolve, milliseconds);
+    });
+}
 
+let showSidebar = true;
+let showSidebarText = false;
+
+function toggleSidebarText() {
+    showSidebarText = !showSidebarText;
+    setSidebarText();
+
+    let updatedShowSidebarTextSetting = { showSidebarText: showSidebarText };
+    localStorage.setItem('show_sidebar_text_setting', JSON.stringify(updatedShowSidebarTextSetting));
+    setSideBarPosition();
+}
+
+function setSidebarText() {
+    let sidebarExapanderIcon = document.getElementById('sidebar-text-expander');
+    sidebarExapanderIcon.style.transition = 'rotate 500ms ease-in-out 0ms';
+    let sidebarTexts = document.querySelectorAll('.sidebar-item-text');
+    let sidebarTextsButton = document.getElementById('side-bar-toggle-text-btn');
+
+    sidebarTexts.forEach(textItem => {
+        if (showSidebarText) {
+            sidebarExapanderIcon.style.rotate = '180deg';
+            textItem.classList.remove('sidebar-item-text-hide');
+            sidebarTextsButton.style.top = "12px";
+            sidebarTextsButton.style.right = "5%";
+        }
+        else {
+            sidebarExapanderIcon.style.rotate = '0deg';
+            textItem.classList.add('sidebar-item-text-hide');
+            sidebarTextsButton.style.top = "58px";
+            sidebarTextsButton.style.right = "";
+        }
+    });
+}
 function toggleSideBar() {
     let sidebarElement = document.getElementById('sidebar-menu-div');
     if (showSidebar) {
@@ -58,7 +94,7 @@ function toggleSideBar() {
     setSideBarPosition();
 }
 
-function setSideBarPosition() {
+async function setSideBarPosition() {
     let viewportHeight = window.innerHeight;
     let sidebarElement = document.getElementById('sidebar-menu-div');
     let sidebarMenuListElement = document.getElementById('sidebar-menu-list-div');
@@ -68,6 +104,7 @@ function setSideBarPosition() {
     let topLanguageElement = document.getElementById('topLanguageDiv');
     let sidebarTogglerElement = document.getElementById('sidebarTogglerDiv');
     let kinaUnaMainElement = document.getElementById('kinaunaMainDiv');
+    let sidebarTextsButton = document.getElementById('side-bar-toggle-text-btn');
     let menuOffset = navMainElement.scrollHeight + topLanguageElement.scrollHeight + 25;
     let sidebarHeight = viewportHeight - (menuOffset + sidebarTogglerElement.offsetHeight);
     let maxSidebarHeight = sidebarNavUlElement.scrollHeight + menuOffset + sidebarTogglerElement.offsetHeight + 10;
@@ -78,39 +115,44 @@ function setSideBarPosition() {
         kinaUnaMainElement.classList.add('kinauna-main');
         sidebarElement.style.opacity = '1.0';
         if (viewportHeight > maxSidebarHeight) {
-            sidebarMenuListWrapperElement.style.height = (sidebarNavUlElement.scrollHeight + 20) + 'px';
-            sidebarElement.style.width = '55px';
-            sidebarTogglerElement.style.width = '55px';
+            sidebarMenuListWrapperElement.style.overflowY = "hidden";
+            sidebarMenuListWrapperElement.style.height = (sidebarNavUlElement.scrollHeight + 50) + 'px';
         }
         else {
-            sidebarMenuListWrapperElement.style.height = sidebarHeight + 'px';
-            sidebarElement.style.width = '72px';
-            sidebarTogglerElement.style.width = '72px';
+            sidebarMenuListWrapperElement.style.overflowY = "auto";
+            sidebarMenuListWrapperElement.style.height = sidebarHeight + 'px';            
         };
-
         
         sidebarElement.style.top = menuOffset + 'px';
-        sidebarElement.style.overflowY = "";
+        
         sidebarTogglerElement.style.borderTopRightRadius = '25px';
         sidebarTogglerElement.style.borderBottomRightRadius = '0px';
+        sidebarTogglerElement.style.width = sidebarMenuListWrapperElement.offsetWidth + 'px';
+        await sidebarMenuDelay(500);
+        sidebarTogglerElement.style.width = sidebarMenuListWrapperElement.offsetWidth + 'px';
+        await sidebarMenuDelay(500);
+        sidebarTogglerElement.style.width = sidebarMenuListWrapperElement.offsetWidth + 'px';
+        sidebarTextsButton.style.visibility = "visible";
     }
     else {
+        sidebarMenuListWrapperElement.style.overflowY = "hidden";
         sidebarTogglerElement.style.transition = 'border-bottom-right-radius 500ms ease-in-out 1000ms';
         sidebarMenuListWrapperElement.style.height = '0px';
         kinaUnaMainElement.classList.remove('kinauna-main');
         sidebarElement.style.opacity = '.5';
-        sidebarElement.style.overflowY = "hidden";
         let sidebarTogglerBottom = viewportHeight - menuOffset - sidebarTogglerElement.scrollHeight;
-        // sidebarElement.style.bottom = sidebarTogglerBottom + 'px';
         sidebarElement.style.top = menuOffset + 'px';
-        //sidebarElement.style.width = '55px';
-        //sidebarTogglerElement.style.width = '55px';
         sidebarTogglerElement.style.borderTopRightRadius = '25px';
         sidebarTogglerElement.style.borderBottomRightRadius = '25px';
+        setTimeout(function () {
+            sidebarTogglerElement.style.width = '55px';
+        }, 500);
+        sidebarTextsButton.style.visibility = "collapse";
     };
 }
 
 let showSidebarSetting = {};
+let showSidebarTextSetting = {};
 
 function initPageSettings() {
     let sidebarElement = document.getElementById('sidebar-menu-div');
@@ -126,6 +168,19 @@ function initPageSettings() {
     } else {
         showSidebarSetting = { showSidebar: true };
         localStorage.setItem('show_sidebar_setting', JSON.stringify(showSidebarSetting));
+    }
+
+    showSidebarTextSetting = JSON.parse(localStorage.getItem('show_sidebar_text_setting'));
+    if (showSidebarTextSetting != null) {
+        if (!showSidebarTextSetting.showSidebarText) {
+            showSidebarText = false;
+        }
+        else {
+            showSidebarText = true;
+        }
+    } else {
+        showSidebarSetting = { showSidebarText: false };
+        localStorage.setItem('show_sidebar_text_setting', JSON.stringify(showSidebarTextSetting));
     }
 }
 $(document).ready(function () {
@@ -152,5 +207,6 @@ $(document).ready(function () {
 
     initPageSettings();
     setSideBarPosition();
+    setSidebarText();
     window.onresize = setSideBarPosition;
 });

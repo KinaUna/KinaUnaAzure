@@ -2329,7 +2329,6 @@ button.Zebra_DatePicker_Icon {
 
 .sidebar-menu {
     position: fixed;
-    width: 55px;
     left: -100px;
     overflow: visible;
     transition: 0.5s;
@@ -2351,12 +2350,13 @@ button.Zebra_DatePicker_Icon {
 
 .sidebar-menu-list-wrapper {
     height: auto;
-    overflow: auto;
+    overflow-y: auto;
     transition: all 500ms ease-in-out 500ms;
     margin-top: 52px;
     background: #19061c;
     background: linear-gradient(120deg, #19061c, #450062);
     border-bottom-right-radius: 25px;
+    border: 1px solid transparent;
 }
 .sidebar-item {
     margin: 0;
@@ -2365,9 +2365,21 @@ button.Zebra_DatePicker_Icon {
 }
 
 .sidebar-item-text {
-    display: none;
+    margin-left: 4px;
 }
 
+.sidebar-item-text-hide {
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
+}
+
+.sidebar-icon {
+    position: relative;
+    margin-left: 6px;
+    margin-right: 6px;
+    top: 4px;
+}
 .kinauna-main {
     margin-left: 70px;
     transition: all 500ms ease-in-out 500ms;
@@ -2379,10 +2391,13 @@ button.Zebra_DatePicker_Icon {
     border: 0;
     font-size: 16px;
     padding: 6px;
-    margin: 6px;
+    margin-top: 6px;
+    margin-bottom: 6px;
     border: 1px solid transparent;
     line-height: 10px;
-    transition: all 500ms ease-in-out 500ms;
+    width: 100%;
+    min-width: 52px;
+    text-align: left;
 }
 
 .btn-sidebar:hover {
@@ -2400,7 +2415,22 @@ button.Zebra_DatePicker_Icon {
     border: 1px solid transparent;
     border-top-right-radius: 25px;
     transition: width 500ms ease-in-out 1ms;
-    width: 55px;
+    min-width: 55px;
+}
+
+.btn-sidebar-toggle-text {
+    border-radius: 45px;
+    border: 0;
+    background: #4b0056;
+    top: 58px;
+    margin-left: 2px;
+    z-index: 999;
+    transition: all 500ms ease-in-out 100ms;
+    visibility: collapse;
+}
+
+.btn-sidebar-toggle-text:focus {
+    outline: none;
 }
 
 .main {

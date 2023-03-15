@@ -54,7 +54,7 @@
                     <div>@Model.WeeksMileStone[0] @weeksString: @Model.WeeksMileStone[1]</div>
                     <div>@Model.DaysMileStone[0] @daysString: @Model.DaysMileStone[1]</div>
                     <div>@Model.HoursMileStone[0] @hoursString: @Model.HoursMileStone[1]</div>
-                    <div>@willBeString @Model.MinutesMileStone[0] @minutesString: @Model.MinutesMileStone[1]</div>
+                    <div>@Model.MinutesMileStone[0] @minutesString: @Model.MinutesMileStone[1]</div>
                 </div>
                 <div class="space-70"></div>
                 <div>
@@ -84,12 +84,13 @@
                     <div style="font-size: 1.25rem;">
 
                         <div>@await LocaleManager.GetTranslation("Photo taken:", PageNames.Home, Model.LanguageId) @Model.PicTime</div>
-                        <div>@Model.CurrentProgeny.NickName @wasString @Model.PicYears @yearsOldString</div>
-                        <div>@Model.CurrentProgeny.NickName @wasString @Model.PicMonths @monthsOldString</div>
-                        <div>@Model.CurrentProgeny.NickName @wasString @Model.PicWeeks[0] @weeksAndString @Model.PicWeeks[1] @daysOldString</div>
-                        <div>@Model.CurrentProgeny.NickName @wasString @Model.PicDays @daysOldString</div>
-                        <div>@Model.CurrentProgeny.NickName @wasString @Model.PicHours @hoursOldString</div>
-                        <div>@Model.CurrentProgeny.NickName @wasString @Model.PicMinutes @minutesOldString</div>
+                        <div>@Model.CurrentProgeny.NickName @wasString</div>
+                        <div>@Model.PicYears @yearsOldString</div>
+                        <div>@Model.PicMonths @monthsOldString</div>
+                        <div>@Model.PicWeeks[0] @weeksAndString @Model.PicWeeks[1] @daysOldString</div>
+                        <div>@Model.PicDays @daysOldString</div>
+                        <div>@Model.PicHours @hoursOldString</div>
+                        <div>@Model.PicMinutes @minutesOldString</div>
                     </div>
                 }
             </div>

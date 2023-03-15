@@ -6,18 +6,33 @@
 <div id="sidebar-menu-div" class="sidebar-menu">
     <div id="sidebarTogglerDiv" class="sidebar-toggler">
         <button class="btn-sidebar btn-link-yellow" onclick="toggleSideBar()">
-            <i class="material-icons">apps</i>
+            <i class="material-icons sidebar-icon">apps</i>
         </button>
     </div>
     <div id="sidebar-menu-list-wrapper" class="sidebar-menu-list-wrapper">
         <div id="sidebar-menu-list-div" class="sidebar-menu-list">
+            <button id="side-bar-toggle-text-btn" class="btn-sidebar-toggle-text" style="text-align: right; position: absolute" onclick="toggleSidebarText()">
+                <i id="sidebar-text-expander" class="material-icons sidebar-icon">chevron_right</i>
+            </button>
+            <div style="height: 30px; display: block;"></div>
             <ul id="sidebar-nav-ul" class="nav flex-column">
                 <li class="nav-item dropdown-item sidebar-item">
-                    <form class="form-inline-fullwidth" asp-area="" asp-controller="TimeLine" asp-action="Index" method="get">
-                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
+                    <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="Index" method="get">
+                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden"/>
                         <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons">update</i>
-                            <span class="sidebar-item-text">
+                            <i class="material-icons sidebar-icon">home</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
+                                @await LocaleManager.GetTranslation("Home", PageNames.Layout, Model.LanguageId)
+                            </span>
+                        </button>
+                    </form>
+                </li>
+                <li class="nav-item dropdown-item sidebar-item">
+                    <form class="form-inline-fullwidth" asp-area="" asp-controller="TimeLine" asp-action="Index" method="get">
+                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden"/>
+                        <button type="submit" class="btn-sidebar leavePage">
+                            <i class="material-icons sidebar-icon">update</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("Timeline", PageNames.Layout, Model.LanguageId)
                             </span>
                         </button>
@@ -26,8 +41,8 @@
                 <li class="nav-item dropdown-item sidebar-item">
                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Pictures" asp-action="Index" method="get">
                         <button style="align-items: flex-start" type="submit" class="btn-sidebar  leavePage">
-                            <i class="material-icons">photo_library</i>
-                            <span class="sidebar-item-text">
+                            <i class="material-icons sidebar-icon">photo_library</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("Photos", PageNames.Layout, Model.LanguageId)
                             </span>
                         </button>
@@ -36,8 +51,8 @@
                 <li class="nav-item dropdown-item sidebar-item">
                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Videos" asp-action="Index" method="get">
                         <button style="align-items: flex-start" type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons">videocam</i>
-                            <span class="sidebar-item-text">
+                            <i class="material-icons sidebar-icon">videocam</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("Videos", PageNames.Layout, Model.LanguageId)
                             </span>
                         </button>
@@ -45,10 +60,10 @@
                 </li>
                 <li class="nav-item dropdown-item sidebar-item">
                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Calendar" asp-action="Index" method="get">
-                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
+                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden"/>
                         <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons">event_note</i>
-                            <span class="sidebar-item-text">
+                            <i class="material-icons sidebar-icon">event_note</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("Calendar", PageNames.Layout, Model.LanguageId)
                             </span>
                         </button>
@@ -56,10 +71,10 @@
                 </li>
                 <li class="nav-item dropdown-item sidebar-item">
                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Notes" asp-action="Index" method="get">
-                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
+                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden"/>
                         <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons">note</i>
-                            <span class="sidebar-item-text">
+                            <i class="material-icons sidebar-icon">note</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("Notes", PageNames.Layout, Model.LanguageId)
                             </span>
                         </button>
@@ -67,10 +82,10 @@
                 </li>
                 <li class="nav-item dropdown-item sidebar-item">
                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Sleep" asp-action="Index" method="get">
-                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
+                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden"/>
                         <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons">hotel</i>
-                            <span class="sidebar-item-text">
+                            <i class="material-icons sidebar-icon">hotel</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("Sleep", PageNames.Layout, Model.LanguageId)
                             </span>
                         </button>
@@ -78,10 +93,10 @@
                 </li>
                 <li class="nav-item dropdown-item sidebar-item">
                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Friends" asp-action="Index" method="get">
-                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
+                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden"/>
                         <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons">face</i>
-                            <span class="sidebar-item-text">
+                            <i class="material-icons sidebar-icon">face</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("Friends", PageNames.Layout, Model.LanguageId)
                             </span>
                         </button>
@@ -89,10 +104,10 @@
                 </li>
                 <li class="nav-item dropdown-item sidebar-item">
                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Contacts" asp-action="Index" method="get">
-                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
+                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden"/>
                         <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons">contact_phone</i>
-                            <span class="sidebar-item-text">
+                            <i class="material-icons sidebar-icon">contact_phone</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("Contacts", PageNames.Layout, Model.LanguageId)
                             </span>
                         </button>
@@ -100,10 +115,10 @@
                 </li>
                 <li class="nav-item dropdown-item sidebar-item">
                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Locations" asp-action="Index" method="get">
-                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
+                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden"/>
                         <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons">person_pin</i>
-                            <span class="sidebar-item-text">
+                            <i class="material-icons sidebar-icon">person_pin</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("Locations", PageNames.Layout, Model.LanguageId)
                             </span>
                         </button>
@@ -111,10 +126,10 @@
                 </li>
                 <li class="nav-item dropdown-item sidebar-item">
                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Measurements" asp-action="Index" method="get">
-                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
+                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden"/>
                         <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons">straighten</i>
-                            <span class="sidebar-item-text">
+                            <i class="material-icons sidebar-icon">straighten</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("Measurements", PageNames.Layout, Model.LanguageId)
                             </span>
                         </button>
@@ -122,10 +137,10 @@
                 </li>
                 <li class="nav-item dropdown-item sidebar-item">
                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Skills" asp-action="Index" method="get">
-                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
+                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden"/>
                         <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons">school</i>
-                            <span class="sidebar-item-text">
+                            <i class="material-icons sidebar-icon">school</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("Skillz", PageNames.Layout, Model.LanguageId)
                             </span>
                         </button>
@@ -133,10 +148,10 @@
                 </li>
                 <li class="nav-item dropdown-item sidebar-item">
                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Vocabulary" asp-action="Index" method="get">
-                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
+                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden"/>
                         <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons">forum</i>
-                            <span class="sidebar-item-text">
+                            <i class="material-icons sidebar-icon">forum</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("Vocabulary", PageNames.Layout, Model.LanguageId)
                             </span>
                         </button>
@@ -144,15 +159,29 @@
                 </li>
                 <li class="nav-item dropdown-item sidebar-item">
                     <form class="form-inline-fullwidth" asp-area="" asp-controller="Vaccinations" asp-action="Index" method="get">
-                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
+                        <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden"/>
                         <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons">local_pharmacy</i>
-                            <span class="sidebar-item-text">
+                            <i class="material-icons sidebar-icon">local_pharmacy</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
                                 @await LocaleManager.GetTranslation("Vaccinations", PageNames.Layout, Model.LanguageId)
                             </span>
                         </button>
                     </form>
                 </li>
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <li class="nav-item dropdown-item sidebar-item">
+                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Family" asp-action="Index" method="get">
+                            <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden"/>
+                            <button type="submit" class="btn-sidebar leavePage">
+                                <i class="material-icons sidebar-icon">people</i>
+                                <span class="sidebar-item-text sidebar-item-text-hide">
+                                    @await LocaleManager.GetTranslation("My Family", PageNames.Layout, Model.LanguageId)
+                                </span>
+                            </button>
+                        </form>
+                    </li>
+                }
             </ul>
         </div>
     </div>

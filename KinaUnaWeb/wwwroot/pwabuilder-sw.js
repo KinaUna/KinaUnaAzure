@@ -3,9 +3,7 @@
 const CACHE = 'kinauna-cache-v1';
 const precacheFiles = [
 /* Add an array of files to precache for your app */
-	'/offline.html', '/lib/fa5_2_0/css/all.min.css', '/css/waitMe.min.css', '/lib/material-kit-205/css/material-kit.min.css', '/css/site.css', '/js/site.js', '/lib/popper.min.js', '/lib/material-kit-205/js/core/bootstrap-material-design.min.js', '/lib/material-kit-205/js/material-kit.min.js', '/js/waitMe.min.js',
-    '/images/Square44x44Logo.scale-100.png', '/js/gdpr.js', '/js/gdpr_da.js', '/js/gdpr_de.js', '/images/kinaunalogo144x144.png', '/images/KinaUnaLogo_246x80.png', '/signalr/KinaUnaWebNotifications.js', '/signalr/msgpack5.min.js', '/signalr/signalr-protocol-msgpack.min.js', '/signalr/signalr.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/css/bootstrap-select.min.css',
-    'https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/js/bootstrap-select.min.js', 'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons', '/lib/fa5_2_0/webfonts/fa-regular-400.woff2', '/lib/fa5_2_0/webfonts/fa-solid-900.woff2', 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js', 'https://code.jquery.com/jquery-3.4.0.min.js'
+
 ];
 
 const offlineFallbackPage = '/offline.html';
