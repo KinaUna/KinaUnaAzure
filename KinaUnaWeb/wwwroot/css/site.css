@@ -2552,6 +2552,10 @@ button.Zebra_DatePicker_Icon {
         .Zebra_DatePicker .dp_body .dp_hover {
             background-color: #555555 !important;
         }
+
+    .modal-content {
+        background-color: #262426 !important;
+    }
 }
 
 div.dataTables_wrapper div.dataTables_length select {
