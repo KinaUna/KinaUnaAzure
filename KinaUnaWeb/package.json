@@ -4,6 +4,7 @@
   "private": true,
   "devDependencies": {
     "del": "5.1.0",
-    "gulp": "4.0.2"
+    "gulp": "4.0.2",
+    "@types/jquery": "3.6.4"
   }
 }

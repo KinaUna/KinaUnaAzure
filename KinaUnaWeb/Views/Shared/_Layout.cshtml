@@ -25,7 +25,7 @@
     <link href="~/css/waitMe.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/css/bootstrap-select.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <script src="https://code.jquery.com/jquery-3.4.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
     <script src="~/lib/popper.min.js"></script>
     <script src="~/js/bootstrap.min.js" asp-append-version="true"></script>
@@ -200,7 +200,7 @@
         </div>
     </div>
 </nav>
-<div class="main-container body-content">
+<div id="body-content" class="main-container body-content">
     
     <div id="kinaunaMainDiv" class="main kinauna-main" style="margin-top: 10px; padding-top: 10px;">
         <partial name="_CookieConsentPartial", model="@languageId"/>
@@ -213,7 +213,7 @@
     <div class="space-20"></div>
     @await Html.PartialAsync("_FooterPartial", languageId)
 </div>
-<script src="~/js/site.js" asp-append-version="true"></script>
+<script src="~/js/app.js" asp-append-version="true"></script>
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
     <script src="~/signalr/signalr.min.js"></script>
