@@ -1,17 +1,22 @@
 ﻿@using KinaUnaWeb.Models.ItemViewModels
 @using KinaUnaWeb.Services
 @using KinaUna.Data
+@using System.Globalization
 @model VocabularyListViewModel
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Vocabulary", PageNames.Vocabulary, Model.LanguageId);
 }
 @section Scripts{
-    <link href="/lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
-    <script src="/lib/moment.min.js"></script>
-    <script src="/lib/datatables/js/jquery.dataTables.min.js"></script>
-    <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
-    <script src="/lib/datatables/sorting/datetime-moment.js"></script>
+    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/da.min.js" integrity="sha512-rybyYvSnwg3zAZ/vjTTMoh8tOK0Z6tC2XCzr9e27M0xr8WU40IGo6SOP7FXXCyWgMyd3wZ8ln2nY4ce1ysYUfw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de.min.js" integrity="sha512-c0OHGm6x2JXZyrb7Kb+Jcoy7eQ4F+AqzYLeciicpzuvgyeTWRQEZ6QthFYRUBOR0rShmm54O/7pHZJ/nqhbrkw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-at.min.js" integrity="sha512-2zI8NFjVrQ4nMIS3HCBVOgiUb6qRiKKa/U4K/DL5aT/sz9dSuHFMZdZIPRjGBQoKZbpyP3NI8diNGK+RlUTTsg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-ch.min.js" integrity="sha512-7VvKBnFgucrOLF0GLzWUuhtDcRKYUuOy9O5AqiqvccZFp4zAqAzkMqIlNVCDR3DJ6OZ6dsdn+MLiJ8vZx84WhQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/1.13.4/sorting/datetime-moment.js"></script>
 }
 
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
@@ -60,7 +65,7 @@
                             <td>@wordItem.VocabularyItem.Language</td>
                             @if (wordItem.VocabularyItem.Date != null)
                             {
-                                <td style="min-width: 100px">@wordItem.VocabularyItem.Date.Value.ToString("dd-MMM-yyyy")</td>
+                                <td style="min-width: 100px">@wordItem.VocabularyItem.Date.Value.ToString("dd-MMMM-yyyy")</td>
                             }
                             else
                             {
@@ -89,15 +94,15 @@
         </div>
         <script src="~/lib/chart.js/dist/Chart.js"></script>
         <script type="text/javascript">
+            moment.locale('@Model.LanguageIdString');
+
             $(document).ready(function () {
-                $.fn.dataTable.moment('DD-MMM-YYYY');
+                $.fn.dataTable.moment('DD-MMMM-YYYY');
                 $("#wordList").DataTable({
                     "scrollX": false,
                     "order": [[4, "desc"]]
                 });
             })
-        </script>
-        <script type="text/javascript">
             let ctx = document.getElementById("chartContainer");
             let myChart = new Chart(ctx,
                 {
@@ -113,7 +118,7 @@
                                            string chartYear = wordItem.WordDate.Year.ToString();
                                            string chartMonth = (wordItem.WordDate.Month - 1).ToString();
                                            string chartDay = wordItem.WordDate.Day.ToString();
-                                           @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + wordItem.WordCount + "},")
+                                           @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + wordItem.WordCount.ToString(CultureInfo.InvariantCulture) + "},")
                                        }
 
                                    }],
@@ -149,6 +154,7 @@
                         }
                     }
                 });
+        
         </script>
     }
 </div>

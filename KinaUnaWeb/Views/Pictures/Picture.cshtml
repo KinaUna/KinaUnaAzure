@@ -59,7 +59,7 @@
                 List<string> tagsList = Model.Tags.Split(',').ToList();
                 foreach (string tagString in tagsList)
                 {
-                            <a asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
+                    <a asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
                 }
             }
         }
@@ -271,40 +271,32 @@
             <div class="form-group">
                 <label asp-for="Picture.PictureTime" class="col-auto control-label">@await LocaleManager.GetTranslation("Photo date and time", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-12">
-                            <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm:ss" type="text" class="form-control-noline pl-3" asp-for="Picture.PictureTime"
+                    <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm:ss" type="text" class="form-control-noline pl-3" asp-for="Picture.PictureTime"
                            value="@Model.Picture.PictureTime?.ToString("dd-MMM-yyyy HH:mm:ss")"/>
                 </div>
             </div>
-            <script type="text/javascript">
-                        $(document).ready(function () {
-                            $('#datetimepicker1').Zebra_DatePicker({
-                                format: 'd-M-Y H:i:s',
-                                open_icon_only: true
-                            });
-                        });
-                    </script>
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="location" type="text" asp-for="Picture.Location" value="@Model.Picture.Location" class="form-control" style="background: #e8fdd0" />
+                    <input id="location" type="text" asp-for="Picture.Location" value="@Model.Picture.Location" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Latitude", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="latitude" type="text" asp-for="Picture.Latitude" value="@Model.Picture.Latitude" class="form-control" style="background: #e8fdd0" />
+                    <input id="latitude" type="text" asp-for="Picture.Latitude" value="@Model.Picture.Latitude" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Longitude", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="longitude" type="text" asp-for="Picture.Longtitude" value="@Model.Picture.Longtitude" class="form-control" style="background: #e8fdd0" />
+                    <input id="longitude" type="text" asp-for="Picture.Longtitude" value="@Model.Picture.Longtitude" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Altitude", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="altitude" type="text" asp-for="Picture.Altitude" value="@Model.Picture.Altitude" class="form-control" style="background: #e8fdd0" />
+                    <input id="altitude" type="text" asp-for="Picture.Altitude" value="@Model.Picture.Altitude" class="form-control" />
                 </div>
             </div>
             @if (Model.LocationsList.Any())
@@ -345,29 +337,36 @@
         </form>
     </div>
     <script type="text/javascript">
-                $("#toggleEditBtn").click(function () {
-                    $("#editSection").toggle(500);
-                });
-                $('#copyLocationButton').click(function copyLocation() {
-                    let locations = [];
-                @{
-                    string myLoc = "";
-                    string addLoc = "";
-                }
-                @foreach (Location loc in Model.ProgenyLocations)
-                {
-                    myLoc = myLoc + "let loc" + loc.LocationId + " = {id: " + loc.LocationId + ", name: \'" + loc.Name + "\', lat: " + loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng: " + loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "};";
-                    addLoc = addLoc + "locations.push(loc" + loc.LocationId + ");";
-                }
-                @Html.Raw(myLoc)
-                @Html.Raw(addLoc)
-                        let locId = Number($('#copyLocation').val());
-                    let selectedLoc = locations.find(obj => { return obj.id === locId });
-                    $('#latitude').val(selectedLoc.lat);
-                    $('#longitude').val(selectedLoc.lng);
-                    $('#location').val(selectedLoc.name);
-                });
-            </script>
+        $(function() {
+            $('#datetimepicker1').Zebra_DatePicker({
+                format: 'd-M-Y H:i:s',
+                open_icon_only: true
+            });
+        });
+                $("#toggleEditBtn").on('click', function() {
+            $("#editSection").toggle(500);
+        });
+                $('#copyLocationButton').on('click', function() {
+            let locations = [];
+        @{
+            string myLoc = "";
+            string addLoc = "";
+        }
+        @foreach (Location loc in Model.ProgenyLocations)
+        {
+            myLoc = myLoc + "let loc" + loc.LocationId + " = {id: " + loc.LocationId + ", name: \'" + loc.Name + "\', lat: " + loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng: " + loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "};";
+            addLoc = addLoc + "locations.push(loc" + loc.LocationId + ");";
+        }
+        @Html.Raw(myLoc)
+        @Html.Raw(addLoc)
+                let locId = Number($('#copyLocation').val());
+            let selectedLoc = locations.find(obj => { return obj.id === locId });
+            $('#latitude').val(selectedLoc.lat);
+            $('#longitude').val(selectedLoc.lng);
+            $('#location').val(selectedLoc.name);
+        });
+            
+    </script>
 }
 <br />
 <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px;">

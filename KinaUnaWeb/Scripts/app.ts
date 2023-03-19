@@ -1,5 +1,5 @@
-﻿let bodyContentDiv: any = $('.body-content')
-function runWaitMeLeave() {
+﻿const bodyContentDiv: any = $('.body-content')
+function runWaitMeLeave(): void {
     
     bodyContentDiv.waitMe({
         effect: 'roundBounce',
@@ -19,7 +19,7 @@ function runWaitMeLeave() {
     });
 }
 
-function runWaitMeLeave2() {
+function runWaitMeLeave2(): void {
     bodyContentDiv.waitMe({
         effect: 'roundBounce',
         text: '',
@@ -34,7 +34,7 @@ function runWaitMeLeave2() {
     });
 }
 
-function removeServiceWorkers() {
+function removeServiceWorkers(): void {
     navigator.serviceWorker.getRegistrations().then(
         function (registrations) {
             for (let registration of registrations) {
@@ -43,32 +43,39 @@ function removeServiceWorkers() {
         });
 }
 
-function sidebarMenuDelay(milliseconds) {
+class SideBarSetting {
+    showSidebar: boolean;
+    showSidebarText: boolean;
+}
+
+const sidebarSetting = new SideBarSetting();
+const sidebarElement = document.getElementById('sidebar-menu-div');
+
+const show_sidebar_setting_key = 'show_sidebar_setting';
+const show_sidebar_text_setting_key = 'show_sidebar_text_setting';
+
+function sidebarMenuDelay(milliseconds): Promise<any> {
     return new Promise(resolve => {
         setTimeout(resolve, milliseconds);
     });
 }
 
-let showSidebar = true;
-let showSidebarText = false;
-
-function toggleSidebarText() {
-    showSidebarText = !showSidebarText;
+function toggleSidebarText(): void {
+    sidebarSetting.showSidebarText = !sidebarSetting.showSidebarText;
     setSidebarText();
 
-    let updatedShowSidebarTextSetting = { showSidebarText: showSidebarText };
-    localStorage.setItem('show_sidebar_text_setting', JSON.stringify(updatedShowSidebarTextSetting));
+    localStorage.setItem(show_sidebar_text_setting_key, JSON.stringify(sidebarSetting.showSidebarText));
     setSideBarPosition();
 }
 
-function setSidebarText() {
-    let sidebarExapanderIcon = document.getElementById('sidebar-text-expander');
+function setSidebarText(): void {
+    const sidebarExapanderIcon = document.getElementById('sidebar-text-expander');
     sidebarExapanderIcon.style.transition = 'rotate 500ms ease-in-out 0ms';
-    let sidebarTexts = document.querySelectorAll('.sidebar-item-text');
-    let sidebarTextsButton = document.getElementById('side-bar-toggle-text-btn');
+    const sidebarTexts = document.querySelectorAll('.sidebar-item-text');
+    const sidebarTextsButton = document.getElementById('side-bar-toggle-text-btn');
 
     sidebarTexts.forEach(textItem => {
-        if (showSidebarText) {
+        if (sidebarSetting.showSidebarText) {
             sidebarExapanderIcon.style.rotate = '180deg';
             textItem.classList.remove('sidebar-item-text-hide');
             sidebarTextsButton.style.top = "12px";
@@ -82,35 +89,34 @@ function setSidebarText() {
         }
     });
 }
-function toggleSideBar() {
-    if (showSidebar) {
-        showSidebar = false;
+
+function toggleSideBar(): void {
+    if (sidebarSetting.showSidebar) {
+        sidebarSetting.showSidebar = false;
     }
     else {
-        showSidebar = true;
+        sidebarSetting.showSidebar = true;
     }
-
-    let updatedShowSidebarSetting = { showSidebar: showSidebar };
-    localStorage.setItem('show_sidebar_setting', JSON.stringify(updatedShowSidebarSetting));
+        
+    localStorage.setItem(show_sidebar_setting_key, JSON.stringify(sidebarSetting.showSidebar));
     setSideBarPosition();
 }
 
-async function setSideBarPosition() {
+async function setSideBarPosition(): Promise<void> {
     let viewportHeight = window.innerHeight;
-    let sidebarElement = document.getElementById('sidebar-menu-div');
-    let sidebarMenuListWrapperElement = document.getElementById('sidebar-menu-list-wrapper');
-    let sidebarNavUlElement = document.getElementById('sidebar-nav-ul');
-    let navMainElement = document.getElementById('navMain');
-    let topLanguageElement = document.getElementById('topLanguageDiv');
-    let sidebarTogglerElement = document.getElementById('sidebarTogglerDiv');
-    let kinaUnaMainElement = document.getElementById('kinaunaMainDiv');
-    let sidebarTextsButton = document.getElementById('side-bar-toggle-text-btn');
-    let menuOffset = navMainElement.scrollHeight + topLanguageElement.scrollHeight + 25;
+    const sidebarMenuListWrapperElement = document.getElementById('sidebar-menu-list-wrapper');
+    const sidebarNavUlElement = document.getElementById('sidebar-nav-ul');
+    const navMainElement = document.getElementById('navMain');
+    const topLanguageElement = document.getElementById('topLanguageDiv');
+    const sidebarTogglerElement = document.getElementById('sidebarTogglerDiv');
+    const kinaUnaMainElement = document.getElementById('kinaunaMainDiv');
+    const sidebarTextsButton = document.getElementById('side-bar-toggle-text-btn');
+    const menuOffset = navMainElement.scrollHeight + topLanguageElement.scrollHeight + 25;
     let sidebarHeight = viewportHeight - (menuOffset + sidebarTogglerElement.offsetHeight);
     let maxSidebarHeight = sidebarNavUlElement.scrollHeight + menuOffset + sidebarTogglerElement.offsetHeight + 10;
     sidebarElement.style.left = "0px";
 
-    if (showSidebar) {
+    if (sidebarSetting.showSidebar) {
         sidebarTogglerElement.style.transition = 'border-bottom-right-radius 500ms ease-in-out 0ms';
         kinaUnaMainElement.classList.add('kinauna-main');
         sidebarElement.style.opacity = '1.0';
@@ -150,56 +156,45 @@ async function setSideBarPosition() {
     };
 }
 
-class ShowSideBarSetting {
-    showSidebar: boolean;
-}
-
-class ShowSideBarTextSetting {
-    showSidebarText: boolean;
-}
-
-let showSidebarSetting = new ShowSideBarSetting();
-let showSidebarTextSetting = new ShowSideBarTextSetting();
-
-function initPageSettings() {
-    let sidebarElement = document.getElementById('sidebar-menu-div');
+function initPageSettings(): void {
     sidebarElement.style.left = '-100px';
-    showSidebarSetting = JSON.parse(localStorage.getItem('show_sidebar_setting'));
-    if (showSidebarSetting != null) {
-        if (!showSidebarSetting.showSidebar) {
-            showSidebar = false;
+    sidebarSetting.showSidebar = JSON.parse(localStorage.getItem(show_sidebar_setting_key));
+    if (sidebarSetting.showSidebar != null) {
+        if (!sidebarSetting.showSidebar) {
+            sidebarSetting.showSidebar = false;
         }
         else {
-            showSidebar = true;
+            sidebarSetting.showSidebar = true;
         }
     } else {
-        showSidebarSetting.showSidebar = true;
-        localStorage.setItem('show_sidebar_setting', JSON.stringify(showSidebarSetting));
+        sidebarSetting.showSidebar = true;
+        localStorage.setItem(show_sidebar_setting_key, JSON.stringify(sidebarSetting.showSidebar));
     }
 
-    showSidebarTextSetting = JSON.parse(localStorage.getItem('show_sidebar_text_setting'));
-    if (showSidebarTextSetting != null) {
-        if (!showSidebarTextSetting.showSidebarText) {
-            showSidebarText = false;
+    sidebarSetting.showSidebarText = JSON.parse(localStorage.getItem(show_sidebar_text_setting_key));
+    if (sidebarSetting.showSidebarText != null) {
+        if (!sidebarSetting.showSidebarText) {
+            sidebarSetting.showSidebarText = false;
         }
         else {
-            showSidebarText = true;
+            sidebarSetting.showSidebarText = true;
         }
     } else {
-        showSidebarTextSetting.showSidebarText = false;
-        localStorage.setItem('show_sidebar_text_setting', JSON.stringify(showSidebarTextSetting));
+        sidebarSetting.showSidebarText = false;
+        localStorage.setItem(show_sidebar_text_setting_key, JSON.stringify(sidebarSetting.showSidebarText));
     }
 }
-$(document).ready(function () {
-    $(document).click(function (event) {
-        var clickover = $(event.target);
-        var _opened = $(".navbar-collapse").hasClass("show");
+
+$(function () {
+    $(document).on('click', function (event) {
+        let clickover = $(event.target);
+        let _opened = $(".navbar-collapse").hasClass("show");
         if (_opened === true && !clickover.hasClass("navbar-toggler")) {
-            $(".navbar-toggler").click();
+            $(".navbar-toggler").trigger('click');
         }
     });
 
-    $('.leavePage').click(function () {
+    $('.leavePage').on('click', function () {
         let dropDownMenuElement: any = $(this).closest('.dropdown-menu').prev();
         dropDownMenuElement.dropdown('toggle');
         if ($('.navbar-toggler').css('display') !== 'none' && document.getElementById('bodyClick')) {
@@ -209,7 +204,7 @@ $(document).ready(function () {
         runWaitMeLeave();
     });
 
-    $(".leavePage2").click(function () {
+    $(".leavePage2").on('click', function () {
         runWaitMeLeave2();
     });
 

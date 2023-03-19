@@ -21,7 +21,7 @@
                     </div>
                     <div class="latest-posts-text text-white-50">
                         <div style="max-width: 60vw; overflow: hidden;">
-                            <img class="img-thumbnail" style="max-height: 200px; max-width: 200px; background: black; margin-bottom: 8px; margin-top: 8px;" src="@Model.PictureLink" />
+                            <img class="img-thumbnail lazyload" style="max-height: 200px; max-width: 200px; background: black; margin-bottom: 8px; margin-top: 8px;" data-src="@Model.PictureLink" />
                         </div>
                         <div class="text-white">@Model.FirstName @Model.MiddleName @Model.LastName</div>
                         @if (!string.IsNullOrEmpty(Model.Context))

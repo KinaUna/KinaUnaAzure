@@ -1,4 +1,4 @@
-﻿$(document).ready(function () {
+﻿$(function () {
     $("#Title, #Message").keyup(function () {
         var payloadObject = {
             title: $("#Title").val(),

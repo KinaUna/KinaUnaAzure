@@ -205,7 +205,7 @@
     color: #333;
     font-weight: normal;
     text-decoration: none;
-    font-size: .8125rem;
+    font-size: 1rem;
     border-radius: 0.125rem;
     margin: 0 0.225rem;
     -webkit-transition: all 150ms linear;
@@ -255,9 +255,9 @@
 }
 
 .dropdown-item.active, .dropdown-item:active {
-    color: #000;
+    color: #fff;
     text-decoration: none;
-    background-color: #b4c89f;
+    background-color: #450058;
     font-weight: bold;
 }
 
@@ -391,15 +391,12 @@
     }
 
 .notifications-List {
-    /*overflow-y: auto;
-max-height: 80vh;*/
-    margin-left: 1.0em;
+   margin-left: 1.0em;
 }
 
 .notification-item {
     background: #3a2051;
     border-top: solid #6828a9 2px;
-    min-width: 360px;
     white-space: normal;
 }
 
@@ -412,8 +409,30 @@ max-height: 80vh;*/
     margin: 0;
     padding: 0;
     width: 95%;
-    min-width: 355px;
     text-transform: none;
+}
+
+.notification-card {
+    width: 95%;
+    margin: 0;
+    padding-bottom: 4px;
+}
+
+.notification-frame {
+    margin: 2px;
+    padding: 2px;
+}
+
+.notification-message {
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+}
+
+.notification-title {
+    font-size: 1.0rem;
+    white-space: pre-wrap;
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
 
 .notificationRead {
@@ -720,9 +739,9 @@ to {
 
 .btn.btn-add-calendar {
     color: #fff;
-    background: #260333;
-    background: linear-gradient(60deg, #480f5d, #361343);
-    border-color: #260333;
+    background: #581b2f;
+    background: linear-gradient(60deg, #621423, #581b2f);
+    border-color: #681b2f;
     box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
     width: 12em;
     height: 8em;
@@ -737,7 +756,7 @@ to {
     color: #fff;
     background: #326ebe;
     background: linear-gradient(60deg, #326ebe, #2d64a9);
-    border-color: #326ebe;
+    border-color: #526ebe;
     box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
     width: 12em;
     height: 8em;
@@ -752,7 +771,7 @@ to {
     color: #fff;
     background: #953761;
     background: linear-gradient(60deg, #c53771, #a53761);
-    border-color: #953761;
+    border-color: #b53761;
     box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
     width: 12em;
     height: 8em;
@@ -767,7 +786,7 @@ to {
     color: #fff;
     background: #641e1e;
     background: linear-gradient(60deg, #641e1e, #540e0e);
-    border-color: #641e1e;
+    border-color: #841e1e;
     box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
     width: 12em;
     height: 8em;
@@ -782,7 +801,7 @@ to {
     color: #fff;
     background: #787864;
     background: linear-gradient(60deg, #787864, #686854);
-    border-color: #787864;
+    border-color: #987864;
     box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
     width: 12em;
     height: 8em;
@@ -797,7 +816,7 @@ to {
     color: #fff;
     background: #555868;
     background: linear-gradient(60deg, #667788, #555868);
-    border-color: #555868;
+    border-color: #755868;
     box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
     width: 12em;
     height: 8em;
@@ -812,7 +831,7 @@ to {
     color: #fff;
     background: #b43c32;
     background: linear-gradient(60deg, #b44c4f, #b43c32);
-    border-color: #b43c32;
+    border-color: #d43c32;
     box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
     width: 12em;
     height: 8em;
@@ -827,7 +846,7 @@ to {
     color: #fff;
     background: #150505;
     background: linear-gradient(60deg, #351515, #150505);
-    border-color: #150505;
+    border-color: #350505;
     box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
     width: 12em;
     height: 8em;
@@ -842,7 +861,7 @@ to {
     color: #fff;
     background: #c800c8;
     background: linear-gradient(60deg, #c800c8, #b540b5);
-    border-color: #c800c8;
+    border-color: #e800c8;
     box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
     width: 12em;
     height: 8em;
@@ -857,7 +876,7 @@ to {
     color: #fff;
     background: #519966;
     background: linear-gradient(60deg, #46a03c, #36902c);
-    border-color: #519966;
+    border-color: #719966;
     box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
     width: 12em;
     height: 8em;
@@ -872,7 +891,7 @@ to {
     color: #fff;
     background: #005bee;
     background: linear-gradient(60deg, #007bff, #005bee);
-    border-color: #005bee;
+    border-color: #205bee;
     box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
     width: 12em;
     height: 8em;
@@ -885,9 +904,9 @@ to {
 
 .btn.btn-add-user {
     color: #fff;
-    background: #ff8600;
-    background: linear-gradient(60deg, #ffa500, #ff8600);
-    border-color: #ff8600;
+    background: #dd7600;
+    background: linear-gradient(60deg, #dd9500, #dd7600);
+    border-color: #ff9600;
     box-shadow: 0 2px 2px 0 rgb(0 188 212 / 14%), 0 3px 1px -2px rgb(0 188 212 / 20%), 0 1px 5px 0 rgb(0 188 212 / 12%);
     width: 12em;
     height: 8em;
@@ -1456,13 +1475,18 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 }
 
 .bg-calendar {
-    background: #260333;
-    background: linear-gradient(60deg, #480f5d, #361343);
+    background: #581b2f;
+    background: linear-gradient(60deg, #621423, #581b2f);
 }
 
 .bg-contact {
-    background: #150505;
-    background: linear-gradient(60deg, #351515, #150505);
+    background: #1e0505;
+    background: linear-gradient(60deg, #241010, #1e0505);
+}
+
+.bg-contact-header {
+    background: #3c0808;
+    background: linear-gradient(60deg, #2e1000, #3c0808);
 }
 
 .bg-friend {
@@ -1518,6 +1542,16 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 .bg-vocabulary {
     background: #641e1e;
     background: linear-gradient(60deg, #641e1e, #540e0e);
+}
+
+.bg-white-gradient {
+    background: #ffffff;
+    background: linear-gradient(90deg, #ffffff, transparent);
+}
+
+.bg-white-gradient2 {
+    background: #ffffff;
+    background: linear-gradient(90deg, transparent, #ffffff);
 }
 
 .img-thumbnail {
@@ -2078,32 +2112,6 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     }
 }
 
-
-.notification-card {
-    width: 95%;
-    margin: 0;
-    padding-bottom: 4px;
-    min-width: 360px;
-}
-
-.notification-frame {
-    margin: 2px;
-    padding: 2px;
-}
-
-.notification-message {
-    font-size: 0.9rem;
-    white-space: pre-wrap;
-}
-
-.notification-title {
-    font-size: 1.0rem;
-    white-space: pre-wrap;
-    margin-top: 4px;
-    margin-bottom: 4px;
-}
-
-
 .top-menu-max-height {
     overflow-y: auto;
     max-height: 90vh;
@@ -2426,12 +2434,17 @@ button.Zebra_DatePicker_Icon {
     margin-left: 2px;
     z-index: 999;
     transition: all 500ms ease-in-out 100ms;
+    color: #fbd10d !important;
     visibility: collapse;
 }
 
-.btn-sidebar-toggle-text:focus {
-    outline: none;
+.btn-sidebar-toggle-text:hover {
+    color: yellow;
 }
+
+    .btn-sidebar-toggle-text:focus {
+        outline: none;
+    }
 
 .main {
     transition: all 500ms ease-in-out 100ms;
@@ -2482,7 +2495,7 @@ button.Zebra_DatePicker_Icon {
 
     .dropdown-item.active, .dropdown-item:active {
         color: #fff;
-        background-color: #450025;
+        background-color: #450058;
     }
     .page-link {
         position: relative;
@@ -2553,8 +2566,44 @@ button.Zebra_DatePicker_Icon {
             background-color: #555555 !important;
         }
 
+    .Zebra_DatePicker .dp_timepicker .dp_disabled {
+        color: #ccc !important;
+    }
+
+    .Zebra_DatePicker .dp_time_separator div:after {
+        color: #ccc !important;
+    }
+
+        .Zebra_DatePicker .dp_icon {
+            background-image: url('../images/zebra-dp-icons-darkmode.png') !important;
+        }
+
     .modal-content {
         background-color: #262426 !important;
+    }
+
+    .select-view-item {
+        background-color: #000;
+        border: 1px solid #fff;
+        border: 1px solid rgba(255, 255, 255, .125);
+    }
+
+    .amsify-suggestags-area .amsify-suggestags-list {
+        background: #262426 !important;
+        border: 1px solid #3e3e3e !important;
+    }
+
+    .amsify-suggestags-area .amsify-suggestags-list ul.amsify-list li.amsify-list-item:active {
+        background: #c1c1c1!important;
+        color: black !important;
+        -moz-box-shadow: inset 0 0 10px #ffffff;
+        -webkit-box-shadow: inset 0 0 10px #ffffff;
+        box-shadow: inset 0 0 10px #ffffff;
+    }
+
+    .amsify-suggestags-area .amsify-suggestags-list ul.amsify-list li.active {
+        background: #d9d8d8;
+        color: black !important;
     }
 }
 

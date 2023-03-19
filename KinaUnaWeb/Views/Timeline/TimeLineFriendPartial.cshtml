@@ -35,7 +35,7 @@
                     </div>
                     <div class="timeline-text text-white-50">
                         <div style="max-width: 60vw; overflow: hidden;">
-                            <img class="img-thumbnail" style="max-height: 200px; max-width: 200px; background: black; margin-bottom: 8px; margin-top: 8px;" src="@Model.PictureLink" />
+                            <img class="img-thumbnail lazyload" style="max-height: 200px; max-width: 200px; background: black; margin-bottom: 8px; margin-top: 8px;" data-src="@Model.PictureLink" />
                         </div>
                         <div>@await LocaleManager.GetTranslation("Type:", PageNames.Friends, languageId) @typeList[Model.Type]</div>
                         @if (!string.IsNullOrEmpty(Model.Context))

@@ -112,7 +112,7 @@
     let itemType = [@string.Join(",", itmType)];
     let numItems = 10;
     let scrollTo = '#';
-    $(document).ready(function() {
+    $(function() {
         async function getItemsHist() {
             run_waitMeLoad();
             let g;
@@ -147,7 +147,7 @@
             getNextSeriesItems();
         }
 
-        $("#moreTimeLineItems").click(getNextSeriesItems);
+        $("#moreTimeLineItems").on('click', getNextSeriesItems);
 
 
         async function getNextSeriesItems() {

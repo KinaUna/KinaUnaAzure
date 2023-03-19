@@ -136,18 +136,18 @@
                     {
                         string chkClass = "contactClass" + contactViewModel.ContactItem.Active.ToString();
                         <div class="@chkClass" style="margin-bottom: 15px;">
-                            <div class="card text-white bg-info" style="float: left; clear: right; text-align: center; height: 100%; width: 300px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
+                            <div class="card text-white bg-contact" style="float: left; clear: right; text-align: center; height: 600px; width: 255px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
                                 <a class="leavePage" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactItem.ContactId">
-                                    <div class="card-header card-header-warning card-title">@contactViewModel.ContactItem.DisplayName</div>
+                                    <div class="card-header bg-contact-header kinauna_yellow_text">@contactViewModel.ContactItem.DisplayName</div>
                                 </a>
                                 <div class="card-body">
                                     <div class="card-text">
                                         <a class="leavePage" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactItem.ContactId">
                                             <div style="height: 253px;">
-                                                <img class="img-thumbnail mx-auto d-block" style="max-height: 250px; max-width: 270px; background: black; margin-bottom: 10px;" src="@contactViewModel.ContactItem.PictureLink" />
+                                                <img class="img-thumbnail mx-auto d-block lazyload" style="max-height: 250px; max-width: 100%; background: black; margin-bottom: 10px;" data-src="@contactViewModel.ContactItem.PictureLink" />
                                             </div>
                                             <div class="space-20"></div>
-                                            <div class="card-title" align="left">
+                                            <div class="kinauna_yellow_text" align="left">
                                                 @contactViewModel.ContactItem.FirstName @contactViewModel.ContactItem.MiddleName @contactViewModel.ContactItem.LastName
                                             </div>
                                             <div class="text-white" align="left">@await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.Email1 @contactViewModel.ContactItem.Email2</div>

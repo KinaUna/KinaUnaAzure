@@ -272,8 +272,8 @@ let getNotifications = function () {
 
 connection.start().catch(err => console.error(err.toString()));
 
-$(document).ready(function () {
-    $('#notificationsButton').click(function () {
+$(function () {
+    $('#notificationsButton').on('click', function () {
         let notificationsIcon = document.getElementById('notificationBellIcon');
         notificationsIcon.classList.remove('notificationIconAnimation');
         menuToggler.classList.remove('notificationIconAnimation');

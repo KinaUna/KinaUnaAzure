@@ -183,16 +183,16 @@ function initPageSettings() {
         localStorage.setItem('show_sidebar_text_setting', JSON.stringify(showSidebarTextSetting));
     }
 }
-$(document).ready(function () {
-    $(document).click(function (event) {
+$(function () {
+    $(document).on('click', function(event) {
         var clickover = $(event.target);
         var _opened = $(".navbar-collapse").hasClass("show");
         if (_opened === true && !clickover.hasClass("navbar-toggler")) {
-            $(".navbar-toggler").click();
+            $(".navbar-toggler").trigger('click');
         }
     });
 
-    $('.leavePage').click(function () {
+    $('.leavePage').on('click', function() {
         $(this).closest('.dropdown-menu').prev().dropdown('toggle');
         if ($('.navbar-toggler').css('display') !== 'none' && document.getElementById('bodyClick')) {
             $('.navbar-toggler').trigger('click');
@@ -201,7 +201,7 @@ $(document).ready(function () {
         runWaitMeLeave();
     });
 
-    $(".leavePage2").click(function() {
+    $(".leavePage2").on('click', function() {
         runWaitMeLeave2();
     });
 

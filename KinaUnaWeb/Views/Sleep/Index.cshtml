@@ -10,12 +10,16 @@
 }
 @section Scripts
     {
-    <link href="/lib/datatables/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
-    <script src="/lib/moment.min.js"></script>
+    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/da.min.js" integrity="sha512-rybyYvSnwg3zAZ/vjTTMoh8tOK0Z6tC2XCzr9e27M0xr8WU40IGo6SOP7FXXCyWgMyd3wZ8ln2nY4ce1ysYUfw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de.min.js" integrity="sha512-c0OHGm6x2JXZyrb7Kb+Jcoy7eQ4F+AqzYLeciicpzuvgyeTWRQEZ6QthFYRUBOR0rShmm54O/7pHZJ/nqhbrkw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-at.min.js" integrity="sha512-2zI8NFjVrQ4nMIS3HCBVOgiUb6qRiKKa/U4K/DL5aT/sz9dSuHFMZdZIPRjGBQoKZbpyP3NI8diNGK+RlUTTsg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-ch.min.js" integrity="sha512-7VvKBnFgucrOLF0GLzWUuhtDcRKYUuOy9O5AqiqvccZFp4zAqAzkMqIlNVCDR3DJ6OZ6dsdn+MLiJ8vZx84WhQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="~/lib/material-kit/plugins/nouislider.min.js"></script>
-    <script src="/lib/datatables/js/jquery.dataTables.min.js"></script>
-    <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
-    <script src="/lib/datatables/sorting/datetime-moment.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/1.13.4/sorting/datetime-moment.js"></script>
 }
 
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
@@ -64,10 +68,10 @@
                     {
                         <tr>
                             <td style="min-width: 100px;">
-                                @sleepItem.SleepStart.ToString("dd-MMM-yyyy")<br /> <strong>@sleepItem.SleepStart.ToString("HH:mm")</strong>
+                                @sleepItem.SleepStart.ToString("dd-MMMM-yyyy")<br /> <strong>@sleepItem.SleepStart.ToString("HH:mm", CultureInfo.InvariantCulture)</strong>
                             </td>
                             <td style="min-width: 100px;">
-                                @sleepItem.SleepEnd.ToString("dd-MMM-yyyy")<br /> <strong>@sleepItem.SleepEnd.ToString("HH:mm")</strong>
+                                @sleepItem.SleepEnd.ToString("dd-MMMM-yyyy")<br /> <strong>@sleepItem.SleepEnd.ToString("HH:mm", CultureInfo.InvariantCulture)</strong>
                             </td>
                             <td>@sleepItem.SleepDuration</td>
                             <td>@sleepItem.SleepRating</td>
@@ -127,14 +131,12 @@
         <br />
         <script src="~/lib/chart.js/dist/Chart.js"></script>
         <script type="text/javascript">
-            $(document).ready(function () {
-                $.fn.dataTable.moment('DD-MMM-YYYY HH:mm');
-                $("#sleepList").DataTable({ "scrollX": false, "order": [[0, "desc"]] });
-            })
-        </script>
+            moment.locale('@Model.LanguageIdString');
 
-        <script type="text/javascript">
-            $(document).ready(function () {
+            $(function () {
+                $.fn.dataTable.moment('DD-MMMM-YYYY HH:mm');
+                $("#sleepList").DataTable({ "scrollX": false, "order": [[0, "desc"]] });
+
                 const ctx = document.getElementById("chartContainer");
                 const myChart = new Chart(ctx,
                     {
@@ -144,16 +146,16 @@
                                 {
                                     label: '@sleepString',
                                     data: [@foreach (Sleep sleepItem in Model.ChartList)
-            {
-                if (sleepItem.SleepDuration.TotalMinutes > 0.0)
-                {
-                    string chartYear = sleepItem.SleepStart.Year.ToString();
-                    string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
-                    string chartDay = sleepItem.SleepStart.Day.ToString();
-                    double yValue = sleepItem.SleepDuration.TotalMinutes / 60.0;
-                    @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + yValue.ToString("##.000000", CultureInfo.InvariantCulture) + "},\n")
-                }
-            }],
+                                           {
+                                               if (sleepItem.SleepDuration.TotalMinutes > 0.0)
+                                               {
+                                                   string chartYear = sleepItem.SleepStart.Year.ToString();
+                                                   string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
+                                                   string chartDay = sleepItem.SleepStart.Day.ToString();
+                                                   double yValue = sleepItem.SleepDuration.TotalMinutes / 60.0;
+                                                   @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + yValue.ToString("##.000000", CultureInfo.InvariantCulture) + "},\n")
+                                               }
+                                           }],
                                     borderColor: 'rgb(75, 192, 192)',
                                     borderWidth: 1
                                 }
@@ -165,9 +167,9 @@
                                     {
                                         type: 'time',
                                         time: {
-                                            tooltipFormat: 'dd DD MMM YYYY',
+                                            tooltipFormat: 'dd DD MMMM YYYY',
                                             displayFormats: {
-                                                quarter: 'MMM YYYY'
+                                                quarter: 'MMMM YYYY'
                                             }
                                         }
                                     }
@@ -193,9 +195,9 @@
                     function () {
                         const pos = $(document).scrollTop();
                         $('#sliderStartVal')
-                            .text("Start: " + moment(slider.noUiSlider.get()[0], "x").format("dddd, DD-MMM-YYYY"));
+                            .text("Start: " + moment(slider.noUiSlider.get()[0], "x").format("dddd, DD-MMMM-YYYY"));
                         $('#sliderEndVal')
-                            .text("End: " + moment(slider.noUiSlider.get()[1], "x").format("dddd, DD-MMM-YYYY"));
+                            .text("End: " + moment(slider.noUiSlider.get()[1], "x").format("dddd, DD-MMMM-YYYY"));
                         document.getElementById("chartDiv").innerHTML = '&nbsp;';
                         document.getElementById("chartDiv").innerHTML = '<canvas id="chartContainer"></canvas>';
                         const slpChart = document.getElementById("chartContainer").getContext("2d");
@@ -206,16 +208,16 @@
                                     {
                                         label: '@sleepString',
                                         data: [@foreach (Sleep sleepItem in Model.ChartList)
-            {
-                if (sleepItem.SleepDuration.TotalMinutes > 0.0)
-                {
-                    string chartYear = sleepItem.SleepStart.Year.ToString();
-                    string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
-                    string chartDay = sleepItem.SleepStart.Day.ToString();
-                    double yValue = sleepItem.SleepDuration.TotalMinutes / 60.0;
-                    @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + yValue.ToString("##.000000", CultureInfo.InvariantCulture) + "},\n")
-                }
-            }],
+                                               {
+                                                   if (sleepItem.SleepDuration.TotalMinutes > 0.0)
+                                                   {
+                                                       string chartYear = sleepItem.SleepStart.Year.ToString();
+                                                       string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
+                                                       string chartDay = sleepItem.SleepStart.Day.ToString();
+                                                       double yValue = sleepItem.SleepDuration.TotalMinutes / 60.0;
+                                                       @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + yValue.ToString("##.000000", CultureInfo.InvariantCulture) + "},\n")
+                                                   }
+                                               }],
                                         borderColor: 'rgb(75, 192, 192)',
                                         borderWidth: 1
                                     }
@@ -229,9 +231,9 @@
                                             time: {
                                                 min: moment(slider.noUiSlider.get()[0], "x").toString(),
                                                 max: moment(slider.noUiSlider.get()[1], "x").toString(),
-                                                tooltipFormat: 'dd DD MMM YYYY',
+                                                tooltipFormat: 'dd DD MMMM YYYY',
                                                 displayFormats: {
-                                                    quarter: 'MMM YYYY'
+                                                    quarter: 'MMMM YYYY'
                                                 }
                                             }
                                         }
@@ -266,15 +268,16 @@
                 {
                     connect: true,
                     range: {
-                        min: timestamp('@Model.ChartList.First().SleepStart.ToString("yyyy-MM-dd")'),
-                        max: timestamp('@Model.ChartList.Last().SleepStart.ToString("yyyy-MM-dd")')
+                        min: timestamp('@Model.ChartList.First().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)'),
+                        max: timestamp('@Model.ChartList.Last().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)')
                     },
                     step: 1000 * 60 * 60 * 24,
                     start: [
-                        timestamp('@Model.ChartList.First().SleepStart.ToString("yyyy-MM-dd")'),
-                        timestamp('@Model.ChartList.Last().SleepStart.ToString("yyyy-MM-dd")')
+                        timestamp('@Model.ChartList.First().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)'),
+                        timestamp('@Model.ChartList.Last().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)')
                     ]
                 });
+        
         </script>
     }
 </div>

@@ -68,14 +68,6 @@
                 </a>
             </div>
             <div class="col">
-                <a asp-controller="Friends" asp-action="AddFriend" class="btn btn-add-friend leavePage">
-                    <div class="space-10"></div>
-                    <i class="material-icons" style="font-size: 42px;">face</i>
-                    <div class="space-10"></div>
-                    @await LocaleManager.GetTranslation("Friend", PageNames.AddItem, Model.LanguageId)
-                </a>
-            </div>
-            <div class="col">
                 <a asp-controller="Measurements" asp-action="AddMeasurement" class="btn btn-add-measurement leavePage">
                     <div class="space-10"></div>
                     <i class="material-icons" style="font-size: 42px;">straighten</i>

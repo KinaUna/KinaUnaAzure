@@ -2,7 +2,7 @@
 var serviceWorker = '/pwabuilder-sw.js';
 var isSubscribed = false;
 
-$(document).ready(function () {
+$(function () {
     // Application Server Public Key defined in Views/Device/Create.cshtml
     if (typeof applicationServerPublicKey === 'undefined') {
         errorHandler('Vapid public key is undefined.');

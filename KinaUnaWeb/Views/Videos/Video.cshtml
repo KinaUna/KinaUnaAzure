@@ -328,25 +328,25 @@
                 <div class="form-group">
                     <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Location", PageNames.Videos, Model.LanguageId)</label>
                     <div class="col-lg-10 col-md-10 col-sm-10">
-                        <input id="location" type="text" asp-for="Video.Location" value="@Model.Video.Location" class="form-control" style="width: 100%; background: #e8fdd0" />
+                        <input id="location" type="text" asp-for="Video.Location" value="@Model.Video.Location" class="form-control"  />
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Latitude", PageNames.Videos, Model.LanguageId)</label>
                     <div class="col-lg-10 col-md-10 col-sm-10">
-                        <input id="latitude" type="text" asp-for="Video.Latitude" value="@Model.Video.Latitude" class="form-control" style="width: 100%; background: #e8fdd0" />
+                        <input id="latitude" type="text" asp-for="Video.Latitude" value="@Model.Video.Latitude" class="form-control" />
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Longitude", PageNames.Videos, Model.LanguageId)</label>
                     <div class="col-lg-10 col-md-10 col-sm-10">
-                        <input id="longitude" type="text" asp-for="Video.Longtitude" value="@Model.Video.Longtitude" class="form-control" style="width: 100%; background: #e8fdd0" />
+                        <input id="longitude" type="text" asp-for="Video.Longtitude" value="@Model.Video.Longtitude" class="form-control" />
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Altitude", PageNames.Videos, Model.LanguageId)</label>
                     <div class="col-lg-10 col-md-10 col-sm-10">
-                        <input id="altitude" type="text" asp-for="Video.Altitude" value="@Model.Video.Altitude" class="form-control" style="width: 100%; background: #e8fdd0" />
+                        <input id="altitude" type="text" asp-for="Video.Altitude" value="@Model.Video.Altitude" class="form-control" />
                     </div>
                 </div>
                 @if (Model.LocationsList.Any())
@@ -391,10 +391,10 @@
             </form>
         </div>
         <script type="text/javascript">
-            $("#toggleEditBtn").click(function () {
+            $("#toggleEditBtn").on('click', function() {
                 $("#editSection").toggle(500);
             });
-            $('#copyLocationButton').click(function copyLocation() {
+            $('#copyLocationButton').on('click', function() {
                 let locations = [];
             @{
                 string myLoc = "";

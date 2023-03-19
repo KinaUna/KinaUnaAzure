@@ -4,13 +4,18 @@
 @model KinaUnaWeb.Models.ItemViewModels.VaccinationViewModel
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
-    <script src="/lib/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/da.min.js" integrity="sha512-rybyYvSnwg3zAZ/vjTTMoh8tOK0Z6tC2XCzr9e27M0xr8WU40IGo6SOP7FXXCyWgMyd3wZ8ln2nY4ce1ysYUfw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de.min.js" integrity="sha512-c0OHGm6x2JXZyrb7Kb+Jcoy7eQ4F+AqzYLeciicpzuvgyeTWRQEZ6QthFYRUBOR0rShmm54O/7pHZJ/nqhbrkw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-at.min.js" integrity="sha512-2zI8NFjVrQ4nMIS3HCBVOgiUb6qRiKKa/U4K/DL5aT/sz9dSuHFMZdZIPRjGBQoKZbpyP3NI8diNGK+RlUTTsg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-ch.min.js" integrity="sha512-7VvKBnFgucrOLF0GLzWUuhtDcRKYUuOy9O5AqiqvccZFp4zAqAzkMqIlNVCDR3DJ6OZ6dsdn+MLiJ8vZx84WhQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Add vaccination", PageNames.Vaccinations, Model.LanguageId);
     string addVaccinationForString = await LocaleManager.GetTranslation("Add vaccination for:", PageNames.Vaccinations, Model.LanguageId);
+    string zebraDateTimeFormat = "d-F-Y";
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="add-item-container">
@@ -58,19 +63,11 @@
                 <label asp-for="VaccinationItem.VaccinationDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Date", PageNames.Vaccinations, Model.LanguageId)</label>
                 <div class="col-auto">
                     <div class="input-group date">
-                        <input id="datetimepicker1" data-format="dd-MMM-yyyy" type="text"
+                        <input id="datetimepicker1"  type="text"
                                class="form-control" data-zdp_readonly_element="false" asp-for="VaccinationItem.VaccinationDate" value="" />
                     </div>
                 </div>
             </div>
-            <script type="text/javascript">
-            $(function () {
-                $('#datetimepicker1').Zebra_DatePicker({
-                    format: 'd-M-Y',
-                    open_icon_only: true
-                });
-            });
-        </script>
             <div class="form-group">
                 <label asp-for="VaccinationItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
                 <div class="col-auto">
@@ -88,3 +85,44 @@
         </form>
     </div>
 </div>
+<script>
+    moment.locale('@Model.LanguageIdString');
+    const zebraDatePickerDaysArray = [
+        '@Html.Raw(await LocaleManager.GetTranslation("Sunday", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("Monday", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("Tuesday", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("Wednesday", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("Thursday", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("Friday", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("Saturday", PageNames.CalendarTools, Model.LanguageId))'
+    ];
+
+    const zebraDatePickerMonthsArray = [
+        '@Html.Raw(await LocaleManager.GetTranslation("January", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("February", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("March", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("April", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("May", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("June", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("July", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("August", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("September", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("October", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("November", PageNames.CalendarTools, Model.LanguageId))',
+        '@Html.Raw(await LocaleManager.GetTranslation("December", PageNames.CalendarTools, Model.LanguageId))'
+    ];
+    const zebraTodayString = '@Html.Raw(await LocaleManager.GetTranslation("Today", PageNames.CalendarTools, Model.LanguageId))';
+    const zebraClearString = '@Html.Raw(await LocaleManager.GetTranslation("Clear", PageNames.CalendarTools, Model.LanguageId))';
+
+    $(function () {
+        $('#datetimepicker1').Zebra_DatePicker({
+            format: '@zebraDateTimeFormat',
+            open_icon_only: true,
+            days: zebraDatePickerDaysArray,
+            months: zebraDatePickerMonthsArray,
+            lang_clear_date: zebraClearString,
+            show_select_today: zebraTodayString,
+            select_other_months: true
+        });
+    });
+</script>

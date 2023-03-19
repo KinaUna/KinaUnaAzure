@@ -66,7 +66,7 @@
                     }
                     <a class="col-auto align-self-center p-0 m-0 leavePage" asp-area="" asp-controller="Pictures" asp-action="Picture" asp-route-id="@item.PictureId" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@Model.TagFilter">
                         <div class="photo-gallery-frame">
-                            <img src="@item.PictureLink600" class="photo-gallery-picture"/>
+                            <img data-src="@item.PictureLink600" class="photo-gallery-picture lazyload" />
                             <div class="photo-picture-number-frame" style="background-color: @bgColor;">
                                 <span class="photo-picture-number-text">@item.PictureNumber</span>
                             </div>
