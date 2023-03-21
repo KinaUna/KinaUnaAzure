@@ -5,6 +5,15 @@
 @inject ILocaleManager LocaleManager
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
+    string startDateString = Model.SleepStart.ToString("dd MMM yyyy");
+    string startTimeString = Model.SleepStart.ToString("HH:mm");
+    string endDateString = Model.SleepEnd.ToString("dd MMM yyyy");
+    string endTimeString = Model.SleepEnd.ToString("HH:mm");
+
+    if (Model.SleepStart.Date == Model.SleepEnd.Date)
+    {
+        endDateString = string.Empty;
+    }
 }
 <a class="leavePage" asp-controller="Sleep" asp-action="Index">
     <div class="bg-primary timeline-card">
@@ -14,12 +23,33 @@
                     <span class="latest-posts-icon"><i class="material-icons">hotel</i></span>
                 </div>
                 <div class="col">
-                    <div class="latest-posts-title">
-                        <strong>
-                            @Model.SleepStart.ToString("dd-MMM-yyyy HH:mm") - @Model.SleepEnd.ToString("dd-MMM-yyyy HH:mm")
-                        </strong>
+                    <div class="latest-posts-title row">
+                        @if (Model.SleepStart.Date == Model.SleepEnd.Date)
+                        {
+                            <div class="col-auto">@startDateString</div>
+                            <div class="col-auto font-weight-normal">@startTimeString - @endTimeString</div>
+                        }
+                        else
+                        {
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col font-weight-bold">@startDateString</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col font-weight-normal text-right">@startTimeString</div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col font-weight-bold ">@endDateString</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col font-weight-normal ">@endTimeString</div>
+                                </div>
+                            </div>
+                        }
                     </div>
-                    <div class="latest-posts-text text-white">@await LocaleManager.GetTranslation("Duration:", PageNames.Sleep, languageId) @Model.SleepDuration</div>
+                    <div class="latest-posts-text text-right text-white-50">@await LocaleManager.GetTranslation("Duration:", PageNames.Sleep, languageId) @Model.SleepDuration</div>
                 </div>
             </div>
         </div>

@@ -103,7 +103,8 @@ function toggleSideBar(): void {
 }
 
 async function setSideBarPosition(): Promise<void> {
-    let viewportHeight = window.innerHeight;
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
     const sidebarMenuListWrapperElement = document.getElementById('sidebar-menu-list-wrapper');
     const sidebarNavUlElement = document.getElementById('sidebar-nav-ul');
     const navMainElement = document.getElementById('navMain');
@@ -112,13 +113,20 @@ async function setSideBarPosition(): Promise<void> {
     const kinaUnaMainElement = document.getElementById('kinaunaMainDiv');
     const sidebarTextsButton = document.getElementById('side-bar-toggle-text-btn');
     const menuOffset = navMainElement.scrollHeight + topLanguageElement.scrollHeight + 25;
-    let sidebarHeight = viewportHeight - (menuOffset + sidebarTogglerElement.offsetHeight);
-    let maxSidebarHeight = sidebarNavUlElement.scrollHeight + menuOffset + sidebarTogglerElement.offsetHeight + 10;
+    const sidebarHeight = viewportHeight - (menuOffset + sidebarTogglerElement.offsetHeight);
+    const maxSidebarHeight = sidebarNavUlElement.scrollHeight + menuOffset + sidebarTogglerElement.offsetHeight + 10;
     sidebarElement.style.left = "0px";
 
     if (sidebarSetting.showSidebar) {
         sidebarTogglerElement.style.transition = 'border-bottom-right-radius 500ms ease-in-out 0ms';
-        kinaUnaMainElement.classList.add('kinauna-main');
+        if (sidebarSetting.showSidebarText && viewportWidth > 992) {
+            kinaUnaMainElement.classList.add('kinauna-main-wide');
+            kinaUnaMainElement.classList.remove('kinauna-main');
+        }
+        else {
+            kinaUnaMainElement.classList.add('kinauna-main');
+            kinaUnaMainElement.classList.remove('kinauna-main-wide');
+        }
         sidebarElement.style.opacity = '1.0';
         if (viewportHeight > maxSidebarHeight) {
             sidebarMenuListWrapperElement.style.overflowY = "hidden";
@@ -144,6 +152,7 @@ async function setSideBarPosition(): Promise<void> {
         sidebarMenuListWrapperElement.style.overflowY = "hidden";
         sidebarTogglerElement.style.transition = 'border-bottom-right-radius 500ms ease-in-out 1000ms';
         sidebarMenuListWrapperElement.style.height = '0px';
+        kinaUnaMainElement.classList.remove('kinauna-main');
         kinaUnaMainElement.classList.remove('kinauna-main');
         sidebarElement.style.opacity = '.5';
         sidebarElement.style.top = menuOffset + 'px';
@@ -171,9 +180,10 @@ function initPageSettings(): void {
         localStorage.setItem(show_sidebar_setting_key, JSON.stringify(sidebarSetting.showSidebar));
     }
 
+    let viewportWidth = window.innerWidth;
     sidebarSetting.showSidebarText = JSON.parse(localStorage.getItem(show_sidebar_text_setting_key));
     if (sidebarSetting.showSidebarText != null) {
-        if (!sidebarSetting.showSidebarText) {
+        if (!sidebarSetting.showSidebarText || viewportWidth < 992) {
             sidebarSetting.showSidebarText = false;
         }
         else {
@@ -189,7 +199,7 @@ $(function () {
     $(document).on('click', function (event) {
         let clickover = $(event.target);
         let _opened = $(".navbar-collapse").hasClass("show");
-        if (_opened === true && !clickover.hasClass("navbar-toggler")) {
+        if (_opened === true && !clickover.hasClass('navbar-toggler')) {
             $(".navbar-toggler").trigger('click');
         }
     });
@@ -206,6 +216,16 @@ $(function () {
 
     $(".leavePage2").on('click', function () {
         runWaitMeLeave2();
+    });
+
+    $(".selectedChildProfilePic").on('click', function () {
+        if ($('.navbar-toggler').css('display') !== 'none') {
+            $('.navbar-toggler').trigger('click');
+            $('#selectChildDropDownMenu').toggleClass('show');
+        }
+        else {
+            $('#selectChildMenuButton').trigger('click');
+        }
     });
 
     initPageSettings();

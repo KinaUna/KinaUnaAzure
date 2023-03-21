@@ -21,6 +21,7 @@
                             @Model.Title
                         </strong>
                     </div>
+                    <div class="space-20"></div>
                     <div class="latest-posts-text text-white-50">
                         <div style="font-size: 12px; overflow-x: hidden; margin-bottom: 8px;" class="rounded text-dark card-body bg-white">@Html.Raw(HttpUtility.HtmlDecode(Model.Content))</div>
                         @if (!string.IsNullOrEmpty(Model.Category))

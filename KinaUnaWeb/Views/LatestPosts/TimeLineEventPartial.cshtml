@@ -6,6 +6,28 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
     Model.StartTime ??= DateTime.MinValue;
     Model.EndTime ??= DateTime.MinValue;
+    Model.StartTime ??= DateTime.MinValue;
+    Model.EndTime ??= DateTime.MinValue;
+    string startDateString = Model.StartTime.Value.ToString("dd MMM yyyy");
+    if (Model.AllDay && Model.StartTime.Value.Date != Model.EndTime.Value.Date)
+    {
+        if (Model.StartTime.Value.Year == Model.EndTime.Value.Year)
+        {
+            startDateString = Model.StartTime.Value.ToString("dd MMM");
+            if (Model.StartTime.Value.Month == Model.EndTime.Value.Month)
+            {
+                startDateString = Model.StartTime.Value.ToString("dd");
+            }
+        }
+    }
+    string startTimeString = Model.StartTime.Value.ToString("HH:mm");
+    string endDateString = Model.EndTime.Value.ToString("dd MMM yyyy");
+    string endTimeString = Model.EndTime.Value.ToString("HH:mm");
+
+    if (Model.StartTime.Value.Date == Model.EndTime.Value.Date)
+    {
+        endDateString = string.Empty;
+    }
 }
 <a class="leavePage" asp-controller="Calendar" asp-action="ViewEvent" asp-route-eventId="@Model.EventId">
     <div class="bg-primary timeline-card">
@@ -15,25 +37,60 @@
                     <span class="latest-posts-icon"><i class="material-icons">event_note</i></span>
                 </div>
                 <div class="col">
-                    <div class="latest-posts-title">
-                        <strong>
-                            @Model.StartTime.Value.ToString("dd-MMM-yyyy HH:mm") - @Model.EndTime.Value.ToString("dd-MMM-yyyy HH:mm")
-                        </strong>
+                    <div class="latest-posts-title row">
+                        @if (Model.AllDay)
+                        {
+
+                            if (string.IsNullOrEmpty(endDateString))
+                            {
+                                <div class="col-auto font-weight-bold">@startDateString</div>
+                            }
+                            else
+                            {
+                                <div class="col-auto"><span class="font-weight-bold">@startDateString</span> - <span class="font-weight-bold">@endDateString</span></div>
+                            }
+                        }
+                        else
+                        {
+                            if (Model.StartTime.Value.Date == Model.EndTime.Value.Date)
+                            {
+                                <div class="col-auto">@startDateString</div>
+                                <div class="col-auto ml-auto font-weight-normal">@startTimeString - @endTimeString</div>
+                            }
+                            else
+                            {
+                                <div class="col-auto">
+                                    <div class="row">
+                                        <div class="col font-weight-bold">@startDateString</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col font-weight-normal text-right">@startTimeString</div>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="row">
+                                        <div class="col font-weight-bold ">@endDateString</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col font-weight-normal ">@endTimeString</div>
+                                    </div>
+                                </div>
+                            }
+                        }
                     </div>
-                    <div class="latest-posts-text text-white-50">
-                        <div class="text-white"><strong>@Model.Title</strong></div>
-                        <br />
+                    <div class="timeline-text row text-white-50">
+                        <div class="col-auto text-white font-weight-bold"><h6>@Model.Title</h6></div>
                         @if (!string.IsNullOrEmpty(Model.Location))
                         {
-                            <div>@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, languageId) @Model.Location</div>
+                            <div class="col-auto ml-auto text-right">@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, languageId) @Model.Location</div>
                         }
                         @if (!string.IsNullOrEmpty(Model.Context))
                         {
-                            <div>@await LocaleManager.GetTranslation("Context:", PageNames.Calendar, languageId) @Model.Context</div>
+                            <div class="col-auto ml-auto text-right">@await LocaleManager.GetTranslation("Context:", PageNames.Calendar, languageId) @Model.Context</div>
                         }
                         @if (!string.IsNullOrEmpty(Model.Notes))
                         {
-                            <div>@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, languageId) @Model.Notes</div>
+                            <div class="col-12">@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, languageId) @Model.Notes</div>
                         }
                     </div>
                 </div>
