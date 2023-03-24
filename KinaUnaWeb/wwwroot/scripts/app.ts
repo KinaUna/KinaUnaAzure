@@ -83,7 +83,7 @@ function setSidebarText(): void {
         if (sidebarSetting.showSidebarText) {
             sidebarExapanderIcon.style.rotate = '180deg';
             textItem.classList.remove('sidebar-item-text-hide');
-            sidebarTextsButton.style.top = "12px";
+            sidebarTextsButton.style.top = "58px";
             sidebarTextsButton.style.right = "5%";
         }
         else {

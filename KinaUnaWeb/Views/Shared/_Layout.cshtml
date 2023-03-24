@@ -141,7 +141,7 @@
                 if (!string.IsNullOrWhiteSpace(child.PictureLink))
                 {
                     string picLink = ChildManager.GetImageUrl(child.PictureLink, "progeny");
-                    childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 48px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 48px;\" /img> ";
+                        childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 48px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 48px; object-fit: contain;\" /img> ";
                 }
                 <span class="d-lg-none selectedChildProfilePic">@Html.Raw(childprofilePic)</span>
             }
@@ -171,7 +171,7 @@
                                                     if (!string.IsNullOrWhiteSpace(prog.PictureLink))
                                                     {
                                                         string picLink2 = ChildManager.GetImageUrl(prog.PictureLink, "progeny");
-                                                        profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px;\" /img> ";
+                                                            profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px; object-fit: contain;\" /img> ";
                                                     }
                                                 }
                                                 @Html.Raw(profilePic2) @prog.NickName

@@ -9,5 +9,6 @@ namespace KinaUnaProgenyApi.Services
         Task<Progeny> AddProgeny(Progeny progeny);
         Task<Progeny> UpdateProgeny(Progeny progeny);
         Task<Progeny> DeleteProgeny(Progeny progeny);
+        Task ResizeImage(string imageId);
     }
 }

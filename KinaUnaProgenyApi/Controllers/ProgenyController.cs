@@ -99,10 +99,11 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 value.PictureLink = Constants.ProfilePictureUrl;
             }
+            
             progeny.PictureLink = value.PictureLink;
-
+            
             progeny = await _progenyService.AddProgeny(progeny);
-
+            
             if (progeny.Admins.Contains(','))
             {
                 List<string> adminList = progeny.Admins.Split(',').ToList();
@@ -129,6 +130,11 @@ namespace KinaUnaProgenyApi.Controllers
                     await _userAccessService.AddUserAccess(ua);
                 }
 
+            }
+
+            if (!progeny.PictureLink.ToLower().StartsWith("http"))
+            {
+                await _progenyService.ResizeImage(progeny.PictureLink);
             }
 
             return Ok(progeny);
@@ -209,7 +215,12 @@ namespace KinaUnaProgenyApi.Controllers
             progeny.TimeZone = value.TimeZone;
 
             progeny = await _progenyService.UpdateProgeny(progeny);
-            
+
+            if (!progeny.PictureLink.ToLower().StartsWith("http"))
+            {
+                await _progenyService.ResizeImage(progeny.PictureLink);
+            }
+
             return Ok(progeny);
         }
 

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Moq;
 
 
 namespace KinaUnaProgenyApi.Tests.Services
@@ -24,7 +25,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ProgenyService progenyService = new ProgenyService(context, memoryCache);
+            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            ProgenyService progenyService = new ProgenyService(context, memoryCache, imageStore.Object);
 
             Progeny resultProgeny = await progenyService.GetProgeny(1);
             // 2nd call to GetProgeny is retrieving the Progeny object from cache.
@@ -58,7 +60,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ProgenyService progenyService = new ProgenyService(context, memoryCache);
+            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            ProgenyService progenyService = new ProgenyService(context, memoryCache, imageStore.Object);
 
             Progeny progeny = await progenyService.GetProgeny(0);
 
@@ -73,7 +76,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ProgenyService progenyService = new ProgenyService(context, memoryCache);
+            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            ProgenyService progenyService = new ProgenyService(context, memoryCache, imageStore.Object);
 
             Progeny progenyToAdd = new Progeny
                 { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
@@ -122,7 +126,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ProgenyService progenyService = new ProgenyService(context, memoryCache);
+            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            ProgenyService progenyService = new ProgenyService(context, memoryCache, imageStore.Object);
 
             Progeny progenyToUpdate = await progenyService.GetProgeny(1);
             progenyToUpdate.Name = "B";
@@ -167,7 +172,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ProgenyService progenyService = new ProgenyService(context, memoryCache);
+            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            ProgenyService progenyService = new ProgenyService(context, memoryCache, imageStore.Object);
 
             Progeny progenyToDelete = await progenyService.GetProgeny(1);
 
