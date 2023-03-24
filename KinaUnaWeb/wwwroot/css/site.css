@@ -249,7 +249,7 @@
 .dropdown-item.active, .dropdown-item:active {
     color: #fff;
     text-decoration: none;
-    background-color: #450058;
+    background-color: #9100b9;
     font-weight: bold;
 }
 
@@ -2424,9 +2424,9 @@ button.Zebra_DatePicker_Icon {
 }
 
 .btn-sidebar-toggle-text {
-    border-radius: 45px;
+    border-radius: 5px;
     border: 0;
-    background: #4b0056;
+    background: transparent;
     top: 58px;
     margin-left: 2px;
     z-index: 999;
@@ -2492,7 +2492,8 @@ button.Zebra_DatePicker_Icon {
 
     .dropdown-item.active, .dropdown-item:active {
         color: #fff;
-        background-color: #450058;
+        background-color: #9100b9;
+        ;
     }
     .page-link {
         position: relative;
