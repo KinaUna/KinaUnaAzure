@@ -1,85 +1,96 @@
-﻿@using Microsoft.AspNetCore.Http.Features
-@using Microsoft.AspNetCore.Hosting
+﻿@using Microsoft.AspNetCore.Hosting
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @using Microsoft.Extensions.Hosting
 @using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @model int
 @inject ILocaleManager LocaleManager
 @inject IWebHostEnvironment Env;
 @{
-	ITrackingConsentFeature consentFeature = Context.Features.Get<ITrackingConsentFeature>();
-	bool showBanner = !consentFeature?.CanTrack ?? false;
-	string cookieString = consentFeature?.CreateConsentCookie();
-	string acceptCookie = Context.Request.Cookies["kinaunagdpr"];
-	if (acceptCookie == "allowEssential")
-	{
-		showBanner = false;
-	}
-}
-@if (showBanner)
-{
-	<div class="container">
-		<div class="row">
-			<div class="col-12">
-				<div id="cookieConsent" class="alert alert-info alert-dismissible fade show" style="background-color: #9f00b7; border-radius: 5px;" role="alert">
-					<div class="row">
-						<div class="col-8">
-							<div class="space-20"></div>
-							@await LocaleManager.GetTranslation("Cookies are used to store login state, language settings, and check if the cookie policy has been accepted, nothing else.", PageNames.Layout, Model)
-							<div class="space-20"></div>
-							<a asp-page="/Home/Cookies">@await LocaleManager.GetTranslation("Cookies", PageNames.Layout, Model)</a>
-							<span class="ml-3 mr-3">-</span>
-							<a asp-page="/Home/Privacy">@await LocaleManager.GetTranslation("Privacy", PageNames.Layout, Model)</a>
-						</div>
-						<div class="col-4">
-							<div class="row">
-								<div class="col">
-									<button type="button" class="btn btn-success" data-dismiss="alert" aria-label="Close" id="acceptEssentialCookies">
-										<span aria-hidden="true">@await LocaleManager.GetTranslation("Accept essential cookies only", PageNames.Layout, Model)</span>
-									</button>
-									<div class="space-20"></div>
-								</div>
-							</div>
-							<div class="row">
-								<div class="col">
-									<button type="button" class="btn btn-default" data-dismiss="alert" aria-label="Close" data-cookie-string="@cookieString">
-										<span aria-hidden="true">@await LocaleManager.GetTranslation("Allow third party cookies", PageNames.Layout, Model)</span>
-									</button>
-									<div class="space-20"></div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="space-50"></div>
-	</div>
-	
-	<script>
-		(function() {
-			var button = document.querySelector("#cookieConsent button[data-cookie-string]");
-			button.addEventListener("click",
-				function() {
-					document.cookie = button.dataset.cookieString;
-				},
-				false);
-		})();
+	string cookieDomainName = "domain=.kinauna.com;path=/";
+    if (Env.IsDevelopment())
+    {
+        cookieDomainName = "path=/";
+    }
 
-		@{
-			string cookieDomainName = "domain=.kinauna.com;path=/";
-			if (Env.IsDevelopment())
-			{
-				cookieDomainName = "";
-			}
-			
-		}
-			$("#acceptEssentialCookies").on('click', function () {
-            let date = new Date();
-			date.setTime(date.getTime() + (180 * 24 * 60 * 60 * 1000));
-			let expires = "; expires=" + date.toGMTString();
-            document.cookie = "kinaunagdpr=" + "allowEssential" + expires + ";" + "@cookieDomainName";
-		});
-	</script>
+    bool hereMapsChecked = Context.Request.HereMapsCookieSet();
+    bool youTubeChecked = Context.Request.YouTubeCookieSet();
 }
+
+<div id="cookieConsent" class="alert alert-info alert-dismissible fade show ml-4" style="background-color: #e3d7c3; border-radius: 5px;" role="alert">
+    <div class="row">
+        <div class="col-auto">
+            <h4>Cookie Consent</h4>
+            <div class="space-20"></div>
+            @await LocaleManager.GetTranslation("KinaUna essential cookies are used to store login state, language settings, and check if this cookie policy has been accepted, nothing else.", PageNames.Layout, Model)
+            <div class="space-20"></div>
+            @await LocaleManager.GetTranslation("Some pages use Here Maps to display map data and videos use YouTube.", PageNames.Layout, Model)
+            <div class="space-20"></div>
+            @await LocaleManager.GetTranslation("To enable maps and videos you need to consent to these third party cookies.", PageNames.Layout, Model)
+        </div>
+    </div>
+    <div class="space-20"></div>
+    <div class="row">
+        <div class="col">
+            <label for="allowEssentialSwitch">@await LocaleManager.GetTranslation("Allow KinaUna essential cookies", PageNames.Layout, Model)</label>
+        </div>
+        <div class="col-auto">
+            <ejs-switch id="allowEssentialSwitch" checked="true" disabled="true"></ejs-switch>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <label for="allowMapsSwitch">@await LocaleManager.GetTranslation("Allow Here Maps cookies and content", PageNames.Layout, Model)</label>
+        </div>
+        <div class="col-auto">
+            <ejs-switch id="allowMapsSwitch" checked="hereMapsChecked"></ejs-switch>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <label for="allowYouTubeSwitch">@await LocaleManager.GetTranslation("Allow YouTube cookies and content", PageNames.Layout, Model)</label>
+        </div>
+        <div class="col-auto">
+            <ejs-switch id="allowYouTubeSwitch" checked="youTubeChecked"></ejs-switch>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-auto ml-auto">
+            <button id="saveGdprButton" class="btn btn-success" type="button" data-dismiss="alert">@await LocaleManager.GetTranslation("Save", PageNames.Layout, Model)</button>
+        </div>
+    </div>
+    <div class="space-20"></div>
+    <div class="row">
+        <div class="col">
+            <a asp-controller="Home" asp-action="Privacy">@await LocaleManager.GetTranslation("Cookies & Privacy Policy", PageNames.Layout, Model)</a>
+        </div>
+    </div>
+</div>
+<script>
+    (function () {
+        const saveGdprButton = document.getElementById('saveGdprButton');
+        const gdprAllowMapsSwitch = document.getElementById('allowMapsSwitch');
+        const gdprAllowYoutubeSwitch = document.getElementById('allowYouTubeSwitch');
+
+        saveGdprButton.addEventListener("click",
+            function () {
+                let gdprSettings = "Essential";
+
+                if (gdprAllowMapsSwitch.checked) {
+                    gdprSettings = gdprSettings + "HereMaps";
+                }
+
+                if (allowYouTubeSwitch.checked) {
+                    gdprSettings = gdprSettings + "YouTube";
+                }
+
+                let date = new Date();
+                date.setTime(date.getTime() + (180 * 24 * 60 * 60 * 1000));
+                let expires = "; expires=" + date.toGMTString();
+                document.cookie = "KinaUnaConsent=" + gdprSettings + expires + ";" + "@cookieDomainName";
+                location.reload();
+            },
+            false);
+    })();
+</script>

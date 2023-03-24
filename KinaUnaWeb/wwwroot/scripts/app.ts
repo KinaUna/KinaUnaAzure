@@ -44,8 +44,8 @@ function removeServiceWorkers(): void {
 }
 
 class SideBarSetting {
-    showSidebar: boolean;
-    showSidebarText: boolean;
+    showSidebar: boolean = false;
+    showSidebarText: boolean = false;
 }
 
 const sidebarSetting = new SideBarSetting();
@@ -54,7 +54,7 @@ const sidebarElement = document.getElementById('sidebar-menu-div');
 const show_sidebar_setting_key = 'show_sidebar_setting';
 const show_sidebar_text_setting_key = 'show_sidebar_text_setting';
 
-function sidebarMenuDelay(milliseconds): Promise<any> {
+function sidebarMenuDelay(milliseconds: number): Promise<any> {
     return new Promise(resolve => {
         setTimeout(resolve, milliseconds);
     });
@@ -70,10 +70,15 @@ function toggleSidebarText(): void {
 
 function setSidebarText(): void {
     const sidebarExapanderIcon = document.getElementById('sidebar-text-expander');
-    sidebarExapanderIcon.style.transition = 'rotate 500ms ease-in-out 0ms';
+    
     const sidebarTexts = document.querySelectorAll('.sidebar-item-text');
     const sidebarTextsButton = document.getElementById('side-bar-toggle-text-btn');
 
+    if (sidebarExapanderIcon == null || sidebarTexts == null || sidebarTextsButton == null) {
+        return;
+    }
+
+    sidebarExapanderIcon.style.transition = 'rotate 500ms ease-in-out 0ms';
     sidebarTexts.forEach(textItem => {
         if (sidebarSetting.showSidebarText) {
             sidebarExapanderIcon.style.rotate = '180deg';
@@ -112,6 +117,10 @@ async function setSideBarPosition(): Promise<void> {
     const sidebarTogglerElement = document.getElementById('sidebarTogglerDiv');
     const kinaUnaMainElement = document.getElementById('kinaunaMainDiv');
     const sidebarTextsButton = document.getElementById('side-bar-toggle-text-btn');
+    if (navMainElement == null || topLanguageElement == null || sidebarTogglerElement == null || sidebarNavUlElement == null ||
+        sidebarElement == null || kinaUnaMainElement == null || sidebarMenuListWrapperElement == null || sidebarTextsButton == null) {
+        return;
+    }
     const menuOffset = navMainElement.scrollHeight + topLanguageElement.scrollHeight + 25;
     const sidebarHeight = viewportHeight - (menuOffset + sidebarTogglerElement.offsetHeight);
     const maxSidebarHeight = sidebarNavUlElement.scrollHeight + menuOffset + sidebarTogglerElement.offsetHeight + 10;
@@ -166,33 +175,50 @@ async function setSideBarPosition(): Promise<void> {
 }
 
 function initPageSettings(): void {
+    if (sidebarElement == null) {
+        return;
+    }
     sidebarElement.style.left = '-100px';
-    sidebarSetting.showSidebar = JSON.parse(localStorage.getItem(show_sidebar_setting_key));
-    if (sidebarSetting.showSidebar != null) {
-        if (!sidebarSetting.showSidebar) {
-            sidebarSetting.showSidebar = false;
-        }
-        else {
+    const localStorageShowSidebarString = localStorage.getItem(show_sidebar_setting_key);
+    if (localStorageShowSidebarString != null) {
+        sidebarSetting.showSidebar = JSON.parse(localStorageShowSidebarString);
+        if (sidebarSetting.showSidebar != null) {
+            if (!sidebarSetting.showSidebar) {
+                sidebarSetting.showSidebar = false;
+            }
+            else {
+                sidebarSetting.showSidebar = true;
+            }
+        } else {
             sidebarSetting.showSidebar = true;
+            localStorage.setItem(show_sidebar_setting_key, JSON.stringify(sidebarSetting.showSidebar));
         }
     } else {
         sidebarSetting.showSidebar = true;
         localStorage.setItem(show_sidebar_setting_key, JSON.stringify(sidebarSetting.showSidebar));
     }
+    
 
     let viewportWidth = window.innerWidth;
-    sidebarSetting.showSidebarText = JSON.parse(localStorage.getItem(show_sidebar_text_setting_key));
-    if (sidebarSetting.showSidebarText != null) {
-        if (!sidebarSetting.showSidebarText || viewportWidth < 992) {
+    const localStorageShowSidebarTextString = localStorage.getItem(show_sidebar_text_setting_key);
+    if (localStorageShowSidebarTextString != null) {
+        sidebarSetting.showSidebarText = JSON.parse(localStorageShowSidebarTextString);
+        if (sidebarSetting.showSidebarText != null) {
+            if (!sidebarSetting.showSidebarText || viewportWidth < 992) {
+                sidebarSetting.showSidebarText = false;
+            }
+            else {
+                sidebarSetting.showSidebarText = true;
+            }
+        } else {
             sidebarSetting.showSidebarText = false;
-        }
-        else {
-            sidebarSetting.showSidebarText = true;
+            localStorage.setItem(show_sidebar_text_setting_key, JSON.stringify(sidebarSetting.showSidebarText));
         }
     } else {
         sidebarSetting.showSidebarText = false;
         localStorage.setItem(show_sidebar_text_setting_key, JSON.stringify(sidebarSetting.showSidebarText));
     }
+    
 }
 
 $(function () {

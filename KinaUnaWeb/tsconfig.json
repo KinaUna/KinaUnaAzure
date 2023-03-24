@@ -1,14 +1,18 @@
 {
+  "compileOnSave": true,
   "compilerOptions": {
-    "noImplicitAny": false,
+    "strict": true,
+    "noImplicitAny": true,
     "noEmitOnError": true,
     "removeComments": false,
     "sourceMap": true,
-    "target": "es2020",
-    "outDir": "wwwroot/js"
+    "target": "ES2020",
+    "outDir": "wwwroot/js",
+    "skipLibCheck": true,
+    "module": "ES2020"
   },
   "exclude": [
-    "node_modules",
+    "**/node_modules",
     "wwwroot"
   ],
   "include": [

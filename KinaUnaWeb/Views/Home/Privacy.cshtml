@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Antiforgery
 @using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @model KinaUnaWeb.Models.HomeViewModels.AboutViewModel
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Privacy", PageNames.Layout, Model.LanguageId);
@@ -10,12 +11,18 @@
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="add-item-container">
-        <h2 class="col-12" class="title">@ViewData["Title"]</h2>
+        <h2 class="col-12">@ViewData["Title"]</h2>
         <div class="col-12">
             <img src="~/images/KinaUnaLogo_246x80.png"/>
         </div>
+        @if (Context.Request.ConsentCookieSet())
+        {
+            <div class="space-20"></div>
+            @await Html.PartialAsync("_CookieConsentPartial", Model.LanguageId)
+        }
+        
         <div class="space-50"></div>
-        <div class="col-auto" style="max-width: 600px;" id="impressumTextDiv">
+        <div class="col-auto" id="impressumTextDiv">
             @Html.Raw(Model.KinaUnaText.Text ?? "")
         </div>
         @if (Model.CurrentUser.IsKinaUnaAdmin && Model.KinaUnaText != null)

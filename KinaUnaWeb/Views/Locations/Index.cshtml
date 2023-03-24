@@ -1,25 +1,28 @@
 ﻿@using System.Globalization
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Locations", PageNames.Locations, Model.LanguageId);
-}
-@section Scripts{
-    <script src="https://js.api.here.com/v3/3.1/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
-    <script src="https://js.api.here.com/v3/3.1/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
-    <script src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js" type="text/javascript" charset="utf-8"></script>
-    <script src="https://js.api.here.com/v3/3.1/mapsjs-ui.js" type="text/javascript" charset="utf-8"></script>
-    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
-}
-    @{
+    bool allowHereMaps = Context.Request.HereMapsCookieSet();
     string sortOldest = "btn btn-primary btn-sm";
     string sortNewest = "btn btn-info btn-sm leavePage";
     string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Locations, Model.LanguageId);
     string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Locations, Model.LanguageId);
     string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Locations, Model.LanguageId);
+}
+@section Scripts{
+    @if (allowHereMaps)
+    {
+        <script src="https://js.api.here.com/v3/3.1/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
+        <script src="https://js.api.here.com/v3/3.1/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
+        <script src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js" type="text/javascript" charset="utf-8"></script>
+        <script src="https://js.api.here.com/v3/3.1/mapsjs-ui.js" type="text/javascript" charset="utf-8"></script>
+        <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css"/>
     }
+}
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     @if (Model.IsCurrentUserProgenyAdmin)
     {
@@ -65,96 +68,23 @@
         }
         <div class="row" style="clear: both; margin-top: 25px;">
             <div class="col-12 col-lg-10 col-xl-9 col-w2500-7">
-                <div style="width: 100%; height: 480px; max-height: 60vh;" id="mapContainer"></div>
-            </div>
-            <script>
-                let lastSelected;
-                let pixelRatio = window.devicePixelRatio || 1;
-                function setUpClickListener(map) {
-                    map.addEventListener('tap',
-                        function (evt) {
-                            if (evt.target instanceof H.map.Marker) {
-                                let locDiv = '#loc' + evt.target.getData();
-                                $('html, body').animate({
-                                    'scrollTop': $(locDiv).offset().top - 100
-                                }, 500);
-                                $(lastSelected).removeClass('bg-info').addClass('bg-light');
-                                $(locDiv).removeClass('bg-light').addClass('bg-info');
-                                lastSelected = locDiv;
-                            }
-                            
-                            let coord = map.screenToGeo(evt.currentPointer.viewportX,
-                                evt.currentPointer.viewportY);
-                            map.setCenter(coord, true);
-
-                        });
-                }
-
-                let platform = new H.service.Platform({
-                    'apikey': '@Constants.HereMapsApiKey',
-                    'useHTTPS': true
-                });
-                
-                var defaultLayers = platform.createDefaultLayers();
-
-                let maptypes = platform.createDefaultLayers({
-                    tileSize: pixelRatio === 1 ? 256 : 512,
-                    ppi: pixelRatio === 1 ? undefined : 320
-                });
-
-                let map = new H.Map(document.getElementById('mapContainer'),
-                    defaultLayers.vector.normal.map,
-                    {
-                        zoom: 3,
-                        center: { lng: @Model.LocationItem.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.'), lat: @Model.LocationItem.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') },
-                        pixelRatio: pixelRatio
-                    });
-
-                
-                let ui = H.ui.UI.createDefault(map, maptypes);
-                let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-                
-                setUpClickListener(map);
-                               
-                //let iconWidth = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
-                //let iconHeight = Math.floor(36 * pixelRatio + (pixelRatio - 1) * 8);
-
-                let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: 36, h: 36 } });
-                let group = new H.map.Group();
-                @{
-                    string locGroup = "[";
-                    string polyCode = "";
-                    string markerCode = "";
-                    string setData = "";
-                }
-                @foreach (Location lineLoc in Model.LocationsList)
+                @if (allowHereMaps)
                 {
-                    string pPoint = "lineString.pushPoint({lat:" + lineLoc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng:" + lineLoc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "});";
-                    string pMarker = "let marker" + lineLoc.LocationId + " = new H.map.Marker({lat:" + lineLoc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng:" + lineLoc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "}, {icon: defaultIcon});";
-                    string sMarker = "marker" + lineLoc.LocationId + ".setData(" + lineLoc.LocationId + ");";
-                    locGroup = locGroup + "marker" + lineLoc.LocationId + ", ";
-                    polyCode = polyCode + pPoint;
-                    markerCode = markerCode + pMarker;
-                    setData = setData + sMarker;
-
+                    <div style="width: 100%; height: 480px; max-height: 60vh;" id="mapContainer"></div>
                 }
-                @{
-                    locGroup = locGroup.Trim().TrimEnd(',') + "]";
+                else
+                {
+                    <div class="col-12 col-md-10 col-lg-9 col-xl-8 col-xxl-7 col-w1900-6 col-w2500-5">
+                        <div class="space-20"></div>
+                        <div>@await LocaleManager.GetTranslation("Cookie consent for Here maps has not been granted. To use maps enable cookies for Here Maps.", PageNames.Layout, Model.LanguageId)</div>
+                        <div class="space-20"></div>
+                        @if (Context.Request.ConsentCookieSet())
+                        {
+                            @await Html.PartialAsync("_CookieConsentPartial", Model.LanguageId)
+                        }
+                    </div>
                 }
-                @Html.Raw(markerCode)
-                @Html.Raw(setData);
-                group.addObjects(@locGroup);
-                map.addObject(group);
-                function addPolylineToMap(map) {
-                    let lineString = new H.geo.LineString();
-                @Html.Raw(polyCode)
-                        map.addObject(new H.map.Polyline(
-                            lineString, { style: { lineWidth: 4 } }
-                        ));
-                }
-                addPolylineToMap(map);
-                map.getViewModel().setLookAtData({ bounds: group.getBoundingBox() });
-            </script>
+            </div>
         </div>
         <div class="space-70"></div>
         <div class="row">
@@ -253,3 +183,94 @@
         </div>
     }
 </div>
+@if (allowHereMaps)
+{
+    <script>
+        let lastSelected;
+        let pixelRatio = window.devicePixelRatio || 1;
+        function setUpClickListener(map) {
+            map.addEventListener('tap',
+                function (evt) {
+                    if (evt.target instanceof H.map.Marker) {
+                        let locDiv = '#loc' + evt.target.getData();
+                        $('html, body').animate({
+                            'scrollTop': $(locDiv).offset().top - 100
+                        }, 500);
+                        $(lastSelected).removeClass('bg-info').addClass('bg-light');
+                        $(locDiv).removeClass('bg-light').addClass('bg-info');
+                        lastSelected = locDiv;
+                    }
+
+                    let coord = map.screenToGeo(evt.currentPointer.viewportX,
+                        evt.currentPointer.viewportY);
+                    map.setCenter(coord, true);
+
+                });
+        }
+
+        let platform = new H.service.Platform({
+            'apikey': '@Constants.HereMapsApiKey',
+            'useHTTPS': true
+        });
+
+        let defaultLayers = platform.createDefaultLayers();
+
+        let maptypes = platform.createDefaultLayers({
+            tileSize: pixelRatio === 1 ? 256 : 512,
+            ppi: pixelRatio === 1 ? undefined : 320
+        });
+
+        let map = new H.Map(document.getElementById('mapContainer'),
+            defaultLayers.vector.normal.map,
+            {
+                zoom: 3,
+                center: { lng: @Model.LocationItem.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.'), lat: @Model.LocationItem.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') },
+                pixelRatio: pixelRatio
+            });
+
+
+        let ui = H.ui.UI.createDefault(map, maptypes);
+        let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+
+        setUpClickListener(map);
+
+        let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: 36, h: 36 } });
+        let group = new H.map.Group();
+        @{
+            string locGroup = "[";
+            string polyCode = "";
+            string markerCode = "";
+            string setData = "";
+        }
+        @if (Model.LocationsList != null)
+        {
+            foreach (Location lineLoc in Model.LocationsList)
+            {
+                string pPoint = "lineString.pushPoint({lat:" + lineLoc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng:" + lineLoc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "});";
+                string pMarker = "let marker" + lineLoc.LocationId + " = new H.map.Marker({lat:" + lineLoc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng:" + lineLoc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "}, {icon: defaultIcon});";
+                string sMarker = "marker" + lineLoc.LocationId + ".setData(" + lineLoc.LocationId + ");";
+                locGroup = locGroup + "marker" + lineLoc.LocationId + ", ";
+                polyCode = polyCode + pPoint;
+                markerCode = markerCode + pMarker;
+                setData = setData + sMarker;
+
+            }
+        }
+        @{
+            locGroup = locGroup.Trim().TrimEnd(',') + "]";
+        }
+        @Html.Raw(markerCode)
+        @Html.Raw(setData);
+        group.addObjects(@locGroup);
+        map.addObject(group);
+        function addPolylineToMap(map) {
+            let lineString = new H.geo.LineString();
+        @Html.Raw(polyCode)
+                map.addObject(new H.map.Polyline(
+                    lineString, { style: { lineWidth: 4 } }
+                ));
+        }
+        addPolylineToMap(map);
+        map.getViewModel().setLookAtData({ bounds: group.getBoundingBox() });
+    </script>
+}

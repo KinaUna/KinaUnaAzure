@@ -1,5 +1,4 @@
 ﻿body {
-    padding-bottom: 20px;
     margin: 0;
     font-family: Roboto, Helvetica, Arial, sans-serif;
     font-size: 1rem;
@@ -13,14 +12,7 @@
 
 @media (prefers-color-scheme: dark) {
     body {
-        padding-bottom: 20px;
-        margin: 0;
-        font-family: Roboto, Helvetica, Arial, sans-serif;
-        font-size: 1rem;
-        font-weight: 400;
-        line-height: 1.5;
         color: white;
-        text-align: left;
         background-color: #262426;
         background: #262426;
     }
@@ -1476,7 +1468,7 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 
 .bg-calendar {
     background: #581b2f;
-    background: linear-gradient(60deg, #621423, #581b2f);
+    background: linear-gradient(60deg, #621423, #5c162d);
 }
 
 .bg-contact {

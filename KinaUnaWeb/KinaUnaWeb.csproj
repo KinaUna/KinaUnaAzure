@@ -1,5 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TypeScriptTarget>ES2020</TypeScriptTarget>
+    <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <TypeScriptTarget>ES2020</TypeScriptTarget>
+    <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TypeScriptTarget>ES2020</TypeScriptTarget>
+    <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TypeScriptTarget>ES2020</TypeScriptTarget>
+    <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
+  </PropertyGroup>
+
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <UserSecretsId>aspnet-KinaUnaWeb-3CFF80E1-DFC0-426E-B569-60032DF70BB3</UserSecretsId>
@@ -12,6 +32,7 @@
     <Content Remove="wwwroot\scripts\**" />
     <EmbeddedResource Remove="wwwroot\scripts\**" />
     <None Remove="wwwroot\scripts\**" />
+    <TypeScriptCompile Remove="node_modules\**" />
   </ItemGroup>
   
   <ItemGroup>
@@ -83,6 +104,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\KinaUna.Data\KinaUna.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="**/node_modules/**/tsconfig.json" />
+    <TypeScriptCompile Remove="**/node_modules/**/tsconfig.json" />
+    <TypeScriptConfiguration Remove="**/node_modules/**/tsconfig.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -161,22 +188,10 @@
     <Content Update="wwwroot\images\kinaunalogo_badge4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\js\gdpr_dev.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Update="wwwroot\js\RemoveDevice.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\js\CreateDevice.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\js\gdpr.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\js\gdpr_da.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\js\gdpr_de.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\js\pushserviceworker.js">

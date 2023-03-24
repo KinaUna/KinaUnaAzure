@@ -33,13 +33,15 @@ namespace KinaUna.Data.Extensions
             {
                 languageId = "1";
             }
-            CookieOptions option = new CookieOptions();
-            option.Expires = DateTime.Now.AddYears(1);
-            option.Domain = ".kinauna.com";
-            option.IsEssential = true;
-            option.Secure = true;
-            option.SameSite = SameSiteMode.Lax;
-            #if DEBUG
+            CookieOptions option = new CookieOptions
+            {
+                Expires = DateTime.Now.AddYears(1),
+                Domain = ".kinauna.com",
+                IsEssential = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax
+            };
+#if DEBUG
             option.Domain = "";
             #endif
             response.Cookies.Append("languageId", languageId, option);  
@@ -78,58 +80,54 @@ namespace KinaUna.Data.Extensions
         }
 
 
-        public static int GetGdprCookie(this HttpRequest request)
+        public static bool ConsentCookieSet(this HttpRequest request)
         {
-            // 0 = not set, only allow essential cookies.
-            // 1 = only essential cookies.
-            // 2 = allow google maps.
-            // 3 = allow  all
-
-            if (request.Cookies.TryGetValue("cookieconsent", out string gdprText))
+            if (request.Cookies.TryGetValue("KinaUnaConsent", out string gdprText))
             {
                 if (string.IsNullOrEmpty(gdprText))
                 {
-                    return 0;
+                    return false;
                 }
 
-                if (gdprText.Contains("1"))
-                {
-                    return 1;
-                }
-
-                if (gdprText.Contains("2"))
-                {
-                    return 2;
-                }
+                return true;
             }
 
-            return 0;
+            return false;
         }
 
-        public static void SetGdprCookie(this HttpResponse response, string gdprId)
+        public static bool HereMapsCookieSet(this HttpRequest request)
         {
-            if (string.IsNullOrEmpty(gdprId))
+            if (request.Cookies.TryGetValue("KinaUnaConsent", out string gdprText))
             {
-                gdprId = "0";
+                if (!(string.IsNullOrEmpty(gdprText)) && gdprText.ToLower().Contains("heremaps"))
+                {
+                    return true;
+                }
             }
 
-            CookieOptions option = new CookieOptions();
-            option.Expires = DateTime.Now.AddYears(1);
-            option.Domain = ".kinauna.com";
-            option.IsEssential = true;
-            option.Secure = true;
-            option.SameSite = SameSiteMode.Lax;
-#if DEBUG
-            option.Domain = "";
-#endif
-            response.Cookies.Append("cookieconsent", gdprId, option);
+            return false;
+        }
+
+        public static bool YouTubeCookieSet(this HttpRequest request)
+        {
+            if (request.Cookies.TryGetValue("KinaUnaConsent", out string gdprText))
+            {
+                if (!(string.IsNullOrEmpty(gdprText)) && gdprText.ToLower().Contains("youtube"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static KinaUnaLanguage GetKinaUnaLanguage(this HttpRequest request)
         {
-            KinaUnaLanguage kinaUnaLanguage = new KinaUnaLanguage();
-            kinaUnaLanguage.Id = 1;
-            kinaUnaLanguage.Code = "en";
+            KinaUnaLanguage kinaUnaLanguage = new KinaUnaLanguage
+            {
+                Id = 1,
+                Code = "en"
+            };
 
             if (request.Query.ContainsKey("languageId"))
             {
