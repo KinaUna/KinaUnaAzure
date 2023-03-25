@@ -20,8 +20,8 @@ namespace KinaUnaProgenyApi.Models
             SleepLastYear = TimeSpan.Zero;
             SleepLastMonth = TimeSpan.Zero;
 
-            List<Sleep> sleepList = new List<Sleep>();
-            DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
+            List<Sleep> sleepList = new();
+            DateTime yearAgo = new(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
             if (allSleepList.Count != 0)
             {
@@ -34,21 +34,21 @@ namespace KinaUnaProgenyApi.Models
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                     sleep.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepEnd,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-                    DateTimeOffset sOffset = new DateTimeOffset(sleep.SleepStart,
+                    DateTimeOffset sOffset = new(sleep.SleepStart,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(sleep.SleepStart));
-                    DateTimeOffset eOffset = new DateTimeOffset(sleep.SleepEnd,
+                    DateTimeOffset eOffset = new(sleep.SleepEnd,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(sleep.SleepEnd));
                     sleep.SleepDuration = eOffset - sOffset;
 
-                    SleepTotal = SleepTotal + sleep.SleepDuration;
+                    SleepTotal += sleep.SleepDuration;
                     if (isLessThanYear)
                     {
-                        SleepLastYear = SleepLastYear + sleep.SleepDuration;
+                        SleepLastYear += sleep.SleepDuration;
                     }
 
                     if (isLessThanMonth)
                     {
-                        SleepLastMonth = SleepLastMonth + sleep.SleepDuration;
+                        SleepLastMonth += sleep.SleepDuration;
                     }
 
                     if (sleep.AccessLevel >= accessLevel)
@@ -73,15 +73,15 @@ namespace KinaUnaProgenyApi.Models
 
         public List<Sleep> ProcessSleepChartData(List<Sleep> allSleepList, int accessLevel, string userTimeZone)
         {
-            List<Sleep> sleepList = new List<Sleep>();
+            List<Sleep> sleepList = new();
             foreach (Sleep sleep in allSleepList)
             {
                 if (sleep.AccessLevel >= accessLevel)
                 {
                     sleep.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                     sleep.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-                    DateTimeOffset sOffset = new DateTimeOffset(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(sleep.SleepStart));
-                    DateTimeOffset eOffset = new DateTimeOffset(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(sleep.SleepEnd));
+                    DateTimeOffset sOffset = new(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(sleep.SleepStart));
+                    DateTimeOffset eOffset = new(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(sleep.SleepEnd));
                     sleep.SleepDuration = eOffset - sOffset;
                     sleepList.Add(sleep);
                 }
@@ -89,13 +89,13 @@ namespace KinaUnaProgenyApi.Models
 
             sleepList = sleepList.OrderBy(s => s.SleepStart).ToList();
 
-            List<Sleep> chartList = new List<Sleep>();
+            List<Sleep> chartList = new();
             foreach (Sleep chartItem in sleepList)
             {
                 double durationStartDate = 0.0;
                 if (chartItem.SleepStart.Date == chartItem.SleepEnd.Date)
                 {
-                    durationStartDate = durationStartDate + chartItem.SleepDuration.TotalMinutes;
+                    durationStartDate += chartItem.SleepDuration.TotalMinutes;
                     Sleep slpItem = chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date);
                     if (slpItem != null)
                     {
@@ -103,19 +103,21 @@ namespace KinaUnaProgenyApi.Models
                     }
                     else
                     {
-                        Sleep newSleep = new Sleep();
-                        newSleep.SleepStart = chartItem.SleepStart;
-                        newSleep.SleepDuration = TimeSpan.FromMinutes(durationStartDate);
+                        Sleep newSleep = new()
+                        {
+                            SleepStart = chartItem.SleepStart,
+                            SleepDuration = TimeSpan.FromMinutes(durationStartDate)
+                        };
                         chartList.Add(newSleep);
                     }
                 }
                 else
                 {
-                    DateTimeOffset sOffset = new DateTimeOffset(chartItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(chartItem.SleepStart));
-                    DateTimeOffset s2Offset = new DateTimeOffset(chartItem.SleepStart.Date + TimeSpan.FromDays(1), TimeZoneInfo.FindSystemTimeZoneById(userTimeZone)
+                    DateTimeOffset sOffset = new(chartItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(chartItem.SleepStart));
+                    DateTimeOffset s2Offset = new(chartItem.SleepStart.Date + TimeSpan.FromDays(1), TimeZoneInfo.FindSystemTimeZoneById(userTimeZone)
                             .GetUtcOffset(chartItem.SleepStart.Date + TimeSpan.FromDays(1)));
-                    DateTimeOffset eOffset = new DateTimeOffset(chartItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(chartItem.SleepEnd));
-                    DateTimeOffset e2Offset = new DateTimeOffset(chartItem.SleepEnd.Date, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone)
+                    DateTimeOffset eOffset = new(chartItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(chartItem.SleepEnd));
+                    DateTimeOffset e2Offset = new(chartItem.SleepEnd.Date, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone)
                             .GetUtcOffset(chartItem.SleepEnd.Date));
 
                     TimeSpan sDateDuration = s2Offset - sOffset;
@@ -130,9 +132,11 @@ namespace KinaUnaProgenyApi.Models
                     }
                     else
                     {
-                        Sleep chartItemToAdd = new Sleep();
-                        chartItemToAdd.SleepStart = chartItem.SleepStart;
-                        chartItemToAdd.SleepDuration = TimeSpan.FromMinutes(durationStartDate);
+                        Sleep chartItemToAdd = new()
+                        {
+                            SleepStart = chartItem.SleepStart,
+                            SleepDuration = TimeSpan.FromMinutes(durationStartDate)
+                        };
                         chartList.Add(chartItemToAdd);
                     }
 
@@ -143,9 +147,11 @@ namespace KinaUnaProgenyApi.Models
                     }
                     else
                     {
-                        Sleep chartItemToAdd = new Sleep();
-                        chartItemToAdd.SleepStart = chartItem.SleepEnd;
-                        chartItemToAdd.SleepDuration = TimeSpan.FromMinutes(durationEndDate);
+                        Sleep chartItemToAdd = new()
+                        {
+                            SleepStart = chartItem.SleepEnd,
+                            SleepDuration = TimeSpan.FromMinutes(durationEndDate)
+                        };
                         chartList.Add(chartItemToAdd);
                     }
                 }

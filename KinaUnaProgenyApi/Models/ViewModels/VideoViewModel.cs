@@ -51,7 +51,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
 
         public VideoViewModel()
         {
-            AccessLevelList aclList = new AccessLevelList();
+            AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
             AccessLevelListDe = aclList.AccessLevelListDe;

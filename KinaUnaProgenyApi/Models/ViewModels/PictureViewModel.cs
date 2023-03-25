@@ -43,7 +43,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
         public int NextPicture { get; set; }
         public PictureViewModel()
         {
-            AccessLevelList aclList = new AccessLevelList();
+            AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
             AccessLevelListDe = aclList.AccessLevelListDe;
@@ -84,7 +84,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
 
             }
 
-            tagItems = tagItems + "]";
+            tagItems += "]";
 
             TagsList = tagItems;
         }
