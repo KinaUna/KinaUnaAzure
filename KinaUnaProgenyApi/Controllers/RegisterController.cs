@@ -19,7 +19,7 @@ namespace KinaUnaProgenyApi.Controllers
     public class RegisterController : ControllerBase
     {
         private readonly NotificationHubClient _hub;
-        
+
         public RegisterController(IAzureNotifications azureNotifications)
         {
             _hub = azureNotifications.Hub;
@@ -85,14 +85,14 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             registration.RegistrationId = id;
-             
+
             string username = User.GetEmail();
             //var userId = User.GetUserId();
             if (string.IsNullOrEmpty(username))
             {
                 return Unauthorized();
             }
-            
+
             registration.Tags = new HashSet<string>(deviceUpdate.Tags);
             // registration.Tags.Add("email:" + username.ToUpper());
             // registration.Tags.Add("userid:" + userId);

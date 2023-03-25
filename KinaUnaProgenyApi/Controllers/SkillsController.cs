@@ -83,7 +83,7 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (progeny != null)
             {
-            
+
                 if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
@@ -95,19 +95,19 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             value.Author = User.GetUserId();
-            
+
             Skill skillItem = await _skillService.AddSkill(value);
-            
+
 
             TimeLineItem timeLineItem = new();
             timeLineItem.CopySkillPropertiesForAdd(skillItem);
             _ = await _timelineService.AddTimeLineItem(timeLineItem);
-            
+
             UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
 
             string notificationTitle = "Skill added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new skill for " + progeny.NickName;
-            
+
             await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
             await _webNotificationsService.SendSkillNotification(skillItem, userInfo, notificationTitle);
 
@@ -137,7 +137,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-            
+
             skillItem = await _skillService.UpdateSkill(value);
 
             UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
@@ -150,7 +150,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                 string notificationTitle = "Skill edited for " + progeny.NickName;
                 string notificationMessage = userInfo.FullName() + " edited a skill for " + progeny.NickName;
-                
+
                 await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                 await _webNotificationsService.SendSkillNotification(skillItem, userInfo, notificationTitle);
             }
@@ -190,12 +190,12 @@ namespace KinaUnaProgenyApi.Controllers
                 if (timeLineItem != null)
                 {
                     UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                    
+
                     string notificationTitle = "Skill deleted for " + progeny.NickName;
                     string notificationMessage = userInfo.FirstName + " " + userInfo.MiddleName + " " + userInfo.LastName + " deleted a skill for " + progeny.NickName + ". Measurement date: " + skillItem.Name;
-                    
+
                     skillItem.AccessLevel = timeLineItem.AccessLevel = 0;
-                    
+
                     await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                     await _webNotificationsService.SendSkillNotification(skillItem, userInfo, notificationTitle);
                 }
@@ -230,8 +230,9 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<IActionResult> GetSkillsListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
-        { 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        public async Task<IActionResult> GetSkillsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
 

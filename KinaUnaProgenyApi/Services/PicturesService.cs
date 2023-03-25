@@ -16,7 +16,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class PicturesService: IPicturesService
+    public class PicturesService : IPicturesService
     {
         private readonly MediaDbContext _mediaContext;
         private readonly IDistributedCache _cache;
@@ -32,7 +32,7 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0)); // Expire after 24 hours.
         }
-        
+
         public async Task<Picture> GetPicture(int id)
         {
             Picture picture = await GetPictureFromCache(id);
@@ -40,13 +40,13 @@ namespace KinaUnaProgenyApi.Services
             {
                 picture = await SetPictureInCache(id);
             }
-            
+
             if (picture != null && picture.PictureRotation == null)
             {
                 picture.PictureRotation = 0;
                 await UpdatePicture(picture);
             }
-            
+
             return picture;
         }
 
@@ -627,7 +627,7 @@ namespace KinaUnaProgenyApi.Services
                 _mediaContext.PicturesDb.Remove(pictureToDelete);
                 _ = await _mediaContext.SaveChangesAsync();
             }
-            
+
 
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
             return pictureToDelete;
@@ -666,7 +666,7 @@ namespace KinaUnaProgenyApi.Services
         {
             List<Picture> picturesList = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId).ToListAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId, JsonConvert.SerializeObject(picturesList), _cacheOptionsSliding);
-            
+
             return picturesList;
         }
 

@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class FriendService: IFriendService
+    public class FriendService : IFriendService
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
@@ -25,7 +25,7 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
-        
+
         public async Task<Friend> GetFriend(int id)
         {
             Friend friend = await GetFriendFromCache(id);
@@ -73,7 +73,7 @@ namespace KinaUnaProgenyApi.Services
 
             return friendToAdd;
         }
-        
+
 
         public async Task<Friend> UpdateFriend(Friend friend)
         {
@@ -98,7 +98,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _context.SaveChangesAsync();
                 _ = await SetFriendInCache(friend.FriendId);
             }
-            
+
 
             return friend;
         }
@@ -112,7 +112,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _context.SaveChangesAsync();
                 await RemoveFriendFromCache(friend.FriendId, friend.ProgenyId);
             }
-            
+
             return friend;
         }
         public async Task RemoveFriendFromCache(int id, int progenyId)

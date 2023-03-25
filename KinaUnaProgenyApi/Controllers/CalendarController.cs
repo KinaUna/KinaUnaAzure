@@ -65,12 +65,12 @@ namespace KinaUnaProgenyApi.Controllers
             bool startParsed = DateTime.TryParseExact(start, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime startDate);
             bool endParsed = DateTime.TryParseExact(end, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime endDate);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            
+
             UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId && startParsed && endParsed)
             {
                 List<CalendarItem> calendarList = await _calendarService.GetCalendarList(id);
-                calendarList = calendarList.Where(c => userAccess != null && c.AccessLevel >= userAccess.AccessLevel && c.EndTime > startDate && c.StartTime < endDate ).ToList();
+                calendarList = calendarList.Where(c => userAccess != null && c.AccessLevel >= userAccess.AccessLevel && c.EndTime > startDate && c.StartTime < endDate).ToList();
                 if (calendarList.Any())
                 {
                     return Ok(calendarList);
@@ -85,7 +85,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetCalendarItem(int id)
         {
             CalendarItem result = await _calendarService.GetCalendarItem(id);
-            if(result != null)
+            if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
@@ -93,7 +93,7 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     return Ok(result);
                 }
-            }            
+            }
 
             return NotFound();
         }
@@ -106,7 +106,7 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (progeny != null)
             {
-            
+
                 if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
@@ -122,13 +122,13 @@ namespace KinaUnaProgenyApi.Controllers
             CalendarItem calendarItem = await _calendarService.AddCalendarItem(value);
 
             UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            
+
             TimeLineItem timeLineItem = new();
-            
+
             timeLineItem.CopyCalendarItemPropertiesForAdd(calendarItem, userInfo.UserId);
-            
+
             _ = await _timelineService.AddTimeLineItem(timeLineItem);
-            
+
             string notificationTitle = "Calendar item added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new calendar item for " + progeny.NickName;
             await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
@@ -148,7 +148,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-            
+
             Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (progeny != null)
@@ -162,20 +162,20 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-            
+
             calendarItem = await _calendarService.UpdateCalendarItem(value);
-            
+
             TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(calendarItem.EventId.ToString(), (int)KinaUnaTypes.TimeLineType.Calendar);
 
             if (timeLineItem != null && timeLineItem.CopyCalendarItemPropertiesForUpdate(calendarItem))
             {
                 _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
-                
+
                 UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                
+
                 string notificationTitle = "Calendar edited for " + progeny.NickName;
                 string notificationMessage = userInfo.FullName() + " edited a calendar item for " + progeny.NickName;
-                
+
                 await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                 await _webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
             }
@@ -191,7 +191,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (calendarItem != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                
+
                 Progeny progeny = await _progenyService.GetProgeny(calendarItem.ProgenyId);
                 if (progeny != null)
                 {
@@ -212,7 +212,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 await _calendarService.DeleteCalendarItem(calendarItem);
-                
+
                 if (timeLineItem != null)
                 {
                     UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
@@ -221,7 +221,7 @@ namespace KinaUnaProgenyApi.Controllers
                     string notificationMessage = userInfo.FullName() + " deleted a calendar item for " + progeny.NickName + ". Event: " + calendarItem.Title;
 
                     calendarItem.AccessLevel = timeLineItem.AccessLevel = 0;
-                    
+
                     await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                     await _webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
                 }

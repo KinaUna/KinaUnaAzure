@@ -32,7 +32,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Post([FromBody] Address value)
         {
             Address addressItem = await _locationService.AddAddressItem(value);
-            
+
             return Ok(addressItem);
         }
 
@@ -45,9 +45,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-            
+
             addressItem = await _locationService.UpdateAddressItem(value);
-            
+
             return Ok(addressItem);
         }
 
@@ -58,8 +58,8 @@ namespace KinaUnaProgenyApi.Controllers
             Address addressItem = await _locationService.GetAddressItem(id);
             if (addressItem != null)
             {
-                await _locationService.RemoveAddressItem(id); 
-                
+                await _locationService.RemoveAddressItem(id);
+
                 return NoContent();
             }
             else

@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class ProgenyService: IProgenyService
+    public class ProgenyService : IProgenyService
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
@@ -26,7 +26,7 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
-        
+
         public async Task<Progeny> GetProgeny(int id)
         {
             Progeny progeny = await GetProgenyFromCache(id);
@@ -34,14 +34,14 @@ namespace KinaUnaProgenyApi.Services
             {
                 progeny = await SetProgenyInCache(id);
             }
-            
+
             return progeny;
         }
         public async Task<Progeny> AddProgeny(Progeny progeny)
         {
             await _context.ProgenyDb.AddAsync(progeny);
             await _context.SaveChangesAsync();
-            
+
             await SetProgenyInCache(progeny.Id);
 
             return progeny;
@@ -64,7 +64,7 @@ namespace KinaUnaProgenyApi.Services
 
                 await SetProgenyInCache(progeny.Id);
             }
-            
+
             return progenyToUpdate;
         }
 
@@ -137,7 +137,7 @@ namespace KinaUnaProgenyApi.Services
             if (image.Height > maxWidthAndHeight)
             {
                 int newHeight = maxWidthAndHeight;
-                int newWidth= (maxWidthAndHeight / image.Width) * image.Height;
+                int newWidth = (maxWidthAndHeight / image.Width) * image.Height;
 
                 image.Resize(newWidth, newHeight);
             }
@@ -149,9 +149,9 @@ namespace KinaUnaProgenyApi.Services
             memStream.Position = 0;
 
             await _imageStore.DeleteImage(imageId, BlobContainers.Progeny);
-            
+
             imageId = await _imageStore.SaveImage(memStream, BlobContainers.Progeny);
-            
+
             return imageId;
         }
     }

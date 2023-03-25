@@ -94,13 +94,13 @@ namespace KinaUnaProgenyApi.Controllers
 
             VocabularyItem vocabularyItem = await _vocabularyService.AddVocabularyItem(value);
 
-            
+
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyVocabularyItemPropertiesForAdd(vocabularyItem);
             _ = await _timelineService.AddTimeLineItem(timeLineItem);
 
             UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            
+
             string notificationTitle = "Word added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new word for " + progeny.NickName;
 
@@ -133,25 +133,25 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-            
+
             vocabularyItem = await _vocabularyService.UpdateVocabularyItem(value);
-            
+
             TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(vocabularyItem.WordId.ToString(), (int)KinaUnaTypes.TimeLineType.Vocabulary);
             if (timeLineItem != null)
             {
                 timeLineItem.CopyVocabularyItemPropertiesForUpdate(vocabularyItem);
                 _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
-                
-                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail); 
-                
-                string notificationTitle = "Word edited for " + progeny.NickName; 
+
+                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+
+                string notificationTitle = "Word edited for " + progeny.NickName;
                 string notificationMessage = userInfo.FullName() + " edited a word for " + progeny.NickName;
-            
+
                 await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                 await _webNotificationsService.SendVocabularyNotification(vocabularyItem, userInfo, notificationTitle);
             }
 
-            
+
             return Ok(vocabularyItem);
         }
 
@@ -183,16 +183,16 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 _ = await _vocabularyService.DeleteVocabularyItem(vocabularyItem);
-                
+
                 if (timeLineItem != null)
                 {
                     UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                    
+
                     string notificationTitle = "Word deleted for " + progeny.NickName;
                     string notificationMessage = userInfo.FullName() + " deleted a word for " + progeny.NickName + ". Word: " + vocabularyItem.Word;
 
                     vocabularyItem.AccessLevel = timeLineItem.AccessLevel = 0;
-                    
+
                     await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                     await _webNotificationsService.SendVocabularyNotification(vocabularyItem, userInfo, notificationTitle);
                 }
@@ -225,7 +225,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<IActionResult> GetVocabularyListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        public async Task<IActionResult> GetVocabularyListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -235,9 +235,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
-            
+
             List<VocabularyItem> allItems = await _vocabularyService.GetVocabularyList(progenyId);
-            
+
             VocabularyListPage model = new();
             model.ProcessVocabularyList(allItems, sortBy, pageIndex, pageSize);
 

@@ -24,7 +24,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task SendCalendarNotification(CalendarItem eventItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(eventItem.ProgenyId);
-            
+
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= eventItem.AccessLevel)
@@ -68,7 +68,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task SendContactNotification(Contact contactItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(contactItem.ProgenyId);
-            
+
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= contactItem.AccessLevel)
@@ -98,7 +98,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task SendFriendNotification(Friend friendItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(friendItem.ProgenyId);
-            
+
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= friendItem.AccessLevel)
@@ -128,7 +128,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task SendLocationNotification(Location locationItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotif = await _userAccessService.GetProgenyUserAccessList(locationItem.ProgenyId);
-            
+
             foreach (UserAccess userAccess in usersToNotif)
             {
                 if (userAccess.AccessLevel <= locationItem.AccessLevel)
@@ -165,7 +165,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task SendMeasurementNotification(Measurement measurementItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotif = await _userAccessService.GetProgenyUserAccessList(measurementItem.ProgenyId);
-            
+
             foreach (UserAccess userAccess in usersToNotif)
             {
                 if (userAccess.AccessLevel <= measurementItem.AccessLevel)
@@ -195,7 +195,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task SendNoteNotification(Note noteItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotif = await _userAccessService.GetProgenyUserAccessList(noteItem.ProgenyId);
-            
+
             foreach (UserAccess userAccess in usersToNotif)
             {
                 if (userAccess.AccessLevel <= noteItem.AccessLevel)
@@ -225,7 +225,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task SendPictureNotification(Picture pictureItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(pictureItem.ProgenyId);
-            
+
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= pictureItem.AccessLevel)
@@ -344,7 +344,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task SendCommentNotification(Comment commentItem, UserInfo currentUser, string title, string message)
         {
             List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(commentItem.Progeny.Id);
-            
+
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= commentItem.Progeny.Id)
@@ -458,10 +458,10 @@ namespace KinaUnaProgenyApi.Services
                         if (vocabularyItem.Date.HasValue)
                         {
                             DateTime startTime = TimeZoneInfo.ConvertTimeFromUtc(vocabularyItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
-                        
+
                             vocabTimeString = "\r\nDate: " + startTime.ToString("dd-MMM-yyyy");
                         }
-                        
+
                         WebNotification notification = new WebNotification();
                         notification.To = uaUserInfo.UserId;
                         notification.From = userInfo.FullName();

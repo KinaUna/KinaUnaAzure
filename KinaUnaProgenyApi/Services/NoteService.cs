@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class NoteService: INoteService
+    public class NoteService : INoteService
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
@@ -68,16 +68,16 @@ namespace KinaUnaProgenyApi.Services
             Note noteToAdd = new Note();
             noteToAdd.CopyPropertiesForAdd(note);
             noteToAdd.CreatedDate = DateTime.UtcNow;
-            
+
             _ = _context.NotesDb.Add(noteToAdd);
             _ = await _context.SaveChangesAsync();
-            
+
             _ = await SetNoteInCache(noteToAdd.NoteId);
-            
+
             return noteToAdd;
         }
 
-        
+
 
         public async Task<Note> UpdateNote(Note note)
         {
@@ -88,10 +88,10 @@ namespace KinaUnaProgenyApi.Services
 
                 _ = _context.NotesDb.Update(noteToUpdate);
                 _ = await _context.SaveChangesAsync();
-                
+
                 _ = await SetNoteInCache(noteToUpdate.NoteId);
             }
-            
+
             return noteToUpdate;
         }
 
@@ -103,7 +103,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = _context.NotesDb.Remove(noteToDelete);
                 _ = await _context.SaveChangesAsync();
             }
-            
+
             await RemoveNoteFromCache(note.NoteId, note.ProgenyId);
 
             return note;

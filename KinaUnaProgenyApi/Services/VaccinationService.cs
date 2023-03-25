@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class VaccinationService: IVaccinationService
+    public class VaccinationService : IVaccinationService
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
@@ -44,7 +44,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.VaccinationsDb.Add(vaccinationToAdd);
             _ = await _context.SaveChangesAsync();
-            
+
             _ = await SetVaccinationInCache(vaccinationToAdd.VaccinationId);
 
             return vaccinationToAdd;
@@ -86,7 +86,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _context.SaveChangesAsync();
                 _ = await SetVaccinationInCache(vaccination.VaccinationId);
             }
-            
+
             return vaccinationToUpdate;
         }
 

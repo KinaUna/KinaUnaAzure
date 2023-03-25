@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class MeasurementService: IMeasurementService
+    public class MeasurementService : IMeasurementService
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
@@ -73,7 +73,7 @@ namespace KinaUnaProgenyApi.Services
 
             return measurementToAdd;
         }
-        
+
 
         public async Task<Measurement> UpdateMeasurement(Measurement measurement)
         {
@@ -87,7 +87,7 @@ namespace KinaUnaProgenyApi.Services
 
                 _ = await SetMeasurementInCache(measurement.MeasurementId);
             }
-            
+
             return measurementToUpdate;
         }
 
@@ -101,7 +101,7 @@ namespace KinaUnaProgenyApi.Services
 
                 await RemoveMeasurementFromCache(measurement.MeasurementId, measurement.ProgenyId);
             }
-            
+
 
             return measurement;
         }

@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class VocabularyService: IVocabularyService
+    public class VocabularyService : IVocabularyService
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
@@ -86,7 +86,7 @@ namespace KinaUnaProgenyApi.Services
 
                 _ = await SetVocabularyItemInCache(vocabularyItemToUpdate.WordId);
             }
-            
+
 
             return vocabularyItemToUpdate;
         }
@@ -100,7 +100,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _context.SaveChangesAsync();
                 await RemoveVocabularyItemFromCache(vocabularyItem.WordId, vocabularyItem.ProgenyId);
             }
-            
+
             return vocabularyItem;
         }
 

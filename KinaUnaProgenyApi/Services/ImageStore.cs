@@ -16,7 +16,7 @@ namespace KinaUnaProgenyApi.Services
         private readonly BlobServiceClient _blobServiceClient;
         private readonly string _storageKey;
         private readonly string _baseUri = Constants.CloudBlobBase;
-        
+
         public ImageStore(IConfiguration configuration)
         {
             _blobServiceClient = new BlobServiceClient(configuration["BlobStorageConnectionString"]);
@@ -57,7 +57,7 @@ namespace KinaUnaProgenyApi.Services
 
             sas.SetPermissions(BlobAccountSasPermissions.Read);
             UriBuilder sasUri = new UriBuilder($"{_baseUri}{containerName}/{imageId}");
-            
+
             sasUri.Query = sas.ToSasQueryParameters(credential).ToString();
 
             return sasUri.Uri.AbsoluteUri;
@@ -70,7 +70,7 @@ namespace KinaUnaProgenyApi.Services
             BlobClient blob = container.GetBlobClient(imageId);
             MemoryStream memoryStream = new MemoryStream();
             await blob.DownloadToAsync(memoryStream).ConfigureAwait(false);
-            
+
             return memoryStream;
         }
 
@@ -82,10 +82,10 @@ namespace KinaUnaProgenyApi.Services
                 {
                     imageId = Constants.ProfilePictureUrl;
                 }
-                
+
                 return imageId;
             }
-                
+
             BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
 
             BlobClient blob = container.GetBlobClient(imageId);
@@ -127,7 +127,7 @@ namespace KinaUnaProgenyApi.Services
                 foreach (string blobString in blobStrings)
                 {
                     int firstSlash = blobString.IndexOf("/", 15, StringComparison.Ordinal);
-                    int secondSlash = blobString.IndexOf("/", firstSlash +1, StringComparison.Ordinal);
+                    int secondSlash = blobString.IndexOf("/", firstSlash + 1, StringComparison.Ordinal);
                     int firstQuestionmark = blobString.IndexOf("?", StringComparison.Ordinal);
                     string container = blobString.Substring(firstSlash, secondSlash - firstSlash).Replace("/", "");
                     string blobId = blobString.Substring(secondSlash, firstQuestionmark - secondSlash).Replace("/", "").Replace("?", "");

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class TextTranslationService: ITextTranslationService
+    public class TextTranslationService : ITextTranslationService
     {
         private readonly ProgenyDbContext _context;
 
@@ -40,7 +40,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<TextTranslation>> GetPageTranslations(int languageId, string pageName)
         {
             List<TextTranslation> translations = await _context.TextTranslations.AsNoTracking().Where(t => t.LanguageId == languageId && t.Page.ToUpper() == pageName.ToUpper()).ToListAsync();
-            
+
             return translations;
         }
 
@@ -61,7 +61,7 @@ namespace KinaUnaProgenyApi.Services
             _ = await _context.SaveChangesAsync();
 
             await AddMissingLanguagesForTranslation(translation);
-            
+
             return translation;
         }
 
@@ -116,7 +116,7 @@ namespace KinaUnaProgenyApi.Services
 
                 _ = await _context.SaveChangesAsync();
             }
-            
+
             return translation;
         }
 

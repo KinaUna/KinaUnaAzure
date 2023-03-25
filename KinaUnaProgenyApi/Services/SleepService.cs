@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class SleepService: ISleepService
+    public class SleepService : ISleepService
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
@@ -44,7 +44,7 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.SleepDb.Add(sleepToAdd);
             _ = await _context.SaveChangesAsync();
-            
+
             _ = await SetSleepInCache(sleepToAdd.SleepId);
 
             return sleepToAdd;
@@ -71,7 +71,7 @@ namespace KinaUnaProgenyApi.Services
 
                 _ = await SetSleepListInCache(sleep.ProgenyId);
             }
-            
+
             return sleep;
         }
 
@@ -87,7 +87,7 @@ namespace KinaUnaProgenyApi.Services
 
                 _ = await SetSleepInCache(sleepToUpdate.SleepId);
             }
-            
+
             return sleepToUpdate;
         }
 
@@ -98,10 +98,10 @@ namespace KinaUnaProgenyApi.Services
             {
                 _ = _context.SleepDb.Remove(sleepToDelete);
                 _ = await _context.SaveChangesAsync();
-                
+
                 await RemoveSleep(sleepToDelete.SleepId, sleepToDelete.ProgenyId);
             }
-            
+
             return sleep;
         }
 
@@ -139,7 +139,7 @@ namespace KinaUnaProgenyApi.Services
         {
             List<Sleep> sleepList = await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId, JsonConvert.SerializeObject(sleepList), _cacheOptionsSliding);
-            
+
             return sleepList;
         }
     }

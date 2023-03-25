@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class LanguageService: ILanguageService
+    public class LanguageService : ILanguageService
     {
         private readonly ProgenyDbContext _context;
 
@@ -53,7 +53,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = _context.Languages.Update(languageToUpdate);
                 _ = await _context.SaveChangesAsync();
             }
-            
+
             return language;
         }
 

@@ -29,7 +29,7 @@ namespace KinaUnaProgenyApi
 
             services.AddDbContext<ProgenyDbContext>(options =>
                 options.UseSqlServer(Configuration["ProgenyDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
-            
+
             services.AddDbContext<MediaDbContext>(options =>
                 options.UseSqlServer(Configuration["MediaDefaultConnection"], s => s.MigrationsAssembly("KinaUna.IDP")));
 
@@ -79,7 +79,7 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IWebNotificationsService, WebNotificationsService>();
 
             services.AddControllers().AddNewtonsoftJson();
-            
+
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(options =>
                 {

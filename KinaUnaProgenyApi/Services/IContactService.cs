@@ -7,7 +7,7 @@ namespace KinaUnaProgenyApi.Services
     public interface IContactService
     {
         Task<Contact> GetContact(int id);
-        Task<Contact> AddContact (Contact contact);
+        Task<Contact> AddContact(Contact contact);
         Task<Contact> SetContactInCache(int id);
         Task<Contact> UpdateContact(Contact contact);
         Task<Contact> DeleteContact(Contact contact);

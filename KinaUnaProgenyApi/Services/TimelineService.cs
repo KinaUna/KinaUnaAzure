@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class TimelineService: ITimelineService
+    public class TimelineService : ITimelineService
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
@@ -77,7 +77,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await SetTimeLineItemByItemIdInCache(timeLineItem.ItemId, timeLineItem.ItemType);
                 _ = await SetTimeLineListInCache(timeLineItem.ProgenyId);
             }
-            
+
             return timeLineItem;
         }
 
@@ -90,10 +90,10 @@ namespace KinaUnaProgenyApi.Services
 
                 _ = _context.TimeLineDb.Update(timeLineItemToUpdate);
                 _ = await _context.SaveChangesAsync();
-                
+
                 _ = await SetTimeLineItemInCache(item.TimeLineId);
             }
-            
+
             return item;
         }
 
@@ -105,7 +105,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = _context.TimeLineDb.Remove(timeLineItemToDelete);
                 _ = await _context.SaveChangesAsync();
             }
-            
+
             await RemoveTimeLineItemFromCache(item.TimeLineId, item.ItemType, item.ProgenyId);
 
             return item;
@@ -156,7 +156,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 timeLineList = await SetTimeLineListInCache(progenyId);
             }
-            
+
             return timeLineList;
         }
 

@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class LocationService: ILocationService
+    public class LocationService : ILocationService
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
@@ -69,25 +69,25 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.LocationsDb.Add(locationToAdd);
             _ = await _context.SaveChangesAsync();
-            
+
             _ = await SetLocationInCache(locationToAdd.LocationId);
-            
+
             return locationToAdd;
         }
-        
+
         public async Task<Location> UpdateLocation(Location location)
         {
             Location locationToUpdate = await _context.LocationsDb.SingleOrDefaultAsync(l => l.LocationId == location.LocationId);
             if (locationToUpdate != null)
             {
                 locationToUpdate.CopyPropertiesForUpdate(location);
-                
+
                 _ = _context.LocationsDb.Update(locationToUpdate);
                 _ = await _context.SaveChangesAsync();
-                
+
                 _ = await SetLocationInCache(locationToUpdate.LocationId);
             }
-            
+
             return locationToUpdate;
         }
 
@@ -170,7 +170,7 @@ namespace KinaUnaProgenyApi.Services
         {
             Address addressItem = await _context.AddressDb.AsNoTracking().SingleOrDefaultAsync(a => a.AddressId == id);
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "address" + id, JsonConvert.SerializeObject(addressItem), _cacheOptionsSliding);
-            
+
             return addressItem;
         }
 
@@ -192,13 +192,13 @@ namespace KinaUnaProgenyApi.Services
             if (addressToUpdate != null)
             {
                 addressToUpdate.CopyPropertiesForUpdate(addressItem);
-                
+
                 _ = _context.AddressDb.Update(addressToUpdate);
                 _ = await _context.SaveChangesAsync();
 
                 _ = await SetAddressItemInCache(addressItem.AddressId);
             }
-            
+
             return addressToUpdate;
         }
 

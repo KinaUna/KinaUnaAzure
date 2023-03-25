@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class KinaUnaTextService: IKinaUnaTextService
+    public class KinaUnaTextService : IKinaUnaTextService
     {
         private readonly ProgenyDbContext _context;
 
@@ -22,10 +22,10 @@ namespace KinaUnaProgenyApi.Services
             title = title.Trim();
             page = page.Trim();
             KinaUnaText textItem = await _context.KinaUnaTexts.AsNoTracking().FirstOrDefaultAsync(t => t.Title.ToUpper() == title.Trim().ToUpper() && t.Page.ToUpper() == page.Trim().ToUpper() && t.LanguageId == languageId);
-            
+
             return textItem;
         }
-        
+
         public async Task<KinaUnaText> GetTextById(int id)
         {
             KinaUnaText kinaUnaText = await _context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
@@ -136,7 +136,7 @@ namespace KinaUnaProgenyApi.Services
                 text.Updated = text.Created;
                 _context.KinaUnaTexts.Add(text);
                 _ = await _context.SaveChangesAsync();
-                
+
                 return text;
 
             }
@@ -223,7 +223,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = _context.KinaUnaTexts.Remove(textItem);
                 _ = await _context.SaveChangesAsync();
             }
-            
+
             return textItem;
         }
     }

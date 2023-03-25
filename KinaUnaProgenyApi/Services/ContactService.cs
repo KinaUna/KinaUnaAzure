@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class ContactService: IContactService
+    public class ContactService : IContactService
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
@@ -33,7 +33,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 contact = await SetContactInCache(id);
             }
-            
+
             return contact;
         }
 
@@ -70,7 +70,7 @@ namespace KinaUnaProgenyApi.Services
 
                 _ = await SetContactsListInCache(contact.ProgenyId);
             }
-            
+
             return contact;
         }
 
@@ -101,13 +101,13 @@ namespace KinaUnaProgenyApi.Services
                 contactToUpdate.Progeny = contact.Progeny;
                 contactToUpdate.Tags = contact.Tags;
                 contactToUpdate.Website = contact.Website;
-                
+
                 _context.ContactsDb.Update(contactToUpdate);
                 _ = await _context.SaveChangesAsync();
 
                 _ = await SetContactInCache(contactToUpdate.ContactId);
             }
-            
+
 
             return contact;
         }
@@ -121,7 +121,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _context.SaveChangesAsync();
                 await RemoveContactFromCache(contact.ContactId, contact.ProgenyId);
             }
-            
+
             return contact;
         }
         public async Task RemoveContactFromCache(int id, int progenyId)
@@ -138,7 +138,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 contactsList = await SetContactsListInCache(progenyId);
             }
-            
+
             return contactsList;
         }
 

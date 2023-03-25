@@ -86,7 +86,7 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (progeny != null)
             {
-            
+
                 if (!progeny.IsInAdminList(userEmail))
                 {
                     return Unauthorized();
@@ -103,7 +103,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 value.PictureLink = Constants.ProfilePictureUrl;
             }
-            
+
             if (value.Address != null)
             {
                 if (value.Address.HasValues())
@@ -114,7 +114,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             Contact contactItem = await _contactService.AddContact(value);
-            
+
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyContactPropertiesForAdd(contactItem);
 
@@ -166,7 +166,7 @@ namespace KinaUnaProgenyApi.Controllers
                 if (contactItem.Address != null)
                 {
                     existingAddress.CopyPropertiesForUpdate(contactItem.Address);
-                    
+
                     contactItem.Address = await _locationService.UpdateAddressItem(existingAddress);
                 }
                 else
@@ -193,16 +193,16 @@ namespace KinaUnaProgenyApi.Controllers
 
             TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(contactItem.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
             if (timeLineItem != null && timeLineItem.CopyContactItemPropertiesForUpdate(contactItem))
-            { 
+            {
                 _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
                 UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
                 string notificationTitle = "Contact edited for " + progeny.NickName;
                 string notificationMessage = userInfo.FullName() + " edited a contact for " + progeny.NickName;
-            
+
                 await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                 await _webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
             }
-            
+
             return Ok(contactItem);
         }
 
@@ -248,10 +248,10 @@ namespace KinaUnaProgenyApi.Controllers
 
                 contactItem.Author = User.GetUserId();
                 UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                
+
                 string notificationTitle = "Contact deleted for " + progeny.NickName;
                 string notificationMessage = userInfo.FullName() + " deleted a contact for " + progeny.NickName + ". Contact: " + contactItem.DisplayName;
-                
+
                 if (timeLineItem != null)
                 {
                     contactItem.AccessLevel = timeLineItem.AccessLevel = 0;
@@ -287,7 +287,7 @@ namespace KinaUnaProgenyApi.Controllers
                     return Ok(result);
                 }
             }
-            
+
             return NotFound();
         }
 
@@ -295,12 +295,12 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
         {
-            List<Contact> contactsList = await _contactService.GetContactsList(id); 
+            List<Contact> contactsList = await _contactService.GetContactsList(id);
             contactsList = contactsList.Where(c => c.AccessLevel >= accessLevel).ToList();
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail); 
-            
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+
             if ((userAccess != null || id == Constants.DefaultChildId) && contactsList.Any())
             {
                 foreach (Contact contact in contactsList)
@@ -339,7 +339,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 contact = await _contactService.UpdateContact(contact);
-                
+
                 return Ok(contact);
             }
 

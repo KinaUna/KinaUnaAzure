@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class CalendarService: ICalendarService
+    public class CalendarService : ICalendarService
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
@@ -41,7 +41,7 @@ namespace KinaUnaProgenyApi.Services
         {
             CalendarItem calendarItemToAdd = new CalendarItem();
             calendarItemToAdd.CopyPropertiesForAdd(item);
-            
+
             _ = _context.CalendarDb.Add(calendarItemToAdd);
             _ = await _context.SaveChangesAsync();
 
@@ -72,7 +72,7 @@ namespace KinaUnaProgenyApi.Services
                 List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == calendarItem.ProgenyId).ToListAsync();
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + calendarItem.ProgenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
             }
-            
+
             return calendarItem;
         }
 
@@ -95,7 +95,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _context.SaveChangesAsync();
                 _ = await SetCalendarItemInCache(calendarItemToUpdate.EventId);
             }
-            
+
             return calendarItemToUpdate;
         }
 
@@ -112,7 +112,7 @@ namespace KinaUnaProgenyApi.Services
 
             return item;
         }
-        
+
         public async Task<List<CalendarItem>> GetCalendarList(int progenyId)
         {
             List<CalendarItem> calendarList = await GetCalendarListFromCache(progenyId);
@@ -120,7 +120,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 calendarList = await SetCalendarListInCache(progenyId);
             }
-            
+
             return calendarList;
         }
 

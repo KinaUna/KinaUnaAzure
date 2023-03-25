@@ -97,16 +97,16 @@ namespace KinaUnaProgenyApi.Controllers
             value.Author = User.GetUserId();
 
             Vaccination vaccinationItem = await _vaccinationService.AddVaccination(value);
-            
+
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyVaccinationPropertiesForAdd(vaccinationItem);
 
             _ = await _timelineService.AddTimeLineItem(timeLineItem);
-            
+
             UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
             string notificationTitle = "Vaccination added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new vaccination for " + progeny.NickName;
-            
+
             await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
             await _webNotificationsService.SendVaccinationNotification(vaccinationItem, userInfo, notificationTitle);
 
@@ -136,9 +136,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-            
+
             vaccinationItem = await _vaccinationService.UpdateVaccination(value);
-            
+
             TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(vaccinationItem.VaccinationId.ToString(), (int)KinaUnaTypes.TimeLineType.Vaccination);
             if (timeLineItem != null)
             {
@@ -153,7 +153,7 @@ namespace KinaUnaProgenyApi.Controllers
                 await _webNotificationsService.SendVaccinationNotification(vaccinationItem, userInfo, notificationTitle);
             }
 
-            
+
 
             return Ok(vaccinationItem);
         }
@@ -187,7 +187,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                 _ = await _vaccinationService.DeleteVaccination(vaccinationItem);
 
-               
+
                 if (timeLineItem != null)
                 {
                     UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);

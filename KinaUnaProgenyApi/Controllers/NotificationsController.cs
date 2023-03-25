@@ -88,7 +88,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<MobileNotification> notifications = await _dataService.GetUsersMobileNotifications(userId, language);
-            
+
             if (notifications.Any())
             {
                 if (start > notifications.Count)
@@ -103,7 +103,7 @@ namespace KinaUnaProgenyApi.Controllers
                     {
                         notif.IconLink = Constants.ProfilePictureUrl;
                     }
-                    
+
                     notif.IconLink = _imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
                 }
             }
@@ -156,12 +156,12 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             MobileNotification mobileNotification = await _dataService.GetMobileNotification(id);
-            
+
             if (mobileNotification != null && mobileNotification.UserId == userId)
             {
                 mobileNotification.Read = value.Read;
                 mobileNotification = await _dataService.UpdateMobileNotification(mobileNotification);
-                
+
                 return Ok(mobileNotification);
             }
 
@@ -179,7 +179,7 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     _ = await _dataService.DeleteMobileNotification(mobileNotification);
                 }
-                
+
                 return NoContent();
             }
             else
@@ -213,7 +213,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetPushDeviceById(int id)
         {
             PushDevices device = await _dataService.GetPushDeviceById(id);
-            
+
             return Ok(device);
         }
 

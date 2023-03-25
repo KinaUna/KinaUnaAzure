@@ -72,7 +72,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
         public void SetTagsList(List<string> tagsList)
         {
             string tagItems = "[";
-            
+
             if (tagsList.Any())
             {
                 foreach (string tagstring in tagsList)
@@ -81,7 +81,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
                 }
 
                 tagItems = tagItems.Remove(tagItems.Length - 1);
-                
+
             }
 
             tagItems = tagItems + "]";

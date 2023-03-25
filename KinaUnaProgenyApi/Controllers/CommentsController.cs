@@ -41,9 +41,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Ok(result);
             }
-            
+
             return NotFound();
-            
+
         }
 
         // GET api/comments/getcommentsbythread/5
@@ -106,7 +106,7 @@ namespace KinaUnaProgenyApi.Controllers
             };
 
             UserInfo userinfo = await _userInfoService.GetUserInfoByUserId(model.Author);
-            
+
             await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
             await _webNotificationsService.SendCommentNotification(newComment, userinfo, notificationTitle, notificationMessage);
 

@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class UserInfoService: IUserInfoService
+    public class UserInfoService : IUserInfoService
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
@@ -32,7 +32,7 @@ namespace KinaUnaProgenyApi.Services
 
             return userinfo;
         }
-        
+
         public async Task<UserInfo> GetUserInfoByEmail(string userEmail)
         {
             userEmail = userEmail.Trim();
@@ -100,7 +100,7 @@ namespace KinaUnaProgenyApi.Services
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userinfo.UserId, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userinfo.Id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
             }
-            
+
             return userinfo;
         }
 
@@ -169,7 +169,7 @@ namespace KinaUnaProgenyApi.Services
                 _context.UserInfoDb.Remove(userInfoToDelete);
                 await _context.SaveChangesAsync();
             }
-            
+
             await RemoveUserInfoByEmail(userInfo.UserEmail, userInfo.UserId, userInfo.Id);
 
             return userInfo;
@@ -185,7 +185,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<UserInfo> GetUserInfoById(int id)
         {
             UserInfo userinfo = await GetUserInfoByIdFromCache(id);
-            if(userinfo == null || userinfo.Id == 0)
+            if (userinfo == null || userinfo.Id == 0)
             {
                 userinfo = await SetUserInfoById(id);
             }
@@ -196,7 +196,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<UserInfo> GetUserInfoByUserId(string id)
         {
             UserInfo userinfo = await GetUserInfoByUserIdFromCache(id);
-            if(userinfo == null || userinfo.Id == 0)
+            if (userinfo == null || userinfo.Id == 0)
             {
                 userinfo = await SetUserInfoByUserId(id);
             }

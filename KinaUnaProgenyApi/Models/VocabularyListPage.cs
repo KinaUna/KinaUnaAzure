@@ -53,7 +53,7 @@ namespace KinaUnaProgenyApi.Models
                 .Skip(pageSize * (pageIndex - 1))
                 .Take(pageSize)
                 .ToList();
-            
+
             VocabularyList = itemsOnPage;
             TotalPages = (int)Math.Ceiling(vocabularyList.Count / (double)pageSize);
             PageNumber = pageIndex;

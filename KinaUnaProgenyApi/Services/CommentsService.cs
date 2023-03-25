@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class CommentsService: ICommentsService
+    public class CommentsService : ICommentsService
     {
         private readonly MediaDbContext _mediaContext;
         private readonly IPicturesService _picturesService;

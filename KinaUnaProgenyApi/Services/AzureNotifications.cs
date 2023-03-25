@@ -31,7 +31,7 @@ namespace KinaUnaProgenyApi.Services
                 new JProperty("data", new JObject(new JProperty("title", title), new JProperty("message", message))),
                 new JProperty("notData", timeLineItem.TimeLineId));
 
-            string alert = "{\"aps\":{\"alert\":\"" + message + "\"},\"message\":\"" + message +"\",\"notData\":\"" + timeLineItem.TimeLineId + "\", \"content-available\":1}";
+            string alert = "{\"aps\":{\"alert\":\"" + message + "\"},\"message\":\"" + message + "\",\"notData\":\"" + timeLineItem.TimeLineId + "\", \"content-available\":1}";
 
             List<UserAccess> userList = await _userAccessService.GetProgenyUserAccessList(timeLineItem.ProgenyId);
             foreach (UserAccess userAcces in userList)
@@ -53,7 +53,7 @@ namespace KinaUnaProgenyApi.Services
                         notification.Time = DateTime.UtcNow;
                         notification.Read = false;
                         _ = await _dataService.AddMobileNotification(notification);
-                        
+
 
                         string userTag = "userEmail:" + userAcces.UserId.ToUpper();
                         _ = await Hub.SendFcmNativeNotificationAsync(payload.ToString(Newtonsoft.Json.Formatting.None), userTag);
@@ -61,7 +61,7 @@ namespace KinaUnaProgenyApi.Services
                     }
                 }
             }
-            
+
         }
     }
 }

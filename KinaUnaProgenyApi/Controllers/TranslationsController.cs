@@ -28,7 +28,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetAllTranslations(int languageId)
         {
             List<TextTranslation> translations = await _textTranslationService.GetAllTranslations(languageId);
-            
+
             return Ok(translations);
         }
 
@@ -37,7 +37,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetTranslationById(int id)
         {
             TextTranslation translation = await _textTranslationService.GetTranslationById(id);
-            
+
             return Ok(translation);
         }
 
@@ -94,7 +94,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 value = await _textTranslationService.AddTranslation(value);
             }
-            
+
             return Ok(value);
         }
 
@@ -102,7 +102,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Put(int id, [FromBody] TextTranslation value)
         {
             string userId = User.GetUserId();
-            
+
             if (await _userInfoService.IsAdminUserId(userId))
             {
                 TextTranslation translation = await _textTranslationService.UpdateTranslation(id, value);
@@ -147,6 +147,6 @@ namespace KinaUnaProgenyApi.Controllers
 
             return NotFound();
         }
-        
+
     }
 }

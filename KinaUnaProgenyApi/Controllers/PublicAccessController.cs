@@ -70,6 +70,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetProgeny(int id)
         {
             Progeny result = await _progenyService.GetProgeny(Constants.DefaultChildId);
@@ -80,9 +81,10 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{id}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> Access(int id)
         {
-            List<UserAccess> accessList = await _userAccessService.GetProgenyUserAccessList(Constants.DefaultChildId); 
+            List<UserAccess> accessList = await _userAccessService.GetProgenyUserAccessList(Constants.DefaultChildId);
             if (accessList.Any())
             {
                 foreach (UserAccess ua in accessList)
@@ -111,10 +113,11 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]/{id}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyListByUser(string id)
         {
             List<Progeny> result = new();
-            Progeny prog = await _progenyService.GetProgeny(Constants.DefaultChildId); 
+            Progeny prog = await _progenyService.GetProgeny(Constants.DefaultChildId);
             result.Add(prog);
             return Ok(result);
 
@@ -122,6 +125,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{progenyId}/{accessLevel}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> EventList(int progenyId, int accessLevel)
         {
             List<CalendarItem> model = await _calendarService.GetCalendarList(Constants.DefaultChildId);
@@ -133,6 +137,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{id}/{accessLevel}/{count}/{start}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyLatest(int id, int accessLevel = 5, int count = 5, int start = 0)
         {
             List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(Constants.DefaultChildId);
@@ -173,6 +178,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{id}/{accessLevel}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyCalendarMobile(int id, int accessLevel = 5)
         {
             List<CalendarItem> calendarList = await _calendarService.GetCalendarList(Constants.DefaultChildId);
@@ -215,9 +221,10 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{id}/{accessLevel}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyContactsMobile(int id, int accessLevel = 5)
         {
-            List<Contact> contactsList = await _contactService.GetContactsList(Constants.DefaultChildId); 
+            List<Contact> contactsList = await _contactService.GetContactsList(Constants.DefaultChildId);
             contactsList = contactsList.Where(c => c.AccessLevel >= 5).ToList();
             if (contactsList.Any())
             {
@@ -236,6 +243,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{id}/{accessLevel}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyFriendsMobile(int id, int accessLevel = 5)
         {
             List<Friend> friendsList = await _friendService.GetFriendsList(Constants.DefaultChildId);
@@ -293,7 +301,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetSkillMobile(int id)
         {
-            Skill result = await _skillService.GetSkill(id); 
+            Skill result = await _skillService.GetSkill(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Skill
@@ -319,7 +327,7 @@ namespace KinaUnaProgenyApi.Controllers
                     AccessLevel = 5,
                     ProgenyId = Constants.DefaultChildId
                 };
-                UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail); 
+                UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
                 result.Author = adminInfo?.UserId ?? "Unknown Author";
                 result.Name = adminInfo?.UserName ?? "Unknown";
                 result.FriendAddedDate = DateTime.UtcNow;
@@ -377,9 +385,10 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{progenyId}/{accessLevel}/{start}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
-            List<Sleep> model = await _sleepService.GetSleepList(Constants.DefaultChildId); 
+            List<Sleep> model = await _sleepService.GetSleepList(Constants.DefaultChildId);
             model = model.Where(s => s.AccessLevel >= 5).ToList();
             model = model.OrderByDescending(s => s.SleepStart).ToList();
             model = model.Skip(start).Take(25).ToList();
@@ -387,6 +396,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]/{progenyId}/{accessLevel}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetSleepStatsMobile(int progenyId, int accessLevel)
         {
             string userTimeZone = Constants.DefaultTimezone;
@@ -451,6 +461,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]/{progenyId}/{accessLevel}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
         {
             string userTimeZone = Constants.DefaultTimezone;
@@ -534,7 +545,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetNoteMobile(int id)
         {
-            Note result = await _noteService.GetNote(id); 
+            Note result = await _noteService.GetNote(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Note
@@ -568,9 +579,10 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{id}/{accessLevel}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyYearAgo(int id, int accessLevel = 5)
         {
-            List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(Constants.DefaultChildId); 
+            List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(Constants.DefaultChildId);
             timeLineList = timeLineList
                 .Where(t => t.AccessLevel >= 5 && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day).OrderBy(t => t.ProgenyTime).ToList();
             if (timeLineList.Any())
@@ -585,7 +597,8 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<IActionResult> GetNotesListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        public async Task<IActionResult> GetNotesListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
             if (pageIndex < 1)
@@ -634,7 +647,8 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<IActionResult> GetSleepListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        public async Task<IActionResult> GetSleepListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
             if (pageIndex < 1)
@@ -685,7 +699,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{sleepId}/{accessLevel}/{sortOrder}")]
         public async Task<IActionResult> GetSleepDetails(int sleepId, int accessLevel, int sortOrder)
         {
-            
+
             Sleep currentSleep = await _sleepService.GetSleep(sleepId);
             if (currentSleep != null && currentSleep.ProgenyId == Constants.DefaultChildId)
             {
@@ -747,6 +761,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{id}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> LocationsList(int id, [FromQuery] int accessLevel = 5)
         {
             if (id == Constants.DefaultChildId)
@@ -765,6 +780,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetLocationsListPage([FromQuery] int pageSize = 8,
             [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId,
             [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
@@ -821,7 +837,8 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<IActionResult> GetMeasurementsListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        public async Task<IActionResult> GetMeasurementsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
             if (progenyId != Constants.DefaultChildId)
@@ -892,7 +909,8 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<IActionResult> GetSkillsListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        public async Task<IActionResult> GetSkillsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
             if (progenyId != Constants.DefaultChildId)
@@ -945,7 +963,8 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<IActionResult> GetVocabularyListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        public async Task<IActionResult> GetVocabularyListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
             if (progenyId != Constants.DefaultChildId)
@@ -1036,6 +1055,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{progenyId}/{accessLevel}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> RandomPictureMobile(int progenyId, int accessLevel)
         {
             List<Picture> picturesList = await _picturesService.GetPicturesList(Constants.DefaultChildId);
@@ -1117,6 +1137,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> PageMobile([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
 
         {
@@ -1322,6 +1343,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> VideoPageMobile([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
 
         {

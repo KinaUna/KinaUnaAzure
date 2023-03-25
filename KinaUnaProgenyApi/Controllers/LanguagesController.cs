@@ -73,12 +73,12 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     return NotFound();
                 }
-                
+
                 language = await _languagesService.UpdateLanguage(value);
 
                 return Ok(language);
             }
-                        
+
             return Unauthorized();
         }
 
@@ -99,7 +99,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                 return Ok(deletedLanguage);
             }
-            
+
             return Unauthorized();
         }
     }

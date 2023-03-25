@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class DataService: IDataService
+    public class DataService : IDataService
     {
         private readonly ProgenyDbContext _progenyDbContext;
         private readonly WebDbContext _webDbContext;
@@ -45,11 +45,11 @@ namespace KinaUnaProgenyApi.Services
                 updatedNotification.Read = notification.Read;
                 updatedNotification.Time = notification.Time;
                 updatedNotification.UserId = notification.UserId;
-                
+
                 _ = _progenyDbContext.MobileNotificationsDb.Update(updatedNotification);
                 _ = await _progenyDbContext.SaveChangesAsync();
             }
-            
+
             return notification;
         }
 
@@ -61,7 +61,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = _progenyDbContext.MobileNotificationsDb.Remove(notificationToDelete);
                 _ = await _progenyDbContext.SaveChangesAsync();
             }
-            
+
             return notification;
         }
         public async Task<List<MobileNotification>> GetUsersMobileNotifications(string userId, string language)

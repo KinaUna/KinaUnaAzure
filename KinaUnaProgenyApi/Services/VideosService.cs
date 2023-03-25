@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class VideosService: IVideosService
+    public class VideosService : IVideosService
     {
         private readonly MediaDbContext _mediaContext;
         private readonly IDistributedCache _cache;
@@ -25,7 +25,7 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(96, 0, 0)); // Expire after 24 hours.
         }
-        
+
         public async Task<Video> GetVideo(int id)
         {
             Video video = await GetVideoFromCache(id);
@@ -33,7 +33,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 video = await SetVideoInCache(id);
             }
-            
+
             return video;
         }
 
@@ -58,11 +58,11 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Video> SetVideoInCache(int id)
         {
             Video video = await _mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(v => v.VideoId == id);
-            
+
             if (video != null)
             {
                 await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
-                
+
                 if (video.Tags != null && video.Tags.Trim().EndsWith(','))
                 {
                     video.Tags = video.Tags.Trim().TrimEnd(',');
@@ -100,7 +100,7 @@ namespace KinaUnaProgenyApi.Services
 
                 _ = await SetVideoInCache(videoToUpdate.VideoId);
             }
-            
+
             return video;
         }
 
@@ -113,7 +113,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _mediaContext.SaveChangesAsync();
                 await RemoveVideoFromCache(videoToDelete.VideoId, videoToDelete.ProgenyId);
             }
-            
+
             return video;
         }
 

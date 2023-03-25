@@ -46,7 +46,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail); 
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 List<Note> notesList = await _noteService.GetNotesList(id);
@@ -103,13 +103,13 @@ namespace KinaUnaProgenyApi.Controllers
             value.Owner = User.GetUserId();
 
             Note noteItem = await _noteService.AddNote(value);
-            
+
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyNotePropertiesForAdd(noteItem);
             _ = await _timelineService.AddTimeLineItem(timeLineItem);
-            
+
             UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            
+
             string notificationTitle = "Note added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new note for " + progeny.NickName;
             await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
@@ -141,9 +141,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-            
+
             noteItem = await _noteService.UpdateNote(value);
-            
+
             TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(noteItem.NoteId.ToString(), (int)KinaUnaTypes.TimeLineType.Note);
             if (timeLineItem != null)
             {
@@ -153,7 +153,7 @@ namespace KinaUnaProgenyApi.Controllers
                 UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
                 string notificationTitle = "Note edited for " + progeny.NickName;
                 string notificationMessage = userInfo.FullName() + " edited a note for " + progeny.NickName;
-                
+
                 await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                 await _webNotificationsService.SendNoteNotification(noteItem, userInfo, notificationTitle);
             }
@@ -189,11 +189,11 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 _ = await _noteService.DeleteNote(noteItem);
-                
+
                 if (timeLineItem != null)
                 {
                     UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                    
+
                     string notificationTitle = "Note deleted for " + progeny.NickName;
                     string notificationMessage = userInfo.FullName() + " deleted a note for " + progeny.NickName + ". Note: " + noteItem.Title;
 
@@ -231,7 +231,8 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<IActionResult> GetNotesListPage([FromQuery]int pageSize = 8, [FromQuery]int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        public async Task<IActionResult> GetNotesListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
             // Check if user should be allowed access.

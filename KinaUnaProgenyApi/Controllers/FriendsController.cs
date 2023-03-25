@@ -108,9 +108,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 value.PictureLink = Constants.ProfilePictureUrl;
             }
-            
+
             Friend friendItem = await _friendService.AddFriend(value);
-            
+
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyFriendPropertiesForAdd(friendItem);
             await _timelineService.AddTimeLineItem(timeLineItem);
@@ -154,7 +154,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             friendItem.CopyPropertiesForUpdate(value);
-            
+
             friendItem = await _friendService.UpdateFriend(friendItem);
 
             friendItem.Author = User.GetUserId();
@@ -182,7 +182,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (friendItem != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                
+
                 Progeny progeny = await _progenyService.GetProgeny(friendItem.ProgenyId);
                 if (progeny != null)
                 {
@@ -197,7 +197,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(friendItem.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend);
-                
+
                 if (timeLineItem != null)
                 {
                     _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
@@ -206,17 +206,17 @@ namespace KinaUnaProgenyApi.Controllers
                 _ = await _imageStore.DeleteImage(friendItem.PictureLink, BlobContainers.Friends);
 
                 _ = await _friendService.DeleteFriend(friendItem);
-                
+
                 if (timeLineItem != null)
                 {
                     friendItem.Author = User.GetUserId();
                     UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-                    
+
                     string notificationTitle = "Friend deleted for " + progeny.NickName;
                     string notificationMessage = userInfo.FullName() + " deleted a friend for " + progeny.NickName + ". Friend: " + friendItem.Name;
-                    
+
                     friendItem.AccessLevel = timeLineItem.AccessLevel = 0;
-                    
+
                     await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                     await _webNotificationsService.SendFriendNotification(friendItem, userInfo, notificationTitle);
                 }
@@ -232,12 +232,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetFriendMobile(int id)
         {
-            Friend result = await _friendService.GetFriend(id); 
+            Friend result = await _friendService.GetFriend(id);
 
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail); 
+                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {
@@ -255,7 +255,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail); 
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 List<Friend> friendsList = await _friendService.GetFriendsList(id);
@@ -304,7 +304,7 @@ namespace KinaUnaProgenyApi.Controllers
 
 
             return NotFound();
-            
+
         }
 
         private static async Task<Stream> GetStreamFromUrl(string url)

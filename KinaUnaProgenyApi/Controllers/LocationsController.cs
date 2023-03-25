@@ -44,7 +44,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail); 
+            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 List<Location> locationsList = await _locationService.GetLocationsList(id);
@@ -103,7 +103,7 @@ namespace KinaUnaProgenyApi.Controllers
             value.Author = User.GetUserId();
 
             Location location = await _locationService.AddLocation(value);
-            
+
             TimeLineItem tItem = new();
             tItem.CopyLocationPropertiesForAdd(location);
             _ = await _timelineService.AddTimeLineItem(tItem);
@@ -140,9 +140,9 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return NotFound();
             }
-            
+
             location = await _locationService.UpdateLocation(value);
-            
+
             TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
             if (timeLineItem != null)
             {
@@ -152,10 +152,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             location.Author = User.GetUserId();
             UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
-            
+
             string notificationTitle = "Location edited for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " edited a location for " + progeny.NickName;
-            
+
             await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
             await _webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
 
@@ -190,7 +190,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 _ = await _locationService.DeleteLocation(location);
-                
+
                 if (timeLineItem != null)
                 {
                     location.Author = User.GetUserId();
@@ -199,7 +199,7 @@ namespace KinaUnaProgenyApi.Controllers
                     string notificationTitle = "Location deleted for " + progeny.NickName;
                     string notificationMessage = userInfo.FullName() + " deleted a location for " + progeny.NickName + ". Location: " + location.Name;
                     location.AccessLevel = timeLineItem.AccessLevel = 0;
-                    
+
                     await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
                     await _webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
                 }
@@ -214,7 +214,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetLocationMobile(int id)
         {
-            Location result = await _locationService.GetLocation(id); 
+            Location result = await _locationService.GetLocation(id);
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -282,7 +282,7 @@ namespace KinaUnaProgenyApi.Controllers
             LocationsListPage model = new()
             {
                 LocationsList = itemsOnPage,
-                TotalPages = (int) Math.Ceiling(allItems.Count / (double) pageSize),
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
                 PageNumber = pageIndex,
                 SortBy = sortBy
             };

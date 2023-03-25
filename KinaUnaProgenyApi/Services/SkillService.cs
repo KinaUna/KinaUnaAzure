@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class SkillService: ISkillService
+    public class SkillService : ISkillService
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
@@ -68,7 +68,7 @@ namespace KinaUnaProgenyApi.Services
 
                 _ = await SetSkillsListInCache(skill.ProgenyId);
             }
-            
+
             return skill;
         }
 
@@ -84,7 +84,7 @@ namespace KinaUnaProgenyApi.Services
 
                 _ = await SetSkillInCache(skill.SkillId);
             }
-            
+
             return skillToUpdate;
         }
 
@@ -97,7 +97,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _context.SaveChangesAsync();
                 await RemoveSkillFromCache(skill.SkillId, skill.ProgenyId);
             }
-            
+
             return skillToDelete;
         }
         public async Task RemoveSkillFromCache(int id, int progenyId)
@@ -114,7 +114,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 skillsList = await SetSkillsListInCache(progenyId);
             }
-            
+
             return skillsList;
         }
 

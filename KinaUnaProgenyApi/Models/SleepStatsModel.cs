@@ -19,7 +19,7 @@ namespace KinaUnaProgenyApi.Models
             SleepTotal = TimeSpan.Zero;
             SleepLastYear = TimeSpan.Zero;
             SleepLastMonth = TimeSpan.Zero;
-            
+
             List<Sleep> sleepList = new List<Sleep>();
             DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
