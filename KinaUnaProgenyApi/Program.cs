@@ -27,8 +27,8 @@ namespace KinaUnaProgenyApi
                         {
                             config.Build();
 
-                            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
-                            KeyVaultClient keyVaultClient = new KeyVaultClient(
+                            AzureServiceTokenProvider azureServiceTokenProvider = new();
+                            KeyVaultClient keyVaultClient = new(
                                 new KeyVaultClient.AuthenticationCallback(
                                     azureServiceTokenProvider.KeyVaultTokenCallback));
 
