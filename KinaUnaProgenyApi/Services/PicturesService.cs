@@ -20,8 +20,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly MediaDbContext _mediaContext;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly IImageStore _imageStore;
 
         public PicturesService(MediaDbContext mediaContext, IDistributedCache cache, IImageStore imageStore)
@@ -52,7 +52,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<Picture> GetPictureFromCache(int id)
         {
-            Picture picture = new Picture();
+            Picture picture = new();
             string cachedPicture = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id);
             if (!string.IsNullOrEmpty(cachedPicture))
             {
@@ -65,7 +65,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Picture> AddPicture(Picture picture)
         {
             picture.RemoveNullStrings();
-            Picture pictureToAdd = new Picture();
+            Picture pictureToAdd = new();
             pictureToAdd.CopyPropertiesForAdd(picture);
             await _mediaContext.PicturesDb.AddAsync(pictureToAdd);
             await _mediaContext.SaveChangesAsync();
@@ -80,7 +80,7 @@ namespace KinaUnaProgenyApi.Services
             MemoryStream memoryStream = await _imageStore.GetStream(picture.PictureLink);
             memoryStream.Position = 0;
 
-            using (MagickImage image = new MagickImage(memoryStream))
+            using (MagickImage image = new(memoryStream))
             {
                 IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
@@ -287,13 +287,13 @@ namespace KinaUnaProgenyApi.Services
 
                 image.Strip();
 
-                using MemoryStream memStream = new MemoryStream();
+                using MemoryStream memStream = new();
                 await image.WriteAsync(memStream);
                 memStream.Position = 0;
                 picture.PictureLink600 = await _imageStore.SaveImage(memStream);
             }
 
-            using (MagickImage image = new MagickImage(memoryStream))
+            using (MagickImage image = new(memoryStream))
             {
                 if (picture.PictureRotation != null)
                 {
@@ -314,7 +314,7 @@ namespace KinaUnaProgenyApi.Services
 
                 image.Strip();
 
-                using MemoryStream memStream = new MemoryStream();
+                using MemoryStream memStream = new();
                 await image.WriteAsync(memStream);
                 memStream.Position = 0;
                 picture.PictureLink1200 = await _imageStore.SaveImage(memStream);
@@ -339,7 +339,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<string> ProcessProgenyPicture(IFormFile file)
         {
-            using MagickImage image = new MagickImage(file.OpenReadStream());
+            using MagickImage image = new(file.OpenReadStream());
             IExifProfile profile = image.GetExifProfile();
             if (profile != null)
             {
@@ -389,7 +389,7 @@ namespace KinaUnaProgenyApi.Services
             image.Resize(newWidth, newHeight);
             image.Strip();
 
-            using MemoryStream memStream = new MemoryStream();
+            using MemoryStream memStream = new();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
             string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Progeny);
@@ -399,7 +399,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<string> ProcessProfilePicture(IFormFile file)
         {
-            using MagickImage image = new MagickImage(file.OpenReadStream());
+            using MagickImage image = new(file.OpenReadStream());
             IExifProfile profile = image.GetExifProfile();
             if (profile != null)
             {
@@ -449,7 +449,7 @@ namespace KinaUnaProgenyApi.Services
             image.Resize(newWidth, newHeight);
             image.Strip();
 
-            using MemoryStream memStream = new MemoryStream();
+            using MemoryStream memStream = new();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
             string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Profiles);
@@ -459,7 +459,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<string> ProcessFriendPicture(IFormFile file)
         {
-            using MagickImage image = new MagickImage(file.OpenReadStream());
+            using MagickImage image = new(file.OpenReadStream());
             IExifProfile profile = image.GetExifProfile();
             if (profile != null)
             {
@@ -509,7 +509,7 @@ namespace KinaUnaProgenyApi.Services
             image.Resize(newWidth, newHeight);
             image.Strip();
 
-            using MemoryStream memStream = new MemoryStream();
+            using MemoryStream memStream = new();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
             string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Friends);
@@ -519,7 +519,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<string> ProcessContactPicture(IFormFile file)
         {
-            using MagickImage image = new MagickImage(file.OpenReadStream());
+            using MagickImage image = new(file.OpenReadStream());
             IExifProfile profile = image.GetExifProfile();
             if (profile != null)
             {
@@ -569,7 +569,7 @@ namespace KinaUnaProgenyApi.Services
             image.Resize(newWidth, newHeight);
             image.Strip();
 
-            using MemoryStream memStream = new MemoryStream();
+            using MemoryStream memStream = new();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
             string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Contacts);
@@ -652,7 +652,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Picture>> GetPicturesListFromCache(int progenyId)
         {
-            List<Picture> picturesList = new List<Picture>();
+            List<Picture> picturesList = new();
             string cachedPicturesList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedPicturesList))
             {

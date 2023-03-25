@@ -15,8 +15,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public FriendService(ProgenyDbContext context, IDistributedCache cache)
         {
@@ -38,7 +38,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<Friend> GetFriendFromCache(int id)
         {
-            Friend friend = new Friend();
+            Friend friend = new();
             string cachedFriend = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "friend" + id);
             if (!string.IsNullOrEmpty(cachedFriend))
             {
@@ -63,7 +63,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Friend> AddFriend(Friend friend)
         {
-            Friend friendToAdd = new Friend();
+            Friend friendToAdd = new();
             friendToAdd.CopyPropertiesForAdd(friend);
 
             _ = _context.FriendsDb.Add(friendToAdd);
@@ -136,7 +136,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Friend>> GetFriendsListFromCache(int progenyId)
         {
-            List<Friend> friendsList = new List<Friend>();
+            List<Friend> friendsList = new();
             string cachedFriendsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedFriendsList))
             {

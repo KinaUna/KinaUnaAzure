@@ -75,11 +75,13 @@ namespace KinaUnaProgenyApi.Services
                     TextTranslation translationItem = await _context.TextTranslations.SingleOrDefaultAsync(t => t.Word == translation.Word && t.Page == translation.Page && t.LanguageId == lang.Id);
                     if (translationItem == null)
                     {
-                        translationItem = new TextTranslation();
-                        translationItem.LanguageId = lang.Id;
-                        translationItem.Page = translation.Page;
-                        translationItem.Word = translation.Word;
-                        translationItem.Translation = translation.Translation;
+                        translationItem = new TextTranslation
+                        {
+                            LanguageId = lang.Id,
+                            Page = translation.Page,
+                            Word = translation.Word,
+                            Translation = translation.Translation
+                        };
                         _ = _context.TextTranslations.Add(translationItem);
                         _ = await _context.SaveChangesAsync();
                     }

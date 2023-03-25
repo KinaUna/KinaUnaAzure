@@ -16,8 +16,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public NoteService(ProgenyDbContext context, IDistributedCache cache)
         {
@@ -40,7 +40,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<Note> GetNoteFromCache(int id)
         {
-            Note note = new Note();
+            Note note = new();
             string cachedNote = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "note" + id);
             if (!string.IsNullOrEmpty(cachedNote))
             {
@@ -65,7 +65,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Note> AddNote(Note note)
         {
-            Note noteToAdd = new Note();
+            Note noteToAdd = new();
             noteToAdd.CopyPropertiesForAdd(note);
             noteToAdd.CreatedDate = DateTime.UtcNow;
 
@@ -129,7 +129,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Note>> GetNotesListFromCache(int progenyId)
         {
-            List<Note> notesList = new List<Note>();
+            List<Note> notesList = new();
             string cachedNotesList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedNotesList))
             {

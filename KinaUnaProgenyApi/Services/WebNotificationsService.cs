@@ -45,15 +45,17 @@ namespace KinaUnaProgenyApi.Services
                                 eventTimeString = eventTimeString + "\r\nEnd: " + endTime.ToString("dd-MMM-yyyy HH:mm");
                             }
 
-                            WebNotification webNotification = new WebNotification();
-                            webNotification.To = uaUserInfo.UserId;
-                            webNotification.From = currentUser.FullName();
-                            webNotification.Message = eventItem.Title + eventTimeString;
-                            webNotification.DateTime = DateTime.UtcNow;
-                            webNotification.Icon = currentUser.ProfilePicture;
-                            webNotification.Title = title;
-                            webNotification.Link = "/Calendar/ViewEvent?eventId=" + eventItem.EventId + "&childId=" + eventItem.ProgenyId;
-                            webNotification.Type = "Notification";
+                            WebNotification webNotification = new()
+                            {
+                                To = uaUserInfo.UserId,
+                                From = currentUser.FullName(),
+                                Message = eventItem.Title + eventTimeString,
+                                DateTime = DateTime.UtcNow,
+                                Icon = currentUser.ProfilePicture,
+                                Title = title,
+                                Link = "/Calendar/ViewEvent?eventId=" + eventItem.EventId + "&childId=" + eventItem.ProgenyId,
+                                Type = "Notification"
+                            };
 
                             webNotification = await _dataService.AddWebNotification(webNotification);
 
@@ -76,15 +78,17 @@ namespace KinaUnaProgenyApi.Services
                     UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
-                        WebNotification webNotification = new WebNotification();
-                        webNotification.To = uaUserInfo.UserId;
-                        webNotification.From = currentUser.FullName();
-                        webNotification.Message = "Name: " + contactItem.DisplayName + "\r\nContext: " + contactItem.Context;
-                        webNotification.DateTime = DateTime.UtcNow;
-                        webNotification.Icon = currentUser.ProfilePicture;
-                        webNotification.Title = title;
-                        webNotification.Link = "/Contacts/ContactDetails?contactId=" + contactItem.ContactId + "&childId=" + contactItem.ProgenyId;
-                        webNotification.Type = "Notification";
+                        WebNotification webNotification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = "Name: " + contactItem.DisplayName + "\r\nContext: " + contactItem.Context,
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = title,
+                            Link = "/Contacts/ContactDetails?contactId=" + contactItem.ContactId + "&childId=" + contactItem.ProgenyId,
+                            Type = "Notification"
+                        };
 
                         webNotification = await _dataService.AddWebNotification(webNotification);
 
@@ -106,15 +110,17 @@ namespace KinaUnaProgenyApi.Services
                     UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = currentUser.FullName();
-                        notification.Message = "Friend: " + friendItem.Name + "\r\nContext: " + friendItem.Context;
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = currentUser.ProfilePicture;
-                        notification.Title = title;
-                        notification.Link = "/Friends?childId=" + friendItem.ProgenyId;
-                        notification.Type = "Notification";
+                        WebNotification notification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = "Friend: " + friendItem.Name + "\r\nContext: " + friendItem.Context,
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = title,
+                            Link = "/Friends?childId=" + friendItem.ProgenyId,
+                            Type = "Notification"
+                        };
 
                         notification = await _dataService.AddWebNotification(notification);
 
@@ -143,15 +149,17 @@ namespace KinaUnaProgenyApi.Services
                         }
 
                         string dateString = tempDate.ToString("dd-MMM-yyyy");
-                        WebNotification webNotification = new WebNotification();
-                        webNotification.To = uaUserInfo.UserId;
-                        webNotification.From = currentUser.FullName();
-                        webNotification.Message = "Name: " + locationItem.Name + "\r\nDate: " + dateString;
-                        webNotification.DateTime = DateTime.UtcNow;
-                        webNotification.Icon = currentUser.ProfilePicture;
-                        webNotification.Title = title;
-                        webNotification.Link = "/Locations?childId=" + locationItem.ProgenyId;
-                        webNotification.Type = "Notification";
+                        WebNotification webNotification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = "Name: " + locationItem.Name + "\r\nDate: " + dateString,
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = title,
+                            Link = "/Locations?childId=" + locationItem.ProgenyId,
+                            Type = "Notification"
+                        };
 
                         webNotification = await _dataService.AddWebNotification(webNotification);
 
@@ -173,15 +181,17 @@ namespace KinaUnaProgenyApi.Services
                     UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = currentUser.FullName();
-                        notification.Message = "Height: " + measurementItem.Height + "\r\nWeight: " + measurementItem.Weight;
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = currentUser.ProfilePicture;
-                        notification.Title = title;
-                        notification.Link = "/Measurements?childId=" + measurementItem.ProgenyId;
-                        notification.Type = "Notification";
+                        WebNotification notification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = "Height: " + measurementItem.Height + "\r\nWeight: " + measurementItem.Weight,
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = title,
+                            Link = "/Measurements?childId=" + measurementItem.ProgenyId,
+                            Type = "Notification"
+                        };
 
                         notification = await _dataService.AddWebNotification(notification);
 
@@ -203,15 +213,17 @@ namespace KinaUnaProgenyApi.Services
                     UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = currentUser.FullName();
-                        notification.Message = "Title: " + noteItem.Title + "\r\nCategory: " + noteItem.Category;
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = currentUser.ProfilePicture;
-                        notification.Title = title;
-                        notification.Link = "/Notes?childId=" + noteItem.ProgenyId;
-                        notification.Type = "Notification";
+                        WebNotification notification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = "Title: " + noteItem.Title + "\r\nCategory: " + noteItem.Category,
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = title,
+                            Link = "/Notes?childId=" + noteItem.ProgenyId,
+                            Type = "Notification"
+                        };
 
                         notification = await _dataService.AddWebNotification(notification);
 
@@ -244,15 +256,17 @@ namespace KinaUnaProgenyApi.Services
                         {
                             picTimeString = "Photo taken: Unknown";
                         }
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = currentUser.FullName();
-                        notification.Message = picTimeString + "\r\n";
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = currentUser.ProfilePicture;
-                        notification.Title = title;
-                        notification.Link = "/Pictures/Picture/" + pictureItem.PictureId + "?childId=" + pictureItem.ProgenyId;
-                        notification.Type = "Notification";
+                        WebNotification notification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = picTimeString + "\r\n",
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = title,
+                            Link = "/Pictures/Picture/" + pictureItem.PictureId + "?childId=" + pictureItem.ProgenyId,
+                            Type = "Notification"
+                        };
 
                         notification = await _dataService.AddWebNotification(notification);
 
@@ -285,15 +299,17 @@ namespace KinaUnaProgenyApi.Services
                         {
                             picTimeString = "Video recorded: Unknown";
                         }
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = currentUser.FullName();
-                        notification.Message = picTimeString + "\r\n";
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = currentUser.ProfilePicture;
-                        notification.Title = title;
-                        notification.Link = "/Videos/Video/" + videoItem.VideoId + "?childId=" + videoItem.ProgenyId;
-                        notification.Type = "Notification";
+                        WebNotification notification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = picTimeString + "\r\n",
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = title,
+                            Link = "/Videos/Video/" + videoItem.VideoId + "?childId=" + videoItem.ProgenyId,
+                            Type = "Notification"
+                        };
 
                         notification = await _dataService.AddWebNotification(notification);
 
@@ -322,15 +338,17 @@ namespace KinaUnaProgenyApi.Services
 
                         string skillTimeString = "\r\nDate: " + skillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy");
 
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = currentUser.FullName();
-                        notification.Message = "Skill: " + skillItem.Name + "\r\nCategory: " + skillItem.Category + skillTimeString;
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = currentUser.ProfilePicture;
-                        notification.Title = title;
-                        notification.Link = "/Skills?childId=" + skillItem.ProgenyId;
-                        notification.Type = "Notification";
+                        WebNotification notification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = "Skill: " + skillItem.Name + "\r\nCategory: " + skillItem.Category + skillTimeString,
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = title,
+                            Link = "/Skills?childId=" + skillItem.ProgenyId,
+                            Type = "Notification"
+                        };
 
                         notification = await _dataService.AddWebNotification(notification);
 
@@ -352,13 +370,15 @@ namespace KinaUnaProgenyApi.Services
                     UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
-                        WebNotification webNotification = new WebNotification();
-                        webNotification.To = uaUserInfo.UserId;
-                        webNotification.From = currentUser.FullName();
-                        webNotification.Message = message;
-                        webNotification.DateTime = DateTime.UtcNow;
-                        webNotification.Icon = currentUser.ProfilePicture;
-                        webNotification.Title = title;
+                        WebNotification webNotification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = message,
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = title
+                        };
                         string tagString = string.Empty;
                         if (commentItem.ItemType == (int)KinaUnaTypes.TimeLineType.Photo)
                         {
@@ -396,15 +416,17 @@ namespace KinaUnaProgenyApi.Services
                         DateTime sleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
                         DateTime sleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
 
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = currentUser.FullName();
-                        notification.Message = "Start: " + sleepStart.ToString("dd-MMM-yyyy HH:mm") + "\r\nEnd: " + sleepEnd.ToString("dd-MMM-yyyy HH:mm");
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = currentUser.ProfilePicture;
-                        notification.Title = title;
-                        notification.Link = "/Sleep?childId=" + sleepItem.ProgenyId;
-                        notification.Type = "Notification";
+                        WebNotification notification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = "Start: " + sleepStart.ToString("dd-MMM-yyyy HH:mm") + "\r\nEnd: " + sleepEnd.ToString("dd-MMM-yyyy HH:mm"),
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = title,
+                            Link = "/Sleep?childId=" + sleepItem.ProgenyId,
+                            Type = "Notification"
+                        };
 
                         notification = await _dataService.AddWebNotification(notification);
 
@@ -425,15 +447,17 @@ namespace KinaUnaProgenyApi.Services
                     UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = currentUser.FullName();
-                        notification.Message = "Name: " + vaccinationItem.VaccinationName + "\r\nContext: " + vaccinationItem.VaccinationDate.ToString("dd-MMM-yyyy");
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = currentUser.ProfilePicture;
-                        notification.Title = title;
-                        notification.Link = "/Vaccinations?childId=" + vaccinationItem.ProgenyId;
-                        notification.Type = "Notification";
+                        WebNotification notification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = "Name: " + vaccinationItem.VaccinationName + "\r\nContext: " + vaccinationItem.VaccinationDate.ToString("dd-MMM-yyyy"),
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = title,
+                            Link = "/Vaccinations?childId=" + vaccinationItem.ProgenyId,
+                            Type = "Notification"
+                        };
 
                         notification = await _dataService.AddWebNotification(notification);
 
@@ -462,15 +486,17 @@ namespace KinaUnaProgenyApi.Services
                             vocabTimeString = "\r\nDate: " + startTime.ToString("dd-MMM-yyyy");
                         }
 
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = userInfo.FullName();
-                        notification.Message = "Word: " + vocabularyItem.Word + "\r\nLanguage: " + vocabularyItem.Language + vocabTimeString;
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = userInfo.ProfilePicture;
-                        notification.Title = title;
-                        notification.Link = "/Vocabulary?childId=" + vocabularyItem.ProgenyId;
-                        notification.Type = "Notification";
+                        WebNotification notification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = userInfo.FullName(),
+                            Message = "Word: " + vocabularyItem.Word + "\r\nLanguage: " + vocabularyItem.Language + vocabTimeString,
+                            DateTime = DateTime.UtcNow,
+                            Icon = userInfo.ProfilePicture,
+                            Title = title,
+                            Link = "/Vocabulary?childId=" + vocabularyItem.ProgenyId,
+                            Type = "Notification"
+                        };
 
                         notification = await _dataService.AddWebNotification(notification);
 
@@ -491,15 +517,17 @@ namespace KinaUnaProgenyApi.Services
                     UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = userInfo.FullName();
-                        notification.Message = "User email: " + userAccessItem.UserId;
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = userInfo.ProfilePicture;
-                        notification.Title = title;
-                        notification.Link = "/Family";
-                        notification.Type = "Notification";
+                        WebNotification notification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = userInfo.FullName(),
+                            Message = "User email: " + userAccessItem.UserId,
+                            DateTime = DateTime.UtcNow,
+                            Icon = userInfo.ProfilePicture,
+                            Title = title,
+                            Link = "/Family",
+                            Type = "Notification"
+                        };
 
                         notification = await _dataService.AddWebNotification(notification);
 

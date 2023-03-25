@@ -46,8 +46,8 @@ namespace KinaUnaProgenyApi.Services
                 return imageId;
             }
 
-            StorageSharedKeyCredential credential = new StorageSharedKeyCredential(Constants.CloudBlobUsername, _storageKey);
-            BlobSasBuilder sas = new BlobSasBuilder
+            StorageSharedKeyCredential credential = new(Constants.CloudBlobUsername, _storageKey);
+            BlobSasBuilder sas = new()
             {
                 BlobName = imageId,
                 BlobContainerName = containerName,
@@ -56,9 +56,10 @@ namespace KinaUnaProgenyApi.Services
             };
 
             sas.SetPermissions(BlobAccountSasPermissions.Read);
-            UriBuilder sasUri = new UriBuilder($"{_baseUri}{containerName}/{imageId}");
-
-            sasUri.Query = sas.ToSasQueryParameters(credential).ToString();
+            UriBuilder sasUri = new($"{_baseUri}{containerName}/{imageId}")
+            {
+                Query = sas.ToSasQueryParameters(credential).ToString()
+            };
 
             return sasUri.Uri.AbsoluteUri;
         }
@@ -68,7 +69,7 @@ namespace KinaUnaProgenyApi.Services
             BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
 
             BlobClient blob = container.GetBlobClient(imageId);
-            MemoryStream memoryStream = new MemoryStream();
+            MemoryStream memoryStream = new();
             await blob.DownloadToAsync(memoryStream).ConfigureAwait(false);
 
             return memoryStream;
@@ -108,7 +109,7 @@ namespace KinaUnaProgenyApi.Services
 
             string updatedText = originalText;
             int lastIndex = 0;
-            List<string> blobStrings = new List<string>();
+            List<string> blobStrings = new();
             int linkFound = 1000000000;
 
             while (linkFound > 0)

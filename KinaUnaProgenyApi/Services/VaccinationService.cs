@@ -15,8 +15,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public VaccinationService(ProgenyDbContext context, IDistributedCache cache)
         {
@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Vaccination> AddVaccination(Vaccination vaccination)
         {
-            Vaccination vaccinationToAdd = new Vaccination();
+            Vaccination vaccinationToAdd = new();
             vaccinationToAdd.CopyPropertiesForAdd(vaccination);
 
             _ = _context.VaccinationsDb.Add(vaccinationToAdd);
@@ -52,7 +52,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<Vaccination> GetVaccinationFromCache(int id)
         {
-            Vaccination vaccination = new Vaccination();
+            Vaccination vaccination = new();
             string cachedVaccination = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id);
             if (!string.IsNullOrEmpty(cachedVaccination))
             {
@@ -123,7 +123,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Vaccination>> GetVaccinationListFromCache(int progenyId)
         {
-            List<Vaccination> vaccinationsList = new List<Vaccination>();
+            List<Vaccination> vaccinationsList = new();
             string cachedVaccinationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVaccinationsList))
             {

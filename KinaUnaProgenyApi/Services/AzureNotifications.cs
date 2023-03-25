@@ -27,7 +27,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task ProgenyUpdateNotification(string title, string message, TimeLineItem timeLineItem, string iconLink = "")
         {
 
-            JObject payload = new JObject(
+            JObject payload = new(
                 new JProperty("data", new JObject(new JProperty("title", title), new JProperty("message", message))),
                 new JProperty("notData", timeLineItem.TimeLineId));
 
@@ -41,17 +41,19 @@ namespace KinaUnaProgenyApi.Services
                     UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userAcces.UserId);
                     if (userInfo != null)
                     {
-                        MobileNotification notification = new MobileNotification();
+                        MobileNotification notification = new()
+                        {
+                            UserId = userInfo.UserId,
+                            IconLink = iconLink,
+                            ItemId = timeLineItem.ItemId,
+                            ItemType = timeLineItem.ItemType,
+                            Language = "EN",
+                            Message = message,
+                            Title = title,
+                            Time = DateTime.UtcNow,
+                            Read = false
+                        };
 
-                        notification.UserId = userInfo.UserId;
-                        notification.IconLink = iconLink;
-                        notification.ItemId = timeLineItem.ItemId;
-                        notification.ItemType = timeLineItem.ItemType;
-                        notification.Language = "EN";
-                        notification.Message = message;
-                        notification.Title = title;
-                        notification.Time = DateTime.UtcNow;
-                        notification.Read = false;
                         _ = await _dataService.AddMobileNotification(notification);
 
 

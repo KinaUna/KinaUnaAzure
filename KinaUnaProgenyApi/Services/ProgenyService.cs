@@ -14,8 +14,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly IImageStore _imageStore;
         public ProgenyService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore)
         {
@@ -85,7 +85,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<Progeny> GetProgenyFromCache(int id)
         {
-            Progeny progeny = new Progeny();
+            Progeny progeny = new();
             string cachedProgeny = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id);
             if (!string.IsNullOrEmpty(cachedProgeny))
             {
@@ -120,7 +120,7 @@ namespace KinaUnaProgenyApi.Services
             MemoryStream memoryStream = await _imageStore.GetStream(imageId, BlobContainers.Progeny);
             memoryStream.Position = 0;
             int maxWidthAndHeight = 250;
-            using MagickImage image = new MagickImage(memoryStream);
+            using MagickImage image = new(memoryStream);
             if (image.Width <= maxWidthAndHeight && image.Height <= maxWidthAndHeight)
             {
                 return imageId;
@@ -144,7 +144,7 @@ namespace KinaUnaProgenyApi.Services
 
             image.Strip();
 
-            using MemoryStream memStream = new MemoryStream();
+            using MemoryStream memStream = new();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
 

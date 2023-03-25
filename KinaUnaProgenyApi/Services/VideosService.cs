@@ -15,8 +15,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly MediaDbContext _mediaContext;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public VideosService(MediaDbContext mediaContext, IDistributedCache cache)
         {
@@ -45,7 +45,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<Video> GetVideoFromCache(int id)
         {
-            Video video = new Video();
+            Video video = new();
             string cachedVideo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id);
             if (!string.IsNullOrEmpty(cachedVideo))
             {
@@ -136,7 +136,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Video>> GetVideosListFromCache(int progenyId)
         {
-            List<Video> videosList = new List<Video>();
+            List<Video> videosList = new();
             string cachedVideosList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVideosList))
             {

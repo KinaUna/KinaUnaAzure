@@ -15,8 +15,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public ContactService(ProgenyDbContext context, IDistributedCache cache)
         {
@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Contact> AddContact(Contact contact)
         {
-            Contact contactToAdd = new Contact();
+            Contact contactToAdd = new();
             contactToAdd.CopyPropertiesForAdd(contact);
 
             _context.ContactsDb.Add(contactToAdd);
@@ -51,7 +51,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<Contact> GetContactFromCache(int id)
         {
-            Contact contact = new Contact();
+            Contact contact = new();
             string cachedContact = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id);
             if (!string.IsNullOrEmpty(cachedContact))
             {
@@ -144,7 +144,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Contact>> GetContactsListFromCache(int progenyId)
         {
-            List<Contact> contactsList = new List<Contact>();
+            List<Contact> contactsList = new();
             string cachedContactsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedContactsList))
             {

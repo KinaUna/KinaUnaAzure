@@ -15,8 +15,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public UserInfoService(ProgenyDbContext context, IDistributedCache cache)
         {
@@ -57,7 +57,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<UserInfo> GetUserInfoByEmailFromCache(string userEmail)
         {
-            UserInfo userinfo = new UserInfo();
+            UserInfo userinfo = new();
             string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper());
             if (!string.IsNullOrEmpty(cachedUserInfo))
             {
@@ -69,7 +69,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<UserInfo> GetUserInfoByIdFromCache(int id)
         {
-            UserInfo userinfo = new UserInfo();
+            UserInfo userinfo = new();
             string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + id);
             if (!string.IsNullOrEmpty(cachedUserInfo))
             {
@@ -81,7 +81,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<UserInfo> GetUserInfoByUserIdFromCache(string userId)
         {
-            UserInfo userinfo = new UserInfo();
+            UserInfo userinfo = new();
             string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userId);
             if (!string.IsNullOrEmpty(cachedUserInfo))
             {

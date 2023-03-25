@@ -15,8 +15,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public LocationService(ProgenyDbContext context, IDistributedCache cache)
         {
@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<Location> GetLocationFromCache(int id)
         {
-            Location location = new Location();
+            Location location = new();
             string cachedLocation = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "location" + id);
             if (!string.IsNullOrEmpty(cachedLocation))
             {
@@ -64,7 +64,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Location> AddLocation(Location location)
         {
-            Location locationToAdd = new Location();
+            Location locationToAdd = new();
             locationToAdd.CopyPropertiesForAdd(location);
 
             _ = _context.LocationsDb.Add(locationToAdd);
@@ -125,7 +125,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Location>> GetLocationsListFromCache(int progenyId)
         {
-            List<Location> locationsList = new List<Location>();
+            List<Location> locationsList = new();
             string cachedLocationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedLocationsList))
             {
@@ -156,7 +156,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<Address> GetAddressFromCache(int id)
         {
-            Address address = new Address();
+            Address address = new();
             string cachedAddress = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "address" + id);
             if (!string.IsNullOrEmpty(cachedAddress))
             {
@@ -176,7 +176,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Address> AddAddressItem(Address addressItem)
         {
-            Address addressToAdd = new Address();
+            Address addressToAdd = new();
             addressToAdd.CopyPropertiesForAdd(addressItem);
             _ = await _context.AddressDb.AddAsync(addressToAdd);
             _ = await _context.SaveChangesAsync();

@@ -15,8 +15,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public MeasurementService(ProgenyDbContext context, IDistributedCache cache)
         {
@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<Measurement> GetMeasurementFromCache(int id)
         {
-            Measurement measurement = new Measurement();
+            Measurement measurement = new();
             string cachedMeasurement = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "measurement" + id);
             if (!string.IsNullOrEmpty(cachedMeasurement))
             {
@@ -64,7 +64,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Measurement> AddMeasurement(Measurement measurement)
         {
-            Measurement measurementToAdd = new Measurement();
+            Measurement measurementToAdd = new();
             measurementToAdd.CopyPropertiesForAdd(measurement);
 
             _ = _context.MeasurementsDb.Add(measurementToAdd);
@@ -125,7 +125,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Measurement>> GetMeasurementsListFromCache(int progenyId)
         {
-            List<Measurement> measurementsList = new List<Measurement>();
+            List<Measurement> measurementsList = new();
             string cachedMeasurementsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedMeasurementsList))
             {

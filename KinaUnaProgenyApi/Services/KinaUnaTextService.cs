@@ -78,14 +78,16 @@ namespace KinaUnaProgenyApi.Services
                         {
                             KinaUnaText oldKinaUnaText = texts.First();
 
-                            KinaUnaText newKinaUnaText = new KinaUnaText();
-                            newKinaUnaText.Page = oldKinaUnaText.Page;
-                            newKinaUnaText.Title = oldKinaUnaText.Title;
-                            newKinaUnaText.Text = oldKinaUnaText.Text;
-                            newKinaUnaText.Created = oldKinaUnaText.Created;
-                            newKinaUnaText.Updated = oldKinaUnaText.Updated;
-                            newKinaUnaText.LanguageId = lang.Id;
-                            newKinaUnaText.TextId = oldKinaUnaText.TextId;
+                            KinaUnaText newKinaUnaText = new()
+                            {
+                                Page = oldKinaUnaText.Page,
+                                Title = oldKinaUnaText.Title,
+                                Text = oldKinaUnaText.Text,
+                                Created = oldKinaUnaText.Created,
+                                Updated = oldKinaUnaText.Updated,
+                                LanguageId = lang.Id,
+                                TextId = oldKinaUnaText.TextId
+                            };
                             _ = await _context.KinaUnaTexts.AddAsync(newKinaUnaText);
                             _ = await _context.SaveChangesAsync();
                         }
@@ -106,8 +108,10 @@ namespace KinaUnaProgenyApi.Services
             }
             else
             {
-                KinaUnaTextNumber textNumber = new KinaUnaTextNumber();
-                textNumber.DefaultLanguage = 1;
+                KinaUnaTextNumber textNumber = new()
+                {
+                    DefaultLanguage = 1
+                };
                 _ = await _context.KinaUnaTextNumbers.AddAsync(textNumber);
                 _ = await _context.SaveChangesAsync();
                 text.TextId = textNumber.Id;
@@ -127,8 +131,10 @@ namespace KinaUnaProgenyApi.Services
             KinaUnaText existingTextItem = await _context.KinaUnaTexts.SingleOrDefaultAsync(t => t.Title == text.Title && t.Page == text.Page && t.LanguageId == text.LanguageId);
             if (existingTextItem == null)
             {
-                KinaUnaTextNumber textNumber = new KinaUnaTextNumber();
-                textNumber.DefaultLanguage = 1;
+                KinaUnaTextNumber textNumber = new()
+                {
+                    DefaultLanguage = 1
+                };
                 _ = await _context.KinaUnaTextNumbers.AddAsync(textNumber);
                 _ = await _context.SaveChangesAsync();
                 text.TextId = textNumber.Id;
@@ -164,14 +170,16 @@ namespace KinaUnaProgenyApi.Services
                     KinaUnaText textItem = await _context.KinaUnaTexts.SingleOrDefaultAsync(t => t.TextId == text.TextId && t.LanguageId == lang.Id);
                     if (textItem == null)
                     {
-                        textItem = new KinaUnaText();
-                        textItem.LanguageId = lang.Id;
-                        textItem.Page = text.Page;
-                        textItem.Title = text.Title;
-                        textItem.Text = text.Text;
-                        textItem.TextId = text.TextId;
-                        textItem.Created = text.Created;
-                        textItem.Updated = text.Updated;
+                        textItem = new KinaUnaText
+                        {
+                            LanguageId = lang.Id,
+                            Page = text.Page,
+                            Title = text.Title,
+                            Text = text.Text,
+                            TextId = text.TextId,
+                            Created = text.Created,
+                            Updated = text.Updated
+                        };
                         _ = _context.KinaUnaTexts.Add(textItem);
                         _ = await _context.SaveChangesAsync();
                     }

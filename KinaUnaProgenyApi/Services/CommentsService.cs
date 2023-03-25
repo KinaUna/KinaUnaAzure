@@ -17,8 +17,8 @@ namespace KinaUnaProgenyApi.Services
         private readonly IPicturesService _picturesService;
         private readonly IVideosService _videosService;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public CommentsService(MediaDbContext mediaContext, IDistributedCache cache, IPicturesService picturesService, IVideosService videosService)
         {
@@ -129,7 +129,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Comment> AddComment(Comment comment)
         {
-            Comment commentToAdd = new Comment();
+            Comment commentToAdd = new();
             commentToAdd.CopyPropertiesForAdd(comment);
 
             await _mediaContext.CommentsDb.AddAsync(commentToAdd);
@@ -194,7 +194,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<CommentThread> AddCommentThread()
         {
-            CommentThread commentThread = new CommentThread();
+            CommentThread commentThread = new();
             await _mediaContext.CommentThreadsDb.AddAsync(commentThread);
             await _mediaContext.SaveChangesAsync();
 

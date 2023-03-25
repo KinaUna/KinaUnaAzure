@@ -15,8 +15,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public CalendarService(ProgenyDbContext context, IDistributedCache cache)
         {
@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<CalendarItem> AddCalendarItem(CalendarItem item)
         {
-            CalendarItem calendarItemToAdd = new CalendarItem();
+            CalendarItem calendarItemToAdd = new();
             calendarItemToAdd.CopyPropertiesForAdd(item);
 
             _ = _context.CalendarDb.Add(calendarItemToAdd);
@@ -52,7 +52,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<CalendarItem> GetCalendarItemFromCache(int id)
         {
-            CalendarItem calendarItem = new CalendarItem();
+            CalendarItem calendarItem = new();
             string cachedCalendarItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id);
             if (!string.IsNullOrEmpty(cachedCalendarItem))
             {
@@ -126,7 +126,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<CalendarItem>> GetCalendarListFromCache(int progenyId)
         {
-            List<CalendarItem> calendarList = new List<CalendarItem>();
+            List<CalendarItem> calendarList = new();
             string cachedCalendar = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId);
             if (!string.IsNullOrEmpty(cachedCalendar))
             {

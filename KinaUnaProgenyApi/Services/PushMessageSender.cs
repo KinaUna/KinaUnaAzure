@@ -22,11 +22,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendMessage(string user, string title, string message, string link, string tag)
         {
-            PushNotification notification = new PushNotification();
-            notification.Title = title;
-            notification.Message = message;
-            notification.Link = link;
-            notification.Tag = tag;
+            PushNotification notification = new()
+            {
+                Title = title,
+                Message = message,
+                Link = link,
+                Tag = tag
+            };
             string payload = JsonConvert.SerializeObject(notification);
             string vapidPublicKey = _configuration["VapidPublicKey"];
             string vapidPrivateKey = _configuration["VapidPrivateKey"];
@@ -36,15 +38,15 @@ namespace KinaUnaProgenyApi.Services
             {
                 foreach (PushDevices dev in deviceList)
                 {
-                    PushSubscription pushSubscription = new PushSubscription(dev.PushEndpoint, dev.PushP256DH, dev.PushAuth);
-                    VapidDetails vapidDetails = new VapidDetails("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
+                    PushSubscription pushSubscription = new(dev.PushEndpoint, dev.PushP256DH, dev.PushAuth);
+                    VapidDetails vapidDetails = new("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
                     if (string.IsNullOrEmpty(dev.PushAuth) || string.IsNullOrEmpty(dev.PushEndpoint))
                     {
                         await _dataService.RemovePushDevice(dev);
                     }
                     else
                     {
-                        WebPushClient webPushClient = new WebPushClient();
+                        WebPushClient webPushClient = new();
                         try
                         {
                             await webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);

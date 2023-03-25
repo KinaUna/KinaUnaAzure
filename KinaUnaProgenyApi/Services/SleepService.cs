@@ -15,8 +15,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public SleepService(ProgenyDbContext context, IDistributedCache cache)
         {
@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<Sleep> AddSleep(Sleep sleep)
         {
-            Sleep sleepToAdd = new Sleep();
+            Sleep sleepToAdd = new();
             sleepToAdd.CopyPropertiesForAdd(sleep);
 
             _ = _context.SleepDb.Add(sleepToAdd);
@@ -52,7 +52,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<Sleep> GetSleepFromCache(int id)
         {
-            Sleep sleep = new Sleep();
+            Sleep sleep = new();
             string cachedSleep = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id);
             if (!string.IsNullOrEmpty(cachedSleep))
             {
@@ -125,7 +125,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Sleep>> GetSleepListFromCache(int progenyId)
         {
-            List<Sleep> sleepList = new List<Sleep>();
+            List<Sleep> sleepList = new();
             string cachedSleepList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId);
             if (!string.IsNullOrEmpty(cachedSleepList))
             {

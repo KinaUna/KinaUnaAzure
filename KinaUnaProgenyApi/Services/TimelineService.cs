@@ -15,8 +15,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public TimelineService(ProgenyDbContext context, IDistributedCache cache)
         {
@@ -45,7 +45,7 @@ namespace KinaUnaProgenyApi.Services
                 return timeLineItem;
             }
 
-            TimeLineItem timeLineItemToAdd = new TimeLineItem();
+            TimeLineItem timeLineItemToAdd = new();
             timeLineItemToAdd.CopyPropertiesForAdd(timeLineItem);
 
             _ = await _context.TimeLineDb.AddAsync(timeLineItemToAdd);
@@ -58,7 +58,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<TimeLineItem> GetTimeLineItemFromCache(int id)
         {
-            TimeLineItem timeLineItem = new TimeLineItem();
+            TimeLineItem timeLineItem = new();
             string cachedTimeLineItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id);
             if (!string.IsNullOrEmpty(cachedTimeLineItem))
             {
@@ -131,7 +131,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<TimeLineItem> GetTimeLineItemByItemIdFromCache(string itemId, int itemType)
         {
-            TimeLineItem timeLineItem = new TimeLineItem();
+            TimeLineItem timeLineItem = new();
             string cachedTimeLineItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + itemId + itemType);
             if (!string.IsNullOrEmpty(cachedTimeLineItem))
             {
@@ -162,7 +162,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<TimeLineItem>> GetTimeLineListFromCache(int progenyId)
         {
-            List<TimeLineItem> timeLineList = new List<TimeLineItem>();
+            List<TimeLineItem> timeLineList = new();
             string cachedTimeLineList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId);
             if (!string.IsNullOrEmpty(cachedTimeLineList))
             {

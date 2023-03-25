@@ -15,8 +15,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public VocabularyService(ProgenyDbContext context, IDistributedCache cache)
         {
@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<VocabularyItem> AddVocabularyItem(VocabularyItem vocabularyItem)
         {
-            VocabularyItem vocabularyItemToAdd = new VocabularyItem();
+            VocabularyItem vocabularyItemToAdd = new();
             vocabularyItemToAdd.CopyPropertiesForAdd(vocabularyItem);
 
             _ = _context.VocabularyDb.Add(vocabularyItemToAdd);
@@ -51,7 +51,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<VocabularyItem> GetVocabularyItemFromCache(int id)
         {
-            VocabularyItem vocabularyItem = new VocabularyItem();
+            VocabularyItem vocabularyItem = new();
             string cachedVocabularyItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id);
             if (!string.IsNullOrEmpty(cachedVocabularyItem))
             {
@@ -124,7 +124,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<VocabularyItem>> GetVocabularyListFromCache(int progenyId)
         {
-            List<VocabularyItem> vocabularyList = new List<VocabularyItem>();
+            List<VocabularyItem> vocabularyList = new();
             string cachedVocabularyList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularylist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVocabularyList))
             {
