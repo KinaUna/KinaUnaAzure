@@ -97,12 +97,14 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "New comment for " + newComment.Progeny.NickName;
             string notificationMessage = model.DisplayName + " added a new comment for " + newComment.Progeny.NickName;
 
-            TimeLineItem timeLineItem = new TimeLineItem();
-            timeLineItem.ProgenyId = newComment.Progeny.Id;
-            timeLineItem.ItemId = newComment.ItemId;
-            timeLineItem.ItemType = newComment.ItemType;
-            timeLineItem.AccessLevel = newComment.AccessLevel;
-            
+            TimeLineItem timeLineItem = new()
+            {
+                ProgenyId = newComment.Progeny.Id,
+                ItemId = newComment.ItemId,
+                ItemType = newComment.ItemType,
+                AccessLevel = newComment.AccessLevel
+            };
+
             UserInfo userinfo = await _userInfoService.GetUserInfoByUserId(model.Author);
             
             await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);

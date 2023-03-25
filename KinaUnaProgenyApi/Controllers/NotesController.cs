@@ -104,7 +104,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             Note noteItem = await _noteService.AddNote(value);
             
-            TimeLineItem timeLineItem = new TimeLineItem();
+            TimeLineItem timeLineItem = new();
             timeLineItem.CopyNotePropertiesForAdd(noteItem);
             _ = await _timelineService.AddTimeLineItem(timeLineItem);
             
@@ -281,11 +281,13 @@ namespace KinaUnaProgenyApi.Controllers
                 note.Content = _imageStore.UpdateBlobLinks(note.Content);
             }
 
-            NotesListPage model = new NotesListPage();
-            model.NotesList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
+            NotesListPage model = new()
+            {
+                NotesList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy
+            };
 
             return Ok(model);
         }

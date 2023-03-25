@@ -118,7 +118,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            List<UserAccess> accessList = new List<UserAccess>();
+            List<UserAccess> accessList = new();
             string accessApiPath = "/api/Access/Progeny/" + progenyId;
             HttpResponseMessage accessResponse = await _httpClient.GetAsync(accessApiPath);
             if (accessResponse.IsSuccessStatusCode)
@@ -135,7 +135,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            List<UserAccess> accessList = new List<UserAccess>();
+            List<UserAccess> accessList = new();
             string accessApiPath = "/api/Access/AccessListByUser/" + userEmail;
             HttpResponseMessage accessResponse = await _httpClient.GetAsync(accessApiPath);
             if (accessResponse.IsSuccessStatusCode)

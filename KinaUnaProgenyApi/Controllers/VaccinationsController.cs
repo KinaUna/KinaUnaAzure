@@ -98,7 +98,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             Vaccination vaccinationItem = await _vaccinationService.AddVaccination(value);
             
-            TimeLineItem timeLineItem = new TimeLineItem();
+            TimeLineItem timeLineItem = new();
             timeLineItem.CopyVaccinationPropertiesForAdd(vaccinationItem);
 
             _ = await _timelineService.AddTimeLineItem(timeLineItem);

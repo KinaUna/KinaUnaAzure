@@ -52,7 +52,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            List<string> autoSuggestList = new List<string>();
+            List<string> autoSuggestList = new();
             List<Note> allNotes = await _noteService.GetNotesList(id);
             allNotes = allNotes.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Note noteItem in allNotes)
@@ -96,7 +96,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            List<string> autoSuggestList = new List<string>();
+            List<string> autoSuggestList = new();
 
             List<Friend> allFriends = await _friendService.GetFriendsList(id);
             allFriends = allFriends.Where(p => p.AccessLevel >= accessLevel).ToList();
@@ -155,7 +155,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             List<Picture> allPictures = await _picturesService.GetPicturesList(id);
             allPictures = allPictures.Where(p => p.AccessLevel >= accessLevel).ToList();
-            List<string> autoSuggestList = new List<string>();
+            List<string> autoSuggestList = new();
             foreach (Picture picture in allPictures)
             {
                 if (!string.IsNullOrEmpty(picture.Location))
@@ -226,7 +226,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             List<Picture> allPictures = await _picturesService.GetPicturesList(id);
             allPictures = allPictures.Where(p => p.AccessLevel >= accessLevel).ToList();
-            List<string> autoSuggestList = new List<string>();
+            List<string> autoSuggestList = new();
             foreach (Picture picture in allPictures)
             {
                 if (!string.IsNullOrEmpty(picture.Tags))

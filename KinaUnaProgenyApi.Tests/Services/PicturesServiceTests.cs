@@ -16,9 +16,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPicture_Should_Return_Picture_Object_When_Id_Is_Valid()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetPicture_Should_Return_Picture_Object_When_Id_Is_Valid").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Picture picture1 = new Picture
+            Picture picture1 = new()
             {
                 ProgenyId = 1, Author = "User1", AccessLevel = 0, PictureLink = Constants.ProfilePictureUrl, Tags = "Tag1, Tag2", Altitude = "0", Latitude = "0",
                 CommentThreadNumber = 1, Location = "Location1", Longtitude = "0", Owners = "User1", PictureHeight = 100, PictureWidth = 100, PictureLink600 = Constants.ProfilePictureUrl,
@@ -26,7 +26,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Picture picture2 = new Picture
+            Picture picture2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -55,9 +55,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            Mock<IImageStore> imageStore = new();
             
-            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
+            PicturesService pictureService = new(context, memoryCache, imageStore.Object);
 
             Picture resultPicture1 = await pictureService.GetPicture(1);
             Picture resultPicture2 = await pictureService.GetPicture(1); // Uses cache
@@ -81,9 +81,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPicture_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetPicture_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Picture picture1 = new Picture
+            Picture picture1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -111,9 +111,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            Mock<IImageStore> imageStore = new();
 
-            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
+            PicturesService pictureService = new(context, memoryCache, imageStore.Object);
 
             Picture resultPicture1 = await pictureService.GetPicture(2);
             Picture resultPicture2 = await pictureService.GetPicture(2); // Using cache
@@ -126,9 +126,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddPicture_Should_Save_Picture()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("AddPicture_Should_Save_Picture").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Picture picture1 = new Picture
+            Picture picture1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -156,11 +156,11 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            Mock<IImageStore> imageStore = new();
 
-            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
+            PicturesService pictureService = new(context, memoryCache, imageStore.Object);
 
-            Picture pictureToAdd = new Picture
+            Picture pictureToAdd = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -215,9 +215,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdatePicture_Should_Save_Picture()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("UpdatePicture_Should_Save_Picture").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Picture picture1 = new Picture
+            Picture picture1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -241,7 +241,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Picture picture2 = new Picture
+            Picture picture2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -269,9 +269,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            Mock<IImageStore> imageStore = new();
 
-            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
+            PicturesService pictureService = new(context, memoryCache, imageStore.Object);
 
             Picture pictureToUpdate = await pictureService.GetPicture(1);
             pictureToUpdate.AccessLevel = 5;
@@ -307,9 +307,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeletePicture_Should_Remove_Picture()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("DeletePicture_Should_Remove_Picture").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Picture picture1 = new Picture
+            Picture picture1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -333,7 +333,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Picture picture2 = new Picture
+            Picture picture2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -361,9 +361,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            Mock<IImageStore> imageStore = new();
 
-            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
+            PicturesService pictureService = new(context, memoryCache, imageStore.Object);
 
             int pictureItemsCountBeforeDelete = context.PicturesDb.Count();
             Picture pictureToDelete = await pictureService.GetPicture(1);
@@ -381,9 +381,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPictureByLink_Returns_Picture_Object_When_Id_Is_Valid()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetPictureByLink_Returns_Picture_Object_When_Id_Is_Valid").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Picture picture1 = new Picture
+            Picture picture1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -407,7 +407,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Picture picture2 = new Picture
+            Picture picture2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -436,9 +436,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            Mock<IImageStore> imageStore = new();
 
-            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
+            PicturesService pictureService = new(context, memoryCache, imageStore.Object);
 
             Picture resultPicture1 = await pictureService.GetPictureByLink("TestLink1");
             
@@ -454,9 +454,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPicturesList_Should_Return_List_Of_Picture_When_Progeny_Has_Saved_Pictures()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetPicturesList_Should_Return_List_Of_Picture_When_Progeny_Has_Saved_Pictures").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Picture picture1 = new Picture
+            Picture picture1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -480,7 +480,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Picture picture2 = new Picture
+            Picture picture2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -509,9 +509,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            Mock<IImageStore> imageStore = new();
 
-            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
+            PicturesService pictureService = new(context, memoryCache, imageStore.Object);
 
             List<Picture> picturesList = await pictureService.GetPicturesList(1);
             List<Picture> picturesList2 = await pictureService.GetPicturesList(1); // Test cached result.
@@ -532,9 +532,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetPicturesList_Should_Return_Empty_List_Of_Picture_When_Progeny_Has_No_Saved_Pictures").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Picture picture1 = new Picture
+            Picture picture1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -558,7 +558,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Picture picture2 = new Picture
+            Picture picture2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -587,9 +587,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new Mock<IImageStore>();
+            Mock<IImageStore> imageStore = new();
 
-            PicturesService pictureService = new PicturesService(context, memoryCache, imageStore.Object);
+            PicturesService pictureService = new(context, memoryCache, imageStore.Object);
 
             List<Picture> picturesList = await pictureService.GetPicturesList(2);
             List<Picture> picturesList2 = await pictureService.GetPicturesList(2); // Test cached result.

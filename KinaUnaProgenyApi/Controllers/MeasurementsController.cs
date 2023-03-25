@@ -97,7 +97,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             Measurement measurementItem = await _measurementService.AddMeasurement(value);
 
-            TimeLineItem timeLineItem = new TimeLineItem();
+            TimeLineItem timeLineItem = new();
             timeLineItem.CopyMeasurementPropertiesForAdd(measurementItem);
 
             
@@ -273,11 +273,13 @@ namespace KinaUnaProgenyApi.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            MeasurementsListPage model = new MeasurementsListPage();
-            model.MeasurementsList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
+            MeasurementsListPage model = new()
+            {
+                MeasurementsList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy
+            };
 
             return Ok(model);
         }

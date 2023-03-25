@@ -99,7 +99,7 @@ namespace KinaUnaProgenyApi.Controllers
             Skill skillItem = await _skillService.AddSkill(value);
             
 
-            TimeLineItem timeLineItem = new TimeLineItem();
+            TimeLineItem timeLineItem = new();
             timeLineItem.CopySkillPropertiesForAdd(skillItem);
             _ = await _timelineService.AddTimeLineItem(timeLineItem);
             
@@ -273,11 +273,13 @@ namespace KinaUnaProgenyApi.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            SkillsListPage model = new SkillsListPage();
-            model.SkillsList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
+            SkillsListPage model = new()
+            {
+                SkillsList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy
+            };
 
             return Ok(model);
         }

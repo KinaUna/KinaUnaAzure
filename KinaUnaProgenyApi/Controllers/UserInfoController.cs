@@ -97,12 +97,14 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (userEmail.ToUpper() == id.ToUpper())
                 {
-                    UserInfo userinfoToAdd = new UserInfo();
-                    userinfoToAdd.UserEmail = userEmail;
-                    userinfoToAdd.ViewChild = 0;
-                    userinfoToAdd.UserId = User.GetUserId();
-                    userinfoToAdd.Timezone = Constants.DefaultTimezone;
-                    userinfoToAdd.UserName = User.GetUserUserName();
+                    UserInfo userinfoToAdd = new()
+                    {
+                        UserEmail = userEmail,
+                        ViewChild = 0,
+                        UserId = User.GetUserId(),
+                        Timezone = Constants.DefaultTimezone,
+                        UserName = User.GetUserUserName()
+                    };
                     if (String.IsNullOrEmpty(userinfoToAdd.UserName))
                     {
                         userinfoToAdd.UserName = userinfoToAdd.UserEmail;
@@ -129,13 +131,15 @@ namespace KinaUnaProgenyApi.Controllers
                 }
                 else
                 {
-                    userInfo = new UserInfo();
-                    userInfo.ViewChild = 0;
-                    userInfo.UserEmail = "Unknown";
-                    userInfo.CanUserAddItems = false;
-                    userInfo.UserId = "Unknown";
-                    userInfo.AccessList = new List<UserAccess>();
-                    userInfo.ProgenyList = new List<Progeny>();
+                    userInfo = new UserInfo
+                    {
+                        ViewChild = 0,
+                        UserEmail = "Unknown",
+                        CanUserAddItems = false,
+                        UserId = "Unknown",
+                        AccessList = new List<UserAccess>(),
+                        ProgenyList = new List<Progeny>()
+                    };
                 }
                 
             }
@@ -198,13 +202,15 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (userEmail.ToUpper() == id.ToUpper())
                 {
-                    UserInfo userInfoToAdd = new UserInfo();
-                    userInfoToAdd.UserEmail = userEmail;
-                    userInfoToAdd.ViewChild = 0;
-                    userInfoToAdd.UserId = User.GetUserId();
-                    userInfoToAdd.Timezone = Constants.DefaultTimezone;
-                    userInfoToAdd.UserName = User.GetUserUserName();
-                    if (String.IsNullOrEmpty(userInfoToAdd.UserName))
+                    UserInfo userInfoToAdd = new()
+                    {
+                        UserEmail = userEmail,
+                        ViewChild = 0,
+                        UserId = User.GetUserId(),
+                        Timezone = Constants.DefaultTimezone,
+                        UserName = User.GetUserUserName()
+                    };
+                    if (string.IsNullOrEmpty(userInfoToAdd.UserName))
                     {
                         userInfoToAdd.UserName = userInfoToAdd.UserEmail;
                     }
@@ -229,13 +235,15 @@ namespace KinaUnaProgenyApi.Controllers
                 }
                 else
                 {
-                    userInfo = new UserInfo();
-                    userInfo.ViewChild = 0;
-                    userInfo.UserEmail = "Unknown";
-                    userInfo.CanUserAddItems = false;
-                    userInfo.UserId = "Unknown";
-                    userInfo.AccessList = new List<UserAccess>();
-                    userInfo.ProgenyList = new List<Progeny>();
+                    userInfo = new UserInfo
+                    {
+                        ViewChild = 0,
+                        UserEmail = "Unknown",
+                        CanUserAddItems = false,
+                        UserId = "Unknown",
+                        AccessList = new List<UserAccess>(),
+                        ProgenyList = new List<Progeny>()
+                    };
                 }
                 
             }
@@ -296,14 +304,15 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                userInfo = new UserInfo();
-                userInfo.ViewChild = 0;
-                userInfo.UserEmail = "Unknown";
-                userInfo.CanUserAddItems = false;
-                userInfo.UserId = "Unknown";
-                userInfo.AccessList = new List<UserAccess>();
-                userInfo.ProgenyList = new List<Progeny>();
-                
+                userInfo = new UserInfo
+                {
+                    ViewChild = 0,
+                    UserEmail = "Unknown",
+                    CanUserAddItems = false,
+                    UserId = "Unknown",
+                    AccessList = new List<UserAccess>(),
+                    ProgenyList = new List<Progeny>()
+                };
             }
             return Ok(userInfo);
         }
@@ -312,18 +321,16 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> ByUserId(string id)
         {
-            UserInfo userInfo = await _userInfoService.GetUserInfoByUserId(id);
-            if (userInfo == null)
+            UserInfo userInfo = await _userInfoService.GetUserInfoByUserId(id) ?? new UserInfo
             {
-                userInfo = new UserInfo();
-                userInfo.ViewChild = 0;
-                userInfo.UserEmail = "Unknown";
-                userInfo.CanUserAddItems = false;
-                userInfo.UserId = "Unknown";
-                userInfo.AccessList = new List<UserAccess>();
-                userInfo.ProgenyList = new List<Progeny>();
-            }
-            
+                ViewChild = 0,
+                UserEmail = "Unknown",
+                CanUserAddItems = false,
+                UserId = "Unknown",
+                AccessList = new List<UserAccess>(),
+                ProgenyList = new List<Progeny>()
+            };
+
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             
             bool allowAccess = false;
@@ -373,14 +380,15 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                userInfo = new UserInfo();
-                userInfo.ViewChild = 0;
-                userInfo.UserEmail = "Unknown";
-                userInfo.CanUserAddItems = false;
-                userInfo.UserId = "Unknown";
-                userInfo.AccessList = new List<UserAccess>();
-                userInfo.ProgenyList = new List<Progeny>();
-
+                userInfo = new UserInfo
+                {
+                    ViewChild = 0,
+                    UserEmail = "Unknown",
+                    CanUserAddItems = false,
+                    UserId = "Unknown",
+                    AccessList = new List<UserAccess>(),
+                    ProgenyList = new List<Progeny>()
+                };
             }
             return Ok(userInfo);
         }
@@ -388,17 +396,15 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost("[action]")]
         public async Task<IActionResult> ByUserIdPost([FromBody] string id)
         {
-            UserInfo userInfo = await _userInfoService.GetUserInfoByUserId(id);
-            if (userInfo == null)
+            UserInfo userInfo = await _userInfoService.GetUserInfoByUserId(id) ?? new UserInfo
             {
-                userInfo = new UserInfo();
-                userInfo.ViewChild = 0;
-                userInfo.UserEmail = "Unknown";
-                userInfo.CanUserAddItems = false;
-                userInfo.UserId = "Unknown";
-                userInfo.AccessList = new List<UserAccess>();
-                userInfo.ProgenyList = new List<Progeny>();
-            }
+                ViewChild = 0,
+                UserEmail = "Unknown",
+                CanUserAddItems = false,
+                UserId = "Unknown",
+                AccessList = new List<UserAccess>(),
+                ProgenyList = new List<Progeny>()
+            };
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             
             bool allowAccess = false;
@@ -448,14 +454,15 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                userInfo = new UserInfo();
-                userInfo.ViewChild = 0;
-                userInfo.UserEmail = "Unknown";
-                userInfo.CanUserAddItems = false;
-                userInfo.UserId = "Unknown";
-                userInfo.AccessList = new List<UserAccess>();
-                userInfo.ProgenyList = new List<Progeny>();
-
+                userInfo = new UserInfo
+                {
+                    ViewChild = 0,
+                    UserEmail = "Unknown",
+                    CanUserAddItems = false,
+                    UserId = "Unknown",
+                    AccessList = new List<UserAccess>(),
+                    ProgenyList = new List<Progeny>()
+                };
             }
             return Ok(userInfo);
         }
@@ -493,16 +500,18 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] UserInfo value)
         {
-            UserInfo userInfo = new UserInfo();
-            userInfo.ViewChild = value?.ViewChild ?? 0;
-            userInfo.UserEmail = value?.UserEmail ?? "";
-            userInfo.UserId = value?.UserId ?? "";
-            userInfo.Timezone = value?.Timezone ?? "Central European Standard Time";
-            userInfo.FirstName = value?.FirstName ?? "";
-            userInfo.MiddleName = value?.MiddleName ?? "";
-            userInfo.LastName = value?.LastName ?? "";
-            userInfo.PhoneNumber = value?.PhoneNumber ?? "";
-            userInfo.ProfilePicture = value?.ProfilePicture ?? "";
+            UserInfo userInfo = new()
+            {
+                ViewChild = value?.ViewChild ?? 0,
+                UserEmail = value?.UserEmail ?? "",
+                UserId = value?.UserId ?? "",
+                Timezone = value?.Timezone ?? "Central European Standard Time",
+                FirstName = value?.FirstName ?? "",
+                MiddleName = value?.MiddleName ?? "",
+                LastName = value?.LastName ?? "",
+                PhoneNumber = value?.PhoneNumber ?? "",
+                ProfilePicture = value?.ProfilePicture ?? ""
+            };
             userInfo.UserName = value?.UserName ?? userInfo.UserEmail;
             userInfo.IsKinaUnaUser = value?.IsKinaUnaUser ?? true;
             userInfo.IsPivoqUser = value?.IsPivoqUser ?? false;
@@ -544,11 +553,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] UserInfo value)
         {
-            UserInfo userInfo = await _userInfoService.GetUserInfoByUserId(value.UserId);
-            if (userInfo == null)
-            {
-                userInfo = await _userInfoService.GetUserInfoByUserId(id);
-            }
+            UserInfo userInfo = await _userInfoService.GetUserInfoByUserId(value.UserId) ?? await _userInfoService.GetUserInfoByUserId(id);
 
             if (userInfo == null)
             {

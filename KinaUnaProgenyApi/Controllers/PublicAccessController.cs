@@ -64,8 +64,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Get()
         {
             Progeny prog = await _progenyService.GetProgeny(Constants.DefaultChildId);
-            List<Progeny> resultList = new List<Progeny>(); 
-            resultList.Add(prog);
+            List<Progeny> resultList = new() { prog };
 
             return Ok(resultList);
         }
@@ -75,6 +74,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             Progeny result = await _progenyService.GetProgeny(Constants.DefaultChildId);
             result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Progeny);
+
             return Ok(result);
         }
 
@@ -113,7 +113,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> ProgenyListByUser(string id)
         {
-            List<Progeny> result = new List<Progeny>();
+            List<Progeny> result = new();
             Progeny prog = await _progenyService.GetProgeny(Constants.DefaultChildId); 
             result.Add(prog);
             return Ok(result);
@@ -158,10 +158,12 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Ok(result);
             }
-            CalendarItem calItem = new CalendarItem();
-            calItem.ProgenyId = Constants.DefaultChildId;
-            calItem.AccessLevel = 5;
-            calItem.Title = "Launch of KinaUna.com";
+            CalendarItem calItem = new()
+            {
+                ProgenyId = Constants.DefaultChildId,
+                AccessLevel = 5,
+                Title = "Launch of KinaUna.com"
+            };
             UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
             calItem.Author = adminInfo?.UserId ?? "Unknown Author";
             calItem.StartTime = new DateTime(2018, 2, 18, 21, 02, 0);
@@ -192,10 +194,12 @@ namespace KinaUnaProgenyApi.Controllers
             Contact result = await _contactService.GetContact(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = new Contact();
-                result.AccessLevel = 5;
-                result.ProgenyId = Constants.DefaultChildId;
-                result.Active = true;
+                result = new Contact
+                {
+                    AccessLevel = 5,
+                    ProgenyId = Constants.DefaultChildId,
+                    Active = true
+                };
                 UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
                 result.Author = adminInfo?.UserId ?? "Unknown Author";
                 result.DisplayName = adminInfo?.UserName ?? "Unknown";
@@ -256,12 +260,14 @@ namespace KinaUnaProgenyApi.Controllers
             Location result = await _locationService.GetLocation(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = new Location();
-                result.AccessLevel = 5;
-                result.ProgenyId = Constants.DefaultChildId;
-                result.Name = Constants.AppName;
-                result.Latitude = 0.0;
-                result.Longitude = 0.0;
+                result = new Location
+                {
+                    AccessLevel = 5,
+                    ProgenyId = Constants.DefaultChildId,
+                    Name = Constants.AppName,
+                    Latitude = 0.0,
+                    Longitude = 0.0
+                };
             }
             return Ok(result);
         }
@@ -272,12 +278,14 @@ namespace KinaUnaProgenyApi.Controllers
             VocabularyItem result = await _vocabularyService.GetVocabularyItem(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = new VocabularyItem();
-                result.AccessLevel = 5;
-                result.ProgenyId = Constants.DefaultChildId;
-                result.Word = Constants.AppName;
-                result.DateAdded = DateTime.UtcNow;
-                result.Date = DateTime.UtcNow;
+                result = new VocabularyItem
+                {
+                    AccessLevel = 5,
+                    ProgenyId = Constants.DefaultChildId,
+                    Word = Constants.AppName,
+                    DateAdded = DateTime.UtcNow,
+                    Date = DateTime.UtcNow
+                };
             }
             return Ok(result);
         }
@@ -288,12 +296,14 @@ namespace KinaUnaProgenyApi.Controllers
             Skill result = await _skillService.GetSkill(id); 
             if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = new Skill();
-                result.AccessLevel = 5;
-                result.ProgenyId = Constants.DefaultChildId;
-                result.Name = "Launch website";
-                result.SkillAddedDate = DateTime.UtcNow;
-                result.SkillFirstObservation = DateTime.UtcNow;
+                result = new Skill
+                {
+                    AccessLevel = 5,
+                    ProgenyId = Constants.DefaultChildId,
+                    Name = "Launch website",
+                    SkillAddedDate = DateTime.UtcNow,
+                    SkillFirstObservation = DateTime.UtcNow
+                };
             }
             return Ok(result);
         }
@@ -304,9 +314,11 @@ namespace KinaUnaProgenyApi.Controllers
             Friend result = await _friendService.GetFriend(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = new Friend();
-                result.AccessLevel = 5;
-                result.ProgenyId = Constants.DefaultChildId;
+                result = new Friend
+                {
+                    AccessLevel = 5,
+                    ProgenyId = Constants.DefaultChildId
+                };
                 UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail); 
                 result.Author = adminInfo?.UserId ?? "Unknown Author";
                 result.Name = adminInfo?.UserName ?? "Unknown";
@@ -326,10 +338,12 @@ namespace KinaUnaProgenyApi.Controllers
             Measurement result = await _measurementService.GetMeasurement(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = new Measurement();
-                result.AccessLevel = 5;
-                result.ProgenyId = Constants.DefaultChildId;
-                result.Circumference = 0;
+                result = new Measurement
+                {
+                    AccessLevel = 5,
+                    ProgenyId = Constants.DefaultChildId,
+                    Circumference = 0
+                };
                 UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
                 result.Author = adminInfo?.UserId ?? "Unknown Author";
                 result.CreatedDate = DateTime.UtcNow;
@@ -346,9 +360,11 @@ namespace KinaUnaProgenyApi.Controllers
             Sleep result = await _sleepService.GetSleep(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = new Sleep();
-                result.AccessLevel = 5;
-                result.ProgenyId = Constants.DefaultChildId;
+                result = new Sleep
+                {
+                    AccessLevel = 5,
+                    ProgenyId = Constants.DefaultChildId
+                };
                 UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
                 result.Author = adminInfo?.UserId ?? "Unknown Author";
                 result.CreatedDate = DateTime.UtcNow;
@@ -374,13 +390,15 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepStatsMobile(int progenyId, int accessLevel)
         {
             string userTimeZone = Constants.DefaultTimezone;
-            SleepStatsModel model = new SleepStatsModel();
-            model.SleepTotal = TimeSpan.Zero;
-            model.SleepLastYear = TimeSpan.Zero;
-            model.SleepLastMonth = TimeSpan.Zero;
+            SleepStatsModel model = new()
+            {
+                SleepTotal = TimeSpan.Zero,
+                SleepLastYear = TimeSpan.Zero,
+                SleepLastMonth = TimeSpan.Zero
+            };
             List<Sleep> sList = await _sleepService.GetSleepList(Constants.DefaultChildId);
-            List<Sleep> sleepList = new List<Sleep>();
-            DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
+            List<Sleep> sleepList = new();
+            DateTime yearAgo = new(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
             if (sList.Count != 0)
             {
@@ -393,21 +411,21 @@ namespace KinaUnaProgenyApi.Controllers
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                     s.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(s.SleepEnd,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-                    DateTimeOffset sOffset = new DateTimeOffset(s.SleepStart,
+                    DateTimeOffset sOffset = new(s.SleepStart,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
-                    DateTimeOffset eOffset = new DateTimeOffset(s.SleepEnd,
+                    DateTimeOffset eOffset = new(s.SleepEnd,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
                     s.SleepDuration = eOffset - sOffset;
 
-                    model.SleepTotal = model.SleepTotal + s.SleepDuration;
+                    model.SleepTotal += s.SleepDuration;
                     if (isLessThanYear)
                     {
-                        model.SleepLastYear = model.SleepLastYear + s.SleepDuration;
+                        model.SleepLastYear += s.SleepDuration;
                     }
 
                     if (isLessThanMonth)
                     {
-                        model.SleepLastMonth = model.SleepLastMonth + s.SleepDuration;
+                        model.SleepLastMonth += s.SleepDuration;
                     }
 
                     if (s.AccessLevel >= accessLevel)
@@ -437,13 +455,13 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string userTimeZone = Constants.DefaultTimezone;
             List<Sleep> sList = await _sleepService.GetSleepList(Constants.DefaultChildId);
-            List<Sleep> chartList = new List<Sleep>();
+            List<Sleep> chartList = new();
             foreach (Sleep chartItem in sList)
             {
                 double durationStartDate = 0.0;
                 if (chartItem.SleepStart.Date == chartItem.SleepEnd.Date)
                 {
-                    durationStartDate = durationStartDate + chartItem.SleepDuration.TotalMinutes;
+                    durationStartDate += chartItem.SleepDuration.TotalMinutes;
                     Sleep slpItem = chartList.SingleOrDefault(s => s.SleepStart.Date == chartItem.SleepStart.Date);
                     if (slpItem != null)
                     {
@@ -452,22 +470,24 @@ namespace KinaUnaProgenyApi.Controllers
                     else
                     {
 
-                        Sleep newSleep = new Sleep();
-                        newSleep.SleepStart = chartItem.SleepStart;
-                        newSleep.SleepDuration = TimeSpan.FromMinutes(durationStartDate);
+                        Sleep newSleep = new()
+                        {
+                            SleepStart = chartItem.SleepStart,
+                            SleepDuration = TimeSpan.FromMinutes(durationStartDate)
+                        };
                         chartList.Add(newSleep);
                     }
                 }
                 else
                 {
-                    DateTimeOffset sOffset = new DateTimeOffset(chartItem.SleepStart,
+                    DateTimeOffset sOffset = new(chartItem.SleepStart,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(chartItem.SleepStart));
-                    DateTimeOffset s2Offset = new DateTimeOffset(chartItem.SleepStart.Date + TimeSpan.FromDays(1),
+                    DateTimeOffset s2Offset = new(chartItem.SleepStart.Date + TimeSpan.FromDays(1),
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone)
                             .GetUtcOffset(chartItem.SleepStart.Date + TimeSpan.FromDays(1)));
-                    DateTimeOffset eOffset = new DateTimeOffset(chartItem.SleepEnd,
+                    DateTimeOffset eOffset = new(chartItem.SleepEnd,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(chartItem.SleepEnd));
-                    DateTimeOffset e2Offset = new DateTimeOffset(chartItem.SleepEnd.Date,
+                    DateTimeOffset e2Offset = new(chartItem.SleepEnd.Date,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone)
                             .GetUtcOffset(chartItem.SleepEnd.Date));
                     TimeSpan sDateDuration = s2Offset - sOffset;
@@ -481,9 +501,11 @@ namespace KinaUnaProgenyApi.Controllers
                     }
                     else
                     {
-                        Sleep newSleep = new Sleep();
-                        newSleep.SleepStart = chartItem.SleepStart;
-                        newSleep.SleepDuration = TimeSpan.FromMinutes(durationStartDate);
+                        Sleep newSleep = new()
+                        {
+                            SleepStart = chartItem.SleepStart,
+                            SleepDuration = TimeSpan.FromMinutes(durationStartDate)
+                        };
                         chartList.Add(newSleep);
                     }
 
@@ -494,9 +516,11 @@ namespace KinaUnaProgenyApi.Controllers
                     }
                     else
                     {
-                        Sleep newSleep = new Sleep();
-                        newSleep.SleepStart = chartItem.SleepEnd;
-                        newSleep.SleepDuration = TimeSpan.FromMinutes(durationEndDate);
+                        Sleep newSleep = new()
+                        {
+                            SleepStart = chartItem.SleepEnd,
+                            SleepDuration = TimeSpan.FromMinutes(durationEndDate)
+                        };
                         chartList.Add(newSleep);
                     }
                 }
@@ -513,12 +537,14 @@ namespace KinaUnaProgenyApi.Controllers
             Note result = await _noteService.GetNote(id); 
             if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = new Note();
-                result.AccessLevel = 5;
-                result.ProgenyId = Constants.DefaultChildId;
-                result.Content = "Sample Note";
-                result.CreatedDate = DateTime.UtcNow;
-                result.Title = "Sample";
+                result = new Note
+                {
+                    AccessLevel = 5,
+                    ProgenyId = Constants.DefaultChildId,
+                    Content = "Sample Note",
+                    CreatedDate = DateTime.UtcNow,
+                    Title = "Sample"
+                };
             }
             return Ok(result);
         }
@@ -529,11 +555,13 @@ namespace KinaUnaProgenyApi.Controllers
             Vaccination result = await _vaccinationService.GetVaccination(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
-                result = new Vaccination();
-                result.AccessLevel = 5;
-                result.ProgenyId = Constants.DefaultChildId;
-                result.VaccinationDate = DateTime.UtcNow;
-                result.VaccinationName = "Test vaccination";
+                result = new Vaccination
+                {
+                    AccessLevel = 5,
+                    ProgenyId = Constants.DefaultChildId,
+                    VaccinationDate = DateTime.UtcNow,
+                    VaccinationName = "Test vaccination"
+                };
             }
             return Ok(result);
         }
@@ -594,11 +622,13 @@ namespace KinaUnaProgenyApi.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            NotesListPage model = new NotesListPage();
-            model.NotesList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
+            NotesListPage model = new()
+            {
+                NotesList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy
+            };
 
             return Ok(model);
         }
@@ -641,11 +671,13 @@ namespace KinaUnaProgenyApi.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            SleepListPage model = new SleepListPage();
-            model.SleepList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
+            SleepListPage model = new()
+            {
+                SleepList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy
+            };
 
             return Ok(model);
         }
@@ -659,7 +691,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 string userTimeZone = Constants.DefaultTimezone;
                 List<Sleep> sList = await _sleepService.GetSleepList(currentSleep.ProgenyId);
-                List<Sleep> sleepList = new List<Sleep>();
+                List<Sleep> sleepList = new();
                 foreach (Sleep s in sList)
                 {
                     if (s.AccessLevel >= accessLevel)
@@ -677,9 +709,8 @@ namespace KinaUnaProgenyApi.Controllers
                     sleepList = sleepList.OrderByDescending(s => s.SleepStart).ToList();
                 }
 
-                List<Sleep> model = new List<Sleep>();
+                List<Sleep> model = new() { currentSleep };
 
-                model.Add(currentSleep);
                 int currentSleepIndex = sleepList.IndexOf(currentSleep);
                 if (currentSleepIndex > 0)
                 {
@@ -687,7 +718,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
                 else
                 {
-                    model.Add(sleepList[sleepList.Count - 1]);
+                    model.Add(sleepList[^1]);
                 }
 
                 if (sleepList.Count < currentSleepIndex + 1)
@@ -701,9 +732,9 @@ namespace KinaUnaProgenyApi.Controllers
 
                 foreach (Sleep s in model)
                 {
-                    DateTimeOffset sOffset = new DateTimeOffset(s.SleepStart,
+                    DateTimeOffset sOffset = new(s.SleepStart,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
-                    DateTimeOffset eOffset = new DateTimeOffset(s.SleepEnd,
+                    DateTimeOffset eOffset = new(s.SleepEnd,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
                     s.SleepDuration = eOffset - sOffset;
                 }
@@ -778,11 +809,13 @@ namespace KinaUnaProgenyApi.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            LocationsListPage model = new LocationsListPage();
-            model.LocationsList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
+            LocationsListPage model = new()
+            {
+                LocationsList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy
+            };
 
             return Ok(model);
         }
@@ -829,11 +862,13 @@ namespace KinaUnaProgenyApi.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            MeasurementsListPage model = new MeasurementsListPage();
-            model.MeasurementsList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
+            MeasurementsListPage model = new()
+            {
+                MeasurementsList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy
+            };
 
             return Ok(model);
         }
@@ -898,11 +933,13 @@ namespace KinaUnaProgenyApi.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            SkillsListPage model = new SkillsListPage();
-            model.SkillsList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
+            SkillsListPage model = new()
+            {
+                SkillsList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy
+            };
 
             return Ok(model);
         }
@@ -949,11 +986,13 @@ namespace KinaUnaProgenyApi.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            VocabularyListPage model = new VocabularyListPage();
-            model.VocabularyList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
+            VocabularyListPage model = new()
+            {
+                VocabularyList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy
+            };
 
             return Ok(model);
         }
@@ -1003,7 +1042,7 @@ namespace KinaUnaProgenyApi.Controllers
             picturesList = picturesList.Where(p => p.AccessLevel >= 5).ToList();
             if (picturesList.Any())
             {
-                Random r = new Random();
+                Random r = new();
                 int pictureNumber = r.Next(0, picturesList.Count);
 
                 Picture picture = picturesList[pictureNumber];
@@ -1014,19 +1053,23 @@ namespace KinaUnaProgenyApi.Controllers
                 return Ok(picture);
             }
 
-            Progeny progeny = new Progeny();
-            progeny.Name = Constants.AppName;
-            progeny.Admins = Constants.AdminEmail;
-            progeny.NickName = Constants.AppName;
-            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+            Progeny progeny = new()
+            {
+                Name = Constants.AppName,
+                Admins = Constants.AdminEmail,
+                NickName = Constants.AppName,
+                BirthDay = new DateTime(2018, 2, 18, 18, 2, 0),
+                Id = 0,
+                TimeZone = Constants.DefaultTimezone
+            };
 
-            progeny.Id = 0;
-            progeny.TimeZone = Constants.DefaultTimezone;
-            Picture tempPicture = new Picture();
-            tempPicture.ProgenyId = 0;
-            tempPicture.Progeny = progeny;
-            tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
+            Picture tempPicture = new()
+            {
+                ProgenyId = 0,
+                Progeny = progeny,
+                AccessLevel = 5,
+                PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg"
+            };
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
             return Ok(tempPicture);
@@ -1049,19 +1092,23 @@ namespace KinaUnaProgenyApi.Controllers
 
             }
 
-            Progeny progeny = new Progeny();
-            progeny.Name = Constants.AppName;
-            progeny.Admins = Constants.AdminEmail;
-            progeny.NickName = Constants.AppName;
-            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+            Progeny progeny = new()
+            {
+                Name = Constants.AppName,
+                Admins = Constants.AdminEmail,
+                NickName = Constants.AppName,
+                BirthDay = new DateTime(2018, 2, 18, 18, 2, 0),
+                Id = 0,
+                TimeZone = Constants.DefaultTimezone
+            };
 
-            progeny.Id = 0;
-            progeny.TimeZone = Constants.DefaultTimezone;
-            Picture tempPicture = new Picture();
-            tempPicture.ProgenyId = 0;
-            tempPicture.Progeny = progeny;
-            tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
+            Picture tempPicture = new()
+            {
+                ProgenyId = 0,
+                Progeny = progeny,
+                AccessLevel = 5,
+                PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg"
+            };
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
@@ -1097,7 +1144,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             int pictureCounter = 1;
             int picCount = allItems.Count;
-            List<string> tagsList = new List<string>();
+            List<string> tagsList = new();
             foreach (Picture pic in allItems)
             {
                 if (sortBy == 1)
@@ -1135,12 +1182,14 @@ namespace KinaUnaProgenyApi.Controllers
                 pic.PictureLink1200 = _imageStore.UriFor(pic.PictureLink1200);
                 pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
             }
-            PicturePageViewModel model = new PicturePageViewModel();
-            model.PicturesList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
-            model.TagFilter = tagFilter;
+            PicturePageViewModel model = new()
+            {
+                PicturesList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy,
+                TagFilter = tagFilter
+            };
             string tList = "";
             foreach (string tstr in tagsList)
             {
@@ -1165,12 +1214,14 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                PictureViewModel model = new PictureViewModel();
-                model.PictureId = picture.PictureId;
-                model.PictureTime = picture.PictureTime;
-                model.ProgenyId = picture.ProgenyId;
-                model.Owners = picture.Owners;
-                model.PictureLink = picture.PictureLink1200;
+                PictureViewModel model = new()
+                {
+                    PictureId = picture.PictureId,
+                    PictureTime = picture.PictureTime,
+                    ProgenyId = picture.ProgenyId,
+                    Owners = picture.Owners,
+                    PictureLink = picture.PictureLink1200
+                };
                 model.PictureLink = _imageStore.UriFor(model.PictureLink);
                 model.AccessLevel = picture.AccessLevel;
                 model.Author = picture.Author;
@@ -1184,7 +1235,7 @@ namespace KinaUnaProgenyApi.Controllers
                 model.PictureCount = 1;
                 model.CommentsList = await _commentsService.GetCommentsList(picture.CommentThreadNumber);
                 model.TagsList = "";
-                List<string> tagsList = new List<string>();
+                List<string> tagsList = new();
                 List<Picture> pictureList = await _picturesService.GetPicturesList(picture.ProgenyId);
                 pictureList = pictureList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToList();
                 if (pictureList.Any())
@@ -1232,9 +1283,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                     if (sortBy == 1)
                     {
-                        int tempVal = model.NextPicture;
-                        model.NextPicture = model.PrevPicture;
-                        model.PrevPicture = tempVal;
+                        (model.PrevPicture, model.NextPicture) = (model.NextPicture, model.PrevPicture);
                     }
 
                 }
@@ -1247,7 +1296,7 @@ namespace KinaUnaProgenyApi.Controllers
                     }
 
                     tagItems = tagItems.Remove(tagItems.Length - 1);
-                    tagItems = tagItems + "]";
+                    tagItems += "]";
                 }
 
                 model.TagsList = tagItems;
@@ -1300,7 +1349,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             int videoCounter = 1;
             int vidCount = allItems.Count;
-            List<string> tagsList = new List<string>();
+            List<string> tagsList = new();
             foreach (Video vid in allItems)
             {
                 if (sortBy == 1)
@@ -1354,12 +1403,14 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 vid.Comments = await _commentsService.GetCommentsList(vid.CommentThreadNumber);
             }
-            VideoPageViewModel model = new VideoPageViewModel();
-            model.VideosList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
-            model.TagFilter = tagFilter;
+            VideoPageViewModel model = new()
+            {
+                VideosList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy,
+                TagFilter = tagFilter
+            };
             string tList = "";
             foreach (string tstr in tagsList)
             {
@@ -1384,17 +1435,19 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                VideoViewModel model = new VideoViewModel();
-                model.VideoId = video.VideoId;
-                model.VideoType = video.VideoType;
-                model.VideoTime = video.VideoTime;
-                model.Duration = video.Duration;
-                model.ProgenyId = video.ProgenyId;
-                model.Owners = video.Owners;
-                model.VideoLink = video.VideoLink;
-                model.ThumbLink = video.ThumbLink;
-                model.AccessLevel = video.AccessLevel;
-                model.Author = video.Author;
+                VideoViewModel model = new()
+                {
+                    VideoId = video.VideoId,
+                    VideoType = video.VideoType,
+                    VideoTime = video.VideoTime,
+                    Duration = video.Duration,
+                    ProgenyId = video.ProgenyId,
+                    Owners = video.Owners,
+                    VideoLink = video.VideoLink,
+                    ThumbLink = video.ThumbLink,
+                    AccessLevel = video.AccessLevel,
+                    Author = video.Author
+                };
                 model.AccessLevelListEn[video.AccessLevel].Selected = true;
                 model.AccessLevelListDa[video.AccessLevel].Selected = true;
                 model.AccessLevelListDe[video.AccessLevel].Selected = true;
@@ -1408,7 +1461,7 @@ namespace KinaUnaProgenyApi.Controllers
                 model.Latitude = video.Latitude;
                 model.Altitude = video.Latitude;
                 model.TagsList = "";
-                List<string> tagsList = new List<string>();
+                List<string> tagsList = new();
                 List<Video> videosList = await _videosService.GetVideosList(video.ProgenyId);
                 videosList = videosList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToList();
                 if (videosList.Any())
@@ -1456,9 +1509,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                     if (sortBy == 1)
                     {
-                        int tempVal = model.NextVideo;
-                        model.NextVideo = model.PrevVideo;
-                        model.PrevVideo = tempVal;
+                        (model.NextVideo, model.PrevVideo) = (model.PrevVideo, model.NextVideo);
                     }
 
                 }
@@ -1471,7 +1522,7 @@ namespace KinaUnaProgenyApi.Controllers
                     }
 
                     tagItems = tagItems.Remove(tagItems.Length - 1);
-                    tagItems = tagItems + "]";
+                    tagItems += "]";
                 }
 
                 model.TagsList = tagItems;
@@ -1487,7 +1538,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> PictureTagsList(int id)
         {
             string tagListString = "";
-            List<string> tagsList = new List<string>();
+            List<string> tagsList = new();
             List<Picture> pictureList = await _picturesService.GetPicturesList(id);
             if (pictureList.Any())
             {
@@ -1520,7 +1571,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 tagItems = tagItems.Remove(tagItems.Length - 1);
-                tagItems = tagItems + "]";
+                tagItems += "]";
             }
 
             tagListString = tagItems;

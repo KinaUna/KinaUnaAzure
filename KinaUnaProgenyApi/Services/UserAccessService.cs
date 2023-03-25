@@ -15,8 +15,8 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly ProgenyDbContext _context;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
-        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
+        private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
         public UserAccessService(ProgenyDbContext context, IDistributedCache cache)
         {
@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Progeny>> GetProgenyUserIsAdminFromCache(string email)
         {
-            List<Progeny> progenyList = new List<Progeny>();
+            List<Progeny> progenyList = new();
             string cachedProgenyList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progenywhereadmin" + email);
             if (!string.IsNullOrEmpty(cachedProgenyList))
             {
@@ -70,7 +70,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<UserAccess>> GetProgenyUserAccessListFromCache(int progenyId)
         {
-            List<UserAccess> accessList = new List<UserAccess>();
+            List<UserAccess> accessList = new();
             string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "accessList" + progenyId);
             if (!string.IsNullOrEmpty(cachedAccessList))
             {
@@ -109,7 +109,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<UserAccess>> GetUsersUserAccessListFromCache(string email)
         {
-            List<UserAccess> accessList = new List<UserAccess>();
+            List<UserAccess> accessList = new();
             string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "usersaccesslist" + email.ToUpper());
             if (!string.IsNullOrEmpty(cachedAccessList))
             {
@@ -140,7 +140,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<UserAccess> GetUserAccessFromCache(int id)
         {
-            UserAccess userAccess = new UserAccess();
+            UserAccess userAccess = new();
             string cachedUserAccess = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id);
             if (!string.IsNullOrEmpty(cachedUserAccess))
             {
@@ -269,7 +269,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<UserAccess> GetProgenyUserAccessForUserFromCache(int progenyId, string userEmail)
         {
-            UserAccess userAccess = new UserAccess();
+            UserAccess userAccess = new();
             string cachedUserAccess = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + progenyId + userEmail.ToUpper());
             if (!string.IsNullOrEmpty(cachedUserAccess))
             {

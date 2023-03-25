@@ -48,11 +48,13 @@ namespace KinaUnaProgenyApi.Controllers
             TextTranslation translation = await _textTranslationService.GetTranslationByWord(word, page, languageId);
             if (translation == null)
             {
-                TextTranslation translationItem = new TextTranslation();
-                translationItem.LanguageId = languageId;
-                translationItem.Word = word;
-                translationItem.Page = page;
-                translationItem.Translation = word;
+                TextTranslation translationItem = new()
+                {
+                    LanguageId = languageId,
+                    Word = word,
+                    Page = page,
+                    Translation = word
+                };
 
                 string userId = User.GetUserId();
 

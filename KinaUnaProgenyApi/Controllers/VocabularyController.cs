@@ -95,7 +95,7 @@ namespace KinaUnaProgenyApi.Controllers
             VocabularyItem vocabularyItem = await _vocabularyService.AddVocabularyItem(value);
 
             
-            TimeLineItem timeLineItem = new TimeLineItem();
+            TimeLineItem timeLineItem = new();
             timeLineItem.CopyVocabularyItemPropertiesForAdd(vocabularyItem);
             _ = await _timelineService.AddTimeLineItem(timeLineItem);
 
@@ -238,7 +238,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             List<VocabularyItem> allItems = await _vocabularyService.GetVocabularyList(progenyId);
             
-            VocabularyListPage model = new VocabularyListPage();
+            VocabularyListPage model = new();
             model.ProcessVocabularyList(allItems, sortBy, pageIndex, pageSize);
 
             return Ok(model);

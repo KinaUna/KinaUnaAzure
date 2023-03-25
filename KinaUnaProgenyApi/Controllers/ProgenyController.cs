@@ -89,12 +89,14 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Progeny value)
         {
-            Progeny progeny = new Progeny();
-            progeny.Name = value.Name;
-            progeny.NickName = value.NickName;
-            progeny.BirthDay = value.BirthDay;
-            progeny.TimeZone = value.TimeZone;
-            progeny.Admins = value.Admins;
+            Progeny progeny = new()
+            {
+                Name = value.Name,
+                NickName = value.NickName,
+                BirthDay = value.BirthDay,
+                TimeZone = value.TimeZone,
+                Admins = value.Admins
+            };
             if (string.IsNullOrEmpty(value.PictureLink))
             {
                 value.PictureLink = Constants.ProfilePictureUrl;
@@ -114,10 +116,12 @@ namespace KinaUnaProgenyApi.Controllers
                 List<string> adminList = progeny.Admins.Split(',').ToList();
                 foreach (string adminEmail in adminList)
                 {
-                    UserAccess ua = new UserAccess();
-                    ua.AccessLevel = 0;
-                    ua.ProgenyId = progeny.Id;
-                    ua.UserId = adminEmail.Trim();
+                    UserAccess ua = new()
+                    {
+                        AccessLevel = 0,
+                        ProgenyId = progeny.Id,
+                        UserId = adminEmail.Trim()
+                    };
                     if (ua.UserId.IsValidEmail())
                     {
                         await _userAccessService.AddUserAccess(ua);
@@ -126,10 +130,13 @@ namespace KinaUnaProgenyApi.Controllers
             }
             else
             {
-                UserAccess ua = new UserAccess();
-                ua.AccessLevel = 0;
-                ua.ProgenyId = progeny.Id;
-                ua.UserId = progeny.Admins.Trim();
+                UserAccess ua = new()
+                {
+                    AccessLevel = 0,
+                    ProgenyId = progeny.Id,
+                    UserId = progeny.Admins.Trim()
+                };
+
                 if (ua.UserId.IsValidEmail())
                 {
                     await _userAccessService.AddUserAccess(ua);

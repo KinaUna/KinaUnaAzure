@@ -104,7 +104,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             Location location = await _locationService.AddLocation(value);
             
-            TimeLineItem tItem = new TimeLineItem();
+            TimeLineItem tItem = new();
             tItem.CopyLocationPropertiesForAdd(location);
             _ = await _timelineService.AddTimeLineItem(tItem);
 
@@ -279,11 +279,13 @@ namespace KinaUnaProgenyApi.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            LocationsListPage model = new LocationsListPage();
-            model.LocationsList = itemsOnPage;
-            model.TotalPages = (int) Math.Ceiling(allItems.Count / (double) pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
+            LocationsListPage model = new()
+            {
+                LocationsList = itemsOnPage,
+                TotalPages = (int) Math.Ceiling(allItems.Count / (double) pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy
+            };
 
             return Ok(model);
         }

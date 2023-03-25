@@ -115,7 +115,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             Contact contactItem = await _contactService.AddContact(value);
             
-            TimeLineItem timeLineItem = new TimeLineItem();
+            TimeLineItem timeLineItem = new();
             timeLineItem.CopyContactPropertiesForAdd(contactItem);
 
             await _timelineService.AddTimeLineItem(timeLineItem);
@@ -180,7 +180,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (contactItem.Address.HasValues())
                 {
-                    Address address = new Address();
+                    Address address = new();
                     address.CopyPropertiesForAdd(contactItem.Address);
                     address = await _locationService.AddAddressItem(address);
                     contactItem.AddressIdNumber = address.AddressId;
@@ -348,7 +348,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         private static async Task<Stream> GetStreamFromUrl(string url)
         {
-            using HttpClient client = new HttpClient();
+            using HttpClient client = new();
             using HttpResponseMessage response = await client.GetAsync(url);
             await using Stream streamToReadFrom = await response.Content.ReadAsStreamAsync();
             return streamToReadFrom;

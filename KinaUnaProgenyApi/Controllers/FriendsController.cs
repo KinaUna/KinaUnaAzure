@@ -111,7 +111,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             Friend friendItem = await _friendService.AddFriend(value);
             
-            TimeLineItem timeLineItem = new TimeLineItem();
+            TimeLineItem timeLineItem = new();
             timeLineItem.CopyFriendPropertiesForAdd(friendItem);
             await _timelineService.AddTimeLineItem(timeLineItem);
 
@@ -309,7 +309,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         private static async Task<Stream> GetStreamFromUrl(string url)
         {
-            using HttpClient client = new HttpClient();
+            using HttpClient client = new();
             using HttpResponseMessage response = await client.GetAsync(url);
             await using Stream streamToReadFrom = await response.Content.ReadAsStreamAsync();
             return streamToReadFrom;

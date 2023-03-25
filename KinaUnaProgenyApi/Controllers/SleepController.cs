@@ -100,7 +100,7 @@ namespace KinaUnaProgenyApi.Controllers
             
             Sleep sleepItem = await _sleepService.AddSleep(value);
             
-            TimeLineItem timeLineItem = new TimeLineItem();
+            TimeLineItem timeLineItem = new();
             timeLineItem.CopySleepPropertiesForAdd(sleepItem);
             
             _ = await _timelineService.AddTimeLineItem(timeLineItem);
@@ -271,12 +271,14 @@ namespace KinaUnaProgenyApi.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            SleepListPage model = new SleepListPage();
-            model.SleepList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
-            
+            SleepListPage model = new()
+            {
+                SleepList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy
+            };
+
             return Ok(model);
         }
         
@@ -311,7 +313,7 @@ namespace KinaUnaProgenyApi.Controllers
                 UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
                 string userTimeZone = userInfo.Timezone;
                 List<Sleep> allSleepList = await _sleepService.GetSleepList(progenyId);
-                SleepStatsModel model = new SleepStatsModel();
+                SleepStatsModel model = new();
                 model.ProcessSleepStats(allSleepList, accessLevel, userTimeZone);
 
                 return Ok(model);
@@ -332,7 +334,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                 List<Sleep> sList = await _sleepService.GetSleepList(progenyId);
                 
-                SleepStatsModel sleepStatsModel = new SleepStatsModel();
+                SleepStatsModel sleepStatsModel = new();
                 List<Sleep> chartList = sleepStatsModel.ProcessSleepChartData(sList, accessLevel, userTimeZone);
 
                 List<Sleep> model = chartList.OrderBy(s => s.SleepStart).ToList();
@@ -358,7 +360,7 @@ namespace KinaUnaProgenyApi.Controllers
                 string userTimeZone = userInfo.Timezone;
 
                 List<Sleep> allSleepList = await _sleepService.GetSleepList(currentSleep.ProgenyId);
-                SleepDetailsModel sleepDetailsModel = new SleepDetailsModel();
+                SleepDetailsModel sleepDetailsModel = new();
                 sleepDetailsModel.CreateSleepList(currentSleep, allSleepList, accessLevel, sortOrder, userTimeZone);
 
                 return Ok(sleepDetailsModel.SleepList);

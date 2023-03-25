@@ -123,7 +123,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
             
-            TimeLineItem timeLineItem = new TimeLineItem();
+            TimeLineItem timeLineItem = new();
             
             timeLineItem.CopyCalendarItemPropertiesForAdd(calendarItem, userInfo.UserId);
             

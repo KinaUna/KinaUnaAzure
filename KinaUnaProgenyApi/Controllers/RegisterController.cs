@@ -57,10 +57,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            if (newRegistrationId == null)
-                newRegistrationId = await _hub.CreateRegistrationIdAsync();
-
-            return newRegistrationId;
+            return newRegistrationId ?? await _hub.CreateRegistrationIdAsync();
         }
 
         // PUT api/register/5
@@ -122,8 +119,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         private static void ReturnGoneIfHubResponseIsGone(MessagingException e)
         {
-            WebException webex = e.InnerException as WebException;
-            if (webex != null)
+            if (e.InnerException is WebException webex)
             {
                 if (webex.Status == WebExceptionStatus.ProtocolError)
                 {
