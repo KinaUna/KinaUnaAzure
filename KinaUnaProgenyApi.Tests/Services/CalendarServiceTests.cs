@@ -14,9 +14,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetCalendarItem_Should_Return_CalendarItem_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetCalendarItem_Should_Return_CalendarItem_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            CalendarItem calendarItem1 = new CalendarItem
+            CalendarItem calendarItem1 = new()
             {
                 StartTime = DateTime.UtcNow,
                 ProgenyId = 1,
@@ -29,7 +29,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Location = "Location1"
             };
 
-            CalendarItem calendarItem2 = new CalendarItem
+            CalendarItem calendarItem2 = new()
             {
                 StartTime = DateTime.UtcNow,
                 ProgenyId = 2,
@@ -48,7 +48,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new CalendarService(context, memoryCache);
+            CalendarService calendarService = new(context, memoryCache);
 
             CalendarItem resultCalendarItem1 = await calendarService.GetCalendarItem(1);
             CalendarItem resultCalendarItem2 = await calendarService.GetCalendarItem(1); // Uses cache
@@ -72,9 +72,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetCalendarItem_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetCalendarItem_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            CalendarItem calendarItem1 = new CalendarItem
+            CalendarItem calendarItem1 = new()
             {
                 StartTime = DateTime.UtcNow,
                 ProgenyId = 1,
@@ -91,7 +91,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new CalendarService(context, memoryCache);
+            CalendarService calendarService = new(context, memoryCache);
 
             CalendarItem calendarItem = await calendarService.GetCalendarItem(2);
             CalendarItem calendarItem2 = await calendarService.GetCalendarItem(2);
@@ -105,9 +105,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddCalendarItem_Should_Save_CalendarItem()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddCalendarItem_Should_Save_CalendarItem").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            CalendarItem calendarItem1 = new CalendarItem
+            CalendarItem calendarItem1 = new()
             {
                 StartTime = DateTime.UtcNow,
                 ProgenyId = 1,
@@ -124,9 +124,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new CalendarService(context, memoryCache);
+            CalendarService calendarService = new(context, memoryCache);
 
-            CalendarItem calendarItemToAdd = new CalendarItem
+            CalendarItem calendarItemToAdd = new()
             {
                 StartTime = DateTime.UtcNow,
                 ProgenyId = 2,
@@ -171,9 +171,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateCalendarItem_Should_Save_CalendarItem()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateCalendarItem_Should_Save_CalendarItem").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            CalendarItem calendarItem1 = new CalendarItem
+            CalendarItem calendarItem1 = new()
             {
                 StartTime = DateTime.UtcNow,
                 ProgenyId = 1,
@@ -186,7 +186,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Location = "Location1"
             };
 
-            CalendarItem calendarItem2 = new CalendarItem
+            CalendarItem calendarItem2 = new()
             {
                 StartTime = DateTime.UtcNow,
                 ProgenyId = 2,
@@ -205,7 +205,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new CalendarService(context, memoryCache);
+            CalendarService calendarService = new(context, memoryCache);
 
             CalendarItem calendarItemToUpdate = await calendarService.GetCalendarItem(1);
             calendarItemToUpdate.AccessLevel = 5;
@@ -241,9 +241,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteCalendarItem_Should_Remove_CalendarItem()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteCalendarItem_Should_Remove_CalendarItem").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            CalendarItem calendarItem1 = new CalendarItem
+            CalendarItem calendarItem1 = new()
             {
                 StartTime = DateTime.UtcNow,
                 ProgenyId = 1,
@@ -256,7 +256,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Location = "Location1"
             };
 
-            CalendarItem calendarItem2 = new CalendarItem
+            CalendarItem calendarItem2 = new()
             {
                 StartTime = DateTime.UtcNow,
                 ProgenyId = 2,
@@ -275,7 +275,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new CalendarService(context, memoryCache);
+            CalendarService calendarService = new(context, memoryCache);
 
             int calendarItemsCountBeforeDelete = context.CalendarDb.Count();
             CalendarItem calendarItemToDelete = await calendarService.GetCalendarItem(1);
@@ -293,9 +293,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetCalendarList_Should_Return_List_Of_CalendarItem_When_Progeny_Has_Stored_Events()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetCalendarList_Should_Return_List_Of_CalendarItem_When_Progeny_Has_Stored_Events").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            CalendarItem calendarItem1 = new CalendarItem
+            CalendarItem calendarItem1 = new()
             {
                 StartTime = DateTime.UtcNow,
                 ProgenyId = 1,
@@ -308,7 +308,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Location = "Location1"
             };
 
-            CalendarItem calendarItem2 = new CalendarItem
+            CalendarItem calendarItem2 = new()
             {
                 StartTime = DateTime.UtcNow,
                 ProgenyId = 1,
@@ -328,7 +328,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new CalendarService(context, memoryCache);
+            CalendarService calendarService = new(context, memoryCache);
 
             List<CalendarItem> calendarList = await calendarService.GetCalendarList(1);
             List<CalendarItem> calendarList2 = await calendarService.GetCalendarList(1); // Test cached result.
@@ -348,9 +348,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetCalendarList_Should_Return_Empty_List_Of_CalendarItems_When_Progeny_Has_No_Stored_Events").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            CalendarItem calendarItem1 = new CalendarItem
+            CalendarItem calendarItem1 = new()
             {
                 StartTime = DateTime.UtcNow,
                 ProgenyId = 1,
@@ -363,7 +363,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Location = "Location1"
             };
 
-            CalendarItem calendarItem2 = new CalendarItem
+            CalendarItem calendarItem2 = new()
             {
                 StartTime = DateTime.UtcNow,
                 ProgenyId = 1,
@@ -382,7 +382,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CalendarService calendarService = new CalendarService(context, memoryCache);
+            CalendarService calendarService = new(context, memoryCache);
 
             List<CalendarItem> calendarList = await calendarService.GetCalendarList(2);
             List<CalendarItem> calendarList2 = await calendarService.GetCalendarList(2); // Test cached result.

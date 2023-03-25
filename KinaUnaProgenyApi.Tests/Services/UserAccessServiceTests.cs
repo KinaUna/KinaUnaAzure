@@ -15,9 +15,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetProgenyUserIsAdmin_Should_Return_List_Of_Progeny_When_Email_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetProgenyUserIsAdmin_Should_Return_List_Of_Progeny_When_Email_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Progeny progenyToAdd1 = new Progeny
+            Progeny progenyToAdd1 = new()
             {
                 BirthDay = DateTime.Now,
                 Admins = "test@test.com, test1@abc.com",
@@ -27,7 +27,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 TimeZone = Constants.DefaultTimezone
             };
 
-            Progeny progenyToAdd2 = new Progeny
+            Progeny progenyToAdd2 = new()
             {
                 BirthDay = DateTime.Now,
                 Admins = "test@test.com, test1@abc.com",
@@ -43,7 +43,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
             List<Progeny> progenyList = await userAccessService.GetProgenyUserIsAdmin("test@test.com");
             List<Progeny> progenyList2 = await userAccessService.GetProgenyUserIsAdmin("test@test.com"); // Test cached result.
@@ -61,7 +61,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetProgenyUserIsAdmin_Should_Return_Empty_List_Of_Progeny_When_Email_Is_Invalid()
         {
-            Progeny progenyToAdd1 = new Progeny
+            Progeny progenyToAdd1 = new()
             {
                 BirthDay = DateTime.Now,
                 Admins = "test@test.com, test1@abc.com",
@@ -71,7 +71,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 TimeZone = Constants.DefaultTimezone
             };
 
-            Progeny progenyToAdd2 = new Progeny
+            Progeny progenyToAdd2 = new()
             {
                 BirthDay = DateTime.Now,
                 Admins = "test@test.com, test1@abc.com",
@@ -82,14 +82,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetProgenyUserIsAdmin_Should_Return_Empty_List_Of_Progeny_When_Email_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(progenyToAdd1);
             context.Add(progenyToAdd2);
             await context.SaveChangesAsync();
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
             List<Progeny> progenyList = await userAccessService.GetProgenyUserIsAdmin("test3@test.com");
             List<Progeny> progenyList2 = await userAccessService.GetProgenyUserIsAdmin("test3@test.com"); // Test cached result.
@@ -106,18 +106,18 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetProgenyUserAccessList_Should_Return_List_Of_UserAccess_When_Id_Is_Valid()
         {
-            UserAccess userAccessToAdd1 = new UserAccess
+            UserAccess userAccessToAdd1 = new()
             {
                 UserId = "User1", AccessLevel = 0, ProgenyId = 1
             };
 
-            UserAccess userAccessToAdd2 = new UserAccess
+            UserAccess userAccessToAdd2 = new()
             {
                 UserId = "User2", AccessLevel = 0, ProgenyId = 1
             };
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetProgenyUserAccessList_Should_Return_List_Of_UserAccess_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             
             context.Add(userAccessToAdd1);
             context.Add(userAccessToAdd2);
@@ -125,7 +125,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
             List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(1);
             List<UserAccess> accessList2 = await userAccessService.GetProgenyUserAccessList(1); // Test cached results.
@@ -143,14 +143,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetProgenyUserAccessList_Should_Return_Empty_List_Of_UserAccess_When_Id_Is_Invalid()
         {
-            UserAccess userAccessToAdd1 = new UserAccess
+            UserAccess userAccessToAdd1 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
                 ProgenyId = 1
             };
 
-            UserAccess userAccessToAdd2 = new UserAccess
+            UserAccess userAccessToAdd2 = new()
             {
                 UserId = "User2",
                 AccessLevel = 0,
@@ -158,7 +158,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetProgenyUserAccessList_Should_Return_Empty_List_Of_UserAccess_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             
             context.Add(userAccessToAdd1);
             context.Add(userAccessToAdd2);
@@ -166,7 +166,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
             List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(2);
             List<UserAccess> accessList2 = await userAccessService.GetProgenyUserAccessList(2); // Test cached results.
@@ -181,21 +181,21 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetUsersUserAccessList_Should_Return_List_Of_UserAccess_When_Id_Is_Valid()
         {
-            UserAccess userAccessToAdd1 = new UserAccess
+            UserAccess userAccessToAdd1 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
                 ProgenyId = 1
             };
 
-            UserAccess userAccessToAdd2 = new UserAccess
+            UserAccess userAccessToAdd2 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
                 ProgenyId = 2
             };
 
-            UserAccess userAccessToAdd3 = new UserAccess
+            UserAccess userAccessToAdd3 = new()
             {
                 UserId = "User2",
                 AccessLevel = 0,
@@ -203,7 +203,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUsersUserAccessList_Should_Return_List_Of_UserAccess_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             context.Add(userAccessToAdd1);
             context.Add(userAccessToAdd2);
@@ -212,7 +212,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
             List<UserAccess> accessList = await userAccessService.GetUsersUserAccessList(userAccessToAdd1.UserId);
             List<UserAccess> accessList2 = await userAccessService.GetUsersUserAccessList(userAccessToAdd1.UserId); // Test cached results.
@@ -230,14 +230,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetUsersUserAccessList_Should_Return_Empty_List_Of_UserAccess_When_Id_Is_Invalid()
         {
-            UserAccess userAccessToAdd1 = new UserAccess
+            UserAccess userAccessToAdd1 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
                 ProgenyId = 1
             };
 
-            UserAccess userAccessToAdd2 = new UserAccess
+            UserAccess userAccessToAdd2 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
@@ -245,7 +245,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUsersUserAccessList_Should_Return_Empty_List_Of_UserAccess_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             context.Add(userAccessToAdd1);
             context.Add(userAccessToAdd2);
@@ -253,7 +253,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
             List<UserAccess> accessList = await userAccessService.GetUsersUserAccessList("User2");
             List<UserAccess> accessList2 = await userAccessService.GetUsersUserAccessList("User2"); // Test cached results.
@@ -268,14 +268,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetUserAccess_Returns_UserAccess_Object_When_Id_Is_Valid()
         {
-            UserAccess userAccessToAdd1 = new UserAccess
+            UserAccess userAccessToAdd1 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
                 ProgenyId = 1
             };
 
-            UserAccess userAccessToAdd2 = new UserAccess
+            UserAccess userAccessToAdd2 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
@@ -283,7 +283,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserAccess_Returns_UserAccess_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             context.Add(userAccessToAdd1);
             context.Add(userAccessToAdd2);
@@ -291,7 +291,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
             UserAccess userAccess = await userAccessService.GetUserAccess(1);
             UserAccess userAccess2 = await userAccessService.GetUserAccess(1);
@@ -312,7 +312,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetUserAccess_Should_Return_Null_When_Id_Is_Invalid()
         {
-            UserAccess userAccessToAdd1 = new UserAccess
+            UserAccess userAccessToAdd1 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
@@ -320,14 +320,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserAccess_Returns_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             context.Add(userAccessToAdd1);
             await context.SaveChangesAsync();
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
             UserAccess userAccess = await userAccessService.GetUserAccess(2);
             UserAccess userAccess2 = await userAccessService.GetUserAccess(2);
@@ -340,7 +340,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task AddUserAccess_Should_Save_UserAccess()
         {
-            UserAccess userAccessToAdd1 = new UserAccess
+            UserAccess userAccessToAdd1 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
@@ -348,9 +348,9 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddUserAccess_Should_Save_UserAccess").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Progeny progeny1 = new Progeny
+            Progeny progeny1 = new()
             {
                 Admins = "User1",
                 BirthDay = DateTime.UtcNow,
@@ -360,7 +360,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 TimeZone = Constants.DefaultTimezone
             };
 
-            Progeny progeny2 = new Progeny
+            Progeny progeny2 = new()
             {
                 Admins = "User1",
                 BirthDay = DateTime.UtcNow,
@@ -377,9 +377,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
-            UserAccess userAccessToAdd2 = new UserAccess
+            UserAccess userAccessToAdd2 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
@@ -419,14 +419,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task UpdateUserAccess_Should_Save_UserAccess()
         {
-            UserAccess userAccessToAdd1 = new UserAccess
+            UserAccess userAccessToAdd1 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
                 ProgenyId = 1
             };
 
-            UserAccess userAccessToAdd2 = new UserAccess
+            UserAccess userAccessToAdd2 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
@@ -434,7 +434,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateUserAccess_Should_Save_UserAccess").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             context.Add(userAccessToAdd1);
             context.Add(userAccessToAdd2);
@@ -442,7 +442,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
             UserAccess userAccessToUpdate = await userAccessService.GetUserAccess(1);
             userAccessToUpdate.AccessLevel = 5;
@@ -477,14 +477,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task RemoveUserAccess_Should_Remove_UserAccess()
         {
-            UserAccess userAccessToAdd1 = new UserAccess
+            UserAccess userAccessToAdd1 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
                 ProgenyId = 1
             };
 
-            UserAccess userAccessToAdd2 = new UserAccess
+            UserAccess userAccessToAdd2 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
@@ -492,7 +492,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("RemoveUserAccess_Should_Remove_UserAccess").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             context.Add(userAccessToAdd1);
             context.Add(userAccessToAdd2);
@@ -500,7 +500,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
             int userAccessesBeforeDelete = context.UserAccessDb.Count();
             UserAccess userAccessToDelete = await userAccessService.GetUserAccess(1);
@@ -517,14 +517,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetProgenyUserAccessForUser_Should_Return_UserAccess_When_It_Exists()
         {
-            UserAccess userAccessToAdd1 = new UserAccess
+            UserAccess userAccessToAdd1 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
                 ProgenyId = 1
             };
 
-            UserAccess userAccessToAdd2 = new UserAccess
+            UserAccess userAccessToAdd2 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
@@ -532,7 +532,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetProgenyUserAccessForUser_Should_Return_UserAccess_When_It_Exists").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             context.Add(userAccessToAdd1);
             context.Add(userAccessToAdd2);
@@ -540,7 +540,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(userAccessToAdd1.ProgenyId, userAccessToAdd1.UserId);
             UserAccess userAccess2 = await userAccessService.GetProgenyUserAccessForUser(userAccessToAdd1.ProgenyId, userAccessToAdd1.UserId); // Test with cache.
@@ -555,14 +555,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetProgenyUserAccessForUser_Should_Return_Null_When_It_Does_Not_Exists()
         {
-            UserAccess userAccessToAdd1 = new UserAccess
+            UserAccess userAccessToAdd1 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
                 ProgenyId = 1
             };
 
-            UserAccess userAccessToAdd2 = new UserAccess
+            UserAccess userAccessToAdd2 = new()
             {
                 UserId = "User1",
                 AccessLevel = 0,
@@ -570,7 +570,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetProgenyUserAccessForUser_Should_Return_Null_When_It_Does_Not_Exists").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             context.Add(userAccessToAdd1);
             context.Add(userAccessToAdd2);
@@ -578,7 +578,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(1, "User2");
             UserAccess userAccess2 = await userAccessService.GetProgenyUserAccessForUser(1, "User2"); // Test with cache.
@@ -590,19 +590,17 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateProgenyAdmins_Should_Save_Progeny()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetProgenyUserAccessForUser_Should_Return_Null_When_It_Does_Not_Exists").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Progeny progenyToAdd1 = new Progeny
-                { BirthDay = DateTime.Now, Admins = "test1@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
-            Progeny progenyToAdd2 = new Progeny
-                { BirthDay = DateTime.Now, Admins = "test2@test.com", Name = "Test Child B", NickName = "B", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
+            Progeny progenyToAdd1 = new() { BirthDay = DateTime.Now, Admins = "test1@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
+            Progeny progenyToAdd2 = new() { BirthDay = DateTime.Now, Admins = "test2@test.com", Name = "Test Child B", NickName = "B", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
             context.Add(progenyToAdd1);
             context.Add(progenyToAdd2);
             await context.SaveChangesAsync();
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserAccessService userAccessService = new UserAccessService(context, memoryCache);
+            UserAccessService userAccessService = new(context, memoryCache);
 
             Progeny? progeny1 = await context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == 1);
             Progeny? progeny2 = await context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == 2);

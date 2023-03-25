@@ -16,21 +16,21 @@ namespace KinaUnaProgenyApi.Tests.Services
         private readonly Mock<IVideosService> _videosServiceMock;
         public CommentsServiceTests()
         {
-            _picturesServiceMock = new Mock<IPicturesService>();
-            _videosServiceMock = new Mock<IVideosService>();
+            _picturesServiceMock = new();
+            _videosServiceMock = new();
         }
 
         [Fact]
         public async Task GetComment_Should_Return_Comment_Object_When_Id_Is_Valid()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetComment_Should_Return_Comment_Object_When_Id_Is_Valid").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Comment comment1 = new Comment
+            Comment comment1 = new()
             {
                 CommentText = "Test1", Author = "User1", AccessLevel = 0, AuthorImage = Constants.ProfilePictureUrl, CommentThreadNumber = 1, Created = DateTime.UtcNow, DisplayName = "User1", ItemType = 1, ItemId = "1"
             };
-            Comment comment2 = new Comment
+            Comment comment2 = new()
             {
                 CommentText = "Test2",
                 Author = "User2",
@@ -48,7 +48,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
+            CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
             Comment resultComment1 = await commentsService.GetComment(1);
             Comment resultComment2 = await commentsService.GetComment(1); // Uses cache
@@ -72,9 +72,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetComment_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetComment_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Comment comment1 = new Comment
+            Comment comment1 = new()
             {
                 CommentText = "Test1",
                 Author = "User1",
@@ -86,7 +86,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ItemType = 1,
                 ItemId = "1"
             };
-            Comment comment2 = new Comment
+            Comment comment2 = new()
             {
                 CommentText = "Test2",
                 Author = "User2",
@@ -104,7 +104,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
+            CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
             Comment resultComment1 = await commentsService.GetComment(3);
             Comment resultComment2 = await commentsService.GetComment(3); // Uses cache
@@ -118,9 +118,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetCommentsList_Should_Return_List_Of_Comment_When_Id_Is_Valid()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetCommentsList_Should_Return_List_Of_Comment_When_Id_Is_Valid").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Comment comment1 = new Comment
+            Comment comment1 = new()
             {
                 CommentText = "Test1",
                 Author = "User1",
@@ -132,7 +132,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ItemType = 1,
                 ItemId = "1"
             };
-            Comment comment2 = new Comment
+            Comment comment2 = new()
             {
                 CommentText = "Test2",
                 Author = "User2",
@@ -150,7 +150,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
+            CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
             List<Comment> resultCommentsList1 = await commentsService.GetCommentsList(1);
             List<Comment> resultCommentsList2 = await commentsService.GetCommentsList(1); // Uses cache
@@ -169,9 +169,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetCommentsList_Should_Return_Empty_List_Of_Comment_When_Id_Is_Invalid()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetCommentsList_Should_Return_Empty_List_Of_Comment_When_Id_Is_Invalid").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Comment comment1 = new Comment
+            Comment comment1 = new()
             {
                 CommentText = "Test1",
                 Author = "User1",
@@ -183,7 +183,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ItemType = 1,
                 ItemId = "1"
             };
-            Comment comment2 = new Comment
+            Comment comment2 = new()
             {
                 CommentText = "Test2",
                 Author = "User2",
@@ -201,7 +201,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
+            CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
             List<Comment> resultCommentsList1 = await commentsService.GetCommentsList(2);
             List<Comment> resultCommentsList2 = await commentsService.GetCommentsList(2); // Uses cache
@@ -219,9 +219,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddComment_Should_Save_Comment()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("AddComment_Should_Save_Comment").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Comment comment1 = new Comment
+            Comment comment1 = new()
             {
                 CommentText = "Test1",
                 Author = "User1",
@@ -233,7 +233,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ItemType = 1,
                 ItemId = "1"
             };
-            Comment comment2 = new Comment
+            Comment comment2 = new()
             {
                 CommentText = "Test2",
                 Author = "User2",
@@ -251,9 +251,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
+            CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
-            Comment commentToAdd = new Comment
+            Comment commentToAdd = new()
             {
                 CommentText = "Test3",
                 Author = "User3",
@@ -298,9 +298,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddComment_Should_Increment_CommentCount()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("AddComment_Should_Increment_CommentCount").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Comment comment1 = new Comment
+            Comment comment1 = new()
             {
                 CommentText = "Test1",
                 Author = "User1",
@@ -312,7 +312,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ItemType = 1,
                 ItemId = "1"
             };
-            Comment comment2 = new Comment
+            Comment comment2 = new()
             {
                 CommentText = "Test2",
                 Author = "User2",
@@ -325,7 +325,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ItemId = "2"
             };
 
-            CommentThread commentThread1 = new CommentThread{CommentsCount = 2};
+            CommentThread commentThread1 = new() {CommentsCount = 2};
             
             context.Add(commentThread1);
             
@@ -336,9 +336,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
+            CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
-            Comment commentToAdd = new Comment
+            Comment commentToAdd = new()
             {
                 CommentText = "Test3",
                 Author = "User3",
@@ -375,9 +375,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateComment_Should_Save_Comment()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("UpdateComment_Should_Save_Comment").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Comment comment1 = new Comment
+            Comment comment1 = new()
             {
                 CommentText = "Test1",
                 Author = "User1",
@@ -389,7 +389,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ItemType = 1,
                 ItemId = "1"
             };
-            Comment comment2 = new Comment
+            Comment comment2 = new()
             {
                 CommentText = "Test2",
                 Author = "User2",
@@ -407,7 +407,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
+            CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
             Comment commentToUpdate = await commentsService.GetComment(1);
             commentToUpdate.CommentText = "Test1 Updated";
@@ -445,9 +445,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteComment_Should_Remove_Comment()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("DeleteComment_Should_Remove_Comment").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Comment comment1 = new Comment
+            Comment comment1 = new()
             {
                 CommentText = "Test1",
                 Author = "User1",
@@ -459,7 +459,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ItemType = 1,
                 ItemId = "1"
             };
-            Comment comment2 = new Comment
+            Comment comment2 = new()
             {
                 CommentText = "Test2",
                 Author = "User2",
@@ -477,7 +477,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
+            CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
             Comment commentToRemove = await commentsService.GetComment(1);
             await commentsService.DeleteComment(commentToRemove);
@@ -492,9 +492,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteComment_Should_Decrement_CommentCount()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("DeleteComment_Should_Decrement_CommentCount").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Comment comment1 = new Comment
+            Comment comment1 = new()
             {
                 CommentText = "Test1",
                 Author = "User1",
@@ -506,7 +506,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ItemType = 1,
                 ItemId = "1"
             };
-            Comment comment2 = new Comment
+            Comment comment2 = new()
             {
                 CommentText = "Test2",
                 Author = "User2",
@@ -519,7 +519,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ItemId = "2"
             };
 
-            CommentThread commentThread1 = new CommentThread { CommentsCount = 2 };
+            CommentThread commentThread1 = new() { CommentsCount = 2 };
 
             context.Add(commentThread1);
 
@@ -530,7 +530,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
+            CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
             
             int commentsCountBefore = 0;
             CommentThread? testCommentThread = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == 1);
@@ -557,10 +557,10 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetCommentThread_Should_Return_CommentThread_Object_When_Id_Is_Valid()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetCommentThread_Should_Return_CommentThread_Object_When_Id_Is_Valid").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            CommentThread commentThread1 = new CommentThread { CommentsCount = 1};
-            CommentThread commentThread2 = new CommentThread { CommentsCount = 1 };
+            CommentThread commentThread1 = new() { CommentsCount = 1};
+            CommentThread commentThread2 = new() { CommentsCount = 1 };
             
             context.Add(commentThread1);
             context.Add(commentThread2);
@@ -568,7 +568,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
+            CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
             CommentThread resultCommentThread1 = await commentsService.GetCommentThread(1);
             
@@ -581,10 +581,10 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetCommentThread__Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetCommentThread__Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            CommentThread commentThread1 = new CommentThread { CommentsCount = 1 };
-            CommentThread commentThread2 = new CommentThread { CommentsCount = 1 };
+            CommentThread commentThread1 = new() { CommentsCount = 1 };
+            CommentThread commentThread2 = new() { CommentsCount = 1 };
 
             context.Add(commentThread1);
             context.Add(commentThread2);
@@ -592,7 +592,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
+            CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
             CommentThread resultCommentThread1 = await commentsService.GetCommentThread(3);
 
@@ -603,10 +603,10 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddCommentThread_Should_Save_CommentThread_Object()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("AddCommentThread_Should_Save_CommentThread_Object").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            CommentThread commentThread1 = new CommentThread { CommentsCount = 1 };
-            CommentThread commentThread2 = new CommentThread { CommentsCount = 1 };
+            CommentThread commentThread1 = new() { CommentsCount = 1 };
+            CommentThread commentThread2 = new() { CommentsCount = 1 };
 
             context.Add(commentThread1);
             context.Add(commentThread2);
@@ -614,7 +614,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
+            CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
             
             CommentThread addedCommentThread = await commentsService.AddCommentThread();
             CommentThread? dbCommentThread = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == addedCommentThread.Id);
@@ -644,10 +644,10 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteCommentThread_Should_Remove_CommentThread_Object()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("DeleteCommentThread_Should_Remove_CommentThread_Object").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            CommentThread commentThread1 = new CommentThread { CommentsCount = 1 };
-            CommentThread commentThread2 = new CommentThread { CommentsCount = 1 };
+            CommentThread commentThread1 = new() { CommentsCount = 1 };
+            CommentThread commentThread2 = new() { CommentsCount = 1 };
 
             context.Add(commentThread1);
             context.Add(commentThread2);
@@ -655,7 +655,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            CommentsService commentsService = new CommentsService(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
+            CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
 
             int commentThreadsCountBefore = context.CommentThreadsDb.Count();
 

@@ -15,15 +15,15 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetContact_Should_Return_Contact_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetContact_Should_Return_Contact_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Contact contact1 = new Contact
+            Contact contact1 = new()
             {
                 ProgenyId = 1, Author = "User1", AccessLevel = 0, Active = true, Context = "Testing", DisplayName = "Contact1", DateAdded = DateTime.UtcNow, Email1 = "testcontact1@test.com",
                 FirstName = "First1", MiddleName = "Middle1", LastName = "Last1", PictureLink = Constants.ProfilePictureUrl, Tags = "Tag1, Tag2", MobileNumber = "111222333444", Notes = "Note1",
                 Website = "https://test1.com"
             };
-            Contact contact2 = new Contact
+            Contact contact2 = new()
             {
                 ProgenyId = 1,
                 Author = "User2",
@@ -49,7 +49,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new ContactService(context, memoryCache);
+            ContactService contactService = new(context, memoryCache);
 
             Contact resultContact1 = await contactService.GetContact(1);
             Contact resultContact2 = await contactService.GetContact(1); // Uses cache
@@ -73,9 +73,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetContact_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetContact_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Contact contact1 = new Contact
+            Contact contact1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -99,7 +99,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new ContactService(context, memoryCache);
+            ContactService contactService = new(context, memoryCache);
 
             Contact resultContact1 = await contactService.GetContact(2);
             Contact resultContact2 = await contactService.GetContact(2);
@@ -112,9 +112,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddContact_Should_Save_Contact()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddContact_Should_Save_Contact").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Contact contact1 = new Contact
+            Contact contact1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -138,9 +138,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new ContactService(context, memoryCache);
+            ContactService contactService = new(context, memoryCache);
 
-            Contact contactToAdd = new Contact
+            Contact contactToAdd = new()
             {
                 ProgenyId = 1,
                 Author = "User2",
@@ -192,9 +192,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateContact_Should_Save_Contact()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateContact_Should_Save_Contact").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Contact contact1 = new Contact
+            Contact contact1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -213,7 +213,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Notes = "Note1",
                 Website = "https://test1.com"
             };
-            Contact contact2 = new Contact
+            Contact contact2 = new()
             {
                 ProgenyId = 1,
                 Author = "User2",
@@ -239,7 +239,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new ContactService(context, memoryCache);
+            ContactService contactService = new(context, memoryCache);
 
             Contact contactToUpdate = await contactService.GetContact(1);
             contactToUpdate.AccessLevel = 5;
@@ -275,9 +275,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteContact_Should_Remove_Contact()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteContact_Should_Remove_Contact").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Contact contact1 = new Contact
+            Contact contact1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -296,7 +296,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Notes = "Note1",
                 Website = "https://test1.com"
             };
-            Contact contact2 = new Contact
+            Contact contact2 = new()
             {
                 ProgenyId = 1,
                 Author = "User2",
@@ -322,7 +322,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new ContactService(context, memoryCache);
+            ContactService contactService = new(context, memoryCache);
 
             int contactItemsCountBeforeDelete = context.ContactsDb.Count();
             Contact contactToDelete = await contactService.GetContact(1);
@@ -340,9 +340,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetContactsList_Should_Return_List_Of_Contact_When_Progeny_Has_Saved_Contacts()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetContactsList_Should_Return_List_Of_Contact_When_Progeny_Has_Saved_Contacts").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Contact contact1 = new Contact
+            Contact contact1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -361,7 +361,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Notes = "Note1",
                 Website = "https://test1.com"
             };
-            Contact contact2 = new Contact
+            Contact contact2 = new()
             {
                 ProgenyId = 1,
                 Author = "User2",
@@ -387,7 +387,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new ContactService(context, memoryCache);
+            ContactService contactService = new(context, memoryCache);
 
             List<Contact> contactsList = await contactService.GetContactsList(1);
             List<Contact> contactsList2 = await contactService.GetContactsList(1); // Test cached result.
@@ -409,9 +409,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetContactsList_Should_Return_Empty_List_Of_Contact_When_Progeny_Has_No_Saved_Contacts").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Contact contact1 = new Contact
+            Contact contact1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -430,7 +430,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Notes = "Note1",
                 Website = "https://test1.com"
             };
-            Contact contact2 = new Contact
+            Contact contact2 = new()
             {
                 ProgenyId = 1,
                 Author = "User2",
@@ -456,7 +456,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new ContactService(context, memoryCache);
+            ContactService contactService = new(context, memoryCache);
 
             List<Contact> contactsList = await contactService.GetContactsList(2);
             List<Contact> contactsList2 = await contactService.GetContactsList(2); // Test cached result.

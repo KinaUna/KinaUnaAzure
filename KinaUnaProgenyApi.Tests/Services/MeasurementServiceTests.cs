@@ -14,15 +14,15 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetMeasurement_Should_Return_Measurement_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMeasurement_Should_Return_Measurement_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Measurement measurement1 = new Measurement
+            Measurement measurement1 = new()
             {
                 Height = 100.0, Weight = 10, ProgenyId = 1, Author = "User1", AccessLevel = 0, Circumference = 0, CreatedDate = DateTime.UtcNow, Date = DateTime.UtcNow, EyeColor = "", HairColor = "", MeasurementNumber = 1
             };
 
 
-            Measurement measurement2 = new Measurement
+            Measurement measurement2 = new()
             {
                 Height = 120.0,
                 Weight = 20,
@@ -43,7 +43,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            MeasurementService measurementService = new MeasurementService(context, memoryCache);
+            MeasurementService measurementService = new(context, memoryCache);
 
             Measurement resultMeasurement1 = await measurementService.GetMeasurement(1);
             Measurement resultMeasurement2 = await measurementService.GetMeasurement(1); // Uses cache
@@ -67,9 +67,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetMeasurement_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMeasurement_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Measurement measurement1 = new Measurement
+            Measurement measurement1 = new()
             {
                 Height = 100.0,
                 Weight = 10,
@@ -89,7 +89,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            MeasurementService measurementService = new MeasurementService(context, memoryCache);
+            MeasurementService measurementService = new(context, memoryCache);
 
             Measurement resultMeasurement1 = await measurementService.GetMeasurement(2);
             Measurement resultMeasurement2 = await measurementService.GetMeasurement(2); // Using cache
@@ -102,9 +102,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddMeasurement_Should_Save_Measurement()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddMeasurement_Should_Save_Measurement").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Measurement measurement1 = new Measurement
+            Measurement measurement1 = new()
             {
                 Height = 100.0, Weight = 10, ProgenyId = 1, Author = "User1", AccessLevel = 0, Circumference = 0, CreatedDate = DateTime.UtcNow, Date = DateTime.UtcNow, EyeColor = "", HairColor = "", MeasurementNumber = 1
             };
@@ -113,9 +113,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            MeasurementService measurementService = new MeasurementService(context, memoryCache);
+            MeasurementService measurementService = new(context, memoryCache);
 
-            Measurement measurementToAdd = new Measurement
+            Measurement measurementToAdd = new()
             {
                 Height = 120.0,
                 Weight = 20,
@@ -162,9 +162,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateMeasurement_Should_Save_Measurement()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateMeasurement_Should_Save_Measurement").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Measurement measurement1 = new Measurement
+            Measurement measurement1 = new()
             {
                 Height = 100.0,
                 Weight = 10,
@@ -180,7 +180,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Measurement measurement2 = new Measurement
+            Measurement measurement2 = new()
             {
                 Height = 120.0,
                 Weight = 20,
@@ -200,7 +200,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            MeasurementService measurementService = new MeasurementService(context, memoryCache);
+            MeasurementService measurementService = new(context, memoryCache);
 
             Measurement measurementToUpdate = await measurementService.GetMeasurement(1);
             measurementToUpdate.AccessLevel = 5;
@@ -236,9 +236,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteMeasurement_Should_Remove_Measurement()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteMeasurement_Should_Remove_Measurement").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Measurement measurement1 = new Measurement
+            Measurement measurement1 = new()
             {
                 Height = 100.0,
                 Weight = 10,
@@ -254,7 +254,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Measurement measurement2 = new Measurement
+            Measurement measurement2 = new()
             {
                 Height = 120.0,
                 Weight = 20,
@@ -274,7 +274,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            MeasurementService measurementService = new MeasurementService(context, memoryCache);
+            MeasurementService measurementService = new(context, memoryCache);
 
             int measurementItemsCountBeforeDelete = context.MeasurementsDb.Count();
             Measurement measurementToDelete = await measurementService.GetMeasurement(1);
@@ -292,9 +292,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetMeasurementsList_Should_Return_List_Of_Measurement_When_Progeny_Has_Saved_Measurements()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMeasurementsList_Should_Return_List_Of_Measurement_When_Progeny_Has_Saved_Measurements").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Measurement measurement1 = new Measurement
+            Measurement measurement1 = new()
             {
                 Height = 100.0,
                 Weight = 10,
@@ -310,7 +310,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Measurement measurement2 = new Measurement
+            Measurement measurement2 = new()
             {
                 Height = 120.0,
                 Weight = 20,
@@ -331,7 +331,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            MeasurementService measurementService = new MeasurementService(context, memoryCache);
+            MeasurementService measurementService = new(context, memoryCache);
 
             List<Measurement> measurementsList = await measurementService.GetMeasurementsList(1);
             List<Measurement> measurementsList2 = await measurementService.GetMeasurementsList(1); // Test cached result.
@@ -352,9 +352,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMeasurementsList_Should_Return_Empty_List_Of_Measurement_When_Progeny_Has_No_Saved_Measurements").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Measurement measurement1 = new Measurement
+            Measurement measurement1 = new()
             {
                 Height = 100.0,
                 Weight = 10,
@@ -370,7 +370,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Measurement measurement2 = new Measurement
+            Measurement measurement2 = new()
             {
                 Height = 120.0,
                 Weight = 20,
@@ -391,7 +391,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            MeasurementService measurementService = new MeasurementService(context, memoryCache);
+            MeasurementService measurementService = new(context, memoryCache);
 
             List<Measurement> measurementsList = await measurementService.GetMeasurementsList(2);
             List<Measurement> measurementsList2 = await measurementService.GetMeasurementsList(2); // Test cached result.

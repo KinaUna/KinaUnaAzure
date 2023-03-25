@@ -15,9 +15,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetAllUserInfos_Should_Return_List_Of_UserInfo()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetAllUserInfos_Should_Return_List_Of_UserInfo").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            UserInfo userInfo1 = new UserInfo
+            UserInfo userInfo1 = new()
             {
                 UserEmail = "test1@test.com",
                 UserId = "UserId1",
@@ -29,7 +29,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProfilePicture = Constants.ProfilePictureUrl,
                 Timezone = Constants.DefaultTimezone
             };
-            UserInfo userInfo2 = new UserInfo
+            UserInfo userInfo2 = new()
             {
                 UserEmail = "test2@test.com",
                 UserId = "UserId2",
@@ -41,7 +41,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProfilePicture = Constants.ProfilePictureUrl,
                 Timezone = Constants.DefaultTimezone
             };
-            UserInfo userInfo3 = new UserInfo
+            UserInfo userInfo3 = new()
             {
                 UserEmail = "test3@test.com",
                 UserId = "UserId3",
@@ -60,7 +60,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
             List<UserInfo>? resultUserInfos = await userInfoService.GetAllUserInfos();
             List<UserInfo> dbUserInfos = await context.UserInfoDb.ToListAsync();
@@ -73,18 +73,18 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetUserInfoByEmail_Should_Return_UserInfo_Object_When_Email_Is_Valid()
         {
-            UserInfo userInfo1 = new UserInfo 
+            UserInfo userInfo1 = new()
             { 
                 UserEmail = "test1@test.com", UserId = "UserId1", UserName = "Test1", FirstName = "FirstName1", MiddleName = "MiddleName1", LastName = "LastName1",
                 ViewChild = 1, ProfilePicture = Constants.ProfilePictureUrl, Timezone = Constants.DefaultTimezone
             };
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoByEmail_Should_Return_UserInfo_Object_When_Email_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(userInfo1);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
             UserInfo resultUserInfo = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
             UserInfo resultUserInfoCached = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
@@ -106,7 +106,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetUserInfoByEmail_Should_Return_Null_When_Email_Is_Invalid()
         {
-            UserInfo userInfo1 = new UserInfo
+            UserInfo userInfo1 = new()
             {
                 UserEmail = "test1@test.com",
                 UserId = "UserId1",
@@ -119,12 +119,12 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Timezone = Constants.DefaultTimezone
             };
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoByEmail_Should_Return_Null_When_Email_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(userInfo1);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
             UserInfo resultUserInfo = await userInfoService.GetUserInfoByEmail("abc@abc.com");
 
@@ -136,12 +136,12 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddUserInfo_Should_Save_UserInfo").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
-            UserInfo userInfoToAdd = new UserInfo
+            UserInfo userInfoToAdd = new()
             {
                 UserEmail = "test1@test.com",
                 UserId = "UserId1",
@@ -188,7 +188,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task UpdateUserInfo_Should_Save_UserInfo()
         {
-            UserInfo userInfo1 = new UserInfo
+            UserInfo userInfo1 = new()
             {
                 UserEmail = "test1@test.com",
                 UserId = "UserId1",
@@ -201,12 +201,12 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Timezone = Constants.DefaultTimezone
             };
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateUserInfo_Should_Save_UserInfo").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(userInfo1);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
             UserInfo userInfoToUpdate = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
             userInfoToUpdate.UserName = userInfo1.UserName + "_Changed";
@@ -264,7 +264,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task DeleteUserInfoShouldRemoveUserInfo()
         {
-            UserInfo userInfo1 = new UserInfo
+            UserInfo userInfo1 = new()
             {
                 UserEmail = "test1@test.com",
                 UserId = "UserId1",
@@ -277,12 +277,12 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Timezone = Constants.DefaultTimezone
             };
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteUserInfoShouldRemoveUserInfo").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(userInfo1);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
             UserInfo userInfoToDelete = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
 
@@ -297,7 +297,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetUserInfoById_Should_Return_UserInfo_Object_When_Id_Is_Valid()
         {
-            UserInfo userInfo1 = new UserInfo
+            UserInfo userInfo1 = new()
             {
                 UserEmail = "test1@test.com",
                 UserId = "UserId1",
@@ -310,12 +310,12 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Timezone = Constants.DefaultTimezone
             };
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoById_Should_Return_UserInfo_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(userInfo1);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
             UserInfo resultUserInfo = await userInfoService.GetUserInfoById(1);
             UserInfo resultUserInfoCached = await userInfoService.GetUserInfoById(1);
@@ -337,7 +337,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetUserInfoById_Should_Return_Null_When_Id_Is_Invalid()
         {
-            UserInfo userInfo1 = new UserInfo
+            UserInfo userInfo1 = new()
             {
                 UserEmail = "test1@test.com",
                 UserId = "UserId1",
@@ -350,12 +350,12 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Timezone = Constants.DefaultTimezone
             };
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoById_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(userInfo1);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
             UserInfo resultUserInfo = await userInfoService.GetUserInfoById(0);
             UserInfo resultUserInfo2 = await userInfoService.GetUserInfoById(2);
@@ -366,7 +366,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetUserInfoByUserId_Should_Return_UserInfo_Object_When_UserId_Is_Valid()
         {
-            UserInfo userInfo1 = new UserInfo
+            UserInfo userInfo1 = new()
             {
                 UserEmail = "test1@test.com",
                 UserId = "UserId1",
@@ -379,12 +379,12 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Timezone = Constants.DefaultTimezone
             };
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoByUserId_Should_Return_UserInfo_Object_When_UserId_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(userInfo1);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
             UserInfo resultUserInfo = await userInfoService.GetUserInfoByUserId(userInfo1.UserId);
             UserInfo resultUserInfoCached = await userInfoService.GetUserInfoByUserId(userInfo1.UserId);
@@ -406,7 +406,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetUserInfoByUserId_Should_Return_Null_When_UserId_Is_Invalid()
         {
-            UserInfo userInfo1 = new UserInfo
+            UserInfo userInfo1 = new()
             {
                 UserEmail = "test1@test.com",
                 UserId = "UserId1",
@@ -419,12 +419,12 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Timezone = Constants.DefaultTimezone
             };
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUserInfoByUserId_Should_Return_Null_When_UserId_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(userInfo1);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
             UserInfo resultUserInfo = await userInfoService.GetUserInfoByUserId("");
             UserInfo resultUserInfo2 = await userInfoService.GetUserInfoByUserId("UserId2");
@@ -435,7 +435,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetDeletedUserInfos_Should_Return_List_Of_UserInfo()
         {
-            UserInfo userInfo1 = new UserInfo
+            UserInfo userInfo1 = new()
             {
                 UserEmail = "test1@test.com",
                 UserId = "UserId1",
@@ -447,7 +447,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProfilePicture = Constants.ProfilePictureUrl,
                 Timezone = Constants.DefaultTimezone
             };
-            UserInfo userInfo2 = new UserInfo
+            UserInfo userInfo2 = new()
             {
                 UserEmail = "test2@test.com",
                 UserId = "UserId2",
@@ -461,7 +461,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Deleted = true,
                 DeletedTime = DateTime.UtcNow
             };
-            UserInfo userInfo3 = new UserInfo
+            UserInfo userInfo3 = new()
             {
                 UserEmail = "test3@test.com",
                 UserId = "UserId3",
@@ -477,14 +477,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetDeletedUserInfos_Should_Return_List_Of_UserInfo").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(userInfo1);
             context.Add(userInfo2);
             context.Add(userInfo3);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
             List<UserInfo>? resultUserInfos = await userInfoService.GetDeletedUserInfos();
             List<UserInfo> dbUserInfos = await context.UserInfoDb.AsNoTracking().Where(ui => ui.Deleted).ToListAsync();
@@ -497,7 +497,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task IsAdminUser_Returns_True_For_Admin_User()
         {
-            UserInfo userInfo1 = new UserInfo
+            UserInfo userInfo1 = new()
             {
                 UserEmail = "test1@test.com",
                 UserId = "UserId1",
@@ -511,12 +511,12 @@ namespace KinaUnaProgenyApi.Tests.Services
                 IsKinaUnaAdmin = true
             };
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("IsAdminUser_Returns_True_For_Admin_User").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(userInfo1);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
             var result = await userInfoService.IsAdminUserId(userInfo1.UserId);
 
@@ -526,7 +526,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task IsAdminUserId_Returns_False_For_Non_Admin_User()
         {
-            UserInfo userInfo1 = new UserInfo
+            UserInfo userInfo1 = new()
             {
                 UserEmail = "test1@test.com",
                 UserId = "UserId1",
@@ -540,12 +540,12 @@ namespace KinaUnaProgenyApi.Tests.Services
                 IsKinaUnaAdmin = false
             };
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("IsAdminUserId_Returns_False_For_Non_Admin_User").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(userInfo1);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
             var result = await userInfoService.IsAdminUserId(userInfo1.UserId);
 
@@ -555,7 +555,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task IsAdminUserId_Returns_False_For_Non_Existing_User()
         {
-            UserInfo userInfo1 = new UserInfo
+            UserInfo userInfo1 = new()
             {
                 UserEmail = "test1@test.com",
                 UserId = "UserId1",
@@ -569,12 +569,12 @@ namespace KinaUnaProgenyApi.Tests.Services
                 IsKinaUnaAdmin = false
             };
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("IsAdminUserId_Returns_False_For_Non_Existing_User").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(userInfo1);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new UserInfoService(context, memoryCache);
+            UserInfoService userInfoService = new(context, memoryCache);
 
             var result = await userInfoService.IsAdminUserId("NoUser");
 

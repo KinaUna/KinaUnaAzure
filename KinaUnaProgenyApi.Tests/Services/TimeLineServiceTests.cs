@@ -14,9 +14,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTimeLineItem_Should_Return_TimeLineItem_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTimeLineItem_Should_Return_TimeLineItem_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            TimeLineItem timeLineItem1 = new TimeLineItem
+            TimeLineItem timeLineItem1 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -27,7 +27,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyTime = DateTime.UtcNow,
             };
 
-            TimeLineItem timeLineItem2 = new TimeLineItem
+            TimeLineItem timeLineItem2 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -44,7 +44,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new TimelineService(context, memoryCache);
+            TimelineService timelineService = new(context, memoryCache);
 
             TimeLineItem resultTimeLineItem1 = await timelineService.GetTimeLineItem(1);
             TimeLineItem resultTimeLineItem2 = await timelineService.GetTimeLineItem(1); // Uses cache
@@ -68,9 +68,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTimeLineItem_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTimeLineItem_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            TimeLineItem timeLineItem1 = new TimeLineItem
+            TimeLineItem timeLineItem1 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -86,7 +86,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new TimelineService(context, memoryCache);
+            TimelineService timelineService = new(context, memoryCache);
 
             TimeLineItem resultTimeLineItem1 = await timelineService.GetTimeLineItem(2);
             TimeLineItem resultTimeLineItem2 = await timelineService.GetTimeLineItem(2); // Using cache
@@ -99,9 +99,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddTimeLineItem_Should_Save_TimeLineItem()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddTimeLineItem_Should_Save_TimeLineItem").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            TimeLineItem timeLineItem1 = new TimeLineItem
+            TimeLineItem timeLineItem1 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -117,9 +117,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new TimelineService(context, memoryCache);
+            TimelineService timelineService = new(context, memoryCache);
 
-            TimeLineItem timeLineItemToAdd = new TimeLineItem
+            TimeLineItem timeLineItemToAdd = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -161,9 +161,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateTimeLineItem_Should_Save_TimeLineItem()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateTimeLineItem_Should_Save_TimeLineItem").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            TimeLineItem timeLineItem1 = new TimeLineItem
+            TimeLineItem timeLineItem1 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -174,7 +174,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyTime = DateTime.UtcNow,
             };
 
-            TimeLineItem timeLineItem2 = new TimeLineItem
+            TimeLineItem timeLineItem2 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -191,7 +191,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new TimelineService(context, memoryCache);
+            TimelineService timelineService = new(context, memoryCache);
 
             TimeLineItem timeLineItemToUpdate = await timelineService.GetTimeLineItem(1);
             timeLineItemToUpdate.AccessLevel = 5;
@@ -227,9 +227,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteTimeLineItem_Should_Remove_TimeLineItem()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteTimeLineItem_Should_Remove_TimeLineItem").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            TimeLineItem timeLineItem1 = new TimeLineItem
+            TimeLineItem timeLineItem1 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -240,7 +240,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyTime = DateTime.UtcNow,
             };
 
-            TimeLineItem timeLineItem2 = new TimeLineItem
+            TimeLineItem timeLineItem2 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -257,7 +257,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new TimelineService(context, memoryCache);
+            TimelineService timelineService = new(context, memoryCache);
 
             int timeLineItemItemsCountBeforeDelete = context.TimeLineDb.Count();
             TimeLineItem timeLineItemToDelete = await timelineService.GetTimeLineItem(1);
@@ -275,9 +275,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTimeLineItemsList_Should_Return_List_Of_TimeLineItem_When_Progeny_Has_Saved_TimeLineItems()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTimeLineItemsList_Should_Return_List_Of_TimeLineItem_When_Progeny_Has_Saved_TimeLineItems").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            TimeLineItem timeLineItem1 = new TimeLineItem
+            TimeLineItem timeLineItem1 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -288,7 +288,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyTime = DateTime.UtcNow,
             };
 
-            TimeLineItem timeLineItem2 = new TimeLineItem
+            TimeLineItem timeLineItem2 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -305,7 +305,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new TimelineService(context, memoryCache);
+            TimelineService timelineService = new(context, memoryCache);
 
             List<TimeLineItem> timeLineItemsList = await timelineService.GetTimeLineList(1);
             List<TimeLineItem> timeLineItemsList2 = await timelineService.GetTimeLineList(1); // Test cached result.
@@ -326,9 +326,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTimeLineItemsList_Should_Return_Empty_List_Of_TimeLineItem_When_Progeny_Has_No_Saved_TimeLineItems").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            TimeLineItem timeLineItem1 = new TimeLineItem
+            TimeLineItem timeLineItem1 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -339,7 +339,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyTime = DateTime.UtcNow,
             };
 
-            TimeLineItem timeLineItem2 = new TimeLineItem
+            TimeLineItem timeLineItem2 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -356,7 +356,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            TimelineService timelineService = new TimelineService(context, memoryCache);
+            TimelineService timelineService = new(context, memoryCache);
 
             List<TimeLineItem> timeLineItemsList = await timelineService.GetTimeLineList(2);
             List<TimeLineItem> timeLineItemsList2 = await timelineService.GetTimeLineList(2); // Test cached result.

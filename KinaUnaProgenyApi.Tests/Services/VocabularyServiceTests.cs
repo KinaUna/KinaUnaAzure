@@ -14,16 +14,16 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetVocabularyItem_Should_Return_VocabularyItem_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetVocabularyItem_Should_Return_VocabularyItem_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            VocabularyItem vocabularyItem1 = new VocabularyItem
+            VocabularyItem vocabularyItem1 = new()
             {
                 ProgenyId = 1, Author = "User1", AccessLevel = 0, Date = DateTime.UtcNow,
                 DateAdded = DateTime.Now, VocabularyItemNumber = 1, Description = "Description1",
                 Language = "Language1", SoundsLike = "SoundsLike1", Word = "Word1"
             };
             
-            VocabularyItem vocabularyItem2 = new VocabularyItem
+            VocabularyItem vocabularyItem2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -43,7 +43,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
+            VocabularyService vocabularyService = new(context, memoryCache);
 
             VocabularyItem resultVocabularyItem1 = await vocabularyService.GetVocabularyItem(1);
             VocabularyItem resultVocabularyItem2 = await vocabularyService.GetVocabularyItem(1); // Uses cache
@@ -67,9 +67,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetVocabularyItem_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetVocabularyItem_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            VocabularyItem vocabularyItem1 = new VocabularyItem
+            VocabularyItem vocabularyItem1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -88,7 +88,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
+            VocabularyService vocabularyService = new(context, memoryCache);
 
             VocabularyItem resultVocabularyItem1 = await vocabularyService.GetVocabularyItem(2);
             VocabularyItem resultVocabularyItem2 = await vocabularyService.GetVocabularyItem(2); // Using cache
@@ -101,9 +101,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddVocabularyItem_Should_Save_VocabularyItem()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddVocabularyItem_Should_Save_VocabularyItem").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            VocabularyItem vocabularyItem1 = new VocabularyItem
+            VocabularyItem vocabularyItem1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -122,9 +122,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
+            VocabularyService vocabularyService = new(context, memoryCache);
             
-            VocabularyItem vocabularyItemToAdd = new VocabularyItem
+            VocabularyItem vocabularyItemToAdd = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -170,9 +170,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateVocabularyItem_Should_Save_VocabularyItem()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateVocabularyItem_Should_Save_VocabularyItem").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            VocabularyItem vocabularyItem1 = new VocabularyItem
+            VocabularyItem vocabularyItem1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -186,7 +186,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Word = "Word1"
             };
 
-            VocabularyItem vocabularyItem2 = new VocabularyItem
+            VocabularyItem vocabularyItem2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -206,7 +206,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
+            VocabularyService vocabularyService = new(context, memoryCache);
 
             VocabularyItem vocabularyItemToUpdate = await vocabularyService.GetVocabularyItem(1);
             vocabularyItemToUpdate.AccessLevel = 5;
@@ -242,9 +242,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteVocabularyItem_Should_Remove_VocabularyItem()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteVocabularyItem_Should_Remove_VocabularyItem").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            VocabularyItem vocabularyItem1 = new VocabularyItem
+            VocabularyItem vocabularyItem1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -258,7 +258,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Word = "Word1"
             };
 
-            VocabularyItem vocabularyItem2 = new VocabularyItem
+            VocabularyItem vocabularyItem2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -278,7 +278,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
+            VocabularyService vocabularyService = new(context, memoryCache);
 
             int vocabularyItemItemsCountBeforeDelete = context.VocabularyDb.Count();
             VocabularyItem vocabularyItemToDelete = await vocabularyService.GetVocabularyItem(1);
@@ -296,9 +296,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetVocabularyItemsList_Should_Return_List_Of_VocabularyItem_When_Progeny_Has_Saved_VocabularyItems()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetVocabularyItemsList_Should_Return_List_Of_VocabularyItem_When_Progeny_Has_Saved_VocabularyItems").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            VocabularyItem vocabularyItem1 = new VocabularyItem
+            VocabularyItem vocabularyItem1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -312,7 +312,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Word = "Word1"
             };
 
-            VocabularyItem vocabularyItem2 = new VocabularyItem
+            VocabularyItem vocabularyItem2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -332,7 +332,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
+            VocabularyService vocabularyService = new(context, memoryCache);
 
             List<VocabularyItem> vocabularyItemsList = await vocabularyService.GetVocabularyList(1);
             List<VocabularyItem> vocabularyItemsList2 = await vocabularyService.GetVocabularyList(1); // Test cached result.
@@ -353,9 +353,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetVocabularyItemsList_Should_Return_Empty_List_Of_VocabularyItem_When_Progeny_Has_No_Saved_VocabularyItems").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            VocabularyItem vocabularyItem1 = new VocabularyItem
+            VocabularyItem vocabularyItem1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -369,7 +369,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Word = "Word1"
             };
             
-            VocabularyItem vocabularyItem2 = new VocabularyItem
+            VocabularyItem vocabularyItem2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -389,7 +389,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VocabularyService vocabularyService = new VocabularyService(context, memoryCache);
+            VocabularyService vocabularyService = new(context, memoryCache);
 
             List<VocabularyItem> vocabularyItemsList = await vocabularyService.GetVocabularyList(2);
             List<VocabularyItem> vocabularyItemsList2 = await vocabularyService.GetVocabularyList(2); // Test cached result.

@@ -11,14 +11,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetLanguagesList_Should_Return_List_Of_KinaUnaLanguage_When_Any_Language_Exist()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLanguagesList_Should_Return_List_Of_KinaUnaLanguage_When_Any_Language_Exist").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage
+            KinaUnaLanguage language1 = new()
             {
                 Name = "Language1", Code = "A", Icon = "A"
             };
 
-            KinaUnaLanguage language2 = new KinaUnaLanguage
+            KinaUnaLanguage language2 = new()
             {
                 Name = "Language2",
                 Code = "B",
@@ -29,7 +29,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(language2);
             await context.SaveChangesAsync();
 
-            LanguageService languageService = new LanguageService(context);
+            LanguageService languageService = new(context);
 
             List<KinaUnaLanguage> allLanguages = await languageService.GetAllLanguages();
             KinaUnaLanguage firstLanguage = allLanguages.First();
@@ -46,9 +46,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLanguagesList_Should_Return_Empty_List_Of_Language_When_Progeny_Has_No_Saved_Languages").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             
-            LanguageService languageService = new LanguageService(context);
+            LanguageService languageService = new(context);
 
             List<KinaUnaLanguage> languagesList = await languageService.GetAllLanguages();
             
@@ -61,16 +61,16 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetLanguage_Should_Return_KinaUnaLanguage_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLanguage_Should_Return_KinaUnaLanguage_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage
+            KinaUnaLanguage language1 = new()
             {
                 Name = "Language1",
                 Code = "A",
                 Icon = "A"
             };
 
-            KinaUnaLanguage language2 = new KinaUnaLanguage
+            KinaUnaLanguage language2 = new()
             {
                 Name = "Language2",
                 Code = "B",
@@ -81,7 +81,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(language2);
             await context.SaveChangesAsync();
 
-            LanguageService languageService = new LanguageService(context);
+            LanguageService languageService = new(context);
 
             KinaUnaLanguage resultLanguage1 = await languageService.GetLanguage(1);
            
@@ -96,9 +96,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetLanguage_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLanguage_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage
+            KinaUnaLanguage language1 = new()
             {
                 Name = "Language1",
                 Code = "A",
@@ -108,7 +108,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(language1);
             await context.SaveChangesAsync();
 
-            LanguageService languageService = new LanguageService(context);
+            LanguageService languageService = new(context);
 
             KinaUnaLanguage resultLanguage1 = await languageService.GetLanguage(2);
             
@@ -119,9 +119,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddLanguage_Should_Save_KinaUnaLanguage()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddLanguage_Should_Save_KinaUnaLanguage").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage
+            KinaUnaLanguage language1 = new()
             {
                 Name = "Language1",
                 Code = "A",
@@ -131,9 +131,9 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(language1);
             await context.SaveChangesAsync();
 
-            LanguageService languageService = new LanguageService(context);
+            LanguageService languageService = new(context);
 
-            KinaUnaLanguage languageToAdd = new KinaUnaLanguage
+            KinaUnaLanguage languageToAdd = new()
             {
                 Name = "Language2",
                 Code = "B",
@@ -169,16 +169,16 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateLanguage_Should_Save_KinaUnaLanguage()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateLanguage_Should_Save_KinaUnaLanguage").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage
+            KinaUnaLanguage language1 = new()
             {
                 Name = "Language1",
                 Code = "A",
                 Icon = "A"
             };
 
-            KinaUnaLanguage language2 = new KinaUnaLanguage
+            KinaUnaLanguage language2 = new()
             {
                 Name = "Language2",
                 Code = "B",
@@ -188,7 +188,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(language2);
             await context.SaveChangesAsync();
 
-            LanguageService languageService = new LanguageService(context);
+            LanguageService languageService = new(context);
 
             KinaUnaLanguage languageToUpdate = await languageService.GetLanguage(1);
             languageToUpdate.Code = "C";
@@ -225,16 +225,16 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteLanguage_Should_Remove_KinaUnaLanguage()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteLanguage_Should_Remove_KinaUnaLanguage").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage
+            KinaUnaLanguage language1 = new()
             {
                 Name = "Language1",
                 Code = "A",
                 Icon = "A"
             };
 
-            KinaUnaLanguage language2 = new KinaUnaLanguage
+            KinaUnaLanguage language2 = new()
             {
                 Name = "Language2",
                 Code = "B",
@@ -244,7 +244,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(language2);
             await context.SaveChangesAsync();
             
-            LanguageService languageService = new LanguageService(context);
+            LanguageService languageService = new(context);
 
             int languageItemsCountBeforeDelete = context.Languages.Count();
             KinaUnaLanguage languageToDelete = await languageService.GetLanguage(1);

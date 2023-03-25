@@ -14,16 +14,16 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetLocation_Should_Return_Location_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLocation_Should_Return_Location_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Location location1 = new Location
+            Location location1 = new()
             {
                 Name = "Location1", ProgenyId = 1, Author = "User1", AccessLevel = 0, City = "City1", Country = "Country1", County = "County1", Date = DateTime.UtcNow, DateAdded = DateTime.UtcNow,
                 District = "District1", HouseNumber = "1", Latitude = 0.0, Longitude = 0.0, LocationNumber = 1, Notes = "Note1", PostalCode = "PostalCode1", State = "State1", StreetName = "Street1", Tags = "Tag1, Tag2"
             };
 
 
-            Location location2 = new Location
+            Location location2 = new()
             {
                 Name = "Location2",
                 ProgenyId = 1,
@@ -52,7 +52,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new LocationService(context, memoryCache);
+            LocationService locationService = new(context, memoryCache);
 
             Location resultLocation1 = await locationService.GetLocation(1);
             Location resultLocation2 = await locationService.GetLocation(1); // Uses cache
@@ -76,9 +76,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetLocation_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLocation_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Location location1 = new Location
+            Location location1 = new()
             {
                 Name = "Location1",
                 ProgenyId = 1,
@@ -106,7 +106,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new LocationService(context, memoryCache);
+            LocationService locationService = new(context, memoryCache);
 
             Location resultLocation1 = await locationService.GetLocation(2);
             Location resultLocation2 = await locationService.GetLocation(2); // Using cache
@@ -119,9 +119,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddLocation_Should_Save_Location()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddLocation_Should_Save_Location").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Location location1 = new Location
+            Location location1 = new()
             {
                 Name = "Location1",
                 ProgenyId = 1,
@@ -149,9 +149,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new LocationService(context, memoryCache);
+            LocationService locationService = new(context, memoryCache);
 
-            Location locationToAdd = new Location
+            Location locationToAdd = new()
             {
                 Name = "Location1",
                 ProgenyId = 1,
@@ -206,9 +206,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateLocation_Should_Save_Location()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateLocation_Should_Save_Location").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Location location1 = new Location
+            Location location1 = new()
             {
                 Name = "Location1",
                 ProgenyId = 1,
@@ -232,7 +232,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Location location2 = new Location
+            Location location2 = new()
             {
                 Name = "Location2",
                 ProgenyId = 1,
@@ -261,7 +261,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new LocationService(context, memoryCache);
+            LocationService locationService = new(context, memoryCache);
 
             Location locationToUpdate = await locationService.GetLocation(1);
             locationToUpdate.AccessLevel = 5;
@@ -297,9 +297,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteLocation_Should_Remove_Location()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteLocation_Should_Remove_Location").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Location location1 = new Location
+            Location location1 = new()
             {
                 Name = "Location1",
                 ProgenyId = 1,
@@ -323,7 +323,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Location location2 = new Location
+            Location location2 = new()
             {
                 Name = "Location2",
                 ProgenyId = 1,
@@ -351,7 +351,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new LocationService(context, memoryCache);
+            LocationService locationService = new(context, memoryCache);
 
             int locationItemsCountBeforeDelete = context.LocationsDb.Count();
             Location locationToDelete = await locationService.GetLocation(1);
@@ -369,9 +369,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetLocationsList_Should_Return_List_Of_Location_When_Progeny_Has_Saved_Locations()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLocationsList_Should_Return_List_Of_Location_When_Progeny_Has_Saved_Locations").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Location location1 = new Location
+            Location location1 = new()
             {
                 Name = "Location1",
                 ProgenyId = 1,
@@ -395,7 +395,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Location location2 = new Location
+            Location location2 = new()
             {
                 Name = "Location2",
                 ProgenyId = 1,
@@ -424,7 +424,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new LocationService(context, memoryCache);
+            LocationService locationService = new(context, memoryCache);
 
             List<Location> locationsList = await locationService.GetLocationsList(1);
             List<Location> locationsList2 = await locationService.GetLocationsList(1); // Test cached result.
@@ -445,9 +445,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLocationsList_Should_Return_Empty_List_Of_Location_When_Progeny_Has_No_Saved_Locations").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Location location1 = new Location
+            Location location1 = new()
             {
                 Name = "Location1",
                 ProgenyId = 1,
@@ -471,7 +471,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Location location2 = new Location
+            Location location2 = new()
             {
                 Name = "Location2",
                 ProgenyId = 1,
@@ -500,7 +500,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new LocationService(context, memoryCache);
+            LocationService locationService = new(context, memoryCache);
 
             List<Location> locationsList = await locationService.GetLocationsList(2);
             List<Location> locationsList2 = await locationService.GetLocationsList(2); // Test cached result.
@@ -517,9 +517,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetAddress_Returns_Address_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetAddress_Returns_Address_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Address address1 = new Address
+            Address address1 = new()
             {
                 AddressLine1 = "Address1 Line1",
                 AddressLine2 = "Address1 Line2",
@@ -529,7 +529,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Country = "Country1"
             };
 
-            Address address2 = new Address
+            Address address2 = new()
             {
                 AddressLine1 = "Address2 Line1",
                 AddressLine2 = "Address2 Line2",
@@ -545,7 +545,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new LocationService(context, memoryCache);
+            LocationService locationService = new(context, memoryCache);
 
             Address resultAddress1 = await locationService.GetAddressItem(1);
             Address resultAddress2 = await locationService.GetAddressItem(1); // Uses cache
@@ -569,9 +569,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetAddress_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetAddress_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Address address1 = new Address
+            Address address1 = new()
             {
                 AddressLine1 = "Address1 Line1",
                 AddressLine2 = "Address1 Line2",
@@ -586,7 +586,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new LocationService(context, memoryCache);
+            LocationService locationService = new(context, memoryCache);
 
             Address resultAddress1 = await locationService.GetAddressItem(2);
             Address resultAddress2 = await locationService.GetAddressItem(2); // Using cache
@@ -599,9 +599,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddAddress_Should_Save_Address()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddAddress_Should_Save_Address").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Address address1 = new Address
+            Address address1 = new()
             {
                 AddressLine1 = "Address1 Line1",
                 AddressLine2 = "Address1 Line2",
@@ -616,9 +616,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new LocationService(context, memoryCache);
+            LocationService locationService = new(context, memoryCache);
 
-            Address addressToAdd = new Address
+            Address addressToAdd = new()
             {
                 AddressLine1 = "Address2 Line1",
                 AddressLine2 = "Address2 Line2",
@@ -660,9 +660,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateAddress_Should_Save_Address()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateAddress_Should_Save_Address").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Address address1 = new Address
+            Address address1 = new()
             {
                 AddressLine1 = "Address1 Line1",
                 AddressLine2 = "Address1 Line2",
@@ -672,7 +672,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Country = "Country1"
             };
 
-            Address address2 = new Address
+            Address address2 = new()
             {
                 AddressLine1 = "Address2 Line1",
                 AddressLine2 = "Address2 Line2",
@@ -687,7 +687,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new LocationService(context, memoryCache);
+            LocationService locationService = new(context, memoryCache);
 
             Address addressToUpdate = await locationService.GetAddressItem(1);
             addressToUpdate.PostalCode = "PostalCode3";
@@ -723,9 +723,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteAddress_Should_Remove_Address()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteAddress_Should_Remove_Address").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Address address1 = new Address
+            Address address1 = new()
             {
                 AddressLine1 = "Address1 Line1",
                 AddressLine2 = "Address1 Line2",
@@ -735,7 +735,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Country = "Country1"
             };
 
-            Address address2 = new Address
+            Address address2 = new()
             {
                 AddressLine1 = "Address2 Line1", AddressLine2 = "Address2 Line2", PostalCode = "PostalCode2", State = "State2", City = "City2", Country = "Country2"
             };
@@ -745,7 +745,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new LocationService(context, memoryCache);
+            LocationService locationService = new(context, memoryCache);
 
             int addressItemsCountBeforeDelete = context.AddressDb.Count();
             Address addressToDelete = await locationService.GetAddressItem(1);

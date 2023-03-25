@@ -14,14 +14,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetSleep_Should_Return_Sleep_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSleep_Should_Return_Sleep_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Sleep sleep1 = new Sleep
+            Sleep sleep1 = new()
             {
                 ProgenyId = 1, Author = "User1", AccessLevel = 0, CreatedDate = DateTime.UtcNow, SleepStart = DateTime.Now, SleepEnd = DateTime.UtcNow + TimeSpan.FromHours(1), SleepNotes = "Note1", SleepNumber = 1, SleepRating = 0
             };
             
-            Sleep sleep2 = new Sleep
+            Sleep sleep2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -40,7 +40,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SleepService sleepService = new SleepService(context, memoryCache);
+            SleepService sleepService = new(context, memoryCache);
 
             Sleep resultSleep1 = await sleepService.GetSleep(1);
             Sleep resultSleep2 = await sleepService.GetSleep(1); // Uses cache
@@ -64,9 +64,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetSleep_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSleep_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Sleep sleep1 = new Sleep
+            Sleep sleep1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -84,7 +84,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SleepService sleepService = new SleepService(context, memoryCache);
+            SleepService sleepService = new(context, memoryCache);
 
             Sleep resultSleep1 = await sleepService.GetSleep(2);
             Sleep resultSleep2 = await sleepService.GetSleep(2); // Using cache
@@ -97,9 +97,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddSleep_Should_Save_Sleep()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddSleep_Should_Save_Sleep").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Sleep sleep1 = new Sleep
+            Sleep sleep1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -117,9 +117,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SleepService sleepService = new SleepService(context, memoryCache);
+            SleepService sleepService = new(context, memoryCache);
             
-            Sleep sleepToAdd = new Sleep
+            Sleep sleepToAdd = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -164,9 +164,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateSleep_Should_Save_Sleep()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateSleep_Should_Save_Sleep").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Sleep sleep1 = new Sleep
+            Sleep sleep1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -179,7 +179,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SleepRating = 0
             };
 
-            Sleep sleep2 = new Sleep
+            Sleep sleep2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -198,7 +198,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SleepService sleepService = new SleepService(context, memoryCache);
+            SleepService sleepService = new(context, memoryCache);
 
             Sleep sleepToUpdate = await sleepService.GetSleep(1);
             sleepToUpdate.AccessLevel = 5;
@@ -234,9 +234,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteSleep_Should_Remove_Sleep()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteSleep_Should_Remove_Sleep").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Sleep sleep1 = new Sleep
+            Sleep sleep1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -249,7 +249,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SleepRating = 0
             };
 
-            Sleep sleep2 = new Sleep
+            Sleep sleep2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -268,7 +268,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SleepService sleepService = new SleepService(context, memoryCache);
+            SleepService sleepService = new(context, memoryCache);
 
             int sleepItemsCountBeforeDelete = context.SleepDb.Count();
             Sleep sleepToDelete = await sleepService.GetSleep(1);
@@ -286,9 +286,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetSleepsList_Should_Return_List_Of_Sleep_When_Progeny_Has_Saved_Sleeps()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSleepsList_Should_Return_List_Of_Sleep_When_Progeny_Has_Saved_Sleeps").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Sleep sleep1 = new Sleep
+            Sleep sleep1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -301,7 +301,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SleepRating = 0
             };
 
-            Sleep sleep2 = new Sleep
+            Sleep sleep2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -320,7 +320,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SleepService sleepService = new SleepService(context, memoryCache);
+            SleepService sleepService = new(context, memoryCache);
 
             List<Sleep> sleepsList = await sleepService.GetSleepList(1);
             List<Sleep> sleepsList2 = await sleepService.GetSleepList(1); // Test cached result.
@@ -341,9 +341,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSleepsList_Should_Return_Empty_List_Of_Sleep_When_Progeny_Has_No_Saved_Sleeps").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Sleep sleep1 = new Sleep
+            Sleep sleep1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -356,7 +356,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SleepRating = 0
             };
             
-            Sleep sleep2 = new Sleep
+            Sleep sleep2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -375,7 +375,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SleepService sleepService = new SleepService(context, memoryCache);
+            SleepService sleepService = new(context, memoryCache);
 
             List<Sleep> sleepsList = await sleepService.GetSleepList(2);
             List<Sleep> sleepsList2 = await sleepService.GetSleepList(2); // Test cached result.

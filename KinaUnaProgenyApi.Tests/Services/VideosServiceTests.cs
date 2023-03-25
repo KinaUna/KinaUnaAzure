@@ -15,9 +15,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetVideo_Should_Return_Video_Object_When_Id_Is_Valid()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetVideo_Should_Return_Video_Object_When_Id_Is_Valid").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Video video1 = new Video
+            Video video1 = new()
             {
                 ProgenyId = 1, Author = "User1", AccessLevel = 0, VideoLink = Constants.ProfilePictureUrl, Tags = "Tag1, Tag2", Altitude = "0", Latitude = "0",
                 CommentThreadNumber = 1, Location = "Location1", Longtitude = "0", Owners = "User1", VideoNumber = 1, VideoTime = DateTime.UtcNow, TimeZone = Constants.DefaultTimezone,
@@ -25,7 +25,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Video video2 = new Video
+            Video video2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -52,7 +52,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VideosService videoService = new VideosService(context, memoryCache);
+            VideosService videoService = new(context, memoryCache);
 
             Video resultVideo1 = await videoService.GetVideo(1);
             Video resultVideo2 = await videoService.GetVideo(1); // Uses cache
@@ -76,9 +76,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetVideo_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetVideo_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Video video1 = new Video
+            Video video1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -104,7 +104,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VideosService videoService = new VideosService(context, memoryCache);
+            VideosService videoService = new(context, memoryCache);
 
             Video resultVideo1 = await videoService.GetVideo(2);
             Video resultVideo2 = await videoService.GetVideo(2); // Using cache
@@ -117,9 +117,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddVideo_Should_Save_Video()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("AddVideo_Should_Save_Video").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Video video1 = new Video
+            Video video1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -145,9 +145,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VideosService videoService = new VideosService(context, memoryCache);
+            VideosService videoService = new(context, memoryCache);
 
-            Video videoToAdd = new Video
+            Video videoToAdd = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -200,9 +200,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateVideo_Should_Save_Video()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("UpdateVideo_Should_Save_Video").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Video video1 = new Video
+            Video video1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -224,7 +224,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Video video2 = new Video
+            Video video2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -250,7 +250,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VideosService videoService = new VideosService(context, memoryCache);
+            VideosService videoService = new(context, memoryCache);
 
             Video videoToUpdate = await videoService.GetVideo(1);
             videoToUpdate.AccessLevel = 5;
@@ -286,9 +286,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteVideo_Should_Remove_Video()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("DeleteVideo_Should_Remove_Video").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Video video1 = new Video
+            Video video1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -310,7 +310,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Video video2 = new Video
+            Video video2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -336,7 +336,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VideosService videoService = new VideosService(context, memoryCache);
+            VideosService videoService = new(context, memoryCache);
 
             int videoItemsCountBeforeDelete = context.VideoDb.Count();
             Video videoToDelete = await videoService.GetVideo(1);
@@ -354,9 +354,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetVideoByLink_Returns_Video_Object_When_Id_Is_Valid()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetVideoByLink_Returns_Video_Object_When_Id_Is_Valid").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Video video1 = new Video
+            Video video1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -377,7 +377,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 VideoType = 1
             };
 
-            Video video2 = new Video
+            Video video2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -404,7 +404,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VideosService videoService = new VideosService(context, memoryCache);
+            VideosService videoService = new(context, memoryCache);
 
             Video resultVideo1 = await videoService.GetVideoByLink(Constants.ProfilePictureUrl, 1);
             
@@ -420,9 +420,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetVideosList_Should_Return_List_Of_Video_When_Progeny_Has_Saved_Videos()
         {
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetVideosList_Should_Return_List_Of_Video_When_Progeny_Has_Saved_Videos").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Video video1 = new Video
+            Video video1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -444,7 +444,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Video video2 = new Video
+            Video video2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -471,7 +471,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VideosService videoService = new VideosService(context, memoryCache);
+            VideosService videoService = new(context, memoryCache);
 
             List<Video> videosList = await videoService.GetVideosList(1);
             List<Video> videosList2 = await videoService.GetVideosList(1); // Test cached result.
@@ -492,9 +492,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<MediaDbContext> dbOptions = new DbContextOptionsBuilder<MediaDbContext>().UseInMemoryDatabase("GetVideosList_Should_Return_Empty_List_Of_Video_When_Progeny_Has_No_Saved_Videos").Options;
-            await using MediaDbContext context = new MediaDbContext(dbOptions);
+            await using MediaDbContext context = new(dbOptions);
 
-            Video video1 = new Video
+            Video video1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -516,7 +516,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            Video video2 = new Video
+            Video video2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -543,7 +543,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VideosService videoService = new VideosService(context, memoryCache);
+            VideosService videoService = new(context, memoryCache);
 
             List<Video> videosList = await videoService.GetVideosList(2);
             List<Video> videosList2 = await videoService.GetVideosList(2); // Test cached result.

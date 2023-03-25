@@ -14,9 +14,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetVaccination_Should_Return_Vaccination_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetVaccination_Should_Return_Vaccination_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Vaccination vaccination1 = new Vaccination
+            Vaccination vaccination1 = new()
             {
                 VaccinationName = "Vaccination1",
                 ProgenyId = 1,
@@ -27,7 +27,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 VaccinationDescription = "Description1"
             };
             
-            Vaccination vaccination2 = new Vaccination
+            Vaccination vaccination2 = new()
             {
                 VaccinationName = "Vaccination2",
                 ProgenyId = 1,
@@ -44,7 +44,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
+            VaccinationService vaccinationService = new(context, memoryCache);
 
             Vaccination resultVaccination1 = await vaccinationService.GetVaccination(1);
             Vaccination resultVaccination2 = await vaccinationService.GetVaccination(1); // Uses cache
@@ -68,9 +68,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetVaccination_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetVaccination_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Vaccination vaccination1 = new Vaccination
+            Vaccination vaccination1 = new()
             {
                 VaccinationName = "Vaccination1",
                 ProgenyId = 1,
@@ -86,7 +86,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
+            VaccinationService vaccinationService = new(context, memoryCache);
 
             Vaccination resultVaccination1 = await vaccinationService.GetVaccination(2);
             Vaccination resultVaccination2 = await vaccinationService.GetVaccination(2); // Using cache
@@ -99,9 +99,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddVaccination_Should_Save_Vaccination()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddVaccination_Should_Save_Vaccination").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Vaccination vaccination1 = new Vaccination
+            Vaccination vaccination1 = new()
             {
                 VaccinationName = "Vaccination1",
                 ProgenyId = 1,
@@ -117,9 +117,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
+            VaccinationService vaccinationService = new(context, memoryCache);
             
-            Vaccination vaccinationToAdd = new Vaccination
+            Vaccination vaccinationToAdd = new()
             {
                 VaccinationName = "Vaccination2",
                 ProgenyId = 1,
@@ -162,9 +162,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateVaccination_Should_Save_Vaccination()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateVaccination_Should_Save_Vaccination").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Vaccination vaccination1 = new Vaccination
+            Vaccination vaccination1 = new()
             {
                 VaccinationName = "Vaccination1",
                 ProgenyId = 1,
@@ -175,7 +175,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 VaccinationDescription = "Description1"
             };
 
-            Vaccination vaccination2 = new Vaccination
+            Vaccination vaccination2 = new()
             {
                 VaccinationName = "Vaccination2",
                 ProgenyId = 1,
@@ -192,7 +192,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
+            VaccinationService vaccinationService = new(context, memoryCache);
 
             Vaccination vaccinationToUpdate = await vaccinationService.GetVaccination(1);
             vaccinationToUpdate.AccessLevel = 5;
@@ -228,9 +228,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteVaccination_Should_Remove_Vaccination()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteVaccination_Should_Remove_Vaccination").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Vaccination vaccination1 = new Vaccination
+            Vaccination vaccination1 = new()
             {
                 VaccinationName = "Vaccination1",
                 ProgenyId = 1,
@@ -241,7 +241,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 VaccinationDescription = "Description1"
             };
 
-            Vaccination vaccination2 = new Vaccination
+            Vaccination vaccination2 = new()
             {
                 VaccinationName = "Vaccination2",
                 ProgenyId = 1,
@@ -258,7 +258,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
+            VaccinationService vaccinationService = new(context, memoryCache);
 
             int vaccinationItemsCountBeforeDelete = context.VaccinationsDb.Count();
             Vaccination vaccinationToDelete = await vaccinationService.GetVaccination(1);
@@ -276,9 +276,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetVaccinationsList_Should_Return_List_Of_Vaccination_When_Progeny_Has_Saved_Vaccinations()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetVaccinationsList_Should_Return_List_Of_Vaccination_When_Progeny_Has_Saved_Vaccinations").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Vaccination vaccination1 = new Vaccination
+            Vaccination vaccination1 = new()
             {
                 VaccinationName = "Vaccination1",
                 ProgenyId = 1,
@@ -289,7 +289,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 VaccinationDescription = "Description1"
             };
 
-            Vaccination vaccination2 = new Vaccination
+            Vaccination vaccination2 = new()
             {
                 VaccinationName = "Vaccination2",
                 ProgenyId = 1,
@@ -306,7 +306,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
+            VaccinationService vaccinationService = new(context, memoryCache);
 
             List<Vaccination> vaccinationsList = await vaccinationService.GetVaccinationsList(1);
             List<Vaccination> vaccinationsList2 = await vaccinationService.GetVaccinationsList(1); // Test cached result.
@@ -327,9 +327,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetVaccinationsList_Should_Return_Empty_List_Of_Vaccination_When_Progeny_Has_No_Saved_Vaccinations").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Vaccination vaccination1 = new Vaccination
+            Vaccination vaccination1 = new()
             {
                 VaccinationName = "Vaccination1",
                 ProgenyId = 1,
@@ -340,7 +340,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 VaccinationDescription = "Description1"
             };
             
-            Vaccination vaccination2 = new Vaccination
+            Vaccination vaccination2 = new()
             {
                 VaccinationName = "Vaccination2",
                 ProgenyId = 1,
@@ -357,7 +357,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            VaccinationService vaccinationService = new VaccinationService(context, memoryCache);
+            VaccinationService vaccinationService = new(context, memoryCache);
 
             List<Vaccination> vaccinationsList = await vaccinationService.GetVaccinationsList(2);
             List<Vaccination> vaccinationsList2 = await vaccinationService.GetVaccinationsList(2); // Test cached result.

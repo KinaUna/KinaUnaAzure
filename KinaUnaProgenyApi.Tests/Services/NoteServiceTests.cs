@@ -14,15 +14,15 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetNote_Should_Return_Note_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetNote_Should_Return_Note_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Note note1 = new Note
+            Note note1 = new()
             {
                 ProgenyId = 1, AccessLevel = 0, Category = "Category1", Content = "Content1", CreatedDate = DateTime.UtcNow, NoteNumber = 1, Owner = "User1", Title = "Title1"
             };
 
 
-            Note note2 = new Note
+            Note note2 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -40,7 +40,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            NoteService noteService = new NoteService(context, memoryCache);
+            NoteService noteService = new(context, memoryCache);
 
             Note resultNote1 = await noteService.GetNote(1);
             Note resultNote2 = await noteService.GetNote(1); // Uses cache
@@ -64,9 +64,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetNote_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetNote_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Note note1 = new Note
+            Note note1 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -83,7 +83,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            NoteService noteService = new NoteService(context, memoryCache);
+            NoteService noteService = new(context, memoryCache);
 
             Note resultNote1 = await noteService.GetNote(2);
             Note resultNote2 = await noteService.GetNote(2); // Using cache
@@ -96,9 +96,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddNote_Should_Save_Note()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddNote_Should_Save_Note").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Note note1 = new Note
+            Note note1 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -115,9 +115,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            NoteService noteService = new NoteService(context, memoryCache);
+            NoteService noteService = new(context, memoryCache);
 
-            Note noteToAdd = new Note
+            Note noteToAdd = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -161,9 +161,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateNote_Should_Save_Note()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateNote_Should_Save_Note").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Note note1 = new Note
+            Note note1 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -175,7 +175,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Title = "Title1"
             };
 
-            Note note2 = new Note
+            Note note2 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -192,7 +192,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            NoteService noteService = new NoteService(context, memoryCache);
+            NoteService noteService = new(context, memoryCache);
 
             Note noteToUpdate = await noteService.GetNote(1);
             noteToUpdate.AccessLevel = 5;
@@ -228,9 +228,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteNote_Should_Remove_Note()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteNote_Should_Remove_Note").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Note note1 = new Note
+            Note note1 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -242,7 +242,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Title = "Title1"
             };
 
-            Note note2 = new Note
+            Note note2 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -259,7 +259,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            NoteService noteService = new NoteService(context, memoryCache);
+            NoteService noteService = new(context, memoryCache);
 
             int noteItemsCountBeforeDelete = context.NotesDb.Count();
             Note noteToDelete = await noteService.GetNote(1);
@@ -277,9 +277,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetNotesList_Should_Return_List_Of_Note_When_Progeny_Has_Saved_Notes()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetNotesList_Should_Return_List_Of_Note_When_Progeny_Has_Saved_Notes").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Note note1 = new Note
+            Note note1 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -291,7 +291,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Title = "Title1"
             };
 
-            Note note2 = new Note
+            Note note2 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -309,7 +309,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            NoteService noteService = new NoteService(context, memoryCache);
+            NoteService noteService = new(context, memoryCache);
 
             List<Note> notesList = await noteService.GetNotesList(1);
             List<Note> notesList2 = await noteService.GetNotesList(1); // Test cached result.
@@ -330,9 +330,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetNotesList_Should_Return_Empty_List_Of_Note_When_Progeny_Has_No_Saved_Notes").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Note note1 = new Note
+            Note note1 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -344,7 +344,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Title = "Title1"
             };
 
-            Note note2 = new Note
+            Note note2 = new()
             {
                 ProgenyId = 1,
                 AccessLevel = 0,
@@ -362,7 +362,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            NoteService noteService = new NoteService(context, memoryCache);
+            NoteService noteService = new(context, memoryCache);
 
             List<Note> notesList = await noteService.GetNotesList(2);
             List<Note> notesList2 = await noteService.GetNotesList(2); // Test cached result.

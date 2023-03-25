@@ -15,16 +15,16 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetFriend_Should_Return_Friend_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetFriend_Should_Return_Friend_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Friend friend1 = new Friend
+            Friend friend1 = new()
             {
                 ProgenyId = 1, Author = "User1", AccessLevel = 0, Context = "Testing", Name = "Friend1", PictureLink = Constants.ProfilePictureUrl, Tags = "Tag1, Tag2",
                 Notes = "Note1", FriendAddedDate = DateTime.UtcNow, Description = "Friend1", FriendSince = DateTime.Now, Type = 1
             };
 
 
-            Friend friend2 = new Friend
+            Friend friend2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -46,7 +46,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new FriendService(context, memoryCache);
+            FriendService friendService = new(context, memoryCache);
 
             Friend resultFriend1 = await friendService.GetFriend(1);
             Friend resultFriend2 = await friendService.GetFriend(1); // Uses cache
@@ -70,9 +70,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetFriend_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetFriend_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Friend friend1 = new Friend
+            Friend friend1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -93,7 +93,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new FriendService(context, memoryCache);
+            FriendService friendService = new(context, memoryCache);
 
             Friend resultFriend1 = await friendService.GetFriend(2);
             Friend resultFriend2 = await friendService.GetFriend(2); // Using cache
@@ -106,9 +106,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddFriend_Should_Save_Friend()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddFriend_Should_Save_Friend").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Friend friend1 = new Friend
+            Friend friend1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -128,9 +128,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new FriendService(context, memoryCache);
+            FriendService friendService = new(context, memoryCache);
 
-            Friend friendToAdd = new Friend
+            Friend friendToAdd = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -178,9 +178,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateFriend_Should_Save_Friend()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateFriend_Should_Save_Friend").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Friend friend1 = new Friend
+            Friend friend1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -196,7 +196,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Type = 1
             };
 
-            Friend friend2 = new Friend
+            Friend friend2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -217,7 +217,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new FriendService(context, memoryCache);
+            FriendService friendService = new(context, memoryCache);
 
             Friend friendToUpdate = await friendService.GetFriend(1);
             friendToUpdate.AccessLevel = 5;
@@ -253,9 +253,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteFriend_Should_Remove_Friend()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteFriend_Should_Remove_Friend").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Friend friend1 = new Friend
+            Friend friend1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -271,7 +271,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Type = 1
             };
 
-            Friend friend2 = new Friend
+            Friend friend2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -292,7 +292,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new FriendService(context, memoryCache);
+            FriendService friendService = new(context, memoryCache);
 
             int friendItemsCountBeforeDelete = context.FriendsDb.Count();
             Friend friendToDelete = await friendService.GetFriend(1);
@@ -310,9 +310,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetFriendsList_Should_Return_List_Of_Friend_When_Progeny_Has_Saved_Friends()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetFriendsList_Should_Return_List_Of_Friend_When_Progeny_Has_Saved_Friends").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Friend friend1 = new Friend
+            Friend friend1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -328,7 +328,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Type = 1
             };
 
-            Friend friend2 = new Friend
+            Friend friend2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -350,7 +350,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new FriendService(context, memoryCache);
+            FriendService friendService = new(context, memoryCache);
 
             List<Friend> friendsList = await friendService.GetFriendsList(1);
             List<Friend> friendsList2 = await friendService.GetFriendsList(1); // Test cached result.
@@ -371,9 +371,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetFriendsList_Should_Return_Empty_List_Of_Friend_When_Progeny_Has_No_Saved_Friends").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Friend friend1 = new Friend
+            Friend friend1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -389,7 +389,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Type = 1
             };
 
-            Friend friend2 = new Friend
+            Friend friend2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -411,7 +411,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new FriendService(context, memoryCache);
+            FriendService friendService = new(context, memoryCache);
 
             List<Friend> friendsList = await friendService.GetFriendsList(2);
             List<Friend> friendsList2 = await friendService.GetFriendsList(2); // Test cached result.

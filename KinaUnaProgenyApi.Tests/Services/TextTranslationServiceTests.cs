@@ -11,18 +11,18 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetAllTranslations_Should_Return_List_Of_TextTranslation()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetAllTranslations_Should_Return_List_Of_KinaUnaText").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage {Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1"};
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language1 = new() {Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1"};
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
 
             context.Add(language1);
             context.Add(language2);
 
-            TextTranslation textTranslation1 = new TextTranslation { LanguageId = 1, Page = "Page1", Word="Word1", Translation = "Translation1.1"};
-            TextTranslation textTranslation2 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
-            TextTranslation textTranslation3 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word2", Translation = "Translation2.1" };
-            TextTranslation textTranslation4 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word2", Translation = "Translation2.2" };
+            TextTranslation textTranslation1 = new() { LanguageId = 1, Page = "Page1", Word="Word1", Translation = "Translation1.1"};
+            TextTranslation textTranslation2 = new() { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
+            TextTranslation textTranslation3 = new() { LanguageId = 1, Page = "Page1", Word = "Word2", Translation = "Translation2.1" };
+            TextTranslation textTranslation4 = new() { LanguageId = 2, Page = "Page1", Word = "Word2", Translation = "Translation2.2" };
 
             context.Add(textTranslation1);
             context.Add(textTranslation2);
@@ -31,7 +31,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
             
-            TextTranslationService textTranslationService = new TextTranslationService(context);
+            TextTranslationService textTranslationService = new(context);
 
             List<TextTranslation> translationsList = await textTranslationService.GetAllTranslations(1);
             
@@ -48,23 +48,23 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTranslationById_Should_Return_TextTranslation_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTranslationById_Should_Return_TextTranslation_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
 
             context.Add(language1);
             context.Add(language2);
 
-            TextTranslation textTranslation1 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
-            TextTranslation textTranslation2 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
+            TextTranslation textTranslation1 = new() { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
+            TextTranslation textTranslation2 = new() { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
             
             context.Add(textTranslation1);
             context.Add(textTranslation2);
             
             await context.SaveChangesAsync();
             
-            TextTranslationService textTranslationService = new TextTranslationService(context);
+            TextTranslationService textTranslationService = new(context);
 
             TextTranslation resultTranslation = await textTranslationService.GetTranslationById(1);
             
@@ -80,23 +80,23 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTranslationById_Returns_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTranslationById_Returns_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
 
             context.Add(language1);
             context.Add(language2);
 
-            TextTranslation textTranslation1 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
-            TextTranslation textTranslation2 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
+            TextTranslation textTranslation1 = new() { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
+            TextTranslation textTranslation2 = new() { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
             
             context.Add(textTranslation1);
             context.Add(textTranslation2);
             
             await context.SaveChangesAsync();
 
-            TextTranslationService textTranslationService = new TextTranslationService(context);
+            TextTranslationService textTranslationService = new(context);
 
             TextTranslation resultTranslation = await textTranslationService.GetTranslationById(3);
 
@@ -107,18 +107,18 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPageTranslations_Returns_List_Of_TextTranslation_When_Page_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPageTranslations_Returns_List_Of_TextTranslation_When_Page_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
 
             context.Add(language1);
             context.Add(language2);
 
-            TextTranslation textTranslation1 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
-            TextTranslation textTranslation2 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
-            TextTranslation textTranslation3 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word2", Translation = "Translation2.1" };
-            TextTranslation textTranslation4 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word2", Translation = "Translation2.2" };
+            TextTranslation textTranslation1 = new() { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
+            TextTranslation textTranslation2 = new() { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
+            TextTranslation textTranslation3 = new() { LanguageId = 1, Page = "Page1", Word = "Word2", Translation = "Translation2.1" };
+            TextTranslation textTranslation4 = new() { LanguageId = 2, Page = "Page1", Word = "Word2", Translation = "Translation2.2" };
 
             context.Add(textTranslation1);
             context.Add(textTranslation2);
@@ -127,7 +127,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            TextTranslationService textTranslationService = new TextTranslationService(context);
+            TextTranslationService textTranslationService = new(context);
 
             List<TextTranslation> resultTranslationsList = await textTranslationService.GetPageTranslations(1, "Page1");
 
@@ -140,18 +140,18 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPageTranslations_Returns_Empty_List_Of_TextTranslation_When_Page_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPageTranslations_Returns_Empty_List_Of_TextTranslation_When_Page_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
 
             context.Add(language1);
             context.Add(language2);
 
-            TextTranslation textTranslation1 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
-            TextTranslation textTranslation2 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
-            TextTranslation textTranslation3 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word2", Translation = "Translation2.1" };
-            TextTranslation textTranslation4 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word2", Translation = "Translation2.2" };
+            TextTranslation textTranslation1 = new() { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
+            TextTranslation textTranslation2 = new() { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
+            TextTranslation textTranslation3 = new() { LanguageId = 1, Page = "Page1", Word = "Word2", Translation = "Translation2.1" };
+            TextTranslation textTranslation4 = new() { LanguageId = 2, Page = "Page1", Word = "Word2", Translation = "Translation2.2" };
 
             context.Add(textTranslation1);
             context.Add(textTranslation2);
@@ -160,7 +160,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            TextTranslationService textTranslationService = new TextTranslationService(context);
+            TextTranslationService textTranslationService = new(context);
 
             List<TextTranslation> resultTranslationsList = await textTranslationService.GetPageTranslations(1, "Page2");
 
@@ -173,23 +173,23 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTranslationByWord_Returns_TextTranslation_Object_When_Word_And_Page_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTranslationByWord_Returns_TextTranslation_Object_When_Word_And_Page_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
 
             context.Add(language1);
             context.Add(language2);
 
-            TextTranslation textTranslation1 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
-            TextTranslation textTranslation2 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
+            TextTranslation textTranslation1 = new() { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
+            TextTranslation textTranslation2 = new() { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
 
             context.Add(textTranslation1);
             context.Add(textTranslation2);
 
             await context.SaveChangesAsync();
 
-            TextTranslationService textTranslationService = new TextTranslationService(context);
+            TextTranslationService textTranslationService = new(context);
 
             TextTranslation resultTranslation = await textTranslationService.GetTranslationByWord("Word1", "Page1", 1);
 
@@ -205,23 +205,23 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTranslationByWord_Returns_Null_When_Word_Or_Page_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTranslationByWord_Returns_Null_When_Word_Or_Page_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
 
             context.Add(language1);
             context.Add(language2);
 
-            TextTranslation textTranslation1 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
-            TextTranslation textTranslation2 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
+            TextTranslation textTranslation1 = new() { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
+            TextTranslation textTranslation2 = new() { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
 
             context.Add(textTranslation1);
             context.Add(textTranslation2);
 
             await context.SaveChangesAsync();
 
-            TextTranslationService textTranslationService = new TextTranslationService(context);
+            TextTranslationService textTranslationService = new(context);
 
             TextTranslation resultTranslation = await textTranslationService.GetTranslationByWord("Word2", "Page1", 1);
             TextTranslation resultTranslation2 = await textTranslationService.GetTranslationByWord("Word1", "Page2", 1);
@@ -234,25 +234,25 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddTranslation_Should_Save_TextTranslation()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddTranslation_Should_Save_TextTranslation").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
 
             context.Add(language1);
             context.Add(language2);
 
-            TextTranslation textTranslation1 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
-            TextTranslation textTranslation2 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
+            TextTranslation textTranslation1 = new() { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
+            TextTranslation textTranslation2 = new() { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
 
             context.Add(textTranslation1);
             context.Add(textTranslation2);
 
             await context.SaveChangesAsync();
             
-            TextTranslationService textTranslationService = new TextTranslationService(context);
+            TextTranslationService textTranslationService = new(context);
 
-            TextTranslation textTranslationToAdd = new TextTranslation { LanguageId = 1, Page = "Page2", Word = "Word2", Translation = "Translation2.1"};
+            TextTranslation textTranslationToAdd = new() { LanguageId = 1, Page = "Page2", Word = "Word2", Translation = "Translation2.1"};
 
             TextTranslation addedTextTranslation = await textTranslationService.AddTranslation(textTranslationToAdd);
             TextTranslation? dbTextTranslation = await context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(tt => tt.Id == addedTextTranslation.Id);
@@ -285,26 +285,26 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddTranslation_Should_Add_TextTranslation_For_All_Languages()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddTranslation_Should_Save_TextTranslation").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
-            TextTranslation textTranslation1 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
-            TextTranslation textTranslation2 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
+            TextTranslation textTranslation1 = new() { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
+            TextTranslation textTranslation2 = new() { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
 
             context.Add(textTranslation1);
             context.Add(textTranslation2);
 
             await context.SaveChangesAsync();
 
-            TextTranslationService textTranslationService = new TextTranslationService(context);
+            TextTranslationService textTranslationService = new(context);
 
-            TextTranslation textTranslationToAdd = new TextTranslation { LanguageId = 1, Page = "Page2", Word = "Word2", Translation = "Translation2.1" };
+            TextTranslation textTranslationToAdd = new() { LanguageId = 1, Page = "Page2", Word = "Word2", Translation = "Translation2.1" };
 
             await textTranslationService.AddTranslation(textTranslationToAdd);
             List<TextTranslation> allLanguageVersionsOfAddedTextTranslation = await context.TextTranslations.Where(tt => tt.Page == textTranslationToAdd.Page && tt.Word == textTranslationToAdd.Word).ToListAsync();
@@ -317,22 +317,22 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateTranslation_Should_Save_TextTranslation()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateTranslation_Should_Save_TextTranslation").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
 
             context.Add(language1);
             context.Add(language2);
 
-            TextTranslation textTranslation1 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
-            TextTranslation textTranslation2 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
+            TextTranslation textTranslation1 = new() { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
+            TextTranslation textTranslation2 = new() { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
             
             context.Add(textTranslation1);
             context.Add(textTranslation2);
             
             await context.SaveChangesAsync();
-            TextTranslationService textTranslationService = new TextTranslationService(context);
+            TextTranslationService textTranslationService = new(context);
             
             TextTranslation textTranslationToUpdate = await textTranslationService.GetTranslationById(1);
             textTranslationToUpdate.Translation = "Translation1.1 Updated";
@@ -368,27 +368,27 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteTranslation_Should_Remove_All_Language_Versions_Of_The_TextTranslation()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteTranslation_Should_Remove_All_Language_Versions_Of_The_TextTranslation").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
-            KinaUnaLanguage language4 = new KinaUnaLanguage { Name = "Language4", Code = "Code4", Icon = "Icon4", IconLink = "IconLink4" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language4 = new() { Name = "Language4", Code = "Code4", Icon = "Icon4", IconLink = "IconLink4" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
             context.Add(language4);
 
-            TextTranslation textTranslation1 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
-            TextTranslation textTranslation2 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
-            TextTranslation textTranslation3 = new TextTranslation { LanguageId = 3, Page = "Page1", Word = "Word1", Translation = "Translation1.3" };
-            TextTranslation textTranslation4 = new TextTranslation { LanguageId = 4, Page = "Page1", Word = "Word1", Translation = "Translation1.4" };
+            TextTranslation textTranslation1 = new() { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
+            TextTranslation textTranslation2 = new() { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
+            TextTranslation textTranslation3 = new() { LanguageId = 3, Page = "Page1", Word = "Word1", Translation = "Translation1.3" };
+            TextTranslation textTranslation4 = new() { LanguageId = 4, Page = "Page1", Word = "Word1", Translation = "Translation1.4" };
 
-            TextTranslation textTranslation5 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word2", Translation = "Translation2.1" };
-            TextTranslation textTranslation6 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word2", Translation = "Translation2.2" };
-            TextTranslation textTranslation7 = new TextTranslation { LanguageId = 3, Page = "Page1", Word = "Word2", Translation = "Translation2.3" };
-            TextTranslation textTranslation8 = new TextTranslation { LanguageId = 4, Page = "Page1", Word = "Word2", Translation = "Translation2.4" };
+            TextTranslation textTranslation5 = new() { LanguageId = 1, Page = "Page1", Word = "Word2", Translation = "Translation2.1" };
+            TextTranslation textTranslation6 = new() { LanguageId = 2, Page = "Page1", Word = "Word2", Translation = "Translation2.2" };
+            TextTranslation textTranslation7 = new() { LanguageId = 3, Page = "Page1", Word = "Word2", Translation = "Translation2.3" };
+            TextTranslation textTranslation8 = new() { LanguageId = 4, Page = "Page1", Word = "Word2", Translation = "Translation2.4" };
 
             context.Add(textTranslation1);
             context.Add(textTranslation2);
@@ -401,7 +401,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            TextTranslationService textTranslationService = new TextTranslationService(context);
+            TextTranslationService textTranslationService = new(context);
 
             TextTranslation textTranslationToDelete = await textTranslationService.GetTranslationById(1);
             List<TextTranslation> textTranslationListBeforeDelete = await context.TextTranslations.Where(tt => tt.Page == textTranslationToDelete.Page && tt.Word == textTranslationToDelete.Word).ToListAsync();
@@ -422,27 +422,27 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteSingleTranslation_Should_Remove_Only_1_Language_Version_Of_The_TextTranslation()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteSingleTranslation_Should_Remove_Only_1_Language_Version_Of_The_TextTranslation").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
-            KinaUnaLanguage language4 = new KinaUnaLanguage { Name = "Language4", Code = "Code4", Icon = "Icon4", IconLink = "IconLink4" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language4 = new() { Name = "Language4", Code = "Code4", Icon = "Icon4", IconLink = "IconLink4" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
             context.Add(language4);
 
-            TextTranslation textTranslation1 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
-            TextTranslation textTranslation2 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
-            TextTranslation textTranslation3 = new TextTranslation { LanguageId = 3, Page = "Page1", Word = "Word1", Translation = "Translation1.3" };
-            TextTranslation textTranslation4 = new TextTranslation { LanguageId = 4, Page = "Page1", Word = "Word1", Translation = "Translation1.4" };
+            TextTranslation textTranslation1 = new() { LanguageId = 1, Page = "Page1", Word = "Word1", Translation = "Translation1.1" };
+            TextTranslation textTranslation2 = new() { LanguageId = 2, Page = "Page1", Word = "Word1", Translation = "Translation1.2" };
+            TextTranslation textTranslation3 = new() { LanguageId = 3, Page = "Page1", Word = "Word1", Translation = "Translation1.3" };
+            TextTranslation textTranslation4 = new() { LanguageId = 4, Page = "Page1", Word = "Word1", Translation = "Translation1.4" };
 
-            TextTranslation textTranslation5 = new TextTranslation { LanguageId = 1, Page = "Page1", Word = "Word2", Translation = "Translation2.1" };
-            TextTranslation textTranslation6 = new TextTranslation { LanguageId = 2, Page = "Page1", Word = "Word2", Translation = "Translation2.2" };
-            TextTranslation textTranslation7 = new TextTranslation { LanguageId = 3, Page = "Page1", Word = "Word2", Translation = "Translation2.3" };
-            TextTranslation textTranslation8 = new TextTranslation { LanguageId = 4, Page = "Page1", Word = "Word2", Translation = "Translation2.4" };
+            TextTranslation textTranslation5 = new() { LanguageId = 1, Page = "Page1", Word = "Word2", Translation = "Translation2.1" };
+            TextTranslation textTranslation6 = new() { LanguageId = 2, Page = "Page1", Word = "Word2", Translation = "Translation2.2" };
+            TextTranslation textTranslation7 = new() { LanguageId = 3, Page = "Page1", Word = "Word2", Translation = "Translation2.3" };
+            TextTranslation textTranslation8 = new() { LanguageId = 4, Page = "Page1", Word = "Word2", Translation = "Translation2.4" };
 
             context.Add(textTranslation1);
             context.Add(textTranslation2);
@@ -455,7 +455,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            TextTranslationService textTranslationService = new TextTranslationService(context);
+            TextTranslationService textTranslationService = new(context);
 
             TextTranslation textTranslationToDelete = await textTranslationService.GetTranslationById(1);
             List<TextTranslation> textTranslationListBeforeDelete = await context.TextTranslations.Where(tt => tt.Page == textTranslationToDelete.Page && tt.Word == textTranslationToDelete.Word).ToListAsync();

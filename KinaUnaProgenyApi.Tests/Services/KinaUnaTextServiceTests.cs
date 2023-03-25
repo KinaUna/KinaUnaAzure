@@ -11,19 +11,19 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTextByTitle_Should_Return_KinaUnaText_Object_When_Parameters_Are_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTextByTitle_Should_Return_KinaUnaText_Object_When_Parameters_Are_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow};
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow};
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -31,7 +31,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText resultKinaUnaText = await kinaUnaTextService.GetTextByTitle("Title1", "Page1", 1);
 
@@ -47,19 +47,19 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTextByTitle_Should_Return_Null_When_Title_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTextByTitle_Should_Return_Null_When_Title_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -67,7 +67,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText resultKinaUnaText = await kinaUnaTextService.GetTextByTitle("Title2", "Page1", 1);
 
@@ -78,19 +78,19 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTextByTitle_Should_Return_Null_When_Page_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTextByTitle_Should_Return_Null_When_Parameters_Are_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -98,7 +98,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText resultKinaUnaText = await kinaUnaTextService.GetTextByTitle("Title1", "Page2", 1);
 
@@ -109,19 +109,19 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTextByTitle_Should_Return_Null_When_Language_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTextByTitle_Should_Return_Null_When_Parameters_Are_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -129,7 +129,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText resultKinaUnaText = await kinaUnaTextService.GetTextByTitle("Title1", "Page1", 4);
 
@@ -140,19 +140,19 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTextById_Should_Return_KinaUnaText_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTextById_Should_Return_KinaUnaText_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -160,7 +160,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText resultKinaUnaText = await kinaUnaTextService.GetTextById(1);
 
@@ -176,19 +176,19 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTextById_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTextById_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -196,7 +196,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText resultKinaUnaText = await kinaUnaTextService.GetTextById(4);
 
@@ -207,19 +207,19 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTextByTextId_Should_Return_KinaUnaText_Object_When_TextId_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTextByTextId_Should_Return_KinaUnaText_Object_When_TextId_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -227,7 +227,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText resultKinaUnaText = await kinaUnaTextService.GetTextByTextId(1, 1);
 
@@ -243,19 +243,19 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTextByTextId_Should_Return_Null_When_TextId_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTextByTextId_Should_Return_Null_When_TextId_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -263,7 +263,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText resultKinaUnaText = await kinaUnaTextService.GetTextByTextId(2, 1);
 
@@ -274,19 +274,19 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetTextByTextId_Should_Return_Null_When_LanguageId_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetTextByTextId_Should_Return_Null_When_LanguageId_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -294,7 +294,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText resultKinaUnaText = await kinaUnaTextService.GetTextByTextId(1, 4);
 
@@ -305,34 +305,34 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPageTextsList_Should_Return_List_Of_KinaUnaText_When_Page_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPageTextsList_Should_Return_List_Of_KinaUnaText_When_TextId_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaTextNumber textNumber1 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber2 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber3 = new KinaUnaTextNumber { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber1 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber2 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber3 = new() { DefaultLanguage = 1 };
             context.Add(textNumber1);
             context.Add(textNumber2);
             context.Add(textNumber3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
-            KinaUnaText text4 = new KinaUnaText { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
-            KinaUnaText text5 = new KinaUnaText { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
-            KinaUnaText text6 = new KinaUnaText { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text4 = new() { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
+            KinaUnaText text5 = new() { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text6 = new() { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
 
-            KinaUnaText text7 = new KinaUnaText { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
-            KinaUnaText text8 = new KinaUnaText { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
-            KinaUnaText text9 = new KinaUnaText { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text7 = new() { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
+            KinaUnaText text8 = new() { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text9 = new() { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -348,7 +348,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             List<KinaUnaText> resultKinaUnaTextsList = await kinaUnaTextService.GetPageTextsList("Page1", 1);
 
@@ -362,34 +362,34 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPageTextsList_Should_Return_Empty_List_Of_KinaUnaText_When_Page_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPageTextsList_Should_Return_List_Of_KinaUnaText_When_TextId_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaTextNumber textNumber1 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber2 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber3 = new KinaUnaTextNumber { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber1 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber2 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber3 = new() { DefaultLanguage = 1 };
             context.Add(textNumber1);
             context.Add(textNumber2);
             context.Add(textNumber3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
-            KinaUnaText text4 = new KinaUnaText { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
-            KinaUnaText text5 = new KinaUnaText { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
-            KinaUnaText text6 = new KinaUnaText { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text4 = new() { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
+            KinaUnaText text5 = new() { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text6 = new() { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
 
-            KinaUnaText text7 = new KinaUnaText { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
-            KinaUnaText text8 = new KinaUnaText { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
-            KinaUnaText text9 = new KinaUnaText { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text7 = new() { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
+            KinaUnaText text8 = new() { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text9 = new() { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -405,7 +405,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             List<KinaUnaText> resultKinaUnaTextsList = await kinaUnaTextService.GetPageTextsList("Page2", 1);
 
@@ -418,34 +418,34 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPageTextsList_Should_Return_Empty_List_Of_KinaUnaText_When_LanguageId_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPageTextsList_Should_Return_Empty_List_Of_KinaUnaText_When_LanguageId_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaTextNumber textNumber1 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber2 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber3 = new KinaUnaTextNumber { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber1 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber2 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber3 = new() { DefaultLanguage = 1 };
             context.Add(textNumber1);
             context.Add(textNumber2);
             context.Add(textNumber3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
-            KinaUnaText text4 = new KinaUnaText { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
-            KinaUnaText text5 = new KinaUnaText { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
-            KinaUnaText text6 = new KinaUnaText { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text4 = new() { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
+            KinaUnaText text5 = new() { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text6 = new() { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
 
-            KinaUnaText text7 = new KinaUnaText { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
-            KinaUnaText text8 = new KinaUnaText { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
-            KinaUnaText text9 = new KinaUnaText { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text7 = new() { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
+            KinaUnaText text8 = new() { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text9 = new() { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -461,7 +461,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             List<KinaUnaText> resultKinaUnaTextsList = await kinaUnaTextService.GetPageTextsList("Page1", 4);
 
@@ -474,34 +474,34 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetAllPageTextsList_Should_Return_List_Of_All_KinaUnaTexts_For_A_Language_When_LanguageId_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetAllPageTextsList_Should_Return_List_Of_All_KinaUnaTexts_For_A_Language_When_LanguageId_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaTextNumber textNumber1 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber2 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber3 = new KinaUnaTextNumber { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber1 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber2 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber3 = new() { DefaultLanguage = 1 };
             context.Add(textNumber1);
             context.Add(textNumber2);
             context.Add(textNumber3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
-            KinaUnaText text4 = new KinaUnaText { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
-            KinaUnaText text5 = new KinaUnaText { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
-            KinaUnaText text6 = new KinaUnaText { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text4 = new() { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
+            KinaUnaText text5 = new() { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text6 = new() { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
 
-            KinaUnaText text7 = new KinaUnaText { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
-            KinaUnaText text8 = new KinaUnaText { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
-            KinaUnaText text9 = new KinaUnaText { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text7 = new() { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
+            KinaUnaText text8 = new() { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text9 = new() { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -517,7 +517,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             List<KinaUnaText> resultKinaUnaTextsList = await kinaUnaTextService.GetAllPageTextsList(1);
 
@@ -531,34 +531,34 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetAllPageTextsList_Should_Return_Empty_List_Of_KinaUnaTexts_When_LanguageId_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetAllPageTextsList_Should_Return_Empty_List_Of_KinaUnaTexts_When_LanguageId_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaTextNumber textNumber1 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber2 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber3 = new KinaUnaTextNumber { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber1 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber2 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber3 = new() { DefaultLanguage = 1 };
             context.Add(textNumber1);
             context.Add(textNumber2);
             context.Add(textNumber3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
-            KinaUnaText text4 = new KinaUnaText { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
-            KinaUnaText text5 = new KinaUnaText { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
-            KinaUnaText text6 = new KinaUnaText { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text4 = new() { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
+            KinaUnaText text5 = new() { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text6 = new() { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
 
-            KinaUnaText text7 = new KinaUnaText { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
-            KinaUnaText text8 = new KinaUnaText { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
-            KinaUnaText text9 = new KinaUnaText { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text7 = new() { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
+            KinaUnaText text8 = new() { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text9 = new() { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -574,7 +574,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             List<KinaUnaText> resultKinaUnaTextsList = await kinaUnaTextService.GetAllPageTextsList(4);
 
@@ -587,33 +587,33 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task CheckLanguages_Should_Add_Any_Missing_KinaUnaText_Language_Version()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("CheckLanguages_Should_Add_Any_Missing_KinaUnaText_Language_Version").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaTextNumber textNumber1 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber2 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber3 = new KinaUnaTextNumber { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber1 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber2 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber3 = new() { DefaultLanguage = 1 };
             context.Add(textNumber1);
             context.Add(textNumber2);
             context.Add(textNumber3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
-            KinaUnaText text4 = new KinaUnaText { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
-            KinaUnaText text5 = new KinaUnaText { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text4 = new() { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
+            KinaUnaText text5 = new() { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
             //KinaUnaText text6 = new KinaUnaText { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
 
-            KinaUnaText text7 = new KinaUnaText { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
-            KinaUnaText text8 = new KinaUnaText { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text7 = new() { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
+            KinaUnaText text8 = new() { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
             //KinaUnaText text9 = new KinaUnaText { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
 
             context.Add(text1);
@@ -630,7 +630,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
             int kinaUnaTextsCountBefore = context.KinaUnaTexts.Count();
             await kinaUnaTextService.CheckLanguages();
             int kinaUnaTextsCountAfter = context.KinaUnaTexts.Count();
@@ -650,34 +650,34 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task CheckLanguages_Should_Make_No_Changes_When_There_Are_No_Missing_KinaUnaText_Language_Version()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("CheckLanguages_Should_Make_No_Changes_When_There_Are_No_Missing_KinaUnaText_Language_Version").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaTextNumber textNumber1 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber2 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber3 = new KinaUnaTextNumber { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber1 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber2 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber3 = new() { DefaultLanguage = 1 };
             context.Add(textNumber1);
             context.Add(textNumber2);
             context.Add(textNumber3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
-            KinaUnaText text4 = new KinaUnaText { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
-            KinaUnaText text5 = new KinaUnaText { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
-            KinaUnaText text6 = new KinaUnaText { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text4 = new() { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
+            KinaUnaText text5 = new() { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text6 = new() { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
 
-            KinaUnaText text7 = new KinaUnaText { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
-            KinaUnaText text8 = new KinaUnaText { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
-            KinaUnaText text9 = new KinaUnaText { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text7 = new() { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
+            KinaUnaText text8 = new() { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text9 = new() { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -693,7 +693,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
             int kinaUnaTextsCountBefore = context.KinaUnaTexts.Count();
             await kinaUnaTextService.CheckLanguages();
             int kinaUnaTextsCountAfter = context.KinaUnaTexts.Count();
@@ -707,23 +707,23 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddText_Should_Save_KinaUnaText()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddText_Should_Save_KinaUnaText").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaTextNumber kinaUnaTextNumber1 = new KinaUnaTextNumber { DefaultLanguage = 1 };
+            KinaUnaTextNumber kinaUnaTextNumber1 = new() { DefaultLanguage = 1 };
             
             context.Add(kinaUnaTextNumber1);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -731,9 +731,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
-            KinaUnaText kinaUnaTextToAdd = new KinaUnaText { LanguageId = 1, Title="Title2", Page = "Page2", Text = "Text2.1", Created = DateTime.UtcNow, Updated = DateTime.UtcNow};
+            KinaUnaText kinaUnaTextToAdd = new() { LanguageId = 1, Title="Title2", Page = "Page2", Text = "Text2.1", Created = DateTime.UtcNow, Updated = DateTime.UtcNow};
 
             KinaUnaText addedKinaUnaText = await kinaUnaTextService.AddText(kinaUnaTextToAdd);
             KinaUnaText? dbKinaUnaText = await context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(kt => kt.Id == addedKinaUnaText.Id);
@@ -766,23 +766,23 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddText_Should_Add_KinaUnaText_For_All_Languages()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddText_Should_Add_KinaUnaText_For_All_Languages").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaTextNumber kinaUnaTextNumber1 = new KinaUnaTextNumber { DefaultLanguage = 1 };
+            KinaUnaTextNumber kinaUnaTextNumber1 = new() { DefaultLanguage = 1 };
 
             context.Add(kinaUnaTextNumber1);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -790,9 +790,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
-            KinaUnaText kinaUnaTextToAdd = new KinaUnaText { LanguageId = 1, Title = "Title2", Page = "Page2", Text = "Text2.1", Created = DateTime.UtcNow, Updated = DateTime.UtcNow };
+            KinaUnaText kinaUnaTextToAdd = new() { LanguageId = 1, Title = "Title2", Page = "Page2", Text = "Text2.1", Created = DateTime.UtcNow, Updated = DateTime.UtcNow };
 
             await kinaUnaTextService.AddText(kinaUnaTextToAdd);
             List<KinaUnaText> allLanguageVersionsOfAddedKinaUnaText = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToAdd.Page && kt.Title == kinaUnaTextToAdd.Title).ToListAsync();
@@ -805,23 +805,23 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateText_Should_Save_KinaUnaText()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateText_Should_Save_KinaUnaText").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaTextNumber kinaUnaTextNumber1 = new KinaUnaTextNumber { DefaultLanguage = 1 };
+            KinaUnaTextNumber kinaUnaTextNumber1 = new() { DefaultLanguage = 1 };
 
             context.Add(kinaUnaTextNumber1);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -829,7 +829,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText kinaUnaTextToUpdate = await kinaUnaTextService.GetTextById(1);
             kinaUnaTextToUpdate.Text = "Text1.1 Updated";
@@ -865,34 +865,34 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteText_Should_Remove_All_Language_Versions_Of_The_KinaUnaText()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteText_Should_Remove_All_Language_Versions_Of_The_KinaUnaText").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaTextNumber textNumber1 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber2 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber3 = new KinaUnaTextNumber { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber1 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber2 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber3 = new() { DefaultLanguage = 1 };
             context.Add(textNumber1);
             context.Add(textNumber2);
             context.Add(textNumber3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
-            KinaUnaText text4 = new KinaUnaText { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
-            KinaUnaText text5 = new KinaUnaText { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
-            KinaUnaText text6 = new KinaUnaText { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text4 = new() { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
+            KinaUnaText text5 = new() { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text6 = new() { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
 
-            KinaUnaText text7 = new KinaUnaText { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
-            KinaUnaText text8 = new KinaUnaText { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
-            KinaUnaText text9 = new KinaUnaText { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text7 = new() { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
+            KinaUnaText text8 = new() { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text9 = new() { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -908,7 +908,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText kinaUnaTextToDelete = await kinaUnaTextService.GetTextById(1);
             List<KinaUnaText> kinaUnaTextsListBeforeDelete = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToDelete.Page && kt.Title == kinaUnaTextToDelete.Title).ToListAsync();
@@ -929,34 +929,34 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteSingleText_Should_Remove_Only_1_Language_Version_Of_The_KinaUnaText()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteSingleText_Should_Remove_Only_1_Language_Version_Of_The_KinaUnaText").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            KinaUnaLanguage language1 = new KinaUnaLanguage { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
-            KinaUnaLanguage language2 = new KinaUnaLanguage { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
-            KinaUnaLanguage language3 = new KinaUnaLanguage { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
+            KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
+            KinaUnaLanguage language2 = new() { Name = "Language2", Code = "Code2", Icon = "Icon2", IconLink = "IconLink2" };
+            KinaUnaLanguage language3 = new() { Name = "Language3", Code = "Code3", Icon = "Icon3", IconLink = "IconLink3" };
 
             context.Add(language1);
             context.Add(language2);
             context.Add(language3);
 
-            KinaUnaTextNumber textNumber1 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber2 = new KinaUnaTextNumber { DefaultLanguage = 1 };
-            KinaUnaTextNumber textNumber3 = new KinaUnaTextNumber { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber1 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber2 = new() { DefaultLanguage = 1 };
+            KinaUnaTextNumber textNumber3 = new() { DefaultLanguage = 1 };
             context.Add(textNumber1);
             context.Add(textNumber2);
             context.Add(textNumber3);
 
-            KinaUnaText text1 = new KinaUnaText { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
-            KinaUnaText text2 = new KinaUnaText { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
-            KinaUnaText text3 = new KinaUnaText { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text1 = new() { LanguageId = 1, Title = "Title1", Page = "Page1", Text = "Text1.1", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow, };
+            KinaUnaText text2 = new() { LanguageId = 2, Title = "Title1", Page = "Page1", Text = "Text1.2", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
+            KinaUnaText text3 = new() { LanguageId = 3, Title = "Title1", Page = "Page1", Text = "Text1.3", Created = DateTime.UtcNow, TextId = 1, Updated = DateTime.UtcNow };
 
-            KinaUnaText text4 = new KinaUnaText { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
-            KinaUnaText text5 = new KinaUnaText { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
-            KinaUnaText text6 = new KinaUnaText { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text4 = new() { LanguageId = 1, Title = "Title2", Page = "Page1", Text = "Text2.1", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow, };
+            KinaUnaText text5 = new() { LanguageId = 2, Title = "Title2", Page = "Page1", Text = "Text2.2", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
+            KinaUnaText text6 = new() { LanguageId = 3, Title = "Title2", Page = "Page1", Text = "Text2.3", Created = DateTime.UtcNow, TextId = 2, Updated = DateTime.UtcNow };
 
-            KinaUnaText text7 = new KinaUnaText { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
-            KinaUnaText text8 = new KinaUnaText { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
-            KinaUnaText text9 = new KinaUnaText { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text7 = new() { LanguageId = 1, Title = "Title3", Page = "Page1", Text = "Text3.1", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow, };
+            KinaUnaText text8 = new() { LanguageId = 2, Title = "Title3", Page = "Page1", Text = "Text3.2", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
+            KinaUnaText text9 = new() { LanguageId = 3, Title = "Title3", Page = "Page1", Text = "Text3.3", Created = DateTime.UtcNow, TextId = 3, Updated = DateTime.UtcNow };
 
             context.Add(text1);
             context.Add(text2);
@@ -972,7 +972,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             await context.SaveChangesAsync();
 
-            KinaUnaTextService kinaUnaTextService = new KinaUnaTextService(context);
+            KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText kinaUnaTextToDelete = await kinaUnaTextService.GetTextById(1);
             List<KinaUnaText> kinaUnaTextsListBeforeDelete = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToDelete.Page && kt.Title == kinaUnaTextToDelete.Title).ToListAsync();

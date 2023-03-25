@@ -16,17 +16,16 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetProgeny_Should_Return_Progeny_Object_When_Id_Is_Valid()
         {
-            Progeny progenyToAdd = new Progeny
-                { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
+            Progeny progenyToAdd = new() { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
 
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetProgeny_Should_Return_Progeny_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(progenyToAdd);
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new Mock<IImageStore>();
-            ProgenyService progenyService = new ProgenyService(context, memoryCache, imageStore.Object);
+            Mock<IImageStore> imageStore = new();
+            ProgenyService progenyService = new(context, memoryCache, imageStore.Object);
 
             Progeny resultProgeny = await progenyService.GetProgeny(1);
             // 2nd call to GetProgeny is retrieving the Progeny object from cache.
@@ -55,13 +54,13 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetProgeny_Should_Return_Null_Object_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetProgeny_Should_Return_Null_Object_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             context.Add(new Progeny { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone });
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new Mock<IImageStore>();
-            ProgenyService progenyService = new ProgenyService(context, memoryCache, imageStore.Object);
+            Mock<IImageStore> imageStore = new();
+            ProgenyService progenyService = new(context, memoryCache, imageStore.Object);
 
             Progeny progeny = await progenyService.GetProgeny(0);
 
@@ -72,15 +71,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddProgeny_Should_Save_Progeny()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddProgeny_Should_Save_Progeny").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new Mock<IImageStore>();
-            ProgenyService progenyService = new ProgenyService(context, memoryCache, imageStore.Object);
+            Mock<IImageStore> imageStore = new();
+            ProgenyService progenyService = new(context, memoryCache, imageStore.Object);
 
-            Progeny progenyToAdd = new Progeny
-                { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
+            Progeny progenyToAdd = new() { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
 
             Progeny addedProgeny = await progenyService.AddProgeny(progenyToAdd);
             Progeny? dbProgeny = await context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == addedProgeny.Id);
@@ -118,16 +116,15 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateProgeny_Should_Save_Progeny()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateProgeny_Should_Save_Progeny").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
-            Progeny originalProgeny = new Progeny
-                { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
+            await using ProgenyDbContext context = new(dbOptions);
+            Progeny originalProgeny = new() { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
             context.Add(originalProgeny);
             await context.SaveChangesAsync();
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new Mock<IImageStore>();
-            ProgenyService progenyService = new ProgenyService(context, memoryCache, imageStore.Object);
+            Mock<IImageStore> imageStore = new();
+            ProgenyService progenyService = new(context, memoryCache, imageStore.Object);
 
             Progeny progenyToUpdate = await progenyService.GetProgeny(1);
             progenyToUpdate.Name = "B";
@@ -164,16 +161,15 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteProgeny_Should_Remove_Progeny()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteProgeny_Should_Remove_Progeny").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
-            Progeny originalProgeny = new Progeny
-            { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
+            await using ProgenyDbContext context = new(dbOptions);
+            Progeny originalProgeny = new() { BirthDay = DateTime.Now, Admins = "test@test.com", Name = "Test Child A", NickName = "A", PictureLink = Constants.ProfilePictureUrl, TimeZone = Constants.DefaultTimezone };
             context.Add(originalProgeny);
             await context.SaveChangesAsync();
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new Mock<IImageStore>();
-            ProgenyService progenyService = new ProgenyService(context, memoryCache, imageStore.Object);
+            Mock<IImageStore> imageStore = new();
+            ProgenyService progenyService = new(context, memoryCache, imageStore.Object);
 
             Progeny progenyToDelete = await progenyService.GetProgeny(1);
 

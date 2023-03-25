@@ -12,12 +12,13 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetMobileNotification_Should_Return_MobileNotification_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMobileNotification_Should_Return_MobileNotification_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            MobileNotification notification1 = new MobileNotification { Title = "Test1", UserId = "User1", IconLink = Constants.ProfilePictureUrl, ItemId = "1", ItemType = 1,
+            MobileNotification notification1 = new()
+            { Title = "Test1", UserId = "User1", IconLink = Constants.ProfilePictureUrl, ItemId = "1", ItemType = 1,
                 Language = "EN", Message = "Test message 1", Read = false, Time = DateTime.UtcNow};
             
-            MobileNotification notification2 = new MobileNotification
+            MobileNotification notification2 = new()
             {
                 Title = "Test2",
                 UserId = "User1",
@@ -34,9 +35,9 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetMobileNotification_Should_Return_MobileNotification_Object_When_Id_Is_Valid2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
             MobileNotification resultNotification1 = await dataService.GetMobileNotification(1);
             
@@ -52,9 +53,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetMobileNotification_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetMobileNotification_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            MobileNotification notification1 = new MobileNotification
+            MobileNotification notification1 = new()
             {
                 Title = "Test1",
                 UserId = "User1",
@@ -67,7 +68,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Time = DateTime.UtcNow
             };
 
-            MobileNotification notification2 = new MobileNotification
+            MobileNotification notification2 = new()
             {
                 Title = "Test2",
                 UserId = "User1",
@@ -84,9 +85,9 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetMobileNotification_Should_Return_Null_When_Id_Is_Invalid2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
             MobileNotification resultNotification1 = await dataService.GetMobileNotification(3);
             
@@ -97,9 +98,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddMobileNotification_Should_Save_MobileNotification()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddMobileNotification_Should_Save_MobileNotification").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            MobileNotification notification1 = new MobileNotification
+            MobileNotification notification1 = new()
             {
                 Title = "Test1",
                 UserId = "User1",
@@ -116,11 +117,11 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("AddMobileNotification_Should_Save_MobileNotification2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            MobileNotification notificationToAdd = new MobileNotification
+            MobileNotification notificationToAdd = new()
             {
                 Title = "Test2",
                 UserId = "User1",
@@ -165,9 +166,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateMobileNotification_Should_Save_MobileNotification()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateMobileNotification_Should_Save_MobileNotification").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            MobileNotification notification1 = new MobileNotification
+            MobileNotification notification1 = new()
             {
                 Title = "Test1",
                 UserId = "User1",
@@ -180,7 +181,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Time = DateTime.UtcNow
             };
 
-            MobileNotification notification2 = new MobileNotification
+            MobileNotification notification2 = new()
             {
                 Title = "Test2",
                 UserId = "User1",
@@ -197,9 +198,9 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("UpdateMobileNotification_Should_Save_MobileNotification2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
             MobileNotification notificationToUpdate = await dataService.GetMobileNotification(1);
             notificationToUpdate.Read = true;
@@ -234,9 +235,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteMobileNotification_Should_Remove_MobileNotification()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteMobileNotification_Should_Remove_MobileNotification").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            MobileNotification notification1 = new MobileNotification
+            MobileNotification notification1 = new()
             {
                 Title = "Test1",
                 UserId = "User1",
@@ -249,7 +250,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Time = DateTime.UtcNow
             };
 
-            MobileNotification notification2 = new MobileNotification
+            MobileNotification notification2 = new()
             {
                 Title = "Test2",
                 UserId = "User1",
@@ -266,9 +267,9 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("DeleteMobileNotification_Should_Remove_MobileNotification2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
             int notificationItemsCountBeforeDelete = context.MobileNotificationsDb.Count();
             MobileNotification notificationToDelete = await dataService.GetMobileNotification(1);
@@ -286,9 +287,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetUsersMobileNotifications_Should_Return_List_Of_MobileNotifications_When_User_Has_Saved_MobileNotifications()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUsersMobileNotifications_Should_Return_List_Of_MobileNotifications_When_User_Has_Saved_MobileNotifications").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            MobileNotification notification1 = new MobileNotification
+            MobileNotification notification1 = new()
             {
                 Title = "Test1",
                 UserId = "User1",
@@ -301,7 +302,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Time = DateTime.UtcNow
             };
 
-            MobileNotification notification2 = new MobileNotification
+            MobileNotification notification2 = new()
             {
                 Title = "Test2",
                 UserId = "User1",
@@ -318,9 +319,9 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetUsersMobileNotifications_Should_Return_List_Of_MobileNotifications_When_User_Has_Saved_MobileNotifications2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
             List<MobileNotification> notificationsList = await dataService.GetUsersMobileNotifications("User1", "EN");
             MobileNotification firstNotification = notificationsList.First();
@@ -338,9 +339,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUsersMobileNotifications_Should_Return_Empty_List_Of_MobileNotifications_When_User_Has_No_Saved_MobileNotifications").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            MobileNotification notification1 = new MobileNotification
+            MobileNotification notification1 = new()
             {
                 Title = "Test1",
                 UserId = "User1",
@@ -353,7 +354,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Time = DateTime.UtcNow
             };
 
-            MobileNotification notification2 = new MobileNotification
+            MobileNotification notification2 = new()
             {
                 Title = "Test2",
                 UserId = "User1",
@@ -372,9 +373,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>()
                 .UseInMemoryDatabase("GetUsersMobileNotifications_Should_Return_Empty_List_Of_MobileNotifications_When_User_Has_No_Saved_MobileNotifications2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
             List<MobileNotification> contactsList = await dataService.GetUsersMobileNotifications("NoUser", "EN");
             
@@ -387,14 +388,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPushDeviceById_Should_Return_PushDevices_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPushDeviceById_Should_Return_PushDevices_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDeviceById_Should_Return_PushDevices_Object_When_Id_Is_Valid2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            PushDevices pushDevice1 = new PushDevices
+            PushDevices pushDevice1 = new()
             {
                 Name = "PushDevice1",
                 PushAuth = "",
@@ -415,14 +416,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPushDeviceById_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPushDeviceById_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
             
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDeviceById_Should_Return_Null_When_Id_Is_Invalid2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            PushDevices pushDevice1 = new PushDevices
+            PushDevices pushDevice1 = new()
             {
                 Name = "PushDevice1",
                 PushAuth = "",
@@ -441,14 +442,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPushDevice_Should_Return_PushDevices_Object_When_Parameter_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPushDevice_Should_Return_PushDevices_Object_When_Parameter_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDevice_Should_Return_PushDevices_Object_When_Parameter_Is_Valid2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            PushDevices pushDevice1 = new PushDevices
+            PushDevices pushDevice1 = new()
             {
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
@@ -459,7 +460,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             webContext.Add(pushDevice1);
             await webContext.SaveChangesAsync();
 
-            PushDevices requestPushDevice1 = new PushDevices
+            PushDevices requestPushDevice1 = new()
             {
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
@@ -482,14 +483,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPushDevice_Should_Return_Null_When_Parameter_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPushDevice_Should_Return_Null_When_Parameter_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDevice_Should_Return_Null_When_Parameter_Is_Invalid2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            PushDevices pushDevice1 = new PushDevices
+            PushDevices pushDevice1 = new()
             {
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
@@ -500,7 +501,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             webContext.Add(pushDevice1);
             await webContext.SaveChangesAsync();
 
-            PushDevices requestPushDevice1 = new PushDevices
+            PushDevices requestPushDevice1 = new()
             {
                 Name = "PushDevice2",
                 PushAuth = "Auth2",
@@ -517,14 +518,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPushDeviceByUserId_Should_Return_List_of_PushDevices_When_UserId_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPushDeviceByUserId_Should_Return_List_of_PushDevices_When_UserId_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDeviceByUserId_Should_Return_List_of_PushDevices_When_UserId_Is_Valid2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            PushDevices pushDevice1 = new PushDevices
+            PushDevices pushDevice1 = new()
             {
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
@@ -532,7 +533,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 PushP256DH = "P256DH1"
             };
 
-            PushDevices pushDevice2 = new PushDevices
+            PushDevices pushDevice2 = new()
             {
                 Name = "PushDevice1",
                 PushAuth = "Auth2",
@@ -558,14 +559,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetPushDeviceByUSerId_Should_Return_Empty_List_When_UserId_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPushDeviceByUSerId_Should_Return_Empty_List_When_UserId_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDeviceByUSerId_Should_Return_Empty_List_When_UserId_Is_Invalid2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            PushDevices pushDevice1 = new PushDevices
+            PushDevices pushDevice1 = new()
             {
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
@@ -573,7 +574,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 PushP256DH = "P256DH1"
             };
 
-            PushDevices pushDevice2 = new PushDevices
+            PushDevices pushDevice2 = new()
             {
                 Name = "PushDevice1",
                 PushAuth = "Auth2",
@@ -594,14 +595,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetAllPushDevices_Should_Return_List_of_PushDevices()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetAllPushDevices_Should_Return_List_of_PushDevices").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetAllPushDevices_Should_Return_List_of_PushDevices2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            PushDevices pushDevice1 = new PushDevices
+            PushDevices pushDevice1 = new()
             {
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
@@ -609,7 +610,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 PushP256DH = "P256DH1"
             };
 
-            PushDevices pushDevice2 = new PushDevices
+            PushDevices pushDevice2 = new()
             {
                 Name = "PushDevice1",
                 PushAuth = "Auth2",
@@ -635,14 +636,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddPushDevice_Should_Save_PushDevices_Object()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddPushDevice_Should_Save_PushDevices_Object").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("AddPushDevice_Should_Save_PushDevices_Object2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            PushDevices pushDevice1 = new PushDevices
+            PushDevices pushDevice1 = new()
             {
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
@@ -653,7 +654,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             webContext.Add(pushDevice1);
             await webContext.SaveChangesAsync();
 
-            PushDevices addPushDevice1 = new PushDevices
+            PushDevices addPushDevice1 = new()
             {
                 Name = "PushDevice2",
                 PushAuth = "Auth2",
@@ -680,14 +681,14 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task RemovePushDevice_Should_Remove_PushDevices_Object()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("RemovePushDevice_Should_Remove_PushDevices_Object").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("RemovePushDevice_Should_Remove_PushDevices_Object2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            PushDevices pushDevice1 = new PushDevices
+            PushDevices pushDevice1 = new()
             {
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
@@ -695,7 +696,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 PushP256DH = "P2256DH1"
             };
 
-            PushDevices pushDevice2 = new PushDevices
+            PushDevices pushDevice2 = new()
             {
                 Name = "PushDevice2",
                 PushAuth = "Auth2",
@@ -719,17 +720,17 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetWebNotificationById_Should_Return_WebNotification_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetWebNotificationById_Should_Return_WebNotification_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetWebNotificationById_Should_Return_WebNotification_Object_When_Id_Is_Valid2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            WebNotification webNotification1 = new WebNotification
+            WebNotification webNotification1 = new()
             {
                 Title = "Title1",
-                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                DateTime = new(2022, 1, 1, 11, 11, 11),
                 From = "From1",
                 To = "To1",
                 Message = "Message1",
@@ -754,17 +755,17 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetWebNotificationById_Should_Return_Null_Object_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetWebNotificationById_Should_Return_Null_Object_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetWebNotificationById_Should_Return_Null_Object_When_Id_Is_Invalid2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            WebNotification webNotification1 = new WebNotification
+            WebNotification webNotification1 = new()
             {
                 Title = "Title1",
-                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                DateTime = new(2022, 1, 1, 11, 11, 11),
                 From = "From1",
                 To = "To1",
                 Message = "Message1",
@@ -784,17 +785,17 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetUsersWebNotifications_Should_Return_List_of_WebNotification_When_UserId_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUsersWebNotifications_Should_Return_List_of_WebNotification_When_UserId_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetUsersWebNotifications_Should_Return_List_of_WebNotification_When_UserId_Is_Valid2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            WebNotification webNotification1 = new WebNotification
+            WebNotification webNotification1 = new()
             {
                 Title = "Title1",
-                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                DateTime = new(2022, 1, 1, 11, 11, 11),
                 From = "From1",
                 To = "To1",
                 Message = "Message1",
@@ -802,10 +803,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Icon = "Icon1"
             };
 
-            WebNotification webNotification2 = new WebNotification
+            WebNotification webNotification2 = new()
             {
                 Title = "Title2",
-                DateTime = new DateTime(2022, 2, 2, 22, 22, 22),
+                DateTime = new(2022, 2, 2, 22, 22, 22),
                 From = "From1",
                 To = "To1",
                 Message = "Message2",
@@ -813,10 +814,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Icon = "Icon2"
             };
 
-            WebNotification webNotification3 = new WebNotification
+            WebNotification webNotification3 = new()
             {
                 Title = "Title3",
-                DateTime = new DateTime(2022, 3, 3, 11, 33, 33),
+                DateTime = new(2022, 3, 3, 11, 33, 33),
                 From = "From1",
                 To = "To2",
                 Message = "Message3",
@@ -840,17 +841,17 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetUsersWebNotifications_Should_Return_Empty_List_of_WebNotification_When_UserId_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetUsersWebNotifications_Should_Return_Empty_List_of_WebNotification_When_UserId_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetUsersWebNotifications_Should_Return_Empty_List_of_WebNotification_When_UserId_Is_Invalid2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            WebNotification webNotification1 = new WebNotification
+            WebNotification webNotification1 = new()
             {
                 Title = "Title1",
-                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                DateTime = new(2022, 1, 1, 11, 11, 11),
                 From = "From1",
                 To = "To1",
                 Message = "Message1",
@@ -858,10 +859,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Icon = "Icon1"
             };
 
-            WebNotification webNotification2 = new WebNotification
+            WebNotification webNotification2 = new()
             {
                 Title = "Title2",
-                DateTime = new DateTime(2022, 2, 2, 22, 22, 22),
+                DateTime = new(2022, 2, 2, 22, 22, 22),
                 From = "From1",
                 To = "To1",
                 Message = "Message2",
@@ -869,10 +870,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Icon = "Icon2"
             };
 
-            WebNotification webNotification3 = new WebNotification
+            WebNotification webNotification3 = new()
             {
                 Title = "Title3",
-                DateTime = new DateTime(2022, 3, 3, 11, 33, 33),
+                DateTime = new(2022, 3, 3, 11, 33, 33),
                 From = "From1",
                 To = "To2",
                 Message = "Message3",
@@ -895,17 +896,17 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddWebNotification_Should_Save_WebNotification()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddWebNotification_Should_Save_WebNotification").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("AddWebNotification_Should_Save_WebNotification2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            WebNotification webNotification1 = new WebNotification
+            WebNotification webNotification1 = new()
             {
                 Title = "Title1",
-                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                DateTime = new(2022, 1, 1, 11, 11, 11),
                 From = "From1",
                 To = "To1",
                 Message = "Message1",
@@ -916,10 +917,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             webContext.Add(webNotification1);
             await webContext.SaveChangesAsync();
 
-            WebNotification webNotificationToAdd = new WebNotification
+            WebNotification webNotificationToAdd = new()
             {
                 Title = "Title2",
-                DateTime = new DateTime(2022, 2, 2, 22, 22, 22),
+                DateTime = new(2022, 2, 2, 22, 22, 22),
                 From = "From1",
                 To = "To1",
                 Message = "Message2",
@@ -943,17 +944,17 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateWebNotification_Should_Save_WebNotification()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateWebNotification_Should_Save_WebNotification").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("UpdateWebNotification_Should_Save_WebNotification2").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            WebNotification webNotification1 = new WebNotification
+            WebNotification webNotification1 = new()
             {
                 Title = "Title1",
-                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                DateTime = new(2022, 1, 1, 11, 11, 11),
                 From = "From1",
                 To = "To1",
                 Message = "Message1",
@@ -961,10 +962,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Icon = "Icon1"
             };
 
-            WebNotification webNotification2 = new WebNotification
+            WebNotification webNotification2 = new()
             {
                 Title = "Title2",
-                DateTime = new DateTime(2022, 2, 2, 22, 22, 22),
+                DateTime = new(2022, 2, 2, 22, 22, 22),
                 From = "From1",
                 To = "To1",
                 Message = "Message2",
@@ -994,17 +995,17 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task RemoveWebNotification_Should_Delete_WebNotification()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("RemoveWebNotification_Should_Delete_WebNotification").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("RemoveWebNotification_Should_Delete_WebNotification").Options;
-            await using WebDbContext webContext = new WebDbContext(dbWebOptions);
+            await using WebDbContext webContext = new(dbWebOptions);
 
-            DataService dataService = new DataService(context, webContext);
+            DataService dataService = new(context, webContext);
 
-            WebNotification webNotification1 = new WebNotification
+            WebNotification webNotification1 = new()
             {
                 Title = "Title1",
-                DateTime = new DateTime(2022, 1, 1, 11, 11, 11),
+                DateTime = new(2022, 1, 1, 11, 11, 11),
                 From = "From1",
                 To = "To1",
                 Message = "Message1",
@@ -1012,10 +1013,10 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Icon = "Icon1"
             };
 
-            WebNotification webNotification2 = new WebNotification
+            WebNotification webNotification2 = new()
             {
                 Title = "Title2",
-                DateTime = new DateTime(2022, 2, 2, 22, 22, 22),
+                DateTime = new(2022, 2, 2, 22, 22, 22),
                 From = "From1",
                 To = "To1",
                 Message = "Message2",

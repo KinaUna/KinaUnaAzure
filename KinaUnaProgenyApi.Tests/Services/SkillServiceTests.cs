@@ -14,15 +14,15 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetSkill_Should_Return_Skill_Object_When_Id_Is_Valid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSkill_Should_Return_Skill_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Skill skill1 = new Skill
+            Skill skill1 = new()
             {
                 ProgenyId = 1, Author = "User1", AccessLevel = 0, Name = "Skill1", SkillAddedDate = DateTime.UtcNow, Description = "Skill1", Category = "Category1", SkillFirstObservation = DateTime.UtcNow, SkillNumber = 1
             };
 
 
-            Skill skill2 = new Skill
+            Skill skill2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -41,7 +41,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SkillService skillService = new SkillService(context, memoryCache);
+            SkillService skillService = new(context, memoryCache);
 
             Skill resultSkill1 = await skillService.GetSkill(1);
             Skill resultSkill2 = await skillService.GetSkill(1); // Uses cache
@@ -65,9 +65,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetSkill_Should_Return_Null_When_Id_Is_Invalid()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSkill_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Skill skill1 = new Skill
+            Skill skill1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -85,7 +85,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SkillService skillService = new SkillService(context, memoryCache);
+            SkillService skillService = new(context, memoryCache);
 
             Skill resultSkill1 = await skillService.GetSkill(2);
             Skill resultSkill2 = await skillService.GetSkill(2); // Using cache
@@ -98,9 +98,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task AddSkill_Should_Save_Skill()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddSkill_Should_Save_Skill").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Skill skill1 = new Skill
+            Skill skill1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -118,9 +118,9 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SkillService skillService = new SkillService(context, memoryCache);
+            SkillService skillService = new(context, memoryCache);
 
-            Skill skillToAdd = new Skill
+            Skill skillToAdd = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -165,9 +165,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task UpdateSkill_Should_Save_Skill()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateSkill_Should_Save_Skill").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Skill skill1 = new Skill
+            Skill skill1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -180,7 +180,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SkillNumber = 1
             };
 
-            Skill skill2 = new Skill
+            Skill skill2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -198,7 +198,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SkillService skillService = new SkillService(context, memoryCache);
+            SkillService skillService = new(context, memoryCache);
 
             Skill skillToUpdate = await skillService.GetSkill(1);
             skillToUpdate.AccessLevel = 5;
@@ -234,9 +234,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task DeleteSkill_Should_Remove_Skill()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteSkill_Should_Remove_Skill").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Skill skill1 = new Skill
+            Skill skill1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -249,7 +249,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SkillNumber = 1
             };
 
-            Skill skill2 = new Skill
+            Skill skill2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -268,7 +268,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SkillService skillService = new SkillService(context, memoryCache);
+            SkillService skillService = new(context, memoryCache);
 
             int skillItemsCountBeforeDelete = context.SkillsDb.Count();
             Skill skillToDelete = await skillService.GetSkill(1);
@@ -286,9 +286,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         public async Task GetSkillsList_Should_Return_List_Of_Skill_When_Progeny_Has_Saved_Skills()
         {
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSkillsList_Should_Return_List_Of_Skill_When_Progeny_Has_Saved_Skills").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Skill skill1 = new Skill
+            Skill skill1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -301,7 +301,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SkillNumber = 1
             };
             
-            Skill skill2 = new Skill
+            Skill skill2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -320,7 +320,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SkillService skillService = new SkillService(context, memoryCache);
+            SkillService skillService = new(context, memoryCache);
 
             List<Skill> skillsList = await skillService.GetSkillsList(1);
             List<Skill> skillsList2 = await skillService.GetSkillsList(1); // Test cached result.
@@ -341,9 +341,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetSkillsList_Should_Return_Empty_List_Of_Skill_When_Progeny_Has_No_Saved_Skills").Options;
-            await using ProgenyDbContext context = new ProgenyDbContext(dbOptions);
+            await using ProgenyDbContext context = new(dbOptions);
 
-            Skill skill1 = new Skill
+            Skill skill1 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -356,7 +356,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 SkillNumber = 1
             };
             
-            Skill skill2 = new Skill
+            Skill skill2 = new()
             {
                 ProgenyId = 1,
                 Author = "User1",
@@ -375,7 +375,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            SkillService skillService = new SkillService(context, memoryCache);
+            SkillService skillService = new(context, memoryCache);
 
             List<Skill> skillsList = await skillService.GetSkillsList(2);
             List<Skill> skillsList2 = await skillService.GetSkillsList(2); // Test cached result.
