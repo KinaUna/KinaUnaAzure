@@ -115,7 +115,7 @@ namespace KinaUnaProgenyApi.Services
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id);
         }
 
-        public async Task ResizeImage(string imageId)
+        public async Task<string> ResizeImage(string imageId)
         {
             MemoryStream memoryStream = await _imageStore.GetStream(imageId, BlobContainers.Progeny);
             memoryStream.Position = 0;
@@ -123,7 +123,7 @@ namespace KinaUnaProgenyApi.Services
             using MagickImage image = new MagickImage(memoryStream);
             if (image.Width <= maxWidthAndHeight && image.Height <= maxWidthAndHeight)
             {
-                return;
+                return imageId;
             }
 
             if (image.Width > maxWidthAndHeight)
@@ -147,7 +147,12 @@ namespace KinaUnaProgenyApi.Services
             using MemoryStream memStream = new MemoryStream();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
-            await _imageStore.SaveImage(memStream);
+
+            await _imageStore.DeleteImage(imageId, BlobContainers.Progeny);
+            
+            imageId = await _imageStore.SaveImage(memStream, BlobContainers.Progeny);
+            
+            return imageId;
         }
     }
 }

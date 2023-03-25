@@ -17,155 +17,125 @@
             <div style="height: 40px; display: block;"></div>
             <ul id="sidebar-nav-ul" class="nav flex-column">
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="home">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="Index">
-                        <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons sidebar-icon">home</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Home", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="Home" asp-action="Index">
+                        <i class="material-icons sidebar-icon">home</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Home", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="timeline">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="TimeLine" asp-action="Index">
-                        <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons sidebar-icon">update</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Timeline", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="TimeLine" asp-action="Index">
+                        <i class="material-icons sidebar-icon">update</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Timeline", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="pictures">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="Pictures" asp-action="Index">
-                        <button style="align-items: flex-start" type="submit" class="btn-sidebar  leavePage">
-                            <i class="material-icons sidebar-icon">photo_library</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Photos", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="Pictures" asp-action="Index">
+                        <i class="material-icons sidebar-icon">photo_library</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Photos", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="videos">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="Videos" asp-action="Index">
-                        <button style="align-items: flex-start" type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons sidebar-icon">videocam</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Videos", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="Videos" asp-action="Index">
+                        <i class="material-icons sidebar-icon">videocam</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Videos", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="calendar">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="Calendar" asp-action="Index">
-                        <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons sidebar-icon">event_note</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Calendar", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="Calendar" asp-action="Index">
+                        <i class="material-icons sidebar-icon">event_note</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Calendar", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="notes">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="Notes" asp-action="Index">
-                        <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons sidebar-icon">note</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Notes", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="Notes" asp-action="Index">
+                        <i class="material-icons sidebar-icon">note</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Notes", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="sleep">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="Sleep" asp-action="Index">
-                        <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons sidebar-icon">hotel</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Sleep", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="Sleep" asp-action="Index">
+                        <i class="material-icons sidebar-icon">hotel</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Sleep", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="friends">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="Friends" asp-action="Index">
-                        <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons sidebar-icon">face</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Friends", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="Friends" asp-action="Index">
+                        <i class="material-icons sidebar-icon">face</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Friends", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="contacts">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="Contacts" asp-action="Index">
-                        <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons sidebar-icon">contact_phone</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Contacts", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="Contacts" asp-action="Index">
+                        <i class="material-icons sidebar-icon">contact_phone</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Contacts", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="locations">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="Locations" asp-action="Index">
-                        <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons sidebar-icon">person_pin</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Locations", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="Locations" asp-action="Index">
+                        <i class="material-icons sidebar-icon">person_pin</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Locations", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="measurements">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="Measurements" asp-action="Index">
-                        <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons sidebar-icon">straighten</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Measurements", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="Measurements" asp-action="Index">
+                        <i class="material-icons sidebar-icon">straighten</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Measurements", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="skills">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="Skills" asp-action="Index">
-                        <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons sidebar-icon">school</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Skillz", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="Skills" asp-action="Index">
+                        <i class="material-icons sidebar-icon">school</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Skillz", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="vocabulary">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="Vocabulary" asp-action="Index">
-                        <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons sidebar-icon">forum</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Vocabulary", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="Vocabulary" asp-action="Index">
+                        <i class="material-icons sidebar-icon">forum</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Vocabulary", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="vaccinations">
-                    <a class="form-inline-fullwidth" asp-area="" asp-controller="Vaccinations" asp-action="Index">
-                        <button type="submit" class="btn-sidebar leavePage">
-                            <i class="material-icons sidebar-icon">local_pharmacy</i>
-                            <span class="sidebar-item-text sidebar-item-text-hide">
-                                @await LocaleManager.GetTranslation("Vaccinations", PageNames.Layout, Model.LanguageId)
-                            </span>
-                        </button>
+                    <a class="btn-sidebar leavePage" asp-controller="Vaccinations" asp-action="Index">
+                        <i class="material-icons sidebar-icon">local_pharmacy</i>
+                        <span class="sidebar-item-text sidebar-item-text-hide">
+                            @await LocaleManager.GetTranslation("Vaccinations", PageNames.Layout, Model.LanguageId)
+                        </span>
                     </a>
                 </li>
                 @if (User.Identity?.IsAuthenticated ?? false)
                 {
                     <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="family">
-                        <a class="form-inline-fullwidth" asp-area="" asp-controller="Family" asp-action="Index">
-                            <button type="submit" class="btn-sidebar leavePage">
-                                <i class="material-icons sidebar-icon">people</i>
-                                <span class="sidebar-item-text sidebar-item-text-hide">
-                                    @await LocaleManager.GetTranslation("My Family", PageNames.Layout, Model.LanguageId)
-                                </span>
-                            </button>
+                        <a class="btn-sidebar leavePage" asp-controller="Family" asp-action="Index">
+                            <i class="material-icons sidebar-icon">people</i>
+                            <span class="sidebar-item-text sidebar-item-text-hide">
+                                @await LocaleManager.GetTranslation("My Family", PageNames.Layout, Model.LanguageId)
+                            </span>
                         </a>
                     </li>
                 }

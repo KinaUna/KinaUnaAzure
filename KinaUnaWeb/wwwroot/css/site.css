@@ -1467,81 +1467,97 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 }
 
 .bg-calendar {
+    color: #fff;
     background: #581b2f;
     background: linear-gradient(60deg, #621423, #5c162d);
 }
 
 .bg-contact {
+    color: #fff;
     background: #1e0505;
     background: linear-gradient(60deg, #241010, #1e0505);
 }
 
 .bg-contact-header {
+    color: #fff;
     background: #3c0808;
     background: linear-gradient(60deg, #2e1000, #3c0808);
 }
 
 .bg-friend {
+    color: #fff;
     background: #555555;
     background: linear-gradient(60deg, #667788, #555868);
 }
 
 .bg-location {
+    color: #fff;
     background: #03317a;
     background: linear-gradient(60deg, #0156b1, #03317a);
 }
 
 .bg-location-header {
+    color: #fff;
     background: #03115a;
     background: linear-gradient(60deg, #03115a, #012681);
 }
 
 .bg-measurement {
+    color: #fff;
     background: #b43c32;
     background: linear-gradient(60deg, #b44c4f, #b43c32);
 }
 
 .bg-notes {
+    color: #fff;
     background: #507832;
     background: linear-gradient(60deg, #507832, #306822);
 }
 
 .bg-photo {
+    color: #fff;
     background: #326ebe;
     background: linear-gradient(60deg, #326ebe, #2d64a9);
 }
 
 .bg-skill {
+    color: #fff;
     background: #787864;
     background: linear-gradient(60deg, #787864, #686854);
 }
 
 .bg-sleep {
+    color: #fff;
     background: #519966;
     background: linear-gradient(60deg, #46a03c, #36902c);
 }
 
 .bg-vaccination {
+    color: #fff;
     background: #c800c8;
     background: linear-gradient(60deg, #c800c8, #b540b5);
 }
 
 .bg-video {
+    color: #fff;
     background: #953761;
     background: linear-gradient(60deg, #c53771, #a53761);
 }
 
 .bg-vocabulary {
+    color: #fff;
     background: #641e1e;
     background: linear-gradient(60deg, #641e1e, #540e0e);
 }
 
 .bg-white-gradient {
+    color: #000;
     background: #ffffff;
     background: linear-gradient(90deg, #ffffff, transparent);
 }
 
 .bg-white-gradient2 {
+    color: #000;
     background: #ffffff;
     background: linear-gradient(90deg, transparent, #ffffff);
 }
@@ -2366,6 +2382,7 @@ button.Zebra_DatePicker_Icon {
 
 .sidebar-item-text {
     margin-left: 4px;
+    vertical-align: middle;
 }
 
 .sidebar-item-text-hide {
@@ -2378,7 +2395,7 @@ button.Zebra_DatePicker_Icon {
     position: relative;
     margin-left: 6px;
     margin-right: 6px;
-    top: 4px;
+    vertical-align: middle;
 }
 .kinauna-main {
     margin-left: 70px;
@@ -2399,10 +2416,11 @@ button.Zebra_DatePicker_Icon {
     margin-top: 6px;
     margin-bottom: 6px;
     border: 1px solid transparent;
-    line-height: 10px;
+    line-height: 1;
     width: 100%;
     min-width: 52px;
     text-align: left;
+    display: inline-block;
 }
 
 .btn-sidebar:hover {

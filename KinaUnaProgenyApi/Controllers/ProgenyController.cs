@@ -101,7 +101,12 @@ namespace KinaUnaProgenyApi.Controllers
             }
             
             progeny.PictureLink = value.PictureLink;
-            
+
+            if (!progeny.PictureLink.ToLower().StartsWith("http"))
+            {
+                progeny.PictureLink = await _progenyService.ResizeImage(progeny.PictureLink);
+            }
+
             progeny = await _progenyService.AddProgeny(progeny);
             
             if (progeny.Admins.Contains(','))
@@ -131,12 +136,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
             }
-
-            if (!progeny.PictureLink.ToLower().StartsWith("http"))
-            {
-                await _progenyService.ResizeImage(progeny.PictureLink);
-            }
-
+            
             return Ok(progeny);
         }
 
@@ -214,12 +214,14 @@ namespace KinaUnaProgenyApi.Controllers
             }
             progeny.TimeZone = value.TimeZone;
 
-            progeny = await _progenyService.UpdateProgeny(progeny);
-
             if (!progeny.PictureLink.ToLower().StartsWith("http"))
             {
-                await _progenyService.ResizeImage(progeny.PictureLink);
+                progeny.PictureLink = await _progenyService.ResizeImage(progeny.PictureLink);
             }
+
+            progeny = await _progenyService.UpdateProgeny(progeny);
+
+            
 
             return Ok(progeny);
         }
