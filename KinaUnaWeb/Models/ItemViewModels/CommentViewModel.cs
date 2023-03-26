@@ -28,15 +28,17 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public Comment CreateComment(int commentType)
         {
-            Comment comment = new Comment();
-            comment.CommentThreadNumber = CommentThreadNumber;
-            comment.CommentText = CommentText;
-            comment.Author = CurrentUser.UserId;
-            comment.DisplayName = CurrentUser.FullName();
-            comment.Created = DateTime.UtcNow;
-            comment.ItemType = commentType;
-            comment.ItemId = ItemId.ToString();
-            comment.Progeny = CurrentProgeny;
+            Comment comment = new()
+            {
+                CommentThreadNumber = CommentThreadNumber,
+                CommentText = CommentText,
+                Author = CurrentUser.UserId,
+                DisplayName = CurrentUser.FullName(),
+                Created = DateTime.UtcNow,
+                ItemType = commentType,
+                ItemId = ItemId.ToString(),
+                Progeny = CurrentProgeny
+            };
 
             return comment;
         }

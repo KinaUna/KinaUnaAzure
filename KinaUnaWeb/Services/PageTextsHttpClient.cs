@@ -66,7 +66,7 @@ namespace KinaUnaWeb.Services
 
         private async Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false)
         {
-            List<KinaUnaLanguage> languageList = new List<KinaUnaLanguage>();
+            List<KinaUnaLanguage> languageList = new();
             string cachedLanguagesString = await _cache.GetStringAsync("AllLanguages");
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguagesString))
             {
@@ -95,7 +95,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<KinaUnaText> GetPageTextByTitle(string title, string page, int languageId, bool updateCache = false)
         {
-            KinaUnaText text = new KinaUnaText();
+            KinaUnaText text = new();
             string cachedText = await _cache.GetStringAsync("PageText" + title + "&Page" + page + "&Lang" + languageId);
             if (!updateCache && !string.IsNullOrEmpty(cachedText))
             {
@@ -115,11 +115,13 @@ namespace KinaUnaWeb.Services
                     text = JsonConvert.DeserializeObject<KinaUnaText>(kinaUnaTextAsString);
                     if (text == null || text.Id == 0)
                     {
-                        KinaUnaText newKinaUnaText = new KinaUnaText();
-                        newKinaUnaText.Title = title;
-                        newKinaUnaText.Page = page;
-                        newKinaUnaText.LanguageId = languageId;
-                        newKinaUnaText.Text = "";
+                        KinaUnaText newKinaUnaText = new()
+                        {
+                            Title = title,
+                            Page = page,
+                            LanguageId = languageId,
+                            Text = ""
+                        };
                         text = await AddPageText(newKinaUnaText);
                     }
 
@@ -135,7 +137,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<KinaUnaText> AddPageText(KinaUnaText textItem)
         {
-            KinaUnaText addedTextItem = new KinaUnaText();
+            KinaUnaText addedTextItem = new();
             textItem.Text ??= "";
 
             string accessToken = await GetNewToken();
@@ -165,7 +167,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<KinaUnaText> GetPageTextById(int id, bool updateCache = false)
         {
-            KinaUnaText text = new KinaUnaText();
+            KinaUnaText text = new();
             string cachedText = await _cache.GetStringAsync("PageText&Id" + id);
             if (!updateCache && !string.IsNullOrEmpty(cachedText))
             {
@@ -192,7 +194,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<KinaUnaText> GetPageTextByTextId(int textId, int languageId, bool updateCache = false)
         {
-            KinaUnaText text = new KinaUnaText();
+            KinaUnaText text = new();
             string cachedText = await _cache.GetStringAsync("PageText&TextId" + textId + "&Language" + languageId);
             if (!updateCache && !string.IsNullOrEmpty(cachedText))
             {
@@ -219,7 +221,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<KinaUnaText> UpdatePageText(KinaUnaText kinaUnaText)
         {
-            KinaUnaText updatedTextItem = new KinaUnaText();
+            KinaUnaText updatedTextItem = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -236,7 +238,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<KinaUnaText>> GetAllKinaUnaTexts(int languageId = 0, bool updateCache = false)
         {
-            List<KinaUnaText> allKinaUnaTexts = new List<KinaUnaText>();
+            List<KinaUnaText> allKinaUnaTexts = new();
             string cachedTextsList = await _cache.GetStringAsync("AllKinaUnaTexts" + "&Lang" + languageId);
             if (!updateCache && languageId != 0 && !string.IsNullOrEmpty(cachedTextsList))
             {

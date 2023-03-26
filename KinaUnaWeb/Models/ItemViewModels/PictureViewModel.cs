@@ -52,7 +52,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string UserId { get; set; }
         public PictureViewModel()
         {
-            AccessLevelList aclList = new AccessLevelList();
+            AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
             AccessLevelListDe = aclList.AccessLevelListDe;

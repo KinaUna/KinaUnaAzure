@@ -135,7 +135,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Sleep>> GetSleepList(int progenyId, int accessLevel)
         {
-            List<Sleep> progenySleepList = new List<Sleep>();
+            List<Sleep> progenySleepList = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

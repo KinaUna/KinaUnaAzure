@@ -28,10 +28,10 @@ namespace KinaUna.Data.Extensions
                     RegexOptions.None, TimeSpan.FromMilliseconds(200));
 
                 // Examines the domain part of the email and normalizes it.
-                string DomainMapper(Match match)
+                static string DomainMapper(Match match)
                 {
                     // Use IdnMapping class to convert Unicode domain names.
-                    IdnMapping idn = new IdnMapping();
+                    IdnMapping idn = new();
 
                     // Pull out and process domain name (throws ArgumentException on invalid)
                     string domainName = idn.GetAscii(match.Groups[2].Value);

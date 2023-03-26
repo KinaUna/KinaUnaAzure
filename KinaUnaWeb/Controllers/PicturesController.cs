@@ -40,11 +40,12 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int id = 1, int pageSize = 16, int childId = 0, int sortBy = 1, string tagFilter = "")
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            PicturesListViewModel model = new PicturesListViewModel(baseModel);
-
-            model.PageSize = pageSize;
-            model.SortBy = sortBy;
-            model.TagFilter = tagFilter;
+            PicturesListViewModel model = new(baseModel)
+            {
+                PageSize = pageSize,
+                SortBy = sortBy,
+                TagFilter = tagFilter
+            };
 
             // PicturePageViewModel is used by KinaUna Xamarin and ProgenyApi, so it should not be changed in this project, instead using a different view model and copying the properties.
             PicturePageViewModel pageViewModel = await _mediaHttpClient.GetPicturePage(pageSize, id, model.CurrentProgenyId, model.CurrentAccessLevel, sortBy, tagFilter, model.CurrentUser.Timezone);
@@ -70,7 +71,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
-            PictureItemViewModel model = new PictureItemViewModel(baseModel);
+            PictureItemViewModel model = new(baseModel);
             PictureViewModel pictureViewModel = await _mediaHttpClient.GetPictureViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone, tagFilter);
 
             model.SetPropertiesFromPictureViewModel(pictureViewModel);
@@ -97,9 +98,11 @@ namespace KinaUnaWeb.Controllers
                 {
                     foreach (Location loc in model.ProgenyLocations)
                     {
-                        SelectListItem selectListItem = new SelectListItem();
-                        selectListItem.Text = loc.Name;
-                        selectListItem.Value = loc.LocationId.ToString();
+                        SelectListItem selectListItem = new()
+                        {
+                            Text = loc.Name,
+                            Value = loc.LocationId.ToString()
+                        };
                         model.LocationsList.Add(selectListItem);
                     }
                 }
@@ -113,7 +116,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddPicture()
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            UploadPictureViewModel model = new UploadPictureViewModel(baseModel);
+            UploadPictureViewModel model = new(baseModel);
             
             if (model.CurrentUser == null)
             {
@@ -144,21 +147,25 @@ namespace KinaUnaWeb.Controllers
                 });
             }
 
-            List<Picture> pictureList = new List<Picture>();
-            UploadPictureViewModel result = new UploadPictureViewModel();
-            result.LanguageId = model.LanguageId;
-            result.FileLinks = new List<string>();
-            result.FileNames = new List<string>();
+            List<Picture> pictureList = new();
+            UploadPictureViewModel result = new()
+            {
+                LanguageId = model.LanguageId,
+                FileLinks = new List<string>(),
+                FileNames = new List<string>()
+            };
             if (model.Files.Any())
             {
                 foreach (IFormFile formFile in model.Files)
                 {
-                    Picture picture = new Picture();
-                    picture.ProgenyId = model.Picture.ProgenyId;
-                    picture.AccessLevel = model.Picture.AccessLevel;
-                    picture.Author = model.CurrentUser.UserId;
-                    picture.Owners = model.CurrentUser.UserEmail;
-                    picture.TimeZone = model.CurrentUser.Timezone;
+                    Picture picture = new()
+                    {
+                        ProgenyId = model.Picture.ProgenyId,
+                        AccessLevel = model.Picture.AccessLevel,
+                        Author = model.CurrentUser.UserId,
+                        Owners = model.CurrentUser.UserEmail,
+                        TimeZone = model.CurrentUser.Timezone
+                    };
 
                     await using (Stream stream = formFile.OpenReadStream())
                     {
@@ -224,7 +231,7 @@ namespace KinaUnaWeb.Controllers
         {
             Picture picture = await _mediaHttpClient.GetPicture(pictureId, "");
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
-            PictureItemViewModel model = new PictureItemViewModel(baseModel);
+            PictureItemViewModel model = new(baseModel);
 
             if (!model.IsCurrentUserProgenyAdmin)
             {

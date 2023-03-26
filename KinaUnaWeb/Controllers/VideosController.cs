@@ -44,10 +44,12 @@ namespace KinaUnaWeb.Controllers
 
             // VideoPageViewModel is used by KinaUna Xamarin and ProgenyApi, so it should not be changed in this project, instead using a different view model and copying the properties.
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            VideoListViewModel model = new VideoListViewModel(baseModel);
-            model.PageSize = pageSize;
-            model.SortBy = sortBy;
-            model.TagFilter = tagFilter;
+            VideoListViewModel model = new(baseModel)
+            {
+                PageSize = pageSize,
+                SortBy = sortBy,
+                TagFilter = tagFilter
+            };
 
             VideoPageViewModel pageViewModel = await _mediaHttpClient.GetVideoPage(pageSize, id, model.CurrentProgenyId, model.CurrentAccessLevel, sortBy, tagFilter, model.CurrentUser.Timezone);
             model.SetPropertiesFromPageViewModel(pageViewModel);
@@ -66,7 +68,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), video.ProgenyId);
-            VideoItemViewModel model = new VideoItemViewModel(baseModel);
+            VideoItemViewModel model = new(baseModel);
             VideoViewModel videoViewModel = await _mediaHttpClient.GetVideoViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone, tagFilter);
             
             model.SetPropertiesFromVideoViewModel(videoViewModel);
@@ -91,9 +93,11 @@ namespace KinaUnaWeb.Controllers
                 {
                     foreach (Location loc in model.ProgenyLocations)
                     {
-                        SelectListItem selectListItem = new SelectListItem();
-                        selectListItem.Text = loc.Name;
-                        selectListItem.Value = loc.LocationId.ToString();
+                        SelectListItem selectListItem = new()
+                        {
+                            Text = loc.Name,
+                            Value = loc.LocationId.ToString()
+                        };
                         model.LocationsList.Add(selectListItem);
                     }
                 }
@@ -113,7 +117,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddVideo()
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            UploadVideoViewModel model = new UploadVideoViewModel(baseModel);
+            UploadVideoViewModel model = new(baseModel);
 
             if (!model.IsCurrentUserProgenyAdmin)
             {
@@ -203,7 +207,7 @@ namespace KinaUnaWeb.Controllers
         {
             Video video = await _mediaHttpClient.GetVideo(videoId, "");
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), video.ProgenyId);
-            VideoItemViewModel model = new VideoItemViewModel(baseModel);
+            VideoItemViewModel model = new(baseModel);
 
             if (!model.IsCurrentUserProgenyAdmin)
             {

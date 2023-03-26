@@ -15,8 +15,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string FileName { get; set; }
         public IFormFile File { get; set; }
         public string TagFilter { get; set; }
-        public Address AddressItem { get; set; } = new Address();
-        public Contact ContactItem { get; set; } = new Contact();
+        public Address AddressItem { get; set; } = new();
+        public Contact ContactItem { get; set; } = new();
         
         public ContactViewModel()
         {
@@ -57,7 +57,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
             AccessLevelListDa = accessLevelList.AccessLevelListDa;
             AccessLevelListDe = accessLevelList.AccessLevelListDe;
@@ -117,24 +117,26 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public Contact CreateContact()
         {
-            Contact contactItem = new Contact();
-            contactItem.ContactId = ContactItem.ContactId;
-            contactItem.FirstName = ContactItem.FirstName;
-            contactItem.MiddleName = ContactItem.MiddleName;
-            contactItem.LastName = ContactItem.LastName;
-            contactItem.DisplayName = ContactItem.DisplayName;
-            contactItem.Email1 = ContactItem.Email1;
-            contactItem.Email2 = ContactItem.Email2;
-            contactItem.PhoneNumber = ContactItem.PhoneNumber;
-            contactItem.MobileNumber = ContactItem.MobileNumber;
-            contactItem.Notes = ContactItem.Notes;
-            contactItem.Website = ContactItem.Website;
-            contactItem.Active = true;
-            contactItem.Context = ContactItem.Context;
-            contactItem.AccessLevel = ContactItem.AccessLevel;
-            contactItem.Author = ContactItem.Author ?? CurrentUser.UserId;
-            contactItem.ProgenyId = ContactItem.ProgenyId;
-            contactItem.PictureLink = ContactItem.PictureLink;
+            Contact contactItem = new()
+            {
+                ContactId = ContactItem.ContactId,
+                FirstName = ContactItem.FirstName,
+                MiddleName = ContactItem.MiddleName,
+                LastName = ContactItem.LastName,
+                DisplayName = ContactItem.DisplayName,
+                Email1 = ContactItem.Email1,
+                Email2 = ContactItem.Email2,
+                PhoneNumber = ContactItem.PhoneNumber,
+                MobileNumber = ContactItem.MobileNumber,
+                Notes = ContactItem.Notes,
+                Website = ContactItem.Website,
+                Active = true,
+                Context = ContactItem.Context,
+                AccessLevel = ContactItem.AccessLevel,
+                Author = ContactItem.Author ?? CurrentUser.UserId,
+                ProgenyId = ContactItem.ProgenyId,
+                PictureLink = ContactItem.PictureLink
+            };
 
             if (ContactItem.DateAdded == null)
             {
@@ -152,13 +154,15 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             if (AddressItem.AddressLine1 + AddressItem.AddressLine2 + AddressItem.City + AddressItem.Country + AddressItem.PostalCode + AddressItem.State != "")
             {
-                Address address = new Address();
-                address.AddressLine1 = AddressItem.AddressLine1;
-                address.AddressLine2 = AddressItem.AddressLine2;
-                address.City = AddressItem.City;
-                address.PostalCode = AddressItem.PostalCode;
-                address.State = AddressItem.State;
-                address.Country = AddressItem.Country;
+                Address address = new()
+                {
+                    AddressLine1 = AddressItem.AddressLine1,
+                    AddressLine2 = AddressItem.AddressLine2,
+                    City = AddressItem.City,
+                    PostalCode = AddressItem.PostalCode,
+                    State = AddressItem.State,
+                    Country = AddressItem.Country
+                };
                 contactItem.Address = address;
             }
 

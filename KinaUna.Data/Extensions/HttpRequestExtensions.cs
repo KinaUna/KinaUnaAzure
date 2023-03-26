@@ -33,7 +33,7 @@ namespace KinaUna.Data.Extensions
             {
                 languageId = "1";
             }
-            CookieOptions option = new CookieOptions
+            CookieOptions option = new()
             {
                 Expires = DateTime.Now.AddYears(1),
                 Domain = ".kinauna.com",
@@ -123,7 +123,7 @@ namespace KinaUna.Data.Extensions
 
         public static KinaUnaLanguage GetKinaUnaLanguage(this HttpRequest request)
         {
-            KinaUnaLanguage kinaUnaLanguage = new KinaUnaLanguage
+            KinaUnaLanguage kinaUnaLanguage = new()
             {
                 Id = 1,
                 Code = "en"

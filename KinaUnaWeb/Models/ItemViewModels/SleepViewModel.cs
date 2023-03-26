@@ -22,12 +22,12 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public TimeSpan SleepLastYear { get; set; }
         public TimeSpan LastYearAverage { get; set; }
 
-        public Sleep SleepItem { get; set; } = new Sleep();
+        public Sleep SleepItem { get; set; } = new();
 
         public SleepViewModel()
         {
             ProgenyList = new List<SelectListItem>();
-            AccessLevelList aclList = new AccessLevelList();
+            AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
             AccessLevelListDe = aclList.AccessLevelListDe;
@@ -56,7 +56,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
             AccessLevelListDa = accessLevelList.AccessLevelListDa;
             AccessLevelListDe = accessLevelList.AccessLevelListDe;
@@ -79,21 +79,31 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public void SetRatingList()
         {
             RatingList = new List<SelectListItem>();
-            SelectListItem selItem1 = new SelectListItem();
-            selItem1.Text = "1";
-            selItem1.Value = "1";
-            SelectListItem selItem2 = new SelectListItem();
-            selItem2.Text = "2";
-            selItem2.Value = "2";
-            SelectListItem selItem3 = new SelectListItem();
-            selItem3.Text = "3";
-            selItem3.Value = "3";
-            SelectListItem selItem4 = new SelectListItem();
-            selItem4.Text = "4";
-            selItem4.Value = "4";
-            SelectListItem selItem5 = new SelectListItem();
-            selItem5.Text = "5";
-            selItem5.Value = "5";
+            SelectListItem selItem1 = new()
+            {
+                Text = "1",
+                Value = "1"
+            };
+            SelectListItem selItem2 = new()
+            {
+                Text = "2",
+                Value = "2"
+            };
+            SelectListItem selItem3 = new()
+            {
+                Text = "3",
+                Value = "3"
+            };
+            SelectListItem selItem4 = new()
+            {
+                Text = "4",
+                Value = "4"
+            };
+            SelectListItem selItem5 = new()
+            {
+                Text = "5",
+                Value = "5"
+            };
             RatingList.Add(selItem1);
             RatingList.Add(selItem2);
             RatingList.Add(selItem3);
@@ -104,14 +114,16 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public Sleep CreateSleep()
         {
-            Sleep sleep = new Sleep();
-            sleep.ProgenyId = SleepItem.ProgenyId;
-            sleep.Progeny = CurrentProgeny;
-            sleep.CreatedDate = SleepItem.CreatedDate;
-            sleep.SleepStart = TimeZoneInfo.ConvertTimeToUtc(SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
-            sleep.SleepEnd = TimeZoneInfo.ConvertTimeToUtc(SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+            Sleep sleep = new()
+            {
+                ProgenyId = SleepItem.ProgenyId,
+                Progeny = CurrentProgeny,
+                CreatedDate = SleepItem.CreatedDate,
+                SleepStart = TimeZoneInfo.ConvertTimeToUtc(SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
+                SleepEnd = TimeZoneInfo.ConvertTimeToUtc(SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
+                SleepRating = SleepItem.SleepRating
+            };
 
-            sleep.SleepRating = SleepItem.SleepRating;
             if (sleep.SleepRating == 0)
             {
                 sleep.SleepRating = 3;
@@ -152,7 +164,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             SleepLastYear = TimeSpan.Zero;
             SleepLastMonth = TimeSpan.Zero;
 
-            DateTime yearAgo = new DateTime(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
+            DateTime yearAgo = new(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
             if (sleepList.Count != 0)
             {
@@ -165,26 +177,26 @@ namespace KinaUnaWeb.Models.ItemViewModels
                         bool isLessThanMonth = sleep.SleepEnd > monthAgo;
                         sleep.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
                         sleep.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
-                        DateTimeOffset startOffset = new DateTimeOffset(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepStart));
-                        DateTimeOffset endOffset = new DateTimeOffset(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepEnd));
+                        DateTimeOffset startOffset = new(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepStart));
+                        DateTimeOffset endOffset = new(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepEnd));
                         sleep.SleepDuration = endOffset - startOffset;
 
-                        SleepTotal = SleepTotal + sleep.SleepDuration;
+                        SleepTotal += sleep.SleepDuration;
                         if (isLessThanYear)
                         {
-                            SleepLastYear = SleepLastYear + sleep.SleepDuration;
+                            SleepLastYear += sleep.SleepDuration;
                         }
 
                         if (isLessThanMonth)
                         {
-                            SleepLastMonth = SleepLastMonth + sleep.SleepDuration;
+                            SleepLastMonth += sleep.SleepDuration;
                         }
 
                         // Calculate chart values
                         double durationStartDate = 0.0;
                         if (sleep.SleepStart.Date == sleep.SleepEnd.Date)
                         {
-                            durationStartDate = durationStartDate + sleep.SleepDuration.TotalMinutes;
+                            durationStartDate += sleep.SleepDuration.TotalMinutes;
                             Sleep slpItem = ChartList.SingleOrDefault(s => s.SleepStart.Date == sleep.SleepStart.Date);
                             if (slpItem != null)
                             {
@@ -192,19 +204,21 @@ namespace KinaUnaWeb.Models.ItemViewModels
                             }
                             else
                             {
-                                Sleep newSleep = new Sleep();
-                                newSleep.SleepStart = sleep.SleepStart;
-                                newSleep.SleepDuration = TimeSpan.FromMinutes(durationStartDate);
+                                Sleep newSleep = new()
+                                {
+                                    SleepStart = sleep.SleepStart,
+                                    SleepDuration = TimeSpan.FromMinutes(durationStartDate)
+                                };
                                 ChartList.Add(newSleep);
                             }
                         }
                         else
                         {
-                            DateTimeOffset sOffset = new DateTimeOffset(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepStart));
-                            DateTimeOffset s2Offset = new DateTimeOffset(sleep.SleepStart.Date + TimeSpan.FromDays(1), TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)
+                            DateTimeOffset sOffset = new(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepStart));
+                            DateTimeOffset s2Offset = new(sleep.SleepStart.Date + TimeSpan.FromDays(1), TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)
                                     .GetUtcOffset(sleep.SleepStart.Date + TimeSpan.FromDays(1)));
-                            DateTimeOffset eOffset = new DateTimeOffset(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepEnd));
-                            DateTimeOffset e2Offset = new DateTimeOffset(sleep.SleepEnd.Date, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)
+                            DateTimeOffset eOffset = new(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepEnd));
+                            DateTimeOffset e2Offset = new(sleep.SleepEnd.Date, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)
                                     .GetUtcOffset(sleep.SleepEnd.Date));
                             TimeSpan sDateDuration = s2Offset - sOffset;
                             TimeSpan eDateDuration = eOffset - e2Offset;
@@ -217,9 +231,11 @@ namespace KinaUnaWeb.Models.ItemViewModels
                             }
                             else
                             {
-                                Sleep chartItemToAdd = new Sleep();
-                                chartItemToAdd.SleepStart = sleep.SleepStart;
-                                chartItemToAdd.SleepDuration = TimeSpan.FromMinutes(durationStartDate);
+                                Sleep chartItemToAdd = new()
+                                {
+                                    SleepStart = sleep.SleepStart,
+                                    SleepDuration = TimeSpan.FromMinutes(durationStartDate)
+                                };
                                 ChartList.Add(chartItemToAdd);
                             }
 
@@ -230,9 +246,11 @@ namespace KinaUnaWeb.Models.ItemViewModels
                             }
                             else
                             {
-                                Sleep chartItemToAdd = new Sleep();
-                                chartItemToAdd.SleepStart = sleep.SleepEnd;
-                                chartItemToAdd.SleepDuration = TimeSpan.FromMinutes(durationEndDate);
+                                Sleep chartItemToAdd = new()
+                                {
+                                    SleepStart = sleep.SleepEnd,
+                                    SleepDuration = TimeSpan.FromMinutes(durationEndDate)
+                                };
                                 ChartList.Add(chartItemToAdd);
                             }
                         }

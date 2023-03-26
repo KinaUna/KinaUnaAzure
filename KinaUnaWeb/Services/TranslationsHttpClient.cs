@@ -67,7 +67,7 @@ namespace KinaUnaWeb.Services
 
         private async Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false)
         {
-            List<KinaUnaLanguage> languageList = new List<KinaUnaLanguage>();
+            List<KinaUnaLanguage> languageList = new();
             string cachedLanguagesString = await _cache.GetStringAsync("AllLanguages");
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguagesString))
             {
@@ -139,11 +139,13 @@ namespace KinaUnaWeb.Services
 
             if (string.IsNullOrEmpty(translation))
             {
-                TextTranslation translationItem = new TextTranslation();
-                translationItem.LanguageId = languageId;
-                translationItem.Translation = word;
-                translationItem.Page = page;
-                translationItem.Word = word;
+                TextTranslation translationItem = new()
+                {
+                    LanguageId = languageId,
+                    Translation = word,
+                    Page = page,
+                    Word = word
+                };
                 translationItem = await AddTranslation(translationItem);
                 translation = translationItem.Translation;
             }
@@ -153,7 +155,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<TextTranslation> AddTranslation(TextTranslation translation)
         {
-            TextTranslation addedTranslation = new TextTranslation();
+            TextTranslation addedTranslation = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -178,7 +180,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<TextTranslation> UpdateTranslation(TextTranslation translation)
         {
-            TextTranslation addedTranslation = new TextTranslation();
+            TextTranslation addedTranslation = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -195,7 +197,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<TextTranslation> DeleteTranslation(TextTranslation translation)
         {
-            TextTranslation deletedTranslation = new TextTranslation();
+            TextTranslation deletedTranslation = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -213,7 +215,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<TextTranslation> DeleteSingleItemTranslation(TextTranslation translation)
         {
-            TextTranslation deletedTranslation = new TextTranslation();
+            TextTranslation deletedTranslation = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -236,7 +238,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<TextTranslation>> GetAllTranslations(int languageId = 0, bool updateCache = false)
         {
-            List<TextTranslation> translationsList = new List<TextTranslation>();
+            List<TextTranslation> translationsList = new();
             string cachedTranslationsList = await _cache.GetStringAsync("AllTranslations" + "&Lang" + languageId);
             if (!updateCache && languageId != 0 && !string.IsNullOrEmpty(cachedTranslationsList))
             {
@@ -263,7 +265,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<TextTranslation> GetTranslationById(int id, bool updateCache = false)
         {
-            TextTranslation textTranslation = new TextTranslation();
+            TextTranslation textTranslation = new();
             string cachedTranslation = await _cache.GetStringAsync("TranslationById" + id);
             if (!updateCache && !string.IsNullOrEmpty(cachedTranslation))
             {

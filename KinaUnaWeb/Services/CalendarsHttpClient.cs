@@ -63,7 +63,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            CalendarItem calendarItem = new CalendarItem();
+            CalendarItem calendarItem = new();
             string calendarApiPath = "/api/Calendar/" + eventId;
             HttpResponseMessage calendarResponse = await _httpClient.GetAsync(calendarApiPath).ConfigureAwait(false);
             if (calendarResponse.IsSuccessStatusCode)
@@ -127,7 +127,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel)
         {
-            List<CalendarItem> progenyCalendarList = new List<CalendarItem>();
+            List<CalendarItem> progenyCalendarList = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -145,7 +145,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<CalendarItem>> GetUpcomingEvents(int progenyId, int accessLevel, string timeZone)
         {
-            List<CalendarItem> progenyCalendarList = new List<CalendarItem>();
+            List<CalendarItem> progenyCalendarList = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

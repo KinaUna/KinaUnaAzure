@@ -63,7 +63,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Friend friendItem = new Friend();
+            Friend friendItem = new();
             string friendsApiPath = "/api/Friends/" + friendId;
             HttpResponseMessage friendResponse = await _httpClient.GetAsync(friendsApiPath).ConfigureAwait(false);
             if (friendResponse.IsSuccessStatusCode)
@@ -127,7 +127,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Friend>> GetFriendsList(int progenyId, int accessLevel, string tagFilter = "")
         {
-            List<Friend> progenyFriendsList = new List<Friend>();
+            List<Friend> progenyFriendsList = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

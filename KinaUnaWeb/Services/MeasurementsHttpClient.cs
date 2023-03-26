@@ -63,7 +63,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Measurement measurementItem = new Measurement();
+            Measurement measurementItem = new();
             string measurementsApiPath = "/api/Measurements/" + measurementId;
             HttpResponseMessage measurementResponse = await _httpClient.GetAsync(measurementsApiPath);
             if (measurementResponse.IsSuccessStatusCode)
@@ -127,7 +127,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Measurement>> GetMeasurementsList(int progenyId, int accessLevel)
         {
-            List<Measurement> progenyMeasurementsList = new List<Measurement>();
+            List<Measurement> progenyMeasurementsList = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

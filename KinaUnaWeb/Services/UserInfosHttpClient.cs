@@ -67,7 +67,7 @@ namespace KinaUnaWeb.Services
             string id = email;
             HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(id), System.Text.Encoding.UTF8, "application/json"));
 
-            UserInfo userInfo = new UserInfo();
+            UserInfo userInfo = new();
             if (userInfoResponse.IsSuccessStatusCode)
             {
                 string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
@@ -153,7 +153,7 @@ namespace KinaUnaWeb.Services
 
             string userInfoApiPath = "/api/UserInfo/GetDeletedUserInfos/";
             HttpResponseMessage userInfoResponse = await _httpClient.GetAsync(userInfoApiPath);
-            List<UserInfo> userInfosList = new List<UserInfo>();
+            List<UserInfo> userInfosList = new();
             if (userInfoResponse.IsSuccessStatusCode)
             {
                 string userInfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
@@ -165,7 +165,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<UserInfo> RemoveUserInfoForGood(UserInfo userInfo)
         {
-            UserInfo deletedUserInfo = new UserInfo();
+            UserInfo deletedUserInfo = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

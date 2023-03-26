@@ -11,7 +11,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
-        public CalendarItem CalendarItem { get; set; } = new CalendarItem();
+        public CalendarItem CalendarItem { get; set; } = new();
 
         public CalendarItemViewModel()
         {
@@ -64,7 +64,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
             AccessLevelListDa = accessLevelList.AccessLevelListDa;
             AccessLevelListDe = accessLevelList.AccessLevelListDe;
@@ -86,11 +86,13 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public CalendarItem CreateCalendarItem()
         {
-            CalendarItem eventItem = new CalendarItem();
-            eventItem.EventId = CalendarItem.EventId;
-            eventItem.ProgenyId = CalendarItem.ProgenyId;
-            eventItem.Title = CalendarItem.Title;
-            eventItem.Notes = CalendarItem.Notes;
+            CalendarItem eventItem = new()
+            {
+                EventId = CalendarItem.EventId,
+                ProgenyId = CalendarItem.ProgenyId,
+                Title = CalendarItem.Title,
+                Notes = CalendarItem.Notes
+            };
             if (CalendarItem.StartTime != null && CalendarItem.EndTime != null)
             {
                 eventItem.StartTime = TimeZoneInfo.ConvertTimeToUtc(CalendarItem.StartTime.Value,

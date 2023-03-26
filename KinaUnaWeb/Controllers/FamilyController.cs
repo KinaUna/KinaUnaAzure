@@ -28,11 +28,12 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index()
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            FamilyViewModel model = new FamilyViewModel(baseModel);
-            
-            model.Family = new Family();
+            FamilyViewModel model = new(baseModel)
+            {
+                Family = new()
+            };
             model.Family.Children = await _progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
-            
+
             if (model.Family.Children != null && model.Family.Children.Any())
             {
                 foreach (Progeny progeny in model.Family.Children)

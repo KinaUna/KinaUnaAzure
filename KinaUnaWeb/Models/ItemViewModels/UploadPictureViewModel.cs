@@ -20,12 +20,12 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public double Longtitude1 { get; set; }
         public double Latitude1 { get; set; }
         public string Altitude { get; set; }
-        public Picture Picture { get; set; } = new Picture();
+        public Picture Picture { get; set; } = new();
 
         public UploadPictureViewModel()
         {
             ProgenyList = new List<SelectListItem>();
-            AccessLevelList aclList = new AccessLevelList();
+            AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
             AccessLevelListDe = aclList.AccessLevelListDe;
@@ -39,7 +39,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
             AccessLevelListDa = accessLevelList.AccessLevelListDa;
             AccessLevelListDe = accessLevelList.AccessLevelListDe;

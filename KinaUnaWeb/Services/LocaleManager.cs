@@ -20,9 +20,11 @@ namespace KinaUnaWeb.Services
 
         public async Task<SetLanguageIdViewModel> GetLanguageModel(int currentLanguageId)
         {
-            SetLanguageIdViewModel languageIdModel = new SetLanguageIdViewModel();
-            languageIdModel.LanguageList = await _languagesHttpClient.GetAllLanguages();
-            languageIdModel.SelectedId = currentLanguageId;
+            SetLanguageIdViewModel languageIdModel = new()
+            {
+                LanguageList = await _languagesHttpClient.GetAllLanguages(),
+                SelectedId = currentLanguageId
+            };
 
             return languageIdModel;
 

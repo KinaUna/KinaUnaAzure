@@ -10,7 +10,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class UploadVideoViewModel: BaseItemsViewModel
     {
-        public Video Video { get; set; } = new Video();
+        public Video Video { get; set; } = new();
         public IFormFile File { get; set; }
         public List<SelectListItem> ProgenyList { get; set; }
         public string FileName { get; set; }
@@ -23,7 +23,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             ProgenyList = new List<SelectListItem>();
             
-            AccessLevelList aclList = new AccessLevelList();
+            AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
             AccessLevelListDe = aclList.AccessLevelListDe;
@@ -37,7 +37,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
             AccessLevelListDa = accessLevelList.AccessLevelListDa;
             AccessLevelListDe = accessLevelList.AccessLevelListDe;
@@ -75,13 +75,15 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public Video CreateVideo(bool parseDuration)
         {
-            Video video = new Video();
-            video.ProgenyId = Video.ProgenyId;
-            video.AccessLevel = Video.AccessLevel;
-            video.Author = CurrentUser.UserId;
-            video.Owners = CurrentUser.UserEmail;
-            video.ThumbLink = Constants.WebAppUrl + "/videodb/moviethumb.png";
-            video.VideoTime = DateTime.UtcNow;
+            Video video = new()
+            {
+                ProgenyId = Video.ProgenyId,
+                AccessLevel = Video.AccessLevel,
+                Author = CurrentUser.UserId,
+                Owners = CurrentUser.UserEmail,
+                ThumbLink = Constants.WebAppUrl + "/videodb/moviethumb.png",
+                VideoTime = DateTime.UtcNow
+            };
             if (Video.VideoTime != null)
             {
                 video.VideoTime = TimeZoneInfo.ConvertTimeToUtc(Video.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
@@ -91,10 +93,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             if (parseDuration)
             {
-                int.TryParse(Video.DurationHours, out int durHours);
-                int.TryParse(Video.DurationMinutes, out int durMins);
-                int.TryParse(Video.DurationSeconds, out int durSecs);
-                if (durHours + durMins + durSecs != 0)
+                bool durationHoursParsed = int.TryParse(Video.DurationHours, out int durHours);
+                bool durationMinutesParsed = int.TryParse(Video.DurationMinutes, out int durMins);
+                bool durationSecondsParsed = int.TryParse(Video.DurationSeconds, out int durSecs);
+                if (durationHoursParsed && durationMinutesParsed && durationSecondsParsed)
                 {
                     video.Duration = new TimeSpan(durHours, durMins, durSecs);
                 }

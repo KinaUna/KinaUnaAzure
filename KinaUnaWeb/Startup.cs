@@ -63,8 +63,8 @@ namespace KinaUnaWeb
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
-            StorageCredentials credentials = new StorageCredentials(Constants.CloudBlobUsername, Configuration["BlobStorageKey"]);
-            CloudBlobClient blobClient = new CloudBlobClient(new Uri(Constants.CloudBlobBase), credentials);
+            StorageCredentials credentials = new(Constants.CloudBlobUsername, Configuration["BlobStorageKey"]);
+            CloudBlobClient blobClient = new(new Uri(Constants.CloudBlobBase), credentials);
             CloudBlobContainer container = blobClient.GetContainerReference("dataprotection");
 
             container.CreateIfNotExistsAsync().GetAwaiter().GetResult();
@@ -242,14 +242,14 @@ namespace KinaUnaWeb
                 new CultureInfo("de-DE"),
             };
 
-            RequestLocalizationOptions localizationOptions = new RequestLocalizationOptions
+            RequestLocalizationOptions localizationOptions = new()
             {
                 DefaultRequestCulture = new RequestCulture("en-US"),
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures
             };
 
-            CookieRequestCultureProvider provider = new CookieRequestCultureProvider()
+            CookieRequestCultureProvider provider = new()
             {
                 CookieName = Constants.LanguageCookieName
             };

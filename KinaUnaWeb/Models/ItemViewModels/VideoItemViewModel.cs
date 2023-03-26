@@ -7,7 +7,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class VideoItemViewModel : BaseItemsViewModel
     {
-        public Video Video { get; set; } = new Video();
+        public Video Video { get; set; } = new();
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
@@ -34,7 +34,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public VideoItemViewModel()
         {
-            AccessLevelList aclList = new AccessLevelList();
+            AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
             AccessLevelListDe = aclList.AccessLevelListDe;
@@ -81,7 +81,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
             if (Video.VideoTime != null && CurrentProgeny.BirthDay.HasValue)
             {
-                PictureTime picTime = new PictureTime(CurrentProgeny.BirthDay.Value,
+                PictureTime picTime = new(CurrentProgeny.BirthDay.Value,
                     TimeZoneInfo.ConvertTimeToUtc(Video.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
                     TimeZoneInfo.FindSystemTimeZoneById(CurrentProgeny.TimeZone));
                 VidTimeValid = true;
@@ -102,7 +102,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
             AccessLevelListDa = accessLevelList.AccessLevelListDa;
             AccessLevelListDe = accessLevelList.AccessLevelListDe;

@@ -7,7 +7,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class NoteViewModel: BaseItemsViewModel
     {
-        public Note NoteItem { get; set; } = new Note();
+        public Note NoteItem { get; set; } = new();
         public string PathName { get; set; }
         public List<SelectListItem> ProgenyList { get; set; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
@@ -28,7 +28,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
             AccessLevelListDa = accessLevelList.AccessLevelListDa;
             AccessLevelListDe = accessLevelList.AccessLevelListDe;
@@ -82,7 +82,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public Note CreateNote()
         {
-            Note note = new Note();
+            Note note = new();
             note.NoteId = NoteItem.NoteId;
             note.Title = NoteItem.Title;
             note.ProgenyId = NoteItem.ProgenyId;

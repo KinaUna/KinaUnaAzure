@@ -32,7 +32,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int Id = 0)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            NotificationsListViewModel model = new NotificationsListViewModel(baseModel);
+            NotificationsListViewModel model = new(baseModel);
             
             model.NotificationsList = await _webNotificationsService.GetUsersNotifications(model.CurrentUser.UserId);
             
@@ -74,7 +74,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> ShowNotification(WebNotification notification)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            WebNotificationViewModel model = new WebNotificationViewModel(baseModel);
+            WebNotificationViewModel model = new(baseModel);
             
             if (!notification.Icon.StartsWith("/"))
             {
@@ -92,7 +92,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> ShowUpdatedNotification(WebNotification notification)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            WebNotificationViewModel model = new WebNotificationViewModel(baseModel);
+            WebNotificationViewModel model = new(baseModel);
             
             if (!notification.Icon.StartsWith("/"))
             {

@@ -55,8 +55,10 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddProgeny()
         {
-            ProgenyViewModel model = new ProgenyViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
+            ProgenyViewModel model = new()
+            {
+                LanguageId = Request.GetLanguageIdFromCookie()
+            };
             string userEmail = User.GetEmail();
             model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
             model.Admins = model.CurrentUser.UserEmail.ToUpper();
@@ -69,13 +71,15 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> AddProgeny(ProgenyViewModel model)
         {
-            Progeny prog = new Progeny();
-            prog.BirthDay = model.BirthDay;
-            prog.Admins = model.Admins.ToUpper();
-            prog.Name = model.Name;
-            prog.NickName = model.NickName;
-            prog.PictureLink = model.PictureLink;
-            prog.TimeZone = model.TimeZone;
+            Progeny prog = new()
+            {
+                BirthDay = model.BirthDay,
+                Admins = model.Admins.ToUpper(),
+                Name = model.Name,
+                NickName = model.NickName,
+                PictureLink = model.PictureLink,
+                TimeZone = model.TimeZone
+            };
             // Todo: Check if the progeny exists.
 
             if (model.File != null)
@@ -99,8 +103,10 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> EditProgeny(int progenyId)
         {
-            ProgenyViewModel model = new ProgenyViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
+            ProgenyViewModel model = new()
+            {
+                LanguageId = Request.GetLanguageIdFromCookie()
+            };
             string userEmail = User.GetEmail();
             model.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
 

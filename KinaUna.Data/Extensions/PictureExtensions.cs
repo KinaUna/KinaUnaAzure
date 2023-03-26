@@ -17,60 +17,27 @@ namespace KinaUna.Data.Extensions
         {
             if (picture != null)
             {
-                if (picture.Altitude == null)
-                {
-                    picture.Altitude = "";
-                }
+                picture.Altitude ??= "";
 
-                if (picture.Tags == null)
-                {
-                    picture.Tags = "";
-                }
+                picture.Tags ??= "";
 
-                if (picture.Author == null)
-                {
-                    picture.Author = "";
-                }
+                picture.Author ??= "";
 
-                if (picture.Latitude == null)
-                {
-                    picture.Latitude = "";
-                }
+                picture.Latitude ??= "";
 
-                if (picture.Location == null)
-                {
-                    picture.Location = "";
-                }
+                picture.Location ??= "";
 
-                if (picture.Longtitude == null)
-                {
-                    picture.Longtitude = "";
-                }
+                picture.Longtitude ??= "";
 
-                if (picture.Owners == null)
-                {
-                    picture.Owners = "";
-                }
+                picture.Owners ??= "";
 
-                if (picture.PictureLink1200 == null)
-                {
-                    picture.PictureLink1200 = "";
-                }
+                picture.PictureLink1200 ??= "";
 
-                if (picture.PictureLink == null)
-                {
-                    picture.PictureLink = "";
-                }
+                picture.PictureLink ??= "";
 
-                if (picture.PictureLink600 == null)
-                {
-                    picture.PictureLink600 = "";
-                }
+                picture.PictureLink600 ??= "";
 
-                if (picture.TimeZone == null)
-                {
-                    picture.TimeZone = "";
-                }
+                picture.TimeZone ??= "";
             }
         }
 
@@ -159,7 +126,7 @@ namespace KinaUna.Data.Extensions
 
         public static void ApplyPlacholderProperties(this Picture picture)
         {
-            Progeny progeny = new Progeny();
+            Progeny progeny = new();
             progeny.ApplyPlaceHolderProperties();
 
             picture.ProgenyId = 0;

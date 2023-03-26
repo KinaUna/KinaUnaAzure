@@ -2,7 +2,6 @@
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
@@ -26,12 +25,7 @@ namespace KinaUnaWeb.Controllers
         {
 
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            CalendarListViewModel model = new CalendarListViewModel(baseModel);
-
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
+            CalendarListViewModel model = new(baseModel);
             
             model.SetEventsList(await _calendarsHttpClient.GetCalendarList(model.CurrentProgenyId, model.CurrentAccessLevel));
 
@@ -44,7 +38,7 @@ namespace KinaUnaWeb.Controllers
             CalendarItem eventItem = await _calendarsHttpClient.GetCalendarItem(eventId);
             
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), eventItem.ProgenyId);
-            CalendarItemViewModel model = new CalendarItemViewModel(baseModel);
+            CalendarItemViewModel model = new(baseModel);
             
             if (eventItem.AccessLevel < model.CurrentAccessLevel)
             {
@@ -61,7 +55,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddEvent()
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            CalendarItemViewModel model = new CalendarItemViewModel(baseModel);
+            CalendarItemViewModel model = new(baseModel);
            
             if (model.CurrentUser == null)
             {
@@ -105,7 +99,7 @@ namespace KinaUnaWeb.Controllers
             CalendarItem eventItem = await _calendarsHttpClient.GetCalendarItem(itemId);
 
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), eventItem.ProgenyId);
-            CalendarItemViewModel model = new CalendarItemViewModel(baseModel);
+            CalendarItemViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
@@ -146,9 +140,10 @@ namespace KinaUnaWeb.Controllers
             CalendarItem calendarItem = await _calendarsHttpClient.GetCalendarItem(itemId);
             
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), calendarItem.ProgenyId);
-            CalendarItemViewModel model = new CalendarItemViewModel(baseModel);
-            
-            model.CalendarItem = calendarItem;
+            CalendarItemViewModel model = new(baseModel)
+            {
+                CalendarItem = calendarItem
+            };
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {

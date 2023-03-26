@@ -135,7 +135,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<TimeLineItem>> GetTimeline(int progenyId, int accessLevel, int order)
         {
-            List<TimeLineItem> progenyTimeline = new List<TimeLineItem>();
+            List<TimeLineItem> progenyTimeline = new();
             
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);

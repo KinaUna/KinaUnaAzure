@@ -63,7 +63,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Note noteItem = new Note();
+            Note noteItem = new();
             string notesApiPath = "/api/Notes/" + noteId;
             HttpResponseMessage noteResponse = await _httpClient.GetAsync(notesApiPath);
             if (noteResponse.IsSuccessStatusCode)
@@ -126,7 +126,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Note>> GetNotesList(int progenyId, int accessLevel)
         {
-            List<Note> progenyNotesList = new List<Note>();
+            List<Note> progenyNotesList = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

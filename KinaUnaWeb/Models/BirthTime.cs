@@ -5,7 +5,7 @@ namespace KinaUnaWeb.Models
 {
     public class BirthTime
     {
-        private DateTime _birthDay;
+        private readonly DateTime _birthDay;
         private readonly TimeZoneInfo _birthTimeZone;
         private readonly DateTime _currentDateTime;
 

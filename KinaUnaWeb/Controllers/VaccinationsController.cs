@@ -25,7 +25,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int childId = 0)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            VaccinationViewModel model = new VaccinationViewModel(baseModel);
+            VaccinationViewModel model = new(baseModel);
             
             List<Vaccination> vaccinations = await _vaccinationsHttpClient.GetVaccinationsList(model.CurrentProgenyId, model.CurrentAccessLevel);
             model.SetVaccinationsList(vaccinations);
@@ -37,7 +37,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddVaccination()
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            VaccinationViewModel model = new VaccinationViewModel(baseModel);
+            VaccinationViewModel model = new(baseModel);
             
             if (model.CurrentUser == null)
             {
@@ -77,7 +77,7 @@ namespace KinaUnaWeb.Controllers
         {
             Vaccination vaccination = await _vaccinationsHttpClient.GetVaccination(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId);
-            VaccinationViewModel model = new VaccinationViewModel(baseModel);
+            VaccinationViewModel model = new(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
@@ -115,7 +115,7 @@ namespace KinaUnaWeb.Controllers
         {
             Vaccination vaccination = await _vaccinationsHttpClient.GetVaccination(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId);
-            VaccinationViewModel model = new VaccinationViewModel(baseModel);
+            VaccinationViewModel model = new(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {

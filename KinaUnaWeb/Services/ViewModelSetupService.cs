@@ -18,7 +18,7 @@ namespace KinaUnaWeb.Services
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IUserAccessHttpClient _userAccessHttpClient;
         private readonly IDistributedCache _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions = new DistributedCacheEntryOptions();
+        private readonly DistributedCacheEntryOptions _cacheOptions = new();
         
         public ViewModelSetupService(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient,IDistributedCache cache)
         {
@@ -31,7 +31,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<BaseItemsViewModel> SetupViewModel(int languageId, string userEmail, int progenyId)
         {
-           BaseItemsViewModel viewModel = new BaseItemsViewModel();
+           BaseItemsViewModel viewModel = new();
            string cachedBaseViewModel = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId);
            if (!string.IsNullOrEmpty(cachedBaseViewModel))
            {
@@ -53,13 +53,13 @@ namespace KinaUnaWeb.Services
         
         public async Task<List<SelectListItem>> GetProgenySelectList(UserInfo userInfo)
         {
-            List<SelectListItem> progenyList = new List<SelectListItem>();
+            List<SelectListItem> progenyList = new();
             List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userInfo.UserEmail);
             if (accessList.Any())
             {
                 foreach (Progeny progeny in accessList)
                 {
-                    SelectListItem selItem = new SelectListItem()
+                    SelectListItem selItem = new()
                     {
                         Text = accessList.Single(p => p.Id == progeny.Id).NickName,
                         Value = progeny.Id.ToString()
@@ -78,9 +78,11 @@ namespace KinaUnaWeb.Services
 
         public async Task<TimeLineViewModel> GetLatestPostTimeLineModel(int progenyId, int accessLevel, int languageId)
         {
-            TimeLineViewModel latestPosts = new TimeLineViewModel();
-            latestPosts.LanguageId = languageId;
-            latestPosts.TimeLineItems = await _progenyHttpClient.GetProgenyLatestPosts(progenyId, accessLevel);
+            TimeLineViewModel latestPosts = new()
+            {
+                LanguageId = languageId,
+                TimeLineItems = await _progenyHttpClient.GetProgenyLatestPosts(progenyId, accessLevel)
+            };
             if (latestPosts.TimeLineItems.Any())
             {
                 latestPosts.TimeLineItems = latestPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).Take(5).ToList();
@@ -91,9 +93,11 @@ namespace KinaUnaWeb.Services
 
         public async Task<TimeLineViewModel> GetYearAgoPostsTimeLineModel(int progenyId, int accessLevel, int languageId)
         {
-            TimeLineViewModel yearAgoPosts = new TimeLineViewModel();
-            yearAgoPosts.LanguageId = languageId;
-            yearAgoPosts.TimeLineItems = await _progenyHttpClient.GetProgenyYearAgo(progenyId, accessLevel);
+            TimeLineViewModel yearAgoPosts = new()
+            {
+                LanguageId = languageId,
+                TimeLineItems = await _progenyHttpClient.GetProgenyYearAgo(progenyId, accessLevel)
+            };
             if (yearAgoPosts.TimeLineItems.Any())
             {
                 yearAgoPosts.TimeLineItems = yearAgoPosts.TimeLineItems.OrderByDescending(t => t.ProgenyTime).ToList();

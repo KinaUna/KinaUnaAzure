@@ -29,7 +29,7 @@ namespace KinaUnaWeb.Services
             public DateTime ExpiresIn { get; set; }
         }
 
-        private ConcurrentDictionary<string, AccessTokenItem> _accessTokens = new ConcurrentDictionary<string, AccessTokenItem>();
+        private readonly ConcurrentDictionary<string, AccessTokenItem> _accessTokens = new();
 
         public ApiTokenInMemoryClient(IOptions<AuthConfigurations> authConfigurations, IHttpClientFactory httpClientFactory, ILoggerFactory loggerFactory)
         {
@@ -61,13 +61,13 @@ namespace KinaUnaWeb.Services
             _logger.LogDebug($"GetApiToken new from STS for {api_name}");
 
             // add
-            AccessTokenItem newAccessToken = await getApiToken(api_name, api_scope, secret);
+            AccessTokenItem newAccessToken = await GetNewApiToken(api_name, api_scope, secret);
             _accessTokens.TryAdd(api_name, newAccessToken);
 
             return newAccessToken.AccessToken;
         }
 
-        private async Task<AccessTokenItem> getApiToken(string api_name, string api_scope, string secret)
+        private async Task<AccessTokenItem> GetNewApiToken(string api_name, string api_scope, string secret)
         {
             try
             {

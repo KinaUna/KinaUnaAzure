@@ -100,7 +100,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            KinaUnaLanguage model = new KinaUnaLanguage();
+            KinaUnaLanguage model = new();
             return View(model);
         }
 
@@ -196,11 +196,12 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            ManageTranslationsViewModel model = new ManageTranslationsViewModel();
-
-            model.Translations = await _translationsHttpClient.GetAllTranslations();
-            model.PagesList = new List<string>();
-            model.WordsList = new List<string>();
+            ManageTranslationsViewModel model = new()
+            {
+                Translations = await _translationsHttpClient.GetAllTranslations(),
+                PagesList = new List<string>(),
+                WordsList = new List<string>()
+            };
 
             foreach (TextTranslation translationItem in model.Translations)
             {
@@ -228,11 +229,12 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            ManageTranslationsViewModel model = new ManageTranslationsViewModel();
-
-            model.Translations = await _translationsHttpClient.GetAllTranslations();
-            model.PagesList = new List<string>();
-            model.WordsList = new List<string>();
+            ManageTranslationsViewModel model = new()
+            {
+                Translations = await _translationsHttpClient.GetAllTranslations(),
+                PagesList = new List<string>(),
+                WordsList = new List<string>()
+            };
 
             foreach (TextTranslation translationItem in model.Translations)
             {
@@ -421,9 +423,11 @@ namespace KinaUnaWeb.Controllers
             UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo != null && userInfo.IsKinaUnaAdmin)
             {
-                ManageKinaUnaTextsViewModel model = new ManageKinaUnaTextsViewModel();
-                model.LanguageId = Request.GetLanguageIdFromCookie();
-                
+                ManageKinaUnaTextsViewModel model = new()
+                {
+                    LanguageId = Request.GetLanguageIdFromCookie()
+                };
+
                 List<KinaUnaText> allTexts = await _pageTextsHttpClient.GetAllKinaUnaTexts(languageId, true);
                 model.KinaUnaText = allTexts.SingleOrDefault(t => t.TextId == textId && t.LanguageId == languageId);
 
@@ -465,10 +469,12 @@ namespace KinaUnaWeb.Controllers
                     await _pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
                 }
 
-                ManageKinaUnaTextsViewModel editTranslationModel = new ManageKinaUnaTextsViewModel();
-                editTranslationModel.KinaUnaText = updatedText;
-                editTranslationModel.LanguageId = Request.GetLanguageIdFromCookie();
-                editTranslationModel.LanguagesList = languages;
+                ManageKinaUnaTextsViewModel editTranslationModel = new()
+                {
+                    KinaUnaText = updatedText,
+                    LanguageId = Request.GetLanguageIdFromCookie(),
+                    LanguagesList = languages
+                };
                 KinaUnaLanguage selectedLanguage = editTranslationModel.LanguagesList.SingleOrDefault(l => l.Id == updatedText.LanguageId);
                 if (selectedLanguage != null)
                 {
@@ -526,11 +532,13 @@ namespace KinaUnaWeb.Controllers
             UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo != null && userInfo.IsKinaUnaAdmin)
             {
-                ManageKinaUnaTextsViewModel model = new ManageKinaUnaTextsViewModel();
-                model.LanguageId = Request.GetLanguageIdFromCookie();
-                model.Texts = await _pageTextsHttpClient.GetAllKinaUnaTexts(1);
-                model.PagesList = new List<string>();
-                model.TitlesList = new List<string>();
+                ManageKinaUnaTextsViewModel model = new()
+                {
+                    LanguageId = Request.GetLanguageIdFromCookie(),
+                    Texts = await _pageTextsHttpClient.GetAllKinaUnaTexts(1),
+                    PagesList = new List<string>(),
+                    TitlesList = new List<string>()
+                };
                 foreach (KinaUnaText textItem in model.Texts)
                 {
                     if (!model.PagesList.Contains(textItem.Page))
@@ -553,7 +561,7 @@ namespace KinaUnaWeb.Controllers
         public IActionResult SendAdminMessage()
         {
             // Todo: Implement Admin as role instead
-            WebNotification model = new WebNotification();
+            WebNotification model = new();
             return View(model);
         }
 
@@ -598,12 +606,14 @@ namespace KinaUnaWeb.Controllers
                     
                     await _hubContext.Clients.User(userinfo.UserId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
 
-                    WebNotification webNotification = new WebNotification();
-                    webNotification.Title = "Notification Sent" ;
-                    webNotification.Message = "To: " + notification.To + "<br/>From: " + notification.From + "<br/><br/>Message: <br/>" + notification.Message;
-                    webNotification.From = Constants.AppName + " Notification System";
-                    webNotification.Type = "Notification";
-                    webNotification.DateTime = DateTime.UtcNow;
+                    WebNotification webNotification = new()
+                    {
+                        Title = "Notification Sent",
+                        Message = "To: " + notification.To + "<br/>From: " + notification.From + "<br/><br/>Message: <br/>" + notification.Message,
+                        From = Constants.AppName + " Notification System",
+                        Type = "Notification",
+                        DateTime = DateTime.UtcNow
+                    };
                     webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
                         TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
                     webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
@@ -626,8 +636,10 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            PushNotification notification = new PushNotification();
-            notification.UserId = userId;
+            PushNotification notification = new()
+            {
+                UserId = userId
+            };
 
             return View(notification);
         }

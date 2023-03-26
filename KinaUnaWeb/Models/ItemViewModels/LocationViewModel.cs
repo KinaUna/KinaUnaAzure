@@ -16,13 +16,13 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string TagFilter { get; set; }
         public int? SortBy { get; set; }
 
-        public Location LocationItem { get; set; } = new Location();
+        public Location LocationItem { get; set; } = new();
 
         public LocationViewModel()
         {
             LocationsList = new List<Location>();
             ProgenyList = new List<SelectListItem>();
-            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
             AccessLevelListDa = accessLevelList.AccessLevelListDa;
             AccessLevelListDe = accessLevelList.AccessLevelListDe;
@@ -37,7 +37,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accList = new AccessLevelList();
+            AccessLevelList accList = new();
             AccessLevelListEn = accList.AccessLevelListEn;
             AccessLevelListDa = accList.AccessLevelListDa;
             AccessLevelListDe = accList.AccessLevelListDe;
@@ -73,7 +73,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
         }
 
-        public void SetPropertiesFromLocation(Location location, bool isAdmin, string timeZone)
+        public void SetPropertiesFromLocation(Location location, string timeZone)
         {
             LocationItem.LocationId = location.LocationId;
             LocationItem.Latitude = location.Latitude;
@@ -101,20 +101,22 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public Location CreateLocation()
         {
-            Location location = new Location();
-            location.LocationId = LocationItem.LocationId;
-            location.Latitude = LocationItem.Latitude;
-            location.Longitude = LocationItem.Longitude;
-            location.Name = LocationItem.Name;
-            location.HouseNumber = LocationItem.HouseNumber;
-            location.StreetName = LocationItem.StreetName;
-            location.District = LocationItem.District;
-            location.City = LocationItem.City;
-            location.PostalCode = LocationItem.PostalCode;
-            location.County = LocationItem.County;
-            location.State = LocationItem.State;
-            location.Country = LocationItem.Country;
-            location.Notes = LocationItem.Notes;
+            Location location = new()
+            {
+                LocationId = LocationItem.LocationId,
+                Latitude = LocationItem.Latitude,
+                Longitude = LocationItem.Longitude,
+                Name = LocationItem.Name,
+                HouseNumber = LocationItem.HouseNumber,
+                StreetName = LocationItem.StreetName,
+                District = LocationItem.District,
+                City = LocationItem.City,
+                PostalCode = LocationItem.PostalCode,
+                County = LocationItem.County,
+                State = LocationItem.State,
+                Country = LocationItem.Country,
+                Notes = LocationItem.Notes
+            };
             if (LocationItem.Date.HasValue)
             {
                 location.Date = TimeZoneInfo.ConvertTimeToUtc(LocationItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));

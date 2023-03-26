@@ -135,7 +135,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Vaccination>> GetVaccinationsList(int progenyId, int accessLevel)
         {
-            List<Vaccination> progenyVaccinationsList = new List<Vaccination>();
+            List<Vaccination> progenyVaccinationsList = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

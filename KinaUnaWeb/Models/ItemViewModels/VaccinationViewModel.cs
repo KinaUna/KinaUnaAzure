@@ -8,17 +8,17 @@ namespace KinaUnaWeb.Models.ItemViewModels
     public class VaccinationViewModel: BaseItemsViewModel
     {
         public List<SelectListItem> ProgenyList { get; set; }
-        public List<Vaccination> VaccinationList { get; set; } = new List<Vaccination>();
+        public List<Vaccination> VaccinationList { get; set; } = new();
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
         
-        public Vaccination VaccinationItem { get; set; } = new Vaccination();
+        public Vaccination VaccinationItem { get; set; } = new();
 
         public VaccinationViewModel()
         {
             ProgenyList = new List<SelectListItem>();
-            AccessLevelList aclList = new AccessLevelList();
+            AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
             AccessLevelListDe = aclList.AccessLevelListDe;
@@ -47,7 +47,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
             AccessLevelListDa = accessLevelList.AccessLevelListDa;
             AccessLevelListDe = accessLevelList.AccessLevelListDe;

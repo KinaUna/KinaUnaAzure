@@ -24,14 +24,18 @@ namespace KinaUnaWeb.Services
         /// <returns></returns>
         public Task SendEmailAsync(string email, string subject, string message)
         {
-            SmtpClient client = new SmtpClient(Constants.SmtpServer);
-            client.UseDefaultCredentials = false;
-            client.Credentials = new NetworkCredential(Constants.SmtpUsername, _configuration["SupportMailPassword"]);
-            client.EnableSsl = true;
-            client.Port = 587;
+            SmtpClient client = new(Constants.SmtpServer)
+            {
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(Constants.SmtpUsername, _configuration["SupportMailPassword"]),
+                EnableSsl = true,
+                Port = 587
+            };
 
-            MailMessage mailMessage = new MailMessage();
-            mailMessage.From = new MailAddress(Constants.SmtpFrom, "Support - " + Constants.AppName);
+            MailMessage mailMessage = new()
+            {
+                From = new MailAddress(Constants.SmtpFrom, "Support - " + Constants.AppName)
+            };
             mailMessage.To.Add(email);
             mailMessage.Body = message;
             mailMessage.IsBodyHtml = true;

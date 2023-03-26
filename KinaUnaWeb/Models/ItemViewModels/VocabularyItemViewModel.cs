@@ -7,15 +7,15 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class VocabularyItemViewModel: BaseItemsViewModel
     {
-        public List<SelectListItem> ProgenyList { get; set; } = new List<SelectListItem>();
-        public VocabularyItem VocabularyItem { get; set; } = new VocabularyItem();
+        public List<SelectListItem> ProgenyList { get; set; } = new();
+        public VocabularyItem VocabularyItem { get; set; } = new();
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
 
         public VocabularyItemViewModel()
         {
-            AccessLevelList aclList = new AccessLevelList();
+            AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
             AccessLevelListDe = aclList.AccessLevelListDe;
@@ -44,7 +44,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
             AccessLevelListDa = accessLevelList.AccessLevelListDa;
             AccessLevelListDe = accessLevelList.AccessLevelListDe;

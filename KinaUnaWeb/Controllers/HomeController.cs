@@ -42,7 +42,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int childId = 0)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            HomeFeedViewModel model = new HomeFeedViewModel(baseModel);
+            HomeFeedViewModel model = new(baseModel);
             
             if (model.CurrentProgeny.Name == "401")
             {
@@ -100,7 +100,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> About(int languageId = 0)
         {
-            AboutViewModel model = new AboutViewModel();
+            AboutViewModel model = new();
             if (languageId == 0)
             {
                 model.LanguageId = Request.GetLanguageIdFromCookie();
@@ -119,7 +119,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Privacy(int languageId = 0)
         {
-            AboutViewModel model = new AboutViewModel();
+            AboutViewModel model = new();
             if (languageId == 0)
             {
                 model.LanguageId = Request.GetLanguageIdFromCookie();
@@ -139,7 +139,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Terms(int languageId = 0)
         {
 
-            AboutViewModel model = new AboutViewModel();
+            AboutViewModel model = new();
             if (languageId == 0)
             {
                 model.LanguageId = Request.GetLanguageIdFromCookie();

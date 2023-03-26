@@ -72,7 +72,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Progeny progeny = new Progeny();
+            Progeny progeny = new();
             string progenyApiPath = "/api/Progeny/" + progenyId;
 
             try
@@ -158,7 +158,7 @@ namespace KinaUnaWeb.Services
 
             string accessApiPath = "/api/Access/AdminListByUserPost/";
             string id = email;
-            List <Progeny> accessList = new List<Progeny>();
+            List <Progeny> accessList = new();
             HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(id), System.Text.Encoding.UTF8, "application/json"));
             if (accessResponse.IsSuccessStatusCode)
             {
@@ -171,7 +171,7 @@ namespace KinaUnaWeb.Services
         
         public async Task<List<TimeLineItem>> GetProgenyLatestPosts(int progenyId, int accessLevel)
         {
-            List<TimeLineItem> progenyPosts = new List<TimeLineItem>();
+            List<TimeLineItem> progenyPosts = new();
 
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -190,7 +190,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<TimeLineItem>> GetProgenyYearAgo(int progenyId, int accessLevel)
         {
-            List<TimeLineItem> yearAgoPosts = new List<TimeLineItem>();
+            List<TimeLineItem> yearAgoPosts = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

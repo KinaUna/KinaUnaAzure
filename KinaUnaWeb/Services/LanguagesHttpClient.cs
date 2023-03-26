@@ -67,7 +67,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false)
         {
-            List<KinaUnaLanguage> languageList = new List<KinaUnaLanguage>();
+            List<KinaUnaLanguage> languageList = new();
             string cachedLanguagesString = await _cache.GetStringAsync("AllLanguages");
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguagesString))
             {
@@ -96,7 +96,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<KinaUnaLanguage> GetLanguage(int languageId, bool updateCache = false)
         {
-            KinaUnaLanguage language = new KinaUnaLanguage();
+            KinaUnaLanguage language = new();
             string cachedLanguageString = await _cache.GetStringAsync("Language" + languageId);
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguageString))
             {
@@ -122,7 +122,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<KinaUnaLanguage> AddLanguage(KinaUnaLanguage language)
         {
-            KinaUnaLanguage addedLanguage = new KinaUnaLanguage();
+            KinaUnaLanguage addedLanguage = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -140,7 +140,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<KinaUnaLanguage> UpdateLanguage(KinaUnaLanguage language)
         {
-            KinaUnaLanguage updatedLanguage = new KinaUnaLanguage();
+            KinaUnaLanguage updatedLanguage = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -157,7 +157,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<KinaUnaLanguage> DeleteLanguage(KinaUnaLanguage language)
         {
-            KinaUnaLanguage deletedLanguage = new KinaUnaLanguage();
+            KinaUnaLanguage deletedLanguage = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

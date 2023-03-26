@@ -103,12 +103,14 @@ namespace KinaUnaWeb.Hubs
 
                 notification = await _notificationsService.SaveNotification(notification);
 
-                WebNotification webNotification = new WebNotification();
-                webNotification.Title = "Notification Sent to " + notification.To;
-                webNotification.Message = "";
-                webNotification.From = "KinaUna.com";
-                webNotification.Type = "Notification";
-                webNotification.DateTime = DateTime.UtcNow;
+                WebNotification webNotification = new()
+                {
+                    Title = "Notification Sent to " + notification.To,
+                    Message = "",
+                    From = "KinaUna.com",
+                    Type = "Notification",
+                    DateTime = DateTime.UtcNow
+                };
                 webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(webNotification.DateTime,
                     TimeZoneInfo.FindSystemTimeZoneById(currentUserInfo.Timezone));
                 webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
@@ -150,8 +152,7 @@ namespace KinaUnaWeb.Hubs
         public async Task SetUnread(string notification)
         {
             string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
-            int id;
-            bool idParsed = int.TryParse(notification, out id);
+            bool idParsed = int.TryParse(notification, out int id);
             if (idParsed)
             {
                 WebNotification updateNotification = await _notificationsService.GetNotificationById(id);
@@ -177,8 +178,7 @@ namespace KinaUnaWeb.Hubs
         public async Task DeleteNotification(string notification)
         {
             string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
-            int id;
-            bool idParsed = int.TryParse(notification, out id);
+            bool idParsed = int.TryParse(notification, out int id);
             if (idParsed)
             {
                 WebNotification deleteNotification = await _notificationsService.GetNotificationById(id);
@@ -211,12 +211,14 @@ namespace KinaUnaWeb.Hubs
 
                     notification = await _notificationsService.SaveNotification(notification);
                     
-                    WebNotification webNotification = new WebNotification();
-                    webNotification.Title = "Notification Sent to " + notification.To;
-                    webNotification.Message = "";
-                    webNotification.From = "KinaUna.com";
-                    webNotification.Type = "Notification";
-                    webNotification.DateTime = DateTime.UtcNow;
+                    WebNotification webNotification = new()
+                    {
+                        Title = "Notification Sent to " + notification.To,
+                        Message = "",
+                        From = "KinaUna.com",
+                        Type = "Notification",
+                        DateTime = DateTime.UtcNow
+                    };
                     webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(webNotification.DateTime,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                     webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");

@@ -36,15 +36,17 @@ namespace KinaUnaWeb.Services
                     UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
                     if (uaUserInfo.UserId != "Unknown")
                     {
-                        WebNotification webNotification = new WebNotification();
-                        webNotification.To = uaUserInfo.UserId;
-                        webNotification.From = currentUser.FullName();
-                        webNotification.Message = "Name: " + contactItem.DisplayName + "\r\nContext: " + contactItem.Context;
-                        webNotification.DateTime = DateTime.UtcNow;
-                        webNotification.Icon = currentUser.ProfilePicture;
-                        webNotification.Title = "A new contact was added for " + progeny.NickName;
-                        webNotification.Link = "/Contacts/ContactDetails?contactId=" + contactItem.ContactId + "&childId=" + progeny.Id;
-                        webNotification.Type = "Notification";
+                        WebNotification webNotification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = "Name: " + contactItem.DisplayName + "\r\nContext: " + contactItem.Context,
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = "A new contact was added for " + progeny.NickName,
+                            Link = "/Contacts/ContactDetails?contactId=" + contactItem.ContactId + "&childId=" + progeny.Id,
+                            Type = "Notification"
+                        };
 
                         webNotification = await _webNotificationsService.SaveNotification(webNotification);
 
@@ -66,15 +68,17 @@ namespace KinaUnaWeb.Services
                     UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
                     if (uaUserInfo.UserId != "Unknown")
                     {
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = currentUser.FullName();
-                        notification.Message = "Friend: " + friendItem.Name + "\r\nContext: " + friendItem.Context;
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = currentUser.ProfilePicture;
-                        notification.Title = "A new friend was added for " + progeny.NickName;
-                        notification.Link = "/Friends?childId=" + progeny.Id;
-                        notification.Type = "Notification";
+                        WebNotification notification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = "Friend: " + friendItem.Name + "\r\nContext: " + friendItem.Context,
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = "A new friend was added for " + progeny.NickName,
+                            Link = "/Friends?childId=" + progeny.Id,
+                            Type = "Notification"
+                        };
 
                         notification = await _webNotificationsService.SaveNotification(notification);
 
@@ -103,15 +107,17 @@ namespace KinaUnaWeb.Services
                         }
 
                         string dateString = tempDate.ToString("dd-MMM-yyyy");
-                        WebNotification webNotification = new WebNotification();
-                        webNotification.To = uaUserInfo.UserId;
-                        webNotification.From = currentUser.FullName();
-                        webNotification.Message = "Name: " + locationItem.Name + "\r\nDate: " + dateString;
-                        webNotification.DateTime = DateTime.UtcNow;
-                        webNotification.Icon = currentUser.ProfilePicture;
-                        webNotification.Title = "A new location was added for " + progeny.NickName;
-                        webNotification.Link = "/Locations?childId=" + progeny.Id;
-                        webNotification.Type = "Notification";
+                        WebNotification webNotification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = "Name: " + locationItem.Name + "\r\nDate: " + dateString,
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = "A new location was added for " + progeny.NickName,
+                            Link = "/Locations?childId=" + progeny.Id,
+                            Type = "Notification"
+                        };
 
                         webNotification = await _webNotificationsService.SaveNotification(webNotification);
 
@@ -133,15 +139,17 @@ namespace KinaUnaWeb.Services
                     UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
                     if (uaUserInfo.UserId != "Unknown")
                     {
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = currentUser.FullName();
-                        notification.Message = "Height: " + measurementItem.Height + "\r\nWeight: " + measurementItem.Weight;
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = currentUser.ProfilePicture;
-                        notification.Title = "A new measurement was added for " + progeny.NickName;
-                        notification.Link = "/Measurements?childId=" + progeny.Id;
-                        notification.Type = "Notification";
+                        WebNotification notification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = "Height: " + measurementItem.Height + "\r\nWeight: " + measurementItem.Weight,
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = "A new measurement was added for " + progeny.NickName,
+                            Link = "/Measurements?childId=" + progeny.Id,
+                            Type = "Notification"
+                        };
 
                         notification = await _webNotificationsService.SaveNotification(notification);
 
@@ -163,15 +171,17 @@ namespace KinaUnaWeb.Services
                     UserInfo uaUserInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
                     if (uaUserInfo.UserId != "Unknown")
                     {
-                        WebNotification notification = new WebNotification();
-                        notification.To = uaUserInfo.UserId;
-                        notification.From = currentUser.FullName();
-                        notification.Message = "Title: " + noteItem.Title + "\r\nCategory: " + noteItem.Category;
-                        notification.DateTime = DateTime.UtcNow;
-                        notification.Icon = currentUser.ProfilePicture;
-                        notification.Title = "A new note was added for " + progeny.NickName;
-                        notification.Link = "/Notes?childId=" + progeny.Id;
-                        notification.Type = "Notification";
+                        WebNotification notification = new()
+                        {
+                            To = uaUserInfo.UserId,
+                            From = currentUser.FullName(),
+                            Message = "Title: " + noteItem.Title + "\r\nCategory: " + noteItem.Category,
+                            DateTime = DateTime.UtcNow,
+                            Icon = currentUser.ProfilePicture,
+                            Title = "A new note was added for " + progeny.NickName,
+                            Link = "/Notes?childId=" + progeny.Id,
+                            Type = "Notification"
+                        };
 
                         notification = await _webNotificationsService.SaveNotification(notification);
 

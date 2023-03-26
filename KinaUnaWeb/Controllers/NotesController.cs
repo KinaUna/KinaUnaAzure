@@ -32,14 +32,14 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int childId = 0)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            NotesListViewModel model = new NotesListViewModel(baseModel);
+            NotesListViewModel model = new(baseModel);
             
             List<Note> notes = await _notesHttpClient.GetNotesList(model.CurrentProgenyId, model.CurrentAccessLevel);
             if (notes.Count != 0)
             {
                 foreach (Note note in notes)
                 {
-                    NoteViewModel notesViewModel = new NoteViewModel();
+                    NoteViewModel notesViewModel = new();
                     notesViewModel.SetBaseProperties(baseModel);
                     notesViewModel.SetPropertiesFromNote(note);
                     notesViewModel.IsCurrentUserProgenyAdmin = model.IsCurrentUserProgenyAdmin;
@@ -53,11 +53,16 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                NoteViewModel noteViewModel = new NoteViewModel();
-                noteViewModel.NoteItem.ProgenyId = model.CurrentProgenyId;
-                noteViewModel.NoteItem.Title = "No notes found.";
-                noteViewModel.NoteItem.Content = "The notes list is empty.";
-                noteViewModel.IsCurrentUserProgenyAdmin = model.IsCurrentUserProgenyAdmin;
+                NoteViewModel noteViewModel = new()
+                {
+                    NoteItem =
+                    {
+                        ProgenyId = model.CurrentProgenyId,
+                        Title = "No notes found.",
+                        Content = "The notes list is empty."
+                    },
+                    IsCurrentUserProgenyAdmin = model.IsCurrentUserProgenyAdmin
+                };
                 model.NotesList.Add(noteViewModel);
             }
             
@@ -70,7 +75,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddNote()
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            NoteViewModel model = new NoteViewModel(baseModel);
+            NoteViewModel model = new(baseModel);
             if (model.CurrentUser == null)
             {
                 return RedirectToAction("Index");
@@ -116,7 +121,7 @@ namespace KinaUnaWeb.Controllers
         {
             Note note = await _notesHttpClient.GetNote(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
-            NoteViewModel model = new NoteViewModel(baseModel);
+            NoteViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
@@ -158,7 +163,7 @@ namespace KinaUnaWeb.Controllers
         {
             Note note = await _notesHttpClient.GetNote(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
-            NoteViewModel model = new NoteViewModel(baseModel);
+            NoteViewModel model = new(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {

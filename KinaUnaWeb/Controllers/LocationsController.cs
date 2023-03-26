@@ -33,9 +33,9 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, string tagFilter = "")
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            LocationViewModel model = new LocationViewModel(baseModel);
+            LocationViewModel model = new(baseModel);
             
-            List<string> tagsList = new List<string>();
+            List<string> tagsList = new();
 
             List<Location> locationsList = await _locationsHttpClient.GetLocationsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
             
@@ -78,11 +78,12 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> PhotoLocations(int childId = 0, string tagFilter = "")
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            LocationViewModel model = new LocationViewModel(baseModel);
-            
-            model.LocationsList = new List<Location>();
-            
-            List<string> tagsList = new List<string>();
+            LocationViewModel model = new(baseModel)
+            {
+                LocationsList = new List<Location>()
+            };
+
+            List<string> tagsList = new();
             
             List<Picture> pictures = await _mediaHttpClient.GetPictureList(model.CurrentProgenyId, model.CurrentAccessLevel, model.CurrentUser.Timezone);
             
@@ -97,10 +98,10 @@ namespace KinaUnaWeb.Controllers
             }
             pictures = pictures.OrderBy(p => p.PictureTime).ToList();
 
-            List<Picture> locPictures = new List<Picture>();
+            List<Picture> locPictures = new();
             foreach (Picture pic in pictures)
             {
-                Location picLoc = new Location();
+                Location picLoc = new();
                 bool validCoords = true;
                 if (double.TryParse(pic.Latitude, NumberStyles.AllowDecimalPoint, new CultureInfo("en-US"), out double lat))
                 {
@@ -156,9 +157,9 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddLocation()
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            LocationViewModel model = new LocationViewModel(baseModel);
+            LocationViewModel model = new(baseModel);
             
-            List<string> tagsList = new List<string>();
+            List<string> tagsList = new();
 
             if (model.CurrentUser == null)
             {
@@ -228,7 +229,7 @@ namespace KinaUnaWeb.Controllers
         {
             Location location = await _locationsHttpClient.GetLocation(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
-            LocationViewModel model = new LocationViewModel(baseModel);
+            LocationViewModel model = new(baseModel);
             
             
             if (model.CurrentUser == null)
@@ -236,7 +237,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            List<string> tagsList = new List<string>();
+            List<string> tagsList = new();
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
                 model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
@@ -266,7 +267,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
             
-            model.SetPropertiesFromLocation(location, model.IsCurrentUserProgenyAdmin, model.CurrentUser.Timezone);
+            model.SetPropertiesFromLocation(location, model.CurrentUser.Timezone);
             
             model.SetTagList(tagsList);
             model.SetAccessLevelList();
@@ -298,8 +299,10 @@ namespace KinaUnaWeb.Controllers
         {
             Location location = await _locationsHttpClient.GetLocation(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
-            LocationViewModel model = new LocationViewModel(baseModel);
-            model.LocationItem = location;
+            LocationViewModel model = new(baseModel)
+            {
+                LocationItem = location
+            };
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {

@@ -14,10 +14,11 @@ namespace KinaUna.Data.Models
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
     }
+
+    public class KinaUnaTextNumber
+    {
+        [Key] public int Id { get; set; }
+        public int DefaultLanguage { get; set; }
+    }
 }
 
-public class KinaUnaTextNumber
-{
-    [Key] public int Id { get; set; }
-    public int DefaultLanguage { get; set; }
-}

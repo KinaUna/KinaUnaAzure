@@ -36,7 +36,7 @@ namespace KinaUnaWeb.Models.FamilyViewModels
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accList = new AccessLevelList();
+            AccessLevelList accList = new();
             AccessLevelListEn = accList.AccessLevelListEn;
             AccessLevelListDa = accList.AccessLevelListDa;
             AccessLevelListDe = accList.AccessLevelListDe;
@@ -78,11 +78,13 @@ namespace KinaUnaWeb.Models.FamilyViewModels
 
         public UserAccess CreateUserAccess()
         {
-            UserAccess userAccess = new UserAccess();
-            userAccess.AccessId = AccessId;
-            userAccess.ProgenyId = CurrentProgenyId;
-            userAccess.UserId = Email;
-            userAccess.AccessLevel = AccessLevel;
+            UserAccess userAccess = new()
+            {
+                AccessId = AccessId,
+                ProgenyId = CurrentProgenyId,
+                UserId = Email,
+                AccessLevel = AccessLevel
+            };
 
             return userAccess;
         }

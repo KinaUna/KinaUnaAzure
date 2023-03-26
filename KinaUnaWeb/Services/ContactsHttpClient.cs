@@ -62,7 +62,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Contact contactItem = new Contact();
+            Contact contactItem = new();
             string contactsApiPath = "/api/Contacts/" + contactId;
             HttpResponseMessage contactResponse = await _httpClient.GetAsync(contactsApiPath).ConfigureAwait(false);
             if (contactResponse.IsSuccessStatusCode)
@@ -116,7 +116,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Contact>> GetContactsList(int progenyId, int accessLevel = 5, string tagFilter = "")
         {
-            List<Contact> progenyContactsList = new List<Contact>();
+            List<Contact> progenyContactsList = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

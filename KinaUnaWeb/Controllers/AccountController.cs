@@ -127,7 +127,7 @@ namespace KinaUnaWeb.Controllers
 
             userInfo.ProfilePicture = _imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
 
-            UserInfoViewModel model = new UserInfoViewModel
+            UserInfoViewModel model = new()
             {
                 Id = userInfo.Id,
                 UserId = userInfo.UserId,
@@ -140,10 +140,9 @@ namespace KinaUnaWeb.Controllers
                 JoinDate = joinDate.ToString(CultureInfo.InvariantCulture),
                 IsEmailConfirmed = mailConfirmed,
                 PhoneNumber = User.FindFirst("phone_number")?.Value ?? "",
-                ProfilePicture = userInfo.ProfilePicture
+                ProfilePicture = userInfo.ProfilePicture,
+                LanguageId = Request.GetLanguageIdFromCookie()
             };
-
-            model.LanguageId = Request.GetLanguageIdFromCookie();
 
             if (string.IsNullOrEmpty(model.UserName))
             {
@@ -209,7 +208,7 @@ namespace KinaUnaWeb.Controllers
             UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
             _ = DateTime.TryParse(User.FindFirst("joindate")?.Value, out DateTime joinDate);
             
-            UserInfoViewModel model = new UserInfoViewModel
+            UserInfoViewModel model = new()
             {
                 Id = userinfo.Id,
                 UserId = userinfo.UserId,
@@ -222,12 +221,10 @@ namespace KinaUnaWeb.Controllers
                 JoinDate = joinDate.ToString(CultureInfo.InvariantCulture),
                 IsEmailConfirmed = mailConfirmed,
                 PhoneNumber = User.FindFirst("phone_number")?.Value ?? "",
-                ProfilePicture = userinfo.ProfilePicture
+                ProfilePicture = userinfo.ProfilePicture,
+                LanguageId = Request.GetLanguageIdFromCookie(),
+                ChangeLink = _configuration["AuthenticationServer"] + "/Account/ChangeEmail?NewEmail=" + newEmail + "&OldEmail=" + oldEmail
             };
-
-            model.LanguageId = Request.GetLanguageIdFromCookie();
-
-            model.ChangeLink = _configuration["AuthenticationServer"] + "/Account/ChangeEmail?NewEmail=" + newEmail + "&OldEmail=" + oldEmail;
 
             return View(model);
         }
@@ -268,7 +265,7 @@ namespace KinaUnaWeb.Controllers
 
             userInfo.ProfilePicture = _imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
 
-            UserInfoViewModel model = new UserInfoViewModel
+            UserInfoViewModel model = new()
             {
                 Id = userInfo.Id,
                 UserId = userInfo.UserId,
@@ -280,10 +277,10 @@ namespace KinaUnaWeb.Controllers
                 Timezone = userInfo.Timezone,
                 JoinDate = joinDate.ToString(CultureInfo.InvariantCulture),
                 PhoneNumber = User.FindFirst("phone_number")?.Value ?? "",
-                ProfilePicture = userInfo.ProfilePicture
+                ProfilePicture = userInfo.ProfilePicture,
+                LanguageId = Request.GetLanguageIdFromCookie()
             };
 
-            model.LanguageId = Request.GetLanguageIdFromCookie();
             if (string.IsNullOrEmpty(model.UserName))
             {
                 model.UserName = model.UserEmail;

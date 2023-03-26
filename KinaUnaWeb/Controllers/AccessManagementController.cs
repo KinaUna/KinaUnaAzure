@@ -32,7 +32,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddAccess(int progenyId)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
-            UserAccessViewModel model = new UserAccessViewModel(baseModel);
+            UserAccessViewModel model = new(baseModel);
             
             model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
 
@@ -53,7 +53,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            UserAccess userAccessToAdd = new UserAccess
+            UserAccess userAccessToAdd = new()
             {
                 ProgenyId = model.CurrentProgenyId,
                 UserId = model.Email.ToUpper(),
@@ -84,7 +84,7 @@ namespace KinaUnaWeb.Controllers
             UserAccess userAccess = await _userAccessHttpClient.GetUserAccess(accessId);
 
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userAccess.ProgenyId);
-            UserAccessViewModel model = new UserAccessViewModel(baseModel);
+            UserAccessViewModel model = new(baseModel);
 
             UserInfo userInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
             
@@ -128,7 +128,7 @@ namespace KinaUnaWeb.Controllers
             UserAccess userAccess = await _userAccessHttpClient.GetUserAccess(accessId);
 
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userAccess.ProgenyId);
-            UserAccessViewModel model = new UserAccessViewModel(baseModel);
+            UserAccessViewModel model = new(baseModel);
 
             UserInfo userAccessUserInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
             model.SetUserAccessItem(userAccess, userAccessUserInfo);

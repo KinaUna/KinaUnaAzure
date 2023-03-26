@@ -78,7 +78,7 @@ public class BaseItemsViewModel : BaseViewModel
             tagItems = tagItems.Remove(tagItems.Length - 1);
         }
 
-        tagItems = tagItems + "]";
+        tagItems += "]";
 
         TagsList = tagItems;
     }

@@ -15,7 +15,7 @@ namespace KinaUnaWeb.Services
         
         public ImageStore(IConfiguration configuration)
         {
-            StorageCredentials credentials = new StorageCredentials(Constants.CloudBlobUsername, configuration["BlobStorageKey"]);
+            StorageCredentials credentials = new(Constants.CloudBlobUsername, configuration["BlobStorageKey"]);
             blobClient = new CloudBlobClient(new Uri(_baseUri), credentials);
         }
 
@@ -52,7 +52,7 @@ namespace KinaUnaWeb.Services
                 return imageId;
             }
 
-            SharedAccessBlobPolicy sasPolicy = new SharedAccessBlobPolicy
+            SharedAccessBlobPolicy sasPolicy = new()
             {
                 Permissions = SharedAccessBlobPermissions.Read,
                 SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-15),

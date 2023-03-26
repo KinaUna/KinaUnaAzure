@@ -26,7 +26,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int childId = 0)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            VocabularyListViewModel model = new VocabularyListViewModel(baseModel);
+            VocabularyListViewModel model = new(baseModel);
 
             List<VocabularyItem> wordList = await _wordsHttpClient.GetWordsList(model.CurrentProgenyId, model.CurrentAccessLevel);
             
@@ -41,7 +41,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddVocabulary()
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            VocabularyItemViewModel model = new VocabularyItemViewModel(baseModel);
+            VocabularyItemViewModel model = new(baseModel);
             
             if (model.CurrentUser == null)
             {
@@ -87,7 +87,7 @@ namespace KinaUnaWeb.Controllers
         {
             VocabularyItem vocab = await _wordsHttpClient.GetWord(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocab.ProgenyId);
-            VocabularyItemViewModel model = new VocabularyItemViewModel(baseModel);
+            VocabularyItemViewModel model = new(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
@@ -130,7 +130,7 @@ namespace KinaUnaWeb.Controllers
         {
             VocabularyItem vocabularyItem = await _wordsHttpClient.GetWord(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId);
-            VocabularyItemViewModel model = new VocabularyItemViewModel(baseModel);
+            VocabularyItemViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {

@@ -54,10 +54,10 @@ namespace KinaUnaWeb.Controllers
 
             if (device != null)
             {
-                PushSubscription pushSubscription = new PushSubscription(device.PushEndpoint, device.PushP256DH, device.PushAuth);
-                VapidDetails vapidDetails = new VapidDetails("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
+                PushSubscription pushSubscription = new(device.PushEndpoint, device.PushP256DH, device.PushAuth);
+                VapidDetails vapidDetails = new("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
 
-                WebPushClient webPushClient = new WebPushClient();
+                WebPushClient webPushClient = new();
                 await webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
             }
 

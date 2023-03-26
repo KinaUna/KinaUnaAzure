@@ -64,7 +64,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Location locationItem = new Location();
+            Location locationItem = new();
             string locationsApiPath = "/api/Locations/" + locationId;
             HttpResponseMessage locationResponse = await _httpClient.GetAsync(locationsApiPath);
             if (locationResponse.IsSuccessStatusCode)
@@ -127,7 +127,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Location>> GetProgenyLocations(int progenyId, int accessLevel)
         {
-            List<Location> progenyLocations = new List<Location>();
+            List<Location> progenyLocations = new();
 
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -146,7 +146,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Location>> GetLocationsList(int progenyId, int accessLevel, string tagFilter = "")
         {
-            List<Location> progenyLocationsList = new List<Location>();
+            List<Location> progenyLocationsList = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -173,7 +173,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Address addressItem = new Address();
+            Address addressItem = new();
             string addressApiPath = "/api/Addresses/" + addressId;
             HttpResponseMessage addressResponse = await _httpClient.GetAsync(addressApiPath);
             if (addressResponse.IsSuccessStatusCode)

@@ -25,8 +25,10 @@ namespace KinaUnaWeb.Controllers
         }
         public IActionResult Index()
         {
-            AboutViewModel model = new AboutViewModel();
-            model.LanguageId = Request.GetLanguageIdFromCookie();
+            AboutViewModel model = new()
+            {
+                LanguageId = Request.GetLanguageIdFromCookie()
+            };
             return View(model);
         }
         

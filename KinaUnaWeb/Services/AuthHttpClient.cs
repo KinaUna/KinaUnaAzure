@@ -82,7 +82,7 @@ namespace KinaUnaWeb.Services
         public async Task<bool> IsApplicationUserValid(string userId)
         {
             string checkAccountPath = "/Account/IsApplicationUserValid/";
-            UserInfo userInfo = new UserInfo
+            UserInfo userInfo = new()
             {
                 UserId = userId
             };

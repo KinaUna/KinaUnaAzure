@@ -26,7 +26,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int childId = 0)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            SkillsListViewModel model = new SkillsListViewModel(baseModel);
+            SkillsListViewModel model = new(baseModel);
             
             List<Skill> skillsList = await _skillsHttpClient.GetSkillsList(model.CurrentProgenyId, model.CurrentAccessLevel);
             
@@ -38,7 +38,7 @@ namespace KinaUnaWeb.Controllers
                 {
                     if (skill.AccessLevel >= model.CurrentAccessLevel)
                     {
-                        SkillViewModel skillViewModel = new SkillViewModel(baseModel);
+                        SkillViewModel skillViewModel = new(baseModel);
                         skillViewModel.SetPropertiesFromSkillItem(skill, model.IsCurrentUserProgenyAdmin);
                         model.SkillsList.Add(skillViewModel);
                     }
@@ -47,15 +47,19 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                SkillViewModel skillViewModel = new SkillViewModel();
-                skillViewModel.SkillItem.ProgenyId = childId;
-                skillViewModel.SkillItem.AccessLevel = (int)AccessLevel.Public;
-                skillViewModel.SkillItem.Description = "The skills list is empty.";
-                skillViewModel.SkillItem.Category = "";
-                skillViewModel.SkillItem.Name = "No items";
-                skillViewModel.SkillItem.SkillFirstObservation = DateTime.UtcNow;
-
-                skillViewModel.IsCurrentUserProgenyAdmin = model.IsCurrentUserProgenyAdmin;
+                SkillViewModel skillViewModel = new()
+                {
+                    SkillItem =
+                    {
+                        ProgenyId = childId,
+                        AccessLevel = (int)AccessLevel.Public,
+                        Description = "The skills list is empty.",
+                        Category = "",
+                        Name = "No items",
+                        SkillFirstObservation = DateTime.UtcNow
+                    },
+                    IsCurrentUserProgenyAdmin = model.IsCurrentUserProgenyAdmin
+                };
 
                 model.SkillsList.Add(skillViewModel);
             }
@@ -68,7 +72,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddSkill()
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            SkillViewModel model = new SkillViewModel(baseModel);
+            SkillViewModel model = new(baseModel);
 
             if (model.CurrentUser == null)
             {
@@ -108,7 +112,7 @@ namespace KinaUnaWeb.Controllers
         {
             Skill skill = await _skillsHttpClient.GetSkill(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
-            SkillViewModel model = new SkillViewModel(baseModel);
+            SkillViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
@@ -152,7 +156,7 @@ namespace KinaUnaWeb.Controllers
         {
             Skill skill = await _skillsHttpClient.GetSkill(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
-            SkillViewModel model = new SkillViewModel(baseModel);
+            SkillViewModel model = new(baseModel);
             
             model.SetPropertiesFromSkillItem(skill, model.IsCurrentUserProgenyAdmin);
 

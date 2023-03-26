@@ -73,7 +73,7 @@ namespace KinaUnaWeb.Services
             _httpClient.SetBearerToken(accessToken);
             
             string userInfoApiPath = "/api/UserInfo/ByEmail/" + userEmail;
-            UserInfo userInfo = new UserInfo();
+            UserInfo userInfo = new();
             try
             {
                 string userInfoResponseString = await _httpClient.GetStringAsync(userInfoApiPath);
@@ -104,17 +104,19 @@ namespace KinaUnaWeb.Services
             {
                 ApplicationUser applicationUser = _userManager.Parse(_httpContextAccessor.HttpContext?.User);
                 
-                UserInfo newUserinfo = new UserInfo();
-                newUserinfo.UserEmail = applicationUser.Email;
-                newUserinfo.ViewChild = 0;
-                newUserinfo.UserId = applicationUser.Id;
-                
-                newUserinfo.FirstName = applicationUser.FirstName ?? "";
-                newUserinfo.MiddleName = applicationUser.MiddleName ?? "";
-                newUserinfo.LastName = applicationUser.LastName ?? "";
-                newUserinfo.Timezone = applicationUser.TimeZone;
-                newUserinfo.UserName = applicationUser.UserName;
-                newUserinfo.IsKinaUnaUser = true;
+                UserInfo newUserinfo = new()
+                {
+                    UserEmail = applicationUser.Email,
+                    ViewChild = 0,
+                    UserId = applicationUser.Id,
+                    FirstName = applicationUser.FirstName ?? "",
+                    MiddleName = applicationUser.MiddleName ?? "",
+                    LastName = applicationUser.LastName ?? "",
+                    Timezone = applicationUser.TimeZone,
+                    UserName = applicationUser.UserName,
+                    IsKinaUnaUser = true
+                };
+
                 if (string.IsNullOrEmpty(newUserinfo.UserName))
                 {
                     newUserinfo.UserName = newUserinfo.UserEmail;
@@ -174,10 +176,12 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
             
-            UserInfo userinfo = new UserInfo();
-            userinfo.UserEmail = userEmail;
-            userinfo.ViewChild = childId;
-            userinfo.UserId = userId;
+            UserInfo userinfo = new()
+            {
+                UserEmail = userEmail,
+                ViewChild = childId,
+                UserId = userId
+            };
 
             string setChildApiPath = "/api/UserInfo/" + userId;
             await _httpClient.PutAsJsonAsync(setChildApiPath, userinfo);

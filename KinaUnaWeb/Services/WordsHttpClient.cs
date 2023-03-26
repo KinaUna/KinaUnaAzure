@@ -135,7 +135,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<VocabularyItem>> GetWordsList(int progenyId, int accessLevel)
         {
-            List<VocabularyItem> progenyWordsList = new List<VocabularyItem>();
+            List<VocabularyItem> progenyWordsList = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 

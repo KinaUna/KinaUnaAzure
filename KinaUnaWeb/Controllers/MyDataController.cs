@@ -59,7 +59,7 @@ namespace KinaUnaWeb.Controllers
             Progeny prog = await _progenyHttpClient.GetProgeny(progenyId);
             //Dictionary<string, string> userEmails = new Dictionary<string, string>();
 
-            MemoryStream stream = new MemoryStream();
+            MemoryStream stream = new();
 
             // Todo: Replace EPP Plus Excel file creation.
             //using (ExcelPackage package = new ExcelPackage(stream))

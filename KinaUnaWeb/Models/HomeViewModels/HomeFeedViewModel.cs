@@ -80,11 +80,13 @@ namespace KinaUnaWeb.Models.HomeViewModels
 
         public Picture CreateTempPicture(string hostUrl)
         {
-            Picture tempPicture = new Picture();
-            tempPicture.ProgenyId = 0;
-            tempPicture.Progeny = CurrentProgeny;
-            tempPicture.AccessLevel = (int)AccessLevel.Public;
-            tempPicture.PictureLink600 =  hostUrl + "/photodb/0/default_temp.jpg";
+            Picture tempPicture = new()
+            {
+                ProgenyId = 0,
+                Progeny = CurrentProgeny,
+                AccessLevel = (int)AccessLevel.Public,
+                PictureLink600 = hostUrl + "/photodb/0/default_temp.jpg"
+            };
             tempPicture.ProgenyId = CurrentProgeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 

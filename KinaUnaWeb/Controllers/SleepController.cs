@@ -26,7 +26,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int childId = 0)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            SleepViewModel model = new SleepViewModel(baseModel);
+            SleepViewModel model = new(baseModel);
 
             List<Sleep> sleepList = await _sleepHttpClient.GetSleepList(model.CurrentProgenyId, model.CurrentAccessLevel);
 
@@ -39,7 +39,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SleepCalendar(int childId = 0)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            SleepViewModel model = new SleepViewModel(baseModel);
+            SleepViewModel model = new(baseModel);
             
             List<Sleep> allSleepList = await _sleepHttpClient.GetSleepList(model.CurrentProgenyId, model.CurrentAccessLevel);
             
@@ -52,7 +52,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddSleep()
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            SleepViewModel model = new SleepViewModel(baseModel);
+            SleepViewModel model = new(baseModel);
             
             if (model.CurrentUser == null)
             {
@@ -95,7 +95,7 @@ namespace KinaUnaWeb.Controllers
         {
             Sleep sleep = await _sleepHttpClient.GetSleepItem(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId);
-            SleepViewModel model = new SleepViewModel(baseModel);
+            SleepViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
@@ -142,7 +142,7 @@ namespace KinaUnaWeb.Controllers
         {
             Sleep sleep = await _sleepHttpClient.GetSleepItem(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId);
-            SleepViewModel model = new SleepViewModel(baseModel);
+            SleepViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {

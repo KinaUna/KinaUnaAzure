@@ -27,9 +27,9 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int childId = 0)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            MeasurementViewModel model = new MeasurementViewModel(baseModel);
+            MeasurementViewModel model = new(baseModel);
             
-            model.MeasurementsList = await _measurementsHttpClient.GetMeasurementsList(childId, model.CurrentAccessLevel);
+            model.MeasurementsList = await _measurementsHttpClient.GetMeasurementsList(model.CurrentProgenyId, model.CurrentAccessLevel);
             
             if (model.MeasurementsList.Count != 0)
             {
@@ -37,12 +37,13 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                Measurement m = new Measurement();
-                m.ProgenyId = childId;
-                m.Date = DateTime.UtcNow;
-                m.CreatedDate = DateTime.UtcNow;
-                model.MeasurementsList = new List<Measurement>();
-                model.MeasurementsList.Add(m);
+                Measurement m = new()
+                {
+                    ProgenyId = childId,
+                    Date = DateTime.UtcNow,
+                    CreatedDate = DateTime.UtcNow
+                };
+                model.MeasurementsList = new List<Measurement> { m };
             }
             
             return View(model);
@@ -52,7 +53,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddMeasurement()
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            MeasurementViewModel model = new MeasurementViewModel(baseModel);
+            MeasurementViewModel model = new(baseModel);
             
             if (model.CurrentUser == null)
             {
@@ -93,7 +94,7 @@ namespace KinaUnaWeb.Controllers
         {
             Measurement measurement = await _measurementsHttpClient.GetMeasurement(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
-            MeasurementViewModel model = new MeasurementViewModel(baseModel);
+            MeasurementViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
@@ -133,7 +134,7 @@ namespace KinaUnaWeb.Controllers
         {
             Measurement measurement = await _measurementsHttpClient.GetMeasurement(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
-            MeasurementViewModel model = new MeasurementViewModel(baseModel);
+            MeasurementViewModel model = new(baseModel);
            
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {

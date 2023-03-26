@@ -150,9 +150,9 @@ namespace KinaUnaWeb.Services
                     {
                         slp.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                         slp.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                        DateTimeOffset sOffset = new DateTimeOffset(slp.SleepStart,
+                        DateTimeOffset sOffset = new(slp.SleepStart,
                             TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone).GetUtcOffset(slp.SleepStart));
-                        DateTimeOffset eOffset = new DateTimeOffset(slp.SleepEnd,
+                        DateTimeOffset eOffset = new(slp.SleepEnd,
                             TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone).GetUtcOffset(slp.SleepEnd));
                         slp.SleepDuration = eOffset - sOffset;
 
@@ -217,9 +217,11 @@ namespace KinaUnaWeb.Services
                 }
             }
 
-            Note failNote = new Note();
-            failNote.CreatedDate = DateTime.UtcNow;
-            failNote.Title = "Error, content not found.";
+            Note failNote = new()
+            {
+                CreatedDate = DateTime.UtcNow,
+                Title = "Error, content not found."
+            };
 
             return new TimeLineItemPartialViewModel("TimeLineNotePartial", failNote);
         }

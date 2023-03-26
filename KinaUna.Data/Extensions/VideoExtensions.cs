@@ -17,55 +17,25 @@ namespace KinaUna.Data.Extensions
         {
             if (video != null)
             {
-                if (video.Altitude == null)
-                {
-                    video.Altitude = "";
-                }
+                video.Altitude ??= "";
 
-                if (video.Tags == null)
-                {
-                    video.Tags = "";
-                }
+                video.Tags ??= "";
 
-                if (video.Author == null)
-                {
-                    video.Author = "";
-                }
+                video.Author ??= "";
 
-                if (video.Latitude == null)
-                {
-                    video.Latitude = "";
-                }
+                video.Latitude ??= "";
 
-                if (video.Location == null)
-                {
-                    video.Location = "";
-                }
+                video.Location ??= "";
 
-                if (video.Longtitude == null)
-                {
-                    video.Longtitude = "";
-                }
+                video.Longtitude ??= "";
 
-                if (video.Owners == null)
-                {
-                    video.Owners = "";
-                }
+                video.Owners ??= "";
 
-                if (video.ThumbLink == null)
-                {
-                    video.ThumbLink = "";
-                }
+                video.ThumbLink ??= "";
 
-                if (video.VideoLink == null)
-                {
-                    video.VideoLink = "";
-                }
+                video.VideoLink ??= "";
                 
-                if (video.TimeZone == null)
-                {
-                    video.TimeZone = "";
-                }
+                video.TimeZone ??= "";
             }
         }
 
@@ -91,10 +61,10 @@ namespace KinaUna.Data.Extensions
 
             if (parseDuration)
             {
-                int.TryParse(otherVideo.DurationHours, out int durHours);
-                int.TryParse(otherVideo.DurationMinutes, out int durMins);
-                int.TryParse(otherVideo.DurationSeconds, out int durSecs);
-                if (durHours + durMins + durSecs != 0)
+                bool durationHoursParsed = int.TryParse(otherVideo.DurationHours, out int durHours);
+                bool durationMinutesParsed = int.TryParse(otherVideo.DurationMinutes, out int durMins);
+                bool durationSecondsParsed = int.TryParse(otherVideo.DurationSeconds, out int durSecs);
+                if (durHours + durMins + durSecs != 0 && durationHoursParsed && durationMinutesParsed && durationSecondsParsed)
                 {
                     currentVideo.Duration = new TimeSpan(durHours, durMins, durSecs);
                 }
@@ -127,9 +97,5 @@ namespace KinaUna.Data.Extensions
             }
         }
 
-        public static void CopyPropertiesForAdd(this Video currentVideo, Video otherVideo)
-        {
-            
-        }
     }
 }

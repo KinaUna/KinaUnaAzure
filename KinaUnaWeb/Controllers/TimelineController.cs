@@ -26,10 +26,11 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, int items = 0)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            TimeLineViewModel model = new TimeLineViewModel(baseModel);
-            
-            model.SortBy = sortBy;
-            
+            TimeLineViewModel model = new(baseModel)
+            {
+                SortBy = sortBy
+            };
+
             model.TimeLineItems = await _timelineHttpClient.GetTimeline(model.CurrentProgenyId, model.CurrentAccessLevel, sortBy);
             
             model.Items = items;

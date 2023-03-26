@@ -62,7 +62,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<PushDevices>> GetAllPushDevices(bool updateCache = false)
         {
-            List<PushDevices> pushDevicesList = new List<PushDevices>();
+            List<PushDevices> pushDevicesList = new();
             
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -81,7 +81,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<PushDevices> GetPushDeviceById(int id, bool updateCache = false)
         {
-            PushDevices pushDevice = new PushDevices();
+            PushDevices pushDevice = new();
             
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -100,7 +100,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<PushDevices> AddPushDevice(PushDevices device)
         {
-            PushDevices addedPushDevice = new PushDevices();
+            PushDevices addedPushDevice = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -117,7 +117,7 @@ namespace KinaUnaWeb.Services
         
         public async Task<PushDevices> RemovePushDevice(PushDevices device)
         {
-            PushDevices deletedPushDevice = new PushDevices();
+            PushDevices deletedPushDevice = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -134,7 +134,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<PushDevices>> GetPushDevicesListByUserId(string user)
         {
-            List<PushDevices> pushDevicesList = new List<PushDevices>();
+            List<PushDevices> pushDevicesList = new();
            
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -153,7 +153,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<PushDevices> GetPushDevice(PushDevices device)
         {
-            PushDevices pushDevice = new PushDevices();
+            PushDevices pushDevice = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -170,7 +170,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<WebNotification> AddWebNotification(WebNotification notification)
         {
-            WebNotification addedNotification = new WebNotification();
+            WebNotification addedNotification = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -187,7 +187,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<WebNotification> UpdateWebNotification(WebNotification notification)
         {
-            WebNotification addedNotification = new WebNotification();
+            WebNotification addedNotification = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -204,7 +204,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<WebNotification> RemoveWebNotification(WebNotification notification)
         {
-            WebNotification removedNotification = new WebNotification();
+            WebNotification removedNotification = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
@@ -221,7 +221,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<WebNotification> GetWebNotificationById(int id)
         {
-            WebNotification notification = new WebNotification();
+            WebNotification notification = new();
 
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -240,7 +240,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<WebNotification>> GetUsersWebNotifications(string user)
         {
-            List<WebNotification> usersWebNotifications = new List<WebNotification>();
+            List<WebNotification> usersWebNotifications = new();
 
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);

@@ -133,7 +133,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Skill>> GetSkillsList(int progenyId, int accessLevel)
         {
-            List<Skill> progenySkillsList = new List<Skill>();
+            List<Skill> progenySkillsList = new();
             
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);

@@ -11,7 +11,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
-        public Measurement MeasurementItem { get; set; } = new Measurement();
+        public Measurement MeasurementItem { get; set; } = new();
         
         public MeasurementViewModel()
         {
@@ -44,7 +44,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
             AccessLevelListDa = accessLevelList.AccessLevelListDa;
             AccessLevelListDe = accessLevelList.AccessLevelListDe;
@@ -66,18 +66,19 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public Measurement CreateMeasurement()
         {
-            Measurement measurement = new Measurement();
-
-            measurement.ProgenyId = CurrentProgenyId;
-            measurement.CreatedDate = MeasurementItem.CreatedDate;
-            measurement.Date = MeasurementItem.Date;
-            measurement.Height = MeasurementItem.Height;
-            measurement.Weight = MeasurementItem.Weight;
-            measurement.Circumference = MeasurementItem.Circumference;
-            measurement.HairColor = MeasurementItem.HairColor;
-            measurement.EyeColor = MeasurementItem.EyeColor;
-            measurement.AccessLevel = MeasurementItem.AccessLevel;
-            measurement.Author = MeasurementItem.Author;
+            Measurement measurement = new()
+            {
+                ProgenyId = CurrentProgenyId,
+                CreatedDate = MeasurementItem.CreatedDate,
+                Date = MeasurementItem.Date,
+                Height = MeasurementItem.Height,
+                Weight = MeasurementItem.Weight,
+                Circumference = MeasurementItem.Circumference,
+                HairColor = MeasurementItem.HairColor,
+                EyeColor = MeasurementItem.EyeColor,
+                AccessLevel = MeasurementItem.AccessLevel,
+                Author = MeasurementItem.Author
+            };
 
             return measurement;
         }
