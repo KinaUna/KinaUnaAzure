@@ -36,7 +36,7 @@
         picPerPageStyle64 = picPerPageSelected;
     }
 }
-<div id="picturesPageSettingsContainer">
+<div id="picturesPageSettingsContainer" style="max-width: 90%;">
     <div class="btn btn-info btn-link-yellow" onclick="pictureSettingsIconClicked()">
         <span><i class="material-icons">display_settings</i></span>
     </div>
@@ -60,14 +60,13 @@
                             </div>
                         </div>
                     </div>
-                    
                 }
                 else
                 {
                     <div class="col-sm-12 col-md-auto" style="align-self: center;">
                         @sortString
                     </div>
-                    <div class="ml-4 ml-md-1 col-sm-12 col-md-auto">
+                    <div class="col-sm-12 col-md-auto">
                         <div class="row">
                             <div class="col-sm-12 col-md-auto">
                                 <a class="@sortOldest"><i class="fas fa-check-circle"></i> @oldestFirstString</a>
@@ -83,7 +82,7 @@
             <div class="space-50"></div>
             <div class="row">
                 <div class="col-sm-12 col-md-auto" style="align-self: center;">@await LocaleManager.GetTranslation("Photos per page:", PageNames.Pictures, Model.LanguageId)</div>
-                <div class="ml-4 ml-md-1 col-sm-12 col-md-auto">
+                <div class="col-sm-12 col-md-auto">
                     <div class="row row-cols-auto">
                         <div class="col-sm-12 col-md-auto">
                             <a class="@picPerPageStyle4" asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-pageSize="4" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">4</a>

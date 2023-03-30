@@ -35,10 +35,11 @@
     <div id="tlineItems">
 
     </div>
-    <div id="moreButtonDiv" class="w-100 m-3">
-        <div class="space-20"></div>
+    <div class="row p-3">
+        <div id="moreButtonDiv" class="col-12">
+            <div class="space-20"></div>
+        </div>
     </div>
-
     <div class="row mt-4 mb-2">
         <div class="col-12">
             @await LocaleManager.GetTranslation("Number of items to get:", PageNames.Timeline, Model.LanguageId)
