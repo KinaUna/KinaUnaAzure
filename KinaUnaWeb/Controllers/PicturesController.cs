@@ -13,6 +13,7 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using Microsoft.Extensions.Configuration;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -24,9 +25,10 @@ namespace KinaUnaWeb.Controllers
         private readonly ImageStore _imageStore;
         private readonly IEmailSender _emailSender;
         private readonly IViewModelSetupService _viewModelSetupService;
+        private readonly string _hereMapsApiKey;
 
         public PicturesController(IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient,
-            ILocationsHttpClient locationsHttpClient, IEmailSender emailSender, IViewModelSetupService viewModelSetupService)
+            ILocationsHttpClient locationsHttpClient, IEmailSender emailSender, IViewModelSetupService viewModelSetupService, IConfiguration configuration)
         {
             _mediaHttpClient = mediaHttpClient;
             _imageStore = imageStore;
@@ -34,6 +36,7 @@ namespace KinaUnaWeb.Controllers
             _locationsHttpClient = locationsHttpClient;
             _emailSender = emailSender;
             _viewModelSetupService = viewModelSetupService;
+            _hereMapsApiKey = configuration.GetValue<string>("HereMapsKey");
         }
 
         [AllowAnonymous]
@@ -72,6 +75,7 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
             PictureItemViewModel model = new(baseModel);
+            model.HereMapsApiKey = _hereMapsApiKey;
             PictureViewModel pictureViewModel = await _mediaHttpClient.GetPictureViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone, tagFilter);
 
             model.SetPropertiesFromPictureViewModel(pictureViewModel);

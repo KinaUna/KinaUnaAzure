@@ -31,7 +31,7 @@
                 </form>
             </div>
         }
-        @if (User.IsInRole("SiteAdmin") || Model.UserInfo.UserEmail.ToUpper() == Constants.AdminEmail.ToUpper())
+        @if (User.IsInRole("SiteAdmin") || Model.UserInfo.IsKinaUnaAdmin)
         {
             <div class="dropdown-item">
                 <form class="form-inline-fullwidth" asp-area="" asp-controller="PushDevices" asp-action="Index" method="get">
@@ -39,7 +39,7 @@
                 </form>
             </div>
         }
-        @if (User.IsInRole("SiteAdmin") || Model.UserInfo.UserEmail.ToUpper() == Constants.AdminEmail.ToUpper())
+        @if (User.IsInRole("SiteAdmin") || Model.UserInfo.IsKinaUnaAdmin)
         {
             <div class="dropdown-item">
                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Admin" asp-action="Index" method="get">

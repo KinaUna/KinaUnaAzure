@@ -63,8 +63,8 @@ namespace KinaUnaWeb
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
-            StorageCredentials credentials = new(Constants.CloudBlobUsername, Configuration["BlobStorageKey"]);
-            CloudBlobClient blobClient = new(new Uri(Constants.CloudBlobBase), credentials);
+            StorageCredentials credentials = new(Configuration.GetValue<string>("CloudBlobUserName"), Configuration.GetValue<string>("BlobStorageKey"));
+            CloudBlobClient blobClient = new(new Uri(Configuration.GetValue<string>("CloudBlobBase")), credentials);
             CloudBlobContainer container = blobClient.GetContainerReference("dataprotection");
 
             container.CreateIfNotExistsAsync().GetAwaiter().GetResult();

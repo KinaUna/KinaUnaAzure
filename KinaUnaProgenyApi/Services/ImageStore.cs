@@ -15,12 +15,15 @@ namespace KinaUnaProgenyApi.Services
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly string _storageKey;
-        private readonly string _baseUri = Constants.CloudBlobBase;
+        private readonly string _baseUri;
+        private readonly string _cloudBlobUserName;
 
         public ImageStore(IConfiguration configuration)
         {
-            _blobServiceClient = new BlobServiceClient(configuration["BlobStorageConnectionString"]);
-            _storageKey = configuration["BlobStorageKey"];
+            _blobServiceClient = new BlobServiceClient(configuration.GetValue<string>("BlobStorageConnectionString"));
+            _storageKey = configuration.GetValue<string>("BlobStorageKey");
+            _baseUri = configuration.GetValue<string>("CloudBlobBase");
+            _cloudBlobUserName = configuration.GetValue<string>("CloudBlobUserName");
         }
 
         public async Task<string> SaveImage(Stream imageStream, string containerName = "pictures")
@@ -46,7 +49,7 @@ namespace KinaUnaProgenyApi.Services
                 return imageId;
             }
 
-            StorageSharedKeyCredential credential = new(Constants.CloudBlobUsername, _storageKey);
+            StorageSharedKeyCredential credential = new(_cloudBlobUserName, _storageKey);
             BlobSasBuilder sas = new()
             {
                 BlobName = imageId,
@@ -114,7 +117,7 @@ namespace KinaUnaProgenyApi.Services
 
             while (linkFound > 0)
             {
-                linkFound = originalText.IndexOf(Constants.CloudBlobBase, lastIndex, StringComparison.Ordinal);
+                linkFound = originalText.IndexOf(_baseUri, lastIndex, StringComparison.Ordinal);
                 if (linkFound > 0)
                 {
                     int linkEnd = originalText.IndexOf("sp=r", linkFound, StringComparison.Ordinal) + 4;

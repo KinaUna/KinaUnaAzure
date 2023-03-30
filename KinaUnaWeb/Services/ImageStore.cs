@@ -11,16 +11,18 @@ namespace KinaUnaWeb.Services
     public class ImageStore
     {
         readonly CloudBlobClient blobClient;
-        readonly string _baseUri = Constants.CloudBlobBase;
-        
+        private readonly string _baseUri;
+
         public ImageStore(IConfiguration configuration)
         {
-            StorageCredentials credentials = new(Constants.CloudBlobUsername, configuration["BlobStorageKey"]);
+            _baseUri = configuration.GetValue<string>("CloudBlobBase");
+            string cloudBlobUserName = configuration.GetValue<string>("CloudBlobUserName");
+            StorageCredentials credentials = new(cloudBlobUserName, configuration.GetValue<string>("BlobStorageKey"));
             blobClient = new CloudBlobClient(new Uri(_baseUri), credentials);
         }
 
         /// <summary>
-        /// Saves an image file to the storage account specified in Constants.CloudBlobBase.
+        /// Saves an image file to the storage account specified in Secrets: CloudBlobBase.
         /// </summary>
         /// <param name="imageStream">Stream: The stream for the image file.</param>
         /// <param name="containerName">string: The name of the Azure Storage Blob Container. Default: pictures</param>

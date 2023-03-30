@@ -32,6 +32,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string VidHours { get; set; }
         public string VidMinutes { get; set; }
 
+        public string HereMapsApiKey { get; set; } = "";
+
         public VideoItemViewModel()
         {
             AccessLevelList aclList = new();

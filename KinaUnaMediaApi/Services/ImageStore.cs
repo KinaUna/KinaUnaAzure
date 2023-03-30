@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using KinaUna.Data;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
@@ -11,14 +10,17 @@ namespace KinaUnaMediaApi.Services
 {
     public class ImageStore
     {
-        private BlobServiceClient _blobServiceClient;
-        private string _storageKey;
-        string baseUri = Constants.CloudBlobBase;
-        
+        private readonly BlobServiceClient _blobServiceClient;
+        private readonly string _storageKey;
+        private readonly string _baseUri;
+        private readonly string _blobUserName;
+
         public ImageStore(IConfiguration configuration)
         {
-            _blobServiceClient = new BlobServiceClient(configuration["BlobStorageConnectionString"]);
-            _storageKey = configuration["BlobStorageKey"];
+            _blobServiceClient = new BlobServiceClient(configuration.GetValue<string>("BlobStorageConnectionString"));
+            _storageKey = configuration.GetValue<string>("BlobStorageKey");
+            _baseUri = configuration.GetValue<string>("CloudBlobBase");
+            _blobUserName = configuration.GetValue<string>("CloudBlobUsername");
         }
 
 
@@ -35,7 +37,7 @@ namespace KinaUnaMediaApi.Services
 
         public string UriFor(string imageId, string containerName = "pictures")
         {
-            StorageSharedKeyCredential credential = new StorageSharedKeyCredential(Constants.CloudBlobUsername, _storageKey);
+            StorageSharedKeyCredential credential = new StorageSharedKeyCredential(_blobUserName, _storageKey);
             BlobSasBuilder sas = new BlobSasBuilder
             {
                 BlobName = imageId,
@@ -45,7 +47,7 @@ namespace KinaUnaMediaApi.Services
             };
 
             sas.SetPermissions(BlobAccountSasPermissions.Read);
-            UriBuilder sasUri = new UriBuilder($"{baseUri}{containerName}/{imageId}");
+            UriBuilder sasUri = new UriBuilder($"{_baseUri}{containerName}/{imageId}");
             
             sasUri.Query = sas.ToSasQueryParameters(credential).ToString();
 

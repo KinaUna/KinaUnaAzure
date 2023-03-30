@@ -7,6 +7,7 @@ using KinaUna.Data.Models;
 using KinaUnaMediaApi.Models.ViewModels;
 using KinaUnaMediaApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace KinaUnaMediaApi.Controllers
 {
@@ -18,13 +19,15 @@ namespace KinaUnaMediaApi.Controllers
         private readonly ICommentsService _commentsService;
         private readonly IPicturesService _picturesService;
         private readonly IVideosService _videosService;
+        private readonly IConfiguration _configuration;
 
-        public PublicAccessController(ImageStore imageStore, IPicturesService picturesService, IVideosService videosService, ICommentsService commentsService)
+        public PublicAccessController(ImageStore imageStore, IPicturesService picturesService, IVideosService videosService, ICommentsService commentsService, IConfiguration configuration)
         {
             _imageStore = imageStore;
             _picturesService = picturesService;
             _videosService = videosService;
             _commentsService = commentsService;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -51,7 +54,7 @@ namespace KinaUnaMediaApi.Controllers
 
             Progeny progeny = new Progeny();
             progeny.Name = Constants.AppName;
-            progeny.Admins = Constants.AdminEmail;
+            progeny.Admins = _configuration.GetValue<string>("AdminEmail");
             progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
@@ -89,7 +92,7 @@ namespace KinaUnaMediaApi.Controllers
 
             Progeny progeny = new Progeny();
             progeny.Name = Constants.AppName;
-            progeny.Admins = Constants.AdminEmail;
+            progeny.Admins = _configuration.GetValue<string>("AdminEmail");
             progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 

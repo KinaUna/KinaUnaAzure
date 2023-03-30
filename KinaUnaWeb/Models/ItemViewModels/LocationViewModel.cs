@@ -17,6 +17,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int? SortBy { get; set; }
 
         public Location LocationItem { get; set; } = new();
+        public string HereMapsApiKey { get; set; } = "";
 
         public LocationViewModel()
         {

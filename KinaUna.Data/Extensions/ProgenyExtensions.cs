@@ -33,7 +33,7 @@ namespace KinaUna.Data.Extensions
         public static void ApplyPlaceHolderProperties(this Progeny progeny)
         {
             progeny.Name = Constants.AppName;
-            progeny.Admins = Constants.AdminEmail;
+            progeny.Admins = Constants.SupportEmail;
             progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
             progeny.Id = 0;

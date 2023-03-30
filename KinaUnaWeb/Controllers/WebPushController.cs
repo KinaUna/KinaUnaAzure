@@ -16,18 +16,19 @@ namespace KinaUnaWeb.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IPushMessageSender _messageSender;
-
+        private readonly string _adminEmail;
         public WebPushController(IConfiguration configuration, IPushMessageSender pushMessageSender)
         {
             _configuration = configuration;
             _messageSender = pushMessageSender;
+            _adminEmail = configuration.GetValue<string>("AdminEmail");
         }
 
         public IActionResult Send()
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
             
-            if (userEmail.ToUpper() != Constants.AdminEmail.ToUpper())
+            if (userEmail.ToUpper() != _adminEmail.ToUpper())
             {
                 return RedirectToAction("Index", "Home");
             }
@@ -41,7 +42,7 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
             
-            if (userEmail.ToUpper() != Constants.AdminEmail.ToUpper())
+            if (userEmail.ToUpper() != _adminEmail.ToUpper())
             {
                 return RedirectToAction("Index", "Home");
             }
@@ -68,7 +69,7 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
             
-            if (userEmail.ToUpper() != Constants.AdminEmail.ToUpper())
+            if (userEmail.ToUpper() != _adminEmail.ToUpper())
             {
                 return RedirectToAction("Index", "Home");
             }

@@ -14,6 +14,7 @@ using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace KinaUnaMediaApi.Controllers
 {
@@ -29,9 +30,10 @@ namespace KinaUnaMediaApi.Controllers
         private readonly IVideosService _videosService;
         private readonly ICommentsService _commentsService;
         private readonly AzureNotifications _azureNotifications;
+        private readonly IConfiguration _configuration;
 
         public PicturesController(ImageStore imageStore, IDataService dataService, AzureNotifications azureNotifications, IPicturesService picturesService,
-            IVideosService videosService, ICommentsService commentsService)
+            IVideosService videosService, ICommentsService commentsService, IConfiguration configuration)
         {
             _imageStore = imageStore;
             _dataService = dataService;
@@ -39,6 +41,7 @@ namespace KinaUnaMediaApi.Controllers
             _picturesService = picturesService;
             _videosService = videosService;
             _commentsService = commentsService;
+            _configuration = configuration;
         }
 
         // GET api/pictures/page[?pageSize=3&pageIndex=10&progenyId=2&accessLevel=1&tagFilter=funny]
@@ -281,7 +284,7 @@ namespace KinaUnaMediaApi.Controllers
             }
             Progeny progeny = new Progeny();
             progeny.Name = Constants.AppName;
-            progeny.Admins = Constants.AdminEmail;
+            progeny.Admins = _configuration.GetValue<string>("AdminEmail");
             progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
@@ -323,7 +326,7 @@ namespace KinaUnaMediaApi.Controllers
 
             Progeny progeny = new Progeny();
             progeny.Name = Constants.AppName;
-            progeny.Admins = Constants.AdminEmail;
+            progeny.Admins = _configuration.GetValue<string>("AdminEmail");
             progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
@@ -360,7 +363,7 @@ namespace KinaUnaMediaApi.Controllers
 
             Progeny progeny = new Progeny();
             progeny.Name = Constants.AppName;
-            progeny.Admins = Constants.AdminEmail;
+            progeny.Admins = _configuration.GetValue<string>("AdminEmail");
             progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
@@ -814,7 +817,7 @@ namespace KinaUnaMediaApi.Controllers
 
             Progeny progeny = new Progeny();
             progeny.Name = Constants.AppName;
-            progeny.Admins = Constants.AdminEmail;
+            progeny.Admins = _configuration.GetValue<string>("AdminEmail");
             progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
@@ -863,7 +866,7 @@ namespace KinaUnaMediaApi.Controllers
 
             Progeny progeny = new Progeny();
             progeny.Name = Constants.AppName;
-            progeny.Admins = Constants.AdminEmail;
+            progeny.Admins = _configuration.GetValue<string>("AdminEmail");
             progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
             progeny.Id = 0;
@@ -907,7 +910,7 @@ namespace KinaUnaMediaApi.Controllers
 
             Progeny progeny = new Progeny();
             progeny.Name = Constants.AppName;
-            progeny.Admins = Constants.AdminEmail;
+            progeny.Admins = _configuration.GetValue<string>("AdminEmail");
             progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 

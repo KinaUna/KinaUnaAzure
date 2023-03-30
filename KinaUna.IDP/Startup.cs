@@ -89,8 +89,8 @@ namespace KinaUna.IDP
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
-            StorageCredentials credentials = new StorageCredentials(Constants.CloudBlobUsername, Configuration["BlobStorageKey"]);
-            CloudBlobClient blobClient = new CloudBlobClient(new Uri(Constants.CloudBlobBase), credentials);
+            StorageCredentials credentials = new StorageCredentials(Configuration.GetValue<string>("CloudBlobUsername"), Configuration.GetValue<string>("BlobStorageKey"));
+            CloudBlobClient blobClient = new CloudBlobClient(new Uri(Configuration.GetValue<string>("CloudBlobBase")), credentials);
             CloudBlobContainer container = blobClient.GetContainerReference("dataprotection");
 
             container.CreateIfNotExistsAsync().GetAwaiter().GetResult();
@@ -391,13 +391,15 @@ namespace KinaUna.IDP
 
                     if (usersContext.UserInfoDb.SingleOrDefault(u => u.UserEmail.ToUpper() == Constants.DefaultUserEmail.ToUpper()) == null)
                     {
-                        UserInfo userInfo = new UserInfo();
-                        userInfo.UserEmail = Constants.DefaultUserEmail;
-                        userInfo.FirstName = "System";
-                        userInfo.LastName = "Default User";
-                        userInfo.Timezone = Constants.DefaultTimezone;
-                        userInfo.UserName = Constants.DefaultUserEmail;
-                        userInfo.ViewChild = Constants.DefaultChildId;
+                        UserInfo userInfo = new UserInfo
+                        {
+                            UserEmail = Constants.DefaultUserEmail,
+                            FirstName = "System",
+                            LastName = "Default User",
+                            Timezone = Constants.DefaultTimezone,
+                            UserName = Constants.DefaultUserEmail,
+                            ViewChild = Constants.DefaultChildId
+                        };
 
                         usersContext.UserInfoDb.Add(userInfo);
                         usersContext.SaveChanges();
@@ -405,13 +407,15 @@ namespace KinaUna.IDP
 
                     if (usersContext.ProgenyDb.SingleOrDefault(p => p.Id == Constants.DefaultChildId) == null)
                     {
-                        Progeny progeny = new Progeny();
-                        progeny.Admins = Constants.AdminEmail;
-                        progeny.BirthDay = DateTime.UtcNow;
-                        progeny.Name = Constants.AppName;
-                        progeny.NickName = Constants.AppName;
-                        progeny.PictureLink = Constants.ProfilePictureUrl;
-                        progeny.TimeZone = Constants.DefaultTimezone;
+                        Progeny progeny = new Progeny
+                        {
+                            Admins = Configuration.GetValue<string>("AdminEmail"),
+                            BirthDay = DateTime.UtcNow,
+                            Name = Constants.AppName,
+                            NickName = Constants.AppName,
+                            PictureLink = Constants.ProfilePictureUrl,
+                            TimeZone = Constants.DefaultTimezone
+                        };
 
                         usersContext.ProgenyDb.Add(progeny);
                         usersContext.SaveChanges();
@@ -421,11 +425,13 @@ namespace KinaUna.IDP
                             u.ProgenyId == Constants.DefaultChildId &&
                             u.UserId.ToUpper() == Constants.DefaultUserEmail.ToUpper()) == null)
                     {
-                        UserAccess userAccess = new UserAccess();
-                        userAccess.ProgenyId = Constants.DefaultChildId;
-                        userAccess.UserId = Constants.DefaultUserEmail.ToUpper();
-                        userAccess.AccessLevel = (int)AccessLevel.Users;
-                        userAccess.CanContribute = false;
+                        UserAccess userAccess = new UserAccess
+                        {
+                            ProgenyId = Constants.DefaultChildId,
+                            UserId = Constants.DefaultUserEmail.ToUpper(),
+                            AccessLevel = (int)AccessLevel.Users,
+                            CanContribute = false
+                        };
 
                         usersContext.UserAccessDb.Add(userAccess);
                         usersContext.SaveChanges();
@@ -433,13 +439,15 @@ namespace KinaUna.IDP
 
                     if (usersContext.UserAccessDb.SingleOrDefault(u =>
                             u.ProgenyId == Constants.DefaultChildId &&
-                            u.UserId.ToUpper() == Constants.AdminEmail.ToUpper()) == null)
+                            u.UserId.ToUpper() == Configuration.GetValue<string>("AdminEmail").ToUpper()) == null)
                     {
-                        UserAccess userAccess = new UserAccess();
-                        userAccess.ProgenyId = Constants.DefaultChildId;
-                        userAccess.UserId = Constants.AdminEmail.ToUpper();
-                        userAccess.AccessLevel = (int)AccessLevel.Private;
-                        userAccess.CanContribute = true;
+                        UserAccess userAccess = new UserAccess
+                        {
+                            ProgenyId = Constants.DefaultChildId,
+                            UserId = Configuration.GetValue<string>("AdminEmail").ToUpper(),
+                            AccessLevel = (int)AccessLevel.Private,
+                            CanContribute = true
+                        };
 
                         usersContext.UserAccessDb.Add(userAccess);
                         usersContext.SaveChanges();

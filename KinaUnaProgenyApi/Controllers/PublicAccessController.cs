@@ -9,6 +9,7 @@ using KinaUnaProgenyApi.Models.ViewModels;
 using KinaUnaProgenyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -35,10 +36,11 @@ namespace KinaUnaProgenyApi.Controllers
         private readonly IPicturesService _picturesService;
         private readonly IVideosService _videosService;
         private readonly ICommentsService _commentsService;
+        private readonly IConfiguration _configuration;
         public PublicAccessController(IImageStore imageStore, IProgenyService progenyService, IUserInfoService userInfoService, IUserAccessService userAccessService, ICalendarService calendarService,
             IContactService contactService, IFriendService friendService, ILocationService locationService, ITimelineService timelineService, IMeasurementService measurementService, INoteService noteService,
             ISkillService skillService, ISleepService sleepService, IVaccinationService vaccinationService, IVocabularyService vocabularyService, IPicturesService picturesService, IVideosService videosService,
-            ICommentsService commentsService)
+            ICommentsService commentsService, IConfiguration configuration)
         {
             _imageStore = imageStore;
             _progenyService = progenyService;
@@ -58,6 +60,7 @@ namespace KinaUnaProgenyApi.Controllers
             _picturesService = picturesService;
             _videosService = videosService;
             _commentsService = commentsService;
+            _configuration = configuration;
         }
         // GET api/publicaccess
         [HttpGet]
@@ -1076,7 +1079,7 @@ namespace KinaUnaProgenyApi.Controllers
             Progeny progeny = new()
             {
                 Name = Constants.AppName,
-                Admins = Constants.AdminEmail,
+                Admins = _configuration.GetValue<string>("AdminEmail"),
                 NickName = Constants.AppName,
                 BirthDay = new DateTime(2018, 2, 18, 18, 2, 0),
                 Id = 0,
@@ -1115,7 +1118,7 @@ namespace KinaUnaProgenyApi.Controllers
             Progeny progeny = new()
             {
                 Name = Constants.AppName,
-                Admins = Constants.AdminEmail,
+                Admins = _configuration.GetValue<string>("AdminEmail"),
                 NickName = Constants.AppName,
                 BirthDay = new DateTime(2018, 2, 18, 18, 2, 0),
                 Id = 0,

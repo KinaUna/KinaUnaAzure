@@ -376,7 +376,7 @@ namespace KinaUna.IDP.Controllers
                 string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 string callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, clientId, model.Language);
                 await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl, clientId, model.Language);
-                await _emailSender.SendEmailAsync(Constants.AdminEmail, "New User Registered",
+                await _emailSender.SendEmailAsync(_configuration.GetValue<string>("AdminEmail"), "New User Registered",
                     "A user registered with this email address: " + model.Email, clientId);
                 
             }
@@ -584,7 +584,7 @@ namespace KinaUna.IDP.Controllers
                 else
                 {
                     string clientType = "KinaUna";
-                    await _emailSender.SendEmailAsync(Constants.AdminEmail, "New User Confirmed Email", "A user confirmed the email with this email address: " + user.Email, clientType);
+                    await _emailSender.SendEmailAsync(_configuration.GetValue<string>("AdminEmail"), "New User Confirmed Email", "A user confirmed the email with this email address: " + user.Email, clientType);
                 }
 
                 ViewData["AccountType"] = "KinaUna";

@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
-using KinaUna.Data;
 
 namespace KinaUna.IDP.Services
 {
@@ -16,14 +15,14 @@ namespace KinaUna.IDP.Services
         }
         public Task SendEmailAsync(string email, string subject, string message, string authclient)
         {
-            SmtpClient client = new SmtpClient(Constants.SmtpServer);
+            SmtpClient client = new SmtpClient(_configuration.GetValue<string>("SmtpServer"));
             client.UseDefaultCredentials = false;
-            client.Credentials = new NetworkCredential(Constants.SmtpUsername, _configuration["SupportMailPassword"]);
+            client.Credentials = new NetworkCredential(_configuration.GetValue<string>("SmtpUserName"), _configuration.GetValue<string>("SupportMailPassword"));
             client.EnableSsl = true;
             client.Port = 587;
 
             MailMessage mailMessage = new MailMessage();
-            mailMessage.From = new MailAddress(Constants.SmtpFrom, "Support - " + authclient);
+            mailMessage.From = new MailAddress(_configuration.GetValue<string>("SmtpFrom"), "Support - " + authclient);
             mailMessage.To.Add(email);
             mailMessage.Body = message;
             mailMessage.IsBodyHtml = true;

@@ -31,7 +31,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string PicHours { get; set; }
         public string PicMinutes { get; set; }
         public int SortBy { get; set; }
-        
+
+        public string HereMapsApiKey { get; set; } = "";
+
         public PictureItemViewModel()
         {
             AccessLevelList aclList = new();

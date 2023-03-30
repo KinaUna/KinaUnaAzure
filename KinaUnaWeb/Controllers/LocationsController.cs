@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -19,14 +20,16 @@ namespace KinaUnaWeb.Controllers
         private readonly ILocationsHttpClient _locationsHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly IViewModelSetupService _viewModelSetupService;
+        private readonly string _hereMapsApiKey;
 
         public LocationsController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ILocationsHttpClient locationsHttpClient,
-            IViewModelSetupService viewModelSetupService)
+            IViewModelSetupService viewModelSetupService, IConfiguration configuration)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
             _locationsHttpClient = locationsHttpClient;
             _viewModelSetupService = viewModelSetupService;
+            _hereMapsApiKey = configuration.GetValue<string>("HereMapsKey");
         }
 
         [AllowAnonymous]
@@ -34,7 +37,7 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             LocationViewModel model = new(baseModel);
-            
+            model.HereMapsApiKey = _hereMapsApiKey;
             List<string> tagsList = new();
 
             List<Location> locationsList = await _locationsHttpClient.GetLocationsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
@@ -82,6 +85,8 @@ namespace KinaUnaWeb.Controllers
             {
                 LocationsList = new List<Location>()
             };
+
+            model.HereMapsApiKey = _hereMapsApiKey;
 
             List<string> tagsList = new();
             
@@ -158,7 +163,8 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             LocationViewModel model = new(baseModel);
-            
+            model.HereMapsApiKey = _hereMapsApiKey;
+
             List<string> tagsList = new();
 
             if (model.CurrentUser == null)
@@ -230,8 +236,8 @@ namespace KinaUnaWeb.Controllers
             Location location = await _locationsHttpClient.GetLocation(itemId);
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
             LocationViewModel model = new(baseModel);
-            
-            
+            model.HereMapsApiKey = _hereMapsApiKey;
+
             if (model.CurrentUser == null)
             {
                 return RedirectToAction("Index");
@@ -303,6 +309,7 @@ namespace KinaUnaWeb.Controllers
             {
                 LocationItem = location
             };
+            model.HereMapsApiKey = _hereMapsApiKey;
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {

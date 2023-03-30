@@ -14,6 +14,7 @@ using KinaUnaWeb.Models.AdminViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -22,16 +23,17 @@ namespace KinaUnaWeb.Controllers
         private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IHubContext<WebNotificationHub> _hubContext;
         private readonly IPushMessageSender _pushMessageSender;
-        private readonly string _adminEmail = Constants.AdminEmail;
+        private readonly string _adminEmail;
         private readonly IAuthHttpClient _authHttpClient;
         private readonly ILanguagesHttpClient _languagesHttpClient;
         private readonly ITranslationsHttpClient _translationsHttpClient;
         private readonly IPageTextsHttpClient _pageTextsHttpClient;
         private readonly ImageStore _imageStore;
         private readonly IWebNotificationsService _webNotificationsService;
+
         public AdminController(IBackgroundTaskQueue queue, IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender, IAuthHttpClient authHttpClient,
             IUserInfosHttpClient userInfosHttpClient, ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient, IPageTextsHttpClient pageTextsHttpClient,
-            ImageStore imageStore, IWebNotificationsService webNotificationsService)
+            ImageStore imageStore, IWebNotificationsService webNotificationsService, IConfiguration configuration)
         {
             Queue = queue;
             _hubContext = hubContext;
@@ -43,6 +45,7 @@ namespace KinaUnaWeb.Controllers
             _pageTextsHttpClient = pageTextsHttpClient;
             _imageStore = imageStore;
             _webNotificationsService = webNotificationsService;
+            _adminEmail = configuration.GetValue<string>("AdminEmail");
         }
 
         // ReSharper disable once UnusedAutoPropertyAccessor.Local
