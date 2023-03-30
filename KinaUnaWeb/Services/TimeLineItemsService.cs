@@ -52,7 +52,7 @@ namespace KinaUnaWeb.Services
                     {
                         picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
                         picture.CommentsCount = picture.CommentsList.Count;
-                        return new TimeLineItemPartialViewModel("TimeLinePhotoPartial", picture);
+                        return new TimeLineItemPartialViewModel("_TimeLinePhotoPartial", picture);
                     }
                 }
             }
@@ -65,7 +65,7 @@ namespace KinaUnaWeb.Services
                     if (video != null && video.VideoId > 0)
                     {
                         video.CommentsCount = video.CommentsList.Count;
-                        return new TimeLineItemPartialViewModel("TimeLineVideoPartial", video);
+                        return new TimeLineItemPartialViewModel("_TimeLineVideoPartial", video);
                     }
                 }
             }
@@ -82,7 +82,7 @@ namespace KinaUnaWeb.Services
                             evt.StartTime = TimeZoneInfo.ConvertTimeFromUtc(evt.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                             evt.EndTime = TimeZoneInfo.ConvertTimeFromUtc(evt.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                         }
-                        return new TimeLineItemPartialViewModel("TimeLineEventPartial", evt);
+                        return new TimeLineItemPartialViewModel("_TimeLineEventPartial", evt);
                     }
                 }
             }
@@ -99,7 +99,7 @@ namespace KinaUnaWeb.Services
                             voc.Date = TimeZoneInfo.ConvertTimeFromUtc(voc.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
                         }
-                        return new TimeLineItemPartialViewModel("TimeLineVocabularyPartial", voc);
+                        return new TimeLineItemPartialViewModel("_TimeLineVocabularyPartial", voc);
                     }
                 }
             }
@@ -111,7 +111,7 @@ namespace KinaUnaWeb.Services
                     Skill skl = await _skillsHttpClient.GetSkill(itemId);
                     if (skl != null && skl.SkillId > 0)
                     {
-                        return new TimeLineItemPartialViewModel("TimeLineSkillPartial", skl);
+                        return new TimeLineItemPartialViewModel("_TimeLineSkillPartial", skl);
                     }
                 }
             }
@@ -124,7 +124,7 @@ namespace KinaUnaWeb.Services
                     if (frn != null && frn.FriendId > 0)
                     {
                         frn.PictureLink = _imageStore.UriFor(frn.PictureLink, "friends");
-                        return new TimeLineItemPartialViewModel("TimeLineFriendPartial", frn);
+                        return new TimeLineItemPartialViewModel("_TimeLineFriendPartial", frn);
                     }
                 }
             }
@@ -136,7 +136,7 @@ namespace KinaUnaWeb.Services
                     Measurement mes = await _measurementsHttpClient.GetMeasurement(itemId);
                     if (mes != null && mes.MeasurementId > 0)
                     {
-                        return new TimeLineItemPartialViewModel("TimeLineMeasurementPartial", mes);
+                        return new TimeLineItemPartialViewModel("_TimeLineMeasurementPartial", mes);
                     }
                 }
             }
@@ -156,7 +156,7 @@ namespace KinaUnaWeb.Services
                             TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone).GetUtcOffset(slp.SleepEnd));
                         slp.SleepDuration = eOffset - sOffset;
 
-                        return new TimeLineItemPartialViewModel("TimeLineSleepPartial", slp);
+                        return new TimeLineItemPartialViewModel("_TimeLineSleepPartial", slp);
                     }
                 }
             }
@@ -169,7 +169,7 @@ namespace KinaUnaWeb.Services
                     if (nte != null && nte.NoteId > 0)
                     {
                         nte.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(nte.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                        return new TimeLineItemPartialViewModel("TimeLineNotePartial", nte);
+                        return new TimeLineItemPartialViewModel("_TimeLineNotePartial", nte);
                     }
                 }
             }
@@ -188,7 +188,7 @@ namespace KinaUnaWeb.Services
 
                         cnt.PictureLink = _imageStore.UriFor(cnt.PictureLink, "contacts");
 
-                        return new TimeLineItemPartialViewModel("TimeLineContactPartial", cnt);
+                        return new TimeLineItemPartialViewModel("_TimeLineContactPartial", cnt);
                     }
                 }
             }
@@ -200,7 +200,7 @@ namespace KinaUnaWeb.Services
                     Vaccination vac = await _vaccinationsHttpClient.GetVaccination(itemId);
                     if (vac != null && vac.VaccinationId > 0)
                     {
-                        return new TimeLineItemPartialViewModel("TimeLineVaccinationPartial", vac);
+                        return new TimeLineItemPartialViewModel("_TimeLineVaccinationPartial", vac);
                     }
                 }
             }
@@ -212,7 +212,7 @@ namespace KinaUnaWeb.Services
                     Location loc = await _locationsHttpClient.GetLocation(itemId);
                     if (loc != null && loc.LocationId > 0)
                     {
-                        return new TimeLineItemPartialViewModel("TimeLineLocationPartial", loc);
+                        return new TimeLineItemPartialViewModel("_TimeLineLocationPartial", loc);
                     }
                 }
             }
@@ -223,7 +223,7 @@ namespace KinaUnaWeb.Services
                 Title = "Error, content not found."
             };
 
-            return new TimeLineItemPartialViewModel("TimeLineNotePartial", failNote);
+            return new TimeLineItemPartialViewModel("_TimeLineNotePartial", failNote);
         }
     }
 }

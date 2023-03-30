@@ -25,14 +25,14 @@
 @media screen and (max-width: 767px) {
     .main-container {
         width: 100%;
-        padding-right: 5px;
-        padding-left: 5px;
+        padding-right: 0;
+        padding-left: 0;
         margin-right: auto;
         margin-left: auto;
     }
 }
 
-@media screen and (min-width: 767px) {
+@media screen and (min-width: 768px) {
     .main-container {
         width: 100%;
         padding-right: 15px;
@@ -42,49 +42,23 @@
     }
 }
 
-@media screen and (max-width: 767px) {
-    .row {
-        display: -ms-flexbox;
-        display: flex;
-        -ms-flex-wrap: wrap;
-        flex-wrap: wrap;
-        margin-right: -5px;
-        margin-left: -5px;
-    }
+/* Carousel */
+.carousel-caption p {
+    font-size: 20px;
+    line-height: 1.4;
 }
-
-@media screen and (min-width: 767px) {
-    .row {
-        display: -ms-flexbox;
-        display: flex;
-        -ms-flex-wrap: wrap;
-        flex-wrap: wrap;
-        margin-right: -15px;
-        margin-left: -15px;
-    }
-}
-
-    /* Carousel */
-
-    .carousel-caption p {
-        font-size: 20px;
-        line-height: 1.4;
-    }
 
 /* Make .svg files in the carousel display properly in older browsers */
-
 .carousel-inner .item img[src$=".svg"] {
     width: 100%;
 }
 
 /* QR code generator */
-
 #qrCode {
     margin: 15px;
 }
 
 /* Hide/rearrange for smaller screens */
-
 @media screen and (max-width: 767px) {
     /* Hide captions */
     .carousel-caption {
@@ -1101,6 +1075,11 @@ to {
 
 .icon_medium {
     top: 8px;
+    position: relative;
+}
+
+.icon-top-4 {
+    top: 4px;
     position: relative;
 }
 
@@ -2348,7 +2327,7 @@ button.Zebra_DatePicker_Icon {
     left: -100px;
     overflow: visible;
     transition: 0.5s;
-    z-index: 1000;
+    z-index: 1042;
     bottom: 0;
     transition: all 500ms ease-in-out 500ms;
     transition: left 1200ms ease-out 500ms;
@@ -2368,7 +2347,7 @@ button.Zebra_DatePicker_Icon {
     height: auto;
     overflow-y: auto;
     transition: all 500ms ease-in-out 500ms;
-    margin-top: 52px;
+    margin-top: 85px;
     background: #19061c;
     background: linear-gradient(120deg, #19061c, #450062);
     border-bottom-right-radius: 25px;
@@ -2398,7 +2377,7 @@ button.Zebra_DatePicker_Icon {
     vertical-align: middle;
 }
 .kinauna-main {
-    margin-left: 70px;
+    margin-left: 66px;
     transition: all 500ms ease-in-out 500ms;
 }
 
@@ -2439,6 +2418,7 @@ button.Zebra_DatePicker_Icon {
     border-top-right-radius: 25px;
     transition: width 500ms ease-in-out 1ms;
     min-width: 55px;
+    padding-bottom: 35px;
 }
 
 .btn-sidebar-toggle-text {
@@ -2511,7 +2491,6 @@ button.Zebra_DatePicker_Icon {
     .dropdown-item.active, .dropdown-item:active {
         color: #fff;
         background-color: #9100b9;
-        ;
     }
     .page-link {
         position: relative;
@@ -2627,3 +2606,71 @@ div.dataTables_wrapper div.dataTables_length select {
     width: 100px !important;
     display: inline-block;
 }
+
+.page-settings-container {
+    position: absolute;
+    right: 10px;
+    top: 0;
+    margin-top: 72px;
+    width: 450px;
+    height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.page-settings-content {
+    margin-left: 0;
+}
+
+.main-show-page-settings {
+    margin-right: 455px;
+}
+
+@media screen and (max-width: 1200px) {
+    .main-show-page-settings {
+        margin-right: 360px;
+    }
+
+    .page-settings-container {
+        right: 5px;
+        width: 355px;
+    }
+}
+
+@media screen and (max-width: 992px) {
+    .main-show-page-settings {
+        margin-right: 305px;
+    }
+
+    .page-settings-container {
+        right: 5px;
+        width: 300px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .main-show-page-settings {
+        margin-right: 225px;
+    }
+
+    .page-settings-container {
+        right: 1px;
+        width: 220px;
+    }
+}
+
+@media screen and (max-width: 660px) {
+    .main-show-page-settings {
+        margin-right: 0;
+    }
+
+    .page-settings-container {
+        left: 0;
+        width: 100%;
+    }
+
+    .page-settings-content {
+        margin-left: 60px;
+    }
+}
+

@@ -1,68 +1,120 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
-@using KinaUnaWeb.Models.ItemViewModels
-@* ReSharper disable once RedundantUsingDirective *@
-@using System.Web;
 @model KinaUnaWeb.Models.ItemViewModels.NotesListViewModel
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Notes", PageNames.Notes, Model.LanguageId);
+    string pageParameters = Json.Serialize(Model.NotesPageParameters).ToString();
+    string pageString = await LocaleManager.GetTranslation("Page:", PageNames.Notes, Model.LanguageId);
+    string previousPageString = await LocaleManager.GetTranslation("Previous page", PageNames.Notes, Model.LanguageId);
+    string nextPageString = await LocaleManager.GetTranslation("Next page", PageNames.Notes, Model.LanguageId);
 }
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
-    @if (Model.NotesList == null || !Model.NotesList.Any())
-    {
-        <h2>@ViewData["Title"]</h2>
-        <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
-    }
-    else
-    {
-        if (Model.IsCurrentUserProgenyAdmin)
-        {
-            <div class="btn-group" style="float: right;">
-                <a asp-controller="Notes" asp-action="AddNote" class="btn btn-success btn-round leavePage">
-                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add note", PageNames.Notes, Model.LanguageId)
-                </a>
+<div id="notes-index-page-parameters" class="d-none" data-notes-index-page-parameters='@pageParameters'></div>
+<div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10 col-w1900-8 col-w2500-7">
+    <h2>@ViewData["Title"]</h2>
+    <div class="row align-items-center">
+        <div class="col text-left">
+            <button class="btn btn-success d-none mr-auto" id="headerPreviousNoteItemsPageButton">
+                <i class="material-icons icon-top-4">chevron_left</i>
+                <span class="d-none d-md-inline"> @previousPageString</span>
+            </button>
+        </div>
+        <div class="col">
+            <div class="text-center font-weight-bold">
+                <span class="d-none d-md-inline">@pageString </span><span id="headerPageNumberSpan"></span><span> / </span><span id="headerPageTotalSpan"></span>
             </div>
-        }
-        <h2>@ViewData["Title"]</h2>
-        <div class="row" style="clear: both; margin-top: 25px;">
-            @foreach (NoteViewModel noteViewModel in Model.NotesList)
-            {
-                <div class="card text-white bg-notes" align="left" style="margin: 15px; margin-bottom: 25px; padding: 1px; float: left; min-width: 49%;">
-                    <div class="card-header rounded" style="padding-left: 15px; padding-right: 5px; margin-bottom: 0;">
-                        @if (Model.IsCurrentUserProgenyAdmin)
-                        {
-                            <div style="float: right;">
-
-                                <a asp-controller="Notes" asp-action="EditNote" asp-route-itemId="@noteViewModel.NoteItem.NoteId" class="btn btn-info btn-sm leavePage">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </a>
-                                <a asp-controller="Notes" asp-action="DeleteNote" asp-route-itemId="@noteViewModel.NoteItem.NoteId" class="btn btn-danger btn-sm leavePage">
-                                    <i class="fas fa-trash-alt"></i>
-                                </a>
-                            </div>
-                        }
-                        <h4 class="card-title">@noteViewModel.NoteItem.Title</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="card-text">
-                            <div class="rounded text-dark card-body bg-white" style="overflow-x: hidden;" align="left">@Html.Raw(HttpUtility.HtmlDecode(noteViewModel.NoteItem.Content))</div>
+        </div>
+        <div class="col text-right">
+            <button class="btn btn-success d-none" id="headerNextNoteItemsPageButton">
+                <span class="d-none d-md-inline">@nextPageString </span>
+                <i class="material-icons icon-top-4">chevron_right</i>
+            </button>
+        </div>
+    </div>
+    <div class="space-20"></div>
+    <div id="notesListDiv" class="row">
+    </div>
+    <div class="row align-items-center">
+        <div class="col text-left">
+            <button class="btn btn-success d-none mr-auto" id="previousNoteItemsPageButton">
+                <i class="material-icons icon-top-4">chevron_left</i>
+                <span class="d-none d-md-inline"> @previousPageString</span>
+            </button>
+        </div>
+        <div class="col">
+            <div class="text-center font-weight-bold">
+                <span class="d-none d-md-inline">@pageString </span><span id="pageNumberSpan"></span><span> / </span><span id="pageTotalSpan"></span>
+            </div>
+        </div>
+        <div class="col text-right">
+            <button class="btn btn-success d-none" id="nextNoteItemsPageButton">
+                <span class="d-none d-md-inline">@nextPageString </span>
+                <i class="material-icons icon-top-4">chevron_right</i>
+            </button>
+        </div>
+    </div>
+</div>
+<div class="d-none">
+    <div id="page-settings-content-div" class="bg-dark page-settings-content">
+        <div class="row">
+            <div class="col-auto ml-auto">
+                <button id="closeNotesPageSettingsButton" class="ml-auto btn btn-link btn-link-yellow p-2">
+                    <i class="material-icons icon-top-4">close</i>
+                </button>
+            </div>
+        </div>
+        <div class="p-4">
+            <div class="row">
+                <div class="col h5">
+                    Page settings
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    Sort:
+                </div>
+                <div class="col-auto ml-4">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <button id="sort-notes-descending-button" class="btn btn-outline-info active"><i class="material-icons icon-top-4">history</i> Newest</button>
+                        </div>
+                        <div class="col">
+                            <button id="sort-notes-ascending-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">update</i> Oldest</button>
                         </div>
                     </div>
-                    <div class="card-footer bg-opacity-50 ">
-                        @if (!string.IsNullOrEmpty(noteViewModel.NoteItem.Category))
-                        {
-                            <div class="card-category text-white-50" style="margin: 0; padding: 0;">
-                                <div> @await LocaleManager.GetTranslation("Category:", PageNames.Notes, Model.LanguageId) @noteViewModel.NoteItem.Category</div>
-                            </div>
-                        }
-                        <div class="card-category text-right text-white-50 float-right" style="margin-top: 0;">@noteViewModel.NoteItem.CreatedDate.ToString("dd-MMM-yyyy HH:mm")</div>
-                        <div class="card-category text-white-50" style="margin-top: 0;">@noteViewModel.NoteItem.Owner</div>
-
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    Items per page:
+                </div>
+                <div class="col-auto ml-4">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <input type="number" id="notes-items-per-page-input" min="1" max="100" step="1" value="10" class="form-control d-inline w-auto"/>
+                        </div>
+                        <div class="col-auto">
+                            <button id="decrease-notes-items-per-page-button" class="btn btn-outline-info">-</button><button id="increase-notes-items-per-page-button" class="btn btn-outline-info">+</button>
+                        </div>
                     </div>
                 </div>
-            }
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    <button id="notes-page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> Save</button>
+                </div>
+
+            </div>
         </div>
-    }
+    </div>
+    <div id="notes-show-page-settings-button-div" style="position: absolute; top: 60px; right: 0;">
+        <button id="notes-index-page-settings-button" class="btn btn-link btn-link-yellow bg-dark p-3 m-2" style="border-radius: 33%">
+            <span><i class="material-icons icon-top-4">settings</i></span>
+        </button>
+    </div>
 </div>
+<script src="/js/notes-index.js" type="module"></script>
 

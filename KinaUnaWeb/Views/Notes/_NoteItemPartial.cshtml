@@ -1,0 +1,51 @@
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@using System.Web;
+@model KinaUnaWeb.Models.TypeScriptModels.Notes.NoteItemResponse
+@inject ILocaleManager LocaleManager
+
+<div class="col-12 card text-white bg-notes" align="left" style="min-width: 49%;">
+    @if (Model.Note.NoteId == 0)
+    {
+        <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
+    }
+    else
+    {
+        <div class="card-header rounded" style="padding-left: 15px; padding-right: 5px; margin-bottom: 0;">
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div style="float: right;">
+
+                    <a asp-controller="Notes" asp-action="EditNote" asp-route-itemId="@Model.NoteId" class="btn btn-info btn-sm leavePage">
+                        <i class="fas fa-pencil-alt"></i>
+                    </a>
+                    <a asp-controller="Notes" asp-action="DeleteNote" asp-route-itemId="@Model.NoteId" class="btn btn-danger btn-sm leavePage">
+                        <i class="fas fa-trash-alt"></i>
+                    </a>
+                </div>
+            }
+
+            <div class="card-title"><span class="pr-2"><i class="material-icons icon-top-4">note</i> </span><span class="h4">@Model.Note.Title</span></div>
+            <div class="row card-category text-white-50">
+                <div class="col-auto">@Model.Note.CreatedDate.ToString("dd-MMM-yyyy HH:mm")</div>
+                <div class="col-auto ml-auto">@Model.Note.Owner</div>
+            </div>
+        </div>
+        <div class="card-body p-2">
+            <div class="card-text">
+                <div class="text-dark card-body bg-white" style="overflow-x: hidden;" align="left">@Html.Raw(HttpUtility.HtmlDecode(Model.Note.Content))</div>
+            </div>
+        </div>
+        <div class="card-footer bg-opacity-50 ">
+            @if (!string.IsNullOrEmpty(Model.Note.Category))
+            {
+                <div class="card-category text-white-50 float-right" style="margin: 0; padding: 0;">
+                    <div> @await LocaleManager.GetTranslation("Category:", PageNames.Notes, Model.LanguageId) @Model.Note.Category</div>
+                </div>
+            }
+        </div>
+    }
+    
+</div>
+<div class="space-20"></div>
+

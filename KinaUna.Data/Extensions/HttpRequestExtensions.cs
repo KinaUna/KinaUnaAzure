@@ -10,13 +10,17 @@ namespace KinaUna.Data.Extensions
     {
         public static int GetLanguageIdFromCookie(this HttpRequest request)
         {
-            int languageId = 0;
+            int languageId;
             if (request.Cookies.TryGetValue("languageId", out string languageIdText))
             {
                 if (!int.TryParse(languageIdText, out languageId))
                 {
                     languageId = request.GetLanguageIdFromBrowser();
                 }
+            }
+            else
+            {
+                languageId = request.GetLanguageIdFromBrowser();
             }
 
             if (languageId == 0)

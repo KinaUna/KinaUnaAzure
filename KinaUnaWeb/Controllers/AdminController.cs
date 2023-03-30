@@ -253,7 +253,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.LanguagesList = await _languagesHttpClient.GetAllLanguages();
-            return PartialView("TranslationPagePartial", model);
+            return PartialView("_TranslationPagePartial", model);
         }
 
         [Authorize]
@@ -267,7 +267,7 @@ namespace KinaUnaWeb.Controllers
 
             TextTranslation model = await _translationsHttpClient.GetTranslationById(translationId);
 
-            return PartialView("EditTranslationPartial", model);
+            return PartialView("_EditTranslationPartial", model);
         }
 
         [Authorize]
@@ -293,7 +293,7 @@ namespace KinaUnaWeb.Controllers
                 _ = await _translationsHttpClient.GetAllTranslations(lang.Id, true);
             }
 
-            return PartialView("EditTranslationPartial", updateTranslation);
+            return PartialView("_EditTranslationPartial", updateTranslation);
         }
 
         [Authorize]
@@ -309,7 +309,7 @@ namespace KinaUnaWeb.Controllers
 
             TextTranslation model = translationsList.SingleOrDefault(t => t.Id == translationId);
 
-            return PartialView("DeleteTranslationItemPartial", model);
+            return PartialView("_DeleteTranslationItemPartial", model);
         }
 
         [Authorize]
@@ -333,7 +333,7 @@ namespace KinaUnaWeb.Controllers
                 _ = await _translationsHttpClient.GetAllTranslations(lang.Id, true);
             }
 
-            return PartialView("DeleteTranslationItemPartial", updateTranslation);
+            return PartialView("_DeleteTranslationItemPartial", updateTranslation);
         }
 
         [Authorize]
@@ -384,7 +384,7 @@ namespace KinaUnaWeb.Controllers
             {
                 KinaUnaText model = await _pageTextsHttpClient.GetPageTextById(Id);
 
-                return PartialView("EditTextPartial", model);
+                return PartialView("_EditTextPartial", model);
             }
 
             return RedirectToAction("Index", "Home");
@@ -411,7 +411,7 @@ namespace KinaUnaWeb.Controllers
                     await _pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
                 }
 
-                return PartialView("EditTextPartial", updateText);
+                return PartialView("_EditTextPartial", updateText);
             }
 
             return RedirectToAction("Index", "Home");
@@ -442,7 +442,7 @@ namespace KinaUnaWeb.Controllers
                     model.Language = 0;
                 }
 
-                return PartialView("EditTextTranslationPartial", model);
+                return PartialView("_EditTextTranslationPartial", model);
             }
 
             return RedirectToAction("Index", "Home");
@@ -486,7 +486,7 @@ namespace KinaUnaWeb.Controllers
                 }
 
                 editTranslationModel.MessageId = 1;
-                return PartialView("EditTextTranslationPartial", editTranslationModel);
+                return PartialView("_EditTextTranslationPartial", editTranslationModel);
             }
 
             return RedirectToAction("Index", "Home");

@@ -72,13 +72,13 @@ function setSidebarText() {
         if (sidebarSetting.showSidebarText) {
             sidebarExapanderIcon.style.rotate = '180deg';
             textItem.classList.remove('sidebar-item-text-hide');
-            sidebarTextsButton.style.top = "58px";
-            sidebarTextsButton.style.right = "5%";
+            sidebarTextsButton.style.top = "50px";
+            sidebarTextsButton.style.right = "12%";
         }
         else {
             sidebarExapanderIcon.style.rotate = '0deg';
             textItem.classList.add('sidebar-item-text-hide');
-            sidebarTextsButton.style.top = "58px";
+            sidebarTextsButton.style.top = "50px";
             sidebarTextsButton.style.right = "";
         }
     });
@@ -107,9 +107,9 @@ async function setSideBarPosition() {
         sidebarElement == null || kinaUnaMainElement == null || sidebarMenuListWrapperElement == null || sidebarTextsButton == null) {
         return;
     }
-    const menuOffset = navMainElement.scrollHeight + topLanguageElement.scrollHeight + 25;
+    const menuOffset = kinaUnaMainElement.offsetTop + 15;
     const sidebarHeight = viewportHeight - (menuOffset + sidebarTogglerElement.offsetHeight);
-    const maxSidebarHeight = sidebarNavUlElement.scrollHeight + menuOffset + sidebarTogglerElement.offsetHeight + 10;
+    const maxSidebarHeight = sidebarNavUlElement.scrollHeight + menuOffset + sidebarTogglerElement.offsetHeight + 20;
     sidebarElement.style.left = "0px";
     if (sidebarSetting.showSidebar) {
         sidebarTogglerElement.style.transition = 'border-bottom-right-radius 500ms ease-in-out 0ms';
@@ -146,7 +146,7 @@ async function setSideBarPosition() {
         sidebarTogglerElement.style.transition = 'border-bottom-right-radius 500ms ease-in-out 1000ms';
         sidebarMenuListWrapperElement.style.height = '0px';
         kinaUnaMainElement.classList.remove('kinauna-main');
-        kinaUnaMainElement.classList.remove('kinauna-main');
+        kinaUnaMainElement.classList.remove('kinauna-main-wide');
         sidebarElement.style.opacity = '.5';
         sidebarElement.style.top = menuOffset + 'px';
         sidebarTogglerElement.style.borderTopRightRadius = '25px';

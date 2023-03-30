@@ -24,7 +24,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult TimeLinePhotoPartial(PictureViewModel model)
         {
-            return View(model);
+            return PartialView("_TimeLinePhotoPartial", model);
         }
 
         [AllowAnonymous]
@@ -32,7 +32,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult TimeLineVideoPartial(VideoViewModel model)
         {
-            return View(model);
+            return PartialView("_TimeLineVideoPartial", model);
         }
 
         [AllowAnonymous]
@@ -40,7 +40,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult TimeLineEventPartial(CalendarItem model)
         {
-            return View(model);
+            return PartialView("_TimeLineEventPartial", model);
         }
 
         [AllowAnonymous]
@@ -48,7 +48,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult TimeLineVocabularyPartial(VocabularyItem model)
         {
-            return View(model);
+            return PartialView("_TimeLineVocabularyPartial", model);
         }
 
         [AllowAnonymous]
@@ -56,7 +56,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult TimeLineSkillPartial(Skill model)
         {
-            return View(model);
+            return PartialView("_TimeLineSkillPartial", model);
         }
 
         [AllowAnonymous]
@@ -64,7 +64,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult TimeLineFriendPartial(Friend model)
         {
-            return View(model);
+            return PartialView("_TimeLineFriendPartial", model);
         }
 
         [AllowAnonymous]
@@ -72,7 +72,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult TimeLineMeasurementPartial(Measurement model)
         {
-            return View(model);
+            return PartialView("_TimeLineMeasurementPartial", model);
         }
 
         [AllowAnonymous]
@@ -80,7 +80,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult TimeLineSleepPartial(Sleep model)
         {
-            return View(model);
+            return PartialView("_TimeLineSleepPartial", model);
         }
 
         [AllowAnonymous]
@@ -88,7 +88,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult TimeLineNotePartial(Note model)
         {
-            return View(model);
+            return PartialView("_TimeLineNotePartial", model);
         }
 
         [AllowAnonymous]
@@ -96,7 +96,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult TimeLineContactPartial(Contact model)
         {
-            return View(model);
+            return PartialView("_TimeLineContactPartial", model);
         }
 
         [AllowAnonymous]
@@ -104,7 +104,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult TimeLineVaccinationPartial(Vaccination model)
         {
-            return View(model);
+            return PartialView("_TimeLineVaccinationPartial", model);
         }
 
         [AllowAnonymous]
@@ -112,7 +112,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult TimeLineLocationPartial(Location model)
         {
-            return View(model);
+            return PartialView("_TimeLineLocationPartial", model);
         }
 
         [AllowAnonymous]

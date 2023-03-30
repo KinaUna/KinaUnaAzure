@@ -113,51 +113,51 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Views\Timeline\TimeLineContactPartial.cshtml">
+    <Content Update="Views\Timeline\_TimeLineContactPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineEventPartial.cshtml">
+    <Content Update="Views\Timeline\_TimeLineEventPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineFriendPartial.cshtml">
+    <Content Update="Views\Timeline\_TimeLineFriendPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineLocationPartial.cshtml">
+    <Content Update="Views\Timeline\_TimeLineLocationPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineMeasurementPartial.cshtml">
+    <Content Update="Views\Timeline\_TimeLineMeasurementPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineNotePartial.cshtml">
+    <Content Update="Views\Timeline\_TimeLineNotePartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLinePhotoPartial.cshtml">
+    <Content Update="Views\Timeline\_TimeLinePhotoPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineSkillPartial.cshtml">
+    <Content Update="Views\Timeline\_TimeLineSkillPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineSleepPartial.cshtml">
+    <Content Update="Views\Timeline\_TimeLineSleepPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineVaccinationPartial.cshtml">
+    <Content Update="Views\Timeline\_TimeLineVaccinationPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineVideoPartial.cshtml">
+    <Content Update="Views\Timeline\_TimeLineVideoPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-    <Content Update="Views\Timeline\TimeLineVocabularyPartial.cshtml">
+    <Content Update="Views\Timeline\_TimeLineVocabularyPartial.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>

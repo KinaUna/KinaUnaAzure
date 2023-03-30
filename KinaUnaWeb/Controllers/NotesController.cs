@@ -9,64 +9,113 @@ using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.TypeScriptModels.Notes;
 
 namespace KinaUnaWeb.Controllers
 {
     public class NotesController : Controller
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly INotesHttpClient _notesHttpClient;
+        private readonly IUserInfosHttpClient _userInfosHttpClient;
         private readonly IViewModelSetupService _viewModelSetupService;
         
-        public NotesController(IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, INotesHttpClient notesHttpClient,
+        public NotesController(IProgenyHttpClient progenyHttpClient, INotesHttpClient notesHttpClient, IUserInfosHttpClient userInfosHttpClient,
             IViewModelSetupService viewModelSetupService)
         {
             _progenyHttpClient = progenyHttpClient;
-            _userInfosHttpClient = userInfosHttpClient;
             _notesHttpClient = notesHttpClient;
+            _userInfosHttpClient = userInfosHttpClient;
             _viewModelSetupService = viewModelSetupService;
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0)
+        public async Task<IActionResult> Index(int childId = 0, int page = 0, int sort = 1, int itemsPerPage = 10)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             NotesListViewModel model = new(baseModel);
-            
-            List<Note> notes = await _notesHttpClient.GetNotesList(model.CurrentProgenyId, model.CurrentAccessLevel);
-            if (notes.Count != 0)
-            {
-                foreach (Note note in notes)
-                {
-                    NoteViewModel notesViewModel = new();
-                    notesViewModel.SetBaseProperties(baseModel);
-                    notesViewModel.SetPropertiesFromNote(note);
-                    notesViewModel.IsCurrentUserProgenyAdmin = model.IsCurrentUserProgenyAdmin;
-                    UserInfo noteUserInfo = await _userInfosHttpClient.GetUserInfoByUserId(note.Owner);
-                    notesViewModel.NoteItem.Owner = noteUserInfo.FullName();
-                    model.NotesList.Add(notesViewModel);
+            model.NotesPageParameters.CurrentPageNumber = page;
+            model.NotesPageParameters.Sort = sort;
+            model.NotesPageParameters.ItemsPerPage = itemsPerPage;
 
-                }
-                model.NotesList = model.NotesList.OrderBy(n => n.NoteItem.CreatedDate).ToList();
-                model.NotesList.Reverse();
+            return View(model);
+
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> NotesList([FromBody] NotesPageParameters parameters)
+        {
+            if (parameters.LanguageId == 0)
+            {
+                parameters.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+
+            if (parameters.CurrentPageNumber < 1)
+            {
+                parameters.CurrentPageNumber = 1;
+            }
+
+            if (parameters.ItemsPerPage < 1)
+            {
+                parameters.ItemsPerPage = 10;
+            }
+
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
+            List<Note> notes = await _notesHttpClient.GetNotesList(baseModel.CurrentProgenyId, baseModel.CurrentAccessLevel);
+            
+            parameters.TotalPages = (int)double.Ceiling((double)notes.Count / parameters.ItemsPerPage);
+            parameters.TotalItems = notes.Count;
+
+            notes = notes.OrderBy(n => n.CreatedDate).ToList();
+
+            if (parameters.Sort == 1)
+            {
+                notes.Reverse();
+            }
+
+            notes = notes.Skip(parameters.ItemsPerPage * (parameters.CurrentPageNumber -1)).Take(parameters.ItemsPerPage).ToList();
+            List<int> notesList = notes.Select(n => n.NoteId).ToList();
+            return Json(new NotesPageResponse()
+            {
+                PageNumber = parameters.CurrentPageNumber,
+                TotalPages = parameters.TotalPages,
+                TotalItems = parameters.TotalItems,
+                NotesList = notesList
+            });
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> NoteElement([FromBody] NoteItemParameters parameters)
+        {
+            if (parameters.LanguageId == 0)
+            {
+                parameters.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+            
+            NoteItemResponse noteItemResponse = new()
+            {
+                LanguageId = parameters.LanguageId
+            };
+
+            if (parameters.NoteId == 0)
+            {
+                noteItemResponse.Note = new() { NoteId = 0};
             }
             else
             {
-                NoteViewModel noteViewModel = new()
-                {
-                    NoteItem =
-                    {
-                        ProgenyId = model.CurrentProgenyId,
-                        Title = "No notes found.",
-                        Content = "The notes list is empty."
-                    },
-                    IsCurrentUserProgenyAdmin = model.IsCurrentUserProgenyAdmin
-                };
-                model.NotesList.Add(noteViewModel);
+                noteItemResponse.Note = await _notesHttpClient.GetNote(parameters.NoteId);
+                noteItemResponse.NoteId = noteItemResponse.Note.NoteId;
+
+                BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), noteItemResponse.Note.ProgenyId);
+                noteItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
+                UserInfo noteUserInfo = await _userInfosHttpClient.GetUserInfoByUserId(noteItemResponse.Note.Owner);
+                noteItemResponse.Note.Owner = noteUserInfo.FullName();
             }
             
-            return View(model);
+
+            return PartialView("_NoteItemPartial", noteItemResponse);
 
         }
 
