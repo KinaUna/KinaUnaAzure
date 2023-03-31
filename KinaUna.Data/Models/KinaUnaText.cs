@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
@@ -13,6 +14,9 @@ namespace KinaUna.Data.Models
         public string Text { get; set; } = string.Empty;
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
+
+        [NotMapped]
+        public string ReturnUrl { get; set; }
     }
 
     public class KinaUnaTextNumber

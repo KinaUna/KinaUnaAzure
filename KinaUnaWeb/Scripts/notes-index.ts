@@ -3,7 +3,7 @@
 const notesPageSettingsStorageKey = 'notes_page_parameters'; 
 let notesPageParameters = new pageModels.NotesPageParameters();
 let notesPageParametersHistory: pageModels.NotesPageParameters[] = []; 
-const notesIndexPageParametersDiv = document.querySelector<HTMLDivElement>('#notes-index-page-parameters')
+const notesIndexPageParametersDiv = document.querySelector<HTMLDivElement>('#notes-index-page-parameters');
 const notesListDiv = document.querySelector<HTMLDivElement>('#notesListDiv');
 const nextNotesItemsPageButton = document.querySelector<HTMLButtonElement>('#nextNoteItemsPageButton');
 const previousNotesItemsPageButton = document.querySelector<HTMLButtonElement>('#previousNoteItemsPageButton');

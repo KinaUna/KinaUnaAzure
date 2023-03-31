@@ -380,12 +380,13 @@ namespace KinaUnaWeb.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> EditText(int Id)
+        public async Task<IActionResult> EditText(int id, string returnUrl = "")
         {
             UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo != null && userInfo.IsKinaUnaAdmin)
             {
-                KinaUnaText model = await _pageTextsHttpClient.GetPageTextById(Id);
+                KinaUnaText model = await _pageTextsHttpClient.GetPageTextById(id);
+                model.ReturnUrl = returnUrl;
 
                 return PartialView("_EditTextPartial", model);
             }
@@ -396,7 +397,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> EditText([FromBody] KinaUnaText model)
+        public async Task<IActionResult> EditText([FromForm] KinaUnaText model)
         {
             UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo != null && userInfo.IsKinaUnaAdmin)
@@ -414,7 +415,13 @@ namespace KinaUnaWeb.Controllers
                     await _pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
                 }
 
-                return PartialView("_EditTextPartial", updateText);
+                if (string.IsNullOrEmpty(model.ReturnUrl))
+                {
+                    return PartialView("_EditTextPartial", updateText);
+                }
+                
+                return Redirect(model.ReturnUrl);
+                
             }
 
             return RedirectToAction("Index", "Home");

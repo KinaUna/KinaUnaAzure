@@ -1,12 +1,12 @@
 ﻿@using KinaUna.Data
 @using KinaUnaWeb.Services
-@using Microsoft.AspNetCore.Antiforgery
-@inject IAntiforgery AntiForgery
+@using Microsoft.AspNetCore.Http.Extensions
 @inject ILocaleManager LocaleManager
 @model KinaUnaWeb.Models.HomeViewModels.AboutViewModel
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("About", PageNames.Layout, Model.LanguageId);
     Model.KinaUnaText = await LocaleManager.GetPageTextByTitle("__About", "About", Model.LanguageId);
+    string returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl();
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="add-item-container">
@@ -15,14 +15,16 @@
             <img src="~/images/KinaUnaLogo_246x80.png" />
         </div>
         <div class="space-50"></div>
-        <div class="col-auto" style="max-width: 800px;" id="impressumTextDiv">
+        <div class="col-auto" style="max-width: 800px;" id="aboutTextDiv">
             @Html.Raw(Model.KinaUnaText.Text ?? "")
         </div>
         <div class="space-20"></div>
         @if (Model.CurrentUser.IsKinaUnaAdmin && Model.KinaUnaText != null)
         {
+            <div id="aboutPageTextIdDiv" class="d-none" data-about-page-text-id='@Model.KinaUnaText.Id'></div>
+            <div id="aboutPageReturnUrlDiv" class="d-none" data-about-page-return-url='@returnUrl'></div>
             <div class="space-20"></div>
-            <div class="col-auto"><a class="btn btn-outline-info" onclick="editModal('@Model.KinaUnaText.Id', 'Edit About')">Edit</a></div>
+            <div class="col-auto"><a class="btn btn-outline-info" id="editAboutTextButton" data-toggle="modal" data-target="#editAboutTextModalDiv">Edit</a></div>
             <div class="space-20"></div>
             <script>
                 function onImageUploadSuccess(args) {
@@ -49,76 +51,17 @@
                     let rteElement = document.getElementById('textTextRTE').ej2_instances[0];
                     rteElement.refreshUI();
                 }
-
-                function updateTitle() {
-                    let editTitleSource = document.getElementById('editTitleInput');
-                    let editTitleTarget = document.getElementById('textTitleInput');
-                    editTitleTarget.value = editTitleSource.value;
-                }
-
-                $(function () {
-                    editModal = (textId, title) => {
-                        try {
-                            $.ajax({
-                                type: 'GET',
-                                url: "/Admin/EditText?Id=" + textId,
-                                contentType: false,
-                                datatype: "html",
-                                async: true,
-                                success: function (res) {
-                                    $('#editImpressumModal .modal-body').html(res);
-                                    $('#editImpressumModal .modal-title').html(title);
-                                    $('#editImpressumModal').modal('show');
-                                },
-                                error: function (err) {
-                                    console.log(err);
-                                }
-                            });
-                            return false;
-                        } catch (ex) {
-                            console.log(ex);
-                        }
-                        return false;
-                    }
-                });
-
-                function saveText() {
-                    let textId = document.getElementById('textIdInput').value;
-                    let textPage = document.getElementById('textPageInput').value;
-                    let textTitle = document.getElementById('textTitleInput').value;
-                    let textLanguageId = document.getElementById('textLanguageIdInput').value;
-                    let textText = defaultRTE.value;
-                    let textItem = { Id: textId, Page: textPage, Title: textTitle, LanguageId: textLanguageId, Text: textText }
-                    return $.ajax({
-                        type: "POST",
-                        beforeSend: function (request) { request.setRequestHeader("RequestVerificationToken", "@AntiForgery.GetTokens(Context).RequestToken"); },
-                        url: "/Admin/EditText",
-                        contentType: 'application/json',
-                        data: JSON.stringify(textItem),
-                        datatype: "html",
-                        async: true,
-                        success: function (data) {
-                            $('#editImpressumModal .modal-body').html(data);
-                            let impressumDiv = document.getElementById('impressumTextDiv');
-                            impressumDiv.innerHTML = textText;
-                            $('#editImpressumModal').modal('hide');
-                        },
-                        error: function (jqXhr, textStatus, errorThrown) {
-                            console.log(textStatus, errorThrown);
-                        }
-                    });
-                }
             </script>
+            <script src="/js/home-about.js"></script>
         }
     </div>
 </div>
-
-<div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editImpressumModal">
+<div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editAboutTextModalDiv">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <h5 class="modal-title">Edit About</h5>
+                <button id="editAboutTextCloseButton" type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
