@@ -7,17 +7,63 @@
 @using KinaUnaWeb.Services
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @using Syncfusion.EJ2
+@inject ILocaleManager LocaleManager;
+@inject IProgenyManager ChildManager
 @{
     KinaUnaLanguage kinaUnaLanguage = Context.Request.GetKinaUnaLanguage();
     int languageId = kinaUnaLanguage.Id;
     string languageCode = kinaUnaLanguage.Code;
+    string returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl();
+    List<Progeny> childList = new List<Progeny>();
+    Progeny child = new Progeny();
+    UserInfo userInfo = new UserInfo();
+    bool showUndelete = false;
+
+    if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        string userId = User.GetUserId();
+        userInfo = await ChildManager.GetInfo(User.GetEmail());
+        bool isAccountDeleted = userInfo.Deleted && userInfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30);
+        if (!isAccountDeleted && await ChildManager.IsUserLoginValid(userId))
+        {
+            if (userInfo.UserId == "401")
+            {
+                Context.Response.Redirect("/Account/CheckOut?returnUrl=" + returnUrl);
+            }
+            else
+            {
+                if (userInfo.ViewChild == 0)
+                {
+                    Context.Response.Redirect("/");
+                }
+                childList = userInfo.ProgenyList;
+                child = userInfo.ProgenyList.SingleOrDefault(p => p.Id == userInfo.ViewChild);
+            }
+        }
+        else
+        {
+            bool isApplicationUserValid = await ChildManager.IsApplicationUserValid(userId);
+
+            if (isApplicationUserValid && userInfo.Deleted && userInfo.DeletedTime > DateTime.UtcNow - TimeSpan.FromDays(30))
+            {
+
+                showUndelete = true;
+            }
+            else
+            {
+                Context.Response.Redirect("/Account/SignIn?returnUrl=" + returnUrl);
+            }
+        }
+    }
+
+    UserMenuViewModel userMenuViewModel = new UserMenuViewModel { LanguageId = languageId, UserInfo = userInfo };
 }
 <html lang="@languageCode">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark">
-    <title>@ViewData["Title"] : KinaUna Web</title>
+    <title>@ViewData["Title"] : KinaUna</title>
     <link rel="stylesheet" href="~/css/bootstrap.min.css" asp-append-version="true">
     <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/bootstrap5.css"/>
     <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/bootstrap5-dark.css" media="(prefers-color-scheme: dark)">
@@ -32,7 +78,7 @@
     <script src="~/js/bootstrap.min.js" asp-append-version="true"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/js/bootstrap-select.min.js"></script>
-   <script src="~/js/waitMe.min.js"></script>
+    <script src="~/js/waitMe.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
     <meta name="theme-color" content="#3a2051" />
     <link rel="manifest" href="~/manifest.json">
@@ -50,56 +96,7 @@
     </script>
     @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
-@inject ILocaleManager LocaleManager;
-@{ string returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl(); }
-@inject IProgenyManager ChildManager
-@{
-    List<Progeny> childList = new List<Progeny>();
-    Progeny child = new Progeny();
-    UserInfo userInfo = new UserInfo();
-    bool showUndelete = false;
-}
-
-@if (User.Identity != null && User.Identity.IsAuthenticated)
-{
-    string userId = User.GetUserId();
-    userInfo = await ChildManager.GetInfo(User.GetEmail());
-    bool isAccountDeleted = userInfo.Deleted && userInfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30);
-    if (!isAccountDeleted && await ChildManager.IsUserLoginValid(userId))
-    {
-        if (userInfo.UserId == "401")
-        {
-            Context.Response.Redirect("/Account/CheckOut?returnUrl=" + returnUrl);
-        }
-        else
-        {
-            if (userInfo.ViewChild == 0)
-            {
-                Context.Response.Redirect("/");
-            }
-            childList = userInfo.ProgenyList;
-            child = userInfo.ProgenyList.SingleOrDefault(p => p.Id == userInfo.ViewChild);
-        }
-    }
-    else
-    {
-        bool isApplicationUserValid = await ChildManager.IsApplicationUserValid(userId);
-
-        if (isApplicationUserValid && userInfo.Deleted && userInfo.DeletedTime > DateTime.UtcNow - TimeSpan.FromDays(30))
-        {
-
-            showUndelete = true;
-        }
-        else
-        {
-            Context.Response.Redirect("/Account/SignIn?returnUrl=" + returnUrl);
-        }
-    }
-}
 <body>
-@{
-        UserMenuViewModel userMenuViewModel = new UserMenuViewModel { LanguageId = languageId, UserInfo = userInfo };
-}
 <div id="topLanguageDiv" class="kinauna_purple_bg">
     <div class="container">
         <div class="row">
@@ -112,25 +109,16 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top" id="navMain">
     <div id="topMainMenuContainer" class="container">
 
-        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage" aria-label="Home" style="margin-right: 80px;">
+            <img src="/images/Square44x44Logo.scale-100.png" class="kinauna-logo"/>
+        </a>
+        @if (userInfo.CanUserAddItems)
         {
-            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage" aria-label="Home" style="margin-right: 80px;">
-                <img src="/images/Square44x44Logo.scale-100.png" class="kinauna-logo"/>
-            </a>
-            @if (userInfo.CanUserAddItems)
-            {
-                <div class="navbar-nav nav-item ml-3 ml-lg-1">
-                    <a class="nav-link kinauna_yellow_text leavePage" style="margin-right: 12px;" asp-area="" asp-controller="AddItem" asp-action="Index" aria-label="Add item">
-                        <i class="material-icons icon_medium kinauna_yellow_text" aria-hidden="true">add</i>
-                    </a>
-                </div>
-            }
-        }
-        else
-        {
-            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand leavePage" aria-label="Home" style="margin-right: 80px;">
-                <img src="/images/Square44x44Logo.scale-100_bw.png" class="kinauna-logo"/>
-            </a>
+            <div class="navbar-nav nav-item ml-3 ml-lg-1">
+                    <button class="btn btn-link kinauna_yellow_text" style="margin-right: 12px;" id="mainPageAddItemButton" data-toggle="modal" data-target="#mainModal" aria-label="Add item">
+                    <i class="material-icons icon_medium kinauna_yellow_text" aria-hidden="true">add</i>
+                </button>
+            </div>
         }
         @{
             string childprofilePic = "<i class=\"material-icons d-none\" style=\"color: #8bda8b;\">child_care</i>";
@@ -200,7 +188,6 @@
         <div id="pageSettingsDiv" class="d-none page-settings-container">
         </div>
     </div>
-    
 </nav>
     @await Html.PartialAsync("_SideMenuPartial", userMenuViewModel)
 <div id="body-content" class="main-container body-content">
@@ -224,6 +211,7 @@
         </div>
     </div>
 }
+@await Html.PartialAsync("_LayoutModalPartial")
 <script src="~/js/app.js" asp-append-version="true"></script>
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
@@ -232,7 +220,6 @@
     <script src="~/signalr/signalr-protocol-msgpack.min.js"></script>
     <script src="~/signalr/KinaUnaWebNotifications.js" asp-append-version="true"></script>
 }
-
 <ejs-scripts></ejs-scripts>
 </body>
 </html>

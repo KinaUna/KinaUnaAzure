@@ -3235,6 +3235,23 @@ button.Zebra_DatePicker_Icon {
         background: #d9d8d8;
         color: black !important;
     }
+
+    .modal-header {
+        border-bottom: 1px solid #363738;
+    }
+
+    .close {
+        color: #fff;
+        text-shadow: 0 1px 0 #6c6c6c;
+    }
+
+    .close:hover {
+        color: #fff;
+    }
+
+    .horizontal_bar_thin {
+        background-color: #363738;
+    }
 }
 
 div.dataTables_wrapper div.dataTables_length select {
