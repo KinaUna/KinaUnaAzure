@@ -122,27 +122,6 @@
         </div>
     </div>
 </div>
-<script>
-    navigator.serviceWorker.ready.then(function (reg) {
-        // Do we already have a push message subscription?
-        reg.pushManager.getSubscription()
-            .then(function (subscription) {
-                let isSubscribed = subscription;
-                let enableBtn = document.getElementById('enablePushButton');
-                let disableBtn = document.getElementById('disablePushButton');
-                if (isSubscribed) {
-                    console.log('User is already subscribed to push notifications');
-                    enableBtn.style.display = 'none';
-                    disableBtn.style.display = 'inline-block';
-
-                } else {
-                    console.log('User is not yet subscribed to push notifications');
-                    disableBtn.style.display = 'none';
-                    enableBtn.style.display = 'inline-block';
-                }
-            })
-            .catch(function (err) {
-                console.log('[req.pushManager.getSubscription] Unable to get subscription details.', err);
-            });
-    });
+<script src="/js/account/my-account.js">
+    
 </script>

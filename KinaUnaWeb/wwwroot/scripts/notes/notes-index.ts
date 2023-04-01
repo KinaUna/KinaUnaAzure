@@ -1,4 +1,4 @@
-﻿import * as pageModels from './page-models.js';
+import * as pageModels from '../page-models.js';
 
 const notesPageSettingsStorageKey = 'notes_page_parameters'; 
 let notesPageParameters = new pageModels.NotesPageParameters();
