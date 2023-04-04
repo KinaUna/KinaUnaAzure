@@ -19,6 +19,10 @@ function runWaitMeLeave(): void {
     });
 }
 
+function stopWaitMeLeave(): void {
+    bodyContentDiv.waitMe("hide");
+}
+
 function runWaitMeLeave2(): void {
     bodyContentDiv.waitMe({
         effect: 'roundBounce',
@@ -274,4 +278,11 @@ $(function () {
     setSideBarPosition();
     setSidebarText();
     window.onresize = setSideBarPosition;
+        
+    window.addEventListener('waitMeStart', () => {
+        runWaitMeLeave();
+    });
+    window.addEventListener('waitMeStop', () => {
+        stopWaitMeLeave();
+    });
 });

@@ -62,3 +62,23 @@ export class KinaUnaTextResponse {
     created: Date = new Date();
     updated: Date = new Date();
 }
+
+export class TextTranslation {
+    id: number = 0;
+    page: string = '';
+    word: string = '';
+    translation: string = '';
+    languageId: number = 0;
+}
+
+export class KinaUnaLanguage {
+    id: number = 0;
+    name: string = '';
+    icon: string = '';
+}
+
+export class TextTranslationPageListModel {
+    page: string = '';
+    translations: TextTranslation[] = [];
+    languagesList: KinaUnaLanguage[] = [];
+}

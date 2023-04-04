@@ -1167,7 +1167,6 @@ footer {
     margin-bottom: 0;
     margin-top: 5px;
     border-radius: .25rem;
-    box-shadow: 0 10px 23px -8px rgb(0 0 0 / 20%);
     width: fit-content;
 }
 
@@ -3216,6 +3215,16 @@ button.Zebra_DatePicker_Icon {
         background-color: #000;
         border: 1px solid #fff;
         border: 1px solid rgba(255, 255, 255, .125);
+    }
+
+    .select-view-item-selected {
+        position: relative;
+        display: block;
+        padding: 1.15rem 1.25rem;
+        background-color: #ee66ff;
+        background-color: rgba(170, 34, 241, 0.11);
+        border: 2px solid #aa22f1;
+        font-weight: bold;
     }
 
     .amsify-suggestags-area .amsify-suggestags-list {

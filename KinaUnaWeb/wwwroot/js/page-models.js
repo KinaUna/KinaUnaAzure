@@ -47,4 +47,27 @@ export class KinaUnaTextResponse {
         this.updated = new Date();
     }
 }
+export class TextTranslation {
+    constructor() {
+        this.id = 0;
+        this.page = '';
+        this.word = '';
+        this.translation = '';
+        this.languageId = 0;
+    }
+}
+export class KinaUnaLanguage {
+    constructor() {
+        this.id = 0;
+        this.name = '';
+        this.icon = '';
+    }
+}
+export class TextTranslationPageListModel {
+    constructor() {
+        this.page = '';
+        this.translations = [];
+        this.languagesList = [];
+    }
+}
 //# sourceMappingURL=page-models.js.map

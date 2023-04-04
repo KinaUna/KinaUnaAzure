@@ -3,6 +3,8 @@ import * as pageModels from '../page-models.js';
 let editTextTranslationCurrentTextItem = new pageModels.KinaUnaTextParameters();
 
 async function loadManageTextsEditTextModal(textItem: pageModels.KinaUnaTextParameters): Promise<void> {
+    const waitMeStartEvent = new Event('waitMeStart');
+    window.dispatchEvent(waitMeStartEvent);
     await fetch('/Admin/EditTextTranslation?textId=' + textItem.textId + '&languageId=' + textItem.languageId + '&returnUrl=' + getManageTextsReturnUrl(), {
         method: 'GET',
         headers: {
@@ -17,6 +19,8 @@ async function loadManageTextsEditTextModal(textItem: pageModels.KinaUnaTextPara
     }).catch(function (error) {
         console.log('Error loading about text content. Error: ' + error);
     });
+    const waitMeStopEvent = new Event('waitMeStop');
+    window.dispatchEvent(waitMeStopEvent);
 }
 
 function showManageTextsEditModal(textItem: pageModels.KinaUnaTextResponse) {
@@ -79,6 +83,8 @@ function setManageTextsEditForm(textItem: pageModels.KinaUnaTextResponse) {
 }
 
 async function saveManageTextsContent() {
+    const waitMeStartEvent = new Event('waitMeStart');
+    window.dispatchEvent(waitMeStartEvent);
     const editTextTranslationForm = document.querySelector<HTMLFormElement>('#manageTextsEditForm');
     
     if (editTextTranslationForm !== null) {
@@ -99,6 +105,8 @@ async function saveManageTextsContent() {
             console.log('Error saving edit text translation. Error: ' + error);
         });
     }
+    const waitMeStopEvent = new Event('waitMeStop');
+    window.dispatchEvent(waitMeStopEvent);
 }
 
 function getManageTextsReturnUrl(): string {
