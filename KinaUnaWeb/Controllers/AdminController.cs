@@ -428,31 +428,20 @@ namespace KinaUnaWeb.Controllers
         }
 
         [Authorize]
+        [Produces("application/json")]
         public async Task<IActionResult> EditTextTranslation(int textId, int languageId)
         {
             UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo != null && userInfo.IsKinaUnaAdmin)
             {
-                ManageKinaUnaTextsViewModel model = new()
-                {
-                    LanguageId = Request.GetLanguageIdFromCookie()
-                };
-
                 List<KinaUnaText> allTexts = await _pageTextsHttpClient.GetAllKinaUnaTexts(languageId, true);
-                model.KinaUnaText = allTexts.SingleOrDefault(t => t.TextId == textId && t.LanguageId == languageId);
+                KinaUnaText textToEdit = allTexts.SingleOrDefault(t => t.TextId == textId && t.LanguageId == languageId);
+                //if (textToEdit != null)
+                //{
+                //    textToEdit.Text = "";
+                //}
 
-                model.LanguagesList = await _languagesHttpClient.GetAllLanguages();
-                KinaUnaLanguage selectedLanguage = model.LanguagesList.SingleOrDefault(l => l.Id == languageId);
-                if (selectedLanguage != null)
-                {
-                    model.Language = model.LanguagesList.IndexOf(selectedLanguage);
-                }
-                else
-                {
-                    model.Language = 0;
-                }
-
-                return PartialView("_EditTextTranslationPartial", model);
+                return Json(textToEdit);
             }
 
             return RedirectToAction("Index", "Home");
@@ -460,8 +449,9 @@ namespace KinaUnaWeb.Controllers
 
         [Authorize]
         [ValidateAntiForgeryToken]
+        [Produces("application/json")]
         [HttpPost]
-        public async Task<IActionResult> EditTextTranslation([FromBody] KinaUnaText model)
+        public async Task<IActionResult> EditTextTranslation([FromForm] KinaUnaText model)
         {
             UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo != null && userInfo.IsKinaUnaAdmin)
@@ -469,7 +459,7 @@ namespace KinaUnaWeb.Controllers
                 KinaUnaText updateText = await _pageTextsHttpClient.GetPageTextById(model.Id);
                 updateText.Text = model.Text;
                 KinaUnaText updatedText = await _pageTextsHttpClient.UpdatePageText(updateText);
-
+                
                 // Update caches
                 await _pageTextsHttpClient.GetPageTextById(updatedText.Id, true);
                 List<KinaUnaLanguage> languages = await _languagesHttpClient.GetAllLanguages();
@@ -479,24 +469,7 @@ namespace KinaUnaWeb.Controllers
                     await _pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
                 }
 
-                ManageKinaUnaTextsViewModel editTranslationModel = new()
-                {
-                    KinaUnaText = updatedText,
-                    LanguageId = Request.GetLanguageIdFromCookie(),
-                    LanguagesList = languages
-                };
-                KinaUnaLanguage selectedLanguage = editTranslationModel.LanguagesList.SingleOrDefault(l => l.Id == updatedText.LanguageId);
-                if (selectedLanguage != null)
-                {
-                    editTranslationModel.Language = editTranslationModel.LanguagesList.IndexOf(selectedLanguage);
-                }
-                else
-                {
-                    editTranslationModel.Language = 0;
-                }
-
-                editTranslationModel.MessageId = 1;
-                return PartialView("_EditTextTranslationPartial", editTranslationModel);
+                return Json(updatedText);
             }
 
             return RedirectToAction("Index", "Home");
@@ -563,6 +536,15 @@ namespace KinaUnaWeb.Controllers
                 }
 
                 model.LanguagesList = await _languagesHttpClient.GetAllLanguages();
+                KinaUnaLanguage selectedLanguage = model.LanguagesList.SingleOrDefault(l => l.Id == model.LanguageId);
+                if (selectedLanguage != null)
+                {
+                    model.Language = model.LanguagesList.IndexOf(selectedLanguage);
+                }
+                else
+                {
+                    model.Language = 0;
+                }
                 return View(model);
             }
 

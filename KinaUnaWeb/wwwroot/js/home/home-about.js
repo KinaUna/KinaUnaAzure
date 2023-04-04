@@ -1,12 +1,6 @@
 "use strict";
-const aboutPageTextIdDiv = document.querySelector('#aboutPageTextIdDiv');
-const editAboutTextButton = document.querySelector('#editAboutTextButton');
-const editAboutTextModalDiv = document.querySelector('#editAboutTextModalDiv');
-const aboutPageReturnUrlDiv = document.querySelector('#aboutPageReturnUrlDiv');
-let aboutTextId = '';
-let aboutPageReturnUrl = '';
-async function showEditAboutModal() {
-    await fetch('/Admin/EditText?id=' + aboutTextId + "&returnUrl=" + aboutPageReturnUrl, {
+async function loadEditAboutModal() {
+    await fetch('/Admin/EditText?id=' + getAboutPageTextId() + "&returnUrl=" + getAboutReturnUrl(), {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
@@ -15,25 +9,42 @@ async function showEditAboutModal() {
     }).then(async function (aboutTextResponse) {
         if (aboutTextResponse.text != null) {
             const aboutTextContent = await aboutTextResponse.text();
-            $('#editAboutTextModalDiv .modal-body').html(aboutTextContent);
+            await showEditAboutModal(aboutTextContent);
         }
     }).catch(function (error) {
         console.log('Error loading about text content. Error: ' + error);
     });
 }
-$(function () {
-    if (aboutPageTextIdDiv !== null) {
-        const aboutTextIdData = aboutPageTextIdDiv.dataset.aboutPageTextId;
-        if (aboutTextIdData) {
-            aboutTextId = aboutTextIdData;
-        }
-    }
+function showEditAboutModal(textContent) {
+    return new Promise(function (resolve, reject) {
+        $('#editAboutTextModalDiv .modal-body').html(textContent);
+        resolve();
+    });
+}
+function getAboutReturnUrl() {
+    let aboutPageReturnUrl = '';
+    const aboutPageReturnUrlDiv = document.querySelector('#aboutPageReturnUrlDiv');
     if (aboutPageReturnUrlDiv !== null) {
         const aboutPageReturnUrlData = aboutPageReturnUrlDiv.dataset.aboutPageReturnUrl;
         if (aboutPageReturnUrlData) {
             aboutPageReturnUrl = aboutPageReturnUrlData;
         }
     }
-    editAboutTextButton?.addEventListener('click', showEditAboutModal);
+    return aboutPageReturnUrl;
+}
+function getAboutPageTextId() {
+    let aboutTextId = '';
+    const aboutPageTextIdDiv = document.querySelector('#aboutPageTextIdDiv');
+    if (aboutPageTextIdDiv !== null) {
+        const aboutTextIdData = aboutPageTextIdDiv.dataset.aboutPageTextId;
+        if (aboutTextIdData) {
+            aboutTextId = aboutTextIdData;
+        }
+    }
+    return aboutTextId;
+}
+$(function () {
+    const editAboutTextButton = document.querySelector('#editAboutTextButton');
+    editAboutTextButton?.addEventListener('click', loadEditAboutModal);
 });
 //# sourceMappingURL=home-about.js.map

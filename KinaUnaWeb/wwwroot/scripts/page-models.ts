@@ -42,3 +42,23 @@ export class NotesPageResponse implements BaseItemsPageResponseModel {
     totalItems: number = 0;
     notesList: number[] = [];
 }
+
+export class KinaUnaTextParameters {
+    id: number = 0;
+    textId: number = 0;
+    languageId: number = 0;
+    page: string = '';
+    title: string = '';
+    text: string = '';
+}
+
+export class KinaUnaTextResponse {
+    id: number = 0;
+    textId: number = 0;
+    languageId: number = 0;
+    page: string = '';
+    title: string = '';
+    text: string = '';
+    created: Date = new Date();
+    updated: Date = new Date();
+}

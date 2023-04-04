@@ -1,9 +1,17 @@
-﻿@using Microsoft.AspNetCore.Antiforgery
+﻿@using Microsoft.AspNetCore.Http.Extensions
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Syncfusion.EJ2
+@using Syncfusion.EJ2.DropDowns
+@using Syncfusion.EJ2.RichTextEditor
+@using KinaUna.Data
 @model KinaUnaWeb.Models.AdminViewModels.ManageKinaUnaTextsViewModel
-@inject IAntiforgery AntiForgery
+@inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = "Manage Texts";
+    string returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl();
 }
+<div id="manageTextsPageReturnUrlDiv" class="d-none" data-manage-texts-page-return-url='@returnUrl'></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="space-20"></div>
     <div class="add-item-container">
@@ -21,7 +29,12 @@
                     {
                         <div class="row">
                             <div class="col-12">
-                                <div><a class="btn btn-primary" onclick="editModal('@kinaUnaText.TextId', 'Edit @kinaUnaText.Title', '@Model.LanguageId')">Edit @kinaUnaText.Title</a></div>
+                                <div>
+                                    <button class="btn btn-primary" data-manage-texts-edit-text-id="@kinaUnaText.TextId" data-manage-texts-edit-language-id="@kinaUnaText.LanguageId"
+                                            data-toggle="modal" data-target="#manageTextsPageEditTextModalDiv">
+                                        Edit @kinaUnaText.Title
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="space-20"></div>
@@ -30,16 +43,77 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editTextModal">
+    <div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="manageTextsPageEditTextModalDiv">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"></h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button id="manageTextsPageEditTextModalCloseButton" type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body">
+                    <form id="manageTextsEditForm" asp-action="EditTextTranslation" method="post" role="form">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="float-right">
+                                    <div class="mb-2">@await LocaleManager.GetTranslation("Translation", PageNames.TextEditor, Model.LanguageId)</div>
+                                    <div class="float-right" style="min-width: 300px;">
+                                        <ejs-dropdownlist id="editTextTranslationLanguageList" dataSource="Model.LanguagesList" index="@Model.Language" change="manageTextsLanguageChanged"
+                                                          itemTemplate="@Html.Raw("<div><div class=\"e-avatar e-avatar-small e-avatar-circle\"><img class=\"image\" src=\"${IconLink}\" alt=\"Flag\"/></div><span class=\"ename\"> ${Name} </span></div>")"
+                                                          valueTemplate="@Html.Raw("<div style=\"width:100%;height:100%;\"><div class=\"e-avatar e-avatar-small e-avatar-circle\"><img class=\"value\" src=\"${IconLink}\" height=\"26px\" width=\"26px\" alt=\"Flag\"/></div><span class=\"name\"> ${Name} </span></div>")">
+                                            <e-dropdownlist-fields text="Name" value="Id"></e-dropdownlist-fields>
+                                        </ejs-dropdownlist>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-20"></div>
+                        <div class="row">
+                            <div class="col-3">Title:</div>
+                            <div class="col-6">
+                                <input id="editTextTranslationTitleInput" type="text" name="Title" />
+                            </div>
+                        </div>
+                        <div class="space-20"></div>
+                        <div class="row">
+                            <div class="col-3">Page:</div>
+                            <div class="col-6" id="editTextTranslationPageDiv"></div>
+                        </div>
+                        <div class="space-20"></div>
+                        <div class="row">
+                            <div class="col-3">Text:</div>
+                            <div class="col-12 col-sm-12 col-md-9">
+                                @{
+                                    string[] toolbarItems = new[]
+                                    {
+                                        "Bold", "Italic", "Underline", "StrikeThrough", "FontName", "FontSize", "FontColor", "BackgroundColor", "LowerCase", "UpperCase", "|", "Formats", "Alignments", "OrderedList", "UnorderedList",
+                                        "Outdent", "Indent", "|", "CreateLink", "Image", "CreateTable", "|", "ClearFormat", "SourceCode", "FullScreen", "|", "Undo", "Redo"
+                                    };
+                                }
+                                <ejs-richtexteditor id="editTextTranslationRichTextEditor" imageUploadSuccess="onImageUploadSuccess" ejs-for="Text" height="400" enableResize="true">
+                                    <e-richtexteditor-toolbarsettings items="@toolbarItems" type="MultiRow" enableFloating="true"></e-richtexteditor-toolbarsettings>
+                                    <e-richtexteditor-insertimagesettings saveUrl="/Admin/SaveRtfFile" path=""></e-richtexteditor-insertimagesettings>
+                                    <e-content-template>
+
+                                    </e-content-template>
+                                </ejs-richtexteditor>
+                            </div>
+                        </div>
+                        <div class="space-50"></div>
+                        <div class="horizontal_bar_thin w-100"></div>
+                        <div class="space-50"></div>
+                        <div class="row">
+                            <div class="col-12">
+                                <input id="editTextTranslationPageInput" hidden="hidden" name="Page" value="" />
+                                <input id="editTextTranslationIdInput" hidden="hidden" name="Id" value="0" />
+                                <input id="editTextTranslationTextIdInput" hidden="hidden" name="TextId" value="0" />
+                                <input id="editTextTranslationLanguageIdInput" hidden="hidden" name="LanguageId" value="0" />
+                                <button id="editTextTranslationPageSaveButton" type="submit" class="btn btn-primary float-right">Save</button>
+                                <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -52,10 +126,6 @@
     }
 </style>
 <script>
-    let kinaUnaTextId;
-    let kinaUnaTextTitle;
-    let kinaUnaTextLanguageId;
-
     function onImageUploadSuccess(args) {
         if (args.e.currentTarget.getResponseHeader('name') != null) {
             args.file.name = args.e.currentTarget.getResponseHeader('name');
@@ -64,109 +134,14 @@
             filename.title = args.file.name;
         }
     }
-
-    let defaultRTE;
-
-    function onrtecreated() {
-        setTimeout(function() {
-                let rteElement = document.getElementById('textTextRTE').ej2_instances[0];
-                rteElement.refreshUI();
-            },
-            1000);
-        defaultRTE = this;
-    }
-
-    function onrtefocus() {
-        let rteElement = document.getElementById('textTextRTE').ej2_instances[0];
-        rteElement.refreshUI();
-    }
-
-    function updateTitle() {
-        let editTitleSource = document.getElementById('editTitleInput');
-        let editTitleTarget = document.getElementById('textTitleInput');
-        editTitleTarget.value = editTitleSource.value;
-    }
-
-    function run_waitMeModal() {
-        $('#editTextModal .modal-body').waitMe({
-            effect: 'bounce',
-            text: '',
-            bg: 'rgba(255,255,255,0.7)',
-            color: '#3a2051',
-            maxSize: '',
-            waitTime: -1,
-            source: '',
-            textPos: 'vertical',
-            fontSize: '',
-            onClose: function () { }
-        });
-    }
-
-    $(function () {
-        editModal = (textId, title, languageId) => {
-            run_waitMeModal();
-            kinaUnaTextId = textId;
-            kinaUnaTextTitle = title;
-            try {
-                $.ajax({
-                    type: 'GET',
-                    url: "/Admin/EditTextTranslation?textId=" + textId + "&languageId=" + languageId,
-                    contentType: false,
-                    datatype: "html",
-                    async: true,
-                    success: function (res) {
-                        $('#editTextModal .modal-body').waitMe("hide");
-                        $('#editTextModal .modal-body').html(res);
-                        $('#editTextModal .modal-title').html(title);
-                        $('#editTextModal').modal('show');
-                    },
-                    error: function (err) {
-                        console.log(err);
-                    }
-                });
-                return false;
-            } catch (ex) {
-                console.log(ex);
-                $('#editTextModal .modal-body').waitMe("hide");
-            }
-            return false;
-        }
-    });
-
-    function saveText() {
-        run_waitMeModal();
-        let textId = document.getElementById('textIdInput').value;
-        let textPage = document.getElementById('textPageInput').value;
-        let textTitle = document.getElementById('textTitleInput').value;
-        let textLanguageId = document.getElementById('textLanguageIdInput').value;
-        let textText = defaultRTE.value;
-        let textItem = { Id: textId, Page: textPage, Title: textTitle, LanguageId: textLanguageId, Text: textText }
-        return $.ajax({
-            type: "POST",
-            beforeSend: function(request) { request.setRequestHeader("RequestVerificationToken", "@AntiForgery.GetTokens(Context).RequestToken"); },
-            url: "/Admin/EditTextTranslation",
-            contentType: 'application/json',
-            data: JSON.stringify(textItem),
-            datatype: "html",
-            async: true,
-            success: function (data) {
-                $('#editTextModal .modal-body').waitMe("hide");
-                $('#editTextModal .modal-body').html(data);
-            },
-            error: function (jqXhr, textStatus, errorThrown) {
-                console.log(textStatus, errorThrown);
-                $('#editTextModal .modal-body').waitMe("hide");
-            }
-        });
-    }
-
-    function editTextLanguageListChange() {
-        let languageListObj = document.getElementById('languageList').ej2_instances[0];
-        let langValTemp = languageListObj.itemData;
-
-        if (langValTemp.Id !== kinaUnaTextLanguageId) {
-            kinaUnaTextLanguageId = langValTemp.Id;
-            editModal(kinaUnaTextId, kinaUnaTextTitle, langValTemp.Id);
-        }
+    
+    const languageChangedEvent = new Event('languageChanged');
+    
+    function manageTextsLanguageChanged(args){
+        console.log('languageChanged in ManageTexts.cshtml');
+        if(args.isInteracted){
+            window.dispatchEvent(languageChangedEvent);
+        }        
     }
 </script>
+<script src="/js/admin/manage-texts.js" type="module"></script>

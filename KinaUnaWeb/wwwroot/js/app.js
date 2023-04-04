@@ -18,6 +18,9 @@ function runWaitMeLeave() {
         onClose: function () { }
     });
 }
+function stopWaitMeLeave() {
+    bodyContentDiv.waitMe("hide");
+}
 function runWaitMeLeave2() {
     bodyContentDiv.waitMe({
         effect: 'roundBounce',
@@ -160,7 +163,6 @@ async function setSideBarPosition() {
 }
 function setActivePageClass() {
     const currentUrl = document.location.pathname.replace('/', '');
-    console.log('currentUrl: ' + currentUrl);
     const sidebarMenuItems = document.querySelectorAll('.sidebar-item');
     sidebarMenuItems.forEach(function (sidebarMenuItem) {
         if (currentUrl.toLowerCase().startsWith(sidebarMenuItem.dataset.sidebarId)) {
@@ -252,5 +254,11 @@ $(function () {
     setSideBarPosition();
     setSidebarText();
     window.onresize = setSideBarPosition;
+    window.addEventListener('waitMeStart', () => {
+        runWaitMeLeave();
+    });
+    window.addEventListener('waitMeStop', () => {
+        stopWaitMeLeave();
+    });
 });
 //# sourceMappingURL=app.js.map

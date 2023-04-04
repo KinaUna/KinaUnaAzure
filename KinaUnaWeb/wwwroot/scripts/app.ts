@@ -178,7 +178,6 @@ async function setSideBarPosition(): Promise<void> {
 
 function setActivePageClass(): void {
     const currentUrl = document.location.pathname.replace('/', '');
-    console.log('currentUrl: ' + currentUrl);
     const sidebarMenuItems = document.querySelectorAll<HTMLLIElement>('.sidebar-item');
     sidebarMenuItems.forEach(function (sidebarMenuItem): void {
         if (currentUrl.toLowerCase().startsWith(sidebarMenuItem.dataset.sidebarId as string)) {
