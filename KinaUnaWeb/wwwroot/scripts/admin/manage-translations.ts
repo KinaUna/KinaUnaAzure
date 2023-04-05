@@ -48,7 +48,10 @@ function setTranslationsListTableContent(content: pageModels.TextTranslationPage
             if (languageName) {
                 languageColumn.innerHTML = languageName;
             }
+
             let translationColumn = document.createElement('td');
+            let translationColumnInputGroup = document.createElement('div');
+            translationColumnInputGroup.classList.add('input-group');
             let translationInput = document.createElement('input');
             translationInput.classList.add('form-control');
             translationInput.value = translationItem.translation;
@@ -58,11 +61,23 @@ function setTranslationsListTableContent(content: pageModels.TextTranslationPage
                     saveTranslationItem(translationItem.id);
                 }
             });
-            translationColumn.appendChild(translationInput);
+            let translationColumnInputGroupAppend = document.createElement('div');
+            translationColumnInputGroupAppend.classList.add('input-group-append');
+            let translationColumnInputSavedIndicator = document.createElement('span');
+            translationColumnInputSavedIndicator.classList.add('input-group-text');
+            let inputSavedIndicator = document.createElement('i');
+            inputSavedIndicator.classList.add('material-icons');
+            inputSavedIndicator.innerHTML = 'task';
+            translationColumnInputSavedIndicator.appendChild(inputSavedIndicator);
+            translationColumnInputGroupAppend.appendChild(translationColumnInputSavedIndicator);
+            translationColumnInputGroup.appendChild(translationInput);
+            translationColumnInputGroup.appendChild(translationColumnInputGroupAppend);
+            translationColumn.appendChild(translationColumnInputGroup);
+
             rowToInsert.appendChild(wordColumn);
             rowToInsert.appendChild(languageColumn);
             rowToInsert.appendChild(translationInput);
-            translationsListTable.appendChild(rowToInsert);
+
             if (translationSetCount == 0) {
                 let translationDeleteColumn = document.createElement('td');
                 translationDeleteColumn.rowSpan = content.languagesList.length;
@@ -73,11 +88,12 @@ function setTranslationsListTableContent(content: pageModels.TextTranslationPage
                 translationDeleteButton.addEventListener('click', () => {
                     deleteTranslationItem(translationItem.id);
                 });
-                translationColumn.appendChild(translationDeleteButton);
-                translationsListTable.appendChild(translationDeleteColumn);
+                translationDeleteColumn.appendChild(translationDeleteButton);
+                rowToInsert.appendChild(translationDeleteColumn);
             }
-            
 
+            translationsListTable.appendChild(rowToInsert);
+            
             translationSetCount++;
             if (translationSetCount === content.languagesList.length) {
                 const addEmptyRow = document.createElement('tr');
@@ -113,9 +129,10 @@ async function saveTranslationItem(translationId: number) {
                 const responseTranslationItem: pageModels.TextTranslation = JSON.parse(await saveTranslationResponse.text());
                 if (responseTranslationItem.id !== 0) {
                     tranlationInputElement.value = responseTranslationItem.translation;
+                    //Todo: show check or some other icon to indicate the translation was updated.
                 }
             }).catch(function (error) {
-                console.log('Error saving edit text translation. Error: ' + error);
+                console.log('Error saving text translation. Error: ' + error);
             });
         }
     }
@@ -147,7 +164,7 @@ async function deleteTranslationItem(translationId: number) {
                     setTranslationsListTableContent(currentPageTranslations);
                 }
             }).catch(function (error) {
-                console.log('Error saving edit text translation. Error: ' + error);
+                console.log('Error deleting translation. Error: ' + error);
             });
 
             const waitMeStopEvent = new Event('waitMeStop');
@@ -162,10 +179,21 @@ $(function (): void {
         const pageLiElement = selectPageElement as HTMLLIElement;
         let pageName = 'Layout';
         if (pageLiElement.dataset.viewid) {
-            pageName = pageLiElement.dataset.viewid
-            
+            pageName = pageLiElement.dataset.viewid;
         }
-        selectPageElement.addEventListener('click', () => {
+
+        selectPageElement.addEventListener('click', (event) => {
+            const translationsPageSelectedDiv = document.querySelector<HTMLDivElement>('#translationsPageSelectedDiv');
+            if (translationsPageSelectedDiv !== null) {
+                translationsPageSelectedDiv.innerHTML = pageName;
+            }
+            const allLiElements = document.querySelectorAll('[data-viewid]');
+            allLiElements.forEach((element) => {
+                element.classList.remove('select-view-item-selected');
+            });
+
+            const liElement = event.target as HTMLLIElement;
+            liElement.classList.add('select-view-item-selected')
             getPageTranslations(pageName); 
         })
     });

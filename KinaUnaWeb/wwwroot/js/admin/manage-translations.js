@@ -23,6 +23,11 @@ async function getPageTranslations(pageName) {
     const waitMeStopEvent = new Event('waitMeStop');
     window.dispatchEvent(waitMeStopEvent);
 }
+function hideElementDelay(milliseconds) {
+    return new Promise(resolve => {
+        setTimeout(resolve, milliseconds);
+    });
+}
 function setTranslationsListTableContent(content) {
     const translationsListTable = document.querySelector('#translationsListTable');
     if (translationsListTable !== null) {
@@ -42,6 +47,8 @@ function setTranslationsListTableContent(content) {
                 languageColumn.innerHTML = languageName;
             }
             let translationColumn = document.createElement('td');
+            let translationColumnInputGroup = document.createElement('div');
+            translationColumnInputGroup.classList.add('input-group');
             let translationInput = document.createElement('input');
             translationInput.classList.add('form-control');
             translationInput.value = translationItem.translation;
@@ -51,15 +58,59 @@ function setTranslationsListTableContent(content) {
                     saveTranslationItem(translationItem.id);
                 }
             });
-            translationColumn.appendChild(translationInput);
+            translationInput.addEventListener('focusin', () => {
+                const saveButton = document.querySelector('[data-save-button-id="' + translationItem.id + '"]');
+                if (saveButton !== null) {
+                    saveButton.classList.remove('d-none');
+                }
+            });
+            translationInput.addEventListener('focusout', async () => {
+                const saveButton = document.querySelector('[data-save-button-id="' + translationItem.id + '"]');
+                if (saveButton !== null) {
+                    await hideElementDelay(500);
+                    saveButton.classList.add('d-none');
+                }
+            });
+            let translationColumnInputGroupAppend = document.createElement('div');
+            translationColumnInputGroupAppend.classList.add('input-group-append');
+            let translationColumnInputSaveButton = document.createElement('button');
+            translationColumnInputSaveButton.classList.add('btn');
+            translationColumnInputSaveButton.classList.add('btn-sm');
+            translationColumnInputSaveButton.classList.add('btn-success');
+            translationColumnInputSaveButton.classList.add('mt-0');
+            translationColumnInputSaveButton.classList.add('mb-0');
+            translationColumnInputSaveButton.classList.add('d-none');
+            translationColumnInputSaveButton.dataset.saveButtonId = translationItem.id.toString();
+            translationColumnInputSaveButton.addEventListener('click', () => {
+                saveTranslationItem(translationItem.id);
+            });
+            let saveButtonIcon = document.createElement('i');
+            saveButtonIcon.classList.add('material-icons');
+            saveButtonIcon.innerHTML = 'save';
+            translationColumnInputSaveButton.appendChild(saveButtonIcon);
+            let translationColumnInputSavedIndicator = document.createElement('span');
+            translationColumnInputSavedIndicator.classList.add('input-group-text');
+            translationColumnInputSavedIndicator.classList.add('d-none');
+            translationColumnInputSavedIndicator.dataset.savedIndicatorId = translationItem.id.toString();
+            let inputSavedIndicator = document.createElement('i');
+            inputSavedIndicator.classList.add('material-icons');
+            inputSavedIndicator.classList.add('text-success');
+            inputSavedIndicator.innerHTML = 'task';
+            translationColumnInputSavedIndicator.appendChild(inputSavedIndicator);
+            translationColumnInputGroupAppend.appendChild(translationColumnInputSaveButton);
+            translationColumnInputGroupAppend.appendChild(translationColumnInputSavedIndicator);
+            translationColumnInputGroup.appendChild(translationInput);
+            translationColumnInputGroup.appendChild(translationColumnInputGroupAppend);
+            translationColumn.appendChild(translationColumnInputGroup);
             rowToInsert.appendChild(wordColumn);
             rowToInsert.appendChild(languageColumn);
-            rowToInsert.appendChild(translationInput);
+            rowToInsert.appendChild(translationColumn);
             if (translationSetCount == 0) {
                 let translationDeleteColumn = document.createElement('td');
                 translationDeleteColumn.rowSpan = content.languagesList.length;
                 let translationDeleteButton = document.createElement('button');
                 translationDeleteButton.classList.add('btn');
+                translationDeleteButton.classList.add('btn-sm');
                 translationDeleteButton.classList.add('btn-danger');
                 translationDeleteButton.innerHTML = 'Delete';
                 translationDeleteButton.addEventListener('click', () => {
@@ -101,7 +152,7 @@ async function saveTranslationItem(translationId) {
                 const responseTranslationItem = JSON.parse(await saveTranslationResponse.text());
                 if (responseTranslationItem.id !== 0) {
                     tranlationInputElement.value = responseTranslationItem.translation;
-                    //Todo: show check or some other icon to indicate the translation was updated.
+                    showSavedIndicator(translationId);
                 }
             }).catch(function (error) {
                 console.log('Error saving text translation. Error: ' + error);
@@ -110,6 +161,12 @@ async function saveTranslationItem(translationId) {
     }
     const waitMeStopEvent = new Event('waitMeStop');
     window.dispatchEvent(waitMeStopEvent);
+}
+function showSavedIndicator(translationId) {
+    const checkElement = document.querySelector('[data-saved-indicator-id="' + translationId.toString() + '"]');
+    if (checkElement !== null) {
+        checkElement.classList.remove('d-none');
+    }
 }
 async function deleteTranslationItem(translationId) {
     let translationToDelete = currentPageTranslations.translations.find(t => t.id == translationId);

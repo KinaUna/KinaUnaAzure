@@ -3085,6 +3085,13 @@ button.Zebra_DatePicker_Icon {
 }
 
 @media (prefers-color-scheme: dark) {
+
+    .input-group-text {
+        color: #e9ecef;
+        background-color: #27282a;
+        border: 1px solid #3f4448;
+    }
+
     .e-quick-popup-wrapper.e-device > .e-event-popup {
         margin-top: 130px;
         background: #262426;
