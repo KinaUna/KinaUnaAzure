@@ -11,7 +11,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<CalendarItem> EventsList { get; set; }
         
         public List<ScheduleView> ViewOptions { get; set; }
-
+        
         public CalendarListViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
@@ -25,6 +25,21 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 new ScheduleView { Option = View.Month, FirstDayOfWeek = 1, ShowWeekNumber = true, DateFormat = "dd/MMM/yyyy" },
                 new ScheduleView { Option = View.Agenda, FirstDayOfWeek = 1, DateFormat = "dd/MMM/yyyy" }
             };
+        }
+
+        public string LanguageIdForCldr()
+        {
+            if (LanguageId == 2)
+            {
+                return "de";
+            }
+
+            if (LanguageId == 3)
+            {
+                return "da";
+            }
+
+            return "en-DK";
         }
 
         public void SetEventsList(List<CalendarItem> eventsList)

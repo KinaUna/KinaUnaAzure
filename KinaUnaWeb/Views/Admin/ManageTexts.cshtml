@@ -138,7 +138,6 @@
     const languageChangedEvent = new Event('languageChanged');
     
     function manageTextsLanguageChanged(args){
-        console.log('languageChanged in ManageTexts.cshtml');
         if(args.isInteracted){
             window.dispatchEvent(languageChangedEvent);
         }        
