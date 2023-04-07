@@ -3,11 +3,12 @@
   "name": "asp.net",
   "private": true,
   "devDependencies": {
-    "@types/jquery": "3.5.16",
+    "@types/jquery": "^3.5.16",
+    "@types/bootstrap": "^5.2.6",
     "del": "5.1.0",
     "gulp": "^4.0.2"
   },
   "dependencies": {
-    "@types/bootstrap": "^5.2.6"
+    "moment": "^2.29.4"
   }
 }

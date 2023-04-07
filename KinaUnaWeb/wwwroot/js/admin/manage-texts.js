@@ -11,7 +11,7 @@ async function loadManageTextsEditTextModal(textItem) {
         },
     }).then(async function (editTextTranslationResponse) {
         if (editTextTranslationResponse != null) {
-            const responseItem = JSON.parse(await editTextTranslationResponse.text());
+            const responseItem = await editTextTranslationResponse.json();
             await showManageTextsEditModal(responseItem);
         }
     }).catch(function (error) {
@@ -79,7 +79,7 @@ async function saveManageTextsContent() {
             method: 'POST',
             body: new FormData(editTextTranslationForm),
         }).then(async function (saveManageTextResponse) {
-            const responseTextItem = JSON.parse(await saveManageTextResponse.text());
+            const responseTextItem = await saveManageTextResponse.json();
             if (responseTextItem.id !== 0) {
                 const buttonToUpdate = document.querySelector('[data-manage-texts-edit-text-id="' + responseTextItem.id + '"]');
                 if (buttonToUpdate !== null) {

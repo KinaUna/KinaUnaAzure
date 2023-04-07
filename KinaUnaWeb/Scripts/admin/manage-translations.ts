@@ -169,7 +169,7 @@ async function saveTranslationItem(translationId: number) {
                     'Content-Type': 'application/json'
                 }
             }).then(async function (saveTranslationResponse) {
-                const responseTranslationItem: pageModels.TextTranslation = JSON.parse(await saveTranslationResponse.text());
+                const responseTranslationItem: pageModels.TextTranslation = await saveTranslationResponse.json();
                 if (responseTranslationItem.id !== 0) {
                     tranlationInputElement.value = responseTranslationItem.translation;
                     showSavedIndicator(translationId);
@@ -207,7 +207,7 @@ async function deleteTranslationItem(translationId: number) {
                     'Content-Type': 'application/json'
                 }
             }).then(async function (saveTranslationResponse) {
-                const responseTranslationItem: pageModels.TextTranslation = JSON.parse(await saveTranslationResponse.text());
+                const responseTranslationItem: pageModels.TextTranslation = await saveTranslationResponse.json();
                 if (responseTranslationItem.id !== 0) {
                     const deletedTranslationItems = currentPageTranslations.translations.filter(t => t.page === responseTranslationItem.page && t.word === responseTranslationItem.word);
                     currentPageTranslations.translations = currentPageTranslations.translations.filter(t => !deletedTranslationItems.includes(t));

@@ -13,7 +13,7 @@ async function loadManageTextsEditTextModal(textItem: pageModels.KinaUnaTextPara
         },
     }).then(async function (editTextTranslationResponse) {
         if (editTextTranslationResponse != null) {
-            const responseItem: pageModels.KinaUnaTextResponse = JSON.parse(await editTextTranslationResponse.text());
+            const responseItem: pageModels.KinaUnaTextResponse = await editTextTranslationResponse.json();
             await showManageTextsEditModal(responseItem);
         }
     }).catch(function (error) {
@@ -92,7 +92,7 @@ async function saveManageTextsContent() {
             method: 'POST',
             body: new FormData(editTextTranslationForm),
         }).then(async function (saveManageTextResponse) {
-            const responseTextItem: pageModels.KinaUnaTextResponse = JSON.parse(await saveManageTextResponse.text());
+            const responseTextItem: pageModels.KinaUnaTextResponse = await saveManageTextResponse.json();
             if (responseTextItem.id !== 0) {
                 const buttonToUpdate = document.querySelector<HTMLButtonElement>('[data-manage-texts-edit-text-id="' + responseTextItem.id + '"]');
                 if (buttonToUpdate !== null) {

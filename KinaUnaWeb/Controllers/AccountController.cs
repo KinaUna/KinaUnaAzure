@@ -113,13 +113,7 @@ namespace KinaUnaWeb.Controllers
             _ = bool.TryParse(User.FindFirst("email_verified")?.Value, out bool mailConfirmed);
             _ = DateTime.TryParse(User.FindFirst("joindate")?.Value, out DateTime joinDate);
 
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfo(userEmail);
-            
-            if (userInfo == null)
-            {
-                throw new ApplicationException($"Unable to load user with email '{userEmail}'.");
-            }
-
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfo(userEmail) ?? throw new ApplicationException($"Unable to load user with email '{userEmail}'.");
             if (string.IsNullOrEmpty(userInfo.ProfilePicture))
             {
                 userInfo.ProfilePicture = Constants.ProfilePictureUrl;
@@ -252,12 +246,7 @@ namespace KinaUnaWeb.Controllers
             string userId = User.GetUserId();
             _ = DateTime.TryParse(User.FindFirst("joindate")?.Value, out DateTime joinDate);
             
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(userId);
-            if (userInfo == null)
-            {
-                throw new ApplicationException($"Unable to load user with ID '{userId}'.");
-            }
-
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
             if (string.IsNullOrEmpty(userInfo.ProfilePicture))
             {
                 userInfo.ProfilePicture = Constants.ProfilePictureUrl;
@@ -318,12 +307,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> UnDeleteAccount()
         {
             string userId = User.GetUserId();
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(userId);
-            if (userInfo == null)
-            {
-                throw new ApplicationException($"Unable to load user with ID '{userId}'.");
-            }
-
+            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
             if (userInfo.UserId == userId)
             {
                 userInfo.Deleted = false;

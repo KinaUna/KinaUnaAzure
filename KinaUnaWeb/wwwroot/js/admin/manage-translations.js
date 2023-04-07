@@ -149,7 +149,7 @@ async function saveTranslationItem(translationId) {
                     'Content-Type': 'application/json'
                 }
             }).then(async function (saveTranslationResponse) {
-                const responseTranslationItem = JSON.parse(await saveTranslationResponse.text());
+                const responseTranslationItem = await saveTranslationResponse.json();
                 if (responseTranslationItem.id !== 0) {
                     tranlationInputElement.value = responseTranslationItem.translation;
                     showSavedIndicator(translationId);
@@ -183,7 +183,7 @@ async function deleteTranslationItem(translationId) {
                     'Content-Type': 'application/json'
                 }
             }).then(async function (saveTranslationResponse) {
-                const responseTranslationItem = JSON.parse(await saveTranslationResponse.text());
+                const responseTranslationItem = await saveTranslationResponse.json();
                 if (responseTranslationItem.id !== 0) {
                     const deletedTranslationItems = currentPageTranslations.translations.filter(t => t.page === responseTranslationItem.page && t.word === responseTranslationItem.word);
                     currentPageTranslations.translations = currentPageTranslations.translations.filter(t => !deletedTranslationItems.includes(t));

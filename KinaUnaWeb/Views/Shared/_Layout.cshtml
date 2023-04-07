@@ -212,7 +212,7 @@
     </div>
 }
 @await Html.PartialAsync("_LayoutModalPartial")
-<script src="~/js/app.js" asp-append-version="true"></script>
+<script src="~/js/app.js" type="module" asp-append-version="true"></script>
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
     <script src="~/signalr/signalr.min.js"></script>
