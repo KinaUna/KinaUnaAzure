@@ -6,7 +6,9 @@ let currentMomentLocale: string = 'en';
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
 let longDateTimeFormatMoment: string;
+let zebraDateTimeFormat: string;
 let warningStartIsAfterEndString = 'Warning: Start time is after End time.';
+
 function setLanguageId() {
     const languageIdDiv = document.querySelector<HTMLDivElement>('#languageIdDiv');
 
@@ -37,6 +39,14 @@ function setDateTimeFormats() {
             longDateTimeFormatMoment = longDateTimeFormatMomentData;
         }
     }
+
+    const zebraDateTimeFormatDiv = document.querySelector<HTMLDivElement>('#zebraDateTimeFormatDiv');
+    if (zebraDateTimeFormatDiv !== null) {
+        const zebraDateTimeFormatData = zebraDateTimeFormatDiv.dataset.zebraDateTimeFormat;
+        if (zebraDateTimeFormatData) {
+            zebraDateTimeFormat = zebraDateTimeFormatData;
+        }
+    }
 }
 
 function checkTimes() {
@@ -61,7 +71,7 @@ $(async function (): Promise<void> {
 
     const dateTimePicker1: any = $('#datetimepicker1');
     dateTimePicker1.Zebra_DatePicker({
-        format: '@zebraDateTimeFormat',
+        format: zebraDateTimeFormat,
         open_icon_only: true,
         onSelect: function (a: any, b: any, c: any) { checkTimes(); },
         days: zebraDatePickerTranslations.daysArray,
@@ -73,7 +83,7 @@ $(async function (): Promise<void> {
 
     const dateTimePicker2: any = $('#datetimepicker2');
     dateTimePicker2.Zebra_DatePicker({
-        format: '@zebraDateTimeFormat',
+        format: zebraDateTimeFormat,
         open_icon_only: true,
         onSelect: function (a: any, b: any, c: any) { checkTimes(); },
         days: zebraDatePickerTranslations.daysArray,
