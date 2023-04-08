@@ -250,6 +250,14 @@ $(function () {
             $('#selectChildMenuButton').trigger('click');
         }
     });
+    const toggleSideBarTextButton = document.querySelector('#side-bar-toggle-text-btn');
+    if (toggleSideBarTextButton !== null) {
+        toggleSideBarTextButton.addEventListener('click', () => { toggleSidebarText(); });
+    }
+    const toggleSideBarButton = document.querySelector('#side-bar-toggle-btn');
+    if (toggleSideBarButton !== null) {
+        toggleSideBarButton.addEventListener('click', () => { toggleSideBar(); });
+    }
     initPageSettings();
     setSideBarPosition();
     setSidebarText();

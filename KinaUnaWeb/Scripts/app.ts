@@ -274,6 +274,16 @@ $(function () {
         }
     });
 
+    const toggleSideBarTextButton = document.querySelector<HTMLButtonElement>('#side-bar-toggle-text-btn');
+    if (toggleSideBarTextButton !== null) {
+        toggleSideBarTextButton.addEventListener('click', () => { toggleSidebarText(); });
+    }
+
+    const toggleSideBarButton = document.querySelector<HTMLButtonElement>('#side-bar-toggle-btn');
+    if (toggleSideBarButton !== null) {
+        toggleSideBarButton.addEventListener('click', () => { toggleSideBar(); });
+    }
+
     initPageSettings();
     setSideBarPosition();
     setSidebarText();
