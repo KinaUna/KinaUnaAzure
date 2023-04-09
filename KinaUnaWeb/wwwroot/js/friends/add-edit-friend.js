@@ -1,19 +1,16 @@
-﻿import * as LocaleHelper from '../localization.js';
+import * as LocaleHelper from '../localization.js';
 import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools.js';
-
-let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
+let zebraDatePickerTranslations;
 let languageId = 1;
-let zebraDateTimeFormat: string;
-let currentProgenyId: number;
-
-$(async function (): Promise<void> {
+let zebraDateTimeFormat;
+let currentProgenyId;
+$(async function () {
     languageId = getCurrentLanguageId();
     setMomentLocale();
     zebraDateTimeFormat = getZebraDateTimeFormat();
     currentProgenyId = getCurrentProgenyId();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
-    
-    const dateTimePicker1: any = $('#datetimepicker1');
+    const dateTimePicker1 = $('#datetimepicker1');
     dateTimePicker1.Zebra_DatePicker({
         format: zebraDateTimeFormat,
         open_icon_only: true,
@@ -23,11 +20,9 @@ $(async function (): Promise<void> {
         show_select_today: zebraDatePickerTranslations.todayString,
         select_other_months: true
     });
-        
     await setTagsAutoSuggestList(currentProgenyId);
     await setContextAutoSuggestList(currentProgenyId);
-
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#progenyIdSelect');
+    const progenyIdSelect = document.querySelector('#progenyIdSelect');
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
@@ -35,5 +30,5 @@ $(async function (): Promise<void> {
             await setContextAutoSuggestList(currentProgenyId);
         });
     }
-
 });
+//# sourceMappingURL=add-edit-friend.js.map

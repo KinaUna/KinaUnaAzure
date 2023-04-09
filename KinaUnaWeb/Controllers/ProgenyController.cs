@@ -89,11 +89,8 @@ namespace KinaUnaWeb.Controllers
 
             if (model.File != null)
             {
-                using (Stream stream = model.File.OpenReadStream())
-                {
-                    prog.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Progeny);
-
-                }
+                await using Stream stream = model.File.OpenReadStream();
+                prog.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Progeny);
             }
             else
             {

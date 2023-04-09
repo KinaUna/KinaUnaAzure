@@ -4,7 +4,7 @@ declare var syncfusionReference: any;
 declare var isCurrentUserProgenyAdmin: boolean;
 
 let selectedEventId: number = 0;
-let currentCulture = 'da';
+let currentCulture = 'en';
 
 function onPopupOpen(args: any) {
     if (args.type === 'Editor' && isCurrentUserProgenyAdmin) {

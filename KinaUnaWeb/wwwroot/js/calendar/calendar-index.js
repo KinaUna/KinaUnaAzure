@@ -1,6 +1,6 @@
 import * as LocaleHelper from '../localization.js';
 let selectedEventId = 0;
-let currentCulture = 'da';
+let currentCulture = 'en';
 function onPopupOpen(args) {
     if (args.type === 'Editor' && isCurrentUserProgenyAdmin) {
         args.cancel = true;

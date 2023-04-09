@@ -66,7 +66,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            List<string> resultTagsList = new List<string>();
+            List<string> resultTagsList = new();
 
             string tagsApiPath = "/api/AutoSuggests/GetTagsAutoSuggestList/" + progenyId + "/" + accessLevel;
 
@@ -86,7 +86,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            List<string> resultContextsList = new List<string>();
+            List<string> resultContextsList = new();
 
             string contextsApiPath = "/api/AutoSuggests/GetContextAutoSuggestList/" + progenyId + "/" + accessLevel;
 
@@ -106,7 +106,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            List<string> resultLocationsList = new List<string>();
+            List<string> resultLocationsList = new();
 
             string locationsApiPath = "/api/AutoSuggests/GetLocationAutoSuggestList/" + progenyId + "/" + accessLevel;
 
@@ -126,7 +126,7 @@ namespace KinaUnaWeb.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            List<string> resultCategoriesList = new List<string>();
+            List<string> resultCategoriesList = new();
 
             string categoriesApiPath = "/api/AutoSuggests/GetCategoryAutoSuggestList/" + progenyId + "/" + accessLevel;
 

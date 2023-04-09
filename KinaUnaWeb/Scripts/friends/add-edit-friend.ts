@@ -12,7 +12,7 @@ $(async function (): Promise<void> {
     zebraDateTimeFormat = getZebraDateTimeFormat();
     currentProgenyId = getCurrentProgenyId();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
-    
+
     const dateTimePicker1: any = $('#datetimepicker1');
     dateTimePicker1.Zebra_DatePicker({
         format: zebraDateTimeFormat,
@@ -23,7 +23,7 @@ $(async function (): Promise<void> {
         show_select_today: zebraDatePickerTranslations.todayString,
         select_other_months: true
     });
-        
+
     await setTagsAutoSuggestList(currentProgenyId);
     await setContextAutoSuggestList(currentProgenyId);
 
@@ -35,5 +35,4 @@ $(async function (): Promise<void> {
             await setContextAutoSuggestList(currentProgenyId);
         });
     }
-
 });

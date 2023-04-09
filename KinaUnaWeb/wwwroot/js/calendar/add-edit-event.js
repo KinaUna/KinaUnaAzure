@@ -1,78 +1,17 @@
 import * as LocaleHelper from '../localization.js';
-import { getContextsList, getCurrentProgenyId } from '../data-tools.js';
-let currentMomentLocale = 'en';
+import { setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, checkTimes, getZebraDateTimeFormat, getLongDateTimeFormatMoment } from '../data-tools.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let longDateTimeFormatMoment;
 let zebraDateTimeFormat;
 let warningStartIsAfterEndString = 'Warning: Start time is after End time.';
 let currentProgenyId;
-function setLanguageId() {
-    const languageIdDiv = document.querySelector('#languageIdDiv');
-    if (languageIdDiv !== null) {
-        const languageIdData = languageIdDiv.dataset.languageId;
-        if (languageIdData) {
-            languageId = parseInt(languageIdData);
-        }
-    }
-}
-function setMomentLocale() {
-    const currentMomentLocaleDiv = document.querySelector('#currentMomentLocaleDiv');
-    if (currentMomentLocaleDiv !== null) {
-        const currentLocaleData = currentMomentLocaleDiv.dataset.currentLocale;
-        if (currentLocaleData) {
-            currentMomentLocale = currentLocaleData;
-        }
-    }
-    moment.locale(currentMomentLocale);
-}
-function setDateTimeFormats() {
-    const longDateTimeFormatMomentDiv = document.querySelector('#longDateTimeFormatMomentDiv');
-    if (longDateTimeFormatMomentDiv !== null) {
-        const longDateTimeFormatMomentData = longDateTimeFormatMomentDiv.dataset.longDateTimeFormatMoment;
-        if (longDateTimeFormatMomentData) {
-            longDateTimeFormatMoment = longDateTimeFormatMomentData;
-        }
-    }
-    const zebraDateTimeFormatDiv = document.querySelector('#zebraDateTimeFormatDiv');
-    if (zebraDateTimeFormatDiv !== null) {
-        const zebraDateTimeFormatData = zebraDateTimeFormatDiv.dataset.zebraDateTimeFormat;
-        if (zebraDateTimeFormatData) {
-            zebraDateTimeFormat = zebraDateTimeFormatData;
-        }
-    }
-}
-function checkTimes() {
-    let sTime = moment($('#datetimepicker1').val(), longDateTimeFormatMoment);
-    let eTime = moment($('#datetimepicker2').val(), longDateTimeFormatMoment);
-    if (sTime < eTime && sTime.isValid() && eTime.isValid()) {
-        $('#notification').text('');
-        $('#submitBtn').prop('disabled', false);
-    }
-    else {
-        $('#submitBtn').prop('disabled', true);
-        $('#notification').text(warningStartIsAfterEndString);
-    }
-    ;
-}
-;
-async function setContextAutoSuggestList(progenyId) {
-    let contextInputElement = document.getElementById('contextInput');
-    if (contextInputElement !== null) {
-        const contextsList = await getContextsList(progenyId);
-        $('#contextInput').amsifySuggestags({
-            suggestions: contextsList.suggestions
-        });
-    }
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
 $(async function () {
     currentProgenyId = getCurrentProgenyId();
-    setLanguageId();
+    languageId = getCurrentLanguageId();
     setMomentLocale();
-    setDateTimeFormats();
+    longDateTimeFormatMoment = getLongDateTimeFormatMoment();
+    zebraDateTimeFormat = getZebraDateTimeFormat();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     warningStartIsAfterEndString = await LocaleHelper.getTranslation('Warning: Start time is after End time.', 'Sleep', languageId);
     setContextAutoSuggestList(currentProgenyId);
@@ -80,7 +19,7 @@ $(async function () {
     dateTimePicker1.Zebra_DatePicker({
         format: zebraDateTimeFormat,
         open_icon_only: true,
-        onSelect: function (a, b, c) { checkTimes(); },
+        onSelect: function (a, b, c) { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); },
         days: zebraDatePickerTranslations.daysArray,
         months: zebraDatePickerTranslations.monthsArray,
         lang_clear_date: zebraDatePickerTranslations.clearString,
@@ -91,25 +30,25 @@ $(async function () {
     dateTimePicker2.Zebra_DatePicker({
         format: zebraDateTimeFormat,
         open_icon_only: true,
-        onSelect: function (a, b, c) { checkTimes(); },
+        onSelect: function (a, b, c) { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); },
         days: zebraDatePickerTranslations.daysArray,
         months: zebraDatePickerTranslations.monthsArray,
         lang_clear_date: zebraDatePickerTranslations.clearString,
         show_select_today: zebraDatePickerTranslations.todayString,
         select_other_months: true
     });
-    checkTimes();
+    checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString);
     const zebra1 = document.querySelector('#datetimepicker1');
     if (zebra1 !== null) {
-        zebra1.addEventListener('change', () => { checkTimes(); });
-        zebra1.addEventListener('blur', () => { checkTimes(); });
-        zebra1.addEventListener('focus', () => { checkTimes(); });
+        zebra1.addEventListener('change', () => { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); });
+        zebra1.addEventListener('blur', () => { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); });
+        zebra1.addEventListener('focus', () => { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); });
     }
     const zebra2 = document.querySelector('#datetimepicker2');
     if (zebra2 !== null) {
-        zebra2.addEventListener('change', () => { checkTimes(); });
-        zebra2.addEventListener('blur', () => { checkTimes(); });
-        zebra2.addEventListener('focus', () => { checkTimes(); });
+        zebra2.addEventListener('change', () => { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); });
+        zebra2.addEventListener('blur', () => { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); });
+        zebra2.addEventListener('focus', () => { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); });
     }
     const progenyIdSelect = document.querySelector('#progenyIdSelect');
     if (progenyIdSelect !== null) {

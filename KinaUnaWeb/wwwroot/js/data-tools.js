@@ -1,4 +1,5 @@
 import { AutoSuggestList } from './page-models.js';
+let currentMomentLocale = 'en';
 export function getCurrentProgenyId() {
     const progenyIdDiv = document.querySelector('#progenyIdDiv');
     if (progenyIdDiv !== null) {
@@ -8,6 +9,46 @@ export function getCurrentProgenyId() {
         }
     }
     return 0;
+}
+export function getCurrentLanguageId() {
+    const languageIdDiv = document.querySelector('#languageIdDiv');
+    if (languageIdDiv !== null) {
+        const languageIdData = languageIdDiv.dataset.languageId;
+        if (languageIdData) {
+            return parseInt(languageIdData);
+        }
+    }
+    return 1;
+}
+export function setMomentLocale() {
+    const currentMomentLocaleDiv = document.querySelector('#currentMomentLocaleDiv');
+    if (currentMomentLocaleDiv !== null) {
+        const currentLocaleData = currentMomentLocaleDiv.dataset.currentLocale;
+        if (currentLocaleData) {
+            currentMomentLocale = currentLocaleData;
+        }
+    }
+    moment.locale(currentMomentLocale);
+}
+export function getZebraDateTimeFormat() {
+    const zebraDateTimeFormatDiv = document.querySelector('#zebraDateTimeFormatDiv');
+    if (zebraDateTimeFormatDiv !== null) {
+        const zebraDateTimeFormatData = zebraDateTimeFormatDiv.dataset.zebraDateTimeFormat;
+        if (zebraDateTimeFormatData) {
+            return zebraDateTimeFormatData;
+        }
+    }
+    return '';
+}
+export function getLongDateTimeFormatMoment() {
+    const longDateTimeFormatMomentDiv = document.querySelector('#longDateTimeFormatMomentDiv');
+    if (longDateTimeFormatMomentDiv !== null) {
+        const longDateTimeFormatMomentData = longDateTimeFormatMomentDiv.dataset.longDateTimeFormatMoment;
+        if (longDateTimeFormatMomentData) {
+            return longDateTimeFormatMomentData;
+        }
+    }
+    return '';
 }
 export async function getTagsList(progenyId) {
     let tagsList = new AutoSuggestList(progenyId);
@@ -28,6 +69,18 @@ export async function getTagsList(progenyId) {
         resolve(tagsList);
     });
 }
+export async function setTagsAutoSuggestList(progenyId, elementId = 'tagList') {
+    let tagListElement = document.getElementById(elementId);
+    if (tagListElement !== null) {
+        const tagsList = await getTagsList(progenyId);
+        $('#tagList').amsifySuggestags({
+            suggestions: tagsList.suggestions
+        });
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
 export async function getContextsList(progenyId) {
     let contextsList = new AutoSuggestList(progenyId);
     const getContextsListParameters = new AutoSuggestList(progenyId);
@@ -45,6 +98,18 @@ export async function getContextsList(progenyId) {
     });
     return new Promise(function (resolve, reject) {
         resolve(contextsList);
+    });
+}
+export async function setContextAutoSuggestList(progenyId, elementId = 'contextInput') {
+    let contextInputElement = document.getElementById(elementId);
+    if (contextInputElement !== null) {
+        const contextsList = await getContextsList(progenyId);
+        $('#contextInput').amsifySuggestags({
+            suggestions: contextsList.suggestions
+        });
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
     });
 }
 export async function getLocationsList(progenyId) {
@@ -120,4 +185,18 @@ export function updateFilterButtonDisplay(button) {
         }
     }
 }
+export function checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString) {
+    let sTime = moment($('#datetimepicker1').val(), longDateTimeFormatMoment);
+    let eTime = moment($('#datetimepicker2').val(), longDateTimeFormatMoment);
+    if (sTime < eTime && sTime.isValid() && eTime.isValid()) {
+        $('#notification').text('');
+        $('#submitBtn').prop('disabled', false);
+    }
+    else {
+        $('#submitBtn').prop('disabled', true);
+        $('#notification').text(warningStartIsAfterEndString);
+    }
+    ;
+}
+;
 //# sourceMappingURL=data-tools.js.map

@@ -1,66 +1,13 @@
 import * as LocaleHelper from '../localization.js';
-import { getTagsList, getContextsList, getCurrentProgenyId } from '../data-tools.js';
-let currentMomentLocale = 'en';
+import { setTagsAutoSuggestList, setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat;
 let currentProgenyId;
-function setLanguageId() {
-    const languageIdDiv = document.querySelector('#languageIdDiv');
-    if (languageIdDiv !== null) {
-        const languageIdData = languageIdDiv.dataset.languageId;
-        if (languageIdData) {
-            languageId = parseInt(languageIdData);
-        }
-    }
-}
-function setMomentLocale() {
-    const currentMomentLocaleDiv = document.querySelector('#currentMomentLocaleDiv');
-    if (currentMomentLocaleDiv !== null) {
-        const currentLocaleData = currentMomentLocaleDiv.dataset.currentLocale;
-        if (currentLocaleData) {
-            currentMomentLocale = currentLocaleData;
-        }
-    }
-    moment.locale(currentMomentLocale);
-}
-function setDateTimeFormats() {
-    const zebraDateTimeFormatDiv = document.querySelector('#zebraDateTimeFormatDiv');
-    if (zebraDateTimeFormatDiv !== null) {
-        const zebraDateTimeFormatData = zebraDateTimeFormatDiv.dataset.zebraDateTimeFormat;
-        if (zebraDateTimeFormatData) {
-            zebraDateTimeFormat = zebraDateTimeFormatData;
-        }
-    }
-}
-async function setTagsAutoSuggestList(progenyId) {
-    let tagListElement = document.getElementById('tagList');
-    if (tagListElement !== null) {
-        const tagsList = await getTagsList(progenyId);
-        $('#tagList').amsifySuggestags({
-            suggestions: tagsList.suggestions
-        });
-    }
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
-async function setContextAutoSuggestList(progenyId) {
-    let contextInputElement = document.getElementById('contextInput');
-    if (contextInputElement !== null) {
-        const contextsList = await getContextsList(progenyId);
-        $('#contextInput').amsifySuggestags({
-            suggestions: contextsList.suggestions
-        });
-    }
-    return new Promise(function (resolve, reject) {
-        resolve();
-    });
-}
 $(async function () {
-    setLanguageId();
+    languageId = getCurrentLanguageId();
     setMomentLocale();
-    setDateTimeFormats();
+    zebraDateTimeFormat = getZebraDateTimeFormat();
     currentProgenyId = getCurrentProgenyId();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     const dateTimePicker1 = $('#datetimepicker1');

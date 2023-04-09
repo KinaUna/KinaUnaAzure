@@ -1,5 +1,8 @@
 ﻿import { AutoSuggestList } from './page-models.js';
 
+declare let moment: any;
+let currentMomentLocale: string = 'en';
+
 export function getCurrentProgenyId(): number {
     const progenyIdDiv = document.querySelector<HTMLDivElement>('#progenyIdDiv');
     if (progenyIdDiv !== null) {
@@ -9,6 +12,55 @@ export function getCurrentProgenyId(): number {
         }
     }
     return 0;
+}
+
+export function getCurrentLanguageId(): number {
+    const languageIdDiv = document.querySelector<HTMLDivElement>('#languageIdDiv');
+
+    if (languageIdDiv !== null) {
+        const languageIdData = languageIdDiv.dataset.languageId;
+        if (languageIdData) {
+            return parseInt(languageIdData);
+        }
+    }
+
+    return 1;
+}
+
+export function setMomentLocale() {
+    const currentMomentLocaleDiv = document.querySelector<HTMLDivElement>('#currentMomentLocaleDiv');
+
+    if (currentMomentLocaleDiv !== null) {
+        const currentLocaleData = currentMomentLocaleDiv.dataset.currentLocale;
+        if (currentLocaleData) {
+            currentMomentLocale = currentLocaleData;
+        }
+    }
+    moment.locale(currentMomentLocale);
+}
+
+export function getZebraDateTimeFormat() {
+    const zebraDateTimeFormatDiv = document.querySelector<HTMLDivElement>('#zebraDateTimeFormatDiv');
+    if (zebraDateTimeFormatDiv !== null) {
+        const zebraDateTimeFormatData = zebraDateTimeFormatDiv.dataset.zebraDateTimeFormat;
+        if (zebraDateTimeFormatData) {
+            return zebraDateTimeFormatData;
+        }
+    }
+
+    return '';
+}
+
+export function getLongDateTimeFormatMoment() {
+    const longDateTimeFormatMomentDiv = document.querySelector<HTMLDivElement>('#longDateTimeFormatMomentDiv');
+    if (longDateTimeFormatMomentDiv !== null) {
+        const longDateTimeFormatMomentData = longDateTimeFormatMomentDiv.dataset.longDateTimeFormatMoment;
+        if (longDateTimeFormatMomentData) {
+            return longDateTimeFormatMomentData;
+        }
+    }
+
+    return '';
 }
 
 export async function getTagsList(progenyId: number): Promise<AutoSuggestList> {
@@ -34,6 +86,21 @@ export async function getTagsList(progenyId: number): Promise<AutoSuggestList> {
     });
 }
 
+export async function setTagsAutoSuggestList(progenyId: number, elementId: string = 'tagList') {
+    let tagListElement = document.getElementById(elementId);
+    if (tagListElement !== null) {
+        const tagsList = await getTagsList(progenyId);
+
+        ($('#tagList') as any).amsifySuggestags({
+            suggestions: tagsList.suggestions
+        });
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
 export async function getContextsList(progenyId: number): Promise<AutoSuggestList> {
     let contextsList: AutoSuggestList = new AutoSuggestList(progenyId);
 
@@ -54,6 +121,21 @@ export async function getContextsList(progenyId: number): Promise<AutoSuggestLis
 
     return new Promise<AutoSuggestList>(function (resolve, reject) {
         resolve(contextsList);
+    });
+}
+
+export async function setContextAutoSuggestList(progenyId: number, elementId: string = 'contextInput') {
+    let contextInputElement = document.getElementById(elementId);
+    if (contextInputElement !== null) {
+        const contextsList = await getContextsList(progenyId);
+
+        ($('#contextInput') as any).amsifySuggestags({
+            suggestions: contextsList.suggestions
+        });
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
     });
 }
 
@@ -140,3 +222,16 @@ export function updateFilterButtonDisplay(button: HTMLButtonElement) {
         }
     }
 }
+
+export function checkTimes(longDateTimeFormatMoment: string, warningStartIsAfterEndString: string) {
+    let sTime: any = moment($('#datetimepicker1').val(), longDateTimeFormatMoment);
+    let eTime: any = moment($('#datetimepicker2').val(), longDateTimeFormatMoment);
+    if (sTime < eTime && sTime.isValid() && eTime.isValid()) {
+        $('#notification').text('');
+        $('#submitBtn').prop('disabled', false);
+
+    } else {
+        $('#submitBtn').prop('disabled', true);
+        $('#notification').text(warningStartIsAfterEndString);
+    };
+};
