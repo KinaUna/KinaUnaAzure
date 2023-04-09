@@ -1,4 +1,6 @@
-﻿using KinaUnaWeb.Models.ItemViewModels;
+﻿using System.Collections.Generic;
+using System.Linq;
+using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +8,7 @@ using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.TypeScriptModels.Timeline;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -36,6 +39,17 @@ namespace KinaUnaWeb.Controllers
             model.Items = items;
             
             return View(model);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> GetTimelineList([FromBody] TimelineParameters parameters)
+        {
+            List<TimeLineItem> timelineList = await _timelineHttpClient.GetTimeline(parameters.ProgenyId, 0, parameters.SortBy);
+            timelineList = timelineList.Skip(parameters.Skip).Take(parameters.Count).ToList();
+
+            return Json(timelineList);
+
         }
 
         [AllowAnonymous]
@@ -140,6 +154,17 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             model.SetBaseProperties(baseModel);
             
+            TimeLineItemPartialViewModel timeLineItemPartialViewModel = await _timeLineItemsService.GetTimeLineItemPartialViewModel(model);
+            return PartialView(timeLineItemPartialViewModel.PartialViewName, timeLineItemPartialViewModel.TimeLineItem);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<ActionResult> GetTimelineItemElement([FromBody] TimeLineItemViewModel model)
+        {
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            model.SetBaseProperties(baseModel);
+
             TimeLineItemPartialViewModel timeLineItemPartialViewModel = await _timeLineItemsService.GetTimeLineItemPartialViewModel(model);
             return PartialView(timeLineItemPartialViewModel.PartialViewName, timeLineItemPartialViewModel.TimeLineItem);
         }

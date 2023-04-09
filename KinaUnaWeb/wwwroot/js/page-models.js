@@ -76,4 +76,27 @@ export class AutoSuggestList {
         this.suggestions = [];
     }
 }
+export class TimelineItem {
+    constructor() {
+        this.timeLineId = 0;
+        this.progenyId = 0;
+        this.itemType = 0;
+        this.itemId = '0';
+    }
+}
+export class TimelineParameters {
+    constructor() {
+        this.progenyId = 0;
+        this.skip = 0;
+        this.count = 5;
+        this.sortBy = 1;
+    }
+}
+export class TimeLineItemViewModel {
+    constructor() {
+        this.typeId = 0;
+        this.itemId = 0;
+        this.tagFilter = '';
+    }
+}
 //# sourceMappingURL=page-models.js.map

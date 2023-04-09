@@ -91,3 +91,23 @@ export class AutoSuggestList {
         this.suggestions = [];
     }
 }
+
+export class TimelineItem {
+    timeLineId: number = 0;
+    progenyId: number = 0;
+    itemType: number = 0;
+    itemId: string = '0';
+}
+
+export class TimelineParameters {
+    progenyId: number = 0;
+    skip: number = 0;
+    count: number = 5;
+    sortBy: number = 1;
+}
+
+export class TimeLineItemViewModel {
+    typeId: number = 0;
+    itemId: number = 0;
+    tagFilter: string = '';
+}

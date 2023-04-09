@@ -5,6 +5,7 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Home", PageNames.Home, Model.LanguageId);
 }
+<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="row m-0">
     <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
         <div class="row">
