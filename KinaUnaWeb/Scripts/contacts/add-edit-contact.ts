@@ -1,11 +1,10 @@
 ﻿import * as LocaleHelper from '../localization.js';
-import { getTagsList } from '../data-tools.js';
+import { getTagsList, getContextsList, getCurrentProgenyId } from '../data-tools.js';
 declare let moment: any;
 
 let currentMomentLocale: string = 'en';
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
-let longDateTimeFormatMoment: string;
 let zebraDateTimeFormat: string;
 let currentProgenyId: number;
 
@@ -32,14 +31,6 @@ function setMomentLocale() {
 }
 
 function setDateTimeFormats() {
-    const longDateTimeFormatMomentDiv = document.querySelector<HTMLDivElement>('#longDateTimeFormatMomentDiv');
-    if (longDateTimeFormatMomentDiv !== null) {
-        const longDateTimeFormatMomentData = longDateTimeFormatMomentDiv.dataset.longDateTimeFormatMoment;
-        if (longDateTimeFormatMomentData) {
-            longDateTimeFormatMoment = longDateTimeFormatMomentData;
-        }
-    }
-
     const zebraDateTimeFormatDiv = document.querySelector<HTMLDivElement>('#zebraDateTimeFormatDiv');
     if (zebraDateTimeFormatDiv !== null) {
         const zebraDateTimeFormatData = zebraDateTimeFormatDiv.dataset.zebraDateTimeFormat;
@@ -49,21 +40,35 @@ function setDateTimeFormats() {
     }
 }
 
-function setProgenyId() {
-    const progenyIdDiv = document.querySelector<HTMLDivElement>('#progenyIdDiv');
-    if (progenyIdDiv !== null) {
-        const progenyIdDivData = progenyIdDiv.dataset.progenyId;
-        if (progenyIdDivData) {
-            currentProgenyId = parseInt(progenyIdDivData);
-        }
-    }
+
+
+async function setTagsAutoSuggestList(progenyId: number) {
+    let tagListElement = document.getElementById('tagList');
+    if (tagListElement !== null) {
+        const tagsList = await getTagsList(progenyId);
+
+        ($('#tagList') as any).amsifySuggestags({
+            suggestions: tagsList.suggestions
+        });
+    }    
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
-async function setTagsList(progenyId: number) {
-    const tagsList = await getTagsList(progenyId);
-    let tagListElement: any = $('input[id="tagList"');
-    tagListElement.amsifySuggestags({
-        suggestions: tagsList.tags
+async function setContextAutoSuggestList(progenyId: number) {
+    let contextInputElement = document.getElementById('contextInput');
+    if (contextInputElement !== null) {
+        const contextsList = await getContextsList(progenyId);
+
+        ($('#contextInput') as any).amsifySuggestags({
+            suggestions: contextsList.suggestions
+        });
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
     });
 }
 
@@ -71,7 +76,7 @@ $(async function (): Promise<void> {
     setLanguageId();
     setMomentLocale();
     setDateTimeFormats();
-    setProgenyId();
+    currentProgenyId = getCurrentProgenyId();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     
     const dateTimePicker1: any = $('#datetimepicker1');
@@ -85,13 +90,15 @@ $(async function (): Promise<void> {
         select_other_months: true
     });
         
-    await setTagsList(currentProgenyId);
+    await setTagsAutoSuggestList(currentProgenyId);
+    await setContextAutoSuggestList(currentProgenyId);
 
     const progenyIdSelect = document.querySelector<HTMLSelectElement>('#progenyIdSelect');
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsList(currentProgenyId);
+            await setTagsAutoSuggestList(currentProgenyId);
+            await setContextAutoSuggestList(currentProgenyId);
         });
     }
 

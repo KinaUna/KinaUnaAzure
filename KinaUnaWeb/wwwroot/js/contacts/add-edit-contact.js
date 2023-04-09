@@ -1,9 +1,8 @@
 import * as LocaleHelper from '../localization.js';
-import { getTagsList } from '../data-tools.js';
+import { getTagsList, getContextsList, getCurrentProgenyId } from '../data-tools.js';
 let currentMomentLocale = 'en';
 let zebraDatePickerTranslations;
 let languageId = 1;
-let longDateTimeFormatMoment;
 let zebraDateTimeFormat;
 let currentProgenyId;
 function setLanguageId() {
@@ -26,13 +25,6 @@ function setMomentLocale() {
     moment.locale(currentMomentLocale);
 }
 function setDateTimeFormats() {
-    const longDateTimeFormatMomentDiv = document.querySelector('#longDateTimeFormatMomentDiv');
-    if (longDateTimeFormatMomentDiv !== null) {
-        const longDateTimeFormatMomentData = longDateTimeFormatMomentDiv.dataset.longDateTimeFormatMoment;
-        if (longDateTimeFormatMomentData) {
-            longDateTimeFormatMoment = longDateTimeFormatMomentData;
-        }
-    }
     const zebraDateTimeFormatDiv = document.querySelector('#zebraDateTimeFormatDiv');
     if (zebraDateTimeFormatDiv !== null) {
         const zebraDateTimeFormatData = zebraDateTimeFormatDiv.dataset.zebraDateTimeFormat;
@@ -41,27 +33,35 @@ function setDateTimeFormats() {
         }
     }
 }
-function setProgenyId() {
-    const progenyIdDiv = document.querySelector('#progenyIdDiv');
-    if (progenyIdDiv !== null) {
-        const progenyIdDivData = progenyIdDiv.dataset.progenyId;
-        if (progenyIdDivData) {
-            currentProgenyId = parseInt(progenyIdDivData);
-        }
+async function setTagsAutoSuggestList(progenyId) {
+    let tagListElement = document.getElementById('tagList');
+    if (tagListElement !== null) {
+        const tagsList = await getTagsList(progenyId);
+        $('#tagList').amsifySuggestags({
+            suggestions: tagsList.suggestions
+        });
     }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
-async function setTagsList(progenyId) {
-    const tagsList = await getTagsList(progenyId);
-    let tagListElement = $('input[id="tagList"');
-    tagListElement.amsifySuggestags({
-        suggestions: tagsList.tags
+async function setContextAutoSuggestList(progenyId) {
+    let contextInputElement = document.getElementById('contextInput');
+    if (contextInputElement !== null) {
+        const contextsList = await getContextsList(progenyId);
+        $('#contextInput').amsifySuggestags({
+            suggestions: contextsList.suggestions
+        });
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
     });
 }
 $(async function () {
     setLanguageId();
     setMomentLocale();
     setDateTimeFormats();
-    setProgenyId();
+    currentProgenyId = getCurrentProgenyId();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     const dateTimePicker1 = $('#datetimepicker1');
     dateTimePicker1.Zebra_DatePicker({
@@ -73,12 +73,14 @@ $(async function () {
         show_select_today: zebraDatePickerTranslations.todayString,
         select_other_months: true
     });
-    await setTagsList(currentProgenyId);
+    await setTagsAutoSuggestList(currentProgenyId);
+    await setContextAutoSuggestList(currentProgenyId);
     const progenyIdSelect = document.querySelector('#progenyIdSelect');
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setTagsList(currentProgenyId);
+            await setTagsAutoSuggestList(currentProgenyId);
+            await setContextAutoSuggestList(currentProgenyId);
         });
     }
 });

@@ -30,9 +30,10 @@ namespace KinaUnaWeb.Controllers
         private readonly ImageStore _imageStore;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
         private readonly ITimelineHttpClient _timelineHttpClient;
+        private readonly IAutoSuggestsHttpClient _autoSuggestsHttpClient;
         public ProgenyController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, ITimelineHttpClient timelineHttpClient,
             ICalendarsHttpClient calendarsHttpClient, IWordsHttpClient wordsHttpClient, ISkillsHttpClient skillsHttpClient, IFriendsHttpClient friendsHttpClient, IMeasurementsHttpClient measurementsHttpClient,
-            ISleepHttpClient sleepHttpClient, INotesHttpClient notesClient, IContactsHttpClient contactsHttpClient, IVaccinationsHttpClient vaccinationsHttpClient, ILocationsHttpClient locationsHttpClient)
+            ISleepHttpClient sleepHttpClient, INotesHttpClient notesClient, IContactsHttpClient contactsHttpClient, IVaccinationsHttpClient vaccinationsHttpClient, ILocationsHttpClient locationsHttpClient, IAutoSuggestsHttpClient autoSuggestsHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
@@ -49,6 +50,7 @@ namespace KinaUnaWeb.Controllers
             _contactsHttpClient = contactsHttpClient;
             _vaccinationsHttpClient = vaccinationsHttpClient;
             _locationsHttpClient = locationsHttpClient;
+            _autoSuggestsHttpClient = autoSuggestsHttpClient;
         }
         public IActionResult Index()
         {
@@ -395,100 +397,36 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetTags([FromBody] TagsList tagsList)
+        public async Task<IActionResult> GetAllProgenyTags([FromBody] AutoSuggestList suggestionsList)
         {
-            List<Contact> contactsList = await _contactsHttpClient.GetContactsList(tagsList.ProgenyId, 0);
-            foreach (Contact contact in contactsList)
-            {
-                if (!string.IsNullOrEmpty(contact.Tags))
-                {
-                    List<string> contactTags = contact.Tags.Split(',').ToList();
-                    foreach (string tagString in contactTags)
-                    {
-                        string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
-                        if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Tags.Contains(trimmedTagString))
-                        {
-                            
-                            tagsList.Tags.Add(trimmedTagString);
-                        }
-                    }
-                }
-            }
-
-            List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(tagsList.ProgenyId, 0);
-            foreach (Friend friend in friendsList)
-            {
-                if (!string.IsNullOrEmpty(friend.Tags))
-                {
-                    List<string> friendTags = friend.Tags.Split(',').ToList();
-                    foreach (string tagString in friendTags)
-                    {
-                        string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
-                        if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Tags.Contains(trimmedTagString))
-                        {
-
-                            tagsList.Tags.Add(trimmedTagString);
-                        }
-                    }
-                }
-            }
-
-            List<Location> locationsList = await _locationsHttpClient.GetLocationsList(tagsList.ProgenyId, 0);
-            foreach (Location location in locationsList)
-            {
-                if (!string.IsNullOrEmpty(location.Tags))
-                {
-                    List<string> locationTags = location.Tags.Split(',').ToList();
-                    foreach (string tagString in locationTags)
-                    {
-                        string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
-                        if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Tags.Contains(trimmedTagString))
-                        {
-
-                            tagsList.Tags.Add(trimmedTagString);
-                        }
-                    }
-                }
-            }
-
-            List<Picture> photoList = await _mediaHttpClient.GetPictureList(tagsList.ProgenyId, 0, Constants.DefaultTimezone);
-            foreach (Picture picture in photoList)
-            {
-                if (!string.IsNullOrEmpty(picture.Tags))
-                {
-                    List<string> pictureTags = picture.Tags.Split(',').ToList();
-                    foreach (string tagString in pictureTags)
-                    {
-                        string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
-                        if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Tags.Contains(trimmedTagString))
-                        {
-
-                            tagsList.Tags.Add(trimmedTagString);
-                        }
-                    }
-                }
-            }
-
-            List<Video> videosList = await _mediaHttpClient.GetVideoList(tagsList.ProgenyId, 0, Constants.DefaultTimezone);
-            foreach (Video video in videosList)
-            {
-                if (!string.IsNullOrEmpty(video.Tags))
-                {
-                    List<string> videoTags = video.Tags.Split(',').ToList();
-                    foreach (string tagString in videoTags)
-                    {
-                        string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
-                        if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Tags.Contains(trimmedTagString))
-                        {
-
-                            tagsList.Tags.Add(trimmedTagString);
-                        }
-                    }
-                }
-            }
+            suggestionsList.Suggestions = await _autoSuggestsHttpClient.GetTagsList(suggestionsList.ProgenyId, 0);
 
 
-            return Json(tagsList);
+            return Json(suggestionsList);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetAllProgenyContexts([FromBody] AutoSuggestList suggestionsList)
+        {
+            suggestionsList.Suggestions = await _autoSuggestsHttpClient.GetContextsList(suggestionsList.ProgenyId, 0);
+            
+            return Json(suggestionsList);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetAllProgenyLocations([FromBody] AutoSuggestList suggestionsList)
+        {
+            suggestionsList.Suggestions = await _autoSuggestsHttpClient.GetLocationsList(suggestionsList.ProgenyId, 0);
+
+            return Json(suggestionsList);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetAllProgenyCategories([FromBody] AutoSuggestList suggestionsList)
+        {
+            suggestionsList.Suggestions = await _autoSuggestsHttpClient.GetCategoriesList(suggestionsList.ProgenyId, 0);
+            
+            return Json(suggestionsList);
         }
     }
 }

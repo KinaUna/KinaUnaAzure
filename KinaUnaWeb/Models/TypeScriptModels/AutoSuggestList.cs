@@ -2,9 +2,9 @@
 
 namespace KinaUnaWeb.Models.TypeScriptModels
 {
-    public class TagsList
+    public class AutoSuggestList
     {
         public int ProgenyId { get; set; } = 0;
-        public List<string> Tags { get; set; } = new List<string>();
+        public List<string> Suggestions { get; set; } = new List<string>();
     }
 }

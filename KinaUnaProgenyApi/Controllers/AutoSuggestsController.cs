@@ -302,9 +302,10 @@ namespace KinaUnaProgenyApi.Controllers
                     List<string> tagsList = contact.Tags.Split(',').ToList();
                     foreach (string tagString in tagsList)
                     {
-                        if (!autoSuggestList.Contains(tagString.Trim()))
+                        string trimmedTagString = tagString.Trim();
+                        if (!string.IsNullOrEmpty(trimmedTagString) && !autoSuggestList.Contains(trimmedTagString))
                         {
-                            autoSuggestList.Add(tagString.Trim());
+                            autoSuggestList.Add(trimmedTagString);
                         }
                     }
                 }

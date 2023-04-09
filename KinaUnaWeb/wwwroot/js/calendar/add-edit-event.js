@@ -1,10 +1,12 @@
 import * as LocaleHelper from '../localization.js';
+import { getContextsList, getCurrentProgenyId } from '../data-tools.js';
 let currentMomentLocale = 'en';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let longDateTimeFormatMoment;
 let zebraDateTimeFormat;
 let warningStartIsAfterEndString = 'Warning: Start time is after End time.';
+let currentProgenyId;
 function setLanguageId() {
     const languageIdDiv = document.querySelector('#languageIdDiv');
     if (languageIdDiv !== null) {
@@ -54,12 +56,26 @@ function checkTimes() {
     ;
 }
 ;
+async function setContextAutoSuggestList(progenyId) {
+    let contextInputElement = document.getElementById('contextInput');
+    if (contextInputElement !== null) {
+        const contextsList = await getContextsList(progenyId);
+        $('#contextInput').amsifySuggestags({
+            suggestions: contextsList.suggestions
+        });
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
 $(async function () {
+    currentProgenyId = getCurrentProgenyId();
     setLanguageId();
     setMomentLocale();
     setDateTimeFormats();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     warningStartIsAfterEndString = await LocaleHelper.getTranslation('Warning: Start time is after End time.', 'Sleep', languageId);
+    setContextAutoSuggestList(currentProgenyId);
     const dateTimePicker1 = $('#datetimepicker1');
     dateTimePicker1.Zebra_DatePicker({
         format: zebraDateTimeFormat,
@@ -94,6 +110,13 @@ $(async function () {
         zebra2.addEventListener('change', () => { checkTimes(); });
         zebra2.addEventListener('blur', () => { checkTimes(); });
         zebra2.addEventListener('focus', () => { checkTimes(); });
+    }
+    const progenyIdSelect = document.querySelector('#progenyIdSelect');
+    if (progenyIdSelect !== null) {
+        progenyIdSelect.addEventListener('change', async () => {
+            currentProgenyId = parseInt(progenyIdSelect.value);
+            await setContextAutoSuggestList(currentProgenyId);
+        });
     }
 });
 //# sourceMappingURL=add-edit-event.js.map

@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization.js';
-
+import { getContextsList, getCurrentProgenyId } from '../data-tools.js';
 declare let moment: any;
 
 let currentMomentLocale: string = 'en';
@@ -8,6 +8,7 @@ let languageId = 1;
 let longDateTimeFormatMoment: string;
 let zebraDateTimeFormat: string;
 let warningStartIsAfterEndString = 'Warning: Start time is after End time.';
+let currentProgenyId: number;
 
 function setLanguageId() {
     const languageIdDiv = document.querySelector<HTMLDivElement>('#languageIdDiv');
@@ -62,12 +63,30 @@ function checkTimes() {
     };
 };
 
+async function setContextAutoSuggestList(progenyId: number) {
+    let contextInputElement = document.getElementById('contextInput');
+    if (contextInputElement !== null) {
+        const contextsList = await getContextsList(progenyId);
+
+        ($('#contextInput') as any).amsifySuggestags({
+            suggestions: contextsList.suggestions
+        });
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
 $(async function (): Promise<void> {
+    currentProgenyId = getCurrentProgenyId();
     setLanguageId();
     setMomentLocale();
     setDateTimeFormats();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     warningStartIsAfterEndString = await LocaleHelper.getTranslation('Warning: Start time is after End time.', 'Sleep', languageId);
+
+    setContextAutoSuggestList(currentProgenyId);
 
     const dateTimePicker1: any = $('#datetimepicker1');
     dateTimePicker1.Zebra_DatePicker({
@@ -107,5 +126,13 @@ $(async function (): Promise<void> {
         zebra2.addEventListener('change', () => { checkTimes(); });
         zebra2.addEventListener('blur', () => { checkTimes(); });
         zebra2.addEventListener('focus', () => { checkTimes(); });
+    }
+
+    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#progenyIdSelect');
+    if (progenyIdSelect !== null) {
+        progenyIdSelect.addEventListener('change', async () => {
+            currentProgenyId = parseInt(progenyIdSelect.value);
+            await setContextAutoSuggestList(currentProgenyId);
+        });
     }
 });

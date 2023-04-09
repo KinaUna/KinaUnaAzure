@@ -83,11 +83,11 @@ export class TextTranslationPageListModel {
     languagesList: KinaUnaLanguage[] = [];
 }
 
-export class TagsList {
+export class AutoSuggestList {
     progenyId: number;
-    tags: string[];
+    suggestions: string[];
     constructor(_progenyId: number) {
         this.progenyId = _progenyId;
-        this.tags = [];
+        this.suggestions = [];
     }
 }

@@ -112,6 +112,7 @@ namespace KinaUnaWeb
             services.AddTransient<IViewModelSetupService, ViewModelSetupService>();
             services.AddTransient<INotificationsService, NotificationsService>();
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
+            services.AddTransient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddDistributedMemoryCache();
 
             string progenyServerUrl = Configuration.GetValue<string>("ProgenyApiServer");
