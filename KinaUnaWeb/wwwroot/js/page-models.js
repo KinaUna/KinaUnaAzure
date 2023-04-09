@@ -70,4 +70,10 @@ export class TextTranslationPageListModel {
         this.languagesList = [];
     }
 }
+export class TagsList {
+    constructor(_progenyId) {
+        this.progenyId = _progenyId;
+        this.tags = [];
+    }
+}
 //# sourceMappingURL=page-models.js.map

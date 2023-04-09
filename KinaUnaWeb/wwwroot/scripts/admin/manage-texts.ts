@@ -21,6 +21,10 @@ async function loadManageTextsEditTextModal(textItem: pageModels.KinaUnaTextPara
     });
     const waitMeStopEvent = new Event('waitMeStop');
     window.dispatchEvent(waitMeStopEvent);
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 function showManageTextsEditModal(textItem: pageModels.KinaUnaTextResponse) {
@@ -107,6 +111,9 @@ async function saveManageTextsContent() {
     }
     const waitMeStopEvent = new Event('waitMeStop');
     window.dispatchEvent(waitMeStopEvent);
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 function getManageTextsReturnUrl(): string {

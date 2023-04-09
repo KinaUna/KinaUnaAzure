@@ -51,7 +51,10 @@ export async function getZebraDatePickerTranslations(languageId: number): Promis
             console.log('Error loading Zebra Date Picker translations. Error: ' + error);
         });
     }
-    return translations;
+
+    return new Promise<ZebraDatePickerTranslations>(function (resolve, reject) {
+        resolve(translations);
+    });
 }
 
 export class ZebraDatePickerTranslations {
@@ -83,5 +86,7 @@ export async function getTranslation(word: string, page: string, languageId: num
         console.log('Error loading Zebra Date Picker translations. Error: ' + error);
     });
 
-    return translationString;
+    return new Promise<string>(function (resolve, reject) {
+        resolve(translationString);
+    });
 }

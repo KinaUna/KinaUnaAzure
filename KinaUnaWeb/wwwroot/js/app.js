@@ -160,6 +160,9 @@ async function setSideBarPosition() {
         sidebarTextsButton.style.visibility = "collapse";
     }
     ;
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 function setActivePageClass() {
     const currentUrl = document.location.pathname.replace('/', '');

@@ -40,6 +40,9 @@ async function loadLocale() {
         }
     }
     await LocaleHelper.loadCldrCultureFiles(currentCulture, syncfusionReference);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 $(async function () {
     let scheduleInstance = document.querySelector('.e-schedule').ej2_instances[0];

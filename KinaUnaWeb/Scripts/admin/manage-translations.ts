@@ -182,6 +182,10 @@ async function saveTranslationItem(translationId: number) {
 
     const waitMeStopEvent = new Event('waitMeStop');
     window.dispatchEvent(waitMeStopEvent);
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 function showSavedIndicator(translationId: number) {
@@ -220,7 +224,11 @@ async function deleteTranslationItem(translationId: number) {
             const waitMeStopEvent = new Event('waitMeStop');
             window.dispatchEvent(waitMeStopEvent);
         }
-    }    
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 $(function (): void {

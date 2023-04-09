@@ -56,6 +56,9 @@ async function getNotes() {
             }
         }
     }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 async function getNoteElement(id) {
     const getNoteElementParameters = new pageModels.NoteItemParameters();
@@ -75,6 +78,9 @@ async function getNoteElement(id) {
             notesListDiv.insertAdjacentHTML('beforeend', noteHtml);
         }
     }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 function getNextNotesPage() {
     notesPageParametersHistory.push(structuredClone(notesPageParameters));

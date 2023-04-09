@@ -82,3 +82,12 @@ export class TextTranslationPageListModel {
     translations: TextTranslation[] = [];
     languagesList: KinaUnaLanguage[] = [];
 }
+
+export class TagsList {
+    progenyId: number;
+    tags: string[];
+    constructor(_progenyId: number) {
+        this.progenyId = _progenyId;
+        this.tags = [];
+    }
+}

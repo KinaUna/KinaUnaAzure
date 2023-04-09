@@ -52,6 +52,9 @@ async function loadLocale() {
     }
 
     await LocaleHelper.loadCldrCultureFiles(currentCulture, syncfusionReference);
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 $(async function (): Promise<void> {

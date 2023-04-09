@@ -19,6 +19,9 @@ async function loadManageTextsEditTextModal(textItem) {
     });
     const waitMeStopEvent = new Event('waitMeStop');
     window.dispatchEvent(waitMeStopEvent);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 function showManageTextsEditModal(textItem) {
     return new Promise(function (resolve, reject) {
@@ -94,6 +97,9 @@ async function saveManageTextsContent() {
     }
     const waitMeStopEvent = new Event('waitMeStop');
     window.dispatchEvent(waitMeStopEvent);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 function getManageTextsReturnUrl() {
     let manageTextsPageReturnUrl = '';

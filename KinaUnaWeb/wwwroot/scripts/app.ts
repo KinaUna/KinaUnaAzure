@@ -178,6 +178,10 @@ async function setSideBarPosition(): Promise<void> {
         }, 500);
         sidebarTextsButton.style.visibility = "collapse";
     };
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 function setActivePageClass(): void {

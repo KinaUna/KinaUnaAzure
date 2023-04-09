@@ -60,6 +60,10 @@ async function getNotes(): Promise<void> {
             }            
         }   
     }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 async function getNoteElement(id: number): Promise<void> {
@@ -82,6 +86,10 @@ async function getNoteElement(id: number): Promise<void> {
             notesListDiv.insertAdjacentHTML('beforeend', noteHtml);
         }
     }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
 function getNextNotesPage(): void {

@@ -161,6 +161,9 @@ async function saveTranslationItem(translationId) {
     }
     const waitMeStopEvent = new Event('waitMeStop');
     window.dispatchEvent(waitMeStopEvent);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 function showSavedIndicator(translationId) {
     const checkElement = document.querySelector('[data-saved-indicator-id="' + translationId.toString() + '"]');
@@ -196,6 +199,9 @@ async function deleteTranslationItem(translationId) {
             window.dispatchEvent(waitMeStopEvent);
         }
     }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 $(function () {
     const selectPageElements = document.querySelectorAll('[data-viewid]');
