@@ -20,87 +20,6 @@
     typeList.Add(caretakerFriend);
 }
 
-@section Scripts
-    {
-    <script type="text/javascript">
-        $(function() {
-            $('.button-checkbox').each(function() {
-
-                // Settings
-                let $widget = $(this),
-                    $button = $widget.find('button'),
-                    $checkbox = $widget.find('input:checkbox'),
-                    color = $button.data('color'),
-                    settings = {
-                        on: {
-                            icon: 'fas fa-check-square'
-                        },
-                        off: {
-                            icon: 'fas fa-square'
-                        }
-                    };
-
-                // Event Handlers
-                $button.on('click',
-                    function() {
-                        $checkbox.prop('checked', !$checkbox.is(':checked')).triggerHandler('click');
-                        $checkbox.triggerHandler('change');
-                        updateDisplay();
-                    });
-                $checkbox.on('change',
-                    function() {
-                        updateDisplay();
-                    });
-
-                // Actions
-                function updateDisplay() {
-                    const isChecked = $checkbox.is(':checked');
-
-                    // Set the button's state
-                    $button.data('state', (isChecked) ? "on" : "off");
-
-                    // Set the button's icon
-                    $button.find('.state-icon')
-                        .removeClass()
-                        .addClass('state-icon ' + settings[$button.data('state')].icon);
-
-                    // Update the button's color
-                    if (isChecked) {
-                        $button
-                            .removeClass('btn-default')
-                            .addClass('btn-' + color + ' active');
-                    } else {
-                        $button
-                            .removeClass('btn-' + color + ' active')
-                            .addClass('btn-default');
-                    }
-                }
-
-                // Initialization
-                function init() {
-                    updateDisplay();
-                    // Inject the icon if applicable
-                    if ($button.find('.state-icon').length === 0) {
-                        $button.prepend('<i class="state-icon ' + settings[$button.data('state')].icon + '"></i> ');
-                    }
-                }
-
-                init();
-            });
-        });
-    </script>
-    <script type="text/javascript">
-        function ShowHideFiltersFunction() {
-            const x = document.getElementById("filtersDiv");
-            if (x.style.display === "none") {
-                x.style.display = "block";
-            } else {
-                x.style.display = "none";
-            }
-        }
-    </script>
-}
-
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="row">
         <div class="col-12">
@@ -123,24 +42,29 @@
                 <div>
                     <span>Show:</span>
                     <span class="button-checkbox">
-                        <button type="button" class="btn" data-color="primary">@personalFriend</button>
-                        <input type="checkbox" name="friendClass0" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
+                        <button type="button" class="btn btn-primary" name="friendClass0">
+                            <span class="checkbox-icon"></span> @personalFriend
+                        </button>
                     </span>
                     <span class="button-checkbox">
-                        <button type="button" class="btn" data-color="primary">@toyFriend</button>
-                        <input type="checkbox" name="friendClass1" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
+                        <button type="button" class="btn btn-primary" name="friendClass1">
+                            <span class="checkbox-icon"></span> @toyFriend
+                        </button>
                     </span>
                     <span class="button-checkbox">
-                        <button type="button" class="btn" data-color="primary">@parentFriend</button>
-                        <input type="checkbox" name="friendClass2" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
+                        <button type="button" class="btn btn-primary" name="friendClass2">
+                            <span class="checkbox-icon"></span> @parentFriend
+                        </button>
                     </span>
                     <span class="button-checkbox">
-                        <button type="button" class="btn" data-color="primary">@familyFriend</button>
-                        <input type="checkbox" name="friendClass3" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
+                        <button type="button" class="btn btn-primary" name="friendClass3">
+                            <span class="checkbox-icon"></span> @familyFriend
+                        </button>
                     </span>
                     <span class="button-checkbox">
-                        <button type="button" class="btn" data-color="primary">@caretakerFriend</button>
-                        <input type="checkbox" name="friendClass4" style="margin-right: 18px;" checked="checked" class="hidden" hidden />
+                            <button type="button" class="btn btn-primary" name="friendClass4">
+                            <span class="checkbox-icon"></span> @caretakerFriend
+                        </button>
                     </span>
                 </div>
                 @if (!string.IsNullOrEmpty(Model.TagFilter))
@@ -210,14 +134,4 @@
     
 </div>
 <div class="space-20"></div>
-<script type="text/javascript">
-    $("input:checkbox:not(:checked)").each(function() {
-        const anchor = document.getElementsByClassName($(this).attr("name"));
-        $(anchor).hide();
-    });
-
-    $("input:checkbox").change(function() {
-        const anchor = document.getElementsByClassName($(this).attr("name"));
-        $(anchor).toggle();
-    });
-</script>
+<script src="/js/friends/friends-index.js" type="module"></script>

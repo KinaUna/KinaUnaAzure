@@ -102,3 +102,41 @@ export async function getCategoriesList(progenyId: number): Promise<AutoSuggestL
         resolve(categoriesList);
     });
 }
+
+export function hideItemsWithClass(classToHide: string) {
+    const queryString = '.' + classToHide;
+    const items = document.querySelectorAll(queryString);
+    items.forEach((item) => {
+        item.classList.add('d-none');
+    });
+}
+
+export function showItemsWithClass(classToShow: string) {
+    const queryString = '.' + classToShow;
+    const items = document.querySelectorAll(queryString);
+    items.forEach((item) => {
+        item.classList.remove('d-none');
+    });
+}
+
+export function updateFilterButtonDisplay(button: HTMLButtonElement) {
+    const iconElement = button.querySelector<HTMLSpanElement>('.checkbox-icon');
+    if (!button.classList.contains('active') && iconElement !== null) {
+        iconElement.classList.value = '';
+        iconElement.classList.add('checkbox-icon');
+        iconElement.classList.add('fas');
+        iconElement.classList.add('fa-check-square');
+        button.classList.add('active');
+        showItemsWithClass(button.name);
+    }
+    else {
+        if (iconElement !== null) {
+            iconElement.classList.value = '';
+            iconElement.classList.add('checkbox-icon');
+            iconElement.classList.add('fas');
+            iconElement.classList.add('fa-square');
+            button.classList.remove('active');
+            hideItemsWithClass(button.name);
+        }
+    }
+}
