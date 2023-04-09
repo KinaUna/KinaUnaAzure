@@ -38,7 +38,7 @@ export function getZebraDateTimeFormat() {
             return zebraDateTimeFormatData;
         }
     }
-    return '';
+    return 'd-F-Y';
 }
 export function getLongDateTimeFormatMoment() {
     const longDateTimeFormatMomentDiv = document.querySelector('#longDateTimeFormatMomentDiv');
@@ -48,7 +48,7 @@ export function getLongDateTimeFormatMoment() {
             return longDateTimeFormatMomentData;
         }
     }
-    return '';
+    return 'DD-MMMM-YYYY HH:mm';
 }
 export async function getTagsList(progenyId) {
     let tagsList = new AutoSuggestList(progenyId);

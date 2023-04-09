@@ -48,7 +48,7 @@ export function getZebraDateTimeFormat() {
         }
     }
 
-    return '';
+    return 'd-F-Y';
 }
 
 export function getLongDateTimeFormatMoment() {
@@ -60,7 +60,7 @@ export function getLongDateTimeFormatMoment() {
         }
     }
 
-    return '';
+    return 'DD-MMMM-YYYY HH:mm';
 }
 
 export async function getTagsList(progenyId: number): Promise<AutoSuggestList> {
