@@ -4,14 +4,20 @@
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
-<div id="upcomingEventsDiv" style="opacity: 0.85">
+<div id="upcomingEventsParentDiv" class="d-none">
+    <div>
+        @await LocaleManager.GetTranslation("Current and upcoming events:", PageNames.Home, languageId)
+    </div>
+    <div id="upcomingEventsDiv" style="opacity: 0.85">
 
-</div>
-<div style="height: 150px;">
-    <button id="moreUpcomingEventsButton" class="btn btn-link btn-link-yellow d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more events", PageNames.Calendar, languageId)</button>
-    <div id="loadingUpcomingEventsDiv" class="w-100">
-        <div class="space-20"></div>
+    </div>
+    <div style="height: 150px;">
+        <button id="moreUpcomingEventsButton" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more events", PageNames.Calendar, languageId)</button>
+        <div id="loadingUpcomingEventsDiv" class="w-100">
+            <div class="space-20"></div>
+        </div>
     </div>
 </div>
+
 
 <script src="/js/home/home-upcoming-events.js" type="module"></script>

@@ -78,8 +78,6 @@ namespace KinaUnaWeb.Controllers
             
             model.SetPictureTimeData();
             
-            model.YearAgoPosts = await _viewModelSetupService.GetYearAgoPostsTimeLineModel(model.CurrentProgenyId, model.CurrentAccessLevel, model.LanguageId);
-
             return View(model);
         }
 

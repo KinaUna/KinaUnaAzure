@@ -2,7 +2,7 @@ import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList }
 import {getCurrentProgenyId } from '../data-tools.js';
 let timelineItemsList: TimelineItem[] = []
 const timeLineParameters: TimelineParameters = new TimelineParameters();
-let currentProgenyId: number;
+let latestPostsProgenyId: number;
 let moreTimelineItemsButton: HTMLButtonElement | null;
 
 function runWaitMeMoreTimelineItemsButton(): void {
@@ -44,6 +44,10 @@ async function getTimelineList(parameters: TimelineParameters) {
         if (getTimelineListResult != null) {
             const newTimeLineItemsList = (await getTimelineListResult.json()) as TimelineList;
             if (newTimeLineItemsList.timelineItems.length > 0) {
+                const latestPostsParentDiv = document.querySelector<HTMLDivElement>('#latestPostsParentDiv');
+                if (latestPostsParentDiv !== null) {
+                    latestPostsParentDiv.classList.remove('d-none');
+                }
                 for await (const timelineItemToAdd of newTimeLineItemsList.timelineItems) {
                     timelineItemsList.push(timelineItemToAdd);
                     await renderTimelineItem(timelineItemToAdd);
@@ -92,10 +96,10 @@ async function renderTimelineItem(timelineItem: TimelineItem) {
 }
 
 $(async function () {
-    currentProgenyId = getCurrentProgenyId();
+    latestPostsProgenyId = getCurrentProgenyId();
     timeLineParameters.count = 5;
     timeLineParameters.skip = 0;
-    timeLineParameters.progenyId = currentProgenyId;
+    timeLineParameters.progenyId = latestPostsProgenyId;
 
     moreTimelineItemsButton = document.querySelector<HTMLButtonElement>('#moreTimelineItemsButton');
     if (moreTimelineItemsButton !== null) {

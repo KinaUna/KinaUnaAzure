@@ -1,8 +1,8 @@
 import { TimelineParameters, TimeLineItemViewModel } from '../page-models.js';
 import { getCurrentProgenyId } from '../data-tools.js';
 let upcomingEventsList = [];
-const timeLineParameters = new TimelineParameters();
-let currentProgenyId;
+const upcomingEventsParameters = new TimelineParameters();
+let upcomingEventsProgenyId;
 let moreUpcomingEventsButton;
 function runWaitMeMoreUpcomingEventsButton() {
     const moreItemsButton = $('#loadingUpcomingEventsDiv');
@@ -39,7 +39,12 @@ async function getUpcomingEventsList(parameters) {
     }).then(async function (getUpcomingEventsListResult) {
         if (getUpcomingEventsListResult != null) {
             const newUpcomingEventsList = (await getUpcomingEventsListResult.json());
+            console.log(newUpcomingEventsList);
             if (newUpcomingEventsList.timelineItems.length > 0) {
+                const upcomingEventsParentDiv = document.querySelector('#upcomingEventsParentDiv');
+                if (upcomingEventsParentDiv !== null) {
+                    upcomingEventsParentDiv.classList.remove('d-none');
+                }
                 for await (const eventToAdd of newUpcomingEventsList.timelineItems) {
                     upcomingEventsList.push(eventToAdd);
                     await renderUpcomingEvent(eventToAdd);
@@ -82,16 +87,16 @@ async function renderUpcomingEvent(timelineItem) {
     });
 }
 $(async function () {
-    currentProgenyId = getCurrentProgenyId();
-    timeLineParameters.count = 5;
-    timeLineParameters.skip = 0;
-    timeLineParameters.progenyId = currentProgenyId;
+    upcomingEventsProgenyId = getCurrentProgenyId();
+    upcomingEventsParameters.count = 5;
+    upcomingEventsParameters.skip = 0;
+    upcomingEventsParameters.progenyId = upcomingEventsProgenyId;
     moreUpcomingEventsButton = document.querySelector('#moreUpcomingEventsButton');
     if (moreUpcomingEventsButton !== null) {
         moreUpcomingEventsButton.addEventListener('click', async () => {
-            getUpcomingEventsList(timeLineParameters);
+            getUpcomingEventsList(upcomingEventsParameters);
         });
     }
-    await getUpcomingEventsList(timeLineParameters);
+    await getUpcomingEventsList(upcomingEventsParameters);
 });
 //# sourceMappingURL=home-upcoming-events.js.map

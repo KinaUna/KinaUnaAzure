@@ -7,9 +7,9 @@
 }
 <div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="row m-0">
-    <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
+    <div class="col-12">
         <div class="row">
-            <div class="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 col-xxl-6 col-xxxl-6 col-w1900-6 col-w2500-5" style="margin-bottom: 10px; padding-left: 25px;">
+            <div class="col-12 col-sm-12 col-md-7 col-lg-7 col-xl-7 col-xxl-4 col-xxxl-5 col-w1900-5 col-w2500-4" style="margin-bottom: 10px; padding-left: 25px;">
                 <div class="row">
                     <div class="col">
                     </div>
@@ -36,25 +36,17 @@
                     @await Html.PartialAsync("_RandomPicturePartial", Model)
                 </div>
             </div>
-            <div class="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-4 col-xxl-4 col-xxxl-4 col-w1900-4 col-w2500-3">
-                <div class="space-10"></div>
-                <div>
-                    @await LocaleManager.GetTranslation("Current and upcoming events:", PageNames.Home, Model.LanguageId)
-                </div>
+            <div class="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-4 col-xxl-4 col-xxxl-3 col-w1900-2 col-w2500-2">
+                <div class="space-20"></div>
                 @await Html.PartialAsync("_EventsPartial")
+            </div>
+            <div class="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-4 col-xxl-4 col-xxxl-3 col-w1900-2 col-w2500-2">
                 <div class="space-20"></div>
-                <div>
-                    @await LocaleManager.GetTranslation("Latest posts:", PageNames.Home, Model.LanguageId)
-                </div>
                 @await Html.PartialAsync("_LatestPostsPartial")
+            </div>
+            <div class="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-4 col-xxl-4 col-xxxl-4 col-w1900-2 col-w2500-2">
                 <div class="space-20"></div>
-                @if (Model.YearAgoPosts.TimeLineItems.Any())
-                {
-                    <div>
-                        @await LocaleManager.GetTranslation("On this day:", PageNames.Home, Model.LanguageId)
-                    </div>
-                    @await Html.PartialAsync("_YearAgoPartial", Model.YearAgoPosts)
-                }
+                @await Html.PartialAsync("_YearAgoPartial")
             </div>
         </div>
     </div>

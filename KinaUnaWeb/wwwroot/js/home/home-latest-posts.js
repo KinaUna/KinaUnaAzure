@@ -2,7 +2,7 @@ import { TimelineParameters, TimeLineItemViewModel } from '../page-models.js';
 import { getCurrentProgenyId } from '../data-tools.js';
 let timelineItemsList = [];
 const timeLineParameters = new TimelineParameters();
-let currentProgenyId;
+let latestPostsProgenyId;
 let moreTimelineItemsButton;
 function runWaitMeMoreTimelineItemsButton() {
     const moreItemsButton = $('#loadingTimeLineItemsDiv');
@@ -40,6 +40,10 @@ async function getTimelineList(parameters) {
         if (getTimelineListResult != null) {
             const newTimeLineItemsList = (await getTimelineListResult.json());
             if (newTimeLineItemsList.timelineItems.length > 0) {
+                const latestPostsParentDiv = document.querySelector('#latestPostsParentDiv');
+                if (latestPostsParentDiv !== null) {
+                    latestPostsParentDiv.classList.remove('d-none');
+                }
                 for await (const timelineItemToAdd of newTimeLineItemsList.timelineItems) {
                     timelineItemsList.push(timelineItemToAdd);
                     await renderTimelineItem(timelineItemToAdd);
@@ -82,10 +86,10 @@ async function renderTimelineItem(timelineItem) {
     });
 }
 $(async function () {
-    currentProgenyId = getCurrentProgenyId();
+    latestPostsProgenyId = getCurrentProgenyId();
     timeLineParameters.count = 5;
     timeLineParameters.skip = 0;
-    timeLineParameters.progenyId = currentProgenyId;
+    timeLineParameters.progenyId = latestPostsProgenyId;
     moreTimelineItemsButton = document.querySelector('#moreTimelineItemsButton');
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.addEventListener('click', async () => {
