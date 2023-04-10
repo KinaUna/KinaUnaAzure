@@ -111,3 +111,9 @@ export class TimeLineItemViewModel {
     itemId: number = 0;
     tagFilter: string = '';
 }
+
+export class TimelineList {
+    timelineItems: TimelineItem[] = [];
+    allItemsCount: number = 0;
+    remainingItemsCount: number = 0;
+}

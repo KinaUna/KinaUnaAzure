@@ -1,12 +1,12 @@
 import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models.js';
-import {getCurrentProgenyId } from '../data-tools.js';
-let timelineItemsList: TimelineItem[] = []
+import { getCurrentProgenyId } from '../data-tools.js';
+let upcomingEventsList: TimelineItem[] = []
 const timeLineParameters: TimelineParameters = new TimelineParameters();
 let currentProgenyId: number;
-let moreTimelineItemsButton: HTMLButtonElement | null;
+let moreUpcomingEventsButton: HTMLButtonElement | null;
 
-function runWaitMeMoreTimelineItemsButton(): void {
-    const moreItemsButton: any = $('#loadingTimeLineItemsDiv');
+function runWaitMeMoreUpcomingEventsButton(): void {
+    const moreItemsButton: any = $('#loadingUpcomingEventsDiv');
     moreItemsButton.waitMe({
         effect: 'bounce',
         text: '',
@@ -21,35 +21,35 @@ function runWaitMeMoreTimelineItemsButton(): void {
     });
 }
 
-function stopWaitMeMoreTimelineItemsButton(): void {
-    const moreItemsButton: any = $('#loadingTimeLineItemsDiv');
+function stopWaitMeMoreUpcomingEventsButton(): void {
+    const moreItemsButton: any = $('#loadingUpcomingEventsDiv');
     moreItemsButton.waitMe("hide");
 }
 
-async function getTimelineList(parameters: TimelineParameters) {
-    runWaitMeMoreTimelineItemsButton();
-    if (moreTimelineItemsButton !== null) {
-        moreTimelineItemsButton.classList.add('d-none');
+async function getUpcomingEventsList(parameters: TimelineParameters) {
+    runWaitMeMoreUpcomingEventsButton();
+    if (moreUpcomingEventsButton !== null) {
+        moreUpcomingEventsButton.classList.add('d-none');
     }
-    parameters.skip = timelineItemsList.length;
+    parameters.skip = upcomingEventsList.length;
 
-    await fetch('/Timeline/GetTimelineList', {
+    await fetch('/Calendar/GetUpcomingEventsList', {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(parameters)
-    }).then(async function (getTimelineListResult) {
-        if (getTimelineListResult != null) {
-            const newTimeLineItemsList = (await getTimelineListResult.json()) as TimelineList;
-            if (newTimeLineItemsList.timelineItems.length > 0) {
-                for await (const timelineItemToAdd of newTimeLineItemsList.timelineItems) {
-                    timelineItemsList.push(timelineItemToAdd);
-                    await renderTimelineItem(timelineItemToAdd);
+    }).then(async function (getUpcomingEventsListResult) {
+        if (getUpcomingEventsListResult != null) {
+            const newUpcomingEventsList = (await getUpcomingEventsListResult.json()) as TimelineList;
+            if (newUpcomingEventsList.timelineItems.length > 0) {
+                for await (const eventToAdd of newUpcomingEventsList.timelineItems) {
+                    upcomingEventsList.push(eventToAdd);
+                    await renderUpcomingEvent(eventToAdd);
                 };
-                if (newTimeLineItemsList.remainingItemsCount > 0 && moreTimelineItemsButton !== null) {
-                    moreTimelineItemsButton.classList.remove('d-none');
+                if (newUpcomingEventsList.remainingItemsCount > 0 && moreUpcomingEventsButton !== null) {
+                    moreUpcomingEventsButton.classList.remove('d-none');
                 }
             }
         }
@@ -57,14 +57,14 @@ async function getTimelineList(parameters: TimelineParameters) {
         console.log('Error loading TimelineList. Error: ' + error);
     });
 
-    stopWaitMeMoreTimelineItemsButton();
+    stopWaitMeMoreUpcomingEventsButton();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
-async function renderTimelineItem(timelineItem: TimelineItem) {
+async function renderUpcomingEvent(timelineItem: TimelineItem) {
     const timeLineItemViewModel: TimeLineItemViewModel = new TimeLineItemViewModel();
     timeLineItemViewModel.typeId = timelineItem.itemType;
     timeLineItemViewModel.itemId = parseInt(timelineItem.itemId);
@@ -80,7 +80,7 @@ async function renderTimelineItem(timelineItem: TimelineItem) {
 
     if (getTimelineElementResponse.ok && getTimelineElementResponse.text !== null) {
         const timelineElementHtml = await getTimelineElementResponse.text();
-        const timelineDiv = document.querySelector<HTMLDivElement>('#timelineItemsDiv');
+        const timelineDiv = document.querySelector<HTMLDivElement>('#upcomingEventsDiv');
         if (timelineDiv != null) {
             timelineDiv.insertAdjacentHTML('beforeend', timelineElementHtml);
         }
@@ -97,12 +97,12 @@ $(async function () {
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = currentProgenyId;
 
-    moreTimelineItemsButton = document.querySelector<HTMLButtonElement>('#moreTimelineItemsButton');
-    if (moreTimelineItemsButton !== null) {
-        moreTimelineItemsButton.addEventListener('click', async () => {
-            getTimelineList(timeLineParameters);
+    moreUpcomingEventsButton = document.querySelector<HTMLButtonElement>('#moreUpcomingEventsButton');
+    if (moreUpcomingEventsButton !== null) {
+        moreUpcomingEventsButton.addEventListener('click', async () => {
+            getUpcomingEventsList(timeLineParameters);
         });
     }
 
-    await getTimelineList(timeLineParameters);
+    await getUpcomingEventsList(timeLineParameters);
 });

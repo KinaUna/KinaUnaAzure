@@ -1,13 +1,14 @@
 ﻿@using KinaUnaWeb.Services
-@using Microsoft.AspNetCore.Mvc.TagHelpers
 @using KinaUna.Data
-@model KinaUnaWeb.Models.ItemViewModels.TimeLineViewModel
 @inject ILocaleManager LocaleManager
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+}
 <div id="timelineItemsDiv" style="opacity: 0.85">
 
 </div>
-<div id="moreButtonDiv" style="height: 150px;">
-    <button id="moreTimelineItemsButton" class="btn btn-success d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more posts", PageNames.Timeline, Model.LanguageId)</button>
+<div style="height: 150px;">
+    <button id="moreTimelineItemsButton" class="btn btn-link btn-link-yellow d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more posts", PageNames.Timeline, languageId)</button>
     <div id="loadingTimeLineItemsDiv" class="w-100">
         <div class="space-20"></div>
     </div>

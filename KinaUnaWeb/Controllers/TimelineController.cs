@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -45,8 +44,11 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetTimelineList([FromBody] TimelineParameters parameters)
         {
-            List<TimeLineItem> timelineList = await _timelineHttpClient.GetTimeline(parameters.ProgenyId, 0, parameters.SortBy);
-            timelineList = timelineList.Skip(parameters.Skip).Take(parameters.Count).ToList();
+            TimelineList timelineList = new TimelineList();
+            timelineList.TimelineItems = await _timelineHttpClient.GetTimeline(parameters.ProgenyId, 0, parameters.SortBy);
+            timelineList.AllItemsCount = timelineList.TimelineItems.Count;
+            timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count; 
+            timelineList.TimelineItems = timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count).ToList();
 
             return Json(timelineList);
 

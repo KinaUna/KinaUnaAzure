@@ -99,4 +99,11 @@ export class TimeLineItemViewModel {
         this.tagFilter = '';
     }
 }
+export class TimelineList {
+    constructor() {
+        this.timelineItems = [];
+        this.allItemsCount = 0;
+        this.remainingItemsCount = 0;
+    }
+}
 //# sourceMappingURL=page-models.js.map

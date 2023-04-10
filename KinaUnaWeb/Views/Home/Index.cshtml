@@ -38,22 +38,16 @@
             </div>
             <div class="col-12 col-sm-12 col-md-5 col-lg-5 col-xl-4 col-xxl-4 col-xxxl-4 col-w1900-4 col-w2500-3">
                 <div class="space-10"></div>
-                @if (Model.EventsList.Any())
-                {
-                    <div>
-                        @await LocaleManager.GetTranslation("Current and upcoming events:", PageNames.Home, Model.LanguageId)
-                    </div>
-                    @await Html.PartialAsync("_EventsPartial", Model.EventsList)
-                    <div class="space-20"></div>
-                }
-                @if (Model.LatestPosts.TimeLineItems.Any())
-                {
-                    <div>
-                        @await LocaleManager.GetTranslation("Latest posts:", PageNames.Home, Model.LanguageId)
-                    </div>
-                    @await Html.PartialAsync("_LatestPostsPartial", Model.LatestPosts)
-                    <div class="space-20"></div>
-                }
+                <div>
+                    @await LocaleManager.GetTranslation("Current and upcoming events:", PageNames.Home, Model.LanguageId)
+                </div>
+                @await Html.PartialAsync("_EventsPartial")
+                <div class="space-20"></div>
+                <div>
+                    @await LocaleManager.GetTranslation("Latest posts:", PageNames.Home, Model.LanguageId)
+                </div>
+                @await Html.PartialAsync("_LatestPostsPartial")
+                <div class="space-20"></div>
                 @if (Model.YearAgoPosts.TimeLineItems.Any())
                 {
                     <div>

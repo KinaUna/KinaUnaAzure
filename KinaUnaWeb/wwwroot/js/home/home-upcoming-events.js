@@ -1,11 +1,11 @@
 import { TimelineParameters, TimeLineItemViewModel } from '../page-models.js';
 import { getCurrentProgenyId } from '../data-tools.js';
-let timelineItemsList = [];
+let upcomingEventsList = [];
 const timeLineParameters = new TimelineParameters();
 let currentProgenyId;
-let moreTimelineItemsButton;
-function runWaitMeMoreTimelineItemsButton() {
-    const moreItemsButton = $('#loadingTimeLineItemsDiv');
+let moreUpcomingEventsButton;
+function runWaitMeMoreUpcomingEventsButton() {
+    const moreItemsButton = $('#loadingUpcomingEventsDiv');
     moreItemsButton.waitMe({
         effect: 'bounce',
         text: '',
@@ -19,46 +19,46 @@ function runWaitMeMoreTimelineItemsButton() {
         onClose: function () { }
     });
 }
-function stopWaitMeMoreTimelineItemsButton() {
-    const moreItemsButton = $('#loadingTimeLineItemsDiv');
+function stopWaitMeMoreUpcomingEventsButton() {
+    const moreItemsButton = $('#loadingUpcomingEventsDiv');
     moreItemsButton.waitMe("hide");
 }
-async function getTimelineList(parameters) {
-    runWaitMeMoreTimelineItemsButton();
-    if (moreTimelineItemsButton !== null) {
-        moreTimelineItemsButton.classList.add('d-none');
+async function getUpcomingEventsList(parameters) {
+    runWaitMeMoreUpcomingEventsButton();
+    if (moreUpcomingEventsButton !== null) {
+        moreUpcomingEventsButton.classList.add('d-none');
     }
-    parameters.skip = timelineItemsList.length;
-    await fetch('/Timeline/GetTimelineList', {
+    parameters.skip = upcomingEventsList.length;
+    await fetch('/Calendar/GetUpcomingEventsList', {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(parameters)
-    }).then(async function (getTimelineListResult) {
-        if (getTimelineListResult != null) {
-            const newTimeLineItemsList = (await getTimelineListResult.json());
-            if (newTimeLineItemsList.timelineItems.length > 0) {
-                for await (const timelineItemToAdd of newTimeLineItemsList.timelineItems) {
-                    timelineItemsList.push(timelineItemToAdd);
-                    await renderTimelineItem(timelineItemToAdd);
+    }).then(async function (getUpcomingEventsListResult) {
+        if (getUpcomingEventsListResult != null) {
+            const newUpcomingEventsList = (await getUpcomingEventsListResult.json());
+            if (newUpcomingEventsList.timelineItems.length > 0) {
+                for await (const eventToAdd of newUpcomingEventsList.timelineItems) {
+                    upcomingEventsList.push(eventToAdd);
+                    await renderUpcomingEvent(eventToAdd);
                 }
                 ;
-                if (newTimeLineItemsList.remainingItemsCount > 0 && moreTimelineItemsButton !== null) {
-                    moreTimelineItemsButton.classList.remove('d-none');
+                if (newUpcomingEventsList.remainingItemsCount > 0 && moreUpcomingEventsButton !== null) {
+                    moreUpcomingEventsButton.classList.remove('d-none');
                 }
             }
         }
     }).catch(function (error) {
         console.log('Error loading TimelineList. Error: ' + error);
     });
-    stopWaitMeMoreTimelineItemsButton();
+    stopWaitMeMoreUpcomingEventsButton();
     return new Promise(function (resolve, reject) {
         resolve();
     });
 }
-async function renderTimelineItem(timelineItem) {
+async function renderUpcomingEvent(timelineItem) {
     const timeLineItemViewModel = new TimeLineItemViewModel();
     timeLineItemViewModel.typeId = timelineItem.itemType;
     timeLineItemViewModel.itemId = parseInt(timelineItem.itemId);
@@ -72,7 +72,7 @@ async function renderTimelineItem(timelineItem) {
     });
     if (getTimelineElementResponse.ok && getTimelineElementResponse.text !== null) {
         const timelineElementHtml = await getTimelineElementResponse.text();
-        const timelineDiv = document.querySelector('#timelineItemsDiv');
+        const timelineDiv = document.querySelector('#upcomingEventsDiv');
         if (timelineDiv != null) {
             timelineDiv.insertAdjacentHTML('beforeend', timelineElementHtml);
         }
@@ -86,12 +86,12 @@ $(async function () {
     timeLineParameters.count = 5;
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = currentProgenyId;
-    moreTimelineItemsButton = document.querySelector('#moreTimelineItemsButton');
-    if (moreTimelineItemsButton !== null) {
-        moreTimelineItemsButton.addEventListener('click', async () => {
-            getTimelineList(timeLineParameters);
+    moreUpcomingEventsButton = document.querySelector('#moreUpcomingEventsButton');
+    if (moreUpcomingEventsButton !== null) {
+        moreUpcomingEventsButton.addEventListener('click', async () => {
+            getUpcomingEventsList(timeLineParameters);
         });
     }
-    await getTimelineList(timeLineParameters);
+    await getUpcomingEventsList(timeLineParameters);
 });
-//# sourceMappingURL=home-latest-posts.js.map
+//# sourceMappingURL=home-upcoming-events.js.map

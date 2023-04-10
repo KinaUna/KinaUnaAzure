@@ -1,4 +1,7 @@
-﻿using KinaUnaWeb.Models.ItemViewModels;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +9,7 @@ using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.TypeScriptModels.Timeline;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -172,6 +176,34 @@ namespace KinaUnaWeb.Controllers
             await _calendarsHttpClient.DeleteCalendarItem(model.CalendarItem.EventId);
 
             return RedirectToAction("Index", "Calendar");
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> GetUpcomingEventsList([FromBody] TimelineParameters parameters)
+        {
+            TimelineList timelineList = new TimelineList();
+            List<CalendarItem> upcomingCalendarItems = await _calendarsHttpClient.GetCalendarList(parameters.ProgenyId, 0);
+            upcomingCalendarItems = upcomingCalendarItems.Where(c => c.EndTime > DateTime.UtcNow).ToList();
+            upcomingCalendarItems = upcomingCalendarItems.OrderBy(c => c.StartTime).ToList();
+            
+            timelineList.AllItemsCount = upcomingCalendarItems.Count;
+            timelineList.RemainingItemsCount = upcomingCalendarItems.Count - parameters.Skip - parameters.Count;
+
+            upcomingCalendarItems = upcomingCalendarItems.Skip(parameters.Skip).Take(parameters.Count).ToList();
+
+            foreach (CalendarItem eventItem in upcomingCalendarItems)
+            {
+                TimeLineItem eventTimelineItem = new TimeLineItem();
+                eventTimelineItem.ProgenyId = eventItem.ProgenyId;
+                eventTimelineItem.AccessLevel = eventItem.AccessLevel;
+                eventTimelineItem.ItemId = eventItem.EventId.ToString();
+                eventTimelineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Calendar;
+                timelineList.TimelineItems.Add(eventTimelineItem);
+            }
+            
+            return Json(timelineList);
+
         }
     }
 }
