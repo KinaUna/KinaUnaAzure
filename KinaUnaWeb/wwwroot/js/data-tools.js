@@ -73,8 +73,10 @@ export async function setTagsAutoSuggestList(progenyId, elementId = 'tagList') {
     let tagListElement = document.getElementById(elementId);
     if (tagListElement !== null) {
         const tagsList = await getTagsList(progenyId);
-        $('#tagList').amsifySuggestags({
-            suggestions: tagsList.suggestions
+        $('#' + elementId).amsifySuggestags({
+            suggestions: tagsList.suggestions,
+            selectOnHover: false,
+            printValues: false
         });
     }
     return new Promise(function (resolve, reject) {
@@ -104,8 +106,10 @@ export async function setContextAutoSuggestList(progenyId, elementId = 'contextI
     let contextInputElement = document.getElementById(elementId);
     if (contextInputElement !== null) {
         const contextsList = await getContextsList(progenyId);
-        $('#contextInput').amsifySuggestags({
-            suggestions: contextsList.suggestions
+        $('#' + elementId).amsifySuggestags({
+            suggestions: contextsList.suggestions,
+            selectOnHover: false,
+            printValues: false
         });
     }
     return new Promise(function (resolve, reject) {
@@ -148,6 +152,20 @@ export async function getCategoriesList(progenyId) {
     });
     return new Promise(function (resolve, reject) {
         resolve(categoriesList);
+    });
+}
+export async function setCategoriesAutoSuggestList(progenyId, elementId = 'categoryInput') {
+    let categoryInputElement = document.getElementById(elementId);
+    if (categoryInputElement !== null) {
+        const categoriesList = await getCategoriesList(progenyId);
+        $('#' + elementId).amsifySuggestags({
+            suggestions: categoriesList.suggestions,
+            selectOnHover: false,
+            printValues: false
+        });
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
     });
 }
 export function hideItemsWithClass(classToHide) {

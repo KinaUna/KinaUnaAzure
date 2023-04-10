@@ -91,8 +91,10 @@ export async function setTagsAutoSuggestList(progenyId: number, elementId: strin
     if (tagListElement !== null) {
         const tagsList = await getTagsList(progenyId);
 
-        ($('#tagList') as any).amsifySuggestags({
-            suggestions: tagsList.suggestions
+        ($('#' + elementId) as any).amsifySuggestags({
+            suggestions: tagsList.suggestions,
+            selectOnHover: false,
+            printValues: false
         });
     }
 
@@ -129,8 +131,10 @@ export async function setContextAutoSuggestList(progenyId: number, elementId: st
     if (contextInputElement !== null) {
         const contextsList = await getContextsList(progenyId);
 
-        ($('#contextInput') as any).amsifySuggestags({
-            suggestions: contextsList.suggestions
+        ($('#' + elementId) as any).amsifySuggestags({
+            suggestions: contextsList.suggestions,
+            selectOnHover: false,
+            printValues: false
         });
     }
 
@@ -182,6 +186,23 @@ export async function getCategoriesList(progenyId: number): Promise<AutoSuggestL
 
     return new Promise<AutoSuggestList>(function (resolve, reject) {
         resolve(categoriesList);
+    });
+}
+
+export async function setCategoriesAutoSuggestList(progenyId: number, elementId: string = 'categoryInput') {
+    let categoryInputElement = document.getElementById(elementId);
+    if (categoryInputElement !== null) {
+        const categoriesList = await getCategoriesList(progenyId);
+
+        ($('#' + elementId) as any).amsifySuggestags({
+            suggestions: categoriesList.suggestions,
+            selectOnHover: false,
+            printValues: false
+        });
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
     });
 }
 
