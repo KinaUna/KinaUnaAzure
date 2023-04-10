@@ -39,7 +39,6 @@ async function getUpcomingEventsList(parameters) {
     }).then(async function (getUpcomingEventsListResult) {
         if (getUpcomingEventsListResult != null) {
             const newUpcomingEventsList = (await getUpcomingEventsListResult.json());
-            console.log(newUpcomingEventsList);
             if (newUpcomingEventsList.timelineItems.length > 0) {
                 const upcomingEventsParentDiv = document.querySelector('#upcomingEventsParentDiv');
                 if (upcomingEventsParentDiv !== null) {

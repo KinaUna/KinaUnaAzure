@@ -182,7 +182,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetUpcomingEventsList([FromBody] TimelineParameters parameters)
         {
-            TimelineList timelineList = new TimelineList();
+            TimelineList timelineList = new();
             List<CalendarItem> upcomingCalendarItems = await _calendarsHttpClient.GetCalendarList(parameters.ProgenyId, 0);
             upcomingCalendarItems = upcomingCalendarItems.Where(c => c.EndTime > DateTime.UtcNow).ToList();
             upcomingCalendarItems = upcomingCalendarItems.OrderBy(c => c.StartTime).ToList();
@@ -194,7 +194,7 @@ namespace KinaUnaWeb.Controllers
 
             foreach (CalendarItem eventItem in upcomingCalendarItems)
             {
-                TimeLineItem eventTimelineItem = new TimeLineItem();
+                TimeLineItem eventTimelineItem = new();
                 eventTimelineItem.ProgenyId = eventItem.ProgenyId;
                 eventTimelineItem.AccessLevel = eventItem.AccessLevel;
                 eventTimelineItem.ItemId = eventItem.EventId.ToString();

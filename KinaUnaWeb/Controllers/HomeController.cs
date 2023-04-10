@@ -56,12 +56,8 @@ namespace KinaUnaWeb.Controllers
 
             if (model.CurrentAccessLevel == (int)AccessLevel.Public || model.DisplayPicture == null)
             {
-                model.DisplayPicture = await _mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, model.CurrentAccessLevel, model.CurrentUser.Timezone);
-                if(model.DisplayPicture == null)
-                {
-                    model.DisplayPicture = model.CreateTempPicture($"https://{Request.Host}{Request.PathBase}");
-                }
-                
+                model.DisplayPicture = await _mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, model.CurrentAccessLevel, model.CurrentUser.Timezone) ?? model.CreateTempPicture($"https://{Request.Host}{Request.PathBase}");
+
                 model.PicTimeValid = false;
             }
             else

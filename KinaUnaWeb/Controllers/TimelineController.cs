@@ -45,7 +45,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetTimelineList([FromBody] TimelineParameters parameters)
         {
-            TimelineList timelineList = new TimelineList();
+            TimelineList timelineList = new();
             timelineList.TimelineItems = await _timelineHttpClient.GetTimeline(parameters.ProgenyId, 0, parameters.SortBy);
             timelineList.AllItemsCount = timelineList.TimelineItems.Count;
             timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count; 
@@ -59,7 +59,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetYearAgoList([FromBody] TimelineParameters parameters)
         {
-            TimelineList timelineList = new TimelineList();
+            TimelineList timelineList = new();
             timelineList.TimelineItems = await _progenyHttpClient.GetProgenyYearAgo(parameters.ProgenyId, 0);
             timelineList.AllItemsCount = timelineList.TimelineItems.Count;
             timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count;
