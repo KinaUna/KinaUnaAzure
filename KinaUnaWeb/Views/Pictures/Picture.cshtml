@@ -304,7 +304,7 @@
             <div class="form-group">
                 <label asp-for="Picture.PictureTime" class="col-auto control-label">@await LocaleManager.GetTranslation("Photo date and time", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-12">
-                    <input id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm:ss" type="text" class="form-control-noline pl-3" asp-for="Picture.PictureTime"
+                    <input id="datetimepicker1" type="text" class="form-control-noline pl-3" asp-for="Picture.PictureTime"
                            value="@Model.Picture.PictureTime?.ToString(longDateTimeFormat)"/>
                 </div>
             </div>

@@ -1,5 +1,5 @@
 import * as LocaleHelper from '../localization.js';
-import { setContextAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, checkTimes, getZebraDateTimeFormat, getLongDateTimeFormatMoment } from '../data-tools.js';
+import { setContextAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, checkTimes, getZebraDateTimeFormat, getLongDateTimeFormatMoment } from '../data-tools.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
@@ -18,6 +18,7 @@ $(async function (): Promise<void> {
     warningStartIsAfterEndString = await LocaleHelper.getTranslation('Warning: Start time is after End time.', 'Sleep', languageId);
 
     setContextAutoSuggestList(currentProgenyId);
+    await setLocationAutoSuggestList(currentProgenyId);
 
     const dateTimePicker1: any = $('#datetimepicker1');
     dateTimePicker1.Zebra_DatePicker({
@@ -64,6 +65,7 @@ $(async function (): Promise<void> {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
             await setContextAutoSuggestList(currentProgenyId);
+            await setLocationAutoSuggestList(currentProgenyId);
         });
     }
 });

@@ -51,7 +51,6 @@ $(async function (): Promise<void> {
             let selectedLoc = copyLocationList.find((obj: { id: number; name: string; lat: number, lng: number }) => { return obj.id === locId });
             $('#latitude').val(selectedLoc.lat);
             $('#longitude').val(selectedLoc.lng);
-            $('#locationInput').val(selectedLoc.name);
         });
     }
 });
