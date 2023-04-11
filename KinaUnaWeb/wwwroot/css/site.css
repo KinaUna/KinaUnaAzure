@@ -2918,6 +2918,8 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
         margin-top: 130px;
         background: #ffffff;
         height: 85vh;
+        padding-left: 80px;
+        padding-top: 15px;
     }
 
 button.Zebra_DatePicker_Icon {
@@ -3093,9 +3095,7 @@ button.Zebra_DatePicker_Icon {
     }
 
     .e-quick-popup-wrapper.e-device > .e-event-popup {
-        margin-top: 130px;
         background: #262426;
-        height: 85vh;
     }
 
     .form-control-noline {

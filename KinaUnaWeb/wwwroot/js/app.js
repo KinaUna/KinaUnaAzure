@@ -137,6 +137,7 @@ async function setSideBarPosition() {
         sidebarElement.style.top = menuOffset + 'px';
         sidebarTogglerElement.style.borderTopRightRadius = '25px';
         sidebarTogglerElement.style.borderBottomRightRadius = '0px';
+        sidebarTogglerElement.style.paddingBottom = '35px';
         sidebarTogglerElement.style.width = sidebarMenuListWrapperElement.offsetWidth + 'px';
         await sidebarMenuDelay(500);
         sidebarTogglerElement.style.width = sidebarMenuListWrapperElement.offsetWidth + 'px';
@@ -157,6 +158,9 @@ async function setSideBarPosition() {
         setTimeout(function () {
             sidebarTogglerElement.style.width = '55px';
         }, 500);
+        setTimeout(function () {
+            sidebarTogglerElement.style.paddingBottom = '0';
+        }, 1050);
         sidebarTextsButton.style.visibility = "collapse";
     }
     ;
