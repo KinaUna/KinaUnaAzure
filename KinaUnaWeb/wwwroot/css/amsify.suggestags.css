@@ -22,7 +22,7 @@
     .amsify-suggestags-input {
         max-width: 200px;
         padding: 0 4px;
-        border: 0;
+        /*border: 0;*/
     }
 
         .amsify-suggestags-area
@@ -190,6 +190,7 @@
 .amsify-suggestags-input-area
 .amsify-remove-tag {
     cursor: pointer;
+    margin-left: 12px
 }
 
 .amsify-no-suggestion {

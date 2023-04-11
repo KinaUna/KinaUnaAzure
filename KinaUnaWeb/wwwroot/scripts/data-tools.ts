@@ -90,12 +90,30 @@ export async function setTagsAutoSuggestList(progenyId: number, elementId: strin
     let tagListElement = document.getElementById(elementId);
     if (tagListElement !== null) {
         const tagsList = await getTagsList(progenyId);
-
+                
         ($('#' + elementId) as any).amsifySuggestags({
             suggestions: tagsList.suggestions,
             selectOnHover: false,
             printValues: false
         });
+
+        const suggestInputElement = tagListElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
+        if (suggestInputElement !== null) {
+            suggestInputElement.tabIndex =-1;
+            suggestInputElement.addEventListener('keydown', function(this, event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    const originalInputElement = document.getElementById(elementId) as HTMLInputElement;
+                    if (originalInputElement !== null) {
+                        if (originalInputElement.value.length > 0) {
+                            originalInputElement.value += ',';
+                        }
+                        originalInputElement.value += this.value;
+                    }
+                    return false;
+                }
+            });
+        }
     }
 
     return new Promise<void>(function (resolve, reject) {
@@ -136,6 +154,24 @@ export async function setContextAutoSuggestList(progenyId: number, elementId: st
             selectOnHover: false,
             printValues: false
         });
+
+        const suggestInputElement = contextInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
+        if (suggestInputElement !== null) {
+            suggestInputElement.tabIndex = -1;
+            suggestInputElement.addEventListener('keydown', function (this, event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    const originalInputElement = document.getElementById(elementId) as HTMLInputElement;
+                    if (originalInputElement !== null) {
+                        if (originalInputElement.value.length > 0) {
+                            originalInputElement.value += ',';
+                        }
+                        originalInputElement.value += this.value;
+                    }
+                    return false;
+                }
+            });
+        }
     }
 
     return new Promise<void>(function (resolve, reject) {
@@ -199,6 +235,24 @@ export async function setCategoriesAutoSuggestList(progenyId: number, elementId:
             selectOnHover: false,
             printValues: false
         });
+
+        const suggestInputElement = categoryInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
+        if (suggestInputElement !== null) {
+            suggestInputElement.tabIndex = -1;
+            suggestInputElement.addEventListener('keydown', function (this, event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    const originalInputElement = document.getElementById(elementId) as HTMLInputElement;
+                    if (originalInputElement !== null) {
+                        if (originalInputElement.value.length > 0) {
+                            originalInputElement.value += ',';
+                        }
+                        originalInputElement.value += this.value;
+                    }
+                    return false;
+                }
+            });
+        }
     }
 
     return new Promise<void>(function (resolve, reject) {
@@ -256,3 +310,4 @@ export function checkTimes(longDateTimeFormatMoment: string, warningStartIsAfter
         $('#notification').text(warningStartIsAfterEndString);
     };
 };
+

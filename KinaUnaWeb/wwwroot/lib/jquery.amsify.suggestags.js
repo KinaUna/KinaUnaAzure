@@ -113,7 +113,7 @@ var AmsifySuggestags;
 				var labelHTML = '<div class="' + this.classes.inputArea.substring(1) + '"></div>';
 				this.selectors.inputArea = $(labelHTML).appendTo(this.selectors.sTagsArea);
 				this.defaultLabel = ($(this.selector).attr('placeholder') !== undefined) ? $(this.selector).attr('placeholder') : this.defaultLabel;
-				var sTagsInput = '<input type="text" class="' + this.classes.sTagsInput.substring(1) + '" placeholder="' + this.defaultLabel + '">';
+				var sTagsInput = '<input type="text" enterkeyhint="enter" class="' + this.classes.sTagsInput.substring(1) + '" placeholder="' + this.defaultLabel + '">';
 				this.selectors.sTagsInput = $(sTagsInput).appendTo(this.selectors.inputArea).attr('autocomplete', 'off');
 				if ($(this.selector).attr('required')) {
 					$(this.selector).removeAttr('required');
@@ -179,6 +179,11 @@ var AmsifySuggestags;
 				$(this.selectors.sTagsInput).blur(function () {
 					$(this).closest(_self.classes.inputArea).removeClass(_self.classes.focus.substring(1));
 					if (!$(this).val()) {
+						$(_self.selectors.listArea).hide();
+					}
+					else {
+						_self.addTag($(this).val());
+						$(this).val('');
 						$(_self.selectors.listArea).hide();
 					}
 					_self.checkPlusAfter(true);

@@ -78,6 +78,23 @@ export async function setTagsAutoSuggestList(progenyId, elementId = 'tagList') {
             selectOnHover: false,
             printValues: false
         });
+        const suggestInputElement = tagListElement.querySelector('.amsify-suggestags-input');
+        if (suggestInputElement !== null) {
+            suggestInputElement.tabIndex = -1;
+            suggestInputElement.addEventListener('keydown', function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    const originalInputElement = document.getElementById(elementId);
+                    if (originalInputElement !== null) {
+                        if (originalInputElement.value.length > 0) {
+                            originalInputElement.value += ',';
+                        }
+                        originalInputElement.value += this.value;
+                    }
+                    return false;
+                }
+            });
+        }
     }
     return new Promise(function (resolve, reject) {
         resolve();
@@ -111,6 +128,23 @@ export async function setContextAutoSuggestList(progenyId, elementId = 'contextI
             selectOnHover: false,
             printValues: false
         });
+        const suggestInputElement = contextInputElement.querySelector('.amsify-suggestags-input');
+        if (suggestInputElement !== null) {
+            suggestInputElement.tabIndex = -1;
+            suggestInputElement.addEventListener('keydown', function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    const originalInputElement = document.getElementById(elementId);
+                    if (originalInputElement !== null) {
+                        if (originalInputElement.value.length > 0) {
+                            originalInputElement.value += ',';
+                        }
+                        originalInputElement.value += this.value;
+                    }
+                    return false;
+                }
+            });
+        }
     }
     return new Promise(function (resolve, reject) {
         resolve();
@@ -163,6 +197,23 @@ export async function setCategoriesAutoSuggestList(progenyId, elementId = 'categ
             selectOnHover: false,
             printValues: false
         });
+        const suggestInputElement = categoryInputElement.querySelector('.amsify-suggestags-input');
+        if (suggestInputElement !== null) {
+            suggestInputElement.tabIndex = -1;
+            suggestInputElement.addEventListener('keydown', function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    const originalInputElement = document.getElementById(elementId);
+                    if (originalInputElement !== null) {
+                        if (originalInputElement.value.length > 0) {
+                            originalInputElement.value += ',';
+                        }
+                        originalInputElement.value += this.value;
+                    }
+                    return false;
+                }
+            });
+        }
     }
     return new Promise(function (resolve, reject) {
         resolve();
