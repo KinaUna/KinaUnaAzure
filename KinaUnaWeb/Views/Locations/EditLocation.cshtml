@@ -129,7 +129,7 @@
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="tagList" type="text" asp-for="LocationItem.Tags" value="@Model.LocationItem.Tags" placeholder="Add tag..." class="form-control" />
+                    <input id="tagList" type="text" asp-for="LocationItem.Tags" value="@Model.LocationItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Locations, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
             <div class="form-group">

@@ -143,7 +143,7 @@
             <div class="form-group">
                 <label asp-for="ContactItem.Context" class="col-auto control-label">@await LocaleManager.GetTranslation("Context", PageNames.Contacts, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="contextInput" asp-for="ContactItem.Context" class="form-control" value="@Model.ContactItem.Context" />
+                    <input id="contextInput" asp-for="ContactItem.Context" class="form-control" value="@Model.ContactItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Contacts, Model.LanguageId)"/>
                 </div>
             </div>
             <div class="form-group">
@@ -155,7 +155,7 @@
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Contacts, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="tagList" type="text" asp-for="Tags" value="@Model.Tags" placeholder="Add tag..." class="form-control" />
+                    <input id="tagList" type="text" asp-for="Tags" value="@Model.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
                 </div>
                 
             </div>

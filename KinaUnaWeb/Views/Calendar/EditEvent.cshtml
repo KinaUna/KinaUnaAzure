@@ -75,13 +75,13 @@
             <div class="form-group">
                 <label asp-for="CalendarItem.Location" class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Calendar, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input asp-for="CalendarItem.Location" class="form-control" value="@Model.CalendarItem.Location" />
+                    <input id="locationInput" asp-for="CalendarItem.Location" class="form-control" value="@Model.CalendarItem.Location" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Calendar, Model.LanguageId)"/>
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="CalendarItem.Context" class="col-auto control-label">@await LocaleManager.GetTranslation("Context", PageNames.Calendar, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="contextInput" asp-for="CalendarItem.Context" class="form-control" value="@Model.CalendarItem.Context" />
+                    <input id="contextInput" asp-for="CalendarItem.Context" class="form-control" value="@Model.CalendarItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Calendar, Model.LanguageId)"/>
                 </div>
             </div>
             <div class="form-group">

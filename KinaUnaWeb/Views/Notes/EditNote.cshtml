@@ -71,7 +71,7 @@
             <div class="form-group">
                 <label asp-for="NoteItem.Category" class="col-auto control-label">@await LocaleManager.GetTranslation("Category", PageNames.Notes, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="categoryInput" asp-for="NoteItem.Category" class="form-control" value="@Model.NoteItem.Category" />
+                    <input id="categoryInput" asp-for="NoteItem.Category" class="form-control" value="@Model.NoteItem.Category" placeholder="@await LocaleManager.GetTranslation("Add category...", PageNames.Notes, Model.LanguageId)"/>
                 </div>
             </div>
             <div class="form-group">

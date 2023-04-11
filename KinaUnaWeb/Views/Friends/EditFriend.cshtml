@@ -87,7 +87,7 @@
             <div class="form-group">
                 <label asp-for="FriendItem.Context" class="col-auto control-label">@await LocaleManager.GetTranslation("Context", PageNames.Friends, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="contextInput" asp-for="FriendItem.Context" class="form-control" value="@Model.FriendItem.Context" />
+                    <input id="contextInput" asp-for="FriendItem.Context" class="form-control" value="@Model.FriendItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Friends, Model.LanguageId)"/>
                 </div>
             </div>
             <div class="form-group">
@@ -99,7 +99,7 @@
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Friends, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="tagList" type="text" asp-for="FriendItem.Tags" value="@Model.FriendItem.Tags" placeholder="Add tag..." class="form-control" />
+                    <input id="tagList" type="text" asp-for="FriendItem.Tags" value="@Model.FriendItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
