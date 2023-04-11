@@ -14,7 +14,7 @@ $(async function () {
     zebraDateTimeFormat = getZebraDateTimeFormat();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     warningStartIsAfterEndString = await LocaleHelper.getTranslation('Warning: Start time is after End time.', 'Sleep', languageId);
-    setContextAutoSuggestList(currentProgenyId);
+    await setContextAutoSuggestList(currentProgenyId);
     await setLocationAutoSuggestList(currentProgenyId);
     const dateTimePicker1 = $('#datetimepicker1');
     dateTimePicker1.Zebra_DatePicker({
