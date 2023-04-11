@@ -68,29 +68,6 @@
     </div>
 </div>
 <script>
-    (function () {
-        const saveGdprButton = document.getElementById('saveGdprButton');
-        const gdprAllowMapsSwitch = document.getElementById('allowMapsSwitch');
-        const gdprAllowYoutubeSwitch = document.getElementById('allowYouTubeSwitch');
-
-        saveGdprButton.addEventListener("click",
-            function () {
-                let gdprSettings = "Essential";
-
-                if (gdprAllowMapsSwitch.checked) {
-                    gdprSettings = gdprSettings + "HereMaps";
-                }
-
-                if (allowYouTubeSwitch.checked) {
-                    gdprSettings = gdprSettings + "YouTube";
-                }
-
-                let date = new Date();
-                date.setTime(date.getTime() + (180 * 24 * 60 * 60 * 1000));
-                let expires = "; expires=" + date.toGMTString();
-                document.cookie = "KinaUnaConsent=" + gdprSettings + expires + ";" + "@cookieDomainName";
-                location.reload();
-            },
-            false);
-    })();
+    var cookieDomainName = '@cookieDomainName';
 </script>
+<script src="/js/shared/cookie-consent.js" asp-append-version="true"></script>
