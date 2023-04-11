@@ -4,6 +4,7 @@
  */
 
 var AmsifySuggestags;
+var suggestionItemClicked = false;
 
 (function (factory) {
 	if (typeof module === 'object' && typeof module.exports === 'object') {
@@ -176,15 +177,17 @@ var AmsifySuggestags;
 					}
 					_self.checkPlusAfter();
 				});
-				$(this.selectors.sTagsInput).blur(function () {
+				$(this.selectors.sTagsInput).blur(function (event) {
 					$(this).closest(_self.classes.inputArea).removeClass(_self.classes.focus.substring(1));
 					if (!$(this).val()) {
 						$(_self.selectors.listArea).hide();
 					}
 					else {
-						_self.addTag($(this).val());
-						$(this).val('');
-						$(_self.selectors.listArea).hide();
+						if (!suggestionItemClicked) {
+							_self.addTag($(this).val());
+							$(this).val('');
+							$(_self.selectors.listArea).hide();
+						}
 					}
 					_self.checkPlusAfter(true);
 				});
@@ -261,7 +264,13 @@ var AmsifySuggestags;
 						}
 					});
 				}
-				$(this.selectors.listArea).find(this.classes.listItem).click(function () {
+				$(this.selectors.listArea).find(this.classes.listItem).mousedown(function (event) {
+					suggestionItemClicked = true;
+					_self.addTag($(this).data('val'));
+					$(_self.selectors.sTagsInput).val('').focus();
+				});
+				$(this.selectors.listArea).find(this.classes.listItem).on('touchstart', function (event) {
+					suggestionItemClicked = true;
 					_self.addTag($(this).data('val'));
 					$(_self.selectors.sTagsInput).val('').focus();
 				});
@@ -523,6 +532,7 @@ var AmsifySuggestags;
 			},
 
 			addTag: function (value, animate = true) {
+				suggestionItemClicked = false;
 				if (!value) {
 					return;
 				}

@@ -78,8 +78,7 @@
                 <label asp-for="NoteItem.CreatedDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Date and time", PageNames.Notes, Model.LanguageId)</label>
                 <div class="col-auto">
                     <div class="input-group date">
-                        <input id="datetimepicker1"  type="text"
-                               class="form-control" data-zdp_readonly_element="false" asp-for="NoteItem.CreatedDate" value="@Model.NoteItem.CreatedDate.ToString(longDateTimeFormat)" />
+                        <input id="datetimepicker1" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="NoteItem.CreatedDate" value="@Model.NoteItem.CreatedDate.ToString(longDateTimeFormat)" />
                     </div>
                 </div>
             </div>

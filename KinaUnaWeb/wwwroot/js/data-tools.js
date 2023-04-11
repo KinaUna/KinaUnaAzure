@@ -169,6 +169,38 @@ export async function getLocationsList(progenyId) {
         resolve(locationsList);
     });
 }
+export async function setLocationAutoSuggestList(progenyId, elementId = 'locationInput') {
+    let locationInputElement = document.getElementById(elementId);
+    if (locationInputElement !== null) {
+        const locationsList = await getLocationsList(progenyId);
+        $('#' + elementId).amsifySuggestags({
+            suggestions: locationsList.suggestions,
+            selectOnHover: false,
+            printValues: false,
+            tagLimit: 5
+        });
+        const suggestInputElement = locationInputElement.querySelector('.amsify-suggestags-input');
+        if (suggestInputElement !== null) {
+            suggestInputElement.tabIndex = -1;
+            suggestInputElement.addEventListener('keydown', function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    const originalInputElement = document.getElementById(elementId);
+                    if (originalInputElement !== null) {
+                        if (originalInputElement.value.length > 0) {
+                            originalInputElement.value += ',';
+                        }
+                        originalInputElement.value += this.value;
+                    }
+                    return false;
+                }
+            });
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
 export async function getCategoriesList(progenyId) {
     let categoriesList = new AutoSuggestList(progenyId);
     const getCategoriesListParameters = new AutoSuggestList(progenyId);

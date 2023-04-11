@@ -202,6 +202,42 @@ export async function getLocationsList(progenyId: number): Promise<AutoSuggestLi
     });
 }
 
+export async function setLocationAutoSuggestList(progenyId: number, elementId: string = 'locationInput') {
+    let locationInputElement = document.getElementById(elementId);
+    if (locationInputElement !== null) {
+        const locationsList = await getLocationsList(progenyId);
+
+        ($('#' + elementId) as any).amsifySuggestags({
+            suggestions: locationsList.suggestions,
+            selectOnHover: false,
+            printValues: false,
+            tagLimit: 5
+        });
+
+        const suggestInputElement = locationInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
+        if (suggestInputElement !== null) {
+            suggestInputElement.tabIndex = -1;
+            suggestInputElement.addEventListener('keydown', function (this, event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    const originalInputElement = document.getElementById(elementId) as HTMLInputElement;
+                    if (originalInputElement !== null) {
+                        if (originalInputElement.value.length > 0) {
+                            originalInputElement.value += ',';
+                        }
+                        originalInputElement.value += this.value;
+                    }
+                    return false;
+                }
+            });
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
 export async function getCategoriesList(progenyId: number): Promise<AutoSuggestList> {
     let categoriesList: AutoSuggestList = new AutoSuggestList(progenyId);
 
