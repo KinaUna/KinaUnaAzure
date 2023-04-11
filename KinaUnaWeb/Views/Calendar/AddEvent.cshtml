@@ -5,8 +5,8 @@
 @model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
-    <link href="/css/amsify.suggestags.css" rel="stylesheet"/>
-    <script src="/lib/jquery.amsify.suggestags.js"></script>
+    <link href="/css/amsify.suggestags.css" rel="stylesheet" asp-append-version="true"/>
+    <script src="/lib/jquery.amsify.suggestags.js" asp-append-version="true"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/da.min.js" integrity="sha512-rybyYvSnwg3zAZ/vjTTMoh8tOK0Z6tC2XCzr9e27M0xr8WU40IGo6SOP7FXXCyWgMyd3wZ8ln2nY4ce1ysYUfw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de.min.js" integrity="sha512-c0OHGm6x2JXZyrb7Kb+Jcoy7eQ4F+AqzYLeciicpzuvgyeTWRQEZ6QthFYRUBOR0rShmm54O/7pHZJ/nqhbrkw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -125,4 +125,4 @@
         </form>
     </div>
 </div>
-<script src="/js/calendar/add-edit-event.js" type="module"></script>
+<script src="/js/calendar/add-edit-event.js" type="module" asp-append-version="true"></script>

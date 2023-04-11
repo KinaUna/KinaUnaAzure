@@ -6,8 +6,8 @@
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Sleep calendar", PageNames.Sleep, Model.LanguageId);
 }
 @section Scripts{
-    <link href="/lib/fullcalendar/fullcalendar.min.css" rel="stylesheet" />
-    <script src="/lib/fullcalendar/fullcalendar.min.js"></script>
+    <link href="/lib/fullcalendar/fullcalendar.min.css" rel="stylesheet" asp-append-version="true"/>
+    <script src="/lib/fullcalendar/fullcalendar.min.js" asp-append-version="true"></script>
 }
 <script>
 
