@@ -80,6 +80,7 @@ async function getTimelineList(parameters: TimelineParameters) {
                 for await (const timelineItemToAdd of newTimeLineItemsList.timelineItems) {
                     timelineItemsList.push(timelineItemToAdd);
                     await renderTimelineItem(timelineItemToAdd);
+                    window.history.replaceState("state", "title", "TimeLine?sortBy=" + sortBy + "&items=" + timelineItemsList.length);
                 };
                 if (newTimeLineItemsList.remainingItemsCount > 0 && moreTimelineItemsButton !== null) {
                     moreTimelineItemsButton.classList.remove('d-none');
