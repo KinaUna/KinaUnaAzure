@@ -5,6 +5,7 @@ let languageId = 1;
 let zebraDateTimeFormat;
 let currentProgenyId;
 let toggleEditBtn;
+let copyLocationButton;
 $(async function () {
     languageId = getCurrentLanguageId();
     setMomentLocale();
@@ -38,6 +39,9 @@ $(async function () {
         $("#toggleEditBtn").on('click', function () {
             $("#editSection").toggle(500);
         });
+    }
+    copyLocationButton = document.querySelector('#copyLocationButton');
+    if (copyLocationButton !== null) {
         $('#copyLocationButton').on('click', function () {
             let locId = Number($('#copyLocation').val());
             let selectedLoc = copyLocationList.find((obj) => { return obj.id === locId; });

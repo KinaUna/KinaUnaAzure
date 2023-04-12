@@ -17,11 +17,20 @@
     }
     bool allowHereMaps = Context.Request.HereMapsCookieSet();
     bool allowYouTube = Context.Request.YouTubeCookieSet();
+    string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
+    string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
+    string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
 }
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
     <link href="/css/amsify.suggestags.css" rel="stylesheet" asp-append-version="true"/>
-        <script src="/lib/jquery.amsify.suggestags.js" asp-append-version="true"></script>
+    <script src="/lib/jquery.amsify.suggestags.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/da.min.js" integrity="sha512-rybyYvSnwg3zAZ/vjTTMoh8tOK0Z6tC2XCzr9e27M0xr8WU40IGo6SOP7FXXCyWgMyd3wZ8ln2nY4ce1ysYUfw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de.min.js" integrity="sha512-c0OHGm6x2JXZyrb7Kb+Jcoy7eQ4F+AqzYLeciicpzuvgyeTWRQEZ6QthFYRUBOR0rShmm54O/7pHZJ/nqhbrkw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-at.min.js" integrity="sha512-2zI8NFjVrQ4nMIS3HCBVOgiUb6qRiKKa/U4K/DL5aT/sz9dSuHFMZdZIPRjGBQoKZbpyP3NI8diNGK+RlUTTsg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-ch.min.js" integrity="sha512-7VvKBnFgucrOLF0GLzWUuhtDcRKYUuOy9O5AqiqvccZFp4zAqAzkMqIlNVCDR3DJ6OZ6dsdn+MLiJ8vZx84WhQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
     @if (allowHereMaps)
     {
@@ -32,6 +41,11 @@
         <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css"/>
     }
 }
+
+<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
+<div id="zebraDateTimeFormatDiv" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <h2>@ViewData["Title"] - @Model.Video.VideoNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.VideoCount</h2>
     <div id="photoDiv">
@@ -287,11 +301,6 @@
                     <div class="col-lg-10 col-md-10 col-sm-10">
                         <input id="tagList" type="text" asp-for="Video.Tags" value="@Model.Video.Tags" placeholder="Add tag..." class="form-control" />
                     </div>
-                    <script>
-                        $('input[id="tagList"').amsifySuggestags({
-                            suggestions: @Html.Raw(Model.TagsList)
-                                                        });
-                    </script>
                 </div>
                 <div class="form-group">
                     <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Duration", PageNames.Videos, Model.LanguageId)</label>
@@ -335,22 +344,14 @@
                         <div class="input-group date">
                             <input style="width: 300px;" id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm:ss" type="text"
                                    class="form-control" data-zdp_readonly_element="false" asp-for="Video.VideoTime"
-                               value="@Model.Video.VideoTime?.ToString(" dd-MMM-yyyy HH:mm:ss")" />
+                                   value="@Model.Video.VideoTime?.ToString(longDateTimeFormat)" />
                         </div>
                     </div>
                 </div>
-                <script type="text/javascript">
-                    $(function () {
-                        $('#datetimepicker1').Zebra_DatePicker({
-                            format: 'd-M-Y H:i:s',
-                            open_icon_only: true
-                        });
-                    });
-                </script>
                 <div class="form-group">
                     <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Location", PageNames.Videos, Model.LanguageId)</label>
                     <div class="col-lg-10 col-md-10 col-sm-10">
-                        <input id="location" type="text" asp-for="Video.Location" value="@Model.Video.Location" class="form-control"  />
+                        <input id="locationInput" type="text" asp-for="Video.Location" value="@Model.Video.Location" class="form-control"  />
                     </div>
                 </div>
                 <div class="form-group">
@@ -374,10 +375,10 @@
                 @if (Model.LocationsList.Any())
                 {
                     <div class="form-group">
-                        <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Copy Location Name, Latitude and Longitude from Existing Location", PageNames.Videos, Model.LanguageId)</label>
-                        <div class="col-lg-12 col-md-12 col-sm-12">
+                        <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Copy Location Latitude and Longitude from Existing Location", PageNames.Videos, Model.LanguageId)</label>
+                        <div class="col-12">
                             <div class="row">
-                                <div class="col-lg-6 col-md-9 col-sm-8">
+                                <div class="col-lg-8 col-md-9 col-sm-8">
                                     <select id="copyLocation" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" asp-items="@Model.LocationsList"></select>
                                 </div>
                                 <div class="col-lg-4 col-md-3 col-sm-3">
@@ -413,29 +414,20 @@
             </form>
         </div>
         <script type="text/javascript">
-            $("#toggleEditBtn").on('click', function() {
-                $("#editSection").toggle(500);
-            });
-            $('#copyLocationButton').on('click', function() {
-                let locations = [];
+            var copyLocationList = [];        
             @{
                 string myLoc = "";
                 string addLoc = "";
-            }
-            @foreach (Location loc in Model.ProgenyLocations)
-            {
-                myLoc = myLoc + "let loc" + loc.LocationId + " = {id: " + loc.LocationId + ", name: \'" + loc.Name + "\', lat: " + loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng: " + loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "};";
-                addLoc = addLoc + "locations.push(loc" + loc.LocationId + ");";
+                foreach (Location loc in Model.ProgenyLocations)
+                {
+                    myLoc = myLoc + "let loc" + loc.LocationId + " = {id: " + loc.LocationId + ", name: \'" + loc.Name + "\', lat: " + loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng: " + loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "};";
+                    addLoc = addLoc + "copyLocationList.push(loc" + loc.LocationId + ");";
+                }
             }
             @Html.Raw(myLoc)
             @Html.Raw(addLoc)
-                    let locId = Number($('#copyLocation').val());
-                let selectedLoc = locations.find(obj => { return obj.id === locId });
-                $('#latitude').val(selectedLoc.lat);
-                $('#longitude').val(selectedLoc.lng);
-                $('#location').val(selectedLoc.name);
-            });
         </script>
+        <script src="/js/videos/add-edit-video.js" type="module" asp-append-version="true"></script>
     }
 <div class="space-20"></div>
 <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px;">

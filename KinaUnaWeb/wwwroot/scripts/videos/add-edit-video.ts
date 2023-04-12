@@ -1,4 +1,4 @@
-﻿import * as LocaleHelper from '../localization.js';
+import * as LocaleHelper from '../localization.js';
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
@@ -28,7 +28,7 @@ $(async function (): Promise<void> {
             select_other_months: true
         });
     }
-    
+
     await setTagsAutoSuggestList(currentProgenyId);
     await setLocationAutoSuggestList(currentProgenyId);
 
@@ -46,8 +46,6 @@ $(async function (): Promise<void> {
         $("#toggleEditBtn").on('click', function () {
             $("#editSection").toggle(500);
         });
-
-        
     }
 
     copyLocationButton = document.querySelector<HTMLButtonElement>('#copyLocationButton');

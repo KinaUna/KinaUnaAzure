@@ -6,6 +6,7 @@ let languageId = 1;
 let zebraDateTimeFormat: string;
 let currentProgenyId: number;
 let toggleEditBtn;
+let copyLocationButton;
 declare var copyLocationList: any;
 
 $(async function (): Promise<void> {
@@ -46,6 +47,11 @@ $(async function (): Promise<void> {
             $("#editSection").toggle(500);
         });
 
+        
+    }
+
+    copyLocationButton = document.querySelector<HTMLButtonElement>('#copyLocationButton');
+    if (copyLocationButton !== null) {
         $('#copyLocationButton').on('click', function () {
             let locId = Number($('#copyLocation').val());
             let selectedLoc = copyLocationList.find((obj: { id: number; name: string; lat: number, lng: number }) => { return obj.id === locId });

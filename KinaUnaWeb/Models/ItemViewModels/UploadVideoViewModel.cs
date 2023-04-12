@@ -18,7 +18,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
-        
+        public List<SelectListItem> LocationsList { get; set; } = new List<SelectListItem>();
+        public List<Location> ProgenyLocations { get; set; } = new List<Location>();
+
         public UploadVideoViewModel()
         {
             ProgenyList = new List<SelectListItem>();
@@ -127,6 +129,12 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
 
             video.ThumbLink = "https://i.ytimg.com/vi/" + video.VideoLink.Split("/").Last() + "/hqdefault.jpg";
+
+            video.Location = Video.Location;
+            video.Latitude = Video.Latitude;
+            video.Longtitude = Video.Longtitude;
+            video.Altitude = Video.Altitude;
+            video.Tags = Video.Tags;
 
             return video;
         }

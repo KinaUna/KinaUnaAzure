@@ -141,6 +141,22 @@ namespace KinaUnaWeb.Controllers
                 model.Video.Owners = model.CurrentUser.UserEmail;
                 model.Video.Author = model.CurrentUser.UserId;
                 model.Video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+                model.ProgenyLocations = new List<Location>();
+                model.ProgenyLocations = await _locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId, model.CurrentAccessLevel);
+                model.LocationsList = new List<SelectListItem>();
+                if (model.ProgenyLocations.Any())
+                {
+                    foreach (Location loc in model.ProgenyLocations)
+                    {
+                        SelectListItem selectListItem = new()
+                        {
+                            Text = loc.Name,
+                            Value = loc.LocationId.ToString()
+                        };
+                        model.LocationsList.Add(selectListItem);
+                    }
+                }
             }
 
             model.SetAccessLevelList();
