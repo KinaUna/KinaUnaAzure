@@ -8,9 +8,11 @@
     "@types/datatables.net": "^1.10.24",
     "@types/jquery": "^3.5.16",
     "del": "5.1.0",
-    "gulp": "^4.0.2"
+    "gulp": "^4.0.2",
+    "moment": "^2.29.4",
+    "nouislider": "^15.7.0"
   },
   "dependencies": {
-    "moment": "^2.29.4"
+    
   }
 }

@@ -1,5 +1,5 @@
 ﻿import * as LocaleHelper from '../localization.js';
-import { setCategoriesAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, checkTimes, getZebraDateTimeFormat, getLongDateTimeFormatMoment } from '../data-tools.js';
+import { setCategoriesAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment } from '../data-tools.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
