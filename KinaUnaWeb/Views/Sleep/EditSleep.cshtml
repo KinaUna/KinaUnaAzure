@@ -20,6 +20,12 @@
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
 
+<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
+<div id="longDateTimeFormatDiv" class="d-none" data-long-date-time-format="@longDateTimeFormat"></div>
+<div id="longDateTimeFormatMomentDiv" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
+<div id="zebraDateTimeFormatDiv" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="add-item-container">
         <h2 class="col-12">@ViewData["Title"]</h2>
@@ -33,8 +39,7 @@
                             @{
                                 string sleepStartValue = Model.SleepItem.SleepStart.ToString(longDateTimeFormat);
                             }
-                            <input id="datetimepicker1" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepStart"
-                                   value="@sleepStartValue" onblur="checkTimes()" onfocus="checkTimes()"/>
+                            <input id="datetimepicker1" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepStart" value="@sleepStartValue"/>
                         </div>
                     </div>
                 </div>
@@ -45,8 +50,7 @@
                             @{
                                 string sleepEndValue = Model.SleepItem.SleepEnd.ToString(longDateTimeFormat);
                             }
-                            <input id="datetimepicker2" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepEnd"
-                                   value="@sleepEndValue" onblur="checkTimes()" onfocus="checkTimes()"/>
+                            <input id="datetimepicker2" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepEnd" value="@sleepEndValue"/>
                         </div>
                     </div>
                 </div>
@@ -89,78 +93,4 @@
         </form>
     </div>
 </div>
-<script type="text/javascript">
-    moment.locale('@Model.LanguageIdString');
-    $(function () {
-        checkTimes();
-        $('#datetimepicker1').change(checkTimes);
-        $('#datetimepicker2').change(checkTimes);
-    });
-
-    function checkTimes() {
-        let sTime = moment($('#datetimepicker1').val(), '@longDateTimeFormatMoment');
-        let eTime = moment($('#datetimepicker2').val(), '@longDateTimeFormatMoment');
-        if (sTime < eTime && sTime.isValid() && eTime.isValid()) {
-            $('#notification').text('');
-            $('#submitBtn').prop('disabled', false);
-
-        } else {
-            $('#submitBtn').prop('disabled', true);
-            $('#notification').text('@await LocaleManager.GetTranslation("Warning: Start time is after End time.", PageNames.Sleep, Model.LanguageId)');
-        };
-    };
-
-    const zebraDatePickerDaysArray = [
-        '@Html.Raw(await LocaleManager.GetTranslation("Sunday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Monday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Tuesday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Wednesday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Thursday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Friday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Saturday", PageNames.CalendarTools, Model.LanguageId))'
-    ];
-
-    const zebraDatePickerMonthsArray = [
-        '@Html.Raw(await LocaleManager.GetTranslation("January", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("February", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("March", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("April", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("May", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("June", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("July", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("August", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("September", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("October", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("November", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("December", PageNames.CalendarTools, Model.LanguageId))'
-    ];
-    const zebraTodayString = '@Html.Raw(await LocaleManager.GetTranslation("Today", PageNames.CalendarTools, Model.LanguageId))';
-    const zebraClearString = '@Html.Raw(await LocaleManager.GetTranslation("Clear", PageNames.CalendarTools, Model.LanguageId))';
-
-    $(function () {
-        $('#datetimepicker1').Zebra_DatePicker({
-            format: '@zebraDateTimeFormat',
-            open_icon_only: true,
-            onSelect: function (a, b, c) { checkTimes(); },
-            days: zebraDatePickerDaysArray,
-            months: zebraDatePickerMonthsArray,
-            lang_clear_date: zebraClearString,
-            show_select_today: zebraTodayString,
-            select_other_months: true
-        });
-    });
-
-    $(function () {
-        $('#datetimepicker2').Zebra_DatePicker({
-            format: '@zebraDateTimeFormat',
-            open_icon_only: true,
-            onSelect: function (a, b, c) { checkTimes(); },
-            days: zebraDatePickerDaysArray,
-            months: zebraDatePickerMonthsArray,
-            lang_clear_date: zebraClearString,
-            show_select_today: zebraTodayString,
-            select_other_months: true
-        });
-    });
-
-</script>
+<script src="/js/sleep/add-edit-sleep.js" type="module" asp-append-version="true"></script>

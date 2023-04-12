@@ -1,7 +1,8 @@
-import * as Chart from 'chart.js';
 import { setMomentLocale } from '../data-tools.js';
-import * as moment from '../../node_modules/moment/ts3.1-typings/moment';
-import * as noUiSlider from '../../node_modules/nouislider/dist/nouislider.js';
+
+declare var Chart: any;
+declare var moment: any;
+declare var noUiSlider: any;
 declare var sleepData: any;
 declare var sleepLabel: string;
 declare var durationInHoursString: string;
@@ -14,6 +15,8 @@ function timestamp(str: string) {
     return new Date(str).getTime();
 }
 
+let sleepChart: any;
+
 $(async function (): Promise<void> {
     setMomentLocale();
         
@@ -21,10 +24,10 @@ $(async function (): Promise<void> {
     $('#sleepList').DataTable({ 'scrollX': false, 'order': [[0, 'desc']] });
         
     let chartContainer = document.querySelector<HTMLCanvasElement>("#chartContainer");
-    let sliderElement: noUiSlider.target | null = null;
+    let sliderElement: any = null;
 
     if (chartContainer != null) {
-        let myChart = new Chart(chartContainer, {
+        sleepChart = new Chart(chartContainer, {
             type: 'bar',
             data: {
                 datasets: [
@@ -38,7 +41,7 @@ $(async function (): Promise<void> {
             },
             options: {
                 scales: {
-                    xAxes: [
+                    x: 
                         {
                             type: 'time',
                             time: {
@@ -48,8 +51,8 @@ $(async function (): Promise<void> {
                                 }
                             }
                         }
-                    ],
-                    yAxes: [
+                    ,
+                    y: 
                         {
                             scaleLabel: {
                                 display: true,
@@ -59,88 +62,69 @@ $(async function (): Promise<void> {
                                 beginAtZero: true
                             }
                         }
-                    ]
+                    
                 }
             }
         });
 
-        myChart.update();
+        sleepChart.update();
         
         const sleepSlider = document.querySelector<HTMLDivElement>('#sliderSleep');
-        
+        if (chartContainer !== null && sleepSlider !== null) {
+            sliderElement = sleepSlider as any;
+        }
+
+        if (sliderElement !== null) {
+            noUiSlider.create(sliderElement,
+                {
+                    connect: true,
+                    range: {
+                        min: timestamp(sliderRangeMin),
+                        max: timestamp(sliderRangeMax)
+                    },
+                    step: 1000 * 60 * 60 * 24,
+                    start: [
+                        timestamp(sliderRangeMin),
+                        timestamp(sliderRangeMax)
+                    ]
+                });
+        }
+
         if (sleepSlider !== null) {
             let slpChart: CanvasRenderingContext2D | null;
             if (chartContainer !== null) {
                 slpChart = chartContainer.getContext("2d");
-                sliderElement = sleepSlider as noUiSlider.target
+                
             }
             const pos = $(document).scrollTop();
 
-            if (sliderElement !== null && sliderElement.noUiSlider) {
-                sliderElement.noUiSlider.on('update',
+            if (sliderElement !== null) {
+                sliderElement.noUiSlider.on('end',
                     function () {
                         if (sliderElement?.noUiSlider) {
                             const sliderValues: string[] = sliderElement.noUiSlider.get() as string[];
-                            let sliderStartValue: string = '';
-                            let sliderEndValue: string = '';
+                            let sliderStartValue: number = 0;
+                            let sliderEndValue: number = 1;
                             if (sliderValues.length === 2) {
-                                sliderStartValue = sliderValues[0];
-                                sliderEndValue = sliderValues[1];
+                                sliderStartValue = parseInt(sliderValues[0]);
+                                sliderEndValue = parseInt(sliderValues[1]);
+                                $('#sliderStartVal').text(sliderStartString + moment(sliderStartValue).format("dddd, DD-MMMM-YYYY"));
+                                $('#sliderEndVal').text(sliderEndString + moment(sliderEndValue).format("dddd, DD-MMMM-YYYY"));
 
-                                $('#sliderStartVal').text(sliderStartString + moment(sliderStartValue, "x").format("dddd, DD-MMMM-YYYY"));
-                                $('#sliderEndVal').text(sliderEndString + moment(sliderEndValue, "x").format("dddd, DD-MMMM-YYYY"));
-                                const chartDiv = document.querySelector<HTMLDivElement>('#chartDiv');
-                                if (chartDiv !== null) {
-                                    chartDiv.innerHTML = '&nbsp;';
-                                    chartDiv.innerHTML = '<canvas id="chartContainer"></canvas>';
-                                }
-
-                                const cfg = {
-                                    type: 'bar',
-                                    data: {
-                                        datasets: [
-                                            {
-                                                label: sleepLabel,
-                                                data: sleepData,
-                                                borderColor: 'rgb(75, 192, 192)',
-                                                borderWidth: 1
-                                            }
-                                        ]
-                                    },
-                                    options: {
-                                        scales: {
-                                            xAxes: [
-                                                {
-                                                    type: 'time',
-                                                    time: {
-                                                        min: moment(sliderStartValue, "x").toString(),
-                                                        max: moment(sliderEndValue, "x").toString(),
-                                                        tooltipFormat: 'dd DD MMMM YYYY',
-                                                        displayFormats: {
-                                                            quarter: 'MMMM YYYY'
-                                                        }
-                                                    }
-                                                }
-                                            ],
-                                            yAxes: [
-                                                {
-                                                    scaleLabel: {
-                                                        display: true,
-                                                        labelString: durationInHoursString
-                                                    },
-                                                    ticks: {
-                                                        beginAtZero: true
-                                                    }
-                                                }
-                                            ]
+                                
+                                sleepChart.options.scales.x = {
+                                    type: 'time',
+                                    time: {
+                                        tooltipFormat: 'dd DD MMMM YYYY',
+                                        displayFormats: {
+                                            quarter: 'MMMM YYYY'
                                         }
-                                    }
+                                    },
+                                    min: sliderStartValue,
+                                    max: sliderEndValue
+                                    
                                 };
-
-                                if (slpChart !== null) {
-                                    const newChart = new Chart(slpChart, cfg);
-                                    newChart.update();
-                                }
+                                sleepChart.update();
                                 if (pos) {
                                     $(document).scrollTop(pos);
                                 }
@@ -149,22 +133,6 @@ $(async function (): Promise<void> {
                     });
             }
         }        
-    }    
-
-    if (sliderElement !== null) {
-        noUiSlider.create(sliderElement,
-            {
-                connect: true,
-                range: {
-                    min: timestamp(sliderRangeMin),
-                    max: timestamp(sliderRangeMax)
-                },
-                step: 1000 * 60 * 60 * 24,
-                start: [
-                    timestamp(sliderRangeMin),
-                    timestamp(sliderRangeMax)
-                ]
-            });
     }
     
 });
