@@ -19,6 +19,9 @@
     <script src="https://cdn.datatables.net/plug-ins/1.13.4/sorting/datetime-moment.js"></script>
 }
 
+<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
+<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     @if (!Model.VocabularyList.Any())
     {
@@ -94,67 +97,20 @@
         </div>
         <script src="~/lib/chart.js/dist/Chart.js"></script>
         <script type="text/javascript">
-            moment.locale('@Model.LanguageIdString');
+        var vocabularyChartLabel = '@await LocaleManager.GetTranslation("Words", PageNames.Vocabulary, Model.LanguageId)';
+        var vocabularyChartYaxisLabel = '@await LocaleManager.GetTranslation("Number of words", PageNames.Vocabulary, Model.LanguageId)';
+        var vocabularyData = [@foreach (WordDateCount wordItem in Model.ChartData)
+                              {
+                                  if (wordItem.WordCount > 0)
+                                  {
+                                      string chartYear = wordItem.WordDate.Year.ToString();
+                                      string chartMonth = (wordItem.WordDate.Month - 1).ToString();
+                                      string chartDay = wordItem.WordDate.Day.ToString();
+                                      @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + wordItem.WordCount.ToString(CultureInfo.InvariantCulture) + "},")
+                                  }
 
-            $(document).ready(function () {
-                $.fn.dataTable.moment('DD-MMMM-YYYY');
-                $("#wordList").DataTable({
-                    "scrollX": false,
-                    "order": [[4, "desc"]]
-                });
-            })
-            let ctx = document.getElementById("chartContainer");
-            let myChart = new Chart(ctx,
-                {
-                    type: 'line',
-                    data: {
-                        datasets: [
-                        {
-                            label: 'Words',
-                            data: [@foreach (WordDateCount wordItem in Model.ChartData)
-                                   {
-                                       if (wordItem.WordCount > 0)
-                                       {
-                                           string chartYear = wordItem.WordDate.Year.ToString();
-                                           string chartMonth = (wordItem.WordDate.Month - 1).ToString();
-                                           string chartDay = wordItem.WordDate.Day.ToString();
-                                           @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + wordItem.WordCount.ToString(CultureInfo.InvariantCulture) + "},")
-                                       }
-
-                                   }],
-                                   borderColor: 'rgb(75, 192, 192)',
-                                   borderWidth: 1
-                        }
-                        ]
-                    },
-                    options: {
-                        scales: {
-                            xAxes: [
-                                {
-                                    type: 'time',
-                                    time: {
-                                        tooltipFormat: 'dd DD MMM YYYY',
-                                        displayFormats: {
-                                            quarter: 'MMM YYYY'
-                                        }
-                                    }
-                                }
-                            ],
-                            yAxes: [
-                                {
-                                    scaleLabel: {
-                                        display: true,
-                                        labelString: '@await LocaleManager.GetTranslation("Number of words", PageNames.Vocabulary, Model.LanguageId)'
-                                    },
-                                    ticks: {
-                                        beginAtZero: true
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                });
-        
+                              }];
         </script>
+        <script src="/js/vocabulary/vocabulary-index.js" type="module" asp-append-version="true"></script>
     }
 </div>

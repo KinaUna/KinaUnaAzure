@@ -1,7 +1,7 @@
 "use strict";
-let chartContainer = document.querySelector("#chartContainer");
-if (chartContainer != null) {
-    let myChart = new Chart(chartContainer, {
+let measurementsHeightChartContainer = document.querySelector("#chartContainer");
+if (measurementsHeightChartContainer != null) {
+    let myChart = new Chart(measurementsHeightChartContainer, {
         type: 'line',
         data: {
             datasets: [{
@@ -37,9 +37,9 @@ if (chartContainer != null) {
         }
     });
 }
-let chartContainer2 = document.querySelector("#chartContainer2");
-if (chartContainer2 !== null) {
-    var myChart2 = new Chart(chartContainer2, {
+let measurementsWeightChartContainer = document.querySelector("#chartContainer2");
+if (measurementsWeightChartContainer !== null) {
+    var myChart2 = new Chart(measurementsWeightChartContainer, {
         type: 'line',
         data: {
             datasets: [{

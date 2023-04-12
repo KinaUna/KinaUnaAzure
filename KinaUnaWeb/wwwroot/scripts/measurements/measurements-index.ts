@@ -4,9 +4,9 @@ declare var heightString: string;
 declare var weightData: any;
 declare var weightString: string;
 
-let chartContainer = document.querySelector<HTMLCanvasElement>("#chartContainer");
-if (chartContainer != null) {
-    let myChart = new Chart(chartContainer, {
+let measurementsHeightChartContainer = document.querySelector<HTMLCanvasElement>("#chartContainer");
+if (measurementsHeightChartContainer != null) {
+    let myChart = new Chart(measurementsHeightChartContainer, {
         type: 'line',
         data: {
             datasets: [{
@@ -43,9 +43,9 @@ if (chartContainer != null) {
     });
 }
 
-let chartContainer2 = document.querySelector<HTMLCanvasElement>("#chartContainer2");
-if (chartContainer2 !== null) {
-    var myChart2 = new Chart(chartContainer2, {
+let measurementsWeightChartContainer = document.querySelector<HTMLCanvasElement>("#chartContainer2");
+if (measurementsWeightChartContainer !== null) {
+    var myChart2 = new Chart(measurementsWeightChartContainer, {
         type: 'line',
         data: {
 
