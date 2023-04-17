@@ -1,63 +1,23 @@
 ﻿@using KinaUnaWeb.Services
-@using Microsoft.AspNetCore.Mvc.TagHelpers
 @using KinaUna.Data
-@model KinaUnaWeb.Models.ItemViewModels.TimeLineViewModel
 @inject ILocaleManager LocaleManager
-<div id="tlineItems" style="opacity: 0.85">
+@{
+    int languageId = LocaleManager.GetLanguageId(Context.Request);
+}
+<div id="latestPostsParentDiv" class="d-none">
+    <div>
+        @await LocaleManager.GetTranslation("Latest posts:", PageNames.Home, languageId)
+    </div>
+    <div id="timelineItemsDiv" style="opacity: 0.75">
 
+    </div>
+    <div style="height: 150px;">
+        <button id="moreTimelineItemsButton" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more posts", PageNames.Timeline, languageId)</button>
+        <div id="loadingTimeLineItemsDiv" class="w-100">
+            <div class="space-50"></div>
+        </div>
+    </div>
 </div>
-<div id="moreButtonDiv">
-    <a class="btn btn-success leavePage" id="moreTimeLineItems" style="margin-top: 20px;" asp-controller="TimeLine" asp-action="Index">@await LocaleManager.GetTranslation("Show more posts", PageNames.Timeline, Model.LanguageId)</a>
-    <br />
-</div>
-<script type="text/javascript">
-    var currentItemNumber = 0;
-    var maxNumber = @Model.TimeLineItems.Count;
 
-    @{
-        string[] idNumbers = new String[Model.TimeLineItems.Count];
-        int[] itmType = new int[Model.TimeLineItems.Count];
-        int tiCount = 0;
-        foreach (TimeLineItem tItm in Model.TimeLineItems)
-        {
-            idNumbers[tiCount] = tItm.ItemId;
-            itmType[tiCount] = tItm.ItemType;
-            tiCount++;
-        }
-    }
-    let itemId = [@string.Join(",", idNumbers)];
-    let itemType = [@string.Join(",", itmType)];
-    let numItems = 5;
-    $(function() {
-        async function getItemsHist() {
-            let g;
-            for (g = 0; g < 5; g++) {
-                await getHistItem();
-            };
-        };
 
-        async function getHistItem() {
-            let timelineItemData = { typeId: itemType[currentItemNumber], itemId: itemId[currentItemNumber] };
-            currentItemNumber++;
-            await getTimeLineItemLoad(timelineItemData);
-        };
-
-        getItemsHist();
-
-        function getTimeLineItemLoad(tData) {
-            return $.ajax({
-                type: "GET",
-                url: "/LatestPosts/GetTimeLineItem",
-                data: tData,
-                datatype: "html",
-                async: true,
-                success: function(data) {
-                    $('#tlineItems').append(data);
-                },
-                error: function (jqXhr, textStatus, errorThrown) {
-                    console.log(textStatus, errorThrown);
-                }
-            });
-        }
-    });
-</script>
+<script src="/js/home/home-latest-posts.js" type="module" asp-append-version="true"></script>

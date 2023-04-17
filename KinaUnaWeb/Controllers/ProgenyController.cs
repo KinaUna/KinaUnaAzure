@@ -6,6 +6,7 @@ using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models.FamilyViewModels;
+using KinaUnaWeb.Models.TypeScriptModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,12 +26,14 @@ namespace KinaUnaWeb.Controllers
         private readonly INotesHttpClient _notesClient;
         private readonly IContactsHttpClient _contactsHttpClient;
         private readonly IVaccinationsHttpClient _vaccinationsHttpClient;
+        private readonly ILocationsHttpClient _locationsHttpClient;
         private readonly ImageStore _imageStore;
         private readonly string _defaultUser = Constants.DefaultUserEmail;
         private readonly ITimelineHttpClient _timelineHttpClient;
+        private readonly IAutoSuggestsHttpClient _autoSuggestsHttpClient;
         public ProgenyController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient, ITimelineHttpClient timelineHttpClient,
             ICalendarsHttpClient calendarsHttpClient, IWordsHttpClient wordsHttpClient, ISkillsHttpClient skillsHttpClient, IFriendsHttpClient friendsHttpClient, IMeasurementsHttpClient measurementsHttpClient,
-            ISleepHttpClient sleepHttpClient, INotesHttpClient notesClient, IContactsHttpClient contactsHttpClient, IVaccinationsHttpClient vaccinationsHttpClient)
+            ISleepHttpClient sleepHttpClient, INotesHttpClient notesClient, IContactsHttpClient contactsHttpClient, IVaccinationsHttpClient vaccinationsHttpClient, ILocationsHttpClient locationsHttpClient, IAutoSuggestsHttpClient autoSuggestsHttpClient)
         {
             _progenyHttpClient = progenyHttpClient;
             _mediaHttpClient = mediaHttpClient;
@@ -46,6 +49,8 @@ namespace KinaUnaWeb.Controllers
             _notesClient = notesClient;
             _contactsHttpClient = contactsHttpClient;
             _vaccinationsHttpClient = vaccinationsHttpClient;
+            _locationsHttpClient = locationsHttpClient;
+            _autoSuggestsHttpClient = autoSuggestsHttpClient;
         }
         public IActionResult Index()
         {
@@ -84,11 +89,8 @@ namespace KinaUnaWeb.Controllers
 
             if (model.File != null)
             {
-                using (Stream stream = model.File.OpenReadStream())
-                {
-                    prog.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Progeny);
-
-                }
+                await using Stream stream = model.File.OpenReadStream();
+                prog.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Progeny);
             }
             else
             {
@@ -372,8 +374,56 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
+            List<Location> locationsList = await _locationsHttpClient.GetLocationsList(model.Id, 0);
+            if (locationsList.Any())
+            {
+                foreach (Location location in locationsList)
+                {
+                    TimeLineItem tItem = await _timelineHttpClient.GetTimeLineItem(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
+                    if (tItem != null)
+                    {
+                        await _timelineHttpClient.DeleteTimeLineItem(tItem.TimeLineId);
+                    }
+
+                    await _locationsHttpClient.DeleteLocation(location.LocationId);
+                }
+            }
+
             await _progenyHttpClient.DeleteProgeny(model.Id);
             return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetAllProgenyTags([FromBody] AutoSuggestList suggestionsList)
+        {
+            suggestionsList.Suggestions = await _autoSuggestsHttpClient.GetTagsList(suggestionsList.ProgenyId, 0);
+
+
+            return Json(suggestionsList);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetAllProgenyContexts([FromBody] AutoSuggestList suggestionsList)
+        {
+            suggestionsList.Suggestions = await _autoSuggestsHttpClient.GetContextsList(suggestionsList.ProgenyId, 0);
+            
+            return Json(suggestionsList);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetAllProgenyLocations([FromBody] AutoSuggestList suggestionsList)
+        {
+            suggestionsList.Suggestions = await _autoSuggestsHttpClient.GetLocationsList(suggestionsList.ProgenyId, 0);
+
+            return Json(suggestionsList);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetAllProgenyCategories([FromBody] AutoSuggestList suggestionsList)
+        {
+            suggestionsList.Suggestions = await _autoSuggestsHttpClient.GetCategoriesList(suggestionsList.ProgenyId, 0);
+            
+            return Json(suggestionsList);
         }
     }
 }

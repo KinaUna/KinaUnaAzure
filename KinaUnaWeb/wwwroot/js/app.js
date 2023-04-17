@@ -18,6 +18,9 @@ function runWaitMeLeave() {
         onClose: function () { }
     });
 }
+function stopWaitMeLeave() {
+    bodyContentDiv.waitMe("hide");
+}
 function runWaitMeLeave2() {
     bodyContentDiv.waitMe({
         effect: 'roundBounce',
@@ -134,6 +137,7 @@ async function setSideBarPosition() {
         sidebarElement.style.top = menuOffset + 'px';
         sidebarTogglerElement.style.borderTopRightRadius = '25px';
         sidebarTogglerElement.style.borderBottomRightRadius = '0px';
+        sidebarTogglerElement.style.paddingBottom = '35px';
         sidebarTogglerElement.style.width = sidebarMenuListWrapperElement.offsetWidth + 'px';
         await sidebarMenuDelay(500);
         sidebarTogglerElement.style.width = sidebarMenuListWrapperElement.offsetWidth + 'px';
@@ -154,13 +158,18 @@ async function setSideBarPosition() {
         setTimeout(function () {
             sidebarTogglerElement.style.width = '55px';
         }, 500);
+        setTimeout(function () {
+            sidebarTogglerElement.style.paddingBottom = '0';
+        }, 1050);
         sidebarTextsButton.style.visibility = "collapse";
     }
     ;
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 function setActivePageClass() {
     const currentUrl = document.location.pathname.replace('/', '');
-    console.log('currentUrl: ' + currentUrl);
     const sidebarMenuItems = document.querySelectorAll('.sidebar-item');
     sidebarMenuItems.forEach(function (sidebarMenuItem) {
         if (currentUrl.toLowerCase().startsWith(sidebarMenuItem.dataset.sidebarId)) {
@@ -248,9 +257,23 @@ $(function () {
             $('#selectChildMenuButton').trigger('click');
         }
     });
+    const toggleSideBarTextButton = document.querySelector('#side-bar-toggle-text-btn');
+    if (toggleSideBarTextButton !== null) {
+        toggleSideBarTextButton.addEventListener('click', () => { toggleSidebarText(); });
+    }
+    const toggleSideBarButton = document.querySelector('#side-bar-toggle-btn');
+    if (toggleSideBarButton !== null) {
+        toggleSideBarButton.addEventListener('click', () => { toggleSideBar(); });
+    }
     initPageSettings();
     setSideBarPosition();
     setSidebarText();
     window.onresize = setSideBarPosition;
+    window.addEventListener('waitMeStart', () => {
+        runWaitMeLeave();
+    });
+    window.addEventListener('waitMeStop', () => {
+        stopWaitMeLeave();
+    });
 });
 //# sourceMappingURL=app.js.map

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using KinaUnaWeb.Models;
 
 namespace KinaUnaWeb.Controllers
@@ -52,11 +51,12 @@ namespace KinaUnaWeb.Controllers
                     if (!string.IsNullOrEmpty(contactViewModel.Tags))
                     {
                         List<string> cvmTags = contactViewModel.Tags.Split(',').ToList();
-                        foreach (string tagstring in cvmTags)
+                        foreach (string tagString in cvmTags)
                         {
-                            if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                            {
-                                tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                            string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
+                            if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Contains(trimmedTagString))
+                            { 
+                                tagsList.Add(trimmedTagString);
                             }
                         }
                     }
@@ -106,11 +106,12 @@ namespace KinaUnaWeb.Controllers
                 if (!string.IsNullOrEmpty(cont.Tags))
                 {
                     List<string> cvmTags = cont.Tags.Split(',').ToList();
-                    foreach (string tagstring in cvmTags)
+                    foreach (string tagString in cvmTags)
                     {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                        string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
+                        if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Contains(trimmedTagString))
                         {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                            tagsList.Add(trimmedTagString);
                         }
                     }
                 }
@@ -135,31 +136,7 @@ namespace KinaUnaWeb.Controllers
 
             model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
             model.SetProgenyList();
-
-            List<string> tagsList = new();
-            foreach (SelectListItem item in model.ProgenyList)
-            {
-                if (int.TryParse(item.Value, out int progenyId))
-                {
-                    List<Contact> contactsList1 = await _contactsHttpClient.GetContactsList(progenyId, 0);
-                    foreach (Contact contact in contactsList1)
-                    {
-                        if (!string.IsNullOrEmpty(contact.Tags))
-                        {
-                            List<string> contactTags = contact.Tags.Split(',').ToList();
-                            foreach (string tagstring in contactTags)
-                            {
-                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                {
-                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            model.SetTagList(tagsList);
+            
             model.SetAccessLevelList();
 
             return View(model);
@@ -218,25 +195,7 @@ namespace KinaUnaWeb.Controllers
             model.SetPropertiesFromContact(contact, model.IsCurrentUserProgenyAdmin);
 
             model.ContactItem.PictureLink = _imageStore.UriFor(contact.PictureLink, "contacts");
-
-            List<string> tagsList = new();
-            List<Contact> contactsList1 = await _contactsHttpClient.GetContactsList(model.CurrentProgenyId, 0);
-            foreach (Contact cont in contactsList1)
-            {
-                if (!string.IsNullOrEmpty(cont.Tags))
-                {
-                    List<string> cvmTags = cont.Tags.Split(',').ToList();
-                    foreach (string tagstring in cvmTags)
-                    {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                        {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                        }
-                    }
-                }
-            }
-
-            model.SetTagList(tagsList);
+            
             model.SetAccessLevelList();
 
             return View(model);

@@ -1,4 +1,5 @@
-﻿using KinaUnaWeb.Models.ItemViewModels;
+﻿using System.Linq;
+using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.TypeScriptModels.Timeline;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -14,28 +16,54 @@ namespace KinaUnaWeb.Controllers
         private readonly ITimelineHttpClient _timelineHttpClient;
         private readonly ITimeLineItemsService _timeLineItemsService;
         private readonly IViewModelSetupService _viewModelSetupService;
-
-        public TimelineController(ITimelineHttpClient timelineHttpClient, ITimeLineItemsService timeLineItemsService, IViewModelSetupService viewModelSetupService)
+        private readonly IProgenyHttpClient _progenyHttpClient;
+        public TimelineController(ITimelineHttpClient timelineHttpClient, ITimeLineItemsService timeLineItemsService, IViewModelSetupService viewModelSetupService, IProgenyHttpClient progenyHttpClient)
         {
             _timelineHttpClient = timelineHttpClient;
             _timeLineItemsService = timeLineItemsService;
             _viewModelSetupService = viewModelSetupService;
+            _progenyHttpClient = progenyHttpClient;
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, int items = 0)
+        public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, int items = 10)
         {
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             TimeLineViewModel model = new(baseModel)
             {
-                SortBy = sortBy
+                SortBy = sortBy,
+                Items = items
             };
-
-            model.TimeLineItems = await _timelineHttpClient.GetTimeline(model.CurrentProgenyId, model.CurrentAccessLevel, sortBy);
-            
-            model.Items = items;
             
             return View(model);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> GetTimelineList([FromBody] TimelineParameters parameters)
+        {
+            TimelineList timelineList = new();
+            timelineList.TimelineItems = await _timelineHttpClient.GetTimeline(parameters.ProgenyId, 0, parameters.SortBy);
+            timelineList.AllItemsCount = timelineList.TimelineItems.Count;
+            timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count; 
+            timelineList.TimelineItems = timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count).ToList();
+
+            return Json(timelineList);
+
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> GetYearAgoList([FromBody] TimelineParameters parameters)
+        {
+            TimelineList timelineList = new();
+            timelineList.TimelineItems = await _progenyHttpClient.GetProgenyYearAgo(parameters.ProgenyId, 0);
+            timelineList.AllItemsCount = timelineList.TimelineItems.Count;
+            timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count;
+            timelineList.TimelineItems = timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count).ToList();
+
+            return Json(timelineList);
+
         }
 
         [AllowAnonymous]
@@ -140,6 +168,17 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             model.SetBaseProperties(baseModel);
             
+            TimeLineItemPartialViewModel timeLineItemPartialViewModel = await _timeLineItemsService.GetTimeLineItemPartialViewModel(model);
+            return PartialView(timeLineItemPartialViewModel.PartialViewName, timeLineItemPartialViewModel.TimeLineItem);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<ActionResult> GetTimelineItemElement([FromBody] TimeLineItemViewModel model)
+        {
+            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            model.SetBaseProperties(baseModel);
+
             TimeLineItemPartialViewModel timeLineItemPartialViewModel = await _timeLineItemsService.GetTimeLineItemPartialViewModel(model);
             return PartialView(timeLineItemPartialViewModel.PartialViewName, timeLineItemPartialViewModel.TimeLineItem);
         }

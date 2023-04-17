@@ -21,7 +21,7 @@ namespace KinaUnaProgenyApi.Services
             foreach (KinaUnaLanguage lang in languagesList)
             {
                 // Downloaded from here : https://www.countryflags.com/en/icons-overview/
-                lang.IconLink = "https://www.kinauna.com/images/flags/64/" + lang.Icon + ".png";
+                lang.IconLink = "https://web.kinauna.com/images/flags/64/" + lang.Icon + ".png";
             }
 
             return languagesList;

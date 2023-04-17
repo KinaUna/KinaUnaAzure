@@ -18,6 +18,8 @@
     <script src="https://cdn.datatables.net/plug-ins/1.13.4/sorting/datetime-moment.js"></script>
 }
 
+<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     @if (Model.SkillsList == null || !Model.SkillsList.Any())
     {
@@ -84,12 +86,6 @@
                 </tbody>
             </table>
         </div>
-        <script type="text/javascript">
-            moment.locale('@Model.LanguageIdString');
-            $(function () {
-                $.fn.dataTable.moment('DD-MMMM-YYYY');
-                $("#skillzList").DataTable({ "scrollX": false, "order": [[3, "desc"]] });
-            })        
-        </script>
+        <script src="/js/skills/skills-index.js" type="module" asp-append-version="true"></script>
     }
 </div>

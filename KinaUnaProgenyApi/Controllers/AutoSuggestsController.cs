@@ -59,9 +59,13 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (!string.IsNullOrEmpty(noteItem.Category))
                 {
-                    if (!autoSuggestList.Contains(noteItem.Category))
+                    List<string> tagsList = noteItem.Category.Split(',').ToList();
+                    foreach (string tagString in tagsList)
                     {
-                        autoSuggestList.Add(noteItem.Category);
+                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
+                        {
+                            autoSuggestList.Add(tagString.Trim());
+                        }
                     }
                 }
             }
@@ -72,9 +76,13 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (!string.IsNullOrEmpty(skillItem.Category))
                 {
-                    if (!autoSuggestList.Contains(skillItem.Category))
+                    List<string> tagsList = skillItem.Category.Split(',').ToList();
+                    foreach (string tagString in tagsList)
                     {
-                        autoSuggestList.Add(skillItem.Category);
+                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
+                        {
+                            autoSuggestList.Add(tagString.Trim());
+                        }
                     }
                 }
             }
@@ -104,9 +112,13 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (!string.IsNullOrEmpty(friendItem.Context))
                 {
-                    if (!autoSuggestList.Contains(friendItem.Context))
+                    List<string> tagsList = friendItem.Context.Split(',').ToList();
+                    foreach (string tagString in tagsList)
                     {
-                        autoSuggestList.Add(friendItem.Context);
+                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
+                        {
+                            autoSuggestList.Add(tagString.Trim());
+                        }
                     }
                 }
             }
@@ -117,9 +129,13 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (!string.IsNullOrEmpty(calendarItem.Context))
                 {
-                    if (!autoSuggestList.Contains(calendarItem.Context))
+                    List<string> tagsList = calendarItem.Context.Split(',').ToList();
+                    foreach (string tagString in tagsList)
                     {
-                        autoSuggestList.Add(calendarItem.Context);
+                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
+                        {
+                            autoSuggestList.Add(tagString.Trim());
+                        }
                     }
                 }
             }
@@ -130,9 +146,13 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (!string.IsNullOrEmpty(contactItem.Context))
                 {
-                    if (!autoSuggestList.Contains(contactItem.Context))
+                    List<string> tagsList = contactItem.Context.Split(',').ToList();
+                    foreach (string tagString in tagsList)
                     {
-                        autoSuggestList.Add(contactItem.Context);
+                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
+                        {
+                            autoSuggestList.Add(tagString.Trim());
+                        }
                     }
                 }
             }
@@ -160,9 +180,13 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (!string.IsNullOrEmpty(picture.Location))
                 {
-                    if (!autoSuggestList.Contains(picture.Location))
+                    List<string> tagsList = picture.Location.Split(',').ToList();
+                    foreach (string tagString in tagsList)
                     {
-                        autoSuggestList.Add(picture.Location);
+                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
+                        {
+                            autoSuggestList.Add(tagString.Trim());
+                        }
                     }
                 }
             }
@@ -173,9 +197,13 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (!string.IsNullOrEmpty(video.Location))
                 {
-                    if (!autoSuggestList.Contains(video.Location))
+                    List<string> tagsList = video.Location.Split(',').ToList();
+                    foreach (string tagString in tagsList)
                     {
-                        autoSuggestList.Add(video.Location);
+                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
+                        {
+                            autoSuggestList.Add(tagString.Trim());
+                        }
                     }
                 }
             }
@@ -186,9 +214,13 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (!string.IsNullOrEmpty(calendarItem.Location))
                 {
-                    if (!autoSuggestList.Contains(calendarItem.Location))
+                    List<string> tagsList = calendarItem.Location.Split(',').ToList();
+                    foreach (string tagString in tagsList)
                     {
-                        autoSuggestList.Add(calendarItem.Location);
+                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
+                        {
+                            autoSuggestList.Add(tagString.Trim());
+                        }
                     }
                 }
             }
@@ -199,9 +231,13 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (!string.IsNullOrEmpty(locationItem.Name))
                 {
-                    if (!autoSuggestList.Contains(locationItem.Name))
+                    List<string> tagsList = locationItem.Name.Split(',').ToList();
+                    foreach (string tagString in tagsList)
                     {
-                        autoSuggestList.Add(locationItem.Name);
+                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
+                        {
+                            autoSuggestList.Add(tagString.Trim());
+                        }
                     }
                 }
             }
@@ -302,9 +338,10 @@ namespace KinaUnaProgenyApi.Controllers
                     List<string> tagsList = contact.Tags.Split(',').ToList();
                     foreach (string tagString in tagsList)
                     {
-                        if (!autoSuggestList.Contains(tagString.Trim()))
+                        string trimmedTagString = tagString.Trim();
+                        if (!string.IsNullOrEmpty(trimmedTagString) && !autoSuggestList.Contains(trimmedTagString))
                         {
-                            autoSuggestList.Add(tagString.Trim());
+                            autoSuggestList.Add(trimmedTagString);
                         }
                     }
                 }

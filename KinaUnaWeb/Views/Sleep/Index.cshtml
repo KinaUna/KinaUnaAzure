@@ -10,18 +10,21 @@
 }
 @section Scripts
     {
-    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <link href="/lib/nouislider/nouislider.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css" rel="stylesheet"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/da.min.js" integrity="sha512-rybyYvSnwg3zAZ/vjTTMoh8tOK0Z6tC2XCzr9e27M0xr8WU40IGo6SOP7FXXCyWgMyd3wZ8ln2nY4ce1ysYUfw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de.min.js" integrity="sha512-c0OHGm6x2JXZyrb7Kb+Jcoy7eQ4F+AqzYLeciicpzuvgyeTWRQEZ6QthFYRUBOR0rShmm54O/7pHZJ/nqhbrkw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-at.min.js" integrity="sha512-2zI8NFjVrQ4nMIS3HCBVOgiUb6qRiKKa/U4K/DL5aT/sz9dSuHFMZdZIPRjGBQoKZbpyP3NI8diNGK+RlUTTsg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-ch.min.js" integrity="sha512-7VvKBnFgucrOLF0GLzWUuhtDcRKYUuOy9O5AqiqvccZFp4zAqAzkMqIlNVCDR3DJ6OZ6dsdn+MLiJ8vZx84WhQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="~/lib/material-kit/plugins/nouislider.min.js"></script>
+    <script src="~/lib/nouislider/nouislider.min.js" asp-append-version="true"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
     <script src="https://cdn.datatables.net/plug-ins/1.13.4/sorting/datetime-moment.js"></script>
 }
 
+<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     @if (!Model.SleepList.Any())
     {
@@ -129,155 +132,28 @@
             </div>
         </div>
         <br />
-        <script src="~/lib/chart.js/dist/Chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
+        @*<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>*@
         <script type="text/javascript">
-            moment.locale('@Model.LanguageIdString');
-
-            $(function () {
-                $.fn.dataTable.moment('DD-MMMM-YYYY HH:mm');
-                $("#sleepList").DataTable({ "scrollX": false, "order": [[0, "desc"]] });
-
-                const ctx = document.getElementById("chartContainer");
-                const myChart = new Chart(ctx,
-                    {
-                        type: 'bar',
-                        data: {
-                            datasets: [
-                                {
-                                    label: '@sleepString',
-                                    data: [@foreach (Sleep sleepItem in Model.ChartList)
-                                           {
-                                               if (sleepItem.SleepDuration.TotalMinutes > 0.0)
-                                               {
-                                                   string chartYear = sleepItem.SleepStart.Year.ToString();
-                                                   string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
-                                                   string chartDay = sleepItem.SleepStart.Day.ToString();
-                                                   double yValue = sleepItem.SleepDuration.TotalMinutes / 60.0;
-                                                   @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + yValue.ToString("##.000000", CultureInfo.InvariantCulture) + "},\n")
-                                               }
-                                           }],
-                                    borderColor: 'rgb(75, 192, 192)',
-                                    borderWidth: 1
-                                }
-                            ]
-                        },
-                        options: {
-                            scales: {
-                                xAxes: [
-                                    {
-                                        type: 'time',
-                                        time: {
-                                            tooltipFormat: 'dd DD MMMM YYYY',
-                                            displayFormats: {
-                                                quarter: 'MMMM YYYY'
-                                            }
-                                        }
-                                    }
-                                ],
-                                yAxes: [
-                                    {
-                                        scaleLabel: {
-                                            display: true,
-                                            labelString: '@durationInHoursString, PageNames.Sleep, Model.LanguageId)'
-                                        },
-                                        ticks: {
-                                            beginAtZero: true
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    });
-
-                myChart.update();
-                const slpSlider = document.getElementById('sliderSleep');
-                slpSlider.noUiSlider.on('update',
-                    function () {
-                        const pos = $(document).scrollTop();
-                        $('#sliderStartVal')
-                            .text("Start: " + moment(slider.noUiSlider.get()[0], "x").format("dddd, DD-MMMM-YYYY"));
-                        $('#sliderEndVal')
-                            .text("End: " + moment(slider.noUiSlider.get()[1], "x").format("dddd, DD-MMMM-YYYY"));
-                        document.getElementById("chartDiv").innerHTML = '&nbsp;';
-                        document.getElementById("chartDiv").innerHTML = '<canvas id="chartContainer"></canvas>';
-                        const slpChart = document.getElementById("chartContainer").getContext("2d");
-                        const cfg = {
-                            type: 'bar',
-                            data: {
-                                datasets: [
-                                    {
-                                        label: '@sleepString',
-                                        data: [@foreach (Sleep sleepItem in Model.ChartList)
-                                               {
-                                                   if (sleepItem.SleepDuration.TotalMinutes > 0.0)
-                                                   {
-                                                       string chartYear = sleepItem.SleepStart.Year.ToString();
-                                                       string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
-                                                       string chartDay = sleepItem.SleepStart.Day.ToString();
-                                                       double yValue = sleepItem.SleepDuration.TotalMinutes / 60.0;
-                                                       @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + yValue.ToString("##.000000", CultureInfo.InvariantCulture) + "},\n")
-                                                   }
-                                               }],
-                                        borderColor: 'rgb(75, 192, 192)',
-                                        borderWidth: 1
-                                    }
-                                ]
-                            },
-                            options: {
-                                scales: {
-                                    xAxes: [
-                                        {
-                                            type: 'time',
-                                            time: {
-                                                min: moment(slider.noUiSlider.get()[0], "x").toString(),
-                                                max: moment(slider.noUiSlider.get()[1], "x").toString(),
-                                                tooltipFormat: 'dd DD MMMM YYYY',
-                                                displayFormats: {
-                                                    quarter: 'MMMM YYYY'
-                                                }
-                                            }
-                                        }
-                                    ],
-                                    yAxes: [
-                                        {
-                                            scaleLabel: {
-                                                display: true,
-                                                labelString: '@durationInHoursString'
-                                            },
-                                            ticks: {
-                                                beginAtZero: true
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        };
-                        const newChart = new Chart(slpChart, cfg);
-                        newChart.update();
-                        $(document).scrollTop(pos);
-                    });
-            }
-            );
-            function timestamp(str) {
-                return new Date(str).getTime();
-            }
-
-            let slider = document.getElementById('sliderSleep');
-
-            noUiSlider.create(slider,
-                {
-                    connect: true,
-                    range: {
-                        min: timestamp('@Model.ChartList.First().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)'),
-                        max: timestamp('@Model.ChartList.Last().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)')
-                    },
-                    step: 1000 * 60 * 60 * 24,
-                    start: [
-                        timestamp('@Model.ChartList.First().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)'),
-                        timestamp('@Model.ChartList.Last().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)')
-                    ]
-                });
-        
+            var sleepData = [@foreach (Sleep sleepItem in Model.ChartList)
+                             {
+                                 if (sleepItem.SleepDuration.TotalMinutes > 0.0)
+                                 {
+                                     string chartYear = sleepItem.SleepStart.Year.ToString();
+                                     string chartMonth = (sleepItem.SleepStart.Month - 1).ToString();
+                                     string chartDay = sleepItem.SleepStart.Day.ToString();
+                                     double yValue = sleepItem.SleepDuration.TotalMinutes / 60.0;
+                                     @Html.Raw("{ x: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + yValue.ToString("##.000000", CultureInfo.InvariantCulture) + "},\n")
+                                 }
+                             }];
+            var sleepLabel = '@sleepString';
+            var durationInHoursString = '@durationInHoursString';
+            var sliderStartString = '@await LocaleManager.GetTranslation("Start:", PageNames.Sleep, Model.LanguageId)';
+            var sliderEndString = '@await LocaleManager.GetTranslation("End:", PageNames.Sleep, Model.LanguageId)';
+            var sliderRangeMin = '@Model.ChartList.First().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)';
+            var sliderRangeMax = '@Model.ChartList.Last().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)';
         </script>
+        <script src="/js/sleep/sleep-index.js" type="module" asp-append-version="true"></script>
     }
 </div>

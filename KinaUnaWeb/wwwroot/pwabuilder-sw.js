@@ -50,9 +50,6 @@ function isPreCached(requestUrl, preCacheArray) {
 }
 
 self.addEventListener('install', function (event) {
-    //console.log("[PWA Builder] Install Event processing");
-
-    //console.log("[PWA Builder] Skip waiting on install");
     self.skipWaiting();
 
     event.waitUntil(
@@ -68,7 +65,6 @@ self.addEventListener('install', function (event) {
 
 // Allow sw to control of current page
 self.addEventListener('activate', function (event) {
-    //console.log("[PWA Builder] Claiming clients for current page");
     event.waitUntil(self.clients.claim());
 });
 
@@ -203,13 +199,12 @@ self.addEventListener('notificationclick',
     function (event) {
         const notification = event.notification;
         const action = event.action;
-        const link = notification.data; // '/notifications';
-        // var notificationId = notification.data.notificationId;
+        const link = notification.data;
         if (action === 'close') {
             notification.close();
         } else {
             if (action === 'open') {
-                self.clients.openWindow('/notifications'); // /notifications/push/' + notificationId);
+                self.clients.openWindow('/notifications');
                 notification.close();
             } else {
                 self.clients.openWindow(link);

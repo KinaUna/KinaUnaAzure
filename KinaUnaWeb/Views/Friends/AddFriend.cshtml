@@ -4,14 +4,14 @@
 @model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
-    <link href="/css/amsify.suggestags.css" rel="stylesheet" />
-    <script src="/lib/jquery.amsify.suggestags.js"></script>
+    <link href="/css/amsify.suggestags.css" rel="stylesheet" asp-append-version="true"/>
+    <script src="/lib/jquery.amsify.suggestags.js" asp-append-version="true"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/da.min.js" integrity="sha512-rybyYvSnwg3zAZ/vjTTMoh8tOK0Z6tC2XCzr9e27M0xr8WU40IGo6SOP7FXXCyWgMyd3wZ8ln2nY4ce1ysYUfw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de.min.js" integrity="sha512-c0OHGm6x2JXZyrb7Kb+Jcoy7eQ4F+AqzYLeciicpzuvgyeTWRQEZ6QthFYRUBOR0rShmm54O/7pHZJ/nqhbrkw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-at.min.js" integrity="sha512-2zI8NFjVrQ4nMIS3HCBVOgiUb6qRiKKa/U4K/DL5aT/sz9dSuHFMZdZIPRjGBQoKZbpyP3NI8diNGK+RlUTTsg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-ch.min.js" integrity="sha512-7VvKBnFgucrOLF0GLzWUuhtDcRKYUuOy9O5AqiqvccZFp4zAqAzkMqIlNVCDR3DJ6OZ6dsdn+MLiJ8vZx84WhQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
+    <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
 @inject ILocaleManager LocaleManager
@@ -20,6 +20,10 @@
     string addFriendForString = await LocaleManager.GetTranslation("Add friend for:", PageNames.Friends, Model.LanguageId);
     string zebraDateTimeFormat = "d-F-Y";
 }
+<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
+<div id="zebraDateTimeFormatDiv" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="add-item-container">
         <h2 class="col-12">@ViewData["Title"]</h2>
@@ -31,7 +35,7 @@
                 <div class="form-group">
                     <label class="control-label col-auto">@addFriendForString </label>
                     <div class="col-auto">
-                        <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="FriendItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                            <select id="progenyIdSelect" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="FriendItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
                 </div>
             }
@@ -99,7 +103,7 @@
             <div class="form-group">
                 <label asp-for="FriendItem.Context" class="col-auto control-label">@await LocaleManager.GetTranslation("Context", PageNames.Friends, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input asp-for="FriendItem.Context" class="form-control" />
+                    <input id="contextInput" asp-for="FriendItem.Context" class="form-control" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Friends, Model.LanguageId)"/>
                 </div>
             </div>
             <div class="form-group">
@@ -111,7 +115,7 @@
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Friends, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="tagList" type="text" asp-for="FriendItem.Tags" value="@Model.FriendItem.Tags" placeholder="Add tag..." class="form-control" />
+                    <input id="tagList" type="text" asp-for="FriendItem.Tags" value="@Model.FriendItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Friends, Model.LanguageId)" class="form-control" />
                 </div>
                 
             </div>
@@ -133,50 +137,4 @@
         </form>
     </div>
 </div>
-<script>
-    moment.locale('@Model.LanguageIdString');
-    const zebraDatePickerDaysArray = [
-        '@Html.Raw(await LocaleManager.GetTranslation("Sunday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Monday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Tuesday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Wednesday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Thursday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Friday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Saturday", PageNames.CalendarTools, Model.LanguageId))'
-    ];
-
-    const zebraDatePickerMonthsArray = [
-        '@Html.Raw(await LocaleManager.GetTranslation("January", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("February", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("March", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("April", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("May", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("June", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("July", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("August", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("September", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("October", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("November", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("December", PageNames.CalendarTools, Model.LanguageId))'
-    ];
-    const zebraTodayString = '@Html.Raw(await LocaleManager.GetTranslation("Today", PageNames.CalendarTools, Model.LanguageId))';
-    const zebraClearString = '@Html.Raw(await LocaleManager.GetTranslation("Clear", PageNames.CalendarTools, Model.LanguageId))';
-
-    $(function () {
-        $('#datetimepicker1').Zebra_DatePicker({
-            format: '@zebraDateTimeFormat',
-            open_icon_only: true,
-            days: zebraDatePickerDaysArray,
-            months: zebraDatePickerMonthsArray,
-            lang_clear_date: zebraClearString,
-            show_select_today: zebraTodayString,
-            select_other_months: true
-        });
-    });
-
-    $('input[id="tagList"').amsifySuggestags(
-        {
-            suggestions: @Html.Raw(Model.TagsList)
-        }
-    );
-</script>
+<script src="/js/friends/add-edit-friend.js" type="module" asp-append-version="true"></script>

@@ -42,3 +42,78 @@ export class NotesPageResponse implements BaseItemsPageResponseModel {
     totalItems: number = 0;
     notesList: number[] = [];
 }
+
+export class KinaUnaTextParameters {
+    id: number = 0;
+    textId: number = 0;
+    languageId: number = 0;
+    page: string = '';
+    title: string = '';
+    text: string = '';
+}
+
+export class KinaUnaTextResponse {
+    id: number = 0;
+    textId: number = 0;
+    languageId: number = 0;
+    page: string = '';
+    title: string = '';
+    text: string = '';
+    created: Date = new Date();
+    updated: Date = new Date();
+}
+
+export class TextTranslation {
+    id: number = 0;
+    page: string = '';
+    word: string = '';
+    translation: string = '';
+    languageId: number = 0;
+}
+
+export class KinaUnaLanguage {
+    id: number = 0;
+    name: string = '';
+    icon: string = '';
+}
+
+export class TextTranslationPageListModel {
+    page: string = '';
+    translations: TextTranslation[] = [];
+    languagesList: KinaUnaLanguage[] = [];
+}
+
+export class AutoSuggestList {
+    progenyId: number;
+    suggestions: string[];
+    constructor(_progenyId: number) {
+        this.progenyId = _progenyId;
+        this.suggestions = [];
+    }
+}
+
+export class TimelineItem {
+    timeLineId: number = 0;
+    progenyId: number = 0;
+    itemType: number = 0;
+    itemId: string = '0';
+}
+
+export class TimelineParameters {
+    progenyId: number = 0;
+    skip: number = 0;
+    count: number = 5;
+    sortBy: number = 1;
+}
+
+export class TimeLineItemViewModel {
+    typeId: number = 0;
+    itemId: number = 0;
+    tagFilter: string = '';
+}
+
+export class TimelineList {
+    timelineItems: TimelineItem[] = [];
+    allItemsCount: number = 0;
+    remainingItemsCount: number = 0;
+}

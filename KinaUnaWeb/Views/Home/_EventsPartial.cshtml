@@ -1,103 +1,23 @@
 ﻿@using KinaUnaWeb.Services
-@using Microsoft.AspNetCore.Mvc.TagHelpers
 @using KinaUna.Data
-@model List<CalendarItem>
 @inject ILocaleManager LocaleManager
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
+<div id="upcomingEventsParentDiv" class="d-none">
+    <div>
+        @await LocaleManager.GetTranslation("Current and upcoming events:", PageNames.Home, languageId)
+    </div>
+    <div id="upcomingEventsDiv" style="opacity: 0.85">
 
-@foreach (CalendarItem ev in Model)
-{
-    ev.StartTime ??= DateTime.MinValue;
-    ev.EndTime ??= DateTime.MinValue;
-    string startDateString = ev.StartTime.Value.ToString("dd MMM yyyy");
-    if (ev.AllDay && ev.StartTime.Value.Date != ev.EndTime.Value.Date)
-    {
-        if (ev.StartTime.Value.Year == ev.EndTime.Value.Year)
-        {
-            startDateString = ev.StartTime.Value.ToString("dd MMM");
-            if (ev.StartTime.Value.Month == ev.EndTime.Value.Month)
-            {
-                startDateString = ev.StartTime.Value.ToString("dd");
-            }
-        }
-    }
-    string startTimeString = ev.StartTime.Value.ToString("HH:mm");
-    string endDateString = ev.EndTime.Value.ToString("dd MMM yyyy");
-    string endTimeString = ev.EndTime.Value.ToString("HH:mm");
-
-    if (ev.StartTime.Value.Date == ev.EndTime.Value.Date)
-    {
-        endDateString = string.Empty;
-    }
-    <a class="leavePage" asp-controller="Calendar" asp-action="ViewEvent" asp-route-eventId="@ev.EventId">
-        <div class="bg-primary timeline-card">
-            <div class="timeline-card-body bg-calendar">
-                <div class="row">
-                    <div class="col-auto">
-                        <span class="timeline-icon"><i class="material-icons">event_note</i></span>
-                    </div>
-                    <div class="col">
-                        <div class="timeline-title row">
-                            @if (ev.AllDay)
-                            {
-                                
-                                if (string.IsNullOrEmpty(endDateString))
-                                {
-                                    <div class="col-auto font-weight-bold">@startDateString</div>
-                                }
-                                else
-                                {
-                                    <div class="col-auto"><span class="font-weight-bold">@startDateString</span> - <span class="font-weight-bold">@endDateString</span></div>
-                                }
-                            }
-                            else
-                            {
-                                if (ev.StartTime.Value.Date == ev.EndTime.Value.Date)
-                                {
-                                    <div class="col-auto">@startDateString</div>
-                                    <div class="col-auto font-weight-normal">@startTimeString - @endTimeString</div>
-                                }
-                                else
-                                {
-                                    <div class="col-auto">
-                                        <div class="row">
-                                            <div class="col font-weight-bold">@startDateString</div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col font-weight-normal text-right">@startTimeString</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <div class="row">
-                                            <div class="col font-weight-bold ">@endDateString</div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col font-weight-normal ">@endTimeString</div>
-                                        </div>
-                                    </div>
-                                }
-                            }
-                        </div>
-                        <div class="timeline-text row text-white-50">
-                            <div class="col-auto text-white font-weight-bold"><h6>@ev.Title</h6></div>
-                            @if (!string.IsNullOrEmpty(ev.Location))
-                            {
-                                <div class="col-auto ml-auto text-right">@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, languageId) @ev.Location</div>
-                            }
-                            @if (!string.IsNullOrEmpty(ev.Context))
-                            {
-                                <div class="col-auto ml-auto text-right">@await LocaleManager.GetTranslation("Context:", PageNames.Calendar, languageId) @ev.Context</div>
-                            }
-                            @if (!string.IsNullOrEmpty(ev.Notes))
-                            {
-                                <div class="col-12">@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, languageId) @ev.Notes</div>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
+    </div>
+    <div style="height: 150px;">
+        <button id="moreUpcomingEventsButton" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more events", PageNames.Calendar, languageId)</button>
+        <div id="loadingUpcomingEventsDiv" class="w-100">
+            <div class="space-50"></div>
         </div>
-    </a>
-}
+    </div>
+</div>
+
+
+<script src="/js/home/home-upcoming-events.js" type="module" asp-append-version="true"></script>

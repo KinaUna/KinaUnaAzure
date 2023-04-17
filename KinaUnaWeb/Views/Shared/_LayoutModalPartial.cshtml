@@ -4,7 +4,7 @@
 @inject ILocaleManager LocaleManager
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
-    string titleString = await LocaleManager.GetTranslation("Add item", PageNames.AddItem, Model.LanguageId);
+    string titleString = await LocaleManager.GetTranslation("Add item", PageNames.AddItem, languageId);
 }
 <div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="mainModal">
     <div class="modal-dialog modal-lg" role="document">

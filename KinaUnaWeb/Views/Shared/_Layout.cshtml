@@ -67,30 +67,29 @@
     <link rel="stylesheet" href="~/css/bootstrap.min.css" asp-append-version="true">
     <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/bootstrap5.css"/>
     <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/bootstrap5-dark.css" media="(prefers-color-scheme: dark)">
-    <link href="~/lib/fa5_2_0/css/all.min.css" rel="stylesheet" />
-    <link href="~/css/waitMe.min.css" rel="stylesheet" />
+    <link href="~/lib/fa5_2_0/css/all.min.css" rel="stylesheet" asp-append-version="true"/>
+    <link href="~/css/waitMe.min.css" rel="stylesheet" asp-append-version="true"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/css/bootstrap-select.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
-    <script src="~/lib/popper.min.js"></script>
-    <script src="~/js/lazysizes.min.js"></script>
+    <script src="~/lib/popper.min.js" asp-append-version="true"></script>
+    <script src="~/js/lazysizes.min.js" asp-append-version="true"></script>
     <script src="~/js/bootstrap.min.js" asp-append-version="true"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/js/bootstrap-select.min.js"></script>
-    <script src="~/js/waitMe.min.js"></script>
+    <script src="~/js/waitMe.min.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
     <meta name="theme-color" content="#3a2051" />
     <link rel="manifest" href="~/manifest.json">
     <script>
         if (navigator.serviceWorker.controller) {
-            // console.log('[PWA Builder] active service worker found, no need to register');
         } else {
             navigator.serviceWorker.register('/pwabuilder-sw.js',
                 {
                     scope: '/'
                 }).then(function (reg) {
-                // console.log('Service worker has been registered for scope:' + reg.scope);
+                   console.log('Service worker has been registered for scope:' + reg.scope);
             });
         }
     </script>
@@ -212,7 +211,7 @@
     </div>
 }
 @await Html.PartialAsync("_LayoutModalPartial")
-<script src="~/js/app.js" asp-append-version="true"></script>
+<script src="~/js/app.js" type="module" asp-append-version="true"></script>
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
     <script src="~/signalr/signalr.min.js"></script>

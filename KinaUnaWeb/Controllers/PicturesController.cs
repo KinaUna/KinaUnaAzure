@@ -168,7 +168,9 @@ namespace KinaUnaWeb.Controllers
                         AccessLevel = model.Picture.AccessLevel,
                         Author = model.CurrentUser.UserId,
                         Owners = model.CurrentUser.UserEmail,
-                        TimeZone = model.CurrentUser.Timezone
+                        TimeZone = model.CurrentUser.Timezone,
+                        Location = model.Picture.Location,
+                        Tags = model.Picture.Tags
                     };
 
                     await using (Stream stream = formFile.OpenReadStream())

@@ -13,6 +13,7 @@ namespace KinaUnaWeb.Models.AdminViewModels
         public int Language { get; set; }
         public KinaUnaText KinaUnaText { get; set; }
         public int MessageId { get; set; }
+        public string Text { get; set; }
 
         public ManageKinaUnaTextsViewModel()
         {

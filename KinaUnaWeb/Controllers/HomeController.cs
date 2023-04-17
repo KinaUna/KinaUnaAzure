@@ -20,20 +20,17 @@ namespace KinaUnaWeb.Controllers
     public class HomeController : Controller
     {
         private readonly IUserInfosHttpClient _userInfosHttpClient;
-        private readonly ICalendarsHttpClient _calendarsHttpClient;
         private readonly IMediaHttpClient _mediaHttpClient;
         private readonly ImageStore _imageStore;
         private readonly IWebHostEnvironment _env;
         private readonly ILanguagesHttpClient _languagesHttpClient;
         private readonly IViewModelSetupService _viewModelSetupService;
-        public HomeController(IMediaHttpClient mediaHttpClient, ImageStore imageStore, IWebHostEnvironment env, IUserInfosHttpClient userInfosHttpClient,
-            ICalendarsHttpClient calendarsHttpClient, ILanguagesHttpClient languagesHttpClient, IViewModelSetupService viewModelSetupService)
+        public HomeController(IMediaHttpClient mediaHttpClient, ImageStore imageStore, IWebHostEnvironment env, IUserInfosHttpClient userInfosHttpClient, ILanguagesHttpClient languagesHttpClient, IViewModelSetupService viewModelSetupService)
         {
             _mediaHttpClient = mediaHttpClient;
             _imageStore = imageStore;
             _env = env;
             _userInfosHttpClient = userInfosHttpClient;
-            _calendarsHttpClient = calendarsHttpClient;
             _languagesHttpClient = languagesHttpClient;
             _viewModelSetupService = viewModelSetupService;
         }
@@ -59,12 +56,8 @@ namespace KinaUnaWeb.Controllers
 
             if (model.CurrentAccessLevel == (int)AccessLevel.Public || model.DisplayPicture == null)
             {
-                model.DisplayPicture = await _mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, model.CurrentAccessLevel, model.CurrentUser.Timezone);
-                if(model.DisplayPicture == null)
-                {
-                    model.DisplayPicture = model.CreateTempPicture($"https://{Request.Host}{Request.PathBase}");
-                }
-                
+                model.DisplayPicture = await _mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, model.CurrentAccessLevel, model.CurrentUser.Timezone) ?? model.CreateTempPicture($"https://{Request.Host}{Request.PathBase}");
+
                 model.PicTimeValid = false;
             }
             else
@@ -81,12 +74,6 @@ namespace KinaUnaWeb.Controllers
             
             model.SetPictureTimeData();
             
-            model.EventsList = await _calendarsHttpClient.GetUpcomingEvents(model.CurrentProgenyId, model.CurrentAccessLevel, model.CurrentUser.Timezone);
-            
-            model.LatestPosts = await _viewModelSetupService.GetLatestPostTimeLineModel(model.CurrentProgenyId, model.CurrentAccessLevel, model.LanguageId);
-
-            model.YearAgoPosts = await _viewModelSetupService.GetYearAgoPostsTimeLineModel(model.CurrentProgenyId, model.CurrentAccessLevel, model.LanguageId);
-
             return View(model);
         }
 

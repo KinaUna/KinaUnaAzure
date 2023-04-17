@@ -11,15 +11,21 @@
 }
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
+    <link href="/css/amsify.suggestags.css" rel="stylesheet" asp-append-version="true"/>
+    <script src="/lib/jquery.amsify.suggestags.js" asp-append-version="true"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/da.min.js" integrity="sha512-rybyYvSnwg3zAZ/vjTTMoh8tOK0Z6tC2XCzr9e27M0xr8WU40IGo6SOP7FXXCyWgMyd3wZ8ln2nY4ce1ysYUfw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de.min.js" integrity="sha512-c0OHGm6x2JXZyrb7Kb+Jcoy7eQ4F+AqzYLeciicpzuvgyeTWRQEZ6QthFYRUBOR0rShmm54O/7pHZJ/nqhbrkw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-at.min.js" integrity="sha512-2zI8NFjVrQ4nMIS3HCBVOgiUb6qRiKKa/U4K/DL5aT/sz9dSuHFMZdZIPRjGBQoKZbpyP3NI8diNGK+RlUTTsg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-ch.min.js" integrity="sha512-7VvKBnFgucrOLF0GLzWUuhtDcRKYUuOy9O5AqiqvccZFp4zAqAzkMqIlNVCDR3DJ6OZ6dsdn+MLiJ8vZx84WhQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js"></script>
+    <script src="/lib/material-kit/plugins/jasny-bootstrap.min.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
 
+<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
+<div id="zebraDateTimeFormatDiv" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="add-item-container">
         <h2 class="col-12">@ViewData["Title"]</h2>
@@ -65,15 +71,14 @@
             <div class="form-group">
                 <label asp-for="NoteItem.Category" class="col-auto control-label">@await LocaleManager.GetTranslation("Category", PageNames.Notes, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input asp-for="NoteItem.Category" class="form-control" value="@Model.NoteItem.Category" />
+                    <input id="categoryInput" asp-for="NoteItem.Category" class="form-control" value="@Model.NoteItem.Category" placeholder="@await LocaleManager.GetTranslation("Add category...", PageNames.Notes, Model.LanguageId)"/>
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="NoteItem.CreatedDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Date and time", PageNames.Notes, Model.LanguageId)</label>
                 <div class="col-auto">
                     <div class="input-group date">
-                        <input id="datetimepicker1"  type="text"
-                               class="form-control" data-zdp_readonly_element="false" asp-for="NoteItem.CreatedDate" value="@Model.NoteItem.CreatedDate.ToString(longDateTimeFormat)" />
+                        <input id="datetimepicker1" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="NoteItem.CreatedDate" value="@Model.NoteItem.CreatedDate.ToString(longDateTimeFormat)" />
                     </div>
                 </div>
             </div>
@@ -98,43 +103,13 @@
     </div>
 </div>
 <script>
-    moment.locale('@Model.LanguageIdString');
-    const zebraDatePickerDaysArray = [
-        '@Html.Raw(await LocaleManager.GetTranslation("Sunday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Monday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Tuesday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Wednesday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Thursday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Friday", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("Saturday", PageNames.CalendarTools, Model.LanguageId))'
-    ];
-
-    const zebraDatePickerMonthsArray = [
-        '@Html.Raw(await LocaleManager.GetTranslation("January", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("February", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("March", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("April", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("May", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("June", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("July", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("August", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("September", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("October", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("November", PageNames.CalendarTools, Model.LanguageId))',
-        '@Html.Raw(await LocaleManager.GetTranslation("December", PageNames.CalendarTools, Model.LanguageId))'
-    ];
-    const zebraTodayString = '@Html.Raw(await LocaleManager.GetTranslation("Today", PageNames.CalendarTools, Model.LanguageId))';
-    const zebraClearString = '@Html.Raw(await LocaleManager.GetTranslation("Clear", PageNames.CalendarTools, Model.LanguageId))';
-
-    $(function () {
-        $('#datetimepicker1').Zebra_DatePicker({
-            format: '@zebraDateTimeFormat',
-            open_icon_only: true,
-            days: zebraDatePickerDaysArray,
-            months: zebraDatePickerMonthsArray,
-            lang_clear_date: zebraClearString,
-            show_select_today: zebraTodayString,
-            select_other_months: true
-        });
-    });
+    function onImageUploadSuccess(args) {
+        if (args.e.currentTarget.getResponseHeader('name') != null) {
+            args.file.name = args.e.currentTarget.getResponseHeader('name');
+            var filename = document.querySelectorAll(".e-file-name")[0];
+            filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
+            filename.title = args.file.name;
+        }
+    }
 </script>
+<script src="/js/notes/add-edit-note.js" type="module" asp-append-version="true"></script>

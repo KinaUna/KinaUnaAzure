@@ -5,19 +5,11 @@
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Calendar", PageNames.Calendar, Model.LanguageId);
 }
-@if (Model.IsCurrentUserProgenyAdmin)
-{
-    <div class="btn-group" style="float: right;">
-        <a asp-controller="Calendar" asp-action="AddEvent" class="btn btn-success btn-round">
-            <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add calendar item", PageNames.Calendar, Model.LanguageId)
-        </a>
-    </div>
-}
 <h2>@ViewData["Title"]</h2>
-<br />
-<br />
+<div class="space-50"></div>
+<div id="calendarCurrentCultureDiv" class="d-none" data-current-culture="@Model.LanguageIdForCldr()"></div>
 <div class="" style="clear: both; height: 90vh; min-height: 600px; max-height: 1180px;">
-    <ejs-schedule id="schedule" height="95%" width="100%" locale="en-DK" dateFormat="dd/MMM/yyyy" views="@Model.ViewOptions" cellClick="onCellClick" cellDoubleClick="onCellDoubleClick" eventClick="onEventClick" popupOpen="onPopupOpen">
+    <ejs-schedule id="schedule" height="95%" width="100%" dateFormat="dd/MMM/yyyy" views="@Model.ViewOptions">
         <e-schedule-eventsettings dataSource="@Model.EventsList">
             <e-eventsettings-fields id="EventId">
                 <e-field-subject name="Title"></e-field-subject>
@@ -29,114 +21,9 @@
             </e-eventsettings-fields>
         </e-schedule-eventsettings>
     </ejs-schedule>
-    @if (Model.IsCurrentUserProgenyAdmin)
-    {
-        <script>
-            let selectedEventId = 0;
-            loadCultureFiles('en-DK');
-            function loadCultureFiles(name) {
-                let files = ['ca-gregorian.json', 'numberingSystems.json', 'numbers.json', 'timeZoneNames.json', 'ca-islamic.json'];
-                let loader = ej.base.loadCldr;
-                let loadCulture = function (prop) {
-                    let val, ajax;
-                    if (files[prop] === 'numberingSystems.json') {
-                        ajax = new ej.base.Ajax(location.origin + '/../cldr-data/supplemental/' + files[prop], 'GET', false);
-                    } else {
-                        ajax = new ej.base.Ajax(location.origin + '/../cldr-data/main/' + name + '/' + files[prop], 'GET', false);
-                    }
-                    ajax.onSuccess = function (value) {
-                        val = value;
-                    };
-                    ajax.send();
-                    loader(JSON.parse(val));
-                };
-                for (let prop = 0; prop < files.length; prop++) {
-                    loadCulture(prop);
-                }
-            }
-
-            function onPopupOpen(args) {
-                console.log('OnPopUp args.type: ' + args.type);
-                if (args.type === 'Editor') {
-                    args.cancel = true;
-                    if (selectedEventId > 0) {
-                        window.location.href = '/Calendar/EditEvent?itemId=' + selectedEventId;
-                    }
-                }
-                if (args.type === 'DeleteAlert') {
-                    args.cancel = true;
-                    if (selectedEventId > 0) {
-                        window.location.href = '/Calendar/DeleteEvent?itemId=' + selectedEventId;
-                    }
-                }
-            }
-
-            function onEventClick(args) {
-                let scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
-                let event = scheduleObj.getEventDetails(args.element);
-                selectedEventId = event.EventId;
-            }
-
-            function onCellClick(args) {
-                args.cancel = true;
-                // Todo: Show add event form
-            }
-
-            function onCellDoubleClick(args) {
-                args.cancel = true;
-            }
+    <script>
+            var syncfusionReference = ej;
+            var isCurrentUserProgenyAdmin = @Model.IsCurrentUserProgenyAdmin.ToString().ToLower();
         </script>
-    }
-    else
-    {
-        <script>
-            var selectedEventId = 0;
-            loadCultureFiles('en-DK');
-            function loadCultureFiles(name) {
-                let files = ['ca-gregorian.json', 'numberingSystems.json', 'numbers.json', 'timeZoneNames.json', 'ca-islamic.json'];
-                let loader = ej.base.loadCldr;
-                let loadCulture = function (prop) {
-                    var val, ajax;
-                    if (files[prop] === 'numberingSystems.json') {
-                        ajax = new ej.base.Ajax(location.origin + '/../cldr-data/supplemental/' + files[prop], 'GET', false);
-                    } else {
-                        ajax = new ej.base.Ajax(location.origin + '/../cldr-data/main/' + name + '/' + files[prop], 'GET', false);
-                    }
-                    ajax.onSuccess = function (value) {
-                        val = value;
-                    };
-                    ajax.send();
-                    loader(JSON.parse(val));
-                };
-                for (var prop = 0; prop < files.length; prop++) {
-                    loadCulture(prop);
-                }
-            }
-
-            function onPopupOpen(args) {
-                console.log('OnPopUp args.type: ' + args.type);
-                if (args.type === 'Editor') {
-                    args.cancel = true;
-                }
-                if (args.type === 'DeleteAlert') {
-                    args.cancel = true;
-                }
-            }
-
-            function onEventClick(args) {
-                let scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
-                let event = scheduleObj.getEventDetails(args.element);
-                selectedEventId = event.EventId;
-            }
-
-            function onCellClick(args) {
-                args.cancel = true;
-                
-            }
-
-            function onCellDoubleClick(args) {
-                args.cancel = true;
-            }
-        </script>
-    }
+    <script src="/js/calendar/calendar-index.js" type="module" asp-append-version="true"></script>
 </div>

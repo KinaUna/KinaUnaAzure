@@ -1,13 +1,10 @@
 ﻿using System;
-using KinaUnaWeb.Models.ItemViewModels;
-using System.Collections.Generic;
 using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Models.HomeViewModels
 {
     public class HomeFeedViewModel: BaseItemsViewModel
     {
-        public List<CalendarItem> EventsList { get; set; }
         public int ImageId { get; set; }
         public string ImageLink { get; set; }
         public string ImageLink600 { get; set; }
@@ -35,8 +32,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
         public string PicMinutes { get; set; }
 
         public string Location { get; set; }
-        public TimeLineViewModel LatestPosts { get; set; }
-        public TimeLineViewModel YearAgoPosts { get; set; }
+        
         public PictureTime PictureTime { get; set; }
         public Picture DisplayPicture { get; set; }
 

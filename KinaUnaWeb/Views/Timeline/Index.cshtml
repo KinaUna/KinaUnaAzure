@@ -8,6 +8,9 @@
     string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Timeline, Model.LanguageId);
     string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Timeline, Model.LanguageId);
 }
+<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
+<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
+<div id="itemsCountDiv" class="d-none" data-items-count="@Model.Items"></div>
 <div class="ml-md-auto mr-md-auto col-md-8 col-lg-7 col-xl-6 col-xxl-4">
     <h2>@ViewData["Title"]</h2>
     <br style="clear: both;"/>
@@ -31,193 +34,36 @@
             <a class="@sortNewest leavePage" asp-controller="TimeLine" asp-action="Index" asp-route-sortBy="1">@newestFirstString</a>
         </div>
     }
-    <div class="space-20"></div>
-    <div id="tlineItems">
 
-    </div>
-    <div class="row p-3">
-        <div id="moreButtonDiv" class="col-12">
-            <div class="space-20"></div>
+    <div id="latestPostsParentDiv" class="d-none">
+        <div id="timelineItemsDiv">
+
         </div>
-    </div>
-    <div class="row mt-4 mb-2">
-        <div class="col-12">
-            @await LocaleManager.GetTranslation("Number of items to get:", PageNames.Timeline, Model.LanguageId)
+        <div id="numberOfItemsDiv" class="row d-none">
+            <div class="col-12">
+                @await LocaleManager.GetTranslation("Number of items to get:", PageNames.Timeline, Model.LanguageId)
+            </div>
+            <div class="col" style="font-size: small; margin-top: 5px;">
+                <select id="nextItemsCount" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
+                    <option value="5">5</option>
+                    <option value="10" selected="selected">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
         </div>
-        <div class="col" style="font-size: small; margin-top: 5px;">
-            <select id="nextItemsCount" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
-                <option value="5">5</option>
-                <option value="10" selected="selected">10</option>
-                <option value="15">15</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
+        <div style="height: 150px;">
+            <button id="moreTimelineItemsButton" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
+            <div id="loadingTimeLineItemsDiv" class="w-100">
+                <div class="space-50"></div>
+            </div>
         </div>
-        <div class="col">
-            <button class="btn btn-success" id="moreTimeLineItems">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
-        </div>
-        <div class="space-20"></div>
     </div>
 </div>
-
 <script type="text/javascript">
-    let current_effect = 'roundBounce';
-
-    function run_waitMe() {
-        $('#moreButtonDiv').waitMe({
-            effect: 'bounce',
-            text: '',
-            bg: 'rgba(177, 77, 227, 0.0)',
-            color: '#9011a1',
-            maxSize: '',
-            waitTime: -1,
-            source: '',
-            textPos: 'vertical',
-            fontSize: '',
-            onClose: function () {}
-        });
-    }
-
-    function run_waitMeLoad() {
-        $('body').waitMe({
-            effect: 'roundBounce',
-            text: '',
-            bg: 'rgba(177, 177, 227, 0.25)',
-            color: '#9011a1',
-            maxSize: '',
-            waitTime: -1,
-            source: '',
-            textPos: 'vertical',
-            fontSize: '',
-            onClose: function () { }
-        });
-    }
-    
-    let currentItemNumber = 0;
-    let maxNumber = @Model.TimeLineItems.Count;
     let sortBy = @Model.SortBy;
-    @{
-        string[] idNumbers = new string[Model.TimeLineItems.Count];
-        int[] itmType = new int[Model.TimeLineItems.Count];
-        int tiCount = 0;
-        foreach (TimeLineItem tItm in Model.TimeLineItems)
-        {
-            idNumbers[tiCount] = tItm.ItemId;
-            itmType[tiCount] = tItm.ItemType;
-            tiCount++;
-        }
-    }
-    let itemId = [@string.Join(",", idNumbers)];
-    let itemType = [@string.Join(",", itmType)];
-    let numItems = 10;
-    let scrollTo = '#';
-    $(function() {
-        async function getItemsHist() {
-            run_waitMeLoad();
-            let g;
-            for (g = 0; g < @Model.Items; g++) {
-                await getHistItem();
-                $("#moreButtonDiv").waitMe("hide");
-
-            };
-            $('body').waitMe("hide");
-            $('html, body').animate({
-                'scrollTop': $(scrollTo).offset().top
-            }, 2000);
-        };
-
-        async function getHistItem() {
-            let timelineItemData = { typeId: itemType[currentItemNumber], itemId: itemId[currentItemNumber] };
-            currentItemNumber++;
-            await getTimeLineItemLoad(timelineItemData);
-        };
-
-        async function getNextItem() {
-            let timelineItemData = { typeId: itemType[currentItemNumber], itemId: itemId[currentItemNumber] };
-            currentItemNumber++;
-            await getTimeLineItem(timelineItemData);
-        };
-
-        if (currentItemNumber < @Model.Items) {
-            getItemsHist();
-
-
-        } else {
-            getNextSeriesItems();
-        }
-
-        $("#moreTimeLineItems").on('click', getNextSeriesItems);
-
-
-        async function getNextSeriesItems() {
-            let h;
-            numItems = $("#nextItemsCount").val();
-            for (h = 0; h < numItems; h++) {
-                await getNextItem();
-                $("#moreButtonDiv").waitMe("hide");
-                if (currentItemNumber === maxNumber) {
-                    $("#moreTimeLineItems").attr("disabled", "disabled");
-                    $('#tlineItems').append("<div>@await LocaleManager.GetTranslation("No more data. All items have been listed now.", PageNames.Timeline, Model.LanguageId)<br/></div>");
-                    return;
-
-                }
-            };
-        }
-
-        function getTimeLineItem(tData) {
-            run_waitMe();
-            return $.ajax({
-                type: "GET",
-                url: "/TimeLine/GetTimeLineItem",
-                data: tData,
-                datatype: "html",
-                async: true,
-                success: function(data) {
-                    $('#tlineItems').append('<div class="addedDiv" style="display:none;"><span id="' +
-                        tData.typeId +
-                        tData.itemId +
-                        '"></span>' +
-                        data +
-                        '</div>');
-                    $('div.addedDiv').slideDown("slow");
-                    window.history.replaceState("state",
-                        "title",
-                        "TimeLine?sortBy=" + sortBy + "&items=" + currentItemNumber);
-                },
-                error: function(jqXhr, textStatus, errorThrown) {
-                    console.log(textStatus, errorThrown);
-                }
-            });
-        }
-
-        function getTimeLineItemLoad(tData) {
-            run_waitMe();
-            return $.ajax({
-                type: "GET",
-                url: "/TimeLine/GetTimeLineItem",
-                data: tData,
-                datatype: "html",
-                async: true,
-                success: function(data) {
-                    $('#tlineItems').append('<div class="addedDiv" style="display:none;"><span id="' +
-                        tData.typeId +
-                        tData.itemId +
-                        '"></span>' +
-                        data +
-                        '</div>');
-                    $('div.addedDiv').slideDown("slow");
-                    window.history.replaceState("state",
-                        "title",
-                        "TimeLine?sortBy=" + sortBy + "&items=" + currentItemNumber);
-                    //$('html, body').animate({ scrollTop: $(document).height() }, 'slow');
-                    scrollTo = '#' + tData.typeId + tData.itemId;
-                },
-                error: function (jqXhr, textStatus, errorThrown) {
-                    console.log(textStatus, errorThrown);
-                }
-            });
-        }
-    });
 </script>
+<script src="/js/timeline/timeline-index.js" type="module" asp-append-version="true"></script>
