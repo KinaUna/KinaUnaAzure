@@ -9,9 +9,6 @@ let togglerCounter = document.getElementById('togglerNotificationsCounter');
 let navMain = document.getElementById('navMain');
 
 function notificationItemClick(btn, event) {
-    //console.log("NotificationItemClick.Event.Target: " + event.target);
-    //console.log("NotificationItemClick.Event.Type: " + event.type);
-    //console.log("NotificationItemClick.Event.CurrentTarget: " + event.currentTarget);
     let notifId = btn.getAttribute('data-notificationid');
     if (btn.classList.contains('notificationUnread')) {
         $.ajax({
@@ -71,7 +68,6 @@ function markRead(btn, event) {
             }
         });
     }
-    // event.stopImmediatePropagation();
 }
 
 function removeNotification(btn, event) {
@@ -88,8 +84,6 @@ function removeNotification(btn, event) {
             console.log(textStatus, errorThrown);
         }
     });
-    
-    // event.stopPropagation();
 }
 
 function countNotifications() {
@@ -120,7 +114,7 @@ function updateNotification(parsedMessage, newData) {
     let itemsToRemove = document.getElementsByClassName('notifId' + parsedMessage.Id);
     if (itemsToRemove.length > 0) {
         for (var i = itemsToRemove.length - 1; i >= 0; --i) {
-            let parentBtn = itemsToRemove[i].closest('.notification-button'); // closest('button');
+            let parentBtn = itemsToRemove[i].closest('.notification-button');
             let parentDiv = parentBtn.parentNode;
             parentBtn.outerHTML = newData;
             if (parsedMessage.IsRead) {
@@ -193,7 +187,6 @@ connection.on('UserInfo',
 
 connection.on('ReceiveMessage',
     function(message) {
-        // console.log('ReceiveNotification: ' + message);
         checkNotificationsCount = 0;
         if (signalRdisconnected) {
             clearInterval(checkConnectionInterval);
@@ -222,7 +215,6 @@ connection.on('ReceiveMessage',
 
 connection.on('UpdateMessage',
     function(message) {
-        // console.log('UpdateNotification: ' + message);
         checkNotificationsCount = 0;
         let parsedMessage = JSON.parse(message);
         $.ajax({
@@ -244,7 +236,6 @@ connection.on('UpdateMessage',
 
 connection.on('DeleteMessage',
     function (message) {
-        // console.log('DeleteNotification: ' + message);
         checkNotificationsCount = 0;
         let parsedMessage = JSON.parse(message);
         let itemsToRemove = document.getElementsByClassName('notifId' + parsedMessage.Id);
