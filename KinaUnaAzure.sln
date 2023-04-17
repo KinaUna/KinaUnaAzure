@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KinaUna.Data", "KinaUna.Dat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KinaUnaWebBlazor", "KinaUnaWebBlazor\KinaUnaWebBlazor.csproj", "{CFF04167-DD6A-4E8B-B91E-7BBBE666FDAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KinaUnaProgenyApi.Tests", "KinaUnaProgenyApi.Tests\KinaUnaProgenyApi.Tests.csproj", "{2D0203E2-6ED1-4958-A146-CB68AC18F780}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KinaUnaProgenyApi.Tests", "KinaUnaProgenyApi.Tests\KinaUnaProgenyApi.Tests.csproj", "{2D0203E2-6ED1-4958-A146-CB68AC18F780}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KinaUnaWeb.Tests", "KinaUnaWeb.Tests\KinaUnaWeb.Tests.csproj", "{C0000A8F-E3D2-4533-9E91-6BC74ECA25C2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +83,14 @@ Global
 		{2D0203E2-6ED1-4958-A146-CB68AC18F780}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2D0203E2-6ED1-4958-A146-CB68AC18F780}.Release|x64.ActiveCfg = Release|Any CPU
 		{2D0203E2-6ED1-4958-A146-CB68AC18F780}.Release|x64.Build.0 = Release|Any CPU
+		{C0000A8F-E3D2-4533-9E91-6BC74ECA25C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0000A8F-E3D2-4533-9E91-6BC74ECA25C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0000A8F-E3D2-4533-9E91-6BC74ECA25C2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C0000A8F-E3D2-4533-9E91-6BC74ECA25C2}.Debug|x64.Build.0 = Debug|Any CPU
+		{C0000A8F-E3D2-4533-9E91-6BC74ECA25C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0000A8F-E3D2-4533-9E91-6BC74ECA25C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0000A8F-E3D2-4533-9E91-6BC74ECA25C2}.Release|x64.ActiveCfg = Release|Any CPU
+		{C0000A8F-E3D2-4533-9E91-6BC74ECA25C2}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
