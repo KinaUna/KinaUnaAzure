@@ -111,7 +111,6 @@ namespace KinaUnaWeb
             services.AddHttpClient<ITranslationsHttpClient, TranslationsHttpClient>();
             services.AddHttpClient<IPageTextsHttpClient, PageTextsHttpClient>();
             services.AddTransient<IViewModelSetupService, ViewModelSetupService>();
-            services.AddTransient<INotificationsService, NotificationsService>();
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
             services.AddTransient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddDistributedMemoryCache();
