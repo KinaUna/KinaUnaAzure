@@ -1,8 +1,5 @@
 ﻿using IdentityModel.Client;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -16,18 +13,14 @@ namespace KinaUnaWeb.Services
 {
     public class ProgenyHttpClient:IProgenyHttpClient
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
 
-        public ProgenyHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public ProgenyHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
-            _httpContextAccessor = httpContextAccessor;
-            _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
 
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -36,31 +29,7 @@ namespace KinaUnaWeb.Services
            
         }
 
-        private async Task<string> GetNewToken(bool apiTokenOnly = false)
-        {
-            if (!apiTokenOnly)
-            {
-                HttpContext currentContext = _httpContextAccessor.HttpContext;
-
-                if (currentContext != null)
-                {
-                    string contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
-
-                    if (!string.IsNullOrWhiteSpace(contextAccessToken))
-                    {
-                        return contextAccessToken;
-                    }
-                }
-            }
-
-            string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
-
-            string accessToken = await _apiTokenClient.GetApiToken(
-                authenticationServerClientId,
-                Constants.ProgenyApiName + " " + Constants.MediaApiName,
-                _configuration.GetValue<string>("AuthenticationServerClientSecret"));
-            return accessToken;
-        }
+        
         
         public async Task<Progeny> GetProgeny(int progenyId)
         {
@@ -69,7 +38,7 @@ namespace KinaUnaWeb.Services
                 progenyId = Constants.DefaultChildId;
             }
 
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             Progeny progeny = new();
@@ -105,7 +74,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<Progeny> AddProgeny(Progeny progeny)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string newProgenyApiPath = "/api/Progeny/";
@@ -122,7 +91,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<Progeny> UpdateProgeny(Progeny progeny)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string updateProgenyApiPath = "/api/Progeny/" + progeny.Id;
@@ -138,7 +107,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> DeleteProgeny(int progenyId)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string progenyApiPath = "/api/Progeny/" + progenyId;
@@ -153,7 +122,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Progeny>> GetProgenyAdminList(string email)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string accessApiPath = "/api/Access/AdminListByUserPost/";
@@ -173,7 +142,7 @@ namespace KinaUnaWeb.Services
         {
             List<TimeLineItem> progenyPosts = new();
 
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string latestApiPath = "/api/Timeline/ProgenyLatest/" + progenyId + "/" + accessLevel + "/5/0";
@@ -191,7 +160,7 @@ namespace KinaUnaWeb.Services
         public async Task<List<TimeLineItem>> GetProgenyYearAgo(int progenyId, int accessLevel)
         {
             List<TimeLineItem> yearAgoPosts = new();
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string yearAgoApiPath = "/api/Timeline/ProgenyYearAgo/" + progenyId + "/" + accessLevel;

@@ -16,7 +16,6 @@ namespace KinaUnaWeb.Services
 {
     public class ProgenyManager : IProgenyManager
     {
-        private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IIdentityParser<ApplicationUser> _userManager;
         private readonly ImageStore _imageStore;
@@ -25,12 +24,11 @@ namespace KinaUnaWeb.Services
         private readonly IAuthHttpClient _authHttpClient;
         public ProgenyManager(IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IIdentityParser<ApplicationUser> userManager, ImageStore imageStore, HttpClient httpClient, ApiTokenInMemoryClient apiTokenClient, IAuthHttpClient authHttpClient)
         {
-            _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _userManager = userManager;
             _imageStore = imageStore;
             _apiTokenClient = apiTokenClient;
-            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
 
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -39,37 +37,10 @@ namespace KinaUnaWeb.Services
             _httpClient = httpClient;
             _authHttpClient = authHttpClient;
         }
-
-        private async Task<string> GetNewToken(bool apiTokenOnly = false)
-        {
-            if (!apiTokenOnly)
-            {
-                HttpContext currentContext = _httpContextAccessor.HttpContext;
-
-                if (currentContext != null)
-                {
-                    string contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
-
-                    if (!string.IsNullOrWhiteSpace(contextAccessToken))
-                    {
-                        return contextAccessToken;
-                    }
-                }
-            }
-
-            string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
-
-            string accessToken = await _apiTokenClient.GetApiToken(
-                authenticationServerClientId,
-                Constants.ProgenyApiName + " " + Constants.MediaApiName,
-                _configuration.GetValue<string>("AuthenticationServerClientSecret"));
-            return accessToken;
-        }
-
-
+        
         public async Task<UserInfo> GetInfo(string userEmail)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string userInfoApiPath = "/api/UserInfo/ByEmail/" + userEmail;
@@ -155,7 +126,7 @@ namespace KinaUnaWeb.Services
 
         private async Task<UserInfo> UpdateUserInfo(UserInfo userInfo)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string newUserinfoApiPath = "/api/UserInfo/" + userInfo.UserId;
@@ -173,7 +144,7 @@ namespace KinaUnaWeb.Services
         
         private async Task SetViewChild(string userEmail, int childId, string userId)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             UserInfo userinfo = new()

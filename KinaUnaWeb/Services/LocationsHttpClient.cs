@@ -5,30 +5,22 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using IdentityModel.Client;
-using KinaUna.Data;
 using KinaUna.Data.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services
 {
     public class LocationsHttpClient: ILocationsHttpClient
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
 
-        public LocationsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public LocationsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
-            _httpContextAccessor = httpContextAccessor;
-            _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
 
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -36,32 +28,11 @@ namespace KinaUnaWeb.Services
             httpClient.DefaultRequestVersion = new Version(2, 0);
 
         }
-        private async Task<string> GetNewToken(bool apiTokenOnly = false)
-        {
-            if (!apiTokenOnly)
-            {
-                HttpContext currentContext = _httpContextAccessor.HttpContext;
-
-                if (currentContext != null)
-                {
-                    string contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
-
-                    if (!string.IsNullOrWhiteSpace(contextAccessToken))
-                    {
-                        return contextAccessToken;
-                    }
-                }
-            }
-
-            string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
-
-            string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName, _configuration.GetValue<string>("AuthenticationServerClientSecret"));
-            return accessToken;
-        }
+        
 
         public async Task<Location> GetLocation(int locationId)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             Location locationItem = new();
@@ -78,7 +49,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<Location> AddLocation(Location location)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string locationsApiPath = "/api/Locations/";
@@ -95,7 +66,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<Location> UpdateLocation(Location location)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string updateApiPath = "/api/Locations/" + location.LocationId;
@@ -112,7 +83,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> DeleteLocation(int locationId)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string locationsApiPath = "/api/Locations/" + locationId;
@@ -129,7 +100,7 @@ namespace KinaUnaWeb.Services
         {
             List<Location> progenyLocations = new();
 
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string locationsApiPath = "/api/Locations/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
@@ -147,7 +118,7 @@ namespace KinaUnaWeb.Services
         public async Task<List<Location>> GetLocationsList(int progenyId, int accessLevel, string tagFilter = "")
         {
             List<Location> progenyLocationsList = new();
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string locationsApiPath = "/api/Locations/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
@@ -170,7 +141,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<Address> GetAddress(int addressId)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             Address addressItem = new();
@@ -188,7 +159,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<Address> AddAddress(Address address)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string addressApiPath = "/api/Addresses/";
@@ -205,7 +176,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<Address> UpdateAddress(Address address)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string updateAddressApiPath = "/api/Addresses/" + address.AddressId;

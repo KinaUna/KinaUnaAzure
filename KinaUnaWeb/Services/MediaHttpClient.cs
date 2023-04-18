@@ -6,30 +6,22 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using IdentityModel.Client;
-using KinaUna.Data;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models.ItemViewModels;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services
 {
     public class MediaHttpClient: IMediaHttpClient
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
 
-        public MediaHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public MediaHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
-            _httpContextAccessor = httpContextAccessor;
-            _configuration = configuration;
             _apiTokenClient = apiTokenClient;
-            string clientUri = _configuration.GetValue<string>("MediaApiServer");
+            string clientUri = configuration.GetValue<string>("MediaApiServer");
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -37,35 +29,11 @@ namespace KinaUnaWeb.Services
             _httpClient = httpClient;
         }
 
-        private async Task<string> GetNewToken(bool apiTokenOnly = false)
-        {
-            if (!apiTokenOnly)
-            {
-                HttpContext currentContext = _httpContextAccessor.HttpContext;
-
-                if (currentContext != null)
-                {
-                    string contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
-
-                    if (!string.IsNullOrWhiteSpace(contextAccessToken))
-                    {
-                        return contextAccessToken;
-                    }
-                }
-            }
-
-            string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
-
-            string accessToken = await _apiTokenClient.GetApiToken(
-                authenticationServerClientId,
-                Constants.ProgenyApiName + " " + Constants.MediaApiName,
-                _configuration.GetValue<string>("AuthenticationServerClientSecret"));
-            return accessToken;
-        }
+        
 
         public async Task<Picture> GetPicture(int pictureId, string timeZone)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string pictureApiPath = "/api/Pictures/" + pictureId;
@@ -92,7 +60,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<Picture> GetRandomPicture(int progenyId, int accessLevel, string timeZone)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string pictureApiPath = "api/Pictures/Random/" + progenyId + "/" + accessLevel;
@@ -118,7 +86,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Picture>> GetPictureList(int progenyId, int accessLevel, string timeZone)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string pictureApiPath = "/api/Pictures/Progeny/" + progenyId + "/" + accessLevel;
@@ -150,7 +118,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Picture>> GetAllPictures()
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string pictureApiPath = "/api/Pictures";
@@ -172,7 +140,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<Picture> AddPicture(Picture picture)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string newPictureApiPath = "/api/Pictures/";
@@ -203,7 +171,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<Picture> UpdatePicture(Picture picture)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string updatePictureApiPath = "/api/Pictures/" + picture.PictureId;
@@ -224,7 +192,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> DeletePicture(int pictureId)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string deletePictureApiPath = "/api/Pictures/" + pictureId;
@@ -240,7 +208,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> AddPictureComment(Comment comment)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string newCommentApiPath = "/api/Comments/";
@@ -256,7 +224,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> DeletePictureComment(int commentId)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string deleteCommentApiPath = "/api/Comments/" + commentId;
@@ -272,7 +240,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<PicturePageViewModel> GetPicturePage(int pageSize, int id, int progenyId, int userAccessLevel, int sortBy, string tagFilter, string timeZone)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string pageApiPath = "/api/Pictures/Page?pageSize=" + pageSize + "&pageIndex=" + id + "&progenyId=" + progenyId + "&accessLevel=" + userAccessLevel + "&sortBy=" + sortBy;
@@ -310,7 +278,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<PictureViewModel> GetPictureViewModel(int id, int userAccessLevel, int sortBy, string timeZone, string tagFilter = "")
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string pageApiPath = "/api/Pictures/PictureViewModel/" + id + "/" + userAccessLevel + "?sortBy=" + sortBy + "&tagFilter=" + tagFilter;
@@ -349,7 +317,7 @@ namespace KinaUnaWeb.Services
         public async Task<VideoPageViewModel> GetVideoPage(int pageSize, int id, int progenyId, int userAccessLevel, int sortBy, string tagFilter, string timeZone)
         {
 
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string pageApiPath = "/api/Videos/Page?pageSize=" + pageSize + "&pageIndex=" + id + "&progenyId=" + progenyId + "&accessLevel=" + userAccessLevel + "&sortBy=" + sortBy;
@@ -389,7 +357,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<VideoViewModel> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone, string tagFilter = "")
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string pageApiPath = "/api/Videos/VideoViewModel/" + id + "/" + userAccessLevel + "?sortBy=" + sortBy + "&tagFilter=" + tagFilter;
@@ -427,7 +395,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<Video> GetVideo(int videoId, string timeZone)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string videoApiPath = "/api/Videos/" + videoId;
@@ -457,7 +425,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Video>> GetVideoList(int progenyId, int accessLevel, string timeZone)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string videoApiPath = "/api/Videos/Progeny/" + progenyId + "/" + accessLevel;
@@ -488,7 +456,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<Video>> GetAllVideos()
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string videoApiPath = "/api/Videos";
@@ -508,7 +476,7 @@ namespace KinaUnaWeb.Services
         }
         public async Task<Video> AddVideo(Video video)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string newVideoApiPath = "/api/Videos/";
@@ -529,7 +497,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<Video> UpdateVideo(Video video)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string updateVideoApiPath = "/api/Videos/" + video.VideoId;
@@ -549,7 +517,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> DeleteVideo(int videoId)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string deleteVideoApiPath = "/api/videos/" + videoId;
@@ -565,7 +533,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> AddVideoComment(Comment comment)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string newCommentApiPath = "/api/comments/";
@@ -580,7 +548,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> DeleteVideoComment(int commentId)
         {
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
             
             string deleteCommentApiPath = "/api/comments/" + commentId;

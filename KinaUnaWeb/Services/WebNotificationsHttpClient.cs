@@ -4,67 +4,34 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using IdentityModel.Client;
-using KinaUna.Data;
 using KinaUna.Data.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services
 {
     public class WebNotificationsHttpClient : IWebNotificationsHttpClient
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
 
-        public WebNotificationsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
+        public WebNotificationsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient)
         {
-            _httpContextAccessor = httpContextAccessor;
-            _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
-            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
 
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpClient.DefaultRequestVersion = new Version(2, 0);
-
         }
-
-        private async Task<string> GetNewToken(bool apiTokenOnly = false)
-        {
-            if (!apiTokenOnly)
-            {
-                HttpContext currentContext = _httpContextAccessor.HttpContext;
-
-                if (currentContext != null)
-                {
-                    string contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
-
-                    if (!string.IsNullOrWhiteSpace(contextAccessToken))
-                    {
-                        return contextAccessToken;
-                    }
-                }
-            }
-
-            string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
-
-            string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
-                _configuration.GetValue<string>("AuthenticationServerClientSecret"));
-            return accessToken;
-        }
-
+        
         public async Task<List<PushDevices>> GetAllPushDevices(bool updateCache = false)
         {
             List<PushDevices> pushDevicesList = new();
             
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string admininfoApiPath = "/api/Notifications/GetAllPushDevices";
@@ -83,7 +50,7 @@ namespace KinaUnaWeb.Services
         {
             PushDevices pushDevice = new();
             
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string apiPath = "/api/Notifications/GetPushDeviceById/" + id;
@@ -101,7 +68,7 @@ namespace KinaUnaWeb.Services
         public async Task<PushDevices> AddPushDevice(PushDevices device)
         {
             PushDevices addedPushDevice = new();
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string addApiPath = "/api/Notifications/AddPushDevice/";
@@ -118,7 +85,7 @@ namespace KinaUnaWeb.Services
         public async Task<PushDevices> RemovePushDevice(PushDevices device)
         {
             PushDevices deletedPushDevice = new();
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string deleteApiPath = "/api/Notifications/RemovePushDevice/";
@@ -136,7 +103,7 @@ namespace KinaUnaWeb.Services
         {
             List<PushDevices> pushDevicesList = new();
            
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string apiPath = "/api/Notifications/GetPushDevicesListByUserId/" + user;
@@ -154,7 +121,7 @@ namespace KinaUnaWeb.Services
         public async Task<PushDevices> GetPushDevice(PushDevices device)
         {
             PushDevices pushDevice = new();
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string apiPath = "/api/Notifications/GetPushDevice/";
@@ -171,7 +138,7 @@ namespace KinaUnaWeb.Services
         public async Task<WebNotification> AddWebNotification(WebNotification notification)
         {
             WebNotification addedNotification = new();
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string addApiPath = "/api/Notifications/AddWebNotification/";
@@ -188,7 +155,7 @@ namespace KinaUnaWeb.Services
         public async Task<WebNotification> UpdateWebNotification(WebNotification notification)
         {
             WebNotification addedNotification = new();
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string addApiPath = "/api/Notifications/UpdateWebNotification/";
@@ -205,7 +172,7 @@ namespace KinaUnaWeb.Services
         public async Task<WebNotification> RemoveWebNotification(WebNotification notification)
         {
             WebNotification removedNotification = new();
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string removeApiPath = "/api/Notifications/RemoveWebNotification/";
@@ -223,7 +190,7 @@ namespace KinaUnaWeb.Services
         {
             WebNotification notification = new();
 
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string apiPath = "/api/Notifications/GetWebNotificationById/" + id;
@@ -242,7 +209,7 @@ namespace KinaUnaWeb.Services
         {
             List<WebNotification> usersWebNotifications = new();
 
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string apiPath = "/api/Notifications/GetUsersNotifications/" + user;

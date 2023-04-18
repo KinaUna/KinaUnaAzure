@@ -5,34 +5,26 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using IdentityModel.Client;
-using KinaUna.Data;
 using KinaUna.Data.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services
 {
     public class TranslationsHttpClient:ITranslationsHttpClient
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheExpirationLong = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromHours(21));
 
-        public TranslationsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IDistributedCache cache)
+        public TranslationsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IDistributedCache cache)
         {
-            _httpContextAccessor = httpContextAccessor;
-            _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
             _cache = cache;
-            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
 
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -41,29 +33,7 @@ namespace KinaUnaWeb.Services
 
         }
 
-        private async Task<string> GetNewToken(bool apiTokenOnly = false)
-        {
-            if (!apiTokenOnly)
-            {
-                HttpContext currentContext = _httpContextAccessor.HttpContext;
-
-                if (currentContext != null)
-                {
-                    string contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
-
-                    if (!string.IsNullOrWhiteSpace(contextAccessToken))
-                    {
-                        return contextAccessToken;
-                    }
-                }
-            }
-
-            string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
-
-            string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
-                _configuration.GetValue<string>("AuthenticationServerClientSecret"));
-            return accessToken;
-        }
+        
 
         private async Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false)
         {
@@ -75,7 +45,7 @@ namespace KinaUnaWeb.Services
                 return languageList;
             }
 
-            string accessToken = await GetNewToken(true);
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
             _httpClient.SetBearerToken(accessToken);
 
             string admininfoApiPath = "/api/Languages/GetAllLanguages";
@@ -114,7 +84,7 @@ namespace KinaUnaWeb.Services
             }
             else
             {
-                string accessToken = await GetNewToken(true);
+                string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
                 _httpClient.SetBearerToken(accessToken);
 
                 string admininfoApiPath = "/api/Translations/PageTranslations/" + languageId + "/" + page;
@@ -156,7 +126,7 @@ namespace KinaUnaWeb.Services
         public async Task<TextTranslation> AddTranslation(TextTranslation translation)
         {
             TextTranslation addedTranslation = new();
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string addApiPath = "/api/Translations/";
@@ -181,7 +151,7 @@ namespace KinaUnaWeb.Services
         public async Task<TextTranslation> UpdateTranslation(TextTranslation translation)
         {
             TextTranslation addedTranslation = new();
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string addApiPath = "/api/Translations/" + translation.Id;
@@ -198,7 +168,7 @@ namespace KinaUnaWeb.Services
         public async Task<TextTranslation> DeleteTranslation(TextTranslation translation)
         {
             TextTranslation deletedTranslation = new();
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string addApiPath = "/api/Translations/" + translation.Id;
@@ -216,7 +186,7 @@ namespace KinaUnaWeb.Services
         public async Task<TextTranslation> DeleteSingleItemTranslation(TextTranslation translation)
         {
             TextTranslation deletedTranslation = new();
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string addApiPath = "/api/Translations/DeleteSingleItem/" + translation.Id;
@@ -246,7 +216,7 @@ namespace KinaUnaWeb.Services
             }
             else
             {
-                string accessToken = await GetNewToken(true);
+                string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
                 _httpClient.SetBearerToken(accessToken);
 
                 string admininfoApiPath = "/api/Translations/GetAllTranslations/" + languageId;
@@ -273,7 +243,7 @@ namespace KinaUnaWeb.Services
             }
             else
             {
-                string accessToken = await GetNewToken(true);
+                string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
                 _httpClient.SetBearerToken(accessToken);
 
                 string admininfoApiPath = "/api/Translations/GetTranslationById/" + id;

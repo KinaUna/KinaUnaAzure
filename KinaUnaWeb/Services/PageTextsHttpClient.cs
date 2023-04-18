@@ -5,34 +5,26 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using IdentityModel.Client;
-using KinaUna.Data;
 using KinaUna.Data.Models;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services
 {
     public class PageTextsHttpClient:IPageTextsHttpClient
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ApiTokenInMemoryClient _apiTokenClient;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheExpirationLong = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromHours(20));
 
-        public PageTextsHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IDistributedCache cache)
+        public PageTextsHttpClient(HttpClient httpClient, IConfiguration configuration, ApiTokenInMemoryClient apiTokenClient, IDistributedCache cache)
         {
-            _httpContextAccessor = httpContextAccessor;
-            _configuration = configuration;
             _httpClient = httpClient;
             _apiTokenClient = apiTokenClient;
             _cache = cache;
-            string clientUri = _configuration.GetValue<string>("ProgenyApiServer");
+            string clientUri = configuration.GetValue<string>("ProgenyApiServer");
             
             httpClient.BaseAddress = new Uri(clientUri!);
             httpClient.DefaultRequestHeaders.Accept.Clear();
@@ -40,30 +32,7 @@ namespace KinaUnaWeb.Services
             httpClient.DefaultRequestVersion = new Version(2, 0);
         }
 
-        private async Task<string> GetNewToken(bool apiTokenOnly = false)
-        {
-            if (!apiTokenOnly)
-            {
-                HttpContext currentContext = _httpContextAccessor.HttpContext;
-
-                if (currentContext != null)
-                {
-                    string contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
-
-                    if (!string.IsNullOrWhiteSpace(contextAccessToken))
-                    {
-                        return contextAccessToken;
-                    }
-                }
-            }
-
-            string authenticationServerClientId = _configuration.GetValue<string>("AuthenticationServerClientId");
-
-            string accessToken = await _apiTokenClient.GetApiToken(authenticationServerClientId, Constants.ProgenyApiName + " " + Constants.MediaApiName,
-                _configuration.GetValue<string>("AuthenticationServerClientSecret"));
-            return accessToken;
-        }
-
+        
         private async Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false)
         {
             List<KinaUnaLanguage> languageList = new();
@@ -74,7 +43,7 @@ namespace KinaUnaWeb.Services
                 return languageList;
             }
 
-            string accessToken = await GetNewToken(true);
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
             _httpClient.SetBearerToken(accessToken);
 
             string languageApiPath = "/api/Languages/GetAllLanguages";
@@ -103,7 +72,7 @@ namespace KinaUnaWeb.Services
             }
             else
             {
-                string accessToken = await GetNewToken(true);
+                string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
                 _httpClient.SetBearerToken(accessToken);
 
                 string pageTextsApiPath = "/api/PageTexts/ByTitle/" + title + "/" + page + "/" + languageId;
@@ -140,7 +109,7 @@ namespace KinaUnaWeb.Services
             KinaUnaText addedTextItem = new();
             textItem.Text ??= "";
 
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string addApiPath = "/api/PageTexts/";
@@ -175,7 +144,7 @@ namespace KinaUnaWeb.Services
             }
             else
             {
-                string accessToken = await GetNewToken(true);
+                string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
                 _httpClient.SetBearerToken(accessToken);
 
                 string pageTextsApiPath = "/api/PageTexts/GetTextById/" + id;
@@ -202,7 +171,7 @@ namespace KinaUnaWeb.Services
             }
             else
             {
-                string accessToken = await GetNewToken(true);
+                string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
                 _httpClient.SetBearerToken(accessToken);
 
                 string pageTextsApiPath = "/api/PageTexts/GetTextByTextId/" + textId + "/" + languageId;
@@ -222,7 +191,7 @@ namespace KinaUnaWeb.Services
         public async Task<KinaUnaText> UpdatePageText(KinaUnaText kinaUnaText)
         {
             KinaUnaText updatedTextItem = new();
-            string accessToken = await GetNewToken();
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string textsApiPath = "/api/PageTexts/" + kinaUnaText.Id;
@@ -246,7 +215,7 @@ namespace KinaUnaWeb.Services
             }
             else
             {
-                string accessToken = await GetNewToken(true);
+                string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
                 _httpClient.SetBearerToken(accessToken);
 
                 string admininfoApiPath = "/api/PageTexts/GetAllTexts/" + languageId;
