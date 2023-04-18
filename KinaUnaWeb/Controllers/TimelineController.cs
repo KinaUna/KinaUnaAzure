@@ -8,6 +8,7 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Timeline;
+using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
+using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {

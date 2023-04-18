@@ -24,6 +24,7 @@ using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 using KinaUna.Data;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Azure.Storage.Auth;

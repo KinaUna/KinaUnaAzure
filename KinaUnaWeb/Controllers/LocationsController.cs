@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.Extensions.Configuration;
 
 namespace KinaUnaWeb.Controllers

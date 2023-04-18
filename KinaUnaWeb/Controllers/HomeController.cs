@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 

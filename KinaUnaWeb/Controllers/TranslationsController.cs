@@ -2,7 +2,7 @@
 using KinaUna.Data;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models.TypeScriptModels;
-using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

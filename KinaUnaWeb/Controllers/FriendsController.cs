@@ -11,6 +11,7 @@ using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.IO;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {

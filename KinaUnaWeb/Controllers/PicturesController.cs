@@ -13,6 +13,7 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.Extensions.Configuration;
 
 namespace KinaUnaWeb.Controllers

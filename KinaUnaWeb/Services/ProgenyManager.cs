@@ -11,6 +11,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
+using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Services
 {
