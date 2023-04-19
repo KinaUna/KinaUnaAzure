@@ -66,7 +66,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> Picture(int id, int childId = 0, string tagFilter = "", int sortBy = 1)
+        public async Task<IActionResult> Picture(int id, string tagFilter = "", int sortBy = 1)
         {
             Picture picture = await _mediaHttpClient.GetPicture(id, Constants.DefaultTimezone);
             if (picture == null)
@@ -75,8 +75,10 @@ namespace KinaUnaWeb.Controllers
             }
 
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
-            PictureItemViewModel model = new(baseModel);
-            model.HereMapsApiKey = _hereMapsApiKey;
+            PictureItemViewModel model = new(baseModel)
+            {
+                HereMapsApiKey = _hereMapsApiKey
+            };
             PictureViewModel pictureViewModel = await _mediaHttpClient.GetPictureViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone, tagFilter);
 
             model.SetPropertiesFromPictureViewModel(pictureViewModel);
@@ -312,7 +314,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeletePictureComment(int commentThreadNumber, int commentId, int pictureId, int progenyId)
+        public async Task<IActionResult> DeletePictureComment(int commentId, int pictureId, int progenyId)
         {
             await _mediaHttpClient.DeletePictureComment(commentId);
 

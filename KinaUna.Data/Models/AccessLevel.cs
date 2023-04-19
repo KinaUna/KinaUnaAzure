@@ -5,6 +5,6 @@
     /// </summary>
     public enum AccessLevel
     {
-        Private = 0, Family = 1, Caretaker = 2, Friends = 3, Users = 4, Public = 5
+        Private = 0, Family = 1, Caretaker = 2, Friends = 3, Users = 4, Public = 5, NoAccess= 100
     }
 }

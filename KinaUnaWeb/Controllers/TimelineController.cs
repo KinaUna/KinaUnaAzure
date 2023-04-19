@@ -43,8 +43,10 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetTimelineList([FromBody] TimelineParameters parameters)
         {
-            TimelineList timelineList = new();
-            timelineList.TimelineItems = await _timelineHttpClient.GetTimeline(parameters.ProgenyId, 0, parameters.SortBy);
+            TimelineList timelineList = new()
+            {
+                TimelineItems = await _timelineHttpClient.GetTimeline(parameters.ProgenyId, 0, parameters.SortBy)
+            };
             timelineList.AllItemsCount = timelineList.TimelineItems.Count;
             timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count; 
             timelineList.TimelineItems = timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count).ToList();
@@ -57,8 +59,10 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetYearAgoList([FromBody] TimelineParameters parameters)
         {
-            TimelineList timelineList = new();
-            timelineList.TimelineItems = await _progenyHttpClient.GetProgenyYearAgo(parameters.ProgenyId, 0);
+            TimelineList timelineList = new()
+            {
+                TimelineItems = await _progenyHttpClient.GetProgenyYearAgo(parameters.ProgenyId, 0)
+            };
             timelineList.AllItemsCount = timelineList.TimelineItems.Count;
             timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count;
             timelineList.TimelineItems = timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count).ToList();

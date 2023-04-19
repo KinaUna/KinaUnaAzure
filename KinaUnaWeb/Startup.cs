@@ -81,7 +81,7 @@ namespace KinaUnaWeb
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddTransient<ILocaleManager, LocaleManager>();
             services.AddHttpClient();
-            services.AddHttpClient<IProgenyManager, ProgenyManager>();
+            services.AddTransient<IProgenyManager, ProgenyManager>();
             services.AddHttpClient<IProgenyHttpClient, ProgenyHttpClient>();
             services.AddHttpClient<IMediaHttpClient, MediaHttpClient>();
             services.AddTransient<IIdentityParser<ApplicationUser>, IdentityParser>();

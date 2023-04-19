@@ -63,7 +63,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> Video(int id, int childId = 0, string tagFilter = "", int sortBy = 1)
+        public async Task<IActionResult> Video(int id, string tagFilter = "", int sortBy = 1)
         {
             Video video = await _mediaHttpClient.GetVideo(id, Constants.DefaultTimezone);
             if (video == null)
@@ -72,10 +72,11 @@ namespace KinaUnaWeb.Controllers
             }
 
             BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), video.ProgenyId);
-            VideoItemViewModel model = new(baseModel);
+            VideoItemViewModel model = new(baseModel)
+            {
+                HereMapsApiKey = _hereMapsApiKey
+            };
 
-            model.HereMapsApiKey = _hereMapsApiKey;
-            
             VideoViewModel videoViewModel = await _mediaHttpClient.GetVideoViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone, tagFilter);
             
             model.SetPropertiesFromVideoViewModel(videoViewModel);
@@ -313,7 +314,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteVideoComment(int commentThreadNumber, int commentId, int videoId, int progenyId)
+        public async Task<IActionResult> DeleteVideoComment(int commentId, int videoId, int progenyId)
         {
             await _mediaHttpClient.DeleteVideoComment(commentId);
 

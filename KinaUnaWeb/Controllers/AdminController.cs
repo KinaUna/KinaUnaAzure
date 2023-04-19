@@ -32,11 +32,10 @@ namespace KinaUnaWeb.Controllers
         private readonly ImageStore _imageStore;
         private readonly IWebNotificationsService _webNotificationsService;
 
-        public AdminController(IBackgroundTaskQueue queue, IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender, IAuthHttpClient authHttpClient,
+        public AdminController(IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender, IAuthHttpClient authHttpClient,
             IUserInfosHttpClient userInfosHttpClient, ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient, IPageTextsHttpClient pageTextsHttpClient,
             ImageStore imageStore, IWebNotificationsService webNotificationsService, IConfiguration configuration)
         {
-            Queue = queue;
             _hubContext = hubContext;
             _pushMessageSender = pushMessageSender;
             _authHttpClient = authHttpClient;
@@ -48,10 +47,7 @@ namespace KinaUnaWeb.Controllers
             _webNotificationsService = webNotificationsService;
             _adminEmail = configuration.GetValue<string>("AdminEmail");
         }
-
-        // ReSharper disable once UnusedAutoPropertyAccessor.Local
-        private IBackgroundTaskQueue Queue { get; }
-
+        
         public async Task<IActionResult> Index()
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? Constants.DefaultUserEmail;

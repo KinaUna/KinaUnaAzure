@@ -71,6 +71,28 @@ namespace KinaUnaWeb.Services.HttpClients
 
             return new UserInfo();
         }
+
+        public async Task<UserInfo> AddUserInfo(UserInfo userInfo)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string newUserInfoApiPath = "/api/UserInfo/";
+            HttpResponseMessage newUserInfoResponse = await _httpClient.PostAsync(newUserInfoApiPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
+
+            if (newUserInfoResponse.IsSuccessStatusCode)
+            {
+                string newUserResponseString = await newUserInfoResponse.Content.ReadAsStringAsync();
+                UserInfo addedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
+                if (addedUserinfo != null)
+                {
+                    return addedUserinfo;
+                }
+            }
+
+            return new UserInfo();
+        }
+
         public async Task<UserInfo> UpdateUserInfo(UserInfo userInfo)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -110,6 +132,20 @@ namespace KinaUnaWeb.Services.HttpClients
                 {
                     return deletedUserInfo;
                 }
+            }
+
+            return new UserInfo();
+        }
+
+        public async Task<UserInfo> CheckCurrentUser(string userId)
+        {
+            const string userinfoApiPath = "/api/UserInfo/CheckCurrentUser/";
+            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userinfoApiPath, new StringContent(JsonConvert.SerializeObject(userId), System.Text.Encoding.UTF8, "application/json"));
+            if (userInfoResponse.IsSuccessStatusCode)
+            {
+                string userInfoResponseAsString = await userInfoResponse.Content.ReadAsStringAsync();
+                UserInfo userInfo = JsonConvert.DeserializeObject<UserInfo>(userInfoResponseAsString);
+                return userInfo;
             }
 
             return new UserInfo();

@@ -79,7 +79,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [Authorize]
-        public IActionResult RequestAccess(int childId)
+        public IActionResult RequestAccess()
         {
             // ToDo: Implement access requests
             return View();
@@ -152,7 +152,7 @@ namespace KinaUnaWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetViewChild(int childId, string returnUrl)
+        public async Task<IActionResult> SetViewChild(int childId)
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {

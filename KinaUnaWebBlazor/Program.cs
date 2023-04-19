@@ -196,14 +196,14 @@ CultureInfo[] supportedCultures = new[]
     new CultureInfo("de-DE"),
 };
 
-RequestLocalizationOptions localizationOptions = new RequestLocalizationOptions
+RequestLocalizationOptions localizationOptions = new()
 {
     DefaultRequestCulture = new RequestCulture("en-US"),
     SupportedCultures = supportedCultures,
     SupportedUICultures = supportedCultures
 };
 
-CookieRequestCultureProvider provider = new CookieRequestCultureProvider()
+CookieRequestCultureProvider provider = new()
 {
     CookieName = Constants.LanguageCookieName
 };

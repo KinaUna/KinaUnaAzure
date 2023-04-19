@@ -48,7 +48,7 @@ namespace KinaUnaWeb.Services
             _configuration = configuration;
         }
 
-        public async Task<string> GetApiToken(string api_name, string api_scope, string secret)
+        private async Task<string> GetApiToken(string api_name, string api_scope, string secret)
         {
             if (_accessTokens.ContainsKey(api_name))
             {

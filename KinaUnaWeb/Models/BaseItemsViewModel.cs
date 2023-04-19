@@ -33,7 +33,7 @@ public class BaseItemsViewModel : BaseViewModel
 
     public void SetCurrentUsersAccessLevel()
     {
-        CurrentAccessLevel = (int)AccessLevel.Public;
+        CurrentAccessLevel = (int)AccessLevel.NoAccess;
 
         if (CurrentProgenyAccessList.Count != 0)
         {

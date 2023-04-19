@@ -21,6 +21,13 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<UserInfo> GetUserInfoByUserId(string userId);
 
         /// <summary>
+        /// Adds a new UserInfo object.
+        /// </summary>
+        /// <param name="userInfo">UserInfo: The UserInfo object to add.</param>
+        /// <returns>UserInfo: The added UserInfo object.</returns>
+        Task<UserInfo> AddUserInfo(UserInfo userInfo);
+
+        /// <summary>
         /// Updates a UserInfo object. The UserInfo with the same Id will be updated.
         /// </summary>
         /// <param name="userInfo">UserInfo: The UserInfo object to update.</param>
@@ -28,6 +35,8 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<UserInfo> UpdateUserInfo(UserInfo userInfo);
 
         Task<UserInfo> DeleteUserInfo(UserInfo userInfo);
+
+        Task<UserInfo> CheckCurrentUser(string userId);
 
         Task<List<UserInfo>> GetDeletedUserInfos();
 
