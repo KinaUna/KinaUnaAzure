@@ -24,6 +24,7 @@ using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 using KinaUna.Data;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Azure.Storage.Auth;
@@ -80,7 +81,7 @@ namespace KinaUnaWeb
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddTransient<ILocaleManager, LocaleManager>();
             services.AddHttpClient();
-            services.AddHttpClient<IProgenyManager, ProgenyManager>();
+            services.AddTransient<IProgenyManager, ProgenyManager>();
             services.AddHttpClient<IProgenyHttpClient, ProgenyHttpClient>();
             services.AddHttpClient<IMediaHttpClient, MediaHttpClient>();
             services.AddTransient<IIdentityParser<ApplicationUser>, IdentityParser>();
@@ -110,7 +111,6 @@ namespace KinaUnaWeb
             services.AddHttpClient<ITranslationsHttpClient, TranslationsHttpClient>();
             services.AddHttpClient<IPageTextsHttpClient, PageTextsHttpClient>();
             services.AddTransient<IViewModelSetupService, ViewModelSetupService>();
-            services.AddTransient<INotificationsService, NotificationsService>();
             services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
             services.AddTransient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddDistributedMemoryCache();

@@ -10,6 +10,7 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Timeline;
+using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -194,11 +195,13 @@ namespace KinaUnaWeb.Controllers
 
             foreach (CalendarItem eventItem in upcomingCalendarItems)
             {
-                TimeLineItem eventTimelineItem = new();
-                eventTimelineItem.ProgenyId = eventItem.ProgenyId;
-                eventTimelineItem.AccessLevel = eventItem.AccessLevel;
-                eventTimelineItem.ItemId = eventItem.EventId.ToString();
-                eventTimelineItem.ItemType = (int)KinaUnaTypes.TimeLineType.Calendar;
+                TimeLineItem eventTimelineItem = new()
+                {
+                    ProgenyId = eventItem.ProgenyId,
+                    AccessLevel = eventItem.AccessLevel,
+                    ItemId = eventItem.EventId.ToString(),
+                    ItemType = (int)KinaUnaTypes.TimeLineType.Calendar
+                };
                 timelineList.TimelineItems.Add(eventTimelineItem);
             }
             

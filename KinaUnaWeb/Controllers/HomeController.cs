@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
@@ -78,7 +79,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [Authorize]
-        public IActionResult RequestAccess(int childId)
+        public IActionResult RequestAccess()
         {
             // ToDo: Implement access requests
             return View();
@@ -151,7 +152,7 @@ namespace KinaUnaWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetViewChild(int childId, string returnUrl)
+        public async Task<IActionResult> SetViewChild(int childId)
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {

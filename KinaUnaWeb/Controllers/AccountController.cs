@@ -13,6 +13,7 @@ using KinaUna.Data.Models;
 using Microsoft.Extensions.Configuration;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
+using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -89,13 +90,14 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
+        [HttpPost]
         public async Task LogOut()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
         }
 
-        public async Task CheckOut(string returnUrl = null)
+        public async Task CheckOut()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);

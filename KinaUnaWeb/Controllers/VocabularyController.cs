@@ -8,6 +8,7 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using System;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {

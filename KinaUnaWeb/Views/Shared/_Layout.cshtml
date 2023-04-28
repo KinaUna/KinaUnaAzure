@@ -14,9 +14,9 @@
     int languageId = kinaUnaLanguage.Id;
     string languageCode = kinaUnaLanguage.Code;
     string returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl();
-    List<Progeny> childList = new List<Progeny>();
-    Progeny child = new Progeny();
-    UserInfo userInfo = new UserInfo();
+    List<Progeny> childList = new();
+    Progeny child = new();
+    UserInfo userInfo = new();
     bool showUndelete = false;
 
     if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -32,10 +32,6 @@
             }
             else
             {
-                if (userInfo.ViewChild == 0)
-                {
-                    Context.Response.Redirect("/");
-                }
                 childList = userInfo.ProgenyList;
                 child = userInfo.ProgenyList.SingleOrDefault(p => p.Id == userInfo.ViewChild);
             }

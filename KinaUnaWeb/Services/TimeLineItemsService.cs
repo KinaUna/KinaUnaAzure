@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models.ItemViewModels;
+using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Services
 {

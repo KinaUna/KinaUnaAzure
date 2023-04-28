@@ -6,6 +6,7 @@ using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.FamilyViewModels;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaWeb.Controllers

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
-using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaWeb.Controllers
