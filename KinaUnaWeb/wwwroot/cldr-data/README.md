@@ -1,4 +1,4 @@
-# cldr-units-modern
+# cldr-misc-modern
 
 This repository provides the a portion of the JSON distribution of CLDR locale data
 for internationalization.
