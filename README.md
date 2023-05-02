@@ -51,6 +51,8 @@ Generally I have tried to use DI to avoid tight coupling with these depencies, s
 
 
 ### Currently wanted/missing features:
+- Landing page
+- Help and support
 - Search
 - Reminders
 
