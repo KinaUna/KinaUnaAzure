@@ -9,6 +9,7 @@
     "@types/jquery": "^3.5.16",
     "cldr-data": "^36.0.1",
     "del": "5.1.0",
+    "glob": "^10.2.2",
     "gulp": "^4.0.2",
     "moment": "^2.29.4",
     "nouislider": "^15.7.0"

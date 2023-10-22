@@ -216,6 +216,8 @@ namespace KinaUnaProgenyApi.Controllers
 
         [HttpGet]
         [Route("[action]/{id}/{accessLevel}/{count}/{start}/{year}/{month}/{day}")]
+        // ReSharper disable once RedundantAssignment
+        // The parameter is used by mobile app and cannot be removed until the mobile app is updated.
         public async Task<IActionResult> ProgenyLatestMobile(int id, int accessLevel = 5, int count = 5, int start = 0, int year = 0, int month = 0, int day = 0)
         {
             Progeny prog = await _progenyService.GetProgeny(id);

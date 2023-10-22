@@ -1,8 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-#nullable disable
-
 namespace KinaUna.IDP.Migrations.ProgenyDb
 {
     public partial class AddPageTexts : Migration
