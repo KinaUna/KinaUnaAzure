@@ -1093,8 +1093,8 @@ namespace KinaUnaProgenyApi.Controllers
         {
             using HttpClient client = new();
             using HttpResponseMessage response = await client.GetAsync(url);
-            await using Stream streamToReadFrom = await response.Content.ReadAsStreamAsync();
-            return streamToReadFrom;
+            
+            return await response.Content.ReadAsStreamAsync();
         }
     }
 }

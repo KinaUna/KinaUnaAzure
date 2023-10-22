@@ -292,7 +292,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (userAccess != null && userAccess.AccessLevel > 0 && friend.PictureLink.ToLower().StartsWith("http"))
             {
-                using (Stream stream = await GetStreamFromUrl(friend.PictureLink))
+                await using (Stream stream = await GetStreamFromUrl(friend.PictureLink))
                 {
                     friend.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Friends);
                 }
@@ -311,8 +311,8 @@ namespace KinaUnaProgenyApi.Controllers
         {
             using HttpClient client = new();
             using HttpResponseMessage response = await client.GetAsync(url);
-            await using Stream streamToReadFrom = await response.Content.ReadAsStreamAsync();
-            return streamToReadFrom;
+            
+            return await response.Content.ReadAsStreamAsync();
         }
     }
 }
