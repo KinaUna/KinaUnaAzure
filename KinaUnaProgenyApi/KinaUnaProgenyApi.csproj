@@ -34,7 +34,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.1.24" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="7.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="7.0.12" />
     <PackageReference Include="WebPush" Version="1.0.12" />
   </ItemGroup>
 
