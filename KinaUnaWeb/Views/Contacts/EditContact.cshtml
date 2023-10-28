@@ -181,7 +181,7 @@
             <div class="form-group">
                 <label asp-for="ContactItem.Active" class="col-auto control-label">@await LocaleManager.GetTranslation("Active", PageNames.Contacts, Model.LanguageId)</label>
                 <div class="col" style="max-width: 5em;">
-                    <input type="checkbox" asp-for="ContactItem.Active" class="form-control" style="width: 3em; height: 3em;" checked="@Model.ContactItem.Active" value="@Model.ContactItem.Active"/>
+                    <input type="checkbox" asp-for="ContactItem.Active" class="form-control" style="width: 3em; height: 3em;" checked="@Model.ContactItem.Active" value="@Model.ContactItem.Active" onchange="this.value=this.checked" />
                 </div>
             </div>
             <input asp-for="ContactItem.AddressIdNumber" value="@Model.ContactItem.AddressIdNumber" type="hidden" />

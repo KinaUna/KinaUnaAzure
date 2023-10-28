@@ -97,7 +97,7 @@
             <div class="form-group">
                 <label asp-for="CalendarItem.AllDay" class="col-auto control-label">@await LocaleManager.GetTranslation("All day", PageNames.Calendar, Model.LanguageId)</label>
                 <div class="col" style="max-width: 5em;">
-                    <input type="checkbox" asp-for="CalendarItem.AllDay" class="form-control" style="width: 3em; height: 3em; accent-color: #73b659;" checked="@Model.CalendarItem.AllDay" value="@Model.CalendarItem.AllDay" />
+                    <input type="checkbox" asp-for="CalendarItem.AllDay" class="form-control" style="width: 3em; height: 3em; accent-color: #73b659;" checked="@Model.CalendarItem.AllDay" value="@Model.CalendarItem.AllDay" onchange="this.value=this.checked"/>
                 </div>
             </div>
             <div class="form-group">

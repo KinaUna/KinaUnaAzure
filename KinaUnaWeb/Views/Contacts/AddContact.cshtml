@@ -202,8 +202,13 @@
                     <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="ContactItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
                 </div>
             </div>
+            <div class="form-group">
+                <label asp-for="ContactItem.Active" class="col-auto control-label">@await LocaleManager.GetTranslation("Active", PageNames.Contacts, Model.LanguageId)</label>
+                <div class="col" style="max-width: 5em;">
+                    <input type="checkbox" asp-for="ContactItem.Active" class="form-control" style="width: 3em; height: 3em;" checked="checked" value="True" onchange="this.value=this.checked"/>
+                </div>
+            </div>
             <div>
-                <input asp-for="ContactItem.Active" value="true" hidden />
                 <div class="form-group">
                     <div class="col-auto control-label"></div>
                     <div class="col-auto">
