@@ -14,19 +14,8 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ProgenyController : ControllerBase
+    public class ProgenyController(IImageStore imageStore, IProgenyService progenyService, IUserAccessService userAccessService) : ControllerBase
     {
-        private readonly IImageStore _imageStore;
-        private readonly IProgenyService _progenyService;
-        private readonly IUserAccessService _userAccessService;
-
-        public ProgenyController(IImageStore imageStore, IProgenyService progenyService, IUserAccessService userAccessService)
-        {
-            _imageStore = imageStore;
-            _progenyService = progenyService;
-            _userAccessService = userAccessService;
-        }
-
         // GET api/progeny/parent/[id]
         [HttpGet]
         [Route("[action]/{id}")]
@@ -35,7 +24,7 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() == id.ToUpper())
             {
-                List<Progeny> progenyList = await _userAccessService.GetProgenyUserIsAdmin(id);
+                List<Progeny> progenyList = await userAccessService.GetProgenyUserIsAdmin(id);
                 if (progenyList.Any())
                 {
                     return Ok(progenyList);
@@ -54,10 +43,10 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetProgeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                Progeny result = await _progenyService.GetProgeny(id);
+                Progeny result = await progenyService.GetProgeny(id);
 
                 if (result != null)
                 {
@@ -73,12 +62,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> Mobile(int id)
         {
-            Progeny result = await _progenyService.GetProgeny(id);
+            Progeny result = await progenyService.GetProgeny(id);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                result.PictureLink = _imageStore.UriFor(result.PictureLink, "progeny");
+                result.PictureLink = imageStore.UriFor(result.PictureLink, "progeny");
                 return Ok(result);
             }
 
@@ -106,10 +95,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (!progeny.PictureLink.ToLower().StartsWith("http"))
             {
-                progeny.PictureLink = await _progenyService.ResizeImage(progeny.PictureLink);
+                progeny.PictureLink = await progenyService.ResizeImage(progeny.PictureLink);
             }
 
-            progeny = await _progenyService.AddProgeny(progeny);
+            progeny = await progenyService.AddProgeny(progeny);
 
             if (progeny.Admins.Contains(','))
             {
@@ -124,7 +113,7 @@ namespace KinaUnaProgenyApi.Controllers
                     };
                     if (ua.UserId.IsValidEmail())
                     {
-                        await _userAccessService.AddUserAccess(ua);
+                        await userAccessService.AddUserAccess(ua);
                     }
                 }
             }
@@ -139,7 +128,7 @@ namespace KinaUnaProgenyApi.Controllers
 
                 if (ua.UserId.IsValidEmail())
                 {
-                    await _userAccessService.AddUserAccess(ua);
+                    await userAccessService.AddUserAccess(ua);
                 }
 
             }
@@ -151,7 +140,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Progeny value)
         {
-            Progeny progeny = await _progenyService.GetProgeny(id);
+            Progeny progeny = await progenyService.GetProgeny(id);
 
             if (progeny == null)
             {
@@ -183,11 +172,11 @@ namespace KinaUnaProgenyApi.Controllers
 
                     foreach (string email in admins)
                     {
-                        UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progeny.Id, email.Trim());
+                        UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, email.Trim());
                         if (userAccess.AccessLevel != (int)AccessLevel.Private)
                         {
                             userAccess.AccessLevel = (int)AccessLevel.Private;
-                            await _userAccessService.UpdateUserAccess(userAccess);
+                            await userAccessService.UpdateUserAccess(userAccess);
                         }
                     }
 
@@ -204,9 +193,9 @@ namespace KinaUnaProgenyApi.Controllers
 
                         if (!isInNewList)
                         {
-                            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progeny.Id, email.Trim());
+                            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, email.Trim());
                             userAccess.AccessLevel = (int)AccessLevel.Family;
-                            await _userAccessService.UpdateUserAccess(userAccess);
+                            await userAccessService.UpdateUserAccess(userAccess);
                         }
                     }
                 }
@@ -223,10 +212,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (!progeny.PictureLink.ToLower().StartsWith("http"))
             {
-                progeny.PictureLink = await _progenyService.ResizeImage(progeny.PictureLink);
+                progeny.PictureLink = await progenyService.ResizeImage(progeny.PictureLink);
             }
 
-            progeny = await _progenyService.UpdateProgeny(progeny);
+            progeny = await progenyService.UpdateProgeny(progeny);
 
 
 
@@ -238,7 +227,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             // Todo: Implement confirmation mail to verify that all content really should be deleted.
-            Progeny progeny = await _progenyService.GetProgeny(id);
+            Progeny progeny = await progenyService.GetProgeny(id);
             if (progeny != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -248,19 +237,19 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
 
-                await _imageStore.DeleteImage(progeny.PictureLink, "progeny");
+                await imageStore.DeleteImage(progeny.PictureLink, "progeny");
 
-                List<UserAccess> userAccessList = await _userAccessService.GetProgenyUserAccessList(progeny.Id);
+                List<UserAccess> userAccessList = await userAccessService.GetProgenyUserAccessList(progeny.Id);
 
                 if (userAccessList.Any())
                 {
                     foreach (UserAccess ua in userAccessList)
                     {
-                        await _userAccessService.RemoveUserAccess(ua.AccessId, ua.ProgenyId, ua.UserId);
+                        await userAccessService.RemoveUserAccess(ua.AccessId, ua.ProgenyId, ua.UserId);
                     }
                 }
 
-                await _progenyService.DeleteProgeny(progeny);
+                await progenyService.DeleteProgeny(progeny);
                 return NoContent();
             }
             else

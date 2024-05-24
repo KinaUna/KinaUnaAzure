@@ -8,30 +8,16 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Services
 {
-    public class ProgenyManager : IProgenyManager
+    public class ProgenyManager(IHttpContextAccessor httpContextAccessor, IIdentityParser<ApplicationUser> userManager, ImageStore imageStore, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient)
+        : IProgenyManager
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IIdentityParser<ApplicationUser> _userManager;
-        private readonly ImageStore _imageStore;
-        private readonly IAuthHttpClient _authHttpClient;
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
-
-        public ProgenyManager(IHttpContextAccessor httpContextAccessor, IIdentityParser<ApplicationUser> userManager, ImageStore imageStore, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient)
-        {
-            _httpContextAccessor = httpContextAccessor;
-            _userManager = userManager;
-            _imageStore = imageStore;
-            _userInfosHttpClient = userInfosHttpClient;
-            _authHttpClient = authHttpClient;
-        }
-        
         public async Task<UserInfo> GetInfo(string userEmail)
         {
             UserInfo userInfo = new();
             try
             {
                 
-                userInfo = await _userInfosHttpClient.GetUserInfo(userEmail);
+                userInfo = await userInfosHttpClient.GetUserInfo(userEmail);
                 if (userInfo != null && !userInfo.IsKinaUnaUser)
                 {
                     if (userInfo.UserEmail != "Unknown")
@@ -56,7 +42,7 @@ namespace KinaUnaWeb.Services
 
             if (userInfo != null && userInfo.UserEmail == "Unknown")
             {
-                ApplicationUser applicationUser = _userManager.Parse(_httpContextAccessor.HttpContext?.User);
+                ApplicationUser applicationUser = userManager.Parse(httpContextAccessor.HttpContext?.User);
                 
                 UserInfo newUserinfo = new()
                 {
@@ -76,7 +62,7 @@ namespace KinaUnaWeb.Services
                     newUserinfo.UserName = newUserinfo.UserEmail;
                 }
 
-                userInfo = await _userInfosHttpClient.AddUserInfo(newUserinfo);
+                userInfo = await userInfosHttpClient.AddUserInfo(newUserinfo);
                 
             }
 
@@ -97,29 +83,29 @@ namespace KinaUnaWeb.Services
 
         public string GetImageUrl(string pictureLink, string pictureContainer)
         {
-            string returnString = _imageStore.UriFor(pictureLink, pictureContainer);
+            string returnString = imageStore.UriFor(pictureLink, pictureContainer);
             return returnString;
         }
 
         private async Task<UserInfo> UpdateUserInfo(UserInfo userInfo)
         {
-            UserInfo updatedUserInfo = await _userInfosHttpClient.UpdateUserInfo(userInfo);
+            UserInfo updatedUserInfo = await userInfosHttpClient.UpdateUserInfo(userInfo);
             return updatedUserInfo;
         }
         
         
         private async Task SetViewChild(string userEmail, int childId)
         {
-            UserInfo currentUserInfo = await _userInfosHttpClient.GetUserInfo(userEmail);
+            UserInfo currentUserInfo = await userInfosHttpClient.GetUserInfo(userEmail);
             currentUserInfo.ViewChild = childId;
-            await _userInfosHttpClient.UpdateUserInfo(currentUserInfo);
+            await userInfosHttpClient.UpdateUserInfo(currentUserInfo);
         }
 
         public async Task<bool> IsUserLoginValid(string userId)
         {
             if (userId != Constants.DefaultUserId && userId != "401")
             {
-                UserInfo userinfo = await _userInfosHttpClient.CheckCurrentUser(userId);
+                UserInfo userinfo = await userInfosHttpClient.CheckCurrentUser(userId);
                 if (userinfo?.UserId.ToUpper() == userId.ToUpper())
                 {
                     return true;
@@ -131,7 +117,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> IsApplicationUserValid(string userId)
         {
-            return await _authHttpClient.IsApplicationUserValid(userId);
+            return await authHttpClient.IsApplicationUserValid(userId);
         }
     }
 }

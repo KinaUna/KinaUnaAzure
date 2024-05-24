@@ -14,38 +14,24 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class AutoSuggestsController : ControllerBase
+    public class AutoSuggestsController(
+        IUserAccessService userAccessService,
+        ICalendarService calendarService,
+        IContactService contactService,
+        IFriendService friendService,
+        INoteService noteService,
+        ISkillService skillService,
+        IPicturesService picturesService,
+        IVideosService videosService,
+        ILocationService locationService)
+        : ControllerBase
     {
-        private readonly IUserAccessService _userAccessService;
-        private readonly ICalendarService _calendarService;
-        private readonly IContactService _contactService;
-        private readonly IFriendService _friendService;
-        private readonly INoteService _noteService;
-        private readonly ISkillService _skillService;
-        private readonly IPicturesService _picturesService;
-        private readonly IVideosService _videosService;
-        private readonly ILocationService _locationService;
-
-        public AutoSuggestsController(IUserAccessService userAccessService, ICalendarService calendarService, IContactService contactService, IFriendService friendService, INoteService noteService,
-            ISkillService skillService, IPicturesService picturesService, IVideosService videosService, ILocationService locationService)
-        {
-            _userAccessService = userAccessService;
-            _calendarService = calendarService;
-            _contactService = contactService;
-            _friendService = friendService;
-            _noteService = noteService;
-            _skillService = skillService;
-            _picturesService = picturesService;
-            _videosService = videosService;
-            _locationService = locationService;
-        }
-
         [Route("[action]/{id}/{accessLevel}")]
         [HttpGet]
         public async Task<IActionResult> GetCategoryAutoSuggestList(int id, int accessLevel)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
@@ -53,7 +39,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<string> autoSuggestList = new();
-            List<Note> allNotes = await _noteService.GetNotesList(id);
+            List<Note> allNotes = await noteService.GetNotesList(id);
             allNotes = allNotes.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Note noteItem in allNotes)
             {
@@ -70,7 +56,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Skill> allSkills = await _skillService.GetSkillsList(id);
+            List<Skill> allSkills = await skillService.GetSkillsList(id);
             allSkills = allSkills.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Skill skillItem in allSkills)
             {
@@ -97,7 +83,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetContextAutoSuggestList(int id, int accessLevel)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
@@ -106,7 +92,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<string> autoSuggestList = new();
 
-            List<Friend> allFriends = await _friendService.GetFriendsList(id);
+            List<Friend> allFriends = await friendService.GetFriendsList(id);
             allFriends = allFriends.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Friend friendItem in allFriends)
             {
@@ -123,7 +109,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<CalendarItem> allCalendarItems = await _calendarService.GetCalendarList(id);
+            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(id);
             allCalendarItems = allCalendarItems.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (CalendarItem calendarItem in allCalendarItems)
             {
@@ -140,7 +126,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Contact> allContacts = await _contactService.GetContactsList(id);
+            List<Contact> allContacts = await contactService.GetContactsList(id);
             allContacts = allContacts.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Contact contactItem in allContacts)
             {
@@ -166,14 +152,14 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetLocationAutoSuggestList(int id, int accessLevel)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
                 return Unauthorized();
             }
 
-            List<Picture> allPictures = await _picturesService.GetPicturesList(id);
+            List<Picture> allPictures = await picturesService.GetPicturesList(id);
             allPictures = allPictures.Where(p => p.AccessLevel >= accessLevel).ToList();
             List<string> autoSuggestList = new();
             foreach (Picture picture in allPictures)
@@ -191,7 +177,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Video> allVideos = await _videosService.GetVideosList(id);
+            List<Video> allVideos = await videosService.GetVideosList(id);
             allVideos = allVideos.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Video video in allVideos)
             {
@@ -208,7 +194,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<CalendarItem> allCalendarItems = await _calendarService.GetCalendarList(id);
+            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(id);
             allCalendarItems = allCalendarItems.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (CalendarItem calendarItem in allCalendarItems)
             {
@@ -225,7 +211,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Location> allLocations = await _locationService.GetLocationsList(id);
+            List<Location> allLocations = await locationService.GetLocationsList(id);
             allLocations = allLocations.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Location locationItem in allLocations)
             {
@@ -253,14 +239,14 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetTagsAutoSuggestList(int id, int accessLevel)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
                 return Unauthorized();
             }
 
-            List<Picture> allPictures = await _picturesService.GetPicturesList(id);
+            List<Picture> allPictures = await picturesService.GetPicturesList(id);
             allPictures = allPictures.Where(p => p.AccessLevel >= accessLevel).ToList();
             List<string> autoSuggestList = new();
             foreach (Picture picture in allPictures)
@@ -278,7 +264,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Video> allVideos = await _videosService.GetVideosList(id);
+            List<Video> allVideos = await videosService.GetVideosList(id);
             allVideos = allVideos.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Video video in allVideos)
             {
@@ -295,7 +281,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Location> allLocations = await _locationService.GetLocationsList(id);
+            List<Location> allLocations = await locationService.GetLocationsList(id);
             allLocations = allLocations.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Location location in allLocations)
             {
@@ -312,7 +298,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Friend> allFriends = await _friendService.GetFriendsList(id);
+            List<Friend> allFriends = await friendService.GetFriendsList(id);
             allFriends = allFriends.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Friend friend in allFriends)
             {
@@ -329,7 +315,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Contact> allContacts = await _contactService.GetContactsList(id);
+            List<Contact> allContacts = await contactService.GetContactsList(id);
             allContacts = allContacts.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Contact contact in allContacts)
             {

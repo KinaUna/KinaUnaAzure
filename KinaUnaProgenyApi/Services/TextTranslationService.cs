@@ -7,25 +7,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class TextTranslationService : ITextTranslationService
+    public class TextTranslationService(ProgenyDbContext context) : ITextTranslationService
     {
-        private readonly ProgenyDbContext _context;
-
-        public TextTranslationService(ProgenyDbContext context)
-        {
-            _context = context;
-        }
-
         public async Task<List<TextTranslation>> GetAllTranslations(int languageId)
         {
             List<TextTranslation> translations;
             if (languageId == 0)
             {
-                translations = await _context.TextTranslations.AsNoTracking().ToListAsync();
+                translations = await context.TextTranslations.AsNoTracking().ToListAsync();
             }
             else
             {
-                translations = await _context.TextTranslations.AsNoTracking().Where(t => t.LanguageId == languageId).ToListAsync();
+                translations = await context.TextTranslations.AsNoTracking().Where(t => t.LanguageId == languageId).ToListAsync();
             }
 
             return translations;
@@ -33,13 +26,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<TextTranslation> GetTranslationById(int id)
         {
-            TextTranslation translation = await _context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
+            TextTranslation translation = await context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
             return translation;
         }
 
         public async Task<List<TextTranslation>> GetPageTranslations(int languageId, string pageName)
         {
-            List<TextTranslation> translations = await _context.TextTranslations.AsNoTracking().Where(t => t.LanguageId == languageId && t.Page.ToUpper() == pageName.ToUpper()).ToListAsync();
+            List<TextTranslation> translations = await context.TextTranslations.AsNoTracking().Where(t => t.LanguageId == languageId && t.Page.ToUpper() == pageName.ToUpper()).ToListAsync();
 
             return translations;
         }
@@ -51,14 +44,14 @@ namespace KinaUnaProgenyApi.Services
                 languageId = 1;
             }
 
-            TextTranslation textTranslation = await _context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(t => t.Word == word && t.Page == page && t.LanguageId == languageId);
+            TextTranslation textTranslation = await context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(t => t.Word == word && t.Page == page && t.LanguageId == languageId);
             return textTranslation;
         }
 
         public async Task<TextTranslation> AddTranslation(TextTranslation translation)
         {
-            _ = _context.TextTranslations.Add(translation);
-            _ = await _context.SaveChangesAsync();
+            _ = context.TextTranslations.Add(translation);
+            _ = await context.SaveChangesAsync();
 
             await AddMissingLanguagesForTranslation(translation);
 
@@ -67,12 +60,12 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task AddMissingLanguagesForTranslation(TextTranslation translation)
         {
-            List<KinaUnaLanguage> languages = await _context.Languages.AsNoTracking().ToListAsync();
+            List<KinaUnaLanguage> languages = await context.Languages.AsNoTracking().ToListAsync();
             foreach (KinaUnaLanguage lang in languages)
             {
                 if (lang.Id != translation.LanguageId)
                 {
-                    TextTranslation translationItem = await _context.TextTranslations.SingleOrDefaultAsync(t => t.Word == translation.Word && t.Page == translation.Page && t.LanguageId == lang.Id);
+                    TextTranslation translationItem = await context.TextTranslations.SingleOrDefaultAsync(t => t.Word == translation.Word && t.Page == translation.Page && t.LanguageId == lang.Id);
                     if (translationItem == null)
                     {
                         translationItem = new TextTranslation
@@ -82,8 +75,8 @@ namespace KinaUnaProgenyApi.Services
                             Word = translation.Word,
                             Translation = translation.Translation
                         };
-                        _ = _context.TextTranslations.Add(translationItem);
-                        _ = await _context.SaveChangesAsync();
+                        _ = context.TextTranslations.Add(translationItem);
+                        _ = await context.SaveChangesAsync();
                     }
                 }
             }
@@ -91,12 +84,12 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<TextTranslation> UpdateTranslation(int id, TextTranslation translation)
         {
-            TextTranslation translationItem = await _context.TextTranslations.SingleOrDefaultAsync(t => t.Id == id);
+            TextTranslation translationItem = await context.TextTranslations.SingleOrDefaultAsync(t => t.Id == id);
             if (translationItem != null)
             {
                 translationItem.Translation = translation.Translation;
-                _ = _context.TextTranslations.Update(translationItem);
-                _ = await _context.SaveChangesAsync();
+                _ = context.TextTranslations.Update(translationItem);
+                _ = await context.SaveChangesAsync();
             }
 
             return translationItem;
@@ -104,19 +97,19 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<TextTranslation> DeleteTranslation(int id)
         {
-            TextTranslation translation = await _context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
+            TextTranslation translation = await context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
             if (translation != null)
             {
-                List<TextTranslation> translationsList = await _context.TextTranslations.Where(t => t.Word == translation.Word && t.Page == translation.Page).ToListAsync();
+                List<TextTranslation> translationsList = await context.TextTranslations.Where(t => t.Word == translation.Word && t.Page == translation.Page).ToListAsync();
                 if (translationsList.Any())
                 {
                     foreach (TextTranslation textTranslation in translationsList)
                     {
-                        _ = _context.TextTranslations.Remove(textTranslation);
+                        _ = context.TextTranslations.Remove(textTranslation);
                     }
                 }
 
-                _ = await _context.SaveChangesAsync();
+                _ = await context.SaveChangesAsync();
             }
 
             return translation;
@@ -124,11 +117,11 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<TextTranslation> DeleteSingleTranslation(int id)
         {
-            TextTranslation translation = await _context.TextTranslations.SingleOrDefaultAsync(t => t.Id == id);
+            TextTranslation translation = await context.TextTranslations.SingleOrDefaultAsync(t => t.Id == id);
             if (translation != null)
             {
-                _ = _context.TextTranslations.Remove(translation);
-                _ = await _context.SaveChangesAsync();
+                _ = context.TextTranslations.Remove(translation);
+                _ = await context.SaveChangesAsync();
             }
 
             return translation;

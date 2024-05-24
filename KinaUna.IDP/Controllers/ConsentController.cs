@@ -15,20 +15,10 @@ namespace KinaUna.IDP.Controllers
     /// This controller implements the consent logic
     /// </summary>
     //[EnableCors("KinaUnaCors")]
-    public class ConsentController : Controller
+    public class ConsentController(
+        ILogger<ConsentController> logger,
+        IIdentityServerInteractionService interaction) : Controller
     {
-        private readonly ILogger<ConsentController> _logger;
-        private readonly IIdentityServerInteractionService _interaction;
-
-        
-        public ConsentController(
-            ILogger<ConsentController> logger,
-            IIdentityServerInteractionService interaction)
-        {
-            _logger = logger;
-            _interaction = interaction;
-        }
-
         /// <summary>
         /// Shows the consent screen
         /// </summary>
@@ -55,7 +45,7 @@ namespace KinaUna.IDP.Controllers
         public async Task<IActionResult> Index(ConsentInputModel model)
         {
             // parse the return URL back to an AuthorizeRequest object
-            AuthorizationRequest request = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
+            AuthorizationRequest request = await interaction.GetAuthorizationContextAsync(model.ReturnUrl);
             ConsentResponse response = null;
 
             // user clicked 'no' - send back the standard 'access_denied' response
@@ -88,7 +78,7 @@ namespace KinaUna.IDP.Controllers
             if (response != null)
             {
                 // communicate outcome of consent back to identityserver
-                await _interaction.GrantConsentAsync(request, response);
+                await interaction.GrantConsentAsync(request, response);
 
                 // redirect back to authorization endpoint
                 return Redirect(model.ReturnUrl);
@@ -105,14 +95,14 @@ namespace KinaUna.IDP.Controllers
 
         async Task<ConsentViewModel> BuildViewModelAsync(string returnUrl, ConsentInputModel model = null)
         {
-            AuthorizationRequest request = await _interaction.GetAuthorizationContextAsync(returnUrl);
+            AuthorizationRequest request = await interaction.GetAuthorizationContextAsync(returnUrl);
             if (request != null)
             {
                 return CreateConsentViewModel(model, returnUrl, request);
             }
             else
             {
-                _logger.LogError("No consent request matching request: {0}", returnUrl);
+                logger.LogError("No consent request matching request: {0}", returnUrl);
             }
 
             return null;

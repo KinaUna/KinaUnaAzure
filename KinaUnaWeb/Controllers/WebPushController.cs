@@ -12,17 +12,9 @@ namespace KinaUnaWeb.Controllers
 {
     // Source: https://github.com/coryjthompson/WebPushDemo/tree/master/WebPushDemo
     [Authorize]
-    public class WebPushController : Controller
+    public class WebPushController(IConfiguration configuration, IPushMessageSender pushMessageSender) : Controller
     {
-        private readonly IConfiguration _configuration;
-        private readonly IPushMessageSender _messageSender;
-        private readonly string _adminEmail;
-        public WebPushController(IConfiguration configuration, IPushMessageSender pushMessageSender)
-        {
-            _configuration = configuration;
-            _messageSender = pushMessageSender;
-            _adminEmail = configuration.GetValue<string>("AdminEmail");
-        }
+        private readonly string _adminEmail = configuration.GetValue<string>("AdminEmail");
 
         public IActionResult Send()
         {
@@ -48,10 +40,10 @@ namespace KinaUnaWeb.Controllers
             }
 
             StringValues payload = Request.Form["payload"];
-            PushDevices device = await _messageSender.GetPushDeviceById(id);
+            PushDevices device = await pushMessageSender.GetPushDeviceById(id);
 
-            string vapidPublicKey = _configuration["VapidPublicKey"];
-            string vapidPrivateKey = _configuration["VapidPrivateKey"];
+            string vapidPublicKey = configuration["VapidPublicKey"];
+            string vapidPrivateKey = configuration["VapidPrivateKey"];
 
             if (device != null)
             {

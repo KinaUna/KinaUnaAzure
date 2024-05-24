@@ -12,15 +12,8 @@ using KinaUna.Data.Models;
 
 namespace KinaUna.IDP.Services
 {
-    public class ProfileService : IProfileService
+    public class ProfileService(UserManager<ApplicationUser> userManager) : IProfileService
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-
-        public ProfileService(UserManager<ApplicationUser> userManager)
-        {
-            _userManager = userManager;
-        }
-
         public async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
             ClaimsPrincipal subject = context.Subject ?? throw new ArgumentNullException(nameof(context.Subject));
@@ -28,7 +21,7 @@ namespace KinaUna.IDP.Services
             if (subjectIdClaim != null)
             {
                 string subjectId = subjectIdClaim.Value;
-                ApplicationUser user = await _userManager.FindByIdAsync(subjectId);
+                ApplicationUser user = await userManager.FindByIdAsync(subjectId);
                 if (user == null)
                     throw new ArgumentException("Invalid subject identifier");
 
@@ -46,18 +39,18 @@ namespace KinaUna.IDP.Services
             if (subjectIdClaim != null)
             {
                 string subjectId = subjectIdClaim.Value;
-                ApplicationUser user = await _userManager.FindByIdAsync(subjectId);
+                ApplicationUser user = await userManager.FindByIdAsync(subjectId);
 
                 context.IsActive = false;
 
                 if (user != null)
                 {
-                    if (_userManager.SupportsUserSecurityStamp)
+                    if (userManager.SupportsUserSecurityStamp)
                     {
                         string securityStamp = subject.Claims.Where(c => c.Type == "security_stamp").Select(c => c.Value).SingleOrDefault();
                         if (securityStamp != null)
                         {
-                            string dbSecurityStamp = await _userManager.GetSecurityStampAsync(user);
+                            string dbSecurityStamp = await userManager.GetSecurityStampAsync(user);
                             if (dbSecurityStamp != securityStamp)
                                 return;
                         }
@@ -114,7 +107,7 @@ namespace KinaUna.IDP.Services
                 claims.Add(new Claim("role", user.Role));
             }
 
-            if (_userManager.SupportsUserEmail)
+            if (userManager.SupportsUserEmail)
             {
                 claims.AddRange(new[]
                 {
@@ -123,7 +116,7 @@ namespace KinaUna.IDP.Services
                 });
             }
 
-            if (_userManager.SupportsUserPhoneNumber && !string.IsNullOrWhiteSpace(user.PhoneNumber))
+            if (userManager.SupportsUserPhoneNumber && !string.IsNullOrWhiteSpace(user.PhoneNumber))
             {
                 claims.AddRange(new[]
                 {

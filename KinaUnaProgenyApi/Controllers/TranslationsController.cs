@@ -12,22 +12,13 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class TranslationsController : ControllerBase
+    public class TranslationsController(IUserInfoService userInfoService, ITextTranslationService textTranslationService) : ControllerBase
     {
-        private readonly IUserInfoService _userInfoService;
-        private readonly ITextTranslationService _textTranslationService;
-
-        public TranslationsController(IUserInfoService userInfoService, ITextTranslationService textTranslationService)
-        {
-            _userInfoService = userInfoService;
-            _textTranslationService = textTranslationService;
-        }
-
         [AllowAnonymous]
         [HttpGet("[action]/{languageId}")]
         public async Task<IActionResult> GetAllTranslations(int languageId)
         {
-            List<TextTranslation> translations = await _textTranslationService.GetAllTranslations(languageId);
+            List<TextTranslation> translations = await textTranslationService.GetAllTranslations(languageId);
 
             return Ok(translations);
         }
@@ -36,7 +27,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetTranslationById(int id)
         {
-            TextTranslation translation = await _textTranslationService.GetTranslationById(id);
+            TextTranslation translation = await textTranslationService.GetTranslationById(id);
 
             return Ok(translation);
         }
@@ -45,7 +36,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{word}/{page}/{languageId}")]
         public async Task<IActionResult> GetTranslationByWord(string word, string page, int languageId)
         {
-            TextTranslation translation = await _textTranslationService.GetTranslationByWord(word, page, languageId);
+            TextTranslation translation = await textTranslationService.GetTranslationByWord(word, page, languageId);
             if (translation == null)
             {
                 TextTranslation translationItem = new()
@@ -58,9 +49,9 @@ namespace KinaUnaProgenyApi.Controllers
 
                 string userId = User.GetUserId();
 
-                if (await _userInfoService.IsAdminUserId(userId))
+                if (await userInfoService.IsAdminUserId(userId))
                 {
-                    translation = await _textTranslationService.AddTranslation(translationItem);
+                    translation = await textTranslationService.AddTranslation(translationItem);
                 }
                 else
                 {
@@ -75,7 +66,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{languageId}/{page}")]
         public async Task<IActionResult> PageTranslations(int languageId, string page)
         {
-            List<TextTranslation> translations = await _textTranslationService.GetPageTranslations(languageId, page);
+            List<TextTranslation> translations = await textTranslationService.GetPageTranslations(languageId, page);
 
             return Ok(translations);
         }
@@ -89,10 +80,10 @@ namespace KinaUnaProgenyApi.Controllers
                 value.LanguageId = 1;
             }
 
-            TextTranslation existingTranslation = await _textTranslationService.GetTranslationByWord(value.Word, value.Page, value.LanguageId);
+            TextTranslation existingTranslation = await textTranslationService.GetTranslationByWord(value.Word, value.Page, value.LanguageId);
             if (existingTranslation == null)
             {
-                value = await _textTranslationService.AddTranslation(value);
+                value = await textTranslationService.AddTranslation(value);
             }
 
             return Ok(value);
@@ -103,9 +94,9 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string userId = User.GetUserId();
 
-            if (await _userInfoService.IsAdminUserId(userId))
+            if (await userInfoService.IsAdminUserId(userId))
             {
-                TextTranslation translation = await _textTranslationService.UpdateTranslation(id, value);
+                TextTranslation translation = await textTranslationService.UpdateTranslation(id, value);
                 if (translation != null)
                 {
                     return Ok(translation);
@@ -122,9 +113,9 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string userId = User.GetUserId();
 
-            if (await _userInfoService.IsAdminUserId(userId))
+            if (await userInfoService.IsAdminUserId(userId))
             {
-                TextTranslation translation = await _textTranslationService.DeleteTranslation(id);
+                TextTranslation translation = await textTranslationService.DeleteTranslation(id);
                 if (translation != null)
                 {
                     return Ok(translation);
@@ -139,7 +130,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("[action]/{id}")]
         public async Task<IActionResult> DeleteSingleItem(int id)
         {
-            TextTranslation translation = await _textTranslationService.DeleteSingleTranslation(id);
+            TextTranslation translation = await textTranslationService.DeleteSingleTranslation(id);
             if (translation != null)
             {
                 return Ok(translation);

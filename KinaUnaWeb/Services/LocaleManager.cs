@@ -7,23 +7,14 @@ using Microsoft.AspNetCore.Http;
 
 namespace KinaUnaWeb.Services
 {
-    public class LocaleManager:ILocaleManager
+    public class LocaleManager(ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient, IPageTextsHttpClient pageTextsHttpClient)
+        : ILocaleManager
     {
-        private readonly ILanguagesHttpClient _languagesHttpClient;
-        private readonly ITranslationsHttpClient _translationsHttpClient;
-        private readonly IPageTextsHttpClient _pageTextsHttpClient;
-        public LocaleManager(ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient, IPageTextsHttpClient pageTextsHttpClient)
-        {
-            _languagesHttpClient = languagesHttpClient;
-            _translationsHttpClient = translationsHttpClient;
-            _pageTextsHttpClient = pageTextsHttpClient;
-        }
-
         public async Task<SetLanguageIdViewModel> GetLanguageModel(int currentLanguageId)
         {
             SetLanguageIdViewModel languageIdModel = new()
             {
-                LanguageList = await _languagesHttpClient.GetAllLanguages(),
+                LanguageList = await languagesHttpClient.GetAllLanguages(),
                 SelectedId = currentLanguageId
             };
 
@@ -34,13 +25,13 @@ namespace KinaUnaWeb.Services
         
         public async Task<string> GetTranslation(string word, string page, int languageId)
         {
-            string translation = await _translationsHttpClient.GetTranslation(word, page, languageId);
+            string translation = await translationsHttpClient.GetTranslation(word, page, languageId);
             return translation;
         }
 
         public async Task<KinaUnaText> GetPageTextByTitle(string title, string page, int languageId)
         {
-            KinaUnaText text = await _pageTextsHttpClient.GetPageTextByTitle(title, page, languageId);
+            KinaUnaText text = await pageTextsHttpClient.GetPageTextByTitle(title, page, languageId);
             return text;
         }
 

@@ -14,32 +14,21 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class AccessController : ControllerBase
+    public class AccessController(
+        IImageStore imageStore,
+        IAzureNotifications azureNotifications,
+        IProgenyService progenyService,
+        IUserInfoService userInfoService,
+        IUserAccessService userAccessService,
+        IWebNotificationsService webNotificationsService)
+        : ControllerBase
     {
-        private readonly IProgenyService _progenyService;
-        private readonly IUserInfoService _userInfoService;
-        private readonly IUserAccessService _userAccessService;
-        private readonly IImageStore _imageStore;
-        private readonly IAzureNotifications _azureNotifications;
-        private readonly IWebNotificationsService _webNotificationsService;
-
-        public AccessController(IImageStore imageStore, IAzureNotifications azureNotifications, IProgenyService progenyService,
-            IUserInfoService userInfoService, IUserAccessService userAccessService, IWebNotificationsService webNotificationsService)
-        {
-            _imageStore = imageStore;
-            _azureNotifications = azureNotifications;
-            _progenyService = progenyService;
-            _userInfoService = userInfoService;
-            _userAccessService = userAccessService;
-            _webNotificationsService = webNotificationsService;
-        }
-
         // GET api/Access/Progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id)
         {
-            List<UserAccess> accessList = await _userAccessService.GetProgenyUserAccessList(id);
+            List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(id);
 
             if (accessList.Any())
             {
@@ -48,10 +37,10 @@ namespace KinaUnaProgenyApi.Controllers
                 bool allowedAccess = false;
                 foreach (UserAccess ua in accessList)
                 {
-                    ua.Progeny = await _progenyService.GetProgeny(ua.ProgenyId);
+                    ua.Progeny = await progenyService.GetProgeny(ua.ProgenyId);
 
                     ua.User = new ApplicationUser();
-                    UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(ua.UserId);
+                    UserInfo userinfo = await userInfoService.GetUserInfoByEmail(ua.UserId);
                     if (userinfo != null)
                     {
                         ua.User.FirstName = userinfo.FirstName;
@@ -82,8 +71,8 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetAccess(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess result = await _userAccessService.GetUserAccess(id);
-            result.Progeny = await _progenyService.GetProgeny(result.ProgenyId);
+            UserAccess result = await userAccessService.GetUserAccess(id);
+            result.Progeny = await progenyService.GetProgeny(result.ProgenyId);
 
             if (result.Progeny.IsInAdminList(User.GetEmail()) || result.UserId.ToUpper() == userEmail.ToUpper())
             {
@@ -97,7 +86,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] UserAccess value)
         {
-            value.Progeny = await _progenyService.GetProgeny(value.ProgenyId);
+            value.Progeny = await progenyService.GetProgeny(value.ProgenyId);
             if (value.Progeny != null)
             {
                 if (!value.Progeny.IsInAdminList(User.GetEmail()))
@@ -110,18 +99,18 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            UserAccess userAccess = await _userAccessService.AddUserAccess(value);
+            UserAccess userAccess = await userAccessService.AddUserAccess(value);
 
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyUserAccessItemPropertiesForAdd(userAccess);
             timeLineItem.AccessLevel = 0;
 
-            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
             string notificationTitle = "User added for " + userAccess.Progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added user: " + userAccess.UserId;
 
-            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await _webNotificationsService.SendUserAccessNotification(userAccess, userInfo, notificationTitle);
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendUserAccessNotification(userAccess, userInfo, notificationTitle);
 
             return Ok(userAccess);
         }
@@ -130,8 +119,8 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] UserAccess value)
         {
-            UserAccess originalUserAccess = await _userAccessService.GetUserAccess(id);
-            value.Progeny = await _progenyService.GetProgeny(value.ProgenyId);
+            UserAccess originalUserAccess = await userAccessService.GetUserAccess(id);
+            value.Progeny = await progenyService.GetProgeny(value.ProgenyId);
             if (value.Progeny != null && originalUserAccess != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -145,7 +134,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            UserAccess updatedUserAccess = await _userAccessService.UpdateUserAccess(value);
+            UserAccess updatedUserAccess = await userAccessService.UpdateUserAccess(value);
 
             if (updatedUserAccess == null)
             {
@@ -153,7 +142,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             string notificationTitle = "User access modified for " + updatedUserAccess.Progeny.NickName;
-            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(User.GetEmail());
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
             if (userInfo != null)
             {
                 string notificationMessage = userInfo.FullName() + " modified access to " + value.Progeny.NickName + " for user: " + updatedUserAccess.UserId;
@@ -163,8 +152,8 @@ namespace KinaUnaProgenyApi.Controllers
 
                 timeLineItem.AccessLevel = 0;
 
-                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                await _webNotificationsService.SendUserAccessNotification(updatedUserAccess, userInfo, notificationTitle);
+                await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await webNotificationsService.SendUserAccessNotification(updatedUserAccess, userInfo, notificationTitle);
             }
 
             return Ok(updatedUserAccess);
@@ -175,12 +164,12 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Delete(int id)
         {
 
-            UserAccess userAccess = await _userAccessService.GetUserAccess(id);
+            UserAccess userAccess = await userAccessService.GetUserAccess(id);
             if (userAccess != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
 
-                userAccess.Progeny = await _progenyService.GetProgeny(userAccess.ProgenyId);
+                userAccess.Progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
                 if (userAccess.Progeny != null)
                 {
                     if (!userAccess.Progeny.IsInAdminList(userEmail))
@@ -193,18 +182,18 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                await _userAccessService.RemoveUserAccess(userAccess.AccessId, userAccess.ProgenyId, userAccess.UserId);
+                await userAccessService.RemoveUserAccess(userAccess.AccessId, userAccess.ProgenyId, userAccess.UserId);
 
 
-                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
                 string notificationTitle = "User removed for " + userAccess.Progeny.NickName;
                 string notificationMessage = userInfo.FullName() + " removed access to " + userAccess.Progeny.NickName + " for user: " + userAccess.UserId;
                 TimeLineItem timeLineItem = new();
                 timeLineItem.CopyUserAccessItemPropertiesForUpdate(userAccess);
                 timeLineItem.AccessLevel = 0;
 
-                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                await _webNotificationsService.SendUserAccessNotification(userAccess, userInfo, notificationTitle);
+                await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await webNotificationsService.SendUserAccessNotification(userAccess, userInfo, notificationTitle);
 
                 return NoContent();
             }
@@ -220,13 +209,13 @@ namespace KinaUnaProgenyApi.Controllers
             if (userEmail.ToUpper() == id.ToUpper())
             {
                 List<Progeny> result = new();
-                List<UserAccess> userAccessList = await _userAccessService.GetUsersUserAccessList(id);
+                List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(id);
 
                 if (userAccessList.Any())
                 {
                     foreach (UserAccess userAccess in userAccessList)
                     {
-                        Progeny progeny = await _progenyService.GetProgeny(userAccess.ProgenyId);
+                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
                         if (string.IsNullOrEmpty(progeny.PictureLink))
                         {
                             progeny.PictureLink = Constants.ProfilePictureUrl;
@@ -249,19 +238,19 @@ namespace KinaUnaProgenyApi.Controllers
             if (userEmail.ToUpper() == id.ToUpper())
             {
                 List<Progeny> result = new();
-                List<UserAccess> userAccessList = await _userAccessService.GetUsersUserAccessList(id);
+                List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(id);
 
                 if (userAccessList.Any())
                 {
                     foreach (UserAccess userAccess in userAccessList)
                     {
-                        Progeny progeny = await _progenyService.GetProgeny(userAccess.ProgenyId);
+                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
                         if (string.IsNullOrEmpty(progeny.PictureLink))
                         {
                             progeny.PictureLink = Constants.ProfilePictureUrl;
                         }
 
-                        progeny.PictureLink = _imageStore.UriFor(progeny.PictureLink, "progeny");
+                        progeny.PictureLink = imageStore.UriFor(progeny.PictureLink, "progeny");
 
                         result.Add(progeny);
                     }
@@ -281,19 +270,19 @@ namespace KinaUnaProgenyApi.Controllers
             if (userEmail.ToUpper() == id.ToUpper())
             {
                 List<Progeny> result = new();
-                List<UserAccess> userAccessList = await _userAccessService.GetUsersUserAccessList(id);
+                List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(id);
 
                 if (userAccessList.Any())
                 {
                     foreach (UserAccess userAccess in userAccessList)
                     {
-                        Progeny progeny = await _progenyService.GetProgeny(userAccess.ProgenyId);
+                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
                         if (string.IsNullOrEmpty(progeny.PictureLink))
                         {
                             progeny.PictureLink = Constants.ProfilePictureUrl;
                         }
 
-                        progeny.PictureLink = _imageStore.UriFor(progeny.PictureLink, "progeny");
+                        progeny.PictureLink = imageStore.UriFor(progeny.PictureLink, "progeny");
 
                         result.Add(progeny);
                     }
@@ -312,12 +301,12 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() == id.ToUpper())
             {
-                List<UserAccess> userAccessList = await _userAccessService.GetUsersUserAccessList(id);
+                List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(id);
                 if (userAccessList.Any())
                 {
                     foreach (UserAccess userAccess in userAccessList)
                     {
-                        userAccess.Progeny = await _progenyService.GetProgeny(userAccess.ProgenyId);
+                        userAccess.Progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
                     }
                     return Ok(userAccessList);
                 }
@@ -333,14 +322,14 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() == id.ToUpper())
             {
-                List<UserAccess> userAccessList = await _userAccessService.GetUsersUserAdminAccessList(id);
+                List<UserAccess> userAccessList = await userAccessService.GetUsersUserAdminAccessList(id);
 
                 List<Progeny> progenyList = new();
                 if (userAccessList.Any())
                 {
                     foreach (UserAccess userAccess in userAccessList)
                     {
-                        Progeny progeny = await _progenyService.GetProgeny(userAccess.ProgenyId);
+                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
                         progenyList.Add(progeny);
                     }
 
@@ -357,13 +346,13 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() == id.ToUpper())
             {
-                List<UserAccess> userAccessList = await _userAccessService.GetUsersUserAdminAccessList(id);
+                List<UserAccess> userAccessList = await userAccessService.GetUsersUserAdminAccessList(id);
                 List<Progeny> progenyList = new();
                 if (userAccessList.Any())
                 {
                     foreach (UserAccess userAccess in userAccessList)
                     {
-                        Progeny progeny = await _progenyService.GetProgeny(userAccess.ProgenyId);
+                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
                         progenyList.Add(progeny);
                     }
 
@@ -381,13 +370,13 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (userEmail.ToUpper() == oldEmail.ToUpper())
             {
-                List<UserAccess> userAccessList = await _userAccessService.GetUsersUserAccessList(oldEmail); // _context.UserAccessDb.Where(u => u.UserId.ToUpper() == oldEmail.ToUpper()).ToListAsync();
+                List<UserAccess> userAccessList = await userAccessService.GetUsersUserAccessList(oldEmail); // _context.UserAccessDb.Where(u => u.UserId.ToUpper() == oldEmail.ToUpper()).ToListAsync();
                 if (userAccessList.Any())
                 {
                     foreach (UserAccess userAccess in userAccessList)
                     {
                         userAccess.UserId = newEmail;
-                        await _userAccessService.UpdateUserAccess(userAccess);
+                        await userAccessService.UpdateUserAccess(userAccess);
                     }
 
                     return Ok(userAccessList);

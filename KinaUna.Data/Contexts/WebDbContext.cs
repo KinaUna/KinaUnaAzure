@@ -3,13 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KinaUna.Data.Contexts
 {
-    public class WebDbContext : DbContext
+    public class WebDbContext(DbContextOptions<WebDbContext> options) : DbContext(options)
     {
-        public WebDbContext(DbContextOptions<WebDbContext> options) : base(options)
-        {
-
-        }
-
         public DbSet<TimeLineItem> TimeLineDb { get; set; }
         public DbSet<CalendarItem> CalendarDb { get; set; }
         public DbSet<Location> LocationsDb { get; set; }

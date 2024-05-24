@@ -3,21 +3,11 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaWebBlazor.Services
 {
-    public class UserStateService
+    public class UserStateService(IUserInfosHttpClient userInfosHttpClient, IProgenyHttpClient progenyHttpClient, ILocaleManager localeManager)
     {
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
-        private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly ILocaleManager _localeManager;
         private UserInfo? _currentUser;
         private Progeny? _currentProgeny;
         private int? _currentLanguageId;
-
-        public UserStateService(IUserInfosHttpClient userInfosHttpClient, IProgenyHttpClient progenyHttpClient, ILocaleManager localeManager)
-        {
-            _userInfosHttpClient = userInfosHttpClient;
-            _progenyHttpClient = progenyHttpClient;
-            _localeManager = localeManager;
-        }
 
         public int CurrentLanguageId
         {
@@ -63,7 +53,7 @@ namespace KinaUnaWebBlazor.Services
 
         public async Task SetUser(string userEmail)
         {
-            CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
+            CurrentUser = await userInfosHttpClient.GetUserInfo(userEmail);
             if (CurrentUser != null) await SetProgeny(CurrentUser.ViewChild);
         }
 
@@ -73,11 +63,11 @@ namespace KinaUnaWebBlazor.Services
             {
                 if (progenyId > 0)
                 {
-                    CurrentProgeny = await _progenyHttpClient.GetProgeny(progenyId);
+                    CurrentProgeny = await progenyHttpClient.GetProgeny(progenyId);
                 }
                 else
                 {
-                    CurrentProgeny = await _progenyHttpClient.GetProgeny(Constants.DefaultChildId);
+                    CurrentProgeny = await progenyHttpClient.GetProgeny(Constants.DefaultChildId);
                 }
                 
             }
@@ -85,7 +75,7 @@ namespace KinaUnaWebBlazor.Services
 
         public async Task<string> GetTranslation(string word, string page)
         {
-            string resultString = await _localeManager.GetTranslation(word, page, CurrentLanguageId);
+            string resultString = await localeManager.GetTranslation(word, page, CurrentLanguageId);
             return resultString;
         }
 

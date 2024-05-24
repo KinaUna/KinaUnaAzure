@@ -15,14 +15,8 @@ using KinaUnaWeb.Models.HomeViewModels;
 namespace KinaUnaWeb.Controllers
 {
     [Authorize]
-    public class AddItemController : Controller
+    public class AddItemController(ImageStore imageStore) : Controller
     {
-        private readonly ImageStore _imageStore;
-        
-        public AddItemController(ImageStore imageStore)
-        {
-            _imageStore = imageStore;
-        }
         public IActionResult Index()
         {
             AboutViewModel model = new()
@@ -52,10 +46,10 @@ namespace KinaUnaWeb.Controllers
                         string filename;
                         await using (Stream stream = file.OpenReadStream())
                         {
-                            filename = await _imageStore.SaveImage(stream, BlobContainers.Notes);
+                            filename = await imageStore.SaveImage(stream, BlobContainers.Notes);
                         }
 
-                        string resultName = _imageStore.UriFor(filename, BlobContainers.Notes);
+                        string resultName = imageStore.UriFor(filename, BlobContainers.Notes);
                         Response.Clear();
                         Response.ContentType = "application/json; charset=utf-8";
                         Response.Headers.Add("name", resultName);

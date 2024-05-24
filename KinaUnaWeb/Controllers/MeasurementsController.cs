@@ -13,24 +13,15 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class MeasurementsController : Controller
+    public class MeasurementsController(IMeasurementsHttpClient measurementsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
-        private readonly IMeasurementsHttpClient _measurementsHttpClient;
-        private readonly IViewModelSetupService _viewModelSetupService;
-
-        public MeasurementsController(IMeasurementsHttpClient measurementsHttpClient, IViewModelSetupService viewModelSetupService)
-        {
-            _measurementsHttpClient = measurementsHttpClient;
-            _viewModelSetupService = viewModelSetupService;
-        }
-
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             MeasurementViewModel model = new(baseModel);
             
-            model.MeasurementsList = await _measurementsHttpClient.GetMeasurementsList(model.CurrentProgenyId, model.CurrentAccessLevel);
+            model.MeasurementsList = await measurementsHttpClient.GetMeasurementsList(model.CurrentProgenyId, model.CurrentAccessLevel);
             
             if (model.MeasurementsList.Count != 0)
             {
@@ -53,7 +44,7 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddMeasurement()
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             MeasurementViewModel model = new(baseModel);
             
             if (model.CurrentUser == null)
@@ -61,7 +52,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
             model.SetProgenyList();
 
             model.SetAccessLevelList();
@@ -73,7 +64,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddMeasurement(MeasurementViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.MeasurementItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.MeasurementItem.ProgenyId);
             model.SetBaseProperties(baseModel);
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
@@ -85,7 +76,7 @@ namespace KinaUnaWeb.Controllers
 
             Measurement measurementItem = model.CreateMeasurement();
 
-            _ = await _measurementsHttpClient.AddMeasurement(measurementItem);
+            _ = await measurementsHttpClient.AddMeasurement(measurementItem);
             
             return RedirectToAction("Index", "Measurements");
         }
@@ -93,8 +84,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> EditMeasurement(int itemId)
         {
-            Measurement measurement = await _measurementsHttpClient.GetMeasurement(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
+            Measurement measurement = await measurementsHttpClient.GetMeasurement(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
             MeasurementViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -114,7 +105,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditMeasurement(MeasurementViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.MeasurementItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.MeasurementItem.ProgenyId);
             model.SetBaseProperties(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -125,7 +116,7 @@ namespace KinaUnaWeb.Controllers
 
             Measurement editedMeasurement = model.CreateMeasurement();
 
-            _ = await _measurementsHttpClient.UpdateMeasurement(editedMeasurement);
+            _ = await measurementsHttpClient.UpdateMeasurement(editedMeasurement);
 
             return RedirectToAction("Index", "Measurements");
         }
@@ -133,8 +124,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteMeasurement(int itemId)
         {
-            Measurement measurement = await _measurementsHttpClient.GetMeasurement(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
+            Measurement measurement = await measurementsHttpClient.GetMeasurement(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
             MeasurementViewModel model = new(baseModel);
            
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -151,8 +142,8 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteMeasurement(MeasurementViewModel model)
         {
-            Measurement measurement = await _measurementsHttpClient.GetMeasurement(model.MeasurementItem.MeasurementId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
+            Measurement measurement = await measurementsHttpClient.GetMeasurement(model.MeasurementItem.MeasurementId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -161,7 +152,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            _ = await _measurementsHttpClient.DeleteMeasurement(measurement.MeasurementId);
+            _ = await measurementsHttpClient.DeleteMeasurement(measurement.MeasurementId);
 
             return RedirectToAction("Index", "Measurements");
         }

@@ -13,26 +13,14 @@ namespace KinaUnaMediaApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class CommentsController : ControllerBase
+    public class CommentsController(IDataService dataService, ImageStore imageStore, AzureNotifications azureNotifications, ICommentsService commentsService)
+        : ControllerBase
     {
-        private readonly IDataService _dataService;
-        private readonly ICommentsService _commentsService;
-        private readonly ImageStore _imageStore;
-        private readonly AzureNotifications _azureNotifications;
-
-        public CommentsController(IDataService dataService, ImageStore imageStore, AzureNotifications azureNotifications, ICommentsService commentsService)
-        {
-            _dataService = dataService;
-            _imageStore = imageStore;
-            _azureNotifications = azureNotifications;
-            _commentsService = commentsService;
-        }
-
         // GET api/comments/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetComment(int id)
         {
-            Comment result = await _commentsService.GetComment(id);
+            Comment result = await commentsService.GetComment(id);
             if (result != null)
             {
                 return Ok(result);
@@ -47,12 +35,12 @@ namespace KinaUnaMediaApi.Controllers
         [Route("[action]/{threadId}")]
         public async Task<IActionResult> GetCommentsByThread(int threadId)
         {
-            List<Comment> result = await _commentsService.GetCommentsList(threadId);
+            List<Comment> result = await commentsService.GetCommentsList(threadId);
             if (result != null)
             {
                 foreach (Comment comment in result)
                 {
-                    UserInfo commentAuthor = await _dataService.GetUserInfoByUserId(comment.Author);
+                    UserInfo commentAuthor = await dataService.GetUserInfoByUserId(comment.Author);
                     if (commentAuthor != null)
                     {
                         string authorImg = commentAuthor.ProfilePicture ?? "";
@@ -60,7 +48,7 @@ namespace KinaUnaMediaApi.Controllers
                         {
                             if (!authorImg.ToLower().StartsWith("http"))
                             {
-                                authorImg = _imageStore.UriFor(authorImg, "profiles");
+                                authorImg = imageStore.UriFor(authorImg, "profiles");
                             }
                         }
 
@@ -83,7 +71,7 @@ namespace KinaUnaMediaApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Comment model)
         {
-            Progeny progeny = await _dataService.GetProgeny(model.Progeny.Id);
+            Progeny progeny = await dataService.GetProgeny(model.Progeny.Id);
             
             string userId = User.GetUserId();
             if (progeny != null)
@@ -98,8 +86,8 @@ namespace KinaUnaMediaApi.Controllers
                 return NotFound();
             }
 
-            Comment newComment = await _commentsService.AddComment(model);
-            await _commentsService.SetComment(newComment.CommentId);
+            Comment newComment = await commentsService.AddComment(model);
+            await commentsService.SetComment(newComment.CommentId);
 
             newComment.Progeny = progeny;
             string title = "New comment for " + newComment.Progeny.NickName;
@@ -109,8 +97,8 @@ namespace KinaUnaMediaApi.Controllers
             tItem.ItemId = newComment.ItemId;
             tItem.ItemType = newComment.ItemType;
             tItem.AccessLevel = newComment.AccessLevel;
-            UserInfo userinfo = await _dataService.GetUserInfoByUserId(model.Author);
-            await _azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+            UserInfo userinfo = await dataService.GetUserInfoByUserId(model.Author);
+            await azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
 
             return Ok(newComment);
         }
@@ -119,13 +107,13 @@ namespace KinaUnaMediaApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Comment value)
         {
-            Comment comment = await _commentsService.GetComment(id);
+            Comment comment = await commentsService.GetComment(id);
             if (comment == null)
             {
                 return NotFound();
             }
 
-            Progeny progeny = await _dataService.GetProgeny(value.Progeny.Id);
+            Progeny progeny = await dataService.GetProgeny(value.Progeny.Id);
 
             string userId = User.GetUserId();
             if (progeny != null)
@@ -141,9 +129,9 @@ namespace KinaUnaMediaApi.Controllers
                 return NotFound();
             }
             
-            comment = await _commentsService.UpdateComment(value);
+            comment = await commentsService.UpdateComment(value);
             
-            await _commentsService.SetComment(comment.CommentId);
+            await commentsService.SetComment(comment.CommentId);
 
             return Ok(comment);
         }
@@ -153,7 +141,7 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> Delete(int id)
         {
 
-            Comment comment = await _commentsService.GetComment(id);
+            Comment comment = await commentsService.GetComment(id);
             if (comment != null)
             {
                 string userId = User.GetUserId();
@@ -162,8 +150,8 @@ namespace KinaUnaMediaApi.Controllers
                     return Unauthorized();
                 }
 
-                _ = await _commentsService.DeleteComment(comment);
-                await _commentsService.RemoveComment(comment.CommentId, comment.CommentThreadNumber);
+                _ = await commentsService.DeleteComment(comment);
+                await commentsService.RemoveComment(comment.CommentId, comment.CommentThreadNumber);
                 return NoContent();
             }
             else

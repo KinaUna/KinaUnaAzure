@@ -8,19 +8,10 @@ using Newtonsoft.Json.Linq;
 
 namespace KinaUnaMediaApi.Services
 {
-    public class AzureNotifications
+    public class AzureNotifications(IConfiguration configuration, IDataService dataService)
     {
-        private readonly IDataService _dataService;
-        
-        public NotificationHubClient Hub { get; set; }
-
-        public AzureNotifications(IConfiguration configuration, IDataService dataService)
-        {
-            Hub = NotificationHubClient.CreateClientFromConnectionString(configuration["NotificationHubConnection"],
-                "kinaunanotifications");
-            _dataService = dataService;
-            
-        }
+        public NotificationHubClient Hub { get; set; } = NotificationHubClient.CreateClientFromConnectionString(configuration["NotificationHubConnection"],
+            "kinaunanotifications");
 
         public async Task ProgenyUpdateNotification(string title, string message, TimeLineItem timeLineItem, string iconLink = "")
         {
@@ -29,12 +20,12 @@ namespace KinaUnaMediaApi.Services
                 new JProperty("data", new JObject(new JProperty("title", title), new JProperty("message", message))),
                 new JProperty("notData", timeLineItem.TimeLineId));
 
-            List<UserAccess> userList = await _dataService.GetProgenyUserAccessList(timeLineItem.ProgenyId);
+            List<UserAccess> userList = await dataService.GetProgenyUserAccessList(timeLineItem.ProgenyId);
             foreach (UserAccess userAcces in userList)
             {
                 if (userAcces.AccessLevel <= timeLineItem.AccessLevel)
                 {
-                    UserInfo userInfo = await _dataService.GetUserInfoByEmail(userAcces.UserId);
+                    UserInfo userInfo = await dataService.GetUserInfoByEmail(userAcces.UserId);
                     if (userInfo != null)
                     {
                         MobileNotification notification = new MobileNotification();
@@ -48,7 +39,7 @@ namespace KinaUnaMediaApi.Services
                         notification.Title = title;
                         notification.Time = DateTime.UtcNow;
                         notification.Read = false;
-                        await _dataService.AddMobileNotification(notification);
+                        await dataService.AddMobileNotification(notification);
 
                         string userTag = "userEmail:" + userAcces.UserId.ToUpper();
                         await Hub.SendFcmNativeNotificationAsync(payload.ToString(Newtonsoft.Json.Formatting.None), userTag);

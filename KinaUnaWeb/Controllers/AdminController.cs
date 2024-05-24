@@ -19,35 +19,21 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class AdminController: Controller
+    public class AdminController(
+        IHubContext<WebNotificationHub> hubContext,
+        IPushMessageSender pushMessageSender,
+        IAuthHttpClient authHttpClient,
+        IUserInfosHttpClient userInfosHttpClient,
+        ILanguagesHttpClient languagesHttpClient,
+        ITranslationsHttpClient translationsHttpClient,
+        IPageTextsHttpClient pageTextsHttpClient,
+        ImageStore imageStore,
+        IWebNotificationsService webNotificationsService,
+        IConfiguration configuration)
+        : Controller
     {
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
-        private readonly IHubContext<WebNotificationHub> _hubContext;
-        private readonly IPushMessageSender _pushMessageSender;
-        private readonly string _adminEmail;
-        private readonly IAuthHttpClient _authHttpClient;
-        private readonly ILanguagesHttpClient _languagesHttpClient;
-        private readonly ITranslationsHttpClient _translationsHttpClient;
-        private readonly IPageTextsHttpClient _pageTextsHttpClient;
-        private readonly ImageStore _imageStore;
-        private readonly IWebNotificationsService _webNotificationsService;
+        private readonly string _adminEmail = configuration.GetValue<string>("AdminEmail");
 
-        public AdminController(IHubContext<WebNotificationHub> hubContext, IPushMessageSender pushMessageSender, IAuthHttpClient authHttpClient,
-            IUserInfosHttpClient userInfosHttpClient, ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient, IPageTextsHttpClient pageTextsHttpClient,
-            ImageStore imageStore, IWebNotificationsService webNotificationsService, IConfiguration configuration)
-        {
-            _hubContext = hubContext;
-            _pushMessageSender = pushMessageSender;
-            _authHttpClient = authHttpClient;
-            _userInfosHttpClient = userInfosHttpClient;
-            _languagesHttpClient = languagesHttpClient;
-            _translationsHttpClient = translationsHttpClient;
-            _pageTextsHttpClient = pageTextsHttpClient;
-            _imageStore = imageStore;
-            _webNotificationsService = webNotificationsService;
-            _adminEmail = configuration.GetValue<string>("AdminEmail");
-        }
-        
         public async Task<IActionResult> Index()
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? Constants.DefaultUserEmail;
@@ -57,17 +43,17 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            List<UserInfo> deletedUserInfosList = await _userInfosHttpClient.GetDeletedUserInfos();
+            List<UserInfo> deletedUserInfosList = await userInfosHttpClient.GetDeletedUserInfos();
             if (deletedUserInfosList.Any())
             {
                 foreach (UserInfo deletedUserInfo in deletedUserInfosList)
                 {
                     if (deletedUserInfo.Deleted && deletedUserInfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30))
                     {
-                        UserInfo authResponseUserInfo = await _authHttpClient.CheckDeleteUser(deletedUserInfo);
+                        UserInfo authResponseUserInfo = await authHttpClient.CheckDeleteUser(deletedUserInfo);
                         if (authResponseUserInfo != null && authResponseUserInfo.UserId == deletedUserInfo.UserId && deletedUserInfo.Deleted && deletedUserInfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30))
                         {
-                            await _userInfosHttpClient.RemoveUserInfoForGood(deletedUserInfo);
+                            await userInfosHttpClient.RemoveUserInfoForGood(deletedUserInfo);
                         }
                     }
                 }
@@ -79,13 +65,13 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<IActionResult> ManageLanguages()
         {
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            List<KinaUnaLanguage> model = await _languagesHttpClient.GetAllLanguages();
+            List<KinaUnaLanguage> model = await languagesHttpClient.GetAllLanguages();
             
             return View(model);
         }
@@ -94,7 +80,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<ActionResult> AddLanguage()
         {
 
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -110,15 +96,15 @@ namespace KinaUnaWeb.Controllers
         public async Task<ActionResult> AddLanguage(KinaUnaLanguage model)
         {
 
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
             }
             
-            KinaUnaLanguage newLanguage = await _languagesHttpClient.AddLanguage(model);
-            _ = await _languagesHttpClient.GetLanguage(newLanguage.Id, true);
-            _ = await _languagesHttpClient.GetAllLanguages(true);
+            KinaUnaLanguage newLanguage = await languagesHttpClient.AddLanguage(model);
+            _ = await languagesHttpClient.GetLanguage(newLanguage.Id, true);
+            _ = await languagesHttpClient.GetAllLanguages(true);
             
             return RedirectToAction("ManageLanguages", "Admin");
         }
@@ -126,13 +112,13 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<ActionResult> EditLanguage(int languageId)
         {
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            KinaUnaLanguage model = await _languagesHttpClient.GetLanguage(languageId);
+            KinaUnaLanguage model = await languagesHttpClient.GetLanguage(languageId);
             return View(model);
         }
 
@@ -142,15 +128,15 @@ namespace KinaUnaWeb.Controllers
         public async Task<ActionResult> EditLanguage(KinaUnaLanguage model)
         {
 
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            _ = await _languagesHttpClient.UpdateLanguage(model);
-            _ = await _languagesHttpClient.GetLanguage(model.Id, true);
-            _ = await _languagesHttpClient.GetAllLanguages(true);
+            _ = await languagesHttpClient.UpdateLanguage(model);
+            _ = await languagesHttpClient.GetLanguage(model.Id, true);
+            _ = await languagesHttpClient.GetAllLanguages(true);
 
             return RedirectToAction("ManageLanguages", "Admin");
         }
@@ -158,13 +144,13 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<ActionResult> DeleteLanguage(int languageId)
         {
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            KinaUnaLanguage model = await _languagesHttpClient.GetLanguage(languageId);
+            KinaUnaLanguage model = await languagesHttpClient.GetLanguage(languageId);
 
             return View(model);
         }
@@ -174,15 +160,15 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteLanguage(KinaUnaLanguage model)
         {
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
             }
             
-            _ = await _languagesHttpClient.DeleteLanguage(model); 
-            _ = await _languagesHttpClient.GetLanguage(model.Id, true);
-            _ = await _languagesHttpClient.GetAllLanguages(true);
+            _ = await languagesHttpClient.DeleteLanguage(model); 
+            _ = await languagesHttpClient.GetLanguage(model.Id, true);
+            _ = await languagesHttpClient.GetAllLanguages(true);
 
             return RedirectToAction("ManageLanguages", "Admin");
         }
@@ -190,7 +176,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<IActionResult> ManageTranslations()
         {
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -198,7 +184,7 @@ namespace KinaUnaWeb.Controllers
 
             ManageTranslationsViewModel model = new()
             {
-                Translations = await _translationsHttpClient.GetAllTranslations(),
+                Translations = await translationsHttpClient.GetAllTranslations(),
                 PagesList = new List<string>(),
                 WordsList = new List<string>()
             };
@@ -216,7 +202,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            model.LanguagesList = await _languagesHttpClient.GetAllLanguages();
+            model.LanguagesList = await languagesHttpClient.GetAllLanguages();
             return View(model);
         }
 
@@ -224,17 +210,17 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> LoadPageTranslations([FromBody] TextTranslationPageListModel model)
         {
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            model.Translations = await _translationsHttpClient.GetAllTranslations();
+            model.Translations = await translationsHttpClient.GetAllTranslations();
             model.Translations = model.Translations.Where(t => t.Page.Trim().ToUpper() == model.Page.Trim().ToUpper()).ToList();
             model.Translations = model.Translations.OrderBy(t => t.Word).ThenBy(t => t.LanguageId).ToList();
 
-            model.LanguagesList = await _languagesHttpClient.GetAllLanguages();
+            model.LanguagesList = await languagesHttpClient.GetAllLanguages();
 
             return Json(model);
         }
@@ -243,24 +229,24 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdatePageTranslation([FromBody] TextTranslation translation)
         {
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            TextTranslation existingTextTranslation = await _translationsHttpClient.GetTranslationById(translation.Id);
+            TextTranslation existingTextTranslation = await translationsHttpClient.GetTranslationById(translation.Id);
             existingTextTranslation.Translation = translation.Translation;
 
-            TextTranslation updatedTextTranslation = await _translationsHttpClient.UpdateTranslation(existingTextTranslation);
+            TextTranslation updatedTextTranslation = await translationsHttpClient.UpdateTranslation(existingTextTranslation);
 
             // Update caches
-            List<KinaUnaLanguage> languages = await _languagesHttpClient.GetAllLanguages();
+            List<KinaUnaLanguage> languages = await languagesHttpClient.GetAllLanguages();
             foreach (KinaUnaLanguage lang in languages)
             {
-                _ = await _translationsHttpClient.GetTranslationById(updatedTextTranslation.Id, true);
-                _ = await _translationsHttpClient.GetTranslation(updatedTextTranslation.Word, updatedTextTranslation.Page, lang.Id, true);
-                _ = await _translationsHttpClient.GetAllTranslations(lang.Id, true);
+                _ = await translationsHttpClient.GetTranslationById(updatedTextTranslation.Id, true);
+                _ = await translationsHttpClient.GetTranslation(updatedTextTranslation.Word, updatedTextTranslation.Page, lang.Id, true);
+                _ = await translationsHttpClient.GetAllTranslations(lang.Id, true);
             }
 
             return Json(updatedTextTranslation);
@@ -270,22 +256,22 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> DeletePageTranslation([FromBody] TextTranslation translation)
         {
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            TextTranslation existingTextTranslation = await _translationsHttpClient.GetTranslationById(translation.Id);
+            TextTranslation existingTextTranslation = await translationsHttpClient.GetTranslationById(translation.Id);
             existingTextTranslation.Translation = translation.Translation;
 
-            _ = await _translationsHttpClient.DeleteTranslation(existingTextTranslation);
+            _ = await translationsHttpClient.DeleteTranslation(existingTextTranslation);
 
             // Update caches
-            List<KinaUnaLanguage> languages = await _languagesHttpClient.GetAllLanguages();
+            List<KinaUnaLanguage> languages = await languagesHttpClient.GetAllLanguages();
             foreach (KinaUnaLanguage lang in languages)
             {
-                _ = await _translationsHttpClient.GetAllTranslations(lang.Id, true);
+                _ = await translationsHttpClient.GetAllTranslations(lang.Id, true);
             }
 
             return Json(existingTextTranslation);
@@ -294,10 +280,10 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<IActionResult> EditText(int id, string returnUrl = "")
         {
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo != null && userInfo.IsKinaUnaAdmin)
             {
-                KinaUnaText model = await _pageTextsHttpClient.GetPageTextById(id);
+                KinaUnaText model = await pageTextsHttpClient.GetPageTextById(id);
                 model.ReturnUrl = returnUrl;
 
                 return PartialView("_EditTextPartial", model);
@@ -311,20 +297,20 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> EditText([FromForm] KinaUnaText model)
         {
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo != null && userInfo.IsKinaUnaAdmin)
             {
-                KinaUnaText updateText = await _pageTextsHttpClient.GetPageTextById(model.Id);
+                KinaUnaText updateText = await pageTextsHttpClient.GetPageTextById(model.Id);
                 updateText.Text = model.Text;
-                KinaUnaText updatedText = await _pageTextsHttpClient.UpdatePageText(updateText);
+                KinaUnaText updatedText = await pageTextsHttpClient.UpdatePageText(updateText);
 
                 // Update caches
-                await _pageTextsHttpClient.GetPageTextById(updatedText.Id, true);
-                List<KinaUnaLanguage> languages = await _languagesHttpClient.GetAllLanguages();
+                await pageTextsHttpClient.GetPageTextById(updatedText.Id, true);
+                List<KinaUnaLanguage> languages = await languagesHttpClient.GetAllLanguages();
                 foreach (KinaUnaLanguage lang in languages)
                 {
-                    _ = await _pageTextsHttpClient.GetPageTextByTitle(updatedText.Title, updatedText.Page, lang.Id, true);
-                    await _pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
+                    _ = await pageTextsHttpClient.GetPageTextByTitle(updatedText.Title, updatedText.Page, lang.Id, true);
+                    await pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
                 }
 
                 if (string.IsNullOrEmpty(model.ReturnUrl))
@@ -343,10 +329,10 @@ namespace KinaUnaWeb.Controllers
         [Produces("application/json")]
         public async Task<IActionResult> EditTextTranslation(int textId, int languageId)
         {
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo != null && userInfo.IsKinaUnaAdmin)
             {
-                List<KinaUnaText> allTexts = await _pageTextsHttpClient.GetAllKinaUnaTexts(languageId, true);
+                List<KinaUnaText> allTexts = await pageTextsHttpClient.GetAllKinaUnaTexts(languageId, true);
                 KinaUnaText textToEdit = allTexts.SingleOrDefault(t => t.TextId == textId && t.LanguageId == languageId);
                 //if (textToEdit != null)
                 //{
@@ -365,20 +351,20 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> EditTextTranslation([FromForm] KinaUnaText model)
         {
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo != null && userInfo.IsKinaUnaAdmin)
             {
-                KinaUnaText updateText = await _pageTextsHttpClient.GetPageTextById(model.Id);
+                KinaUnaText updateText = await pageTextsHttpClient.GetPageTextById(model.Id);
                 updateText.Text = model.Text;
-                KinaUnaText updatedText = await _pageTextsHttpClient.UpdatePageText(updateText);
+                KinaUnaText updatedText = await pageTextsHttpClient.UpdatePageText(updateText);
                 
                 // Update caches
-                await _pageTextsHttpClient.GetPageTextById(updatedText.Id, true);
-                List<KinaUnaLanguage> languages = await _languagesHttpClient.GetAllLanguages();
+                await pageTextsHttpClient.GetPageTextById(updatedText.Id, true);
+                List<KinaUnaLanguage> languages = await languagesHttpClient.GetAllLanguages();
                 foreach (KinaUnaLanguage lang in languages)
                 {
-                    _ = await _pageTextsHttpClient.GetPageTextByTitle(updatedText.Title, updatedText.Page, lang.Id, true);
-                    await _pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
+                    _ = await pageTextsHttpClient.GetPageTextByTitle(updatedText.Title, updatedText.Page, lang.Id, true);
+                    await pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
                 }
 
                 return Json(updatedText);
@@ -399,10 +385,10 @@ namespace KinaUnaWeb.Controllers
                         string filename;
                         await using (Stream stream = file.OpenReadStream())
                         {
-                            filename = await _imageStore.SaveImage(stream, BlobContainers.KinaUnaTexts);
+                            filename = await imageStore.SaveImage(stream, BlobContainers.KinaUnaTexts);
                         }
 
-                        string resultName = _imageStore.UriFor(filename, BlobContainers.KinaUnaTexts);
+                        string resultName = imageStore.UriFor(filename, BlobContainers.KinaUnaTexts);
                         Response.Clear();
                         Response.ContentType = "application/json; charset=utf-8";
                         Response.Headers.Add("name", resultName);
@@ -424,13 +410,13 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<IActionResult> ManageTexts()
         {
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo != null && userInfo.IsKinaUnaAdmin)
             {
                 ManageKinaUnaTextsViewModel model = new()
                 {
                     LanguageId = Request.GetLanguageIdFromCookie(),
-                    Texts = await _pageTextsHttpClient.GetAllKinaUnaTexts(1),
+                    Texts = await pageTextsHttpClient.GetAllKinaUnaTexts(1),
                     PagesList = new List<string>(),
                     TitlesList = new List<string>()
                 };
@@ -447,7 +433,7 @@ namespace KinaUnaWeb.Controllers
                     }
                 }
 
-                model.LanguagesList = await _languagesHttpClient.GetAllLanguages();
+                model.LanguagesList = await languagesHttpClient.GetAllLanguages();
                 KinaUnaLanguage selectedLanguage = model.LanguagesList.SingleOrDefault(l => l.Id == model.LanguageId);
                 if (selectedLanguage != null)
                 {
@@ -489,26 +475,26 @@ namespace KinaUnaWeb.Controllers
                     notification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
                         TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                     notification.DateTimeString = notification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                    await _hubContext.Clients.All.SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
+                    await hubContext.Clients.All.SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
                 }
                 else
                 {
                     UserInfo userinfo;
                     if (notification.To.Contains('@'))
                     {
-                        userinfo = await _userInfosHttpClient.GetUserInfo(notification.To);
+                        userinfo = await userInfosHttpClient.GetUserInfo(notification.To);
                         notification.To = userinfo.UserId;
                     }
                     else
                     {
-                        userinfo = await _userInfosHttpClient.GetUserInfoByUserId(notification.To);
+                        userinfo = await userInfosHttpClient.GetUserInfoByUserId(notification.To);
                     }
 
                     notification.DateTime = DateTime.UtcNow;
 
-                    notification = await _webNotificationsService.SaveNotification(notification);
+                    notification = await webNotificationsService.SaveNotification(notification);
                     
-                    await _hubContext.Clients.User(userinfo.UserId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
+                    await hubContext.Clients.User(userinfo.UserId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
 
                     WebNotification webNotification = new()
                     {
@@ -521,7 +507,7 @@ namespace KinaUnaWeb.Controllers
                     webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
                         TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
                     webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                    await _hubContext.Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
+                    await hubContext.Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
                 }
             }
 
@@ -559,11 +545,11 @@ namespace KinaUnaWeb.Controllers
 
             if (notification.UserId.Contains('@'))
             {
-                UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(notification.UserId);
+                UserInfo userinfo = await userInfosHttpClient.GetUserInfo(notification.UserId);
                 notification.UserId = userinfo.UserId;
             }
 
-            await _pushMessageSender.SendMessage(notification.UserId, notification.Title, notification.Message,
+            await pushMessageSender.SendMessage(notification.UserId, notification.Title, notification.Message,
                 notification.Link, "kinaunapush");
             notification.Title = "Message Sent";
 

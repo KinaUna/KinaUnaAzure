@@ -3,13 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KinaUna.Data.Contexts
 {
-    public class MediaDbContext : DbContext
+    public class MediaDbContext(DbContextOptions<MediaDbContext> options) : DbContext(options)
     {
-        public MediaDbContext(DbContextOptions<MediaDbContext> options) : base(options)
-        {
-
-        }
-
         public DbSet<Picture> PicturesDb { get; set; }
         public DbSet<Video> VideoDb { get; set; }
         public DbSet<CommentThread> CommentThreadsDb { get; set; }

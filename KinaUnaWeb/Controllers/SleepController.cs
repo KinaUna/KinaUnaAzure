@@ -12,24 +12,15 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class SleepController : Controller
+    public class SleepController(ISleepHttpClient sleepHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
-        private readonly ISleepHttpClient _sleepHttpClient;
-        private readonly IViewModelSetupService _viewModelSetupService;
-
-        public SleepController(ISleepHttpClient sleepHttpClient, IViewModelSetupService viewModelSetupService)
-        {
-            _sleepHttpClient = sleepHttpClient;
-            _viewModelSetupService = viewModelSetupService;
-        }
-
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             SleepViewModel model = new(baseModel);
 
-            List<Sleep> sleepList = await _sleepHttpClient.GetSleepList(model.CurrentProgenyId, model.CurrentAccessLevel);
+            List<Sleep> sleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId, model.CurrentAccessLevel);
 
             model.ProcessSleepListData(sleepList);
             
@@ -39,10 +30,10 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> SleepCalendar(int childId = 0)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             SleepViewModel model = new(baseModel);
             
-            List<Sleep> allSleepList = await _sleepHttpClient.GetSleepList(model.CurrentProgenyId, model.CurrentAccessLevel);
+            List<Sleep> allSleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId, model.CurrentAccessLevel);
             
             model.ProcessSleepCalendarList(allSleepList);
 
@@ -52,7 +43,7 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddSleep()
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             SleepViewModel model = new(baseModel);
             
             if (model.CurrentUser == null)
@@ -60,7 +51,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
             model.SetProgenyList();
 
             model.SetAccessLevelList();
@@ -72,7 +63,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddSleep(SleepViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SleepItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SleepItem.ProgenyId);
             model.SetBaseProperties(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -86,7 +77,7 @@ namespace KinaUnaWeb.Controllers
 
             Sleep sleepToAdd = model.CreateSleep();
 
-            _ = await _sleepHttpClient.AddSleep(sleepToAdd);
+            _ = await sleepHttpClient.AddSleep(sleepToAdd);
             
             return RedirectToAction("Index", "Sleep");
         }
@@ -94,8 +85,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> EditSleep(int itemId)
         {
-            Sleep sleep = await _sleepHttpClient.GetSleepItem(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId);
+            Sleep sleep = await sleepHttpClient.GetSleepItem(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId);
             SleepViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -115,7 +106,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditSleep(SleepViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SleepItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SleepItem.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -133,7 +124,7 @@ namespace KinaUnaWeb.Controllers
                     model.SleepItem.SleepRating = 3;
                 }
                 
-                await _sleepHttpClient.UpdateSleep(model.SleepItem);
+                await sleepHttpClient.UpdateSleep(model.SleepItem);
             }
             return RedirectToAction("Index", "Sleep");
         }
@@ -141,8 +132,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteSleep(int itemId)
         {
-            Sleep sleep = await _sleepHttpClient.GetSleepItem(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId);
+            Sleep sleep = await sleepHttpClient.GetSleepItem(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId);
             SleepViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -160,8 +151,8 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteSleep(SleepViewModel model)
         {
-            Sleep sleep = await _sleepHttpClient.GetSleepItem(model.SleepItem.SleepId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId);
+            Sleep sleep = await sleepHttpClient.GetSleepItem(model.SleepItem.SleepId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -170,7 +161,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            await _sleepHttpClient.DeleteSleepItem(sleep.SleepId);
+            await sleepHttpClient.DeleteSleepItem(sleep.SleepId);
 
             return RedirectToAction("Index", "Sleep");
         }

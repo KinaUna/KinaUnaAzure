@@ -13,28 +13,14 @@ namespace KinaUnaMediaApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PublicAccessController : ControllerBase
+    public class PublicAccessController(ImageStore imageStore, IPicturesService picturesService, IVideosService videosService, ICommentsService commentsService, IConfiguration configuration)
+        : ControllerBase
     {
-        private readonly ImageStore _imageStore;
-        private readonly ICommentsService _commentsService;
-        private readonly IPicturesService _picturesService;
-        private readonly IVideosService _videosService;
-        private readonly IConfiguration _configuration;
-
-        public PublicAccessController(ImageStore imageStore, IPicturesService picturesService, IVideosService videosService, ICommentsService commentsService, IConfiguration configuration)
-        {
-            _imageStore = imageStore;
-            _picturesService = picturesService;
-            _videosService = videosService;
-            _commentsService = commentsService;
-            _configuration = configuration;
-        }
-
         [HttpGet]
         [Route("[action]/{progenyId}/{accessLevel}")]
         public async Task<IActionResult> RandomPictureMobile(int progenyId, int accessLevel)
         {
-            List<Picture> picturesList = await _picturesService.GetPicturesList(Constants.DefaultChildId);
+            List<Picture> picturesList = await picturesService.GetPicturesList(Constants.DefaultChildId);
             picturesList = picturesList.Where(p => p.AccessLevel >= 5).ToList();
             if (picturesList.Any())
             {
@@ -44,9 +30,9 @@ namespace KinaUnaMediaApi.Controllers
                 Picture picture = picturesList[pictureNumber];
                 if (!picture.PictureLink.ToLower().StartsWith("http"))
                 {
-                    picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
-                    picture.PictureLink1200 = _imageStore.UriFor(picture.PictureLink1200);
-                    picture.PictureLink600 = _imageStore.UriFor(picture.PictureLink600);
+                    picture.PictureLink = imageStore.UriFor(picture.PictureLink);
+                    picture.PictureLink1200 = imageStore.UriFor(picture.PictureLink1200);
+                    picture.PictureLink600 = imageStore.UriFor(picture.PictureLink600);
                 }
 
                 return Ok(picture);
@@ -54,7 +40,7 @@ namespace KinaUnaMediaApi.Controllers
 
             Progeny progeny = new Progeny();
             progeny.Name = Constants.AppName;
-            progeny.Admins = _configuration.GetValue<string>("AdminEmail");
+            progeny.Admins = configuration.GetValue<string>("AdminEmail");
             progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
@@ -74,16 +60,16 @@ namespace KinaUnaMediaApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetPictureMobile(int id)
         {
-            Picture result = await _picturesService.GetPicture(id);
+            Picture result = await picturesService.GetPicture(id);
             if (result != null)
             {
                 if (result.ProgenyId == Constants.DefaultChildId)
                 {
                     if (!result.PictureLink.ToLower().StartsWith("http"))
                     {
-                        result.PictureLink = _imageStore.UriFor(result.PictureLink);
-                        result.PictureLink1200 = _imageStore.UriFor(result.PictureLink1200);
-                        result.PictureLink600 = _imageStore.UriFor(result.PictureLink600);
+                        result.PictureLink = imageStore.UriFor(result.PictureLink);
+                        result.PictureLink1200 = imageStore.UriFor(result.PictureLink1200);
+                        result.PictureLink600 = imageStore.UriFor(result.PictureLink600);
                     }
                     return Ok(result);
                 }
@@ -92,7 +78,7 @@ namespace KinaUnaMediaApi.Controllers
 
             Progeny progeny = new Progeny();
             progeny.Name = Constants.AppName;
-            progeny.Admins = _configuration.GetValue<string>("AdminEmail");
+            progeny.Admins = configuration.GetValue<string>("AdminEmail");
             progeny.NickName = Constants.AppName;
             progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
 
@@ -122,12 +108,12 @@ namespace KinaUnaMediaApi.Controllers
             List<Picture> allItems;
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                allItems = await _picturesService.GetPicturesList(Constants.DefaultChildId);
+                allItems = await picturesService.GetPicturesList(Constants.DefaultChildId);
                 allItems = allItems.Where(p => p.AccessLevel >= 5 && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToList();
             }
             else
             {
-                allItems = await _picturesService.GetPicturesList(2);
+                allItems = await picturesService.GetPicturesList(2);
                 allItems = allItems.Where(p => p.AccessLevel >= 5).OrderBy(p => p.PictureTime).ToList();
             }
 
@@ -171,18 +157,18 @@ namespace KinaUnaMediaApi.Controllers
 
             foreach (Picture pic in itemsOnPage)
             {
-                pic.Comments = await _commentsService.GetCommentsList(pic.CommentThreadNumber);
+                pic.Comments = await commentsService.GetCommentsList(pic.CommentThreadNumber);
                 if (!pic.PictureLink.ToLower().StartsWith("http"))
                 {
-                    pic.PictureLink = _imageStore.UriFor(pic.PictureLink);
+                    pic.PictureLink = imageStore.UriFor(pic.PictureLink);
                 }
                 if (!pic.PictureLink1200.ToLower().StartsWith("http"))
                 {
-                    pic.PictureLink1200 = _imageStore.UriFor(pic.PictureLink1200);
+                    pic.PictureLink1200 = imageStore.UriFor(pic.PictureLink1200);
                 }
                 if (!pic.PictureLink600.ToLower().StartsWith("http"))
                 {
-                    pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
+                    pic.PictureLink600 = imageStore.UriFor(pic.PictureLink600);
                 }
             }
             PicturePageViewModel model = new PicturePageViewModel();
@@ -206,7 +192,7 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> PictureViewModelMobile(int id, int accessLevel, [FromQuery] int sortBy = 1)
         {
 
-            Picture picture = await _picturesService.GetPicture(id);
+            Picture picture = await picturesService.GetPicture(id);
 
             if (picture != null)
             {
@@ -223,7 +209,7 @@ namespace KinaUnaMediaApi.Controllers
                 model.PictureLink = picture.PictureLink1200;
                 if (!model.PictureLink.ToLower().StartsWith("http"))
                 {
-                    model.PictureLink = _imageStore.UriFor(model.PictureLink);
+                    model.PictureLink = imageStore.UriFor(model.PictureLink);
                 }
                 model.AccessLevel = picture.AccessLevel;
                 model.Author = picture.Author;
@@ -235,10 +221,10 @@ namespace KinaUnaMediaApi.Controllers
                 model.Altitude = picture.Altitude;
                 model.PictureNumber = 1;
                 model.PictureCount = 1;
-                model.CommentsList = await _commentsService.GetCommentsList(picture.CommentThreadNumber);
+                model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
                 model.TagsList = "";
                 List<string> tagsList = new List<string>();
-                List<Picture> pictureList = await _picturesService.GetPicturesList(picture.ProgenyId);
+                List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId);
                 pictureList = pictureList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToList();
                 if (pictureList.Any())
                 {
@@ -313,14 +299,14 @@ namespace KinaUnaMediaApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetVideoMobile(int id)
         {
-            Video result = await _videosService.GetVideo(id);
+            Video result = await videosService.GetVideo(id);
             if (result.ProgenyId == Constants.DefaultChildId)
             {
                 return Ok(result);
             }
 
             // Todo: Create default video item
-            result = await _videosService.GetVideo(204);
+            result = await videosService.GetVideo(204);
             return Ok(result);
         }
 
@@ -337,12 +323,12 @@ namespace KinaUnaMediaApi.Controllers
             List<Video> allItems;
             if (tagFilter != "")
             {
-                allItems = await _videosService.GetVideosList(Constants.DefaultChildId);
+                allItems = await videosService.GetVideosList(Constants.DefaultChildId);
                 allItems = allItems.Where(p => p.AccessLevel >= 5 && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToList();
             }
             else
             {
-                allItems = await _videosService.GetVideosList(Constants.DefaultChildId);
+                allItems = await videosService.GetVideosList(Constants.DefaultChildId);
                 allItems = allItems.Where(p => p.AccessLevel >= 5).OrderBy(p => p.VideoTime).ToList();
             }
 
@@ -405,7 +391,7 @@ namespace KinaUnaMediaApi.Controllers
 
             foreach (Video vid in itemsOnPage)
             {
-                vid.Comments = await _commentsService.GetCommentsList(vid.CommentThreadNumber);
+                vid.Comments = await commentsService.GetCommentsList(vid.CommentThreadNumber);
             }
             VideoPageViewModel model = new VideoPageViewModel();
             model.VideosList = itemsOnPage;
@@ -428,7 +414,7 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> VideoViewModelMobile(int id, int accessLevel, [FromQuery] int sortBy = 1)
         {
 
-            Video video = await _videosService.GetVideo(id);
+            Video video = await videosService.GetVideo(id);
 
             if (video != null)
             {
@@ -455,14 +441,14 @@ namespace KinaUnaMediaApi.Controllers
                 model.Tags = video.Tags;
                 model.VideoNumber = 1;
                 model.VideoCount = 1;
-                model.CommentsList = await _commentsService.GetCommentsList(video.CommentThreadNumber);
+                model.CommentsList = await commentsService.GetCommentsList(video.CommentThreadNumber);
                 model.Location = video.Location;
                 model.Longtitude = video.Longtitude;
                 model.Latitude = video.Latitude;
                 model.Altitude = video.Latitude;
                 model.TagsList = "";
                 List<string> tagsList = new List<string>();
-                List<Video> videosList = await _videosService.GetVideosList(video.ProgenyId);
+                List<Video> videosList = await videosService.GetVideosList(video.ProgenyId);
                 videosList = videosList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToList();
                 if (videosList.Any())
                 {
@@ -541,7 +527,7 @@ namespace KinaUnaMediaApi.Controllers
         {
             string tagListString = "";
             List<string> tagsList = new List<string>();
-            List<Picture> pictureList = await _picturesService.GetPicturesList(id);
+            List<Picture> pictureList = await picturesService.GetPicturesList(id);
             if (pictureList.Any())
             {
                 foreach (Picture pic in pictureList)

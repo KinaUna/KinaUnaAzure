@@ -18,20 +18,9 @@ using KinaUnaWeb.Services.HttpClients;
 namespace KinaUnaWeb.Controllers
 {
     [AllowAnonymous]
-    public class AccountController : Controller
+    public class AccountController(ImageStore imageStore, IConfiguration configuration, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient)
+        : Controller
     {
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
-        private readonly IAuthHttpClient _authHttpClient;
-        private readonly ImageStore _imageStore;
-        private readonly IConfiguration _configuration;
-        public AccountController(ImageStore imageStore, IConfiguration configuration, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient)
-        {
-            _imageStore = imageStore;
-            _configuration = configuration;
-            _authHttpClient = authHttpClient;
-            _userInfosHttpClient = userInfosHttpClient;
-        }
-
         [Authorize]
         public IActionResult Index()
         {
@@ -115,13 +104,13 @@ namespace KinaUnaWeb.Controllers
             _ = bool.TryParse(User.FindFirst("email_verified")?.Value, out bool mailConfirmed);
             _ = DateTime.TryParse(User.FindFirst("joindate")?.Value, out DateTime joinDate);
 
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfo(userEmail) ?? throw new ApplicationException($"Unable to load user with email '{userEmail}'.");
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfo(userEmail) ?? throw new ApplicationException($"Unable to load user with email '{userEmail}'.");
             if (string.IsNullOrEmpty(userInfo.ProfilePicture))
             {
                 userInfo.ProfilePicture = Constants.ProfilePictureUrl;
             }
 
-            userInfo.ProfilePicture = _imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
+            userInfo.ProfilePicture = imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
 
             UserInfoViewModel model = new()
             {
@@ -145,7 +134,7 @@ namespace KinaUnaWeb.Controllers
                 model.UserName = model.UserEmail;
             }
 
-            model.ChangeLink = _configuration["AuthenticationServer"] + "/Account/ChangePassword";
+            model.ChangeLink = configuration["AuthenticationServer"] + "/Account/ChangePassword";
             
             return View(model);
         }
@@ -160,7 +149,7 @@ namespace KinaUnaWeb.Controllers
             string userEmail = User.GetEmail();
             _ = bool.TryParse(User.FindFirst("email_verified")?.Value, out bool mailConfirmed);
 
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfo(userEmail);
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfo(userEmail);
             userInfo.CopyPropertiesFromUserInfoViewModel(model);
             
             bool emailChanged = false;
@@ -177,13 +166,13 @@ namespace KinaUnaWeb.Controllers
             if (model.File != null && model.File.Name != string.Empty)
             {
                 await using Stream stream = model.File.OpenReadStream();
-                userInfo.ProfilePicture = await _imageStore.SaveImage(stream, BlobContainers.Profiles);
+                userInfo.ProfilePicture = await imageStore.SaveImage(stream, BlobContainers.Profiles);
             }
 
-            await _userInfosHttpClient.UpdateUserInfo(userInfo);
+            await userInfosHttpClient.UpdateUserInfo(userInfo);
             
             model.ProfilePicture = userInfo.ProfilePicture;
-            model.ProfilePicture = _imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
+            model.ProfilePicture = imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
 
             if (emailChanged)
             {
@@ -201,7 +190,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             _ = bool.TryParse(User.FindFirst("email_verified")?.Value, out bool mailConfirmed);
-            UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(userEmail);
+            UserInfo userinfo = await userInfosHttpClient.GetUserInfo(userEmail);
             _ = DateTime.TryParse(User.FindFirst("joindate")?.Value, out DateTime joinDate);
             
             UserInfoViewModel model = new()
@@ -219,7 +208,7 @@ namespace KinaUnaWeb.Controllers
                 PhoneNumber = User.FindFirst("phone_number")?.Value ?? "",
                 ProfilePicture = userinfo.ProfilePicture,
                 LanguageId = Request.GetLanguageIdFromCookie(),
-                ChangeLink = _configuration["AuthenticationServer"] + "/Account/ChangeEmail?NewEmail=" + newEmail + "&OldEmail=" + oldEmail
+                ChangeLink = configuration["AuthenticationServer"] + "/Account/ChangeEmail?NewEmail=" + newEmail + "&OldEmail=" + oldEmail
             };
 
             return View(model);
@@ -229,7 +218,7 @@ namespace KinaUnaWeb.Controllers
         public IActionResult EnablePush()
         {
             ViewBag.UserId = User.GetUserId();
-            ViewBag.PublicKey = _configuration["VapidPublicKey"];
+            ViewBag.PublicKey = configuration["VapidPublicKey"];
 
             return View();
         }
@@ -238,7 +227,7 @@ namespace KinaUnaWeb.Controllers
         public IActionResult DisablePush()
         {
             ViewBag.UserId = User.GetUserId();
-            ViewBag.PublicKey = _configuration["VapidPublicKey"];
+            ViewBag.PublicKey = configuration["VapidPublicKey"];
             return View();
         }
         
@@ -248,13 +237,13 @@ namespace KinaUnaWeb.Controllers
             string userId = User.GetUserId();
             _ = DateTime.TryParse(User.FindFirst("joindate")?.Value, out DateTime joinDate);
             
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
             if (string.IsNullOrEmpty(userInfo.ProfilePicture))
             {
                 userInfo.ProfilePicture = Constants.ProfilePictureUrl;
             }
 
-            userInfo.ProfilePicture = _imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
+            userInfo.ProfilePicture = imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
 
             UserInfoViewModel model = new()
             {
@@ -287,7 +276,7 @@ namespace KinaUnaWeb.Controllers
         {
             model.LanguageId = Request.GetLanguageIdFromCookie();
 
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             if (userInfo != null && userInfo.UserEmail.ToUpper() == User.GetEmail().ToUpper())
             {
                 model.UserId = userInfo.UserId;
@@ -297,9 +286,9 @@ namespace KinaUnaWeb.Controllers
                 model.LastName = userInfo.LastName;
                 model.UserName = userInfo.UserName;
 
-                _ = await _userInfosHttpClient.DeleteUserInfo(userInfo);
+                _ = await userInfosHttpClient.DeleteUserInfo(userInfo);
 
-                model.ChangeLink = _configuration["AuthenticationServer"] + "/Account/DeleteAccount";
+                model.ChangeLink = configuration["AuthenticationServer"] + "/Account/DeleteAccount";
             }
             
             return Redirect(model.ChangeLink);
@@ -309,12 +298,12 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> UnDeleteAccount()
         {
             string userId = User.GetUserId();
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfoByUserId(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
             if (userInfo.UserId == userId)
             {
                 userInfo.Deleted = false;
-                _ = await _userInfosHttpClient.UpdateUserInfo(userInfo);
-                _ = await _authHttpClient.RemoveDeleteUser(userInfo);
+                _ = await userInfosHttpClient.UpdateUserInfo(userInfo);
+                _ = await authHttpClient.RemoveDeleteUser(userInfo);
             }
             
             return RedirectToAction("Index", "Home");

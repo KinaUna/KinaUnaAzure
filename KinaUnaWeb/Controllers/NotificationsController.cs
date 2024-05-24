@@ -13,28 +13,19 @@ using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class NotificationsController : Controller
+    public class NotificationsController(
+        IHubContext<WebNotificationHub> hubContext,
+        ImageStore imageStore,
+        IWebNotificationsService webNotificationsService,
+        IViewModelSetupService viewModelSetupService)
+        : Controller
     {
-        private readonly IHubContext<WebNotificationHub> _hubContext;
-        private readonly ImageStore _imageStore;
-        private readonly IWebNotificationsService _webNotificationsService;
-        private readonly IViewModelSetupService _viewModelSetupService;
-
-        public NotificationsController(IHubContext<WebNotificationHub> hubContext, ImageStore imageStore,
-            IWebNotificationsService webNotificationsService, IViewModelSetupService viewModelSetupService)
-        {
-            _hubContext = hubContext;
-            _imageStore = imageStore;
-            _webNotificationsService = webNotificationsService;
-            _viewModelSetupService = viewModelSetupService;
-        }
-
         public async Task<IActionResult> Index(int Id = 0)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             NotificationsListViewModel model = new(baseModel);
             
-            model.NotificationsList = await _webNotificationsService.GetUsersNotifications(model.CurrentUser.UserId);
+            model.NotificationsList = await webNotificationsService.GetUsersNotifications(model.CurrentUser.UserId);
             
             if (model.NotificationsList.Any())
             {
@@ -47,14 +38,14 @@ namespace KinaUnaWeb.Controllers
                     notif.DateTimeString = notif.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
                     if (!notif.Icon.StartsWith("/"))
                     {
-                        notif.Icon = _imageStore.UriFor(notif.Icon, "profiles");
+                        notif.Icon = imageStore.UriFor(notif.Icon, "profiles");
                     }
                 }
             }
 
             if (Id != 0)
             {
-                WebNotification notification = await _webNotificationsService.GetNotificationById(Id);
+                WebNotification notification = await webNotificationsService.GetNotificationById(Id);
                 if (notification != null && notification.To == model.CurrentUser.UserId)
                 {
                     notification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(notification.DateTime,
@@ -63,7 +54,7 @@ namespace KinaUnaWeb.Controllers
                     model.SelectedNotification = notification;
                     if (!notification.Icon.StartsWith("/"))
                     {
-                        notification.Icon = _imageStore.UriFor(notification.Icon, "profiles");
+                        notification.Icon = imageStore.UriFor(notification.Icon, "profiles");
                     }
                 }
             }
@@ -73,12 +64,12 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> ShowNotification(WebNotification notification)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             WebNotificationViewModel model = new(baseModel);
             
             if (!notification.Icon.StartsWith("/"))
             {
-                notification.Icon = _imageStore.UriFor(notification.Icon, "profiles");
+                notification.Icon = imageStore.UriFor(notification.Icon, "profiles");
             }
 
             if (model.CurrentUser.UserId == notification.To)
@@ -91,12 +82,12 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> ShowUpdatedNotification(WebNotification notification)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             WebNotificationViewModel model = new(baseModel);
             
             if (!notification.Icon.StartsWith("/"))
             {
-                notification.Icon = _imageStore.UriFor(notification.Icon, "profiles");
+                notification.Icon = imageStore.UriFor(notification.Icon, "profiles");
             }
 
             if (model.CurrentUser.UserId == notification.To)
@@ -110,16 +101,16 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SetUnread(int Id)
         {
             string userId = User.GetUserId() ?? "NoUser";
-            WebNotification updateNotification = await _webNotificationsService.GetNotificationById(Id);
+            WebNotification updateNotification = await webNotificationsService.GetNotificationById(Id);
 
             if (updateNotification != null)
             {
                 if (userId == updateNotification.To)
                 {
                     updateNotification.IsRead = false;
-                    updateNotification = await _webNotificationsService.UpdateNotification(updateNotification);
+                    updateNotification = await webNotificationsService.UpdateNotification(updateNotification);
 
-                    await _hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
+                    await hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
                 }
             }
 
@@ -129,7 +120,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SetRead(int Id)
         {
             string userId = User.GetUserId() ?? "NoUser";
-            WebNotification updateNotification = await _webNotificationsService.GetNotificationById(Id);
+            WebNotification updateNotification = await webNotificationsService.GetNotificationById(Id);
 
             if (updateNotification != null)
             {
@@ -137,9 +128,9 @@ namespace KinaUnaWeb.Controllers
                 {
                     updateNotification.IsRead = true;
                     
-                    updateNotification = await _webNotificationsService.UpdateNotification(updateNotification);
+                    updateNotification = await webNotificationsService.UpdateNotification(updateNotification);
 
-                    await _hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
+                    await hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
                 }
             }
 
@@ -149,14 +140,14 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Remove(int Id)
         {
             string userId = User.GetUserId() ?? "NoUser";
-            WebNotification updateNotification = await _webNotificationsService.GetNotificationById(Id);
+            WebNotification updateNotification = await webNotificationsService.GetNotificationById(Id);
 
             if (updateNotification != null)
             {
                 if (userId == updateNotification.To)
                 {
-                    await _webNotificationsService.RemoveNotification(updateNotification);
-                    await _hubContext.Clients.User(userId).SendAsync("DeleteMessage", JsonConvert.SerializeObject(updateNotification));
+                    await webNotificationsService.RemoveNotification(updateNotification);
+                    await hubContext.Clients.User(userId).SendAsync("DeleteMessage", JsonConvert.SerializeObject(updateNotification));
                 }
             }
 

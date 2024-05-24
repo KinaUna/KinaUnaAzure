@@ -13,23 +13,15 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class SkillsController : Controller
+    public class SkillsController(ISkillsHttpClient skillsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
-        private readonly ISkillsHttpClient _skillsHttpClient;
-        private readonly IViewModelSetupService _viewModelSetupService;
-        public SkillsController(ISkillsHttpClient skillsHttpClient, IViewModelSetupService viewModelSetupService)
-        {
-            _skillsHttpClient = skillsHttpClient;
-            _viewModelSetupService = viewModelSetupService;
-        }
-
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             SkillsListViewModel model = new(baseModel);
             
-            List<Skill> skillsList = await _skillsHttpClient.GetSkillsList(model.CurrentProgenyId, model.CurrentAccessLevel);
+            List<Skill> skillsList = await skillsHttpClient.GetSkillsList(model.CurrentProgenyId, model.CurrentAccessLevel);
             
             if (skillsList.Count != 0)
             {
@@ -72,7 +64,7 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddSkill()
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             SkillViewModel model = new(baseModel);
 
             if (model.CurrentUser == null)
@@ -81,7 +73,7 @@ namespace KinaUnaWeb.Controllers
             }
 
 
-            model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
             
             model.SetAccessLevelList();
 
@@ -92,7 +84,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddSkill(SkillViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SkillItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SkillItem.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -103,7 +95,7 @@ namespace KinaUnaWeb.Controllers
 
             Skill skillItem = model.CreateSkill();
 
-            _ = await _skillsHttpClient.AddSkill(skillItem);
+            _ = await skillsHttpClient.AddSkill(skillItem);
             
             return RedirectToAction("Index", "Skills");
         }
@@ -111,8 +103,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> EditSkill(int itemId)
         {
-            Skill skill = await _skillsHttpClient.GetSkill(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
+            Skill skill = await skillsHttpClient.GetSkill(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
             SkillViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -136,7 +128,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditSkill(SkillViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SkillItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SkillItem.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -147,7 +139,7 @@ namespace KinaUnaWeb.Controllers
 
             Skill editedSkill = model.CreateSkill();
 
-            _ = await _skillsHttpClient.UpdateSkill(editedSkill);
+            _ = await skillsHttpClient.UpdateSkill(editedSkill);
 
             return RedirectToAction("Index", "Skills");
         }
@@ -155,8 +147,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteSkill(int itemId)
         {
-            Skill skill = await _skillsHttpClient.GetSkill(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
+            Skill skill = await skillsHttpClient.GetSkill(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
             SkillViewModel model = new(baseModel);
             
             model.SetPropertiesFromSkillItem(skill, model.IsCurrentUserProgenyAdmin);
@@ -173,8 +165,8 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteSkill(SkillViewModel model)
         {
-            Skill skill = await _skillsHttpClient.GetSkill(model.SkillItem.SkillId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
+            Skill skill = await skillsHttpClient.GetSkill(model.SkillItem.SkillId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
             model.SetBaseProperties(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -183,7 +175,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            _ = await _skillsHttpClient.DeleteSkill(skill.SkillId);
+            _ = await skillsHttpClient.DeleteSkill(skill.SkillId);
 
             return RedirectToAction("Index", "Skills");
         }

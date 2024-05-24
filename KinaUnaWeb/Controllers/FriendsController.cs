@@ -15,25 +15,14 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class FriendsController : Controller
+    public class FriendsController(ImageStore imageStore, IFriendsHttpClient friendsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
-        private readonly IFriendsHttpClient _friendsHttpClient;
-        private readonly ImageStore _imageStore;
-        private readonly IViewModelSetupService _viewModelSetupService;
-
-        public FriendsController(ImageStore imageStore, IFriendsHttpClient friendsHttpClient, IViewModelSetupService viewModelSetupService)
-        {
-            _imageStore = imageStore;
-            _friendsHttpClient = friendsHttpClient;
-            _viewModelSetupService = viewModelSetupService;
-        }
-        
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, string tagFilter = "")
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             FriendsListViewModel model = new(baseModel);
-            List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
+            List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
             
             if (friendsList.Count != 0)
             {
@@ -46,7 +35,7 @@ namespace KinaUnaWeb.Controllers
                     FriendViewModel friendViewModel = new();
                     friendViewModel.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
 
-                    friendViewModel.FriendItem.PictureLink = _imageStore.UriFor(friendViewModel.FriendItem.PictureLink, "friends");
+                    friendViewModel.FriendItem.PictureLink = imageStore.UriFor(friendViewModel.FriendItem.PictureLink, "friends");
 
                     if (!string.IsNullOrEmpty(friendViewModel.Tags))
                     {
@@ -74,8 +63,8 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> FriendDetails(int friendId, string tagFilter)
         {
-            Friend friend = await _friendsHttpClient.GetFriend(friendId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
+            Friend friend = await friendsHttpClient.GetFriend(friendId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
             FriendViewModel model = new(baseModel);
 
             if (friend.AccessLevel < model.CurrentAccessLevel)
@@ -86,10 +75,10 @@ namespace KinaUnaWeb.Controllers
             model.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
             
             
-            model.FriendItem.PictureLink = _imageStore.UriFor(model.FriendItem.PictureLink, "friends");
+            model.FriendItem.PictureLink = imageStore.UriFor(model.FriendItem.PictureLink, "friends");
 
             List<string> tagsList = new();
-            List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
+            List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
             foreach (Friend frn in friendsList)
             {
                 if (!string.IsNullOrEmpty(frn.Tags))
@@ -114,7 +103,7 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddFriend()
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             FriendViewModel model = new(baseModel);
             
             
@@ -123,7 +112,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
             model.SetProgenyList();
 
             List<string> tagsList = new();
@@ -131,7 +120,7 @@ namespace KinaUnaWeb.Controllers
             {
                 if (int.TryParse(item.Value, out int progenyId))
                 {
-                    List<Friend> friendsList = await _friendsHttpClient.GetFriendsList(progenyId, 0);
+                    List<Friend> friendsList = await friendsHttpClient.GetFriendsList(progenyId, 0);
                     foreach (Friend friend in friendsList)
                     {
                         if (!string.IsNullOrEmpty(friend.Tags))
@@ -161,7 +150,7 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> AddFriend(FriendViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.FriendItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.FriendItem.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -175,14 +164,14 @@ namespace KinaUnaWeb.Controllers
             if (model.File != null)
             {
                 await using Stream stream = model.File.OpenReadStream();
-                friendItem.PictureLink = await _imageStore.SaveImage(stream, "friends");
+                friendItem.PictureLink = await imageStore.SaveImage(stream, "friends");
             }
             else
             {
                 friendItem.PictureLink = Constants.ProfilePictureUrl;
             }
 
-            _ = await _friendsHttpClient.AddFriend(friendItem);
+            _ = await friendsHttpClient.AddFriend(friendItem);
 
             return RedirectToAction("Index", "Friends");
         }
@@ -190,8 +179,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> EditFriend(int itemId)
         {
-            Friend friend = await _friendsHttpClient.GetFriend(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
+            Friend friend = await friendsHttpClient.GetFriend(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
             FriendViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -200,12 +189,12 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            friend.PictureLink = _imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
+            friend.PictureLink = imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
 
             model.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
             
             List<string> tagsList = new();
-            List<Friend> friendsList1 = await _friendsHttpClient.GetFriendsList(model.CurrentProgenyId, 0);
+            List<Friend> friendsList1 = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, 0);
             foreach (Friend friendItem in friendsList1)
             {
                 if (!string.IsNullOrEmpty(friendItem.Tags))
@@ -233,7 +222,7 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> EditFriend(FriendViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.FriendItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.FriendItem.ProgenyId);
             model.SetBaseProperties(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -246,21 +235,21 @@ namespace KinaUnaWeb.Controllers
 
             if (model.File != null && model.File.Name != string.Empty)
             {
-                Friend originalFriend = await _friendsHttpClient.GetFriend(model.FriendItem.FriendId);
+                Friend originalFriend = await friendsHttpClient.GetFriend(model.FriendItem.FriendId);
                 model.FileName = model.File.FileName;
                 await using (Stream stream = model.File.OpenReadStream())
                 {
-                    editedFriend.PictureLink = await _imageStore.SaveImage(stream, "friends");
+                    editedFriend.PictureLink = await imageStore.SaveImage(stream, "friends");
                 }
 
-                await _imageStore.DeleteImage(originalFriend.PictureLink, "friends");
+                await imageStore.DeleteImage(originalFriend.PictureLink, "friends");
             }
             else
             {
                 editedFriend.PictureLink = Constants.KeepExistingLink;
             }
 
-            _ = await _friendsHttpClient.UpdateFriend(editedFriend);
+            _ = await friendsHttpClient.UpdateFriend(editedFriend);
 
             return RedirectToAction("Index", "Friends");
         }
@@ -268,8 +257,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteFriend(int itemId)
         {
-            Friend friend = await _friendsHttpClient.GetFriend(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
+            Friend friend = await friendsHttpClient.GetFriend(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
             FriendViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -278,7 +267,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            friend.PictureLink = _imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
+            friend.PictureLink = imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
             model.FriendItem = friend;
 
             return View(model);
@@ -288,8 +277,8 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteFriend(FriendViewModel model)
         {
-            Friend friend = await _friendsHttpClient.GetFriend(model.FriendItem.FriendId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
+            Friend friend = await friendsHttpClient.GetFriend(model.FriendItem.FriendId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -298,7 +287,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            _ = await _friendsHttpClient.DeleteFriend(friend.FriendId);
+            _ = await friendsHttpClient.DeleteFriend(friend.FriendId);
 
             return RedirectToAction("Index", "Friends");
         }

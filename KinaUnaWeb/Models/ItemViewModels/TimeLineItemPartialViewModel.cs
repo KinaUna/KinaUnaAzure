@@ -1,14 +1,8 @@
 ﻿namespace KinaUnaWeb.Models.ItemViewModels
 {
-    public class TimeLineItemPartialViewModel
+    public class TimeLineItemPartialViewModel(string partialViewName, object timeLineItem)
     {
-        public string PartialViewName { get; set; }
-        public object TimeLineItem { get; set; }
-
-        public TimeLineItemPartialViewModel(string partialViewName, object timeLineItem)
-        {
-            PartialViewName = partialViewName;
-            TimeLineItem = timeLineItem;
-        }
+        public string PartialViewName { get; set; } = partialViewName;
+        public object TimeLineItem { get; set; } = timeLineItem;
     }
 }

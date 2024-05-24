@@ -29,16 +29,9 @@ using System.Threading.Tasks;
 
 namespace KinaUna.IDP
 {
-    public class Startup
+    public class Startup(IConfiguration configuration, IWebHostEnvironment environment)
     {
-        private IConfiguration Configuration { get; }
-        private readonly IWebHostEnvironment _env;
-
-        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
-        {
-            Configuration = configuration;
-            _env = environment;
-        }
+        private IConfiguration Configuration { get; } = configuration;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -136,7 +129,7 @@ namespace KinaUna.IDP
                 }
             }
 
-            if (_env.IsDevelopment())
+            if (environment.IsDevelopment())
             {
                 services.AddCors(options =>
                 {
@@ -224,7 +217,7 @@ namespace KinaUna.IDP
                         return Task.CompletedTask;
                     };
 
-                    if (!_env.IsDevelopment())
+                    if (!environment.IsDevelopment())
                     {
                         options.Cookie.Domain = "web." + Constants.AppRootDomain;
 
@@ -235,7 +228,7 @@ namespace KinaUna.IDP
                     options.ClientId = Configuration["AppleClientId"] ?? throw new InvalidOperationException("AppleClientId missing in configuration."); 
                     options.KeyId = Configuration["AppleKeyId"];
                     options.TeamId = Configuration["AppleTeamId"] ?? throw new InvalidOperationException("AppleTeamId missing in configuration");
-                    options.UsePrivateKey((keyId) => _env.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
+                    options.UsePrivateKey((keyId) => environment.ContentRootFileProvider.GetFileInfo($"AuthKey_{keyId}.p8"));
                     options.SaveTokens = true;
                 })
                 .AddGoogle("Google", "Google", options =>
@@ -268,7 +261,7 @@ namespace KinaUna.IDP
             // This will do the initial DB population
             InitializeDatabase(app, Constants.ResetIdentityDb);
 
-            if (_env.IsDevelopment())
+            if (environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }

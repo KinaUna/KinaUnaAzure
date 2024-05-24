@@ -15,38 +15,26 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class VocabularyController : ControllerBase
+    public class VocabularyController(
+        IAzureNotifications azureNotifications,
+        IUserInfoService userInfoService,
+        IUserAccessService userAccessService,
+        ITimelineService timelineService,
+        IVocabularyService vocabularyService,
+        IProgenyService progenyService,
+        IWebNotificationsService webNotificationsService)
+        : ControllerBase
     {
-        private readonly IUserInfoService _userInfoService;
-        private readonly IUserAccessService _userAccessService;
-        private readonly ITimelineService _timelineService;
-        private readonly IVocabularyService _vocabularyService;
-        private readonly IProgenyService _progenyService;
-        private readonly IAzureNotifications _azureNotifications;
-        private readonly IWebNotificationsService _webNotificationsService;
-
-        public VocabularyController(IAzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService, ITimelineService timelineService,
-            IVocabularyService vocabularyService, IProgenyService progenyService, IWebNotificationsService webNotificationsService)
-        {
-            _azureNotifications = azureNotifications;
-            _userInfoService = userInfoService;
-            _userAccessService = userAccessService;
-            _timelineService = timelineService;
-            _vocabularyService = vocabularyService;
-            _progenyService = progenyService;
-            _webNotificationsService = webNotificationsService;
-        }
-
         // GET api/vocabulary/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<VocabularyItem> wordList = await _vocabularyService.GetVocabularyList(id);
+                List<VocabularyItem> wordList = await vocabularyService.GetVocabularyList(id);
                 wordList = wordList.Where(w => w.AccessLevel >= accessLevel).ToList();
                 if (wordList.Any())
                 {
@@ -62,10 +50,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVocabularyItem(int id)
         {
-            VocabularyItem result = await _vocabularyService.GetVocabularyItem(id);
+            VocabularyItem result = await vocabularyService.GetVocabularyItem(id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -78,7 +66,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] VocabularyItem value)
         {
-            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (progeny != null)
             {
@@ -92,20 +80,20 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            VocabularyItem vocabularyItem = await _vocabularyService.AddVocabularyItem(value);
+            VocabularyItem vocabularyItem = await vocabularyService.AddVocabularyItem(value);
 
 
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyVocabularyItemPropertiesForAdd(vocabularyItem);
-            _ = await _timelineService.AddTimeLineItem(timeLineItem);
+            _ = await timelineService.AddTimeLineItem(timeLineItem);
 
-            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
             string notificationTitle = "Word added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new word for " + progeny.NickName;
 
-            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await _webNotificationsService.SendVocabularyNotification(vocabularyItem, userInfo, notificationTitle);
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendVocabularyNotification(vocabularyItem, userInfo, notificationTitle);
 
             return Ok(vocabularyItem);
         }
@@ -114,7 +102,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] VocabularyItem value)
         {
-            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (progeny != null)
             {
@@ -128,27 +116,27 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            VocabularyItem vocabularyItem = await _vocabularyService.GetVocabularyItem(id);
+            VocabularyItem vocabularyItem = await vocabularyService.GetVocabularyItem(id);
             if (vocabularyItem == null)
             {
                 return NotFound();
             }
 
-            vocabularyItem = await _vocabularyService.UpdateVocabularyItem(value);
+            vocabularyItem = await vocabularyService.UpdateVocabularyItem(value);
 
-            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(vocabularyItem.WordId.ToString(), (int)KinaUnaTypes.TimeLineType.Vocabulary);
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(vocabularyItem.WordId.ToString(), (int)KinaUnaTypes.TimeLineType.Vocabulary);
             if (timeLineItem != null)
             {
                 timeLineItem.CopyVocabularyItemPropertiesForUpdate(vocabularyItem);
-                _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
+                _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
                 string notificationTitle = "Word edited for " + progeny.NickName;
                 string notificationMessage = userInfo.FullName() + " edited a word for " + progeny.NickName;
 
-                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                await _webNotificationsService.SendVocabularyNotification(vocabularyItem, userInfo, notificationTitle);
+                await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await webNotificationsService.SendVocabularyNotification(vocabularyItem, userInfo, notificationTitle);
             }
 
 
@@ -159,10 +147,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            VocabularyItem vocabularyItem = await _vocabularyService.GetVocabularyItem(id);
+            VocabularyItem vocabularyItem = await vocabularyService.GetVocabularyItem(id);
             if (vocabularyItem != null)
             {
-                Progeny progeny = await _progenyService.GetProgeny(vocabularyItem.ProgenyId);
+                Progeny progeny = await progenyService.GetProgeny(vocabularyItem.ProgenyId);
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 if (progeny != null)
                 {
@@ -176,25 +164,25 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(vocabularyItem.WordId.ToString(), (int)KinaUnaTypes.TimeLineType.Vocabulary);
+                TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(vocabularyItem.WordId.ToString(), (int)KinaUnaTypes.TimeLineType.Vocabulary);
                 if (timeLineItem != null)
                 {
-                    _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
+                    _ = await timelineService.DeleteTimeLineItem(timeLineItem);
                 }
 
-                _ = await _vocabularyService.DeleteVocabularyItem(vocabularyItem);
+                _ = await vocabularyService.DeleteVocabularyItem(vocabularyItem);
 
                 if (timeLineItem != null)
                 {
-                    UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                    UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
                     string notificationTitle = "Word deleted for " + progeny.NickName;
                     string notificationMessage = userInfo.FullName() + " deleted a word for " + progeny.NickName + ". Word: " + vocabularyItem.Word;
 
                     vocabularyItem.AccessLevel = timeLineItem.AccessLevel = 0;
 
-                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                    await _webNotificationsService.SendVocabularyNotification(vocabularyItem, userInfo, notificationTitle);
+                    await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                    await webNotificationsService.SendVocabularyNotification(vocabularyItem, userInfo, notificationTitle);
                 }
 
                 return NoContent();
@@ -206,12 +194,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetItemMobile(int id)
         {
-            VocabularyItem result = await _vocabularyService.GetVocabularyItem(id);
+            VocabularyItem result = await vocabularyService.GetVocabularyItem(id);
 
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {
@@ -229,14 +217,14 @@ namespace KinaUnaProgenyApi.Controllers
         {
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {
                 return Unauthorized();
             }
 
-            List<VocabularyItem> allItems = await _vocabularyService.GetVocabularyList(progenyId);
+            List<VocabularyItem> allItems = await vocabularyService.GetVocabularyList(progenyId);
 
             VocabularyListPage model = new();
             model.ProcessVocabularyList(allItems, sortBy, pageIndex, pageSize);

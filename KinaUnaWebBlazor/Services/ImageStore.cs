@@ -3,14 +3,9 @@ using Azure.Storage.Sas;
 
 namespace KinaUnaWebBlazor.Services
 {
-    public class ImageStore
+    public class ImageStore(IConfiguration configuration)
     {
-        private BlobServiceClient _blobServiceClient;
-
-        public ImageStore(IConfiguration configuration)
-        {
-            _blobServiceClient = new BlobServiceClient(configuration["kinaunastorageconnectionstring"]);
-        }
+        private BlobServiceClient _blobServiceClient = new BlobServiceClient(configuration["kinaunastorageconnectionstring"]);
 
         /// <summary>
         /// Saves an image file to the storage account specified in Constants.CloudBlobBase.

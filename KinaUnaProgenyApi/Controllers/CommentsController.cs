@@ -12,31 +12,20 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class CommentsController : ControllerBase
+    public class CommentsController(
+        IImageStore imageStore,
+        IAzureNotifications azureNotifications,
+        ICommentsService commentsService,
+        IProgenyService progenyService,
+        IUserInfoService userInfoService,
+        IWebNotificationsService webNotificationsService)
+        : ControllerBase
     {
-        private readonly ICommentsService _commentsService;
-        private readonly IProgenyService _progenyService;
-        private readonly IUserInfoService _userInfoService;
-        private readonly IImageStore _imageStore;
-        private readonly IAzureNotifications _azureNotifications;
-        private readonly IWebNotificationsService _webNotificationsService;
-
-        public CommentsController(IImageStore imageStore, IAzureNotifications azureNotifications, ICommentsService commentsService, IProgenyService progenyService,
-            IUserInfoService userInfoService, IWebNotificationsService webNotificationsService)
-        {
-            _imageStore = imageStore;
-            _azureNotifications = azureNotifications;
-            _commentsService = commentsService;
-            _progenyService = progenyService;
-            _userInfoService = userInfoService;
-            _webNotificationsService = webNotificationsService;
-        }
-
         // GET api/comments/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetComment(int id)
         {
-            Comment result = await _commentsService.GetComment(id);
+            Comment result = await commentsService.GetComment(id);
             if (result != null)
             {
                 return Ok(result);
@@ -51,16 +40,16 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{threadId}")]
         public async Task<IActionResult> GetCommentsByThread(int threadId)
         {
-            List<Comment> result = await _commentsService.GetCommentsList(threadId);
+            List<Comment> result = await commentsService.GetCommentsList(threadId);
             if (result != null)
             {
                 foreach (Comment comment in result)
                 {
-                    UserInfo commentAuthor = await _userInfoService.GetUserInfoByUserId(comment.Author);
+                    UserInfo commentAuthor = await userInfoService.GetUserInfoByUserId(comment.Author);
                     if (commentAuthor != null)
                     {
                         string authorImg = commentAuthor.ProfilePicture ?? "";
-                        comment.AuthorImage = _imageStore.UriFor(authorImg, "profiles");
+                        comment.AuthorImage = imageStore.UriFor(authorImg, "profiles");
                         comment.DisplayName = commentAuthor.FullName();
                     }
                 }
@@ -75,7 +64,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Comment model)
         {
-            Progeny progeny = await _progenyService.GetProgeny(model.Progeny.Id);
+            Progeny progeny = await progenyService.GetProgeny(model.Progeny.Id);
 
             string userId = User.GetUserId();
             if (progeny != null && model.CommentThreadNumber != 0)
@@ -90,8 +79,8 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            Comment newComment = await _commentsService.AddComment(model);
-            await _commentsService.SetComment(newComment.CommentId);
+            Comment newComment = await commentsService.AddComment(model);
+            await commentsService.SetComment(newComment.CommentId);
 
             newComment.Progeny = progeny;
             string notificationTitle = "New comment for " + newComment.Progeny.NickName;
@@ -105,10 +94,10 @@ namespace KinaUnaProgenyApi.Controllers
                 AccessLevel = newComment.AccessLevel
             };
 
-            UserInfo userinfo = await _userInfoService.GetUserInfoByUserId(model.Author);
+            UserInfo userinfo = await userInfoService.GetUserInfoByUserId(model.Author);
 
-            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
-            await _webNotificationsService.SendCommentNotification(newComment, userinfo, notificationTitle, notificationMessage);
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
+            await webNotificationsService.SendCommentNotification(newComment, userinfo, notificationTitle, notificationMessage);
 
             return Ok(newComment);
         }
@@ -117,13 +106,13 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Comment value)
         {
-            Comment comment = await _commentsService.GetComment(id);
+            Comment comment = await commentsService.GetComment(id);
             if (comment == null)
             {
                 return NotFound();
             }
 
-            Progeny progeny = await _progenyService.GetProgeny(value.Progeny.Id);
+            Progeny progeny = await progenyService.GetProgeny(value.Progeny.Id);
 
             string userId = User.GetUserId();
             if (progeny != null)
@@ -139,9 +128,9 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            comment = await _commentsService.UpdateComment(value);
+            comment = await commentsService.UpdateComment(value);
 
-            await _commentsService.SetComment(comment.CommentId);
+            await commentsService.SetComment(comment.CommentId);
 
             return Ok(comment);
         }
@@ -151,7 +140,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Delete(int id)
         {
 
-            Comment comment = await _commentsService.GetComment(id);
+            Comment comment = await commentsService.GetComment(id);
             if (comment != null)
             {
                 string userId = User.GetUserId();
@@ -160,8 +149,8 @@ namespace KinaUnaProgenyApi.Controllers
                     return Unauthorized();
                 }
 
-                _ = await _commentsService.DeleteComment(comment);
-                await _commentsService.RemoveComment(comment.CommentId, comment.CommentThreadNumber);
+                _ = await commentsService.DeleteComment(comment);
+                await commentsService.RemoveComment(comment.CommentId, comment.CommentThreadNumber);
                 return NoContent();
             }
             else

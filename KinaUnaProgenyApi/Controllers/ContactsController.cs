@@ -16,42 +16,28 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ContactsController : ControllerBase
+    public class ContactsController(
+        IImageStore imageStore,
+        IAzureNotifications azureNotifications,
+        IUserInfoService userInfoService,
+        IUserAccessService userAccessService,
+        IContactService contactService,
+        ILocationService locationService,
+        ITimelineService timelineService,
+        IProgenyService progenyService,
+        IWebNotificationsService webNotificationsService)
+        : ControllerBase
     {
-        private readonly IImageStore _imageStore;
-        private readonly IUserInfoService _userInfoService;
-        private readonly IUserAccessService _userAccessService;
-        private readonly IContactService _contactService;
-        private readonly ILocationService _locationService;
-        private readonly ITimelineService _timelineService;
-        private readonly IProgenyService _progenyService;
-        private readonly IAzureNotifications _azureNotifications;
-        private readonly IWebNotificationsService _webNotificationsService;
-
-        public ContactsController(IImageStore imageStore, IAzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService,
-            IContactService contactService, ILocationService locationService, ITimelineService timelineService, IProgenyService progenyService, IWebNotificationsService webNotificationsService)
-        {
-            _imageStore = imageStore;
-            _azureNotifications = azureNotifications;
-            _userInfoService = userInfoService;
-            _userAccessService = userAccessService;
-            _contactService = contactService;
-            _locationService = locationService;
-            _timelineService = timelineService;
-            _progenyService = progenyService;
-            _webNotificationsService = webNotificationsService;
-        }
-
         // GET api/contacts/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Contact> contactsList = await _contactService.GetContactsList(id);
+                List<Contact> contactsList = await contactService.GetContactsList(id);
                 contactsList = contactsList.Where(c => c.AccessLevel >= (userAccess?.AccessLevel ?? accessLevel)).ToList();
                 if (contactsList.Any())
                 {
@@ -66,10 +52,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetContactItem(int id)
         {
-            Contact result = await _contactService.GetContact(id);
+            Contact result = await contactService.GetContact(id);
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -82,7 +68,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Contact value)
         {
-            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (progeny != null)
             {
@@ -108,23 +94,23 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 if (value.Address.HasValues())
                 {
-                    value.Address = await _locationService.AddAddressItem(value.Address);
+                    value.Address = await locationService.AddAddressItem(value.Address);
                     value.AddressIdNumber = value.Address.AddressId;
                 }
             }
 
-            Contact contactItem = await _contactService.AddContact(value);
+            Contact contactItem = await contactService.AddContact(value);
 
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyContactPropertiesForAdd(contactItem);
 
-            await _timelineService.AddTimeLineItem(timeLineItem);
+            await timelineService.AddTimeLineItem(timeLineItem);
 
-            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
             string notificationTitle = "Contact added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new contact for " + progeny.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await _webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
 
             return Ok(contactItem);
         }
@@ -133,13 +119,13 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Contact value)
         {
-            Contact contactItem = await _contactService.GetContact(id);
+            Contact contactItem = await contactService.GetContact(id);
             if (contactItem == null)
             {
                 return NotFound();
             }
 
-            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (progeny != null)
             {
@@ -162,18 +148,18 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (contactItem.AddressIdNumber != null && contactItem.AddressIdNumber.Value != 0)
             {
-                Address existingAddress = await _locationService.GetAddressItem(contactItem.AddressIdNumber.Value);
+                Address existingAddress = await locationService.GetAddressItem(contactItem.AddressIdNumber.Value);
                 if (contactItem.Address != null)
                 {
                     existingAddress.CopyPropertiesForUpdate(contactItem.Address);
 
-                    contactItem.Address = await _locationService.UpdateAddressItem(existingAddress);
+                    contactItem.Address = await locationService.UpdateAddressItem(existingAddress);
                 }
                 else
                 {
                     int removedAddressId = existingAddress.AddressId;
                     contactItem.AddressIdNumber = null;
-                    await _locationService.RemoveAddressItem(removedAddressId);
+                    await locationService.RemoveAddressItem(removedAddressId);
                 }
             }
             else
@@ -182,25 +168,25 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     Address address = new();
                     address.CopyPropertiesForAdd(contactItem.Address);
-                    address = await _locationService.AddAddressItem(address);
+                    address = await locationService.AddAddressItem(address);
                     contactItem.AddressIdNumber = address.AddressId;
                 }
             }
 
-            contactItem = await _contactService.UpdateContact(contactItem);
+            contactItem = await contactService.UpdateContact(contactItem);
 
             contactItem.Author = User.GetUserId();
 
-            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(contactItem.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(contactItem.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
             if (timeLineItem != null && timeLineItem.CopyContactItemPropertiesForUpdate(contactItem))
             {
-                _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
-                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                _ = await timelineService.UpdateTimeLineItem(timeLineItem);
+                UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
                 string notificationTitle = "Contact edited for " + progeny.NickName;
                 string notificationMessage = userInfo.FullName() + " edited a contact for " + progeny.NickName;
 
-                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                await _webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
+                await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
             }
 
             return Ok(contactItem);
@@ -210,11 +196,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Contact contactItem = await _contactService.GetContact(id);
+            Contact contactItem = await contactService.GetContact(id);
             if (contactItem != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                Progeny progeny = await _progenyService.GetProgeny(contactItem.ProgenyId);
+                Progeny progeny = await progenyService.GetProgeny(contactItem.ProgenyId);
                 if (progeny != null)
                 {
                     if (!progeny.IsInAdminList(userEmail))
@@ -227,27 +213,27 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(contactItem.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
+                TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(contactItem.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
                 if (timeLineItem != null)
                 {
-                    _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
+                    _ = await timelineService.DeleteTimeLineItem(timeLineItem);
                 }
 
                 if (contactItem.AddressIdNumber != null)
                 {
-                    Address address = await _locationService.GetAddressItem(contactItem.AddressIdNumber.Value);
+                    Address address = await locationService.GetAddressItem(contactItem.AddressIdNumber.Value);
                     if (address != null)
                     {
-                        await _locationService.RemoveAddressItem(address.AddressId);
+                        await locationService.RemoveAddressItem(address.AddressId);
                     }
                 }
 
-                await _imageStore.DeleteImage(contactItem.PictureLink, BlobContainers.Contacts);
+                await imageStore.DeleteImage(contactItem.PictureLink, BlobContainers.Contacts);
 
-                _ = await _contactService.DeleteContact(contactItem);
+                _ = await contactService.DeleteContact(contactItem);
 
                 contactItem.Author = User.GetUserId();
-                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
                 string notificationTitle = "Contact deleted for " + progeny.NickName;
                 string notificationMessage = userInfo.FullName() + " deleted a contact for " + progeny.NickName + ". Contact: " + contactItem.DisplayName;
@@ -255,8 +241,8 @@ namespace KinaUnaProgenyApi.Controllers
                 if (timeLineItem != null)
                 {
                     contactItem.AccessLevel = timeLineItem.AccessLevel = 0;
-                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                    await _webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
+                    await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                    await webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
                 }
 
                 return NoContent();
@@ -268,21 +254,21 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetContactMobile(int id)
         {
-            Contact result = await _contactService.GetContact(id);
+            Contact result = await contactService.GetContact(id);
 
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {
                     if (result.AddressIdNumber.HasValue)
                     {
-                        result.Address = await _locationService.GetAddressItem(result.AddressIdNumber.Value);
+                        result.Address = await locationService.GetAddressItem(result.AddressIdNumber.Value);
                     }
 
-                    result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Contacts);
+                    result.PictureLink = imageStore.UriFor(result.PictureLink, BlobContainers.Contacts);
 
                     return Ok(result);
                 }
@@ -295,11 +281,11 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}/{accessLevel}")]
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
         {
-            List<Contact> contactsList = await _contactService.GetContactsList(id);
+            List<Contact> contactsList = await contactService.GetContactsList(id);
             contactsList = contactsList.Where(c => c.AccessLevel >= accessLevel).ToList();
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
 
             if ((userAccess != null || id == Constants.DefaultChildId) && contactsList.Any())
             {
@@ -307,10 +293,10 @@ namespace KinaUnaProgenyApi.Controllers
                 {
                     if (contact.AddressIdNumber.HasValue)
                     {
-                        contact.Address = await _locationService.GetAddressItem(contact.AddressIdNumber.Value);
+                        contact.Address = await locationService.GetAddressItem(contact.AddressIdNumber.Value);
                     }
 
-                    contact.PictureLink = _imageStore.UriFor(contact.PictureLink, BlobContainers.Contacts);
+                    contact.PictureLink = imageStore.UriFor(contact.PictureLink, BlobContainers.Contacts);
                 }
                 return Ok(contactsList);
             }
@@ -322,23 +308,23 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{contactId}")]
         public async Task<IActionResult> DownloadPicture(int contactId)
         {
-            Contact contact = await _contactService.GetContact(contactId);
+            Contact contact = await contactService.GetContact(contactId);
             if (contact == null)
             {
                 return NotFound();
             }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(contact.ProgenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(contact.ProgenyId, userEmail);
 
             if (userAccess != null && userAccess.AccessLevel > 0 && contact.PictureLink.ToLower().StartsWith("http"))
             {
                 await using (Stream stream = await GetStreamFromUrl(contact.PictureLink))
                 {
-                    contact.PictureLink = await _imageStore.SaveImage(stream, BlobContainers.Contacts);
+                    contact.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Contacts);
                 }
 
-                contact = await _contactService.UpdateContact(contact);
+                contact = await contactService.UpdateContact(contact);
 
                 return Ok(contact);
             }

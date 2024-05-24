@@ -6,15 +6,8 @@ using KinaUna.Data;
 
 namespace KinaUnaWeb.Services
 {
-    public class EmailSender : IEmailSender
+    public class EmailSender(IConfiguration configuration) : IEmailSender
     {
-        private readonly IConfiguration _configuration;
-
-        public EmailSender(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-
         /// <summary>
         /// Sends an email from the email address configured in Constants.SmtpFrom.
         /// </summary>
@@ -24,17 +17,17 @@ namespace KinaUnaWeb.Services
         /// <returns></returns>
         public Task SendEmailAsync(string email, string subject, string message)
         {
-            SmtpClient client = new(_configuration.GetValue<string>("SmtpServer"))
+            SmtpClient client = new(configuration.GetValue<string>("SmtpServer"))
             {
                 UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(_configuration.GetValue<string>("SmtpUserName"), _configuration.GetValue<string>("SupportMailPassword")),
+                Credentials = new NetworkCredential(configuration.GetValue<string>("SmtpUserName"), configuration.GetValue<string>("SupportMailPassword")),
                 EnableSsl = true,
                 Port = 587
             };
 
             MailMessage mailMessage = new()
             {
-                From = new MailAddress(_configuration.GetValue<string>("SmtpFrom"), "Support - " + Constants.AppName)
+                From = new MailAddress(configuration.GetValue<string>("SmtpFrom"), "Support - " + Constants.AppName)
             };
             mailMessage.To.Add(email);
             mailMessage.Body = message;

@@ -12,28 +12,17 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class FamilyController : Controller
+    public class FamilyController(IProgenyHttpClient progenyHttpClient, IUserAccessHttpClient userAccessHttpClient, IViewModelSetupService viewModelSetupService)
+        : Controller
     {
-        
-        private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private readonly IViewModelSetupService _viewModelSetupService;
-        
-        public FamilyController(IProgenyHttpClient progenyHttpClient, IUserAccessHttpClient userAccessHttpClient, IViewModelSetupService viewModelSetupService)
-        {
-            _progenyHttpClient = progenyHttpClient;
-            _userAccessHttpClient = userAccessHttpClient;
-            _viewModelSetupService = viewModelSetupService;
-        }
-
         public async Task<IActionResult> Index()
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             FamilyViewModel model = new(baseModel)
             {
                 Family = new()
             };
-            model.Family.Children = await _progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+            model.Family.Children = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
 
             if (model.Family.Children != null && model.Family.Children.Any())
             {
@@ -43,7 +32,7 @@ namespace KinaUnaWeb.Controllers
                     {
                         progeny.BirthDay = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(progeny.BirthDay.Value,progeny.TimeZone,model.CurrentUser.Timezone);
                     }
-                    List<UserAccess> userAccesses = await _userAccessHttpClient.GetProgenyAccessList(progeny.Id);
+                    List<UserAccess> userAccesses = await userAccessHttpClient.GetProgenyAccessList(progeny.Id);
                     model.Family.AccessList.AddRange(userAccesses);
                 }
             }

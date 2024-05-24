@@ -3,21 +3,12 @@ using System.Globalization;
 
 namespace KinaUnaWeb.Models
 {
-    public class BirthTime
+    public class BirthTime(DateTime bday, TimeZoneInfo bdayTz)
     {
-        private readonly DateTime _birthDay;
-        private readonly TimeZoneInfo _birthTimeZone;
-        private readonly DateTime _currentDateTime;
+        private readonly DateTime _birthDay = TimeZoneInfo.ConvertTimeToUtc(bday, bdayTz);
+        private readonly DateTime _currentDateTime = DateTime.UtcNow; // TimeZoneInfo.ConvertTimeToUtc(DateTime.Now);
 
-        public string CurrentTime => TimeZoneInfo.ConvertTimeFromUtc(_currentDateTime, _birthTimeZone).ToString("dd MMMM yyyy HH:mm:ss");
-
-        public BirthTime( DateTime bday, TimeZoneInfo bdayTz)
-        {
-            _birthTimeZone = bdayTz;
-            _birthDay = TimeZoneInfo.ConvertTimeToUtc(bday, bdayTz);
-
-            _currentDateTime = DateTime.UtcNow; // TimeZoneInfo.ConvertTimeToUtc(DateTime.Now);
-        }
+        public string CurrentTime => TimeZoneInfo.ConvertTimeFromUtc(_currentDateTime, bdayTz).ToString("dd MMMM yyyy HH:mm:ss");
 
 
         public string CalcYears()

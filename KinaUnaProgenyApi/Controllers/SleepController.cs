@@ -16,37 +16,26 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class SleepController : ControllerBase
+    public class SleepController(
+        IAzureNotifications azureNotifications,
+        IUserAccessService userAccessService,
+        ITimelineService timelineService,
+        ISleepService sleepService,
+        IProgenyService progenyService,
+        IUserInfoService userInfoService,
+        IWebNotificationsService webNotificationsService)
+        : ControllerBase
     {
-        private readonly IUserAccessService _userAccessService;
-        private readonly ITimelineService _timelineService;
-        private readonly ISleepService _sleepService;
-        private readonly IProgenyService _progenyService;
-        private readonly IUserInfoService _userInfoService;
-        private readonly IAzureNotifications _azureNotifications;
-        private readonly IWebNotificationsService _webNotificationsService;
-
-        public SleepController(IAzureNotifications azureNotifications, IUserAccessService userAccessService, ITimelineService timelineService, ISleepService sleepService, IProgenyService progenyService, IUserInfoService userInfoService, IWebNotificationsService webNotificationsService)
-        {
-            _azureNotifications = azureNotifications;
-            _userAccessService = userAccessService;
-            _timelineService = timelineService;
-            _sleepService = sleepService;
-            _progenyService = progenyService;
-            _userInfoService = userInfoService;
-            _webNotificationsService = webNotificationsService;
-        }
-
         // GET api/sleep/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Sleep> sleepList = await _sleepService.GetSleepList(id);
+                List<Sleep> sleepList = await sleepService.GetSleepList(id);
                 sleepList = sleepList.Where(s => s.AccessLevel >= accessLevel).ToList();
                 if (sleepList.Any())
                 {
@@ -62,14 +51,14 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepItem(int id)
         {
 
-            Sleep result = await _sleepService.GetSleep(id);
+            Sleep result = await sleepService.GetSleep(id);
             if (result.AccessLevel == (int)AccessLevel.Public || result.ProgenyId == Constants.DefaultChildId)
             {
                 return Ok(result);
             }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null)
             {
                 return Ok(result);
@@ -82,7 +71,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Sleep value)
         {
-            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail();
             if (progeny != null)
             {
@@ -98,20 +87,20 @@ namespace KinaUnaProgenyApi.Controllers
 
             value.Author = User.GetUserId();
 
-            Sleep sleepItem = await _sleepService.AddSleep(value);
+            Sleep sleepItem = await sleepService.AddSleep(value);
 
             TimeLineItem timeLineItem = new();
             timeLineItem.CopySleepPropertiesForAdd(sleepItem);
 
-            _ = await _timelineService.AddTimeLineItem(timeLineItem);
+            _ = await timelineService.AddTimeLineItem(timeLineItem);
 
-            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
             string notificationTitle = "Sleep added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new sleep item for " + progeny.NickName;
 
-            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await _webNotificationsService.SendSleepNotification(sleepItem, userInfo, notificationTitle);
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendSleepNotification(sleepItem, userInfo, notificationTitle);
 
             return Ok(sleepItem);
         }
@@ -120,13 +109,13 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Sleep value)
         {
-            Sleep sleepItem = await _sleepService.GetSleep(id);
+            Sleep sleepItem = await sleepService.GetSleep(id);
             if (sleepItem == null)
             {
                 return NotFound();
             }
 
-            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail();
             if (progeny != null)
             {
@@ -140,22 +129,22 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            sleepItem = await _sleepService.UpdateSleep(value);
+            sleepItem = await sleepService.UpdateSleep(value);
 
-            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(sleepItem.SleepId.ToString(), (int)KinaUnaTypes.TimeLineType.Sleep);
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(sleepItem.SleepId.ToString(), (int)KinaUnaTypes.TimeLineType.Sleep);
 
             if (timeLineItem != null)
             {
                 timeLineItem.CopySleepPropertiesForUpdate(sleepItem);
-                _ = await _timelineService.UpdateTimeLineItem(timeLineItem);
+                _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
                 string notificationTitle = "Sleep for " + progeny.NickName + " edited";
                 string notificationMessage = userInfo.FullName() + " edited a sleep item for " + progeny.NickName;
 
-                await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                await _webNotificationsService.SendSleepNotification(sleepItem, userInfo, notificationTitle);
+                await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                await webNotificationsService.SendSleepNotification(sleepItem, userInfo, notificationTitle);
             }
 
             return Ok(sleepItem);
@@ -165,11 +154,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Sleep sleepItem = await _sleepService.GetSleep(id);
+            Sleep sleepItem = await sleepService.GetSleep(id);
             if (sleepItem != null)
             {
                 string userEmail = User.GetEmail();
-                Progeny progeny = await _progenyService.GetProgeny(sleepItem.ProgenyId);
+                Progeny progeny = await progenyService.GetProgeny(sleepItem.ProgenyId);
                 if (progeny != null)
                 {
                     if (!progeny.IsInAdminList(userEmail))
@@ -182,25 +171,25 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(sleepItem.SleepId.ToString(), (int)KinaUnaTypes.TimeLineType.Sleep);
+                TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(sleepItem.SleepId.ToString(), (int)KinaUnaTypes.TimeLineType.Sleep);
                 if (timeLineItem != null)
                 {
-                    _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
+                    _ = await timelineService.DeleteTimeLineItem(timeLineItem);
                 }
 
-                _ = await _sleepService.DeleteSleep(sleepItem);
+                _ = await sleepService.DeleteSleep(sleepItem);
 
                 if (timeLineItem != null)
                 {
-                    UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                    UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
                     string notificationTitle = "Sleep for " + progeny.NickName + " deleted";
                     string notificationMessage = userInfo.FullName() + " deleted a sleep item for " + progeny.NickName + ". Sleep start: " + sleepItem.SleepStart.ToString("dd-MMM-yyyy HH:mm");
 
                     sleepItem.AccessLevel = timeLineItem.AccessLevel = 0;
 
-                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                    await _webNotificationsService.SendSleepNotification(sleepItem, userInfo, notificationTitle);
+                    await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                    await webNotificationsService.SendSleepNotification(sleepItem, userInfo, notificationTitle);
                 }
 
                 return NoContent();
@@ -215,9 +204,9 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepMobile(int id)
         {
 
-            Sleep result = await _sleepService.GetSleep(id);
+            Sleep result = await sleepService.GetSleep(id);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null)
             {
                 return Ok(result);
@@ -232,7 +221,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {
@@ -243,7 +232,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Sleep> allItems = await _sleepService.GetSleepList(progenyId);
+            List<Sleep> allItems = await sleepService.GetSleepList(progenyId);
             allItems = allItems.OrderBy(s => s.SleepStart).ToList();
 
             if (sortBy == 1)
@@ -287,10 +276,10 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
             if (userAccess != null)
             {
-                List<Sleep> result = await _sleepService.GetSleepList(progenyId);
+                List<Sleep> result = await sleepService.GetSleepList(progenyId);
                 result = result.Where(s => s.AccessLevel >= accessLevel).ToList();
                 result = result.OrderByDescending(s => s.SleepStart).ToList();
                 if (start != -1)
@@ -308,12 +297,12 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepStatsMobile(int progenyId, int accessLevel)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
             if (userAccess != null)
             {
-                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
                 string userTimeZone = userInfo.Timezone;
-                List<Sleep> allSleepList = await _sleepService.GetSleepList(progenyId);
+                List<Sleep> allSleepList = await sleepService.GetSleepList(progenyId);
                 SleepStatsModel model = new();
                 model.ProcessSleepStats(allSleepList, accessLevel, userTimeZone);
 
@@ -327,13 +316,13 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
             if (userAccess != null)
             {
-                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
                 string userTimeZone = userInfo.Timezone;
 
-                List<Sleep> sList = await _sleepService.GetSleepList(progenyId);
+                List<Sleep> sList = await sleepService.GetSleepList(progenyId);
 
                 SleepStatsModel sleepStatsModel = new();
                 List<Sleep> chartList = sleepStatsModel.ProcessSleepChartData(sList, accessLevel, userTimeZone);
@@ -351,16 +340,16 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
 
-            Sleep currentSleep = await _sleepService.GetSleep(sleepId);
+            Sleep currentSleep = await sleepService.GetSleep(sleepId);
 
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(currentSleep.ProgenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(currentSleep.ProgenyId, userEmail);
 
             if (userAccess != null)
             {
-                UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
                 string userTimeZone = userInfo.Timezone;
 
-                List<Sleep> allSleepList = await _sleepService.GetSleepList(currentSleep.ProgenyId);
+                List<Sleep> allSleepList = await sleepService.GetSleepList(currentSleep.ProgenyId);
                 SleepDetailsModel sleepDetailsModel = new();
                 sleepDetailsModel.CreateSleepList(currentSleep, allSleepList, accessLevel, sortOrder, userTimeZone);
 

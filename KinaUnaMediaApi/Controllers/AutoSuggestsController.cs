@@ -14,26 +14,15 @@ namespace KinaUnaMediaApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class AutoSuggestsController : ControllerBase
+    public class AutoSuggestsController(IDataService dataService, IPicturesService picturesService, IVideosService videosService) : ControllerBase
     {
-        private readonly IDataService _dataService;
-        private readonly IPicturesService _picturesService;
-        private readonly IVideosService _videosService;
-
-        public AutoSuggestsController(IDataService dataService, IPicturesService picturesService, IVideosService videosService)
-        {
-            _dataService = dataService;
-            _picturesService = picturesService;
-            _videosService = videosService;
-        }
-
         [Route("[action]/{id}/{accessLevel}")]
         [HttpGet]
         public async Task<IActionResult> GetLocationAutoSuggestList(int id, int accessLevel)
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
@@ -41,7 +30,7 @@ namespace KinaUnaMediaApi.Controllers
             }
 
 
-            List<Picture> allItems = await _picturesService.GetPicturesList(id);
+            List<Picture> allItems = await picturesService.GetPicturesList(id);
             allItems = allItems.Where(p => p.AccessLevel >= accessLevel).ToList();
             List<string> autoSuggestList = new List<string>();
             foreach (Picture picture in allItems)
@@ -55,7 +44,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
 
-            List<Video> allVideos = await _videosService.GetVideosList(id);
+            List<Video> allVideos = await videosService.GetVideosList(id);
             allVideos = allVideos.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Video video in allVideos)
             {
@@ -68,7 +57,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
 
-            List<CalendarItem> allCalendarItems = await _dataService.GetCalendarList(id);
+            List<CalendarItem> allCalendarItems = await dataService.GetCalendarList(id);
             allCalendarItems = allCalendarItems.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (CalendarItem calendarItem in allCalendarItems)
             {
@@ -81,7 +70,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
 
-            List<Location> allLocations = await _dataService.GetLocationsList(id);
+            List<Location> allLocations = await dataService.GetLocationsList(id);
             allLocations = allLocations.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Location locationItem in allLocations)
             {
@@ -105,7 +94,7 @@ namespace KinaUnaMediaApi.Controllers
         {
             // Check if user should be allowed access.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _dataService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(id, userEmail);
 
             if (userAccess == null && id != Constants.DefaultChildId)
             {
@@ -113,7 +102,7 @@ namespace KinaUnaMediaApi.Controllers
             }
 
 
-            List<Picture> allItems = await _picturesService.GetPicturesList(id);
+            List<Picture> allItems = await picturesService.GetPicturesList(id);
             allItems = allItems.Where(p => p.AccessLevel >= accessLevel).ToList();
             List<string> autoSuggestList = new List<string>();
             foreach (Picture picture in allItems)
@@ -131,7 +120,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
 
-            List<Video> allVideos = await _videosService.GetVideosList(id);
+            List<Video> allVideos = await videosService.GetVideosList(id);
             allVideos = allVideos.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Video video in allVideos)
             {
@@ -148,7 +137,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
 
-            List<Location> allLocations = await _dataService.GetLocationsList(id);
+            List<Location> allLocations = await dataService.GetLocationsList(id);
             allLocations = allLocations.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Location location in allLocations)
             {
@@ -165,7 +154,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
 
-            List<Friend> allFriends = await _dataService.GetFriendsList(id);
+            List<Friend> allFriends = await dataService.GetFriendsList(id);
             allFriends = allFriends.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Friend friend in allFriends)
             {
@@ -182,7 +171,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
             }
 
-            List<Contact> allContacts = await _dataService.GetContactsList(id);
+            List<Contact> allContacts = await dataService.GetContactsList(id);
             allContacts = allContacts.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Contact contact in allContacts)
             {

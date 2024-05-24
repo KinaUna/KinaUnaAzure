@@ -4,15 +4,8 @@ using KinaUna.Data;
 
 namespace KinaUnaWebBlazor.Services
 {
-    public class EmailSender : IEmailSender
+    public class EmailSender(IConfiguration configuration) : IEmailSender
     {
-        private readonly IConfiguration _configuration;
-
-        public EmailSender(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-
         /// <summary>
         /// Sends an email from the email address configured in Constants.SmtpFrom.
         /// </summary>
@@ -22,14 +15,14 @@ namespace KinaUnaWebBlazor.Services
         /// <returns></returns>
         public Task SendEmailAsync(string email, string subject, string message)
         {
-            SmtpClient client = new SmtpClient(_configuration.GetValue<string>("SmtpServer"));
+            SmtpClient client = new SmtpClient(configuration.GetValue<string>("SmtpServer"));
             client.UseDefaultCredentials = false;
-            client.Credentials = new NetworkCredential(_configuration.GetValue<string>("SmtpUsername"), _configuration.GetValue<string>("SupportMailPassword"));
+            client.Credentials = new NetworkCredential(configuration.GetValue<string>("SmtpUsername"), configuration.GetValue<string>("SupportMailPassword"));
             client.EnableSsl = true;
             client.Port = 587;
 
             MailMessage mailMessage = new MailMessage();
-            mailMessage.From = new MailAddress(_configuration.GetValue<string>("SmtpFrom") ?? throw new KeyNotFoundException("Key SmtpFrom not found. Check if it is defined in the configuration"), "Support - " + Constants.AppName);
+            mailMessage.From = new MailAddress(configuration.GetValue<string>("SmtpFrom") ?? throw new KeyNotFoundException("Key SmtpFrom not found. Check if it is defined in the configuration"), "Support - " + Constants.AppName);
             mailMessage.To.Add(email);
             mailMessage.Body = message;
             mailMessage.IsBodyHtml = true;

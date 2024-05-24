@@ -16,38 +16,26 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class LocationsController : ControllerBase
+    public class LocationsController(
+        IAzureNotifications azureNotifications,
+        IUserInfoService userInfoService,
+        IUserAccessService userAccessService,
+        ILocationService locationService,
+        ITimelineService timelineService,
+        IProgenyService progenyService,
+        IWebNotificationsService webNotificationsService)
+        : ControllerBase
     {
-        private readonly IUserInfoService _userInfoService;
-        private readonly IUserAccessService _userAccessService;
-        private readonly ILocationService _locationService;
-        private readonly ITimelineService _timelineService;
-        private readonly IProgenyService _progenyService;
-        private readonly IAzureNotifications _azureNotifications;
-        private readonly IWebNotificationsService _webNotificationsService;
-
-        public LocationsController(IAzureNotifications azureNotifications, IUserInfoService userInfoService, IUserAccessService userAccessService, ILocationService locationService,
-            ITimelineService timelineService, IProgenyService progenyService, IWebNotificationsService webNotificationsService)
-        {
-            _azureNotifications = azureNotifications;
-            _userInfoService = userInfoService;
-            _userAccessService = userAccessService;
-            _locationService = locationService;
-            _timelineService = timelineService;
-            _progenyService = progenyService;
-            _webNotificationsService = webNotificationsService;
-        }
-
         // GET api/locations/progeny/[id]
         [HttpGet]
         [Route("[action]/{id}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                List<Location> locationsList = await _locationService.GetLocationsList(id);
+                List<Location> locationsList = await locationService.GetLocationsList(id);
                 locationsList = locationsList.Where(l => l.AccessLevel >= accessLevel).ToList();
                 if (locationsList.Any())
                 {
@@ -65,7 +53,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetLocationItem(int id)
         {
             Location
-                result = await _locationService.GetLocation(id);
+                result = await locationService.GetLocation(id);
 
             if (result == null)
             {
@@ -73,7 +61,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -86,7 +74,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Location value)
         {
-            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (progeny != null)
             {
@@ -102,17 +90,17 @@ namespace KinaUnaProgenyApi.Controllers
 
             value.Author = User.GetUserId();
 
-            Location location = await _locationService.AddLocation(value);
+            Location location = await locationService.AddLocation(value);
 
             TimeLineItem tItem = new();
             tItem.CopyLocationPropertiesForAdd(location);
-            _ = await _timelineService.AddTimeLineItem(tItem);
+            _ = await timelineService.AddTimeLineItem(tItem);
 
-            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
             string notificationTitle = "Location added for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " added a new location for " + progeny.NickName;
-            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, tItem, userInfo.ProfilePicture);
-            await _webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, tItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
 
             return Ok(location);
         }
@@ -121,7 +109,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Location value)
         {
-            Progeny progeny = await _progenyService.GetProgeny(value.ProgenyId);
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             if (progeny != null)
             {
@@ -135,29 +123,29 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            Location location = await _locationService.GetLocation(id);
+            Location location = await locationService.GetLocation(id);
             if (location == null)
             {
                 return NotFound();
             }
 
-            location = await _locationService.UpdateLocation(value);
+            location = await locationService.UpdateLocation(value);
 
-            TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
             if (timeLineItem != null)
             {
                 timeLineItem.CopyLocationPropertiesForUpdate(location);
-                await _timelineService.UpdateTimeLineItem(timeLineItem);
+                await timelineService.UpdateTimeLineItem(timeLineItem);
             }
 
             location.Author = User.GetUserId();
-            UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
             string notificationTitle = "Location edited for " + progeny.NickName;
             string notificationMessage = userInfo.FullName() + " edited a location for " + progeny.NickName;
 
-            await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await _webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
 
             return Ok(location);
         }
@@ -166,10 +154,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Location location = await _locationService.GetLocation(id);
+            Location location = await locationService.GetLocation(id);
             if (location != null)
             {
-                Progeny progeny = await _progenyService.GetProgeny(location.ProgenyId);
+                Progeny progeny = await progenyService.GetProgeny(location.ProgenyId);
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
                 if (progeny != null)
                 {
@@ -183,25 +171,25 @@ namespace KinaUnaProgenyApi.Controllers
                     return NotFound();
                 }
 
-                TimeLineItem timeLineItem = await _timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
+                TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
                 if (timeLineItem != null)
                 {
-                    _ = await _timelineService.DeleteTimeLineItem(timeLineItem);
+                    _ = await timelineService.DeleteTimeLineItem(timeLineItem);
                 }
 
-                _ = await _locationService.DeleteLocation(location);
+                _ = await locationService.DeleteLocation(location);
 
                 if (timeLineItem != null)
                 {
                     location.Author = User.GetUserId();
-                    UserInfo userInfo = await _userInfoService.GetUserInfoByEmail(userEmail);
+                    UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
                     string notificationTitle = "Location deleted for " + progeny.NickName;
                     string notificationMessage = userInfo.FullName() + " deleted a location for " + progeny.NickName + ". Location: " + location.Name;
                     location.AccessLevel = timeLineItem.AccessLevel = 0;
 
-                    await _azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                    await _webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
+                    await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+                    await webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
                 }
 
                 return NoContent();
@@ -214,11 +202,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetLocationMobile(int id)
         {
-            Location result = await _locationService.GetLocation(id);
+            Location result = await locationService.GetLocation(id);
             if (result != null)
             {
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
                 if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
                 {
@@ -238,7 +226,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await _userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
 
             if (userAccess == null && progenyId != Constants.DefaultChildId)
             {
@@ -250,7 +238,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Location> allItems = await _locationService.GetLocationsList(progenyId);
+            List<Location> allItems = await locationService.GetLocationsList(progenyId);
             allItems = allItems.OrderBy(v => v.Date).ToList();
 
             if (sortBy == 1)

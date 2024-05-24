@@ -10,20 +10,15 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class AddressesController : ControllerBase
+    public class AddressesController(ILocationService locationService) : ControllerBase
     {
         // Todo: Security check, verify that users can view/change addresses.
-        private readonly ILocationService _locationService;
-        public AddressesController(ILocationService locationService)
-        {
-            _locationService = locationService;
-        }
 
         // GET api/addresses/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAddressItem(int id)
         {
-            Address result = await _locationService.GetAddressItem(id);
+            Address result = await locationService.GetAddressItem(id);
             return Ok(result);
         }
 
@@ -31,7 +26,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Address value)
         {
-            Address addressItem = await _locationService.AddAddressItem(value);
+            Address addressItem = await locationService.AddAddressItem(value);
 
             return Ok(addressItem);
         }
@@ -40,13 +35,13 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Address value)
         {
-            Address addressItem = await _locationService.GetAddressItem(id);
+            Address addressItem = await locationService.GetAddressItem(id);
             if (addressItem == null)
             {
                 return NotFound();
             }
 
-            addressItem = await _locationService.UpdateAddressItem(value);
+            addressItem = await locationService.UpdateAddressItem(value);
 
             return Ok(addressItem);
         }
@@ -55,10 +50,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Address addressItem = await _locationService.GetAddressItem(id);
+            Address addressItem = await locationService.GetAddressItem(id);
             if (addressItem != null)
             {
-                await _locationService.RemoveAddressItem(id);
+                await locationService.RemoveAddressItem(id);
 
                 return NoContent();
             }

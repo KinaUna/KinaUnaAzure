@@ -10,17 +10,8 @@ namespace KinaUnaWebBlazor.Controllers
 {
     [AllowAnonymous]
     [Route("[controller]")]
-    public class AppSettingsController: Controller
+    public class AppSettingsController(IWebHostEnvironment env, ILanguagesHttpClient languagesHttpClient) : Controller
     {
-        private readonly IWebHostEnvironment _env;
-        private readonly ILanguagesHttpClient _languagesHttpClient;
-
-        public AppSettingsController(IWebHostEnvironment env, ILanguagesHttpClient languagesHttpClient)
-        {
-            _env = env;
-            _languagesHttpClient = languagesHttpClient;
-        }
-        
         [AllowAnonymous]
         [HttpGet]
         [Route("[action]/{languageId}")]
@@ -28,10 +19,10 @@ namespace KinaUnaWebBlazor.Controllers
         {
             if (languageId > 0)
             {
-                KinaUnaLanguage? language = await _languagesHttpClient.GetLanguage(languageId);
+                KinaUnaLanguage? language = await languagesHttpClient.GetLanguage(languageId);
 
                 string cultureString = CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(language.CodeToLongFormat()));
-                if (_env.IsDevelopment())
+                if (env.IsDevelopment())
                 {
                     Response.Cookies.Append(
                         Constants.LanguageCookieName,

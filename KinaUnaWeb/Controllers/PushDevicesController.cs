@@ -9,26 +9,16 @@ namespace KinaUnaWeb.Controllers
 {
     // Source: https://github.com/coryjthompson/WebPushDemo/tree/master/WebPushDemo
     [Authorize]
-    public class PushDevicesController : Controller
+    public class PushDevicesController(IConfiguration configuration, IPushMessageSender messageSender) : Controller
     {
-        private readonly IConfiguration _configuration;
-        private readonly IPushMessageSender _messageSender;
-
-        public PushDevicesController(IConfiguration configuration, IPushMessageSender messageSender)
-        {
-            _configuration = configuration;
-            _messageSender = messageSender;
-        }
-
-        
         public async Task<IActionResult> Index()
         {
-            return View(await _messageSender.GetAllPushDevices());
+            return View(await messageSender.GetAllPushDevices());
         }
 
         public IActionResult Create()
         {
-            ViewBag.PublicKey = _configuration["VapidPublicKey"];
+            ViewBag.PublicKey = configuration["VapidPublicKey"];
 
             return View();
         }
@@ -44,7 +34,7 @@ namespace KinaUnaWeb.Controllers
             {
                 string userId = HttpContext.User.FindFirst("sub")?.Value;
                 devices.Name = userId;
-                _ = await _messageSender.AddPushDevice(devices);
+                _ = await messageSender.AddPushDevice(devices);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -59,11 +49,11 @@ namespace KinaUnaWeb.Controllers
             if (ModelState.IsValid)
             {
                 string userId = HttpContext.User.FindFirst("sub")?.Value;
-                PushDevices existingDevice = await _messageSender.GetDevice(devices);
+                PushDevices existingDevice = await messageSender.GetDevice(devices);
                 if (existingDevice == null)
                 {
                     devices.Name = userId;
-                    _ = await _messageSender.AddPushDevice(devices);
+                    _ = await messageSender.AddPushDevice(devices);
                 }
 
                 return RedirectToAction("MyAccount", "Account");
@@ -80,7 +70,7 @@ namespace KinaUnaWeb.Controllers
                 return NotFound();
             }
 
-            PushDevices devices = await _messageSender.GetPushDeviceById(id.Value);
+            PushDevices devices = await messageSender.GetPushDeviceById(id.Value);
 
             if (devices == null)
             {
@@ -95,11 +85,11 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            PushDevices devices = await _messageSender.GetPushDeviceById(id);
+            PushDevices devices = await messageSender.GetPushDeviceById(id);
             
             if (devices != null)
             {
-                await _messageSender.RemoveDevice(devices);
+                await messageSender.RemoveDevice(devices);
             }
             return RedirectToAction(nameof(Index));
         }
@@ -108,10 +98,10 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> RemovePushDevice(PushDevices device)
         {
             // string userId = HttpContext.User.FindFirst("sub").Value;
-            PushDevices deleteDevice = await _messageSender.GetDevice(device);
+            PushDevices deleteDevice = await messageSender.GetDevice(device);
             if (deleteDevice != null)
             {
-                await _messageSender.RemoveDevice(deleteDevice);
+                await messageSender.RemoveDevice(deleteDevice);
             }
            
             return RedirectToAction("MyAccount", "Account");

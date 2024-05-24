@@ -12,24 +12,15 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class VocabularyController : Controller
+    public class VocabularyController(IWordsHttpClient wordsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
-        private readonly IWordsHttpClient _wordsHttpClient;
-        private readonly IViewModelSetupService _viewModelSetupService;
-
-        public VocabularyController(IWordsHttpClient wordsHttpClient, IViewModelSetupService viewModelSetupService)
-        {
-            _wordsHttpClient = wordsHttpClient;
-            _viewModelSetupService = viewModelSetupService;
-        }
-
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             VocabularyListViewModel model = new(baseModel);
 
-            List<VocabularyItem> wordList = await _wordsHttpClient.GetWordsList(model.CurrentProgenyId, model.CurrentAccessLevel);
+            List<VocabularyItem> wordList = await wordsHttpClient.GetWordsList(model.CurrentProgenyId, model.CurrentAccessLevel);
             
             model.SetVocabularyList(wordList);
             
@@ -41,7 +32,7 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddVocabulary()
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             VocabularyItemViewModel model = new(baseModel);
             
             if (model.CurrentUser == null)
@@ -49,7 +40,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
             model.SetProgenyList();
 
             model.SetAccessLevelList();
@@ -61,7 +52,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddVocabulary(VocabularyItemViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VocabularyItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VocabularyItem.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -78,7 +69,7 @@ namespace KinaUnaWeb.Controllers
 
             model.VocabularyItem.Author = model.CurrentUser.UserId;
 
-            _ = await _wordsHttpClient.AddWord(model.VocabularyItem);
+            _ = await wordsHttpClient.AddWord(model.VocabularyItem);
             
             return RedirectToAction("Index", "Vocabulary");
         }
@@ -86,8 +77,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> EditVocabulary(int itemId)
         {
-            VocabularyItem vocab = await _wordsHttpClient.GetWord(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocab.ProgenyId);
+            VocabularyItem vocab = await wordsHttpClient.GetWord(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocab.ProgenyId);
             VocabularyItemViewModel model = new(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -107,7 +98,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditVocabulary(VocabularyItemViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VocabularyItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VocabularyItem.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -121,7 +112,7 @@ namespace KinaUnaWeb.Controllers
                 model.VocabularyItem.Date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
 
-            await _wordsHttpClient.UpdateWord(model.VocabularyItem);
+            await wordsHttpClient.UpdateWord(model.VocabularyItem);
 
             return RedirectToAction("Index", "Vocabulary");
         }
@@ -129,8 +120,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteVocabulary(int itemId)
         {
-            VocabularyItem vocabularyItem = await _wordsHttpClient.GetWord(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId);
+            VocabularyItem vocabularyItem = await wordsHttpClient.GetWord(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId);
             VocabularyItemViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -148,8 +139,8 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteVocabulary(VocabularyItemViewModel model)
         {
-            VocabularyItem vocabularyItem = await _wordsHttpClient.GetWord(model.VocabularyItem.WordId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId);
+            VocabularyItem vocabularyItem = await wordsHttpClient.GetWord(model.VocabularyItem.WordId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId);
             model.SetBaseProperties(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -158,7 +149,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            await _wordsHttpClient.DeleteWord(vocabularyItem.WordId);
+            await wordsHttpClient.DeleteWord(vocabularyItem.WordId);
 
             return RedirectToAction("Index", "Vocabulary");
         }

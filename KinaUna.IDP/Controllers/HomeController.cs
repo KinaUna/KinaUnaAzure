@@ -16,19 +16,8 @@ using Microsoft.Extensions.Hosting;
 namespace KinaUna.IDP.Controllers
 {
     //[EnableCors("KinaUnaCors")]
-    public class HomeController : Controller
+    public class HomeController(IIdentityServerInteractionService interaction, IRedirectService redirectSvc, IWebHostEnvironment env) : Controller
     {
-        private readonly IIdentityServerInteractionService _interaction;
-        private readonly IRedirectService _redirectSvc;
-        private readonly IWebHostEnvironment _env;
-
-        public HomeController(IIdentityServerInteractionService interaction, IRedirectService redirectSvc, IWebHostEnvironment env)
-        {
-            _interaction = interaction;
-            _redirectSvc = redirectSvc;
-            _env = env;
-        }
-
         public IActionResult Index(string returnUrl)
         {
             return View();
@@ -37,7 +26,7 @@ namespace KinaUna.IDP.Controllers
         public IActionResult ReturnToOriginalApplication(string returnUrl)
         {
             if (returnUrl != null)
-                return Redirect(_redirectSvc.ExtractRedirectUriFromReturnUrl(returnUrl));
+                return Redirect(redirectSvc.ExtractRedirectUriFromReturnUrl(returnUrl));
             else
                 return RedirectToAction("Index", "Home");
         }
@@ -50,7 +39,7 @@ namespace KinaUna.IDP.Controllers
             ErrorViewModel vm = new ErrorViewModel();
 
             // retrieve error details from identityserver
-            ErrorMessage message = await _interaction.GetErrorContextAsync(errorId);
+            ErrorMessage message = await interaction.GetErrorContextAsync(errorId);
             if (message != null)
             {
                 vm.Error = message;
@@ -76,7 +65,7 @@ namespace KinaUna.IDP.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult SetLanguage(string culture, string returnUrl)
         {
-            if (_env.IsDevelopment())
+            if (env.IsDevelopment())
             {
                 Response.Cookies.Append(
                     Constants.LanguageCookieName,

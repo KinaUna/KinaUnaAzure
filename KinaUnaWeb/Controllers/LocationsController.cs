@@ -15,35 +15,27 @@ using Microsoft.Extensions.Configuration;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class LocationsController : Controller
+    public class LocationsController(
+        IProgenyHttpClient progenyHttpClient,
+        IMediaHttpClient mediaHttpClient,
+        ILocationsHttpClient locationsHttpClient,
+        IViewModelSetupService viewModelSetupService,
+        IConfiguration configuration)
+        : Controller
     {
-        private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly ILocationsHttpClient _locationsHttpClient;
-        private readonly IMediaHttpClient _mediaHttpClient;
-        private readonly IViewModelSetupService _viewModelSetupService;
-        private readonly string _hereMapsApiKey;
-
-        public LocationsController(IProgenyHttpClient progenyHttpClient, IMediaHttpClient mediaHttpClient, ILocationsHttpClient locationsHttpClient,
-            IViewModelSetupService viewModelSetupService, IConfiguration configuration)
-        {
-            _progenyHttpClient = progenyHttpClient;
-            _mediaHttpClient = mediaHttpClient;
-            _locationsHttpClient = locationsHttpClient;
-            _viewModelSetupService = viewModelSetupService;
-            _hereMapsApiKey = configuration.GetValue<string>("HereMapsKey");
-        }
+        private readonly string _hereMapsApiKey = configuration.GetValue<string>("HereMapsKey");
 
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, string tagFilter = "")
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             LocationViewModel model = new(baseModel)
             {
                 HereMapsApiKey = _hereMapsApiKey
             };
             List<string> tagsList = new();
 
-            List<Location> locationsList = await _locationsHttpClient.GetLocationsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
+            List<Location> locationsList = await locationsHttpClient.GetLocationsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
             
             if (locationsList.Any())
             {
@@ -83,7 +75,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> PhotoLocations(int childId = 0, string tagFilter = "")
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             LocationViewModel model = new(baseModel)
             {
                 LocationsList = new List<Location>()
@@ -93,7 +85,7 @@ namespace KinaUnaWeb.Controllers
 
             List<string> tagsList = new();
             
-            List<Picture> pictures = await _mediaHttpClient.GetPictureList(model.CurrentProgenyId, model.CurrentAccessLevel, model.CurrentUser.Timezone);
+            List<Picture> pictures = await mediaHttpClient.GetPictureList(model.CurrentProgenyId, model.CurrentAccessLevel, model.CurrentUser.Timezone);
             
             if (string.IsNullOrEmpty(tagFilter))
             {
@@ -164,7 +156,7 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> AddLocation()
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             LocationViewModel model = new(baseModel)
             {
                 HereMapsApiKey = _hereMapsApiKey
@@ -177,16 +169,16 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+                List<Progeny> accessList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
                 if (accessList.Any())
                 {
                     foreach (Progeny progeny in accessList)
                     {
-                        List<Location> locList1 = await _locationsHttpClient.GetLocationsList(progeny.Id, 0);
+                        List<Location> locList1 = await locationsHttpClient.GetLocationsList(progeny.Id, 0);
                         foreach (Location loc in locList1)
                         {
                             if (!string.IsNullOrEmpty(loc.Tags))
@@ -220,7 +212,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddLocation(LocationViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.LocationItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.LocationItem.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -231,15 +223,15 @@ namespace KinaUnaWeb.Controllers
 
             Location locationItem = model.CreateLocation();
 
-            _ = await _locationsHttpClient.AddLocation(locationItem);
+            _ = await locationsHttpClient.AddLocation(locationItem);
             
             return RedirectToAction("Index", "Locations");
         }
 
         public async Task<IActionResult> EditLocation(int itemId)
         {
-            Location location = await _locationsHttpClient.GetLocation(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
+            Location location = await locationsHttpClient.GetLocation(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
             LocationViewModel model = new(baseModel);
             model.HereMapsApiKey = _hereMapsApiKey;
 
@@ -251,15 +243,15 @@ namespace KinaUnaWeb.Controllers
             List<string> tagsList = new();
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
 
-                List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+                List<Progeny> accessList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
                 if (accessList.Any())
                 {
                     foreach (Progeny progeny in accessList)
                     {
                         
-                        List<Location> locList1 = await _locationsHttpClient.GetLocationsList(progeny.Id, 0);
+                        List<Location> locList1 = await locationsHttpClient.GetLocationsList(progeny.Id, 0);
                         foreach (Location locationItem in locList1)
                         {
                             if (!string.IsNullOrEmpty(locationItem.Tags))
@@ -290,7 +282,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditLocation(LocationViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.LocationItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.LocationItem.ProgenyId);
             model.SetBaseProperties(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -301,15 +293,15 @@ namespace KinaUnaWeb.Controllers
 
             Location location = model.CreateLocation();
 
-            _ = await _locationsHttpClient.UpdateLocation(location);
+            _ = await locationsHttpClient.UpdateLocation(location);
 
             return RedirectToAction("Index", "Locations");
         }
 
         public async Task<IActionResult> DeleteLocation(int itemId)
         {
-            Location location = await _locationsHttpClient.GetLocation(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
+            Location location = await locationsHttpClient.GetLocation(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
             LocationViewModel model = new(baseModel)
             {
                 LocationItem = location,
@@ -328,8 +320,8 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteLocation(LocationViewModel model)
         {
-            Location location = await _locationsHttpClient.GetLocation(model.LocationItem.LocationId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
+            Location location = await locationsHttpClient.GetLocation(model.LocationItem.LocationId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -338,7 +330,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            _ = await _locationsHttpClient.DeleteLocation(location.LocationId);
+            _ = await locationsHttpClient.DeleteLocation(location.LocationId);
 
             return RedirectToAction("Index", "Locations");
         }

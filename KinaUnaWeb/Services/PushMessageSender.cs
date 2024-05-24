@@ -10,18 +10,8 @@ using WebPush;
 
 namespace KinaUnaWeb.Services
 {
-    public class PushMessageSender: IPushMessageSender
+    public class PushMessageSender(IConfiguration configuration, IWebNotificationsHttpClient webNotificationHttpClient) : IPushMessageSender
     {
-        private readonly IConfiguration _configuration;
-        private readonly IWebNotificationsHttpClient _webNotificationHttpClient;
-        
-
-        public PushMessageSender(IConfiguration configuration, IWebNotificationsHttpClient webNotificationHttpClient)
-        {
-            _configuration = configuration;
-            _webNotificationHttpClient = webNotificationHttpClient;
-        }
-
         public async Task SendMessage(string user, string title, string message, string link, string tag)
         {
             PushNotification notification = new()
@@ -32,10 +22,10 @@ namespace KinaUnaWeb.Services
                 Tag = tag
             };
             string payload = JsonConvert.SerializeObject(notification);
-            string vapidPublicKey = _configuration["VapidPublicKey"];
-            string vapidPrivateKey = _configuration["VapidPrivateKey"];
+            string vapidPublicKey = configuration["VapidPublicKey"];
+            string vapidPrivateKey = configuration["VapidPrivateKey"];
 
-            List<PushDevices> deviceList = await _webNotificationHttpClient.GetPushDevicesListByUserId(user);
+            List<PushDevices> deviceList = await webNotificationHttpClient.GetPushDevicesListByUserId(user);
             if (deviceList.Any())
             {
                 foreach (PushDevices dev in deviceList)
@@ -44,7 +34,7 @@ namespace KinaUnaWeb.Services
                     VapidDetails vapidDetails = new("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
                     if (string.IsNullOrEmpty(dev.PushAuth) || string.IsNullOrEmpty(dev.PushEndpoint))
                     {
-                        await _webNotificationHttpClient.RemovePushDevice(dev);
+                        await webNotificationHttpClient.RemovePushDevice(dev);
                     }
                     else
                     {
@@ -57,7 +47,7 @@ namespace KinaUnaWeb.Services
                         {
                             if (ex.Message == "Subscription no longer valid")
                             {
-                                await _webNotificationHttpClient.RemovePushDevice(dev);
+                                await webNotificationHttpClient.RemovePushDevice(dev);
                             }
                         }
                     }
@@ -69,21 +59,21 @@ namespace KinaUnaWeb.Services
 
         public async Task<PushDevices> GetPushDeviceById(int id)
         {
-            PushDevices device = await _webNotificationHttpClient.GetPushDeviceById(id);
+            PushDevices device = await webNotificationHttpClient.GetPushDeviceById(id);
 
             return device;
         }
 
         public async Task<List<PushDevices>> GetAllPushDevices()
         {
-            var pushDevicesList = await _webNotificationHttpClient.GetAllPushDevices();
+            var pushDevicesList = await webNotificationHttpClient.GetAllPushDevices();
 
             return pushDevicesList;
         }
 
         public async Task<PushDevices> AddPushDevice(PushDevices device)
         {
-            device = await _webNotificationHttpClient.AddPushDevice(device);
+            device = await webNotificationHttpClient.AddPushDevice(device);
 
             return device;
 
@@ -91,14 +81,14 @@ namespace KinaUnaWeb.Services
 
         public async Task<PushDevices> GetDevice(PushDevices device)
         {
-            PushDevices result = await _webNotificationHttpClient.GetPushDevice(device);
+            PushDevices result = await webNotificationHttpClient.GetPushDevice(device);
             
             return result;
         }
 
         public async Task RemoveDevice(PushDevices device)
         {
-            await _webNotificationHttpClient.RemovePushDevice(device);
+            await webNotificationHttpClient.RemovePushDevice(device);
         }
     }
 }

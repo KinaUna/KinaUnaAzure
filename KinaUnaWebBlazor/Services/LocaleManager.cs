@@ -4,22 +4,13 @@ using KinaUnaWebBlazor.Models.HomeViewModels;
 
 namespace KinaUnaWebBlazor.Services
 {
-    public class LocaleManager:ILocaleManager
+    public class LocaleManager(ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient, IPageTextsHttpClient pageTextsHttpClient)
+        : ILocaleManager
     {
-        private readonly ILanguagesHttpClient _languagesHttpClient;
-        private readonly ITranslationsHttpClient _translationsHttpClient;
-        private readonly IPageTextsHttpClient _pageTextsHttpClient;
-        public LocaleManager(ILanguagesHttpClient languagesHttpClient, ITranslationsHttpClient translationsHttpClient, IPageTextsHttpClient pageTextsHttpClient)
-        {
-            _languagesHttpClient = languagesHttpClient;
-            _translationsHttpClient = translationsHttpClient;
-            _pageTextsHttpClient = pageTextsHttpClient;
-        }
-
         public async Task<SetLanguageIdViewModel> GetLanguageModel(int currentLanguageId)
         {
             SetLanguageIdViewModel languageIdModel = new SetLanguageIdViewModel();
-            languageIdModel.LanguageList = await _languagesHttpClient.GetAllLanguages();
+            languageIdModel.LanguageList = await languagesHttpClient.GetAllLanguages();
             languageIdModel.SelectedId = currentLanguageId;
 
             return languageIdModel;
@@ -28,18 +19,18 @@ namespace KinaUnaWebBlazor.Services
 
         public async Task<List<KinaUnaLanguage>?> GetAllLanguages()
         {
-            return await _languagesHttpClient.GetAllLanguages();
+            return await languagesHttpClient.GetAllLanguages();
         }
         
         public async Task<string> GetTranslation(string word, string page, int languageId)
         {
-            string translation = await _translationsHttpClient.GetTranslation(word, page, languageId);
+            string translation = await translationsHttpClient.GetTranslation(word, page, languageId);
             return translation;
         }
 
         public async Task<KinaUnaText?> GetPageTextByTitle(string title, string page, int languageId)
         {
-            KinaUnaText? text = await _pageTextsHttpClient.GetPageTextByTitle(title, page, languageId);
+            KinaUnaText? text = await pageTextsHttpClient.GetPageTextByTitle(title, page, languageId);
             return text;
         }
 

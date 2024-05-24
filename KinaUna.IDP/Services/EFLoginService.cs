@@ -4,27 +4,18 @@ using Microsoft.AspNetCore.Identity;
 
 namespace KinaUna.IDP.Services
 {
-    public class EfLoginService : ILoginService<ApplicationUser>
+    public class EfLoginService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager) : ILoginService<ApplicationUser>
     {
-        readonly UserManager<ApplicationUser> _userManager;
-        readonly SignInManager<ApplicationUser> _signInManager;
-
-        public EfLoginService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-        }
-
         public async Task<ApplicationUser> FindByUsername(string user)
         {
-            ApplicationUser appUser = await _userManager.FindByEmailAsync(user);
+            ApplicationUser appUser = await userManager.FindByEmailAsync(user);
 
             if (appUser != null)
             {
                 if (string.IsNullOrEmpty(appUser.UserName))
                 {
                     appUser.UserName = appUser.Email;
-                    await _userManager.UpdateAsync(appUser);
+                    await userManager.UpdateAsync(appUser);
                 }
             }
             
@@ -34,12 +25,12 @@ namespace KinaUna.IDP.Services
 
         public async Task<bool> ValidateCredentials(ApplicationUser user, string password)
         {
-            return await _userManager.CheckPasswordAsync(user, password);
+            return await userManager.CheckPasswordAsync(user, password);
         }
 
         public Task SignIn(ApplicationUser user)
         {
-            return _signInManager.SignInAsync(user, true);
+            return signInManager.SignInAsync(user, true);
         }
     }
 }

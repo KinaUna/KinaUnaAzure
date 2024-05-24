@@ -3,13 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KinaUna.Data.Contexts
 {
-    public class ProgenyDbContext:DbContext
+    public class ProgenyDbContext(DbContextOptions<ProgenyDbContext> options) : DbContext(options)
     {
-        public ProgenyDbContext(DbContextOptions<ProgenyDbContext> options) : base(options)
-        {
-            
-        }
-
         public DbSet<Progeny> ProgenyDb { get; set; }
         public DbSet<UserAccess> UserAccessDb { get; set; }
         public DbSet<TimeLineItem> TimeLineDb { get; set; }

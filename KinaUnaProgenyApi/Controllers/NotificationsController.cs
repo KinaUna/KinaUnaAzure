@@ -16,19 +16,8 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class NotificationsController : ControllerBase
+    public class NotificationsController(IAzureNotifications azureNotifications, IImageStore imageStore, IDataService dataService) : ControllerBase
     {
-        private readonly IAzureNotifications _azureNotifications;
-        private readonly IDataService _dataService;
-        private readonly IImageStore _imageStore;
-
-        public NotificationsController(IAzureNotifications azureNotifications, IImageStore imageStore, IDataService dataService)
-        {
-            _azureNotifications = azureNotifications;
-            _dataService = dataService;
-            _imageStore = imageStore;
-        }
-
         [HttpPost]
         public async Task<HttpResponseMessage> Post(string pns, [FromBody] string message, string to_tag)
         {
@@ -51,17 +40,17 @@ namespace KinaUnaProgenyApi.Controllers
                     // Windows 8.1 / Windows Phone 8.1
                     string toast = @"<toast><visual><binding template=""ToastText01""><text id=""1"">" +
                                    "From " + user + ": " + message + "</text></binding></visual></toast>";
-                    outcome = await _azureNotifications.Hub.SendWindowsNativeNotificationAsync(toast, userTag);
+                    outcome = await azureNotifications.Hub.SendWindowsNativeNotificationAsync(toast, userTag);
                     break;
                 case "apns":
                     // iOS
                     string alert = "{\"aps\":{\"alert\":\"" + "From " + user + ": " + message + "\"}}";
-                    outcome = await _azureNotifications.Hub.SendAppleNativeNotificationAsync(alert, userTag);
+                    outcome = await azureNotifications.Hub.SendAppleNativeNotificationAsync(alert, userTag);
                     break;
                 case "fcm":
                     // Android
                     string notif = "{ \"data\" : {\"message\":\"" + "From " + user + ": " + message + "\"}}";
-                    outcome = await _azureNotifications.Hub.SendFcmNativeNotificationAsync(notif, userTag);
+                    outcome = await azureNotifications.Hub.SendFcmNativeNotificationAsync(notif, userTag);
                     break;
             }
 
@@ -87,7 +76,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            List<MobileNotification> notifications = await _dataService.GetUsersMobileNotifications(userId, language);
+            List<MobileNotification> notifications = await dataService.GetUsersMobileNotifications(userId, language);
 
             if (notifications.Any())
             {
@@ -104,7 +93,7 @@ namespace KinaUnaProgenyApi.Controllers
                         notif.IconLink = Constants.ProfilePictureUrl;
                     }
 
-                    notif.IconLink = _imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
+                    notif.IconLink = imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
                 }
             }
 
@@ -121,7 +110,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            List<MobileNotification> notifications = await _dataService.GetUsersMobileNotifications(userId, language);
+            List<MobileNotification> notifications = await dataService.GetUsersMobileNotifications(userId, language);
             notifications = notifications.Where(n => n.Read == false).ToList();
 
             if (notifications.Any())
@@ -139,7 +128,7 @@ namespace KinaUnaProgenyApi.Controllers
                         notif.IconLink = Constants.ProfilePictureUrl;
                     }
 
-                    notif.IconLink = _imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
+                    notif.IconLink = imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
                 }
             }
 
@@ -155,12 +144,12 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            MobileNotification mobileNotification = await _dataService.GetMobileNotification(id);
+            MobileNotification mobileNotification = await dataService.GetMobileNotification(id);
 
             if (mobileNotification != null && mobileNotification.UserId == userId)
             {
                 mobileNotification.Read = value.Read;
-                mobileNotification = await _dataService.UpdateMobileNotification(mobileNotification);
+                mobileNotification = await dataService.UpdateMobileNotification(mobileNotification);
 
                 return Ok(mobileNotification);
             }
@@ -172,12 +161,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            MobileNotification mobileNotification = await _dataService.GetMobileNotification(id);
+            MobileNotification mobileNotification = await dataService.GetMobileNotification(id);
             if (mobileNotification != null)
             {
                 if (mobileNotification.UserId == User.GetUserId())
                 {
-                    _ = await _dataService.DeleteMobileNotification(mobileNotification);
+                    _ = await dataService.DeleteMobileNotification(mobileNotification);
                 }
 
                 return NoContent();
@@ -194,7 +183,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             //Todo: Add UserId to PushDevice and check if user should have access.
 
-            device = await _dataService.AddPushDevice(device);
+            device = await dataService.AddPushDevice(device);
 
             return Ok(device);
         }
@@ -203,7 +192,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]")]
         public async Task<IActionResult> RemovePushDevice([FromBody] PushDevices device)
         {
-            await _dataService.RemovePushDevice(device);
+            await dataService.RemovePushDevice(device);
 
             return Ok(device);
         }
@@ -212,7 +201,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}")]
         public async Task<IActionResult> GetPushDeviceById(int id)
         {
-            PushDevices device = await _dataService.GetPushDeviceById(id);
+            PushDevices device = await dataService.GetPushDeviceById(id);
 
             return Ok(device);
         }
@@ -227,7 +216,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            List<PushDevices> devices = await _dataService.GetPushDevicesListByUserId(userId);
+            List<PushDevices> devices = await dataService.GetPushDevicesListByUserId(userId);
 
             return Ok(devices);
         }
@@ -236,7 +225,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]")]
         public async Task<IActionResult> GetPushDevice([FromBody] PushDevices device)
         {
-            device = await _dataService.GetPushDevice(device);
+            device = await dataService.GetPushDevice(device);
 
             return Ok(device);
         }
@@ -251,7 +240,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            notification = await _dataService.AddWebNotification(notification);
+            notification = await dataService.AddWebNotification(notification);
 
             return Ok(notification);
         }
@@ -266,7 +255,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            notification = await _dataService.UpdateWebNotification(notification);
+            notification = await dataService.UpdateWebNotification(notification);
 
             return Ok(notification);
         }
@@ -281,7 +270,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            await _dataService.RemoveWebNotification(notification);
+            await dataService.RemoveWebNotification(notification);
 
             return Ok(notification);
         }
@@ -290,7 +279,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id}")]
         public async Task<IActionResult> GetWebNotificationById(int id)
         {
-            WebNotification webNotification = await _dataService.GetWebNotificationById(id);
+            WebNotification webNotification = await dataService.GetWebNotificationById(id);
 
             string currentUserId = User.GetUserId() ?? "";
             if (webNotification.To != currentUserId)
@@ -311,7 +300,7 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            List<WebNotification> webNotifications = await _dataService.GetUsersWebNotifications(userId);
+            List<WebNotification> webNotifications = await dataService.GetUsersWebNotifications(userId);
 
             return Ok(webNotifications);
         }

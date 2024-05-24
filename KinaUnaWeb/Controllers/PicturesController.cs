@@ -18,32 +18,22 @@ using Microsoft.Extensions.Configuration;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class PicturesController : Controller
+    public class PicturesController(
+        IMediaHttpClient mediaHttpClient,
+        ImageStore imageStore,
+        IUserInfosHttpClient userInfosHttpClient,
+        ILocationsHttpClient locationsHttpClient,
+        IEmailSender emailSender,
+        IViewModelSetupService viewModelSetupService,
+        IConfiguration configuration)
+        : Controller
     {
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
-        private readonly ILocationsHttpClient _locationsHttpClient;
-        private readonly IMediaHttpClient _mediaHttpClient;
-        private readonly ImageStore _imageStore;
-        private readonly IEmailSender _emailSender;
-        private readonly IViewModelSetupService _viewModelSetupService;
-        private readonly string _hereMapsApiKey;
-
-        public PicturesController(IMediaHttpClient mediaHttpClient, ImageStore imageStore, IUserInfosHttpClient userInfosHttpClient,
-            ILocationsHttpClient locationsHttpClient, IEmailSender emailSender, IViewModelSetupService viewModelSetupService, IConfiguration configuration)
-        {
-            _mediaHttpClient = mediaHttpClient;
-            _imageStore = imageStore;
-            _userInfosHttpClient = userInfosHttpClient;
-            _locationsHttpClient = locationsHttpClient;
-            _emailSender = emailSender;
-            _viewModelSetupService = viewModelSetupService;
-            _hereMapsApiKey = configuration.GetValue<string>("HereMapsKey");
-        }
+        private readonly string _hereMapsApiKey = configuration.GetValue<string>("HereMapsKey");
 
         [AllowAnonymous]
         public async Task<IActionResult> Index(int id = 1, int pageSize = 16, int childId = 0, int sortBy = 1, string tagFilter = "")
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             PicturesListViewModel model = new(baseModel)
             {
                 PageSize = pageSize,
@@ -52,14 +42,14 @@ namespace KinaUnaWeb.Controllers
             };
 
             // PicturePageViewModel is used by KinaUna Xamarin and ProgenyApi, so it should not be changed in this project, instead using a different view model and copying the properties.
-            PicturePageViewModel pageViewModel = await _mediaHttpClient.GetPicturePage(pageSize, id, model.CurrentProgenyId, model.CurrentAccessLevel, sortBy, tagFilter, model.CurrentUser.Timezone);
+            PicturePageViewModel pageViewModel = await mediaHttpClient.GetPicturePage(pageSize, id, model.CurrentProgenyId, model.CurrentAccessLevel, sortBy, tagFilter, model.CurrentUser.Timezone);
             model.SetPropertiesFromPageViewModel(pageViewModel);
 
             //model.SortBy = sortBy;
             //model.PageSize = pageSize;
             foreach (Picture pic in model.PicturesList)
             {
-                pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
+                pic.PictureLink600 = imageStore.UriFor(pic.PictureLink600);
             }
 
             return View(model);
@@ -68,21 +58,21 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Picture(int id, string tagFilter = "", int sortBy = 1)
         {
-            Picture picture = await _mediaHttpClient.GetPicture(id, Constants.DefaultTimezone);
+            Picture picture = await mediaHttpClient.GetPicture(id, Constants.DefaultTimezone);
             if (picture == null)
             {
                 return RedirectToAction("Index");
             }
 
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
             PictureItemViewModel model = new(baseModel)
             {
                 HereMapsApiKey = _hereMapsApiKey
             };
-            PictureViewModel pictureViewModel = await _mediaHttpClient.GetPictureViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone, tagFilter);
+            PictureViewModel pictureViewModel = await mediaHttpClient.GetPictureViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone, tagFilter);
 
             model.SetPropertiesFromPictureViewModel(pictureViewModel);
-            model.Picture.PictureLink = _imageStore.UriFor(model.Picture.PictureLink);
+            model.Picture.PictureLink = imageStore.UriFor(model.Picture.PictureLink);
             model.TagFilter = tagFilter;
             model.SortBy = sortBy;
             
@@ -90,16 +80,16 @@ namespace KinaUnaWeb.Controllers
             {
                 foreach(Comment comment in model.CommentsList)
                 {
-                    UserInfo commentAuthor = await _userInfosHttpClient.GetUserInfoByUserId(comment.Author);
+                    UserInfo commentAuthor = await userInfosHttpClient.GetUserInfoByUserId(comment.Author);
                     string commentAuthorProfilePicture = commentAuthor?.ProfilePicture ?? "";
-                    commentAuthorProfilePicture = _imageStore.UriFor(commentAuthorProfilePicture, "profiles");
+                    commentAuthorProfilePicture = imageStore.UriFor(commentAuthorProfilePicture, "profiles");
                     comment.AuthorImage = commentAuthorProfilePicture;
                     comment.DisplayName = commentAuthor.FullName();
                 }
             }
             if (model.IsCurrentUserProgenyAdmin)
             {
-                model.ProgenyLocations = await _locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId, model.CurrentAccessLevel);
+                model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId, model.CurrentAccessLevel);
                 model.LocationsList = new List<SelectListItem>();
                 if (model.ProgenyLocations.Any())
                 {
@@ -122,7 +112,7 @@ namespace KinaUnaWeb.Controllers
 
         public async Task<IActionResult> AddPicture()
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             UploadPictureViewModel model = new(baseModel);
             
             if (model.CurrentUser == null)
@@ -130,7 +120,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
             model.SetProgenyList();
 
             model.SetAccessLevelList();
@@ -142,7 +132,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadPictures(UploadPictureViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Picture.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Picture.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.IsCurrentUserProgenyAdmin)
@@ -178,10 +168,10 @@ namespace KinaUnaWeb.Controllers
 
                     await using (Stream stream = formFile.OpenReadStream())
                     {
-                        picture.PictureLink = await _imageStore.SaveImage(stream);
+                        picture.PictureLink = await imageStore.SaveImage(stream);
                     }
 
-                    Picture newPicture = await _mediaHttpClient.AddPicture(picture);
+                    Picture newPicture = await mediaHttpClient.AddPicture(picture);
                     
                     pictureList.Add(newPicture);
                 }
@@ -191,8 +181,8 @@ namespace KinaUnaWeb.Controllers
             {
                 foreach (Picture pic in pictureList)
                 {
-                    result.FileLinks.Add(_imageStore.UriFor(pic.PictureLink600));
-                    result.FileNames.Add(_imageStore.UriFor(pic.PictureLink600));
+                    result.FileLinks.Add(imageStore.UriFor(pic.PictureLink600));
+                    result.FileNames.Add(imageStore.UriFor(pic.PictureLink600));
                 }
             }
 
@@ -206,7 +196,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditPicture(PictureItemViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Picture.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Picture.ProgenyId);
             model.SetBaseProperties(baseModel);
             
             if (!model.IsCurrentUserProgenyAdmin)
@@ -221,14 +211,14 @@ namespace KinaUnaWeb.Controllers
                 });
             }
 
-            Picture pictureToUpdate = await _mediaHttpClient.GetPicture(model.Picture.PictureId, model.CurrentUser.Timezone);
+            Picture pictureToUpdate = await mediaHttpClient.GetPicture(model.Picture.PictureId, model.CurrentUser.Timezone);
             pictureToUpdate.CopyPropertiesForUpdate(model.Picture);
             
             if (model.Picture.PictureTime != null)
             {
                 pictureToUpdate.PictureTime = TimeZoneInfo.ConvertTimeToUtc(model.Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
-            _ = await _mediaHttpClient.UpdatePicture(pictureToUpdate);
+            _ = await mediaHttpClient.UpdatePicture(pictureToUpdate);
             
             return RedirectToRoute(new { controller = "Pictures", action = "Picture", id = model.Picture.PictureId, childId = model.Picture.ProgenyId, tagFilter = model.TagFilter, sortBy = model.SortBy });
         }
@@ -238,8 +228,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> DeletePicture(int pictureId)
         {
-            Picture picture = await _mediaHttpClient.GetPicture(pictureId, "");
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
+            Picture picture = await mediaHttpClient.GetPicture(pictureId, "");
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
             PictureItemViewModel model = new(baseModel);
 
             if (!model.IsCurrentUserProgenyAdmin)
@@ -255,7 +245,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.SetPropertiesFromPictureItem(picture);
-            model.Picture.PictureLink600 = _imageStore.UriFor(model.Picture.PictureLink600);
+            model.Picture.PictureLink600 = imageStore.UriFor(model.Picture.PictureLink600);
             
             return View(model);
         }
@@ -265,12 +255,12 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeletePicture(PictureItemViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Picture.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Picture.ProgenyId);
             model.SetBaseProperties(baseModel);
             
             if (model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
-                _ = await _mediaHttpClient.DeletePicture(model.Picture.PictureId);
+                _ = await mediaHttpClient.DeletePicture(model.Picture.PictureId);
 
             }
 
@@ -286,12 +276,12 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPictureComment(CommentViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
             model.SetBaseProperties(baseModel);
 
             Comment comment = model.CreateComment((int)KinaUnaTypes.TimeLineType.Photo);
             
-            bool commentAdded = await _mediaHttpClient.AddPictureComment(comment);
+            bool commentAdded = await mediaHttpClient.AddPictureComment(comment);
 
             if (commentAdded)
             {
@@ -302,7 +292,7 @@ namespace KinaUnaWeb.Controllers
 
                     foreach (string toMail in emails)
                     {
-                        await _emailSender.SendEmailAsync(toMail, "New Comment on " + model.CurrentProgeny.NickName + "'s Picture",
+                        await emailSender.SendEmailAsync(toMail, "New Comment on " + model.CurrentProgeny.NickName + "'s Picture",
                            "A comment was added to " + model.CurrentProgeny.NickName + "'s picture by " + comment.DisplayName + ":<br/><br/>" + comment.CommentText + "<br/><br/>Picture Link: <a href=\"" + imgLink + "\">" + imgLink + "</a>");
                     }
                 }
@@ -316,7 +306,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeletePictureComment(int commentId, int pictureId, int progenyId)
         {
-            await _mediaHttpClient.DeletePictureComment(commentId);
+            await mediaHttpClient.DeletePictureComment(commentId);
 
             return RedirectToRoute(new { controller = "Pictures", action = "Picture", id = pictureId, childId = progenyId });
         }

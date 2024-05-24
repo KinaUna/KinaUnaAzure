@@ -11,19 +11,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class AccessManagementController : Controller
+    public class AccessManagementController(IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient, IViewModelSetupService viewModelSetupService)
+        : Controller
     {
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
-        private readonly IUserAccessHttpClient _userAccessHttpClient;
-        private readonly IViewModelSetupService _viewModelSetupService;
-        
-        public AccessManagementController(IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient, IViewModelSetupService viewModelSetupService)
-        {
-            _userInfosHttpClient = userInfosHttpClient;
-            _userAccessHttpClient = userAccessHttpClient;
-            _viewModelSetupService = viewModelSetupService;
-        }
-
         public IActionResult Index()
         {
             return RedirectToAction("Index", "Family");
@@ -32,10 +22,10 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddAccess(int progenyId)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
             UserAccessViewModel model = new(baseModel);
             
-            model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
 
             model.SetAccessLevelList();
 
@@ -46,7 +36,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddAccess(UserAccessViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
             model.SetBaseProperties(baseModel);
             
             if(!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -61,17 +51,17 @@ namespace KinaUnaWeb.Controllers
                 AccessLevel = model.AccessLevel
             };
 
-            List<UserAccess> progenyAccessList = await _userAccessHttpClient.GetUserAccessList(model.Email.ToUpper());
+            List<UserAccess> progenyAccessList = await userAccessHttpClient.GetUserAccessList(model.Email.ToUpper());
             
             UserAccess oldUserAccess = progenyAccessList.SingleOrDefault(u => u.ProgenyId == model.CurrentProgenyId);
             if (oldUserAccess == null)
             {
-                _ = await _userAccessHttpClient.AddUserAccess(userAccessToAdd);
+                _ = await userAccessHttpClient.AddUserAccess(userAccessToAdd);
             }
             else
             {
-                _ = await _userAccessHttpClient.DeleteUserAccess(oldUserAccess.AccessId);
-                _ = await _userAccessHttpClient.AddUserAccess(userAccessToAdd);
+                _ = await userAccessHttpClient.DeleteUserAccess(oldUserAccess.AccessId);
+                _ = await userAccessHttpClient.AddUserAccess(userAccessToAdd);
             }
             
             // Todo: Notify user of update
@@ -82,12 +72,12 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> EditAccess(int accessId)
         {
-            UserAccess userAccess = await _userAccessHttpClient.GetUserAccess(accessId);
+            UserAccess userAccess = await userAccessHttpClient.GetUserAccess(accessId);
 
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userAccess.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userAccess.ProgenyId);
             UserAccessViewModel model = new(baseModel);
 
-            UserInfo userInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfo(userAccess.UserId);
             
             model.SetUserAccessItem(userAccess, userInfo);
             
@@ -107,7 +97,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditAccess(UserAccessViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
             model.SetBaseProperties(baseModel);
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
@@ -116,7 +106,7 @@ namespace KinaUnaWeb.Controllers
 
             UserAccess userAccess = model.CreateUserAccess();
             
-            await _userAccessHttpClient.UpdateUserAccess(userAccess);
+            await userAccessHttpClient.UpdateUserAccess(userAccess);
             
             // Todo: Notify user of update
             
@@ -126,12 +116,12 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteAccess(int accessId)
         {
-            UserAccess userAccess = await _userAccessHttpClient.GetUserAccess(accessId);
+            UserAccess userAccess = await userAccessHttpClient.GetUserAccess(accessId);
 
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userAccess.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), userAccess.ProgenyId);
             UserAccessViewModel model = new(baseModel);
 
-            UserInfo userAccessUserInfo = await _userInfosHttpClient.GetUserInfo(userAccess.UserId);
+            UserInfo userAccessUserInfo = await userInfosHttpClient.GetUserInfo(userAccess.UserId);
             model.SetUserAccessItem(userAccess, userAccessUserInfo);
             model.SetAccessLevelList();
 
@@ -147,7 +137,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAccess(UserAccessViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.CurrentProgenyId);
             model.SetBaseProperties(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -155,10 +145,10 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            UserAccess accessToDelete = await _userAccessHttpClient.GetUserAccess(model.AccessId);
+            UserAccess accessToDelete = await userAccessHttpClient.GetUserAccess(model.AccessId);
             if (accessToDelete.ProgenyId == model.CurrentProgenyId)
             {
-                await _userAccessHttpClient.DeleteUserAccess(model.AccessId);
+                await userAccessHttpClient.DeleteUserAccess(model.AccessId);
             }
             
             // Todo: Notify user of update

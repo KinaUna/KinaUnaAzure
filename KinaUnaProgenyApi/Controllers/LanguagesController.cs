@@ -12,23 +12,14 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class LanguagesController : ControllerBase
+    public class LanguagesController(ILanguageService languagesService, IUserInfoService userInfoService) : ControllerBase
     {
-        private readonly ILanguageService _languagesService;
-        private readonly IUserInfoService _userInfoService;
-
-        public LanguagesController(ILanguageService languagesService, IUserInfoService userInfoService)
-        {
-            _languagesService = languagesService;
-            _userInfoService = userInfoService;
-        }
-
         [AllowAnonymous]
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> GetAllLanguages()
         {
-            List<KinaUnaLanguage> languagesList = await _languagesService.GetAllLanguages();
+            List<KinaUnaLanguage> languagesList = await languagesService.GetAllLanguages();
             return Ok(languagesList);
         }
 
@@ -37,7 +28,7 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{languageId}")]
         public async Task<IActionResult> GetLanguage(int languageId)
         {
-            KinaUnaLanguage language = await _languagesService.GetLanguage(languageId);
+            KinaUnaLanguage language = await languagesService.GetLanguage(languageId);
             return Ok(language);
         }
 
@@ -48,10 +39,10 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string userId = User.GetUserId();
 
-            if (await _userInfoService.IsAdminUserId(userId))
+            if (await userInfoService.IsAdminUserId(userId))
             {
                 language.Name = language.Name?.Trim();
-                await _languagesService.AddLanguage(language);
+                await languagesService.AddLanguage(language);
 
                 return Ok(language);
             }
@@ -66,15 +57,15 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string userId = User.GetUserId();
 
-            if (await _userInfoService.IsAdminUserId(userId))
+            if (await userInfoService.IsAdminUserId(userId))
             {
-                KinaUnaLanguage language = await _languagesService.GetLanguage(languageId);
+                KinaUnaLanguage language = await languagesService.GetLanguage(languageId);
                 if (language == null)
                 {
                     return NotFound();
                 }
 
-                language = await _languagesService.UpdateLanguage(value);
+                language = await languagesService.UpdateLanguage(value);
 
                 return Ok(language);
             }
@@ -89,9 +80,9 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string userId = User.GetUserId();
 
-            if (await _userInfoService.IsAdminUserId(userId))
+            if (await userInfoService.IsAdminUserId(userId))
             {
-                KinaUnaLanguage deletedLanguage = await _languagesService.DeleteLanguage(languageId);
+                KinaUnaLanguage deletedLanguage = await languagesService.DeleteLanguage(languageId);
                 if (deletedLanguage.Id == -1)
                 {
                     return NotFound();

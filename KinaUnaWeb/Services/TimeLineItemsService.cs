@@ -6,39 +6,21 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Services
 {
-    public class TimeLineItemsService : ITimeLineItemsService
+    public class TimeLineItemsService(
+        IMediaHttpClient mediaHttpClient,
+        ImageStore imageStore,
+        IWordsHttpClient wordsHttpClient,
+        IVaccinationsHttpClient vaccinationsHttpClient,
+        ISkillsHttpClient skillsHttpClient,
+        INotesHttpClient notesHttpClient,
+        IMeasurementsHttpClient measurementsHttpClient,
+        ILocationsHttpClient locationsHttpClient,
+        IFriendsHttpClient friendsHttpClient,
+        IContactsHttpClient contactsHttpClient,
+        ICalendarsHttpClient calendarsHttpClient,
+        ISleepHttpClient sleepHttpClient)
+        : ITimeLineItemsService
     {
-        private readonly IWordsHttpClient _wordsHttpClient;
-        private readonly IVaccinationsHttpClient _vaccinationsHttpClient;
-        private readonly ISkillsHttpClient _skillsHttpClient;
-        private readonly INotesHttpClient _notesHttpClient;
-        private readonly IMeasurementsHttpClient _measurementsHttpClient;
-        private readonly ILocationsHttpClient _locationsHttpClient;
-        private readonly IFriendsHttpClient _friendsHttpClient;
-        private readonly IContactsHttpClient _contactsHttpClient;
-        private readonly ICalendarsHttpClient _calendarsHttpClient;
-        private readonly ISleepHttpClient _sleepHttpClient;
-        private readonly IMediaHttpClient _mediaHttpClient;
-        private readonly ImageStore _imageStore;
-
-        public TimeLineItemsService(IMediaHttpClient mediaHttpClient, ImageStore imageStore, IWordsHttpClient wordsHttpClient, IVaccinationsHttpClient vaccinationsHttpClient,
-            ISkillsHttpClient skillsHttpClient, INotesHttpClient notesHttpClient, IMeasurementsHttpClient measurementsHttpClient, ILocationsHttpClient locationsHttpClient, IFriendsHttpClient friendsHttpClient,
-            IContactsHttpClient contactsHttpClient, ICalendarsHttpClient calendarsHttpClient, ISleepHttpClient sleepHttpClient)
-        {
-            _mediaHttpClient = mediaHttpClient;
-            _imageStore = imageStore;
-            _wordsHttpClient = wordsHttpClient;
-            _vaccinationsHttpClient = vaccinationsHttpClient;
-            _skillsHttpClient = skillsHttpClient;
-            _notesHttpClient = notesHttpClient;
-            _measurementsHttpClient = measurementsHttpClient;
-            _locationsHttpClient = locationsHttpClient;
-            _friendsHttpClient = friendsHttpClient;
-            _contactsHttpClient = contactsHttpClient;
-            _calendarsHttpClient = calendarsHttpClient;
-            _sleepHttpClient = sleepHttpClient;
-        }
-
         public async Task<TimeLineItemPartialViewModel> GetTimeLineItemPartialViewModel(TimeLineItemViewModel model)
         {
             string id = model.ItemId.ToString();
@@ -48,10 +30,10 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    PictureViewModel picture = await _mediaHttpClient.GetPictureViewModel(itemId, 0, 1, model.CurrentUser.Timezone, model.TagFilter);
+                    PictureViewModel picture = await mediaHttpClient.GetPictureViewModel(itemId, 0, 1, model.CurrentUser.Timezone, model.TagFilter);
                     if (picture != null && picture.PictureId > 0)
                     {
-                        picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
+                        picture.PictureLink = imageStore.UriFor(picture.PictureLink);
                         picture.CommentsCount = picture.CommentsList.Count;
                         return new TimeLineItemPartialViewModel("_TimeLinePhotoPartial", picture);
                     }
@@ -62,7 +44,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    VideoViewModel video = await _mediaHttpClient.GetVideoViewModel(itemId, 0, 1, model.CurrentUser.Timezone);
+                    VideoViewModel video = await mediaHttpClient.GetVideoViewModel(itemId, 0, 1, model.CurrentUser.Timezone);
                     if (video != null && video.VideoId > 0)
                     {
                         video.CommentsCount = video.CommentsList.Count;
@@ -75,7 +57,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    CalendarItem evt = await _calendarsHttpClient.GetCalendarItem(itemId);
+                    CalendarItem evt = await calendarsHttpClient.GetCalendarItem(itemId);
                     if (evt != null && evt.EventId > 0)
                     {
                         if (evt.StartTime.HasValue && evt.EndTime.HasValue)
@@ -92,7 +74,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    VocabularyItem voc = await _wordsHttpClient.GetWord(itemId);
+                    VocabularyItem voc = await wordsHttpClient.GetWord(itemId);
                     if (voc != null && voc.WordId > 0)
                     {
                         if (voc.Date != null)
@@ -109,7 +91,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    Skill skl = await _skillsHttpClient.GetSkill(itemId);
+                    Skill skl = await skillsHttpClient.GetSkill(itemId);
                     if (skl != null && skl.SkillId > 0)
                     {
                         return new TimeLineItemPartialViewModel("_TimeLineSkillPartial", skl);
@@ -121,10 +103,10 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    Friend frn = await _friendsHttpClient.GetFriend(itemId);
+                    Friend frn = await friendsHttpClient.GetFriend(itemId);
                     if (frn != null && frn.FriendId > 0)
                     {
-                        frn.PictureLink = _imageStore.UriFor(frn.PictureLink, "friends");
+                        frn.PictureLink = imageStore.UriFor(frn.PictureLink, "friends");
                         return new TimeLineItemPartialViewModel("_TimeLineFriendPartial", frn);
                     }
                 }
@@ -134,7 +116,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    Measurement mes = await _measurementsHttpClient.GetMeasurement(itemId);
+                    Measurement mes = await measurementsHttpClient.GetMeasurement(itemId);
                     if (mes != null && mes.MeasurementId > 0)
                     {
                         return new TimeLineItemPartialViewModel("_TimeLineMeasurementPartial", mes);
@@ -146,7 +128,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    Sleep slp = await _sleepHttpClient.GetSleepItem(itemId);
+                    Sleep slp = await sleepHttpClient.GetSleepItem(itemId);
                     if (slp != null && slp.SleepId > 0)
                     {
                         slp.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(slp.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
@@ -166,7 +148,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    Note nte = await _notesHttpClient.GetNote(itemId);
+                    Note nte = await notesHttpClient.GetNote(itemId);
                     if (nte != null && nte.NoteId > 0)
                     {
                         nte.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(nte.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
@@ -179,7 +161,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    Contact cnt = await _contactsHttpClient.GetContact(itemId);
+                    Contact cnt = await contactsHttpClient.GetContact(itemId);
                     if (cnt != null && cnt.ContactId > 0)
                     {
                         if (cnt.DateAdded == null)
@@ -187,7 +169,7 @@ namespace KinaUnaWeb.Services
                             cnt.DateAdded = DateTime.UtcNow;
                         }
 
-                        cnt.PictureLink = _imageStore.UriFor(cnt.PictureLink, "contacts");
+                        cnt.PictureLink = imageStore.UriFor(cnt.PictureLink, "contacts");
 
                         return new TimeLineItemPartialViewModel("_TimeLineContactPartial", cnt);
                     }
@@ -198,7 +180,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    Vaccination vac = await _vaccinationsHttpClient.GetVaccination(itemId);
+                    Vaccination vac = await vaccinationsHttpClient.GetVaccination(itemId);
                     if (vac != null && vac.VaccinationId > 0)
                     {
                         return new TimeLineItemPartialViewModel("_TimeLineVaccinationPartial", vac);
@@ -210,7 +192,7 @@ namespace KinaUnaWeb.Services
             {
                 if (idParse)
                 {
-                    Location loc = await _locationsHttpClient.GetLocation(itemId);
+                    Location loc = await locationsHttpClient.GetLocation(itemId);
                     if (loc != null && loc.LocationId > 0)
                     {
                         return new TimeLineItemPartialViewModel("_TimeLineLocationPartial", loc);

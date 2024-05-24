@@ -16,57 +16,33 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [AllowAnonymous]
-    public class PublicAccessController : ControllerBase
+    public class PublicAccessController(
+        IImageStore imageStore,
+        IProgenyService progenyService,
+        IUserInfoService userInfoService,
+        IUserAccessService userAccessService,
+        ICalendarService calendarService,
+        IContactService contactService,
+        IFriendService friendService,
+        ILocationService locationService,
+        ITimelineService timelineService,
+        IMeasurementService measurementService,
+        INoteService noteService,
+        ISkillService skillService,
+        ISleepService sleepService,
+        IVaccinationService vaccinationService,
+        IVocabularyService vocabularyService,
+        IPicturesService picturesService,
+        IVideosService videosService,
+        ICommentsService commentsService,
+        IConfiguration configuration)
+        : ControllerBase
     {
-        private readonly IImageStore _imageStore;
-        private readonly IProgenyService _progenyService;
-        private readonly IUserInfoService _userInfoService;
-        private readonly IUserAccessService _userAccessService;
-        private readonly ICalendarService _calendarService;
-        private readonly IContactService _contactService;
-        private readonly IFriendService _friendService;
-        private readonly ILocationService _locationService;
-        private readonly ITimelineService _timelineService;
-        private readonly IMeasurementService _measurementService;
-        private readonly INoteService _noteService;
-        private readonly ISkillService _skillService;
-        private readonly ISleepService _sleepService;
-        private readonly IVaccinationService _vaccinationService;
-        private readonly IVocabularyService _vocabularyService;
-        private readonly IPicturesService _picturesService;
-        private readonly IVideosService _videosService;
-        private readonly ICommentsService _commentsService;
-        private readonly IConfiguration _configuration;
-        public PublicAccessController(IImageStore imageStore, IProgenyService progenyService, IUserInfoService userInfoService, IUserAccessService userAccessService, ICalendarService calendarService,
-            IContactService contactService, IFriendService friendService, ILocationService locationService, ITimelineService timelineService, IMeasurementService measurementService, INoteService noteService,
-            ISkillService skillService, ISleepService sleepService, IVaccinationService vaccinationService, IVocabularyService vocabularyService, IPicturesService picturesService, IVideosService videosService,
-            ICommentsService commentsService, IConfiguration configuration)
-        {
-            _imageStore = imageStore;
-            _progenyService = progenyService;
-            _userInfoService = userInfoService;
-            _userAccessService = userAccessService;
-            _calendarService = calendarService;
-            _contactService = contactService;
-            _friendService = friendService;
-            _locationService = locationService;
-            _timelineService = timelineService;
-            _measurementService = measurementService;
-            _noteService = noteService;
-            _skillService = skillService;
-            _sleepService = sleepService;
-            _vaccinationService = vaccinationService;
-            _vocabularyService = vocabularyService;
-            _picturesService = picturesService;
-            _videosService = videosService;
-            _commentsService = commentsService;
-            _configuration = configuration;
-        }
         // GET api/publicaccess
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            Progeny prog = await _progenyService.GetProgeny(Constants.DefaultChildId);
+            Progeny prog = await progenyService.GetProgeny(Constants.DefaultChildId);
             List<Progeny> resultList = new() { prog };
 
             return Ok(resultList);
@@ -76,8 +52,8 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetProgeny(int id)
         {
-            Progeny result = await _progenyService.GetProgeny(Constants.DefaultChildId);
-            result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Progeny);
+            Progeny result = await progenyService.GetProgeny(Constants.DefaultChildId);
+            result.PictureLink = imageStore.UriFor(result.PictureLink, BlobContainers.Progeny);
 
             return Ok(result);
         }
@@ -87,14 +63,14 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> Access(int id)
         {
-            List<UserAccess> accessList = await _userAccessService.GetProgenyUserAccessList(Constants.DefaultChildId);
+            List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(Constants.DefaultChildId);
             if (accessList.Any())
             {
                 foreach (UserAccess ua in accessList)
                 {
-                    ua.Progeny = await _progenyService.GetProgeny(ua.ProgenyId);
+                    ua.Progeny = await progenyService.GetProgeny(ua.ProgenyId);
                     ua.User = new ApplicationUser();
-                    UserInfo userinfo = await _userInfoService.GetUserInfoByEmail(ua.UserId);
+                    UserInfo userinfo = await userInfoService.GetUserInfoByEmail(ua.UserId);
                     if (userinfo != null)
                     {
                         ua.User.FirstName = userinfo.FirstName;
@@ -120,7 +96,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> ProgenyListByUser(string id)
         {
             List<Progeny> result = new();
-            Progeny prog = await _progenyService.GetProgeny(Constants.DefaultChildId);
+            Progeny prog = await progenyService.GetProgeny(Constants.DefaultChildId);
             result.Add(prog);
             return Ok(result);
 
@@ -131,7 +107,7 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> EventList(int progenyId, int accessLevel)
         {
-            List<CalendarItem> model = await _calendarService.GetCalendarList(Constants.DefaultChildId);
+            List<CalendarItem> model = await calendarService.GetCalendarList(Constants.DefaultChildId);
             model = model.Where(e => e.EndTime > DateTime.UtcNow && e.AccessLevel >= 5).OrderBy(e => e.StartTime).ToList();
             model = model.Take(5).ToList();
 
@@ -143,7 +119,7 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyLatest(int id, int accessLevel = 5, int count = 5, int start = 0)
         {
-            List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(Constants.DefaultChildId);
+            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(Constants.DefaultChildId);
             timeLineList = timeLineList.Where(t => t.AccessLevel >= 5 && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime).ToList();
             if (timeLineList.Any())
             {
@@ -161,7 +137,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetCalendarItemMobile(int id)
         {
-            CalendarItem result = await _calendarService.GetCalendarItem(id);
+            CalendarItem result = await calendarService.GetCalendarItem(id);
             if (result.ProgenyId == Constants.DefaultChildId)
             {
                 return Ok(result);
@@ -172,7 +148,7 @@ namespace KinaUnaProgenyApi.Controllers
                 AccessLevel = 5,
                 Title = "Launch of KinaUna.com"
             };
-            UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
+            UserInfo adminInfo = await userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
             calItem.Author = adminInfo?.UserId ?? "Unknown Author";
             calItem.StartTime = new DateTime(2018, 2, 18, 21, 02, 0);
             calItem.EndTime = new DateTime(2018, 2, 18, 22, 02, 0);
@@ -184,7 +160,7 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyCalendarMobile(int id, int accessLevel = 5)
         {
-            List<CalendarItem> calendarList = await _calendarService.GetCalendarList(Constants.DefaultChildId);
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(Constants.DefaultChildId);
             calendarList = calendarList.Where(c => c.AccessLevel >= 5).ToList();
             if (calendarList.Any())
             {
@@ -200,7 +176,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetContactMobile(int id)
         {
-            Contact result = await _contactService.GetContact(id);
+            Contact result = await contactService.GetContact(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Contact
@@ -209,7 +185,7 @@ namespace KinaUnaProgenyApi.Controllers
                     ProgenyId = Constants.DefaultChildId,
                     Active = true
                 };
-                UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
+                UserInfo adminInfo = await userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
                 result.Author = adminInfo?.UserId ?? "Unknown Author";
                 result.DisplayName = adminInfo?.UserName ?? "Unknown";
                 result.FirstName = adminInfo?.FirstName ?? "Unknown";
@@ -218,7 +194,7 @@ namespace KinaUnaProgenyApi.Controllers
                 result.Email1 = Constants.SupportEmail;
                 result.PictureLink = Constants.ProfilePictureUrl;
             }
-            result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Contacts);
+            result.PictureLink = imageStore.UriFor(result.PictureLink, BlobContainers.Contacts);
             return Ok(result);
         }
 
@@ -227,13 +203,13 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyContactsMobile(int id, int accessLevel = 5)
         {
-            List<Contact> contactsList = await _contactService.GetContactsList(Constants.DefaultChildId);
+            List<Contact> contactsList = await contactService.GetContactsList(Constants.DefaultChildId);
             contactsList = contactsList.Where(c => c.AccessLevel >= 5).ToList();
             if (contactsList.Any())
             {
                 foreach (Contact cont in contactsList)
                 {
-                    cont.PictureLink = _imageStore.UriFor(cont.PictureLink, BlobContainers.Contacts);
+                    cont.PictureLink = imageStore.UriFor(cont.PictureLink, BlobContainers.Contacts);
                 }
                 return Ok(contactsList);
             }
@@ -249,13 +225,13 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyFriendsMobile(int id, int accessLevel = 5)
         {
-            List<Friend> friendsList = await _friendService.GetFriendsList(Constants.DefaultChildId);
+            List<Friend> friendsList = await friendService.GetFriendsList(Constants.DefaultChildId);
             friendsList = friendsList.Where(c => c.AccessLevel >= 5).ToList();
             if (friendsList.Any())
             {
                 foreach (Friend frn in friendsList)
                 {
-                    frn.PictureLink = _imageStore.UriFor(frn.PictureLink, BlobContainers.Friends);
+                    frn.PictureLink = imageStore.UriFor(frn.PictureLink, BlobContainers.Friends);
                 }
                 return Ok(friendsList);
             }
@@ -268,7 +244,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetLocationMobile(int id)
         {
-            Location result = await _locationService.GetLocation(id);
+            Location result = await locationService.GetLocation(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Location
@@ -286,7 +262,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetVocabularyItemMobile(int id)
         {
-            VocabularyItem result = await _vocabularyService.GetVocabularyItem(id);
+            VocabularyItem result = await vocabularyService.GetVocabularyItem(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new VocabularyItem
@@ -304,7 +280,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetSkillMobile(int id)
         {
-            Skill result = await _skillService.GetSkill(id);
+            Skill result = await skillService.GetSkill(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Skill
@@ -322,7 +298,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetFriendMobile(int id)
         {
-            Friend result = await _friendService.GetFriend(id);
+            Friend result = await friendService.GetFriend(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Friend
@@ -330,7 +306,7 @@ namespace KinaUnaProgenyApi.Controllers
                     AccessLevel = 5,
                     ProgenyId = Constants.DefaultChildId
                 };
-                UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
+                UserInfo adminInfo = await userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
                 result.Author = adminInfo?.UserId ?? "Unknown Author";
                 result.Name = adminInfo?.UserName ?? "Unknown";
                 result.FriendAddedDate = DateTime.UtcNow;
@@ -339,14 +315,14 @@ namespace KinaUnaProgenyApi.Controllers
                 result.PictureLink = Constants.ProfilePictureUrl;
             }
 
-            result.PictureLink = _imageStore.UriFor(result.PictureLink, BlobContainers.Friends);
+            result.PictureLink = imageStore.UriFor(result.PictureLink, BlobContainers.Friends);
             return Ok(result);
         }
 
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetMeasurementMobile(int id)
         {
-            Measurement result = await _measurementService.GetMeasurement(id);
+            Measurement result = await measurementService.GetMeasurement(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Measurement
@@ -355,7 +331,7 @@ namespace KinaUnaProgenyApi.Controllers
                     ProgenyId = Constants.DefaultChildId,
                     Circumference = 0
                 };
-                UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
+                UserInfo adminInfo = await userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
                 result.Author = adminInfo?.UserId ?? "Unknown Author";
                 result.CreatedDate = DateTime.UtcNow;
                 result.Height = 1;
@@ -368,7 +344,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetSleepMobile(int id)
         {
-            Sleep result = await _sleepService.GetSleep(id);
+            Sleep result = await sleepService.GetSleep(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Sleep
@@ -376,7 +352,7 @@ namespace KinaUnaProgenyApi.Controllers
                     AccessLevel = 5,
                     ProgenyId = Constants.DefaultChildId
                 };
-                UserInfo adminInfo = await _userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
+                UserInfo adminInfo = await userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
                 result.Author = adminInfo?.UserId ?? "Unknown Author";
                 result.CreatedDate = DateTime.UtcNow;
                 result.SleepStart = DateTime.UtcNow - TimeSpan.FromHours(1);
@@ -391,7 +367,7 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
-            List<Sleep> model = await _sleepService.GetSleepList(Constants.DefaultChildId);
+            List<Sleep> model = await sleepService.GetSleepList(Constants.DefaultChildId);
             model = model.Where(s => s.AccessLevel >= 5).ToList();
             model = model.OrderByDescending(s => s.SleepStart).ToList();
             model = model.Skip(start).Take(25).ToList();
@@ -409,7 +385,7 @@ namespace KinaUnaProgenyApi.Controllers
                 SleepLastYear = TimeSpan.Zero,
                 SleepLastMonth = TimeSpan.Zero
             };
-            List<Sleep> sList = await _sleepService.GetSleepList(Constants.DefaultChildId);
+            List<Sleep> sList = await sleepService.GetSleepList(Constants.DefaultChildId);
             List<Sleep> sleepList = new();
             DateTime yearAgo = new(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
@@ -468,7 +444,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
         {
             string userTimeZone = Constants.DefaultTimezone;
-            List<Sleep> sList = await _sleepService.GetSleepList(Constants.DefaultChildId);
+            List<Sleep> sList = await sleepService.GetSleepList(Constants.DefaultChildId);
             List<Sleep> chartList = new();
             foreach (Sleep chartItem in sList)
             {
@@ -548,7 +524,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetNoteMobile(int id)
         {
-            Note result = await _noteService.GetNote(id);
+            Note result = await noteService.GetNote(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Note
@@ -566,7 +542,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetVaccinationMobile(int id)
         {
-            Vaccination result = await _vaccinationService.GetVaccination(id);
+            Vaccination result = await vaccinationService.GetVaccination(id);
             if (result.ProgenyId != Constants.DefaultChildId)
             {
                 result = new Vaccination
@@ -585,7 +561,7 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyYearAgo(int id, int accessLevel = 5)
         {
-            List<TimeLineItem> timeLineList = await _timelineService.GetTimeLineList(Constants.DefaultChildId);
+            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(Constants.DefaultChildId);
             timeLineList = timeLineList
                 .Where(t => t.AccessLevel >= 5 && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day).OrderBy(t => t.ProgenyTime).ToList();
             if (timeLineList.Any())
@@ -609,7 +585,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Note> allItems = await _noteService.GetNotesList(Constants.DefaultChildId);
+            List<Note> allItems = await noteService.GetNotesList(Constants.DefaultChildId);
             allItems = allItems.Where(n => n.AccessLevel == 5).OrderBy(v => v.CreatedDate).ToList();
 
             if (sortBy == 1)
@@ -659,7 +635,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Sleep> allItems = await _sleepService.GetSleepList(Constants.DefaultChildId);
+            List<Sleep> allItems = await sleepService.GetSleepList(Constants.DefaultChildId);
             allItems = allItems.Where(s => s.AccessLevel == 5).OrderBy(s => s.SleepStart).ToList();
 
             if (sortBy == 1)
@@ -703,11 +679,11 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> GetSleepDetails(int sleepId, int accessLevel, int sortOrder)
         {
 
-            Sleep currentSleep = await _sleepService.GetSleep(sleepId);
+            Sleep currentSleep = await sleepService.GetSleep(sleepId);
             if (currentSleep != null && currentSleep.ProgenyId == Constants.DefaultChildId)
             {
                 string userTimeZone = Constants.DefaultTimezone;
-                List<Sleep> sList = await _sleepService.GetSleepList(currentSleep.ProgenyId);
+                List<Sleep> sList = await sleepService.GetSleepList(currentSleep.ProgenyId);
                 List<Sleep> sleepList = new();
                 foreach (Sleep s in sList)
                 {
@@ -769,7 +745,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             if (id == Constants.DefaultChildId)
             {
-                List<Location> locationsList = await _locationService.GetLocationsList(id);
+                List<Location> locationsList = await locationService.GetLocationsList(id);
                 locationsList = locationsList.Where(l => l.AccessLevel == 5).ToList();
                 if (locationsList.Any())
                 {
@@ -799,7 +775,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Location> allItems = await _locationService.GetLocationsList(progenyId);
+            List<Location> allItems = await locationService.GetLocationsList(progenyId);
             allItems = allItems.OrderBy(v => v.Date).ToList();
 
             if (sortBy == 1)
@@ -853,7 +829,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Measurement> allItems = await _measurementService.GetMeasurementsList(progenyId);
+            List<Measurement> allItems = await measurementService.GetMeasurementsList(progenyId);
             allItems = allItems.OrderBy(m => m.Date).ToList();
 
             if (sortBy == 1)
@@ -899,7 +875,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             if (id == Constants.DefaultChildId)
             {
-                List<Measurement> measurementsList = await _measurementService.GetMeasurementsList(id);
+                List<Measurement> measurementsList = await measurementService.GetMeasurementsList(id);
                 measurementsList = measurementsList.Where(m => m.AccessLevel >= accessLevel).ToList();
                 if (measurementsList.Any())
                 {
@@ -925,7 +901,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Skill> allItems = await _skillService.GetSkillsList(progenyId);
+            List<Skill> allItems = await skillService.GetSkillsList(progenyId);
             allItems = allItems.OrderBy(s => s.SkillFirstObservation).ToList();
 
             if (sortBy == 1)
@@ -979,7 +955,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<VocabularyItem> allItems = await _vocabularyService.GetVocabularyList(progenyId);
+            List<VocabularyItem> allItems = await vocabularyService.GetVocabularyList(progenyId);
             allItems = allItems.OrderBy(v => v.Date).ToList();
 
             if (sortBy == 1)
@@ -1025,7 +1001,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             if (id == Constants.DefaultChildId)
             {
-                List<VocabularyItem> wordList = await _vocabularyService.GetVocabularyList(id);
+                List<VocabularyItem> wordList = await vocabularyService.GetVocabularyList(id);
                 wordList = wordList.Where(w => w.AccessLevel >= accessLevel).ToList();
                 if (wordList.Any())
                 {
@@ -1043,7 +1019,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             if (id == Constants.DefaultChildId)
             {
-                List<Vaccination> vaccinationsList = await _vaccinationService.GetVaccinationsList(id);
+                List<Vaccination> vaccinationsList = await vaccinationService.GetVaccinationsList(id);
                 vaccinationsList = vaccinationsList.Where(v => v.AccessLevel >= accessLevel).ToList();
                 if (vaccinationsList.Any())
                 {
@@ -1061,7 +1037,7 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> RandomPictureMobile(int progenyId, int accessLevel)
         {
-            List<Picture> picturesList = await _picturesService.GetPicturesList(Constants.DefaultChildId);
+            List<Picture> picturesList = await picturesService.GetPicturesList(Constants.DefaultChildId);
             picturesList = picturesList.Where(p => p.AccessLevel >= 5).ToList();
             if (picturesList.Any())
             {
@@ -1069,9 +1045,9 @@ namespace KinaUnaProgenyApi.Controllers
                 int pictureNumber = r.Next(0, picturesList.Count);
 
                 Picture picture = picturesList[pictureNumber];
-                picture.PictureLink = _imageStore.UriFor(picture.PictureLink);
-                picture.PictureLink1200 = _imageStore.UriFor(picture.PictureLink1200);
-                picture.PictureLink600 = _imageStore.UriFor(picture.PictureLink600);
+                picture.PictureLink = imageStore.UriFor(picture.PictureLink);
+                picture.PictureLink1200 = imageStore.UriFor(picture.PictureLink1200);
+                picture.PictureLink600 = imageStore.UriFor(picture.PictureLink600);
 
                 return Ok(picture);
             }
@@ -1079,7 +1055,7 @@ namespace KinaUnaProgenyApi.Controllers
             Progeny progeny = new()
             {
                 Name = Constants.AppName,
-                Admins = _configuration.GetValue<string>("AdminEmail"),
+                Admins = configuration.GetValue<string>("AdminEmail"),
                 NickName = Constants.AppName,
                 BirthDay = new DateTime(2018, 2, 18, 18, 2, 0),
                 Id = 0,
@@ -1102,14 +1078,14 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetPictureMobile(int id)
         {
-            Picture result = await _picturesService.GetPicture(id);
+            Picture result = await picturesService.GetPicture(id);
             if (result != null)
             {
                 if (result.ProgenyId == Constants.DefaultChildId)
                 {
-                    result.PictureLink = _imageStore.UriFor(result.PictureLink);
-                    result.PictureLink1200 = _imageStore.UriFor(result.PictureLink1200);
-                    result.PictureLink600 = _imageStore.UriFor(result.PictureLink600);
+                    result.PictureLink = imageStore.UriFor(result.PictureLink);
+                    result.PictureLink1200 = imageStore.UriFor(result.PictureLink1200);
+                    result.PictureLink600 = imageStore.UriFor(result.PictureLink600);
                     return Ok(result);
                 }
 
@@ -1118,7 +1094,7 @@ namespace KinaUnaProgenyApi.Controllers
             Progeny progeny = new()
             {
                 Name = Constants.AppName,
-                Admins = _configuration.GetValue<string>("AdminEmail"),
+                Admins = configuration.GetValue<string>("AdminEmail"),
                 NickName = Constants.AppName,
                 BirthDay = new DateTime(2018, 2, 18, 18, 2, 0),
                 Id = 0,
@@ -1152,12 +1128,12 @@ namespace KinaUnaProgenyApi.Controllers
             List<Picture> allItems;
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                allItems = await _picturesService.GetPicturesList(Constants.DefaultChildId);
+                allItems = await picturesService.GetPicturesList(Constants.DefaultChildId);
                 allItems = allItems.Where(p => p.AccessLevel >= 5 && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToList();
             }
             else
             {
-                allItems = await _picturesService.GetPicturesList(2);
+                allItems = await picturesService.GetPicturesList(2);
                 allItems = allItems.Where(p => p.AccessLevel >= 5).OrderBy(p => p.PictureTime).ToList();
             }
 
@@ -1201,10 +1177,10 @@ namespace KinaUnaProgenyApi.Controllers
 
             foreach (Picture pic in itemsOnPage)
             {
-                pic.Comments = await _commentsService.GetCommentsList(pic.CommentThreadNumber);
-                pic.PictureLink = _imageStore.UriFor(pic.PictureLink);
-                pic.PictureLink1200 = _imageStore.UriFor(pic.PictureLink1200);
-                pic.PictureLink600 = _imageStore.UriFor(pic.PictureLink600);
+                pic.Comments = await commentsService.GetCommentsList(pic.CommentThreadNumber);
+                pic.PictureLink = imageStore.UriFor(pic.PictureLink);
+                pic.PictureLink1200 = imageStore.UriFor(pic.PictureLink1200);
+                pic.PictureLink600 = imageStore.UriFor(pic.PictureLink600);
             }
             PicturePageViewModel model = new()
             {
@@ -1229,7 +1205,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> PictureViewModelMobile(int id, int accessLevel, [FromQuery] int sortBy = 1)
         {
 
-            Picture picture = await _picturesService.GetPicture(id);
+            Picture picture = await picturesService.GetPicture(id);
 
             if (picture != null)
             {
@@ -1246,7 +1222,7 @@ namespace KinaUnaProgenyApi.Controllers
                     Owners = picture.Owners,
                     PictureLink = picture.PictureLink1200
                 };
-                model.PictureLink = _imageStore.UriFor(model.PictureLink);
+                model.PictureLink = imageStore.UriFor(model.PictureLink);
                 model.AccessLevel = picture.AccessLevel;
                 model.Author = picture.Author;
                 model.CommentThreadNumber = picture.CommentThreadNumber;
@@ -1257,10 +1233,10 @@ namespace KinaUnaProgenyApi.Controllers
                 model.Altitude = picture.Altitude;
                 model.PictureNumber = 1;
                 model.PictureCount = 1;
-                model.CommentsList = await _commentsService.GetCommentsList(picture.CommentThreadNumber);
+                model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
                 model.TagsList = "";
                 List<string> tagsList = new();
-                List<Picture> pictureList = await _picturesService.GetPicturesList(picture.ProgenyId);
+                List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId);
                 pictureList = pictureList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToList();
                 if (pictureList.Any())
                 {
@@ -1333,14 +1309,14 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> GetVideoMobile(int id)
         {
-            Video result = await _videosService.GetVideo(id);
+            Video result = await videosService.GetVideo(id);
             if (result.ProgenyId == Constants.DefaultChildId)
             {
                 return Ok(result);
             }
 
             // Todo: Create default video item
-            result = await _videosService.GetVideo(204);
+            result = await videosService.GetVideo(204);
             return Ok(result);
         }
 
@@ -1358,12 +1334,12 @@ namespace KinaUnaProgenyApi.Controllers
             List<Video> allItems;
             if (tagFilter != "")
             {
-                allItems = await _videosService.GetVideosList(Constants.DefaultChildId);
+                allItems = await videosService.GetVideosList(Constants.DefaultChildId);
                 allItems = allItems.Where(p => p.AccessLevel >= 5 && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToList();
             }
             else
             {
-                allItems = await _videosService.GetVideosList(Constants.DefaultChildId);
+                allItems = await videosService.GetVideosList(Constants.DefaultChildId);
                 allItems = allItems.Where(p => p.AccessLevel >= 5).OrderBy(p => p.VideoTime).ToList();
             }
 
@@ -1426,7 +1402,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             foreach (Video vid in itemsOnPage)
             {
-                vid.Comments = await _commentsService.GetCommentsList(vid.CommentThreadNumber);
+                vid.Comments = await commentsService.GetCommentsList(vid.CommentThreadNumber);
             }
             VideoPageViewModel model = new()
             {
@@ -1451,7 +1427,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> VideoViewModelMobile(int id, int accessLevel, [FromQuery] int sortBy = 1)
         {
 
-            Video video = await _videosService.GetVideo(id);
+            Video video = await videosService.GetVideo(id);
 
             if (video != null)
             {
@@ -1480,14 +1456,14 @@ namespace KinaUnaProgenyApi.Controllers
                 model.Tags = video.Tags;
                 model.VideoNumber = 1;
                 model.VideoCount = 1;
-                model.CommentsList = await _commentsService.GetCommentsList(video.CommentThreadNumber);
+                model.CommentsList = await commentsService.GetCommentsList(video.CommentThreadNumber);
                 model.Location = video.Location;
                 model.Longtitude = video.Longtitude;
                 model.Latitude = video.Latitude;
                 model.Altitude = video.Latitude;
                 model.TagsList = "";
                 List<string> tagsList = new();
-                List<Video> videosList = await _videosService.GetVideosList(video.ProgenyId);
+                List<Video> videosList = await videosService.GetVideosList(video.ProgenyId);
                 videosList = videosList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToList();
                 if (videosList.Any())
                 {
@@ -1564,7 +1540,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string tagListString = "";
             List<string> tagsList = new();
-            List<Picture> pictureList = await _picturesService.GetPicturesList(id);
+            List<Picture> pictureList = await picturesService.GetPicturesList(id);
             if (pictureList.Any())
             {
                 foreach (Picture pic in pictureList)

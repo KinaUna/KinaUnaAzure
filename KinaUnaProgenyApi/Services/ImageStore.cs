@@ -11,20 +11,12 @@ using Azure.Storage.Sas;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class ImageStore : IImageStore
+    public class ImageStore(IConfiguration configuration) : IImageStore
     {
-        private readonly BlobServiceClient _blobServiceClient;
-        private readonly string _storageKey;
-        private readonly string _baseUri;
-        private readonly string _cloudBlobUserName;
-
-        public ImageStore(IConfiguration configuration)
-        {
-            _blobServiceClient = new BlobServiceClient(configuration.GetValue<string>("BlobStorageConnectionString"));
-            _storageKey = configuration.GetValue<string>("BlobStorageKey");
-            _baseUri = configuration.GetValue<string>("CloudBlobBase");
-            _cloudBlobUserName = configuration.GetValue<string>("CloudBlobUserName");
-        }
+        private readonly BlobServiceClient _blobServiceClient = new BlobServiceClient(configuration.GetValue<string>("BlobStorageConnectionString"));
+        private readonly string _storageKey = configuration.GetValue<string>("BlobStorageKey");
+        private readonly string _baseUri = configuration.GetValue<string>("CloudBlobBase");
+        private readonly string _cloudBlobUserName = configuration.GetValue<string>("CloudBlobUserName");
 
         public async Task<string> SaveImage(Stream imageStream, string containerName = "pictures")
         {

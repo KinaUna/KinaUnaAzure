@@ -7,29 +7,18 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class WebNotificationsService : IWebNotificationsService
+    public class WebNotificationsService(IPushMessageSender pushMessageSender, IDataService dataService, IUserAccessService userAccessService, IUserInfoService userInfoService)
+        : IWebNotificationsService
     {
-        private readonly IPushMessageSender _pushMessageSender;
-        private readonly IDataService _dataService;
-        private readonly IUserAccessService _userAccessService;
-        private readonly IUserInfoService _userInfoService;
-        public WebNotificationsService(IPushMessageSender pushMessageSender, IDataService dataService, IUserAccessService userAccessService, IUserInfoService userInfoService)
-        {
-            _pushMessageSender = pushMessageSender;
-            _dataService = dataService;
-            _userAccessService = userAccessService;
-            _userInfoService = userInfoService;
-        }
-
         public async Task SendCalendarNotification(CalendarItem eventItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(eventItem.ProgenyId);
+            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(eventItem.ProgenyId);
 
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= eventItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         if (eventItem.StartTime != null)
@@ -57,9 +46,9 @@ namespace KinaUnaProgenyApi.Services
                                 Type = "Notification"
                             };
 
-                            webNotification = await _dataService.AddWebNotification(webNotification);
+                            webNotification = await dataService.AddWebNotification(webNotification);
 
-                            await _pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
+                            await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
                                 webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunacalendar" + eventItem.ProgenyId);
                         }
                     }
@@ -69,13 +58,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendContactNotification(Contact contactItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(contactItem.ProgenyId);
+            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(contactItem.ProgenyId);
 
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= contactItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification webNotification = new()
@@ -90,9 +79,9 @@ namespace KinaUnaProgenyApi.Services
                             Type = "Notification"
                         };
 
-                        webNotification = await _dataService.AddWebNotification(webNotification);
+                        webNotification = await dataService.AddWebNotification(webNotification);
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
+                        await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
                             webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunacontact" + contactItem.ProgenyId);
                     }
                 }
@@ -101,13 +90,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendFriendNotification(Friend friendItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(friendItem.ProgenyId);
+            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(friendItem.ProgenyId);
 
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= friendItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification notification = new()
@@ -122,9 +111,9 @@ namespace KinaUnaProgenyApi.Services
                             Type = "Notification"
                         };
 
-                        notification = await _dataService.AddWebNotification(notification);
+                        notification = await dataService.AddWebNotification(notification);
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                        await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunafriend" + friendItem.ProgenyId);
                     }
                 }
@@ -133,13 +122,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendLocationNotification(Location locationItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotif = await _userAccessService.GetProgenyUserAccessList(locationItem.ProgenyId);
+            List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(locationItem.ProgenyId);
 
             foreach (UserAccess userAccess in usersToNotif)
             {
                 if (userAccess.AccessLevel <= locationItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         DateTime tempDate = DateTime.UtcNow;
@@ -161,9 +150,9 @@ namespace KinaUnaProgenyApi.Services
                             Type = "Notification"
                         };
 
-                        webNotification = await _dataService.AddWebNotification(webNotification);
+                        webNotification = await dataService.AddWebNotification(webNotification);
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
+                        await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
                             webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunalocation" + locationItem.ProgenyId);
                     }
                 }
@@ -172,13 +161,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendMeasurementNotification(Measurement measurementItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotif = await _userAccessService.GetProgenyUserAccessList(measurementItem.ProgenyId);
+            List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(measurementItem.ProgenyId);
 
             foreach (UserAccess userAccess in usersToNotif)
             {
                 if (userAccess.AccessLevel <= measurementItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification notification = new()
@@ -193,9 +182,9 @@ namespace KinaUnaProgenyApi.Services
                             Type = "Notification"
                         };
 
-                        notification = await _dataService.AddWebNotification(notification);
+                        notification = await dataService.AddWebNotification(notification);
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                        await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunameasurement" + measurementItem.ProgenyId);
                     }
                 }
@@ -204,13 +193,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendNoteNotification(Note noteItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotif = await _userAccessService.GetProgenyUserAccessList(noteItem.ProgenyId);
+            List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(noteItem.ProgenyId);
 
             foreach (UserAccess userAccess in usersToNotif)
             {
                 if (userAccess.AccessLevel <= noteItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification notification = new()
@@ -225,9 +214,9 @@ namespace KinaUnaProgenyApi.Services
                             Type = "Notification"
                         };
 
-                        notification = await _dataService.AddWebNotification(notification);
+                        notification = await dataService.AddWebNotification(notification);
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                        await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunanote" + noteItem.ProgenyId);
                     }
                 }
@@ -236,13 +225,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendPictureNotification(Picture pictureItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(pictureItem.ProgenyId);
+            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(pictureItem.ProgenyId);
 
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= pictureItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         string picTimeString;
@@ -268,9 +257,9 @@ namespace KinaUnaProgenyApi.Services
                             Type = "Notification"
                         };
 
-                        notification = await _dataService.AddWebNotification(notification);
+                        notification = await dataService.AddWebNotification(notification);
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                        await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaphoto" + pictureItem.ProgenyId);
                     }
                 }
@@ -279,13 +268,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendVideoNotification(Video videoItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(videoItem.ProgenyId);
+            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(videoItem.ProgenyId);
 
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= videoItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         string picTimeString;
@@ -311,9 +300,9 @@ namespace KinaUnaProgenyApi.Services
                             Type = "Notification"
                         };
 
-                        notification = await _dataService.AddWebNotification(notification);
+                        notification = await dataService.AddWebNotification(notification);
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                        await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavideo" + videoItem.ProgenyId);
                     }
                 }
@@ -322,13 +311,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendSkillNotification(Skill skillItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(skillItem.ProgenyId);
+            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(skillItem.ProgenyId);
 
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= skillItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         if (!skillItem.SkillFirstObservation.HasValue)
@@ -350,9 +339,9 @@ namespace KinaUnaProgenyApi.Services
                             Type = "Notification"
                         };
 
-                        notification = await _dataService.AddWebNotification(notification);
+                        notification = await dataService.AddWebNotification(notification);
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                        await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaskill" + skillItem.ProgenyId);
                     }
                 }
@@ -361,13 +350,13 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendCommentNotification(Comment commentItem, UserInfo currentUser, string title, string message)
         {
-            List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(commentItem.Progeny.Id);
+            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(commentItem.Progeny.Id);
 
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= commentItem.Progeny.Id)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification webNotification = new()
@@ -394,9 +383,9 @@ namespace KinaUnaProgenyApi.Services
 
                         webNotification.Type = "Notification";
 
-                        webNotification = await _dataService.AddWebNotification(webNotification);
+                        webNotification = await dataService.AddWebNotification(webNotification);
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
+                        await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
                             webNotification.Message, Constants.WebAppUrl + webNotification.Link, tagString + commentItem.Progeny.Id);
                     }
                 }
@@ -405,12 +394,12 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendSleepNotification(Sleep sleepItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(sleepItem.ProgenyId);
+            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(sleepItem.ProgenyId);
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= sleepItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         DateTime sleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
@@ -428,9 +417,9 @@ namespace KinaUnaProgenyApi.Services
                             Type = "Notification"
                         };
 
-                        notification = await _dataService.AddWebNotification(notification);
+                        notification = await dataService.AddWebNotification(notification);
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title, notification.Message,
+                        await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title, notification.Message,
                             Constants.WebAppUrl + notification.Link, "kinaunasleep" + sleepItem.ProgenyId);
                     }
                 }
@@ -439,12 +428,12 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendVaccinationNotification(Vaccination vaccinationItem, UserInfo currentUser, string title)
         {
-            List<UserAccess> usersToNotify = await _userAccessService.GetProgenyUserAccessList(vaccinationItem.ProgenyId);
+            List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(vaccinationItem.ProgenyId);
             foreach (UserAccess userAccess in usersToNotify)
             {
                 if (userAccess.AccessLevel <= vaccinationItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification notification = new()
@@ -459,9 +448,9 @@ namespace KinaUnaProgenyApi.Services
                             Type = "Notification"
                         };
 
-                        notification = await _dataService.AddWebNotification(notification);
+                        notification = await dataService.AddWebNotification(notification);
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                        await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavaccination" + vaccinationItem.ProgenyId);
                     }
                 }
@@ -470,12 +459,12 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendVocabularyNotification(VocabularyItem vocabularyItem, UserInfo userInfo, string title)
         {
-            List<UserAccess> usersToNotif = await _userAccessService.GetProgenyUserAccessList(vocabularyItem.ProgenyId);
+            List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(vocabularyItem.ProgenyId);
             foreach (UserAccess userAccess in usersToNotif)
             {
                 if (userAccess.AccessLevel <= vocabularyItem.AccessLevel)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         string vocabTimeString = String.Empty;
@@ -498,9 +487,9 @@ namespace KinaUnaProgenyApi.Services
                             Type = "Notification"
                         };
 
-                        notification = await _dataService.AddWebNotification(notification);
+                        notification = await dataService.AddWebNotification(notification);
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                        await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavocabulary" + vocabularyItem.ProgenyId);
                     }
                 }
@@ -509,12 +498,12 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task SendUserAccessNotification(UserAccess userAccessItem, UserInfo userInfo, string title)
         {
-            List<UserAccess> usersToNotif = await _userAccessService.GetProgenyUserAccessList(userAccessItem.ProgenyId);
+            List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(userAccessItem.ProgenyId);
             foreach (UserAccess userAccess in usersToNotif)
             {
                 if (userAccess.AccessLevel == 0)
                 {
-                    UserInfo uaUserInfo = await _userInfoService.GetUserInfoByEmail(userAccess.UserId);
+                    UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
                     if (uaUserInfo != null && uaUserInfo.UserId != "Unknown")
                     {
                         WebNotification notification = new()
@@ -529,9 +518,9 @@ namespace KinaUnaProgenyApi.Services
                             Type = "Notification"
                         };
 
-                        notification = await _dataService.AddWebNotification(notification);
+                        notification = await dataService.AddWebNotification(notification);
 
-                        await _pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                        await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                             notification.Message, Constants.WebAppUrl + notification.Link, "kinaunauseraccess" + userAccessItem.ProgenyId);
                     }
                 }

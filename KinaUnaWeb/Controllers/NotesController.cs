@@ -14,26 +14,17 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class NotesController : Controller
+    public class NotesController(
+        IProgenyHttpClient progenyHttpClient,
+        INotesHttpClient notesHttpClient,
+        IUserInfosHttpClient userInfosHttpClient,
+        IViewModelSetupService viewModelSetupService)
+        : Controller
     {
-        private readonly IProgenyHttpClient _progenyHttpClient;
-        private readonly INotesHttpClient _notesHttpClient;
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
-        private readonly IViewModelSetupService _viewModelSetupService;
-        
-        public NotesController(IProgenyHttpClient progenyHttpClient, INotesHttpClient notesHttpClient, IUserInfosHttpClient userInfosHttpClient,
-            IViewModelSetupService viewModelSetupService)
-        {
-            _progenyHttpClient = progenyHttpClient;
-            _notesHttpClient = notesHttpClient;
-            _userInfosHttpClient = userInfosHttpClient;
-            _viewModelSetupService = viewModelSetupService;
-        }
-
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int page = 0, int sort = 1, int itemsPerPage = 10)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             NotesListViewModel model = new(baseModel);
             model.NotesPageParameters.CurrentPageNumber = page;
             model.NotesPageParameters.Sort = sort;
@@ -62,8 +53,8 @@ namespace KinaUnaWeb.Controllers
                 parameters.ItemsPerPage = 10;
             }
 
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
-            List<Note> notes = await _notesHttpClient.GetNotesList(baseModel.CurrentProgenyId, baseModel.CurrentAccessLevel);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
+            List<Note> notes = await notesHttpClient.GetNotesList(baseModel.CurrentProgenyId, baseModel.CurrentAccessLevel);
             
             parameters.TotalPages = (int)double.Ceiling((double)notes.Count / parameters.ItemsPerPage);
             parameters.TotalItems = notes.Count;
@@ -106,12 +97,12 @@ namespace KinaUnaWeb.Controllers
             }
             else
             {
-                noteItemResponse.Note = await _notesHttpClient.GetNote(parameters.NoteId);
+                noteItemResponse.Note = await notesHttpClient.GetNote(parameters.NoteId);
                 noteItemResponse.NoteId = noteItemResponse.Note.NoteId;
 
-                BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), noteItemResponse.Note.ProgenyId);
+                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), noteItemResponse.Note.ProgenyId);
                 noteItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
-                UserInfo noteUserInfo = await _userInfosHttpClient.GetUserInfoByUserId(noteItemResponse.Note.Owner);
+                UserInfo noteUserInfo = await userInfosHttpClient.GetUserInfoByUserId(noteItemResponse.Note.Owner);
                 noteItemResponse.Note.Owner = noteUserInfo.FullName();
             }
             
@@ -124,7 +115,7 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddNote()
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             NoteViewModel model = new(baseModel);
             if (model.CurrentUser == null)
             {
@@ -133,7 +124,7 @@ namespace KinaUnaWeb.Controllers
 
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
-                model.ProgenyList = await _viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
                 model.SetProgenyList();
             }
 
@@ -149,10 +140,10 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddNote(NoteViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.NoteItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.NoteItem.ProgenyId);
             model.SetBaseProperties(baseModel);
             
-            List<Progeny> progAdminList = await _progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
+            List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
             if (!progAdminList.Any())
             {
                 // Todo: Show that no children are available to add note for.
@@ -161,7 +152,7 @@ namespace KinaUnaWeb.Controllers
 
             Note noteItem = model.CreateNote();
 
-            _ = await _notesHttpClient.AddNote(noteItem);
+            _ = await notesHttpClient.AddNote(noteItem);
             
             return RedirectToAction("Index", "Notes");
         }
@@ -169,8 +160,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> EditNote(int itemId)
         {
-            Note note = await _notesHttpClient.GetNote(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
+            Note note = await notesHttpClient.GetNote(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
             NoteViewModel model = new(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -192,7 +183,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditNote(NoteViewModel model)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.NoteItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.NoteItem.ProgenyId);
             model.SetBaseProperties(baseModel);
             
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -203,7 +194,7 @@ namespace KinaUnaWeb.Controllers
             
             Note editedNote = model.CreateNote();
 
-            _ = await _notesHttpClient.UpdateNote(editedNote);
+            _ = await notesHttpClient.UpdateNote(editedNote);
             
             return RedirectToAction("Index", "Notes");
         }
@@ -211,8 +202,8 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteNote(int itemId)
         {
-            Note note = await _notesHttpClient.GetNote(itemId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
+            Note note = await notesHttpClient.GetNote(itemId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
             NoteViewModel model = new(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -230,8 +221,8 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteNote(NoteViewModel model)
         {
-            Note note = await _notesHttpClient.GetNote(model.NoteItem.NoteId);
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
+            Note note = await notesHttpClient.GetNote(model.NoteItem.NoteId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
             model.SetBaseProperties(baseModel);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
@@ -240,7 +231,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            _ = await _notesHttpClient.DeleteNote(note.NoteId);
+            _ = await notesHttpClient.DeleteNote(note.NoteId);
             return RedirectToAction("Index", "Notes");
         }
     }

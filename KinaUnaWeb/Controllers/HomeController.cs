@@ -18,28 +18,19 @@ using Microsoft.Extensions.Hosting;
 namespace KinaUnaWeb.Controllers
 {
     [AllowAnonymous]
-    public class HomeController : Controller
+    public class HomeController(
+        IMediaHttpClient mediaHttpClient,
+        ImageStore imageStore,
+        IWebHostEnvironment env,
+        IUserInfosHttpClient userInfosHttpClient,
+        ILanguagesHttpClient languagesHttpClient,
+        IViewModelSetupService viewModelSetupService)
+        : Controller
     {
-        private readonly IUserInfosHttpClient _userInfosHttpClient;
-        private readonly IMediaHttpClient _mediaHttpClient;
-        private readonly ImageStore _imageStore;
-        private readonly IWebHostEnvironment _env;
-        private readonly ILanguagesHttpClient _languagesHttpClient;
-        private readonly IViewModelSetupService _viewModelSetupService;
-        public HomeController(IMediaHttpClient mediaHttpClient, ImageStore imageStore, IWebHostEnvironment env, IUserInfosHttpClient userInfosHttpClient, ILanguagesHttpClient languagesHttpClient, IViewModelSetupService viewModelSetupService)
-        {
-            _mediaHttpClient = mediaHttpClient;
-            _imageStore = imageStore;
-            _env = env;
-            _userInfosHttpClient = userInfosHttpClient;
-            _languagesHttpClient = languagesHttpClient;
-            _viewModelSetupService = viewModelSetupService;
-        }
-
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0)
         {
-            BaseItemsViewModel baseModel = await _viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             HomeFeedViewModel model = new(baseModel);
             
             if (model.CurrentProgeny.Name == "401")
@@ -52,12 +43,12 @@ namespace KinaUnaWeb.Controllers
             
             if (model.CurrentAccessLevel < (int)AccessLevel.Public)
             {
-                model.DisplayPicture = await _mediaHttpClient.GetRandomPicture(model.CurrentProgeny.Id, model.CurrentAccessLevel, model.CurrentUser.Timezone);
+                model.DisplayPicture = await mediaHttpClient.GetRandomPicture(model.CurrentProgeny.Id, model.CurrentAccessLevel, model.CurrentUser.Timezone);
             }
 
             if (model.CurrentAccessLevel == (int)AccessLevel.Public || model.DisplayPicture == null)
             {
-                model.DisplayPicture = await _mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, model.CurrentAccessLevel, model.CurrentUser.Timezone) ?? model.CreateTempPicture($"https://{Request.Host}{Request.PathBase}");
+                model.DisplayPicture = await mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, model.CurrentAccessLevel, model.CurrentUser.Timezone) ?? model.CreateTempPicture($"https://{Request.Host}{Request.PathBase}");
 
                 model.PicTimeValid = false;
             }
@@ -70,7 +61,7 @@ namespace KinaUnaWeb.Controllers
 
             }
 
-            model.DisplayPicture.PictureLink600 = _imageStore.UriFor(model.DisplayPicture.PictureLink600);
+            model.DisplayPicture.PictureLink600 = imageStore.UriFor(model.DisplayPicture.PictureLink600);
             model.SetDisplayPictureData();
             
             model.SetPictureTimeData();
@@ -98,7 +89,7 @@ namespace KinaUnaWeb.Controllers
                 model.LanguageId = languageId;
                 Response.SetLanguageCookie(languageId.ToString());
             }
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            model.CurrentUser = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
             
             return View(model);
         }
@@ -118,7 +109,7 @@ namespace KinaUnaWeb.Controllers
                 Response.SetLanguageCookie(languageId.ToString());
             }
 
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            model.CurrentUser = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
 
             return View(model);
         }
@@ -138,7 +129,7 @@ namespace KinaUnaWeb.Controllers
                 Response.SetLanguageCookie(languageId.ToString());
             }
 
-            model.CurrentUser = await _userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            model.CurrentUser = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
 
             return View(model);
         }
@@ -156,9 +147,9 @@ namespace KinaUnaWeb.Controllers
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                UserInfo userinfo = await _userInfosHttpClient.GetUserInfo(User.GetEmail());
+                UserInfo userinfo = await userInfosHttpClient.GetUserInfo(User.GetEmail());
                 userinfo.ViewChild = childId;
-                await _userInfosHttpClient.SetViewChild(User.GetUserId(), userinfo);
+                await userInfosHttpClient.SetViewChild(User.GetUserId(), userinfo);
             }
 
             // return Redirect(returnUrl);
@@ -170,7 +161,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult SetLanguage(string culture, string returnUrl)
         {
-            if (_env.IsDevelopment())
+            if (env.IsDevelopment())
             {
                 Response.Cookies.Append(
                     Constants.LanguageCookieName,
@@ -196,10 +187,10 @@ namespace KinaUnaWeb.Controllers
             bool languageIdParsed = int.TryParse(languageId, out int languageIdAsInt);
             if (languageIdParsed)
             {
-                KinaUnaLanguage language = await _languagesHttpClient.GetLanguage(languageIdAsInt);
+                KinaUnaLanguage language = await languagesHttpClient.GetLanguage(languageIdAsInt);
                 
                 string cultureString = CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(language.CodeToLongFormat()));
-                if (_env.IsDevelopment())
+                if (env.IsDevelopment())
                 {
                     Response.Cookies.Append(
                     Constants.LanguageCookieName,
