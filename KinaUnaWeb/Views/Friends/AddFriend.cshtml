@@ -45,7 +45,7 @@
                     <div class="col-auto">
                         <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
                     </div>
-                    <input asp-for="FriendItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+                    <input asp-for="FriendItem.ProgenyId" value="@Model.ProgenyList[0].Value!" type="hidden" />
                 </div>
             }
             <div class="form-group">
@@ -114,7 +114,7 @@
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Friends, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="tagList" type="text" asp-for="FriendItem.Tags" value="@Model.FriendItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Friends, Model.LanguageId)" class="form-control" />
+                    <input id="tagList" type="text" asp-for="FriendItem.Tags" value="@Model.FriendItem.Tags!" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Friends, Model.LanguageId)" class="form-control" />
                 </div>
                 
             </div>

@@ -29,7 +29,7 @@
             <div class="form-group">
                 <label asp-for="VaccinationItem.VaccinationName" class="col-auto control-label">@await LocaleManager.GetTranslation("Vaccination name", PageNames.Vaccinations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input asp-for="VaccinationItem.VaccinationName" class="form-control" value="@Model.VaccinationItem.VaccinationName" />
+                    <input asp-for="VaccinationItem.VaccinationName" class="form-control" value="@Model.VaccinationItem.VaccinationName!" />
                 </div>
             </div>
             <div class="form-group">
@@ -49,7 +49,7 @@
                 <div class="col-auto">
                     <div class="input-group date">
                         <input id="datetimepicker1"  type="text"
-                               class="form-control" data-zdp_readonly_element="false" asp-for="VaccinationItem.VaccinationDate" value="@Model.VaccinationItem.VaccinationDate.ToString(longDateTimeFormat)" />
+                               class="form-control" data-zdp_readonly_element="false" asp-for="VaccinationItem.VaccinationDate" value="@Model.VaccinationItem.VaccinationDate.ToString(longDateTimeFormat)!" />
                     </div>
                 </div>
             </div>
@@ -60,9 +60,9 @@
                 </div>
             </div>
             <div class="space-20"></div>
-            <input asp-for="VaccinationItem.ProgenyId" value="@Model.VaccinationItem.ProgenyId" type="hidden" />
-            <input asp-for="VaccinationItem.VaccinationId" value="@Model.VaccinationItem.VaccinationId" type="hidden" />
-            <input asp-for="VaccinationItem.Author" value="@Model.VaccinationItem.Author" type="hidden" />
+            <input asp-for="VaccinationItem.ProgenyId" value="@Model.VaccinationItem.ProgenyId!" type="hidden" />
+            <input asp-for="VaccinationItem.VaccinationId" value="@Model.VaccinationItem.VaccinationId!" type="hidden" />
+            <input asp-for="VaccinationItem.Author" value="@Model.VaccinationItem.Author!" type="hidden" />
             <div class="form-group">
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">

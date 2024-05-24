@@ -26,7 +26,7 @@
                 @await LocaleManager.GetTranslation("Date:", PageNames.Vaccinations, Model.LanguageId) @Model.VaccinationItem.VaccinationDate.ToString("dd-MMM-yyyy")
             </div>
             <div class="space-20"></div>
-            <input asp-for="VaccinationItem.VaccinationId" class="form-control" value="@Model.VaccinationItem.VaccinationId" type="hidden" />
+            <input asp-for="VaccinationItem.VaccinationId" class="form-control" value="@Model.VaccinationItem.VaccinationId!" type="hidden" />
             <div class="col-auto">
                 <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - delete this vaccination", PageNames.Vaccinations, Model.LanguageId)</Button>
                 <a class="btn btn-danger leavePage" asp-controller="Vaccinations" asp-action="Index">@await LocaleManager.GetTranslation("Cancel:", PageNames.AddItem, Model.LanguageId)</a>

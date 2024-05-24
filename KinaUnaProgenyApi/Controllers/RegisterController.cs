@@ -16,14 +16,9 @@ namespace KinaUnaProgenyApi.Controllers
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class RegisterController : ControllerBase
+    public class RegisterController(IAzureNotifications azureNotifications) : ControllerBase
     {
-        private readonly NotificationHubClient _hub;
-
-        public RegisterController(IAzureNotifications azureNotifications)
-        {
-            _hub = azureNotifications.Hub;
-        }
+        private readonly NotificationHubClient _hub = azureNotifications.Hub;
 
         public class DeviceRegistration
         {
@@ -42,7 +37,7 @@ namespace KinaUnaProgenyApi.Controllers
             // make sure there are no existing registrations for this push handle (used for iOS and Android)
             if (handle != null)
             {
-                CollectionQueryResult<RegistrationDescription> registrations = await _hub.GetRegistrationsByChannelAsync(handle, 100);
+                CollectionQueryResult<RegistrationDescription> registrations = (CollectionQueryResult<RegistrationDescription>)await _hub.GetRegistrationsByChannelAsync(handle, 100);
 
                 foreach (RegistrationDescription registration in registrations)
                 {
@@ -133,7 +128,7 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{handle}")]
         public async Task<string> GetRegistrationId(string handle)
         {
-            CollectionQueryResult<RegistrationDescription> regList = await _hub.GetRegistrationsByChannelAsync(handle, 1);
+            CollectionQueryResult<RegistrationDescription> regList = (CollectionQueryResult<RegistrationDescription>)await _hub.GetRegistrationsByChannelAsync(handle, 1);
 
             if (regList.Any())
             {

@@ -21,8 +21,8 @@
                 }
             </div>
             <div class="space-20"></div>
-            <input asp-for="Video.VideoId" class="form-control" value="@Model.Video.VideoId" type="hidden" />
-            <input asp-for="Video.ProgenyId" class="form-control" value="@Model.Video.ProgenyId" type="hidden" />
+            <input asp-for="Video.VideoId" class="form-control" value="@Model.Video.VideoId!" type="hidden" />
+            <input asp-for="Video.ProgenyId" class="form-control" value="@Model.Video.ProgenyId!" type="hidden" />
             <div class="col-auto">
                 <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - delete this video", PageNames.Videos, Model.LanguageId)</Button>
                 <a class="btn btn-danger leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.Video.VideoId" asp-route-childId="@Model.Video.ProgenyId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>

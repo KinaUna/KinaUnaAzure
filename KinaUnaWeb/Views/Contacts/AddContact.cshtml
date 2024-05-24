@@ -47,7 +47,7 @@
                     <div class="col-auto">
                         <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
                     </div>
-                    <input asp-for="ContactItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+                    <input asp-for="ContactItem.ProgenyId" value="@Model.ProgenyList[0].Value!" type="hidden" />
                 </div>
             }
             <div class="form-group">
@@ -180,7 +180,7 @@
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Contacts, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="tagList" type="text" asp-for="ContactItem.Tags" value="@Model.ContactItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
+                    <input id="tagList" type="text" asp-for="ContactItem.Tags" value="@Model.ContactItem.Tags!" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
@@ -192,7 +192,7 @@
                             Model.ContactItem.DateAdded = DateTime.UtcNow;
                         }
                         <input id="datetimepicker1"  type="text" class="form-control" data-zdp_readonly_element="false" asp-for="ContactItem.DateAdded"
-                               value="@Model.ContactItem.DateAdded.Value.ToString(longDateTimeFormat)"/>
+                               value="@Model.ContactItem.DateAdded.Value.ToString(longDateTimeFormat)!"/>
                     </div>
                 </div>
             </div>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
@@ -7,8 +8,13 @@ namespace KinaUna.Data.Models
     {
         public int CommentId { get; set; }
         public int CommentThreadNumber { get; set; }
+        [MaxLength(4096)] 
         public string CommentText { get; set; }
+
+        [MaxLength(256)]
         public string Author { get; set; }
+
+        [MaxLength(256)]
         public string DisplayName { get; set; }
         public DateTime Created { get; set; }
 

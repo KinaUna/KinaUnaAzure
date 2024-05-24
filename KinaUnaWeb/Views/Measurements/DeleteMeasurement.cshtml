@@ -26,7 +26,7 @@
             <div class="space-20"></div>
             <div class="col-auto">@await LocaleManager.GetTranslation("Eye color:", PageNames.Friends, Model.LanguageId) @Model.MeasurementItem.EyeColor</div>
             <div class="space-20"></div>
-            <input asp-for="MeasurementItem.MeasurementId" class="form-control" value="@Model.MeasurementItem.MeasurementId" type="hidden" />
+            <input asp-for="MeasurementItem.MeasurementId" class="form-control" value="@Model.MeasurementItem.MeasurementId!" type="hidden" />
             <div class="col-auto">
                 <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes, delete this measurement", PageNames.Friends, Model.LanguageId)</Button>
                 <a class="btn btn-danger leavePage" asp-controller="Measurements" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>

@@ -2,7 +2,5 @@
 
 namespace KinaUnaMediaApi.Authorization
 {
-    public class MustBeAdminRequirement : IAuthorizationRequirement
-    {
-    }
+    public class MustBeAdminRequirement : IAuthorizationRequirement;
 }

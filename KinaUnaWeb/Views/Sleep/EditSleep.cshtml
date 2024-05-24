@@ -39,7 +39,7 @@
                             @{
                                 string sleepStartValue = Model.SleepItem.SleepStart.ToString(longDateTimeFormat);
                             }
-                            <input id="datetimepicker1" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepStart" value="@sleepStartValue"/>
+                            <input id="datetimepicker1" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepStart" value="@sleepStartValue!"/>
                         </div>
                     </div>
                 </div>
@@ -50,7 +50,7 @@
                             @{
                                 string sleepEndValue = Model.SleepItem.SleepEnd.ToString(longDateTimeFormat);
                             }
-                            <input id="datetimepicker2" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepEnd" value="@sleepEndValue"/>
+                            <input id="datetimepicker2" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepEnd" value="@sleepEndValue!"/>
                         </div>
                     </div>
                 </div>
@@ -73,10 +73,10 @@
                     <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="SleepItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
                 </div>
             </div>
-            <input asp-for="SleepItem.ProgenyId" value="@Model.SleepItem.ProgenyId" type="hidden"/>
-            <input asp-for="SleepItem.CreatedDate" value="@Model.SleepItem.CreatedDate" type="hidden"/>
-            <input asp-for="SleepItem.SleepId" value="@Model.SleepItem.SleepId" type="hidden"/>
-            <input asp-for="SleepItem.Author" value="@Model.SleepItem.Author" type="hidden"/>
+            <input asp-for="SleepItem.ProgenyId" value="@Model.SleepItem.ProgenyId!" type="hidden"/>
+            <input asp-for="SleepItem.CreatedDate" value="@Model.SleepItem.CreatedDate!" type="hidden"/>
+            <input asp-for="SleepItem.SleepId" value="@Model.SleepItem.SleepId!" type="hidden"/>
+            <input asp-for="SleepItem.Author" value="@Model.SleepItem.Author!" type="hidden"/>
             <div class="form-group">
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">

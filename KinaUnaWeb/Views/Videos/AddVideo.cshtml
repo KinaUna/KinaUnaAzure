@@ -47,7 +47,7 @@
                     <div class="col-auto">
                         <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
                     </div>
-                    <input asp-for="Video.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+                    <input asp-for="Video.ProgenyId" value="@Model.ProgenyList[0].Value!" type="hidden" />
                 </div>
 
             }
@@ -74,15 +74,15 @@
                     <div class="form-row">
                         <div class="col-auto">
                             <label class="control-label">@await LocaleManager.GetTranslation("H:", PageNames.Videos, Model.LanguageId)</label>
-                            <input type="number" id="DurationHours" asp-for="Video.DurationHours" min="0" max="100" value="@hours" class="form-control d-inline" />
+                            <input type="number" id="DurationHours" asp-for="Video.DurationHours" min="0" max="100" value="@hours!" class="form-control d-inline" />
                         </div>
                         <div class="col-auto">
                             <label class="control-label">@await LocaleManager.GetTranslation("m:", PageNames.Videos, Model.LanguageId)</label>
-                            <input type="number" id="DurationMinutes" asp-for="Video.DurationMinutes" min="0" max="59" value="@minutes" class="form-control d-inline" />
+                            <input type="number" id="DurationMinutes" asp-for="Video.DurationMinutes" min="0" max="59" value="@minutes!" class="form-control d-inline" />
                         </div>
                         <div class="col-auto">
                             <label class="control-label">@await LocaleManager.GetTranslation("s:", PageNames.Videos, Model.LanguageId)</label>
-                            <input type="number" id="DurationSeconds" asp-for="Video.DurationSeconds" min="0" max="59" value="@seconds" class="form-control d-inline" />
+                            <input type="number" id="DurationSeconds" asp-for="Video.DurationSeconds" min="0" max="59" value="@seconds!" class="form-control d-inline" />
                         </div>
                     </div>
                 </div>
@@ -92,32 +92,32 @@
                 <div class="col-auto">
                     <div class="input-group date">
                         <input id="datetimepicker1" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="Video.VideoTime"
-                               value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(@Model.CurrentUser.Timezone)).ToString(longDateTimeFormat)"/>
+                               value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(@Model.CurrentUser.Timezone)).ToString(longDateTimeFormat)!"/>
                     </div>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Videos, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="locationInput" type="text" asp-for="Video.Location" value="@Model.Video.Tags" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Videos, Model.LanguageId)" class="form-control"/>
+                    <input id="locationInput" type="text" asp-for="Video.Location" value="@Model.Video.Tags!" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Videos, Model.LanguageId)" class="form-control"/>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Latitude", PageNames.Videos, Model.LanguageId)</label>
                 <div class="col-lg-10 col-md-10 col-sm-10">
-                    <input id="latitude" type="text" asp-for="Video.Latitude" value="@Model.Video.Latitude" class="form-control"/>
+                    <input id="latitude" type="text" asp-for="Video.Latitude" value="@Model.Video.Latitude!" class="form-control"/>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Longitude", PageNames.Videos, Model.LanguageId)</label>
                 <div class="col-lg-10 col-md-10 col-sm-10">
-                    <input id="longitude" type="text" asp-for="Video.Longtitude" value="@Model.Video.Longtitude" class="form-control"/>
+                    <input id="longitude" type="text" asp-for="Video.Longtitude" value="@Model.Video.Longtitude!" class="form-control"/>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Altitude", PageNames.Videos, Model.LanguageId)</label>
                 <div class="col-lg-10 col-md-10 col-sm-10">
-                    <input id="altitude" type="text" asp-for="Video.Altitude" value="@Model.Video.Altitude" class="form-control"/>
+                    <input id="altitude" type="text" asp-for="Video.Altitude" value="@Model.Video.Altitude!" class="form-control"/>
                 </div>
             </div>
             @if (Model.LocationsList.Any())
@@ -139,7 +139,7 @@
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Videos, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="tagList" type="text" asp-for="Video.Tags" value="@Model.Video.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Videos, Model.LanguageId)" class="form-control"/>
+                    <input id="tagList" type="text" asp-for="Video.Tags" value="@Model.Video.Tags!" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Videos, Model.LanguageId)" class="form-control"/>
                 </div>
             </div>
             <div class="form-group">
@@ -151,7 +151,7 @@
             <div class="space-20"></div>
             <div class="form-group">
                 <div class="col-auto"></div>
-                <input asp-for="Video.Owners" class="form-control" value="@Model.Video.Owners" type="hidden" />
+                <input asp-for="Video.Owners" class="form-control" value="@Model.Video.Owners!" type="hidden" />
                 <div class="col-auto">
                     <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
                     <a class="btn btn-danger leavePage" asp-controller="Videos" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>

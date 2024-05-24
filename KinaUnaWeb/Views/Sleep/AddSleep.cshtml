@@ -48,7 +48,7 @@
                     <div class="col-auto">
                         <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
                     </div>
-                    <input asp-for="SleepItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
+                    <input asp-for="SleepItem.ProgenyId" value="@Model.ProgenyList[0].Value!" type="hidden" />
                 </div>
             }
             <div class="row">
@@ -57,7 +57,7 @@
                     <div class="col">
                         <div class="input-group date">
                             <input id="datetimepicker1" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepStart"
-                                   value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(@Model.CurrentUser.Timezone)).ToString(longDateTimeFormat)"/>
+                                   value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(@Model.CurrentUser.Timezone)).ToString(longDateTimeFormat)!"/>
                         </div>
                     </div>
                 </div>
@@ -66,7 +66,7 @@
                     <div class="col">
                         <div class="input-group date">
                             <input id="datetimepicker2" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepEnd"
-                                   value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow + TimeSpan.FromMinutes(10), TimeZoneInfo.FindSystemTimeZoneById(Model.CurrentUser.Timezone)).ToString(longDateTimeFormat)"/>
+                                   value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow + TimeSpan.FromMinutes(10), TimeZoneInfo.FindSystemTimeZoneById(Model.CurrentUser.Timezone)).ToString(longDateTimeFormat)!"/>
                         </div>
                     </div>
                 </div>

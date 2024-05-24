@@ -920,7 +920,7 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> UploadNoteImage([FromForm] IFormFile file)
         {
             string pictureLink;
-            using (Stream stream = file.OpenReadStream())
+            await using (Stream stream = file.OpenReadStream())
             {
                 pictureLink = await _imageStore.SaveImage(stream, BlobContainers.Notes);
                 pictureLink = _imageStore.UriFor(pictureLink, BlobContainers.Notes);

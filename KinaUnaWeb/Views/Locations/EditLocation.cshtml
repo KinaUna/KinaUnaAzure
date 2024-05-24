@@ -42,67 +42,67 @@
             <div class="form-group">
                 <label asp-for="LocationItem.Name" class="col-auto control-label">@await LocaleManager.GetTranslation("Name or label", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="nameText" asp-for="LocationItem.Name" value="@Model.LocationItem.Name" class="form-control" />
+                    <input id="nameText" asp-for="LocationItem.Name" value="@Model.LocationItem.Name!" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="LocationItem.StreetName" class="col-auto control-label">@await LocaleManager.GetTranslation("Street", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="streetText" asp-for="LocationItem.StreetName" value="@Model.LocationItem.StreetName" class="form-control" />
+                    <input id="streetText" asp-for="LocationItem.StreetName" value="@Model.LocationItem.StreetName!" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="LocationItem.HouseNumber" class="col-auto control-label">@await LocaleManager.GetTranslation("House number", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="houseNumberText" asp-for="LocationItem.HouseNumber" value="@Model.LocationItem.HouseNumber" class="form-control" />
+                    <input id="houseNumberText" asp-for="LocationItem.HouseNumber" value="@Model.LocationItem.HouseNumber!" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="LocationItem.District" class="col-auto control-label">@await LocaleManager.GetTranslation("District", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="disctrictText" asp-for="LocationItem.District" value="@Model.LocationItem.District" class="form-control" />
+                    <input id="disctrictText" asp-for="LocationItem.District" value="@Model.LocationItem.District!" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="LocationItem.City" class="col-auto control-label">@await LocaleManager.GetTranslation("City", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="cityText" asp-for="LocationItem.City" value="@Model.LocationItem.City" class="form-control" />
+                    <input id="cityText" asp-for="LocationItem.City" value="@Model.LocationItem.City!" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="LocationItem.PostalCode" class="col-auto control-label">@await LocaleManager.GetTranslation("Postal code", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="postalCodeText" asp-for="LocationItem.PostalCode" value="@Model.LocationItem.PostalCode" class="form-control" />
+                    <input id="postalCodeText" asp-for="LocationItem.PostalCode" value="@Model.LocationItem.PostalCode!" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="LocationItem.County" class="col-auto control-label">@await LocaleManager.GetTranslation("County", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="countyText" asp-for="LocationItem.County" value="@Model.LocationItem.County" class="form-control" />
+                    <input id="countyText" asp-for="LocationItem.County" value="@Model.LocationItem.County!" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="LocationItem.State" class="col-auto control-label">@await LocaleManager.GetTranslation("State/region", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="stateText" asp-for="LocationItem.State" value="@Model.LocationItem.State" class="form-control" />
+                    <input id="stateText" asp-for="LocationItem.State" value="@Model.LocationItem.State!" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="LocationItem.Country" class="col-auto control-label">@await LocaleManager.GetTranslation("Country", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="countryText" asp-for="LocationItem.Country" value="@Model.LocationItem.Country" class="form-control" />
+                    <input id="countryText" asp-for="LocationItem.Country" value="@Model.LocationItem.Country!" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="LocationItem.Latitude" class="col-auto control-label">@await LocaleManager.GetTranslation("Latitude", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="latitudeText" asp-for="LocationItem.Latitude" value="@Model.LocationItem.Latitude" class="form-control" />
+                    <input id="latitudeText" asp-for="LocationItem.Latitude" value="@Model.LocationItem.Latitude!" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="LocationItem.Longitude" class="col-auto control-label">@await LocaleManager.GetTranslation("Longitude", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="longitudeText" asp-for="LocationItem.Longitude" value="@Model.LocationItem.Longitude" class="form-control" />
+                    <input id="longitudeText" asp-for="LocationItem.Longitude" value="@Model.LocationItem.Longitude!" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
@@ -116,20 +116,20 @@
                                 dateValue = Model.LocationItem.Date.Value.ToString(longDateTimeFormat);
                             }
                         }
-                        <input id="datetimepicker1"  type="text" class="form-control" data-zdp_readonly_element="false" asp-for="LocationItem.Date" value="@dateValue" />
+                        <input id="datetimepicker1"  type="text" class="form-control" data-zdp_readonly_element="false" asp-for="LocationItem.Date" value="@dateValue!" />
                     </div>
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="LocationItem.Notes" class="col-auto control-label">@await LocaleManager.GetTranslation("Notes", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input asp-for="LocationItem.Notes" value="@Model.LocationItem.Notes" class="form-control" />
+                    <input asp-for="LocationItem.Notes" value="@Model.LocationItem.Notes!" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Locations, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="tagList" type="text" asp-for="LocationItem.Tags" value="@Model.LocationItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Locations, Model.LanguageId)" class="form-control" />
+                    <input id="tagList" type="text" asp-for="LocationItem.Tags" value="@Model.LocationItem.Tags!" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Locations, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
@@ -140,8 +140,8 @@
             </div>
             <div>
                 <div class="form-group">
-                    <input asp-for="LocationItem.LocationId" type="text" value="@Model.LocationItem.LocationId" hidden="hidden" />
-                    <input asp-for="LocationItem.ProgenyId" value="@Model.LocationItem.ProgenyId" hidden="hidden" />
+                    <input asp-for="LocationItem.LocationId" type="text" value="@Model.LocationItem.LocationId!" hidden="hidden" />
+                    <input asp-for="LocationItem.ProgenyId" value="@Model.LocationItem.ProgenyId!" hidden="hidden" />
                     <div class="col-auto control-label"></div>
                     <div class="col-auto">
                         <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>

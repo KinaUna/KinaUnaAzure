@@ -1,7 +1,6 @@
 ﻿@using KinaUnaWebBlazor.Models.ItemViewModels
 @using KinaUnaWebBlazor.Services
 @using KinaUna.Data.Models
-@using KinaUna.Data
 @using KinaUnaWebBlazor.Models.HomeViewModels
 @inject UserStateService UserStateService
 @inject ImageStore ImageStore
@@ -29,7 +28,7 @@
     public PictureViewModel? PictureViewModel { get; set; }
 
     private string _pictureUrl = "";
-    private List<string> _tagsList = new List<string>();
+    private List<string> _tagsList = [];
     Progeny? Progeny { get; set; }
     UserInfo? UserInfo { get; set; }
     LocationDataViewModel? LocationDataViewModel { get; set; }
@@ -44,12 +43,9 @@
 
     protected override void OnParametersSet()
     {
-
-        if (PictureViewModel != null)
-        {
-            Progeny = PictureViewModel?.Progeny;
-            UpdateImage();
-        }
+        if (PictureViewModel == null) return;
+        Progeny = PictureViewModel?.Progeny;
+        UpdateImage();
     }
 
     private void UpdateImage()

@@ -128,6 +128,12 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 video.VideoLink = "https://www.youtube.com/embed/" + str;
             }
 
+            if (FileLink.Contains("youtube.com/shorts/") || FileLink.Contains("youtu.be/shorts/"))
+            {
+                string str = FileLink.Split('/').Last();
+                video.VideoLink = "https://www.youtube.com/embed/" + str;
+            }
+
             video.ThumbLink = "https://i.ytimg.com/vi/" + video.VideoLink.Split("/").Last() + "/hqdefault.jpg";
 
             video.Location = Video.Location;

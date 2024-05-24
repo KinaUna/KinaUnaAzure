@@ -21,7 +21,7 @@
                 @await LocaleManager.GetTranslation("Description:", PageNames.Skills, Model.LanguageId) @Model.SkillItem.Description
             </div>
             <div class="space-20"></div>
-            <input asp-for="SkillItem.SkillId" class="form-control" value="@Model.SkillItem.SkillId" type="hidden" />
+            <input asp-for="SkillItem.SkillId" class="form-control" value="@Model.SkillItem.SkillId!" type="hidden" />
             <div class="col-auto">
                 <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - delete this skill", PageNames.Skills, Model.LanguageId)</Button>
                 <a class="btn btn-danger leavePage" asp-controller="Skills" asp-action="Index">@await LocaleManager.GetTranslation("Cancel:", PageNames.AddItem, Model.LanguageId)</a>
