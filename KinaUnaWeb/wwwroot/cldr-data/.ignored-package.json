@@ -1,8 +1,8 @@
 {
-  "name": "cldr-cal-islamic-modern",
+  "name": "cldr-dates-modern",
   "version": "36.0.0",
   "peerDependencies": {
-    "cldr-dates-modern": "36.0.0"
+    "cldr-numbers-modern": "36.0.0"
   },
   "homepage": "http://cldr.unicode.org",
   "author": "The Unicode Consortium",
@@ -15,7 +15,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/unicode-cldr/cldr-cal-islamic-modern.git"
+    "url": "git://github.com/unicode-cldr/cldr-dates-modern.git"
   },
   "licenses": [
     {
