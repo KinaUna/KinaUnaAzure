@@ -24,7 +24,7 @@
                 @await LocaleManager.GetTranslation("All data for this child will be deleted, including pictures, videos, calendar events, vocabulary, skills, friends, notes, measurements, sleep, notes, contacts, and vaccinations.", PageNames.Progeny, languageId)
             </div>
             <div class="space-20"></div>
-            <input asp-for="Id" class="form-control" value="@Model.Id!" type="hidden" />
+            <input asp-for="Id" class="form-control" value="@Model.Id" type="hidden" />
             <div class="col-auto">
                 <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - remove child", PageNames.Progeny, languageId)</Button><a class="btn btn-danger leavePage" asp-controller="Family" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, languageId)</a>
             </div>

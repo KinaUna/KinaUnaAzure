@@ -22,7 +22,7 @@
                 @await LocaleManager.GetTranslation("Description:", PageNames.Vocabulary, Model.LanguageId) @Model.VocabularyItem.Description
             </div>
             <div class="space-20"></div>
-            <input asp-for="VocabularyItem.WordId" class="form-control" value="@Model.VocabularyItem.WordId!" type="hidden" />
+            <input asp-for="VocabularyItem.WordId" class="form-control" value="@Model.VocabularyItem.WordId" type="hidden" />
             <div class="col-auto">
                 <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - delete this word", PageNames.Vocabulary, Model.LanguageId)</Button>
                 <a class="btn btn-danger leavePage" asp-controller="Vocabulary" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>

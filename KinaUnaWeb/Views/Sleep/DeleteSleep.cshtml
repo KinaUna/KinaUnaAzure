@@ -26,7 +26,7 @@
                 @await LocaleManager.GetTranslation("Notes:", PageNames.Sleep, Model.LanguageId) @Model.SleepItem.SleepNotes
             </div>
             <div class="space-20"></div>
-            <input asp-for="SleepItem.SleepId" class="form-control" value="@Model.SleepItem.SleepId!" type="hidden" />
+            <input asp-for="SleepItem.SleepId" class="form-control" value="@Model.SleepItem.SleepId" type="hidden" />
             <div class="col-auto">
                 <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - delete this sleep record", PageNames.Sleep, Model.LanguageId)</Button>
                 <a class="btn btn-danger leavePage" asp-controller="Sleep" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>

@@ -22,7 +22,7 @@
                 @await LocaleManager.GetTranslation("Content:", PageNames.Notes, Model.LanguageId) @Html.Raw(Model.NoteItem.Content)
             </div>
             <div class="space-20"></div>
-            <input asp-for="NoteItem.NoteId" class="form-control" value="@Model.NoteItem.NoteId!" type="hidden" />
+            <input asp-for="NoteItem.NoteId" class="form-control" value="@Model.NoteItem.NoteId" type="hidden" />
             <div class="col-auto">
                 <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - delete this note", PageNames.Notes, Model.LanguageId)</Button>
                 <a class="btn btn-danger leavePage" asp-controller="Notes" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>

@@ -21,8 +21,8 @@
                 }
             </div>
             <div class="space-20"></div>
-            <input asp-for="Picture.PictureId" class="form-control" value="@Model.Picture.PictureId!" type="hidden" />
-            <input asp-for="Picture.ProgenyId" class="form-control" value="@Model.Picture.ProgenyId!" type="hidden" />
+            <input asp-for="Picture.PictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden" />
+            <input asp-for="Picture.ProgenyId" class="form-control" value="@Model.Picture.ProgenyId" type="hidden" />
             <div class="col-auto">
                 <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes - delete this photo", PageNames.Pictures, Model.LanguageId)</Button>
                 <a class="btn btn-danger leavePage" asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.Picture.PictureId" asp-route-childId="@Model.Picture.ProgenyId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>

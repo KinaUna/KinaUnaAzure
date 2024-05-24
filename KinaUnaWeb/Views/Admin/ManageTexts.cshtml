@@ -56,8 +56,8 @@
                                     <div class="mb-2">@await LocaleManager.GetTranslation("Translation", PageNames.TextEditor, Model.LanguageId)</div>
                                     <div class="float-right" style="min-width: 300px;">
                                         <ejs-dropdownlist id="editTextTranslationLanguageList" dataSource="Model.LanguagesList" index="@Model.Language" change="manageTextsLanguageChanged"
-                                                          itemTemplate="@Html.Raw("<div><div class=\"e-avatar e-avatar-small e-avatar-circle\"><img class=\"image\" src=\"${IconLink}\" alt=\"Flag\"/></div><span class=\"ename\"> ${Name} </span></div>")!"
-                                                          valueTemplate="@Html.Raw("<div style=\"width:100%;height:100%;\"><div class=\"e-avatar e-avatar-small e-avatar-circle\"><img class=\"value\" src=\"${IconLink}\" height=\"26px\" width=\"26px\" alt=\"Flag\"/></div><span class=\"name\"> ${Name} </span></div>")!">
+                                                          itemTemplate="@Html.Raw("<div><div class=\"e-avatar e-avatar-small e-avatar-circle\"><img class=\"image\" src=\"${IconLink}\" alt=\"Flag\"/></div><span class=\"ename\"> ${Name} </span></div>")"
+                                                          valueTemplate="@Html.Raw("<div style=\"width:100%;height:100%;\"><div class=\"e-avatar e-avatar-small e-avatar-circle\"><img class=\"value\" src=\"${IconLink}\" height=\"26px\" width=\"26px\" alt=\"Flag\"/></div><span class=\"name\"> ${Name} </span></div>")">
                                             <e-dropdownlist-fields text="Name" value="Id"></e-dropdownlist-fields>
                                         </ejs-dropdownlist>
                                     </div>

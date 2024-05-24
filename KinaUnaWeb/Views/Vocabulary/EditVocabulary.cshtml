@@ -29,13 +29,13 @@
             <div class="form-group">
                 <label asp-for="VocabularyItem.Word" class="col-auto control-label">@await LocaleManager.GetTranslation("Word", PageNames.Vocabulary, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input asp-for="VocabularyItem.Word" class="form-control" value="@Model.VocabularyItem.Word!" />
+                    <input asp-for="VocabularyItem.Word" class="form-control" value="@Model.VocabularyItem.Word" />
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="VocabularyItem.SoundsLike" class="col-auto control-label">@await LocaleManager.GetTranslation("Sounds like", PageNames.Vocabulary, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input asp-for="VocabularyItem.SoundsLike" class="form-control" value="@Model.VocabularyItem.SoundsLike!" />
+                    <input asp-for="VocabularyItem.SoundsLike" class="form-control" value="@Model.VocabularyItem.SoundsLike" />
                 </div>
             </div>
             <div class="form-group">
@@ -47,7 +47,7 @@
             <div class="form-group">
                 <label asp-for="VocabularyItem.Language" class="col-auto control-label">@await LocaleManager.GetTranslation("Language", PageNames.Vocabulary, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input asp-for="VocabularyItem.Language" class="form-control" value="@Model.VocabularyItem.Language!" />
+                    <input asp-for="VocabularyItem.Language" class="form-control" value="@Model.VocabularyItem.Language" />
                 </div>
             </div>
             <div class="form-group">
@@ -61,7 +61,7 @@
                             }
                         }
                         <input id="datetimepicker1"  type="text" class="form-control" data-zdp_readonly_element="false" asp-for="VocabularyItem.Date"
-                               value="@Model.VocabularyItem.Date.Value.ToString(longDateTimeFormat)!" />
+                               value="@Model.VocabularyItem.Date.Value.ToString(longDateTimeFormat)" />
                     </div>
                 </div>
             </div>
@@ -72,10 +72,10 @@
                 </div>
             </div>
             <div class="space-20"></div>
-            <input asp-for="VocabularyItem.ProgenyId" value="@Model.VocabularyItem.ProgenyId!" type="hidden" />
-            <input asp-for="VocabularyItem.DateAdded" value="@Model.VocabularyItem.DateAdded!" type="hidden" />
-            <input asp-for="VocabularyItem.WordId" value="@Model.VocabularyItem.WordId!" type="hidden" />
-            <input asp-for="VocabularyItem.Author" value="@Model.VocabularyItem.Author!" type="hidden" />
+            <input asp-for="VocabularyItem.ProgenyId" value="@Model.VocabularyItem.ProgenyId" type="hidden" />
+            <input asp-for="VocabularyItem.DateAdded" value="@Model.VocabularyItem.DateAdded" type="hidden" />
+            <input asp-for="VocabularyItem.WordId" value="@Model.VocabularyItem.WordId" type="hidden" />
+            <input asp-for="VocabularyItem.Author" value="@Model.VocabularyItem.Author" type="hidden" />
             <div class="form-group">
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">

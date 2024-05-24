@@ -16,7 +16,7 @@
                 <img src="@Model.ContactItem.PictureLink" />
             </div>
             <div class="space-20"></div>
-            <input asp-for="ContactItem.ContactId" class="form-control" value="@Model.ContactItem.ContactId!" type="hidden" />
+            <input asp-for="ContactItem.ContactId" class="form-control" value="@Model.ContactItem.ContactId" type="hidden" />
             <div class="col-auto">
                 <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes, delete contact", PageNames.Contacts, Model.LanguageId)</Button>
                 <a class="btn btn-danger leavePage" asp-controller="Contacts" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
