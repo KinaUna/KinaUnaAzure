@@ -7,7 +7,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class VocabularyItemViewModel: BaseItemsViewModel
     {
-        public List<SelectListItem> ProgenyList { get; set; } = new();
+        public List<SelectListItem> ProgenyList { get; set; } = [];
         public VocabularyItem VocabularyItem { get; set; } = new();
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }

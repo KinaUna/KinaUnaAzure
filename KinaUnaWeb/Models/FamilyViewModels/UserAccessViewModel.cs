@@ -22,7 +22,7 @@ namespace KinaUnaWeb.Models.FamilyViewModels
 
         public UserAccessViewModel()
         {
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
         }
 
         public UserAccessViewModel(BaseItemsViewModel baseItemsViewModel)

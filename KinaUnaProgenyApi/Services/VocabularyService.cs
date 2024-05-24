@@ -114,7 +114,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<VocabularyItem>> GetVocabularyList(int progenyId)
         {
             List<VocabularyItem> vocabularyList = await GetVocabularyListFromCache(progenyId);
-            if (!vocabularyList.Any())
+            if (vocabularyList.Count == 0)
             {
                 vocabularyList = await SetVocabularyListInCache(progenyId);
             }
@@ -124,7 +124,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<VocabularyItem>> GetVocabularyListFromCache(int progenyId)
         {
-            List<VocabularyItem> vocabularyList = new();
+            List<VocabularyItem> vocabularyList = [];
             string cachedVocabularyList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularylist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVocabularyList))
             {
