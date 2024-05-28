@@ -25,10 +25,15 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> Index(int childId = 0, int page = 0, int sort = 1, int itemsPerPage = 10)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
-            NotesListViewModel model = new(baseModel);
-            model.NotesPageParameters.CurrentPageNumber = page;
-            model.NotesPageParameters.Sort = sort;
-            model.NotesPageParameters.ItemsPerPage = itemsPerPage;
+            NotesListViewModel model = new(baseModel)
+            {
+                NotesPageParameters =
+                {
+                    CurrentPageNumber = page,
+                    Sort = sort,
+                    ItemsPerPage = itemsPerPage
+                }
+            };
 
             return View(model);
 
@@ -59,7 +64,7 @@ namespace KinaUnaWeb.Controllers
             parameters.TotalPages = (int)double.Ceiling((double)notes.Count / parameters.ItemsPerPage);
             parameters.TotalItems = notes.Count;
 
-            notes = notes.OrderBy(n => n.CreatedDate).ToList();
+            notes = [.. notes.OrderBy(n => n.CreatedDate)];
 
             if (parameters.Sort == 1)
             {
@@ -93,7 +98,7 @@ namespace KinaUnaWeb.Controllers
 
             if (parameters.NoteId == 0)
             {
-                noteItemResponse.Note = new() { NoteId = 0};
+                noteItemResponse.Note = new Note { NoteId = 0};
             }
             else
             {
@@ -144,7 +149,7 @@ namespace KinaUnaWeb.Controllers
             model.SetBaseProperties(baseModel);
             
             List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
-            if (!progAdminList.Any())
+            if (progAdminList.Count == 0)
             {
                 // Todo: Show that no children are available to add note for.
                 return RedirectToAction("Index");

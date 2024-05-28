@@ -14,7 +14,7 @@ namespace KinaUnaProgenyApi
 {
     public class Startup(IConfiguration configuration)
     {
-        public IConfiguration Configuration { get; } = configuration;
+        private IConfiguration Configuration { get; } = configuration;
 
         public void ConfigureServices(IServiceCollection services)
         {

@@ -10,7 +10,7 @@ namespace KinaUnaMediaApi.Services
 {
     public class ImageStore(IConfiguration configuration)
     {
-        private readonly BlobServiceClient _blobServiceClient = new BlobServiceClient(configuration.GetValue<string>("BlobStorageConnectionString"));
+        private readonly BlobServiceClient _blobServiceClient = new(configuration.GetValue<string>("BlobStorageConnectionString"));
         private readonly string _storageKey = configuration.GetValue<string>("BlobStorageKey");
         private readonly string _baseUri = configuration.GetValue<string>("CloudBlobBase");
         private readonly string _blobUserName = configuration.GetValue<string>("CloudBlobUsername");
@@ -29,8 +29,8 @@ namespace KinaUnaMediaApi.Services
 
         public string UriFor(string imageId, string containerName = "pictures")
         {
-            StorageSharedKeyCredential credential = new StorageSharedKeyCredential(_blobUserName, _storageKey);
-            BlobSasBuilder sas = new BlobSasBuilder
+            StorageSharedKeyCredential credential = new(_blobUserName, _storageKey);
+            BlobSasBuilder sas = new()
             {
                 BlobName = imageId,
                 BlobContainerName = containerName,
@@ -39,9 +39,10 @@ namespace KinaUnaMediaApi.Services
             };
 
             sas.SetPermissions(BlobAccountSasPermissions.Read);
-            UriBuilder sasUri = new UriBuilder($"{_baseUri}{containerName}/{imageId}");
-            
-            sasUri.Query = sas.ToSasQueryParameters(credential).ToString();
+            UriBuilder sasUri = new($"{_baseUri}{containerName}/{imageId}")
+            {
+                Query = sas.ToSasQueryParameters(credential).ToString()
+            };
 
             return sasUri.Uri.AbsoluteUri;
         }
@@ -51,7 +52,7 @@ namespace KinaUnaMediaApi.Services
             BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
 
             BlobClient blob = container.GetBlobClient(imageId);
-            MemoryStream memoryStream = new MemoryStream();
+            MemoryStream memoryStream = new();
             await blob.DownloadToAsync(memoryStream).ConfigureAwait(false);
             
             return memoryStream;

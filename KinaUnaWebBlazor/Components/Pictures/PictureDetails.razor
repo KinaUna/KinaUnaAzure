@@ -51,70 +51,68 @@
     private void UpdateImage()
     {
         UserInfo = UserStateService.CurrentUser;
-        if (Progeny != null && UserInfo != null && !string.IsNullOrEmpty(PictureViewModel?.PictureLink))
+        if (Progeny == null || UserInfo == null || string.IsNullOrEmpty(PictureViewModel?.PictureLink)) return;
+
+        if (string.IsNullOrEmpty(PictureViewModel?.PictureLink)) return;
+
+        _pictureUrl = ImageStore.UriFor(PictureViewModel.PictureLink);
+        if (!string.IsNullOrEmpty(PictureViewModel.Tags))
         {
+            _tagsList = PictureViewModel.Tags.Trim(',').Split(',').ToList();
+        }
 
-            if (!string.IsNullOrEmpty(PictureViewModel?.PictureLink))
+        if (!string.IsNullOrEmpty(PictureViewModel.Location))
+        {
+            LocationDataViewModel = new LocationDataViewModel
             {
-                _pictureUrl = ImageStore.UriFor(PictureViewModel.PictureLink);
-                if (!string.IsNullOrEmpty(PictureViewModel.Tags))
+                Location = PictureViewModel.Location
+            };
+            
+            if(!string.IsNullOrEmpty(PictureViewModel.Latitude)){
+                LocationDataViewModel.Latitude = PictureViewModel.Latitude;
+                bool latitudeParsed = double.TryParse(LocationDataViewModel.Latitude, out double latitude);
+                if (latitudeParsed)
                 {
-                    _tagsList = PictureViewModel.Tags.Trim(',').Split(',').ToList();
+                    LocationDataViewModel.LatitudeDouble = latitude;
                 }
-
-                if (!string.IsNullOrEmpty(PictureViewModel.Location))
+            }
+            if(!string.IsNullOrEmpty(PictureViewModel.Longitude)){
+                LocationDataViewModel.Longitude = PictureViewModel.Longitude;
+                bool longitudeParsed = double.TryParse(LocationDataViewModel.Longitude, out double longitude);
+                if (longitudeParsed)
                 {
-                    LocationDataViewModel = new LocationDataViewModel();
-                    LocationDataViewModel.Location = PictureViewModel.Location;
-                    if(!string.IsNullOrEmpty(PictureViewModel.Latitude)){
-                        LocationDataViewModel.Latitude = PictureViewModel.Latitude;
-                        bool latitudeParsed = double.TryParse(LocationDataViewModel.Latitude, out double latitude);
-                        if (latitudeParsed)
-                        {
-                            LocationDataViewModel.LatitudeDouble = latitude;
-                        }
-                    }
-                    if(!string.IsNullOrEmpty(PictureViewModel.Longitude)){
-                        LocationDataViewModel.Longitude = PictureViewModel.Longitude;
-                        bool longitudeParsed = double.TryParse(LocationDataViewModel.Longitude, out double longitude);
-                        if (longitudeParsed)
-                        {
-                            LocationDataViewModel.LongitudeDouble = longitude;
-                        }
-                    }
-
-                    if (!string.IsNullOrEmpty(PictureViewModel.Altitude))
-                    {
-                        LocationDataViewModel.Altitude = PictureViewModel.Altitude;
-                        bool altitudeParsed = double.TryParse(LocationDataViewModel.Altitude, out double altitude);
-                        if (altitudeParsed)
-                        {
-                            LocationDataViewModel.AltitudeDouble = altitude;
-                        }
-                    }
+                    LocationDataViewModel.LongitudeDouble = longitude;
                 }
-                
-                StateHasChanged();
+            }
+
+            if (!string.IsNullOrEmpty(PictureViewModel.Altitude))
+            {
+                LocationDataViewModel.Altitude = PictureViewModel.Altitude;
+                bool altitudeParsed = double.TryParse(LocationDataViewModel.Altitude, out double altitude);
+                if (altitudeParsed)
+                {
+                    LocationDataViewModel.AltitudeDouble = altitude;
+                }
             }
         }
+                
+        StateHasChanged();
     }
 
     private void UserStateServiceOnCurrentProgenyChanged(object? sender, Progeny e)
     {
-        if (e.Id > 0)
-        {
-            Progeny = e;
-            StateHasChanged();
-        }
+        if (e.Id <= 0) return;
+
+        Progeny = e;
+        StateHasChanged();
     }
 
     private void UserStateServiceOnCurrentUserChanged(object? sender, UserInfo e)
     {
-        if (UserInfo?.Id != e.Id)
-        {
-            UserInfo = e;
-            StateHasChanged();
-        }
+        if (UserInfo?.Id == e.Id) return;
+
+        UserInfo = e;
+        StateHasChanged();
     }
 
     public void Dispose()

@@ -30,41 +30,38 @@ namespace KinaUnaMediaApi.Controllers
             
         }
 
-        // GET api/comments/getcommentsbythread/5
+        // GET api/comments/GetCommentsByThread/5
         [HttpGet]
-        [Route("[action]/{threadId}")]
+        [Route("[action]/{threadId:int}")]
         public async Task<IActionResult> GetCommentsByThread(int threadId)
         {
             List<Comment> result = await commentsService.GetCommentsList(threadId);
-            if (result != null)
-            {
-                foreach (Comment comment in result)
-                {
-                    UserInfo commentAuthor = await dataService.GetUserInfoByUserId(comment.Author);
-                    if (commentAuthor != null)
-                    {
-                        string authorImg = commentAuthor.ProfilePicture ?? "";
-                        if (!string.IsNullOrEmpty(authorImg))
-                        {
-                            if (!authorImg.ToLower().StartsWith("http"))
-                            {
-                                authorImg = imageStore.UriFor(authorImg, "profiles");
-                            }
-                        }
+            if (result == null) return NotFound();
 
-                        comment.AuthorImage = authorImg;
-                        if (string.IsNullOrEmpty(comment.AuthorImage))
-                        {
-                            comment.AuthorImage = Constants.ProfilePictureUrl;
-                        }
-                        
-                        comment.DisplayName = commentAuthor.FullName();
+            foreach (Comment comment in result)
+            {
+                UserInfo commentAuthor = await dataService.GetUserInfoByUserId(comment.Author);
+                if (commentAuthor == null) continue;
+
+                string authorImg = commentAuthor.ProfilePicture ?? "";
+                if (!string.IsNullOrEmpty(authorImg))
+                {
+                    if (!authorImg.StartsWith("http", System.StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        authorImg = imageStore.UriFor(authorImg, "profiles");
                     }
                 }
-                return Ok(result);
-            }
 
-            return NotFound();
+                comment.AuthorImage = authorImg;
+                if (string.IsNullOrEmpty(comment.AuthorImage))
+                {
+                    comment.AuthorImage = Constants.ProfilePictureUrl;
+                }
+                        
+                comment.DisplayName = commentAuthor.FullName();
+            }
+            return Ok(result);
+
         }
 
         // POST api/comments
@@ -92,11 +89,13 @@ namespace KinaUnaMediaApi.Controllers
             newComment.Progeny = progeny;
             string title = "New comment for " + newComment.Progeny.NickName;
             string message = model.DisplayName + " added a new comment for " + newComment.Progeny.NickName;
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = newComment.Progeny.Id;
-            tItem.ItemId = newComment.ItemId;
-            tItem.ItemType = newComment.ItemType;
-            tItem.AccessLevel = newComment.AccessLevel;
+            TimeLineItem tItem = new()
+            {
+                ProgenyId = newComment.Progeny.Id,
+                ItemId = newComment.ItemId,
+                ItemType = newComment.ItemType,
+                AccessLevel = newComment.AccessLevel
+            };
             UserInfo userinfo = await dataService.GetUserInfoByUserId(model.Author);
             await azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
 
@@ -104,7 +103,7 @@ namespace KinaUnaMediaApi.Controllers
         }
 
         // PUT api/comments/5
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Comment value)
         {
             Comment comment = await commentsService.GetComment(id);
@@ -137,7 +136,7 @@ namespace KinaUnaMediaApi.Controllers
         }
 
         // DELETE api/comments/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
 
@@ -154,10 +153,8 @@ namespace KinaUnaMediaApi.Controllers
                 await commentsService.RemoveComment(comment.CommentId, comment.CommentThreadNumber);
                 return NoContent();
             }
-            else
-            {
-                return NotFound();
-            }
+
+            return NotFound();
         }
     }
 }

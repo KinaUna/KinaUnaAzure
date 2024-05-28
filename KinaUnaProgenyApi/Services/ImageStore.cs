@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using Azure.Storage;
@@ -13,7 +12,7 @@ namespace KinaUnaProgenyApi.Services
 {
     public class ImageStore(IConfiguration configuration) : IImageStore
     {
-        private readonly BlobServiceClient _blobServiceClient = new BlobServiceClient(configuration.GetValue<string>("BlobStorageConnectionString"));
+        private readonly BlobServiceClient _blobServiceClient = new(configuration.GetValue<string>("BlobStorageConnectionString"));
         private readonly string _storageKey = configuration.GetValue<string>("BlobStorageKey");
         private readonly string _baseUri = configuration.GetValue<string>("CloudBlobBase");
         private readonly string _cloudBlobUserName = configuration.GetValue<string>("CloudBlobUserName");
@@ -31,7 +30,7 @@ namespace KinaUnaProgenyApi.Services
 
         public string UriFor(string imageId, string containerName = "pictures")
         {
-            if (imageId.ToLower().StartsWith("http"))
+            if (imageId.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
             {
                 if (string.IsNullOrEmpty(imageId))
                 {
@@ -72,7 +71,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<string> DeleteImage(string imageId, string containerName = "pictures")
         {
-            if (string.IsNullOrEmpty(imageId) || imageId.ToLower().StartsWith("http"))
+            if (string.IsNullOrEmpty(imageId) || imageId.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
             {
                 if (string.IsNullOrEmpty(imageId))
                 {
@@ -104,32 +103,30 @@ namespace KinaUnaProgenyApi.Services
 
             string updatedText = originalText;
             int lastIndex = 0;
-            List<string> blobStrings = new();
+            List<string> blobStrings = [];
             int linkFound = 1000000000;
 
             while (linkFound > 0)
             {
                 linkFound = originalText.IndexOf(_baseUri, lastIndex, StringComparison.Ordinal);
-                if (linkFound > 0)
-                {
-                    int linkEnd = originalText.IndexOf("sp=r", linkFound, StringComparison.Ordinal) + 4;
-                    blobStrings.Add(originalText.Substring(linkFound, linkEnd - linkFound));
-                    lastIndex = linkEnd;
-                }
+                if (linkFound <= 0) continue;
+
+                int linkEnd = originalText.IndexOf("sp=r", linkFound, StringComparison.Ordinal) + 4;
+                blobStrings.Add(originalText[linkFound..linkEnd]);
+                lastIndex = linkEnd;
             }
 
-            if (blobStrings.Any())
+            if (blobStrings.Count == 0) return updatedText;
+
+            foreach (string blobString in blobStrings)
             {
-                foreach (string blobString in blobStrings)
-                {
-                    int firstSlash = blobString.IndexOf("/", 15, StringComparison.Ordinal);
-                    int secondSlash = blobString.IndexOf("/", firstSlash + 1, StringComparison.Ordinal);
-                    int firstQuestionmark = blobString.IndexOf("?", StringComparison.Ordinal);
-                    string container = blobString.Substring(firstSlash, secondSlash - firstSlash).Replace("/", "");
-                    string blobId = blobString.Substring(secondSlash, firstQuestionmark - secondSlash).Replace("/", "").Replace("?", "");
-                    string updatedBlobUri = UriFor(blobId, container);
-                    updatedText = updatedText.Replace(blobString, updatedBlobUri);
-                }
+                int firstSlash = blobString.IndexOf('/', 15);
+                int secondSlash = blobString.IndexOf('/', firstSlash + 1);
+                int firstQuestionmark = blobString.IndexOf('?');
+                string container = blobString[firstSlash..secondSlash].Replace("/", "");
+                string blobId = blobString[secondSlash..firstQuestionmark].Replace("/", "").Replace("?", "");
+                string updatedBlobUri = UriFor(blobId, container);
+                updatedText = updatedText.Replace(blobString, updatedBlobUri);
             }
 
             return updatedText;

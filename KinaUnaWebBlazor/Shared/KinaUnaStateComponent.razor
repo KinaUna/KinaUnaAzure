@@ -18,31 +18,31 @@
 
     public int LanguageId {
         get => _languageId;
-        set{
-            if (_languageId != value)
-            {
-                _languageId = value;
-                if(LanguageList != null && LanguageList.Any()){
-                    KinaUnaLanguage? selectedLanguage = LanguageList.FirstOrDefault(l => l.Id == _languageId);
-                    if(selectedLanguage != null){
-                        LanguageName = selectedLanguage.Name;
-                    }
-                }
+        set
+        {
+            if (_languageId == value) return;
 
-                if(!_initializing){
-                    NavigationManager.NavigateTo($"SetLanguage?languageId={_languageId}&returnUrl={NavigationManager.Uri}", forceLoad: true);
+            _languageId = value;
+            if(LanguageList != null && LanguageList.Any()){
+                KinaUnaLanguage? selectedLanguage = LanguageList.FirstOrDefault(l => l.Id == _languageId);
+                if(selectedLanguage != null){
+                    LanguageName = selectedLanguage.Name;
                 }
-
-                StateHasChanged();
             }
+
+            if(!_initializing){
+                NavigationManager.NavigateTo($"SetLanguage?languageId={_languageId}&returnUrl={NavigationManager.Uri}", forceLoad: true);
+            }
+
+            StateHasChanged();
         }
     }
 
     public string LanguageName { get; private set; } = "";
 
-    public List<KinaUnaLanguage>? LanguageList { get; set; } = new List<KinaUnaLanguage>();
+    public List<KinaUnaLanguage>? LanguageList { get; set; } = [];
 
-    public bool ExpandSideBar { get; set; } = false;
+    public bool ExpandSideBar { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {

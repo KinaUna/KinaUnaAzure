@@ -5,7 +5,7 @@ namespace KinaUnaWebBlazor.Services
 {
     public class ImageStore(IConfiguration configuration)
     {
-        private BlobServiceClient _blobServiceClient = new BlobServiceClient(configuration["kinaunastorageconnectionstring"]);
+        private readonly BlobServiceClient _blobServiceClient = new(configuration["kinaunastorageconnectionstring"]);
 
         /// <summary>
         /// Saves an image file to the storage account specified in Constants.CloudBlobBase.
@@ -30,7 +30,7 @@ namespace KinaUnaWebBlazor.Services
         /// <returns>string: The URI for the image.</returns>
         public string UriFor(string imageId, string containerName = "pictures")
         {
-            BlobSasBuilder sasBuilder = new BlobSasBuilder()
+            BlobSasBuilder sasBuilder = new()
             {
                 BlobContainerName = containerName,
                 Resource = "b",
@@ -74,32 +74,30 @@ namespace KinaUnaWebBlazor.Services
             }
             string updatedText = originalText;
             int lastIndex = 0;
-            List<string> blobStrings = new List<string>();
+            List<string> blobStrings = [];
             int linkFound = 1000000000;
             while (linkFound > 0)
             {
                 linkFound = originalText.IndexOf("https://kinaunastorage.blob.core.windows.net", lastIndex, StringComparison.Ordinal);
-                if (linkFound > 0)
-                {
-                    int linkEnd = originalText.IndexOf("sp=r", linkFound, StringComparison.Ordinal) + 4;
-                    blobStrings.Add(originalText.Substring(linkFound, linkEnd - linkFound));
-                    lastIndex = linkEnd;
-                }
+                if (linkFound <= 0) continue;
+
+                int linkEnd = originalText.IndexOf("sp=r", linkFound, StringComparison.Ordinal) + 4;
+                blobStrings.Add(originalText[linkFound..linkEnd]);
+                lastIndex = linkEnd;
 
             }
 
-            if (blobStrings.Any())
+            if (blobStrings.Count == 0) return updatedText;
+
+            foreach (string blobString in blobStrings)
             {
-                foreach (string blobString in blobStrings)
-                {
-                    int firstSlash = blobString.IndexOf("/", 15, StringComparison.Ordinal);
-                    int secondSlash = blobString.IndexOf("/", firstSlash + 1, StringComparison.Ordinal);
-                    int firstQuestionmark = blobString.IndexOf("?", StringComparison.Ordinal);
-                    string container = blobString.Substring(firstSlash, secondSlash - firstSlash).Replace("/", "");
-                    string blobId = blobString.Substring(secondSlash, firstQuestionmark - secondSlash).Replace("/", "").Replace("?", "");
-                    string updatedBlobUri = UriFor(blobId, container);
-                    updatedText = updatedText.Replace(blobString, updatedBlobUri);
-                }
+                int firstSlash = blobString.IndexOf('/', 15);
+                int secondSlash = blobString.IndexOf('/', 15);
+                int firstQuestionmark = blobString.IndexOf('?');
+                string container = blobString[firstSlash..secondSlash].Replace("/", "");
+                string blobId = blobString[secondSlash..firstQuestionmark].Replace("/", "").Replace("?", "");
+                string updatedBlobUri = UriFor(blobId, container);
+                updatedText = updatedText.Replace(blobString, updatedBlobUri);
             }
 
             return updatedText;

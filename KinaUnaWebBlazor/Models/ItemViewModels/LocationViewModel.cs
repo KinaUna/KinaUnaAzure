@@ -24,13 +24,13 @@ namespace KinaUnaWebBlazor.Models.ItemViewModels
         public DateTime? DateAdded { get; set; }
         public string Author { get; set; } = "";
 
-        public List<Location> LocationsList { get; set; } = new List<Location>();
+        public List<Location> LocationsList { get; set; } = [];
         public string TagsList { get; set; } = "";
-        public Progeny Progeny { get; set; } = new Progeny();
+        public Progeny Progeny { get; set; } = new();
         public bool IsAdmin { get; set; }
         public string TagFilter { get; set; } = "";
         public int? SortBy { get; set; }
 
-        public Location Location { get; set; } = new Location();
+        public Location Location { get; set; } = new();
     }
 }

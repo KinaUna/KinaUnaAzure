@@ -26,7 +26,7 @@ namespace KinaUnaProgenyApi.Controllers
         ILocationService locationService)
         : ControllerBase
     {
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         [HttpGet]
         public async Task<IActionResult> GetCategoryAutoSuggestList(int id, int accessLevel)
         {
@@ -38,20 +38,19 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            List<string> autoSuggestList = new();
+            List<string> autoSuggestList = [];
             List<Note> allNotes = await noteService.GetNotesList(id);
             allNotes = allNotes.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Note noteItem in allNotes)
             {
-                if (!string.IsNullOrEmpty(noteItem.Category))
+                if (string.IsNullOrEmpty(noteItem.Category)) continue;
+
+                List<string> tagsList = [.. noteItem.Category.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = noteItem.Category.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -60,15 +59,14 @@ namespace KinaUnaProgenyApi.Controllers
             allSkills = allSkills.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Skill skillItem in allSkills)
             {
-                if (!string.IsNullOrEmpty(skillItem.Category))
+                if (string.IsNullOrEmpty(skillItem.Category)) continue;
+
+                List<string> tagsList = [.. skillItem.Category.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = skillItem.Category.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -78,7 +76,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(autoSuggestList);
         }
 
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         [HttpGet]
         public async Task<IActionResult> GetContextAutoSuggestList(int id, int accessLevel)
         {
@@ -90,21 +88,20 @@ namespace KinaUnaProgenyApi.Controllers
                 return Unauthorized();
             }
 
-            List<string> autoSuggestList = new();
+            List<string> autoSuggestList = [];
 
             List<Friend> allFriends = await friendService.GetFriendsList(id);
             allFriends = allFriends.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Friend friendItem in allFriends)
             {
-                if (!string.IsNullOrEmpty(friendItem.Context))
+                if (string.IsNullOrEmpty(friendItem.Context)) continue;
+
+                List<string> tagsList = [.. friendItem.Context.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = friendItem.Context.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -113,15 +110,14 @@ namespace KinaUnaProgenyApi.Controllers
             allCalendarItems = allCalendarItems.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (CalendarItem calendarItem in allCalendarItems)
             {
-                if (!string.IsNullOrEmpty(calendarItem.Context))
+                if (string.IsNullOrEmpty(calendarItem.Context)) continue;
+
+                List<string> tagsList = [.. calendarItem.Context.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = calendarItem.Context.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -130,15 +126,14 @@ namespace KinaUnaProgenyApi.Controllers
             allContacts = allContacts.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Contact contactItem in allContacts)
             {
-                if (!string.IsNullOrEmpty(contactItem.Context))
+                if (string.IsNullOrEmpty(contactItem.Context)) continue;
+
+                List<string> tagsList = [.. contactItem.Context.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = contactItem.Context.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -147,7 +142,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(autoSuggestList);
         }
 
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         [HttpGet]
         public async Task<IActionResult> GetLocationAutoSuggestList(int id, int accessLevel)
         {
@@ -161,18 +156,17 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<Picture> allPictures = await picturesService.GetPicturesList(id);
             allPictures = allPictures.Where(p => p.AccessLevel >= accessLevel).ToList();
-            List<string> autoSuggestList = new();
+            List<string> autoSuggestList = [];
             foreach (Picture picture in allPictures)
             {
-                if (!string.IsNullOrEmpty(picture.Location))
+                if (string.IsNullOrEmpty(picture.Location)) continue;
+
+                List<string> tagsList = [.. picture.Location.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = picture.Location.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -181,15 +175,14 @@ namespace KinaUnaProgenyApi.Controllers
             allVideos = allVideos.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Video video in allVideos)
             {
-                if (!string.IsNullOrEmpty(video.Location))
+                if (string.IsNullOrEmpty(video.Location)) continue;
+
+                List<string> tagsList = [.. video.Location.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = video.Location.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -198,15 +191,14 @@ namespace KinaUnaProgenyApi.Controllers
             allCalendarItems = allCalendarItems.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (CalendarItem calendarItem in allCalendarItems)
             {
-                if (!string.IsNullOrEmpty(calendarItem.Location))
+                if (string.IsNullOrEmpty(calendarItem.Location)) continue;
+
+                List<string> tagsList = [.. calendarItem.Location.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = calendarItem.Location.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -215,15 +207,14 @@ namespace KinaUnaProgenyApi.Controllers
             allLocations = allLocations.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Location locationItem in allLocations)
             {
-                if (!string.IsNullOrEmpty(locationItem.Name))
+                if (string.IsNullOrEmpty(locationItem.Name)) continue;
+
+                List<string> tagsList = [.. locationItem.Name.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = locationItem.Name.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!string.IsNullOrEmpty(tagString) && !autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -234,7 +225,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(autoSuggestList);
         }
 
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         [HttpGet]
         public async Task<IActionResult> GetTagsAutoSuggestList(int id, int accessLevel)
         {
@@ -248,18 +239,17 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<Picture> allPictures = await picturesService.GetPicturesList(id);
             allPictures = allPictures.Where(p => p.AccessLevel >= accessLevel).ToList();
-            List<string> autoSuggestList = new();
+            List<string> autoSuggestList = [];
             foreach (Picture picture in allPictures)
             {
-                if (!string.IsNullOrEmpty(picture.Tags))
+                if (string.IsNullOrEmpty(picture.Tags)) continue;
+
+                List<string> tagsList = [.. picture.Tags.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = picture.Tags.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -268,15 +258,14 @@ namespace KinaUnaProgenyApi.Controllers
             allVideos = allVideos.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Video video in allVideos)
             {
-                if (!string.IsNullOrEmpty(video.Tags))
+                if (string.IsNullOrEmpty(video.Tags)) continue;
+
+                List<string> tagsList = [.. video.Tags.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = video.Tags.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -285,15 +274,14 @@ namespace KinaUnaProgenyApi.Controllers
             allLocations = allLocations.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Location location in allLocations)
             {
-                if (!string.IsNullOrEmpty(location.Tags))
+                if (string.IsNullOrEmpty(location.Tags)) continue;
+
+                List<string> tagsList = [.. location.Tags.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = location.Tags.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -302,15 +290,14 @@ namespace KinaUnaProgenyApi.Controllers
             allFriends = allFriends.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Friend friend in allFriends)
             {
-                if (!string.IsNullOrEmpty(friend.Tags))
+                if (string.IsNullOrEmpty(friend.Tags)) continue;
+
+                List<string> tagsList = [.. friend.Tags.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = friend.Tags.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -319,16 +306,15 @@ namespace KinaUnaProgenyApi.Controllers
             allContacts = allContacts.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Contact contact in allContacts)
             {
-                if (!string.IsNullOrEmpty(contact.Tags))
+                if (string.IsNullOrEmpty(contact.Tags)) continue;
+
+                List<string> tagsList = [.. contact.Tags.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = contact.Tags.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    string trimmedTagString = tagString.Trim();
+                    if (!string.IsNullOrEmpty(trimmedTagString) && !autoSuggestList.Contains(trimmedTagString))
                     {
-                        string trimmedTagString = tagString.Trim();
-                        if (!string.IsNullOrEmpty(trimmedTagString) && !autoSuggestList.Contains(trimmedTagString))
-                        {
-                            autoSuggestList.Add(trimmedTagString);
-                        }
+                        autoSuggestList.Add(trimmedTagString);
                     }
                 }
             }

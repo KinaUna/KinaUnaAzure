@@ -17,8 +17,8 @@ namespace KinaUna.IDP
         // identity-related resources (scopes)
         public static List<IdentityResource> GetIdentityResources()
         {
-            return new List<IdentityResource>
-            {
+            return
+            [
                 new IdentityResources.OpenId(),
                 new IdentityResources.Profile(),
                 new IdentityResources.Address(),
@@ -27,75 +27,74 @@ namespace KinaUna.IDP
                 new IdentityResource(
                     "firstname",
                     "Your First Name",
-                    new List<string>(){"firstname"}),
+                    ["firstname"]),
                 new IdentityResource(
                     "middlename",
                     "Your Middle Name",
-                    new List<string>(){"middlename"}),
+                    ["middlename"]),
                 new IdentityResource(
                     "lastname",
                     "Your Last Name",
-                    new List<string>(){"lastname"}),
+                    ["lastname"]),
                 new IdentityResource(
                     "roles",
                     "Your role(s)",
-                    new List<string>(){"role"}),
+                    ["role"]),
                 new IdentityResource(
                     "timezone",
                     "Your timezone",
-                    new List<string>(){"timezone"}),
+                    ["timezone"]),
                 new IdentityResource(
                     "viewchild",
                     "Currently Viewing Child",
-                    new List<string>(){"viewchild"}),
+                    ["viewchild"]),
                 new IdentityResource(
                     "joindate",
                     "Joined Date",
-                    new List<string>(){"joindate"})
-            };
+                    ["joindate"])
+            ];
         }
 
         // API related resources (Scopes)
         public static List<ApiResource> GetApiResources(IConfiguration configuration)
         {
             string secretString = configuration.GetValue<string>("SecretString");
-            return new List<ApiResource>
-            {
+            return
+            [
                 new ApiResource{
                     Name = Constants.ProgenyApiName,
                     DisplayName = "KinaUna Progeny API",
-                    UserClaims = new List<string> { JwtClaimTypes.Role, JwtClaimTypes.Subject, JwtClaimTypes.Email, "timezone" },
-                    ApiSecrets = new List<Secret>
-                    {
+                    UserClaims = [JwtClaimTypes.Role, JwtClaimTypes.Subject, JwtClaimTypes.Email, "timezone"],
+                    ApiSecrets =
+                    [
                         new Secret(secretString.Sha256())
-                    },
-                    Scopes = new List<string>
-                    {
+                    ],
+                    Scopes =
+                    [
                        Constants.ProgenyApiName, Constants.MediaApiName
-                    }
+                    ]
                 },
                 new ApiResource{
                     Name = Constants.MediaApiName,
                     DisplayName = "KinaUna Media API",
-                    UserClaims = new List<string> { JwtClaimTypes.Role, JwtClaimTypes.Subject, JwtClaimTypes.Email, "timezone" },
-                    ApiSecrets = new List<Secret>
-                    {
+                    UserClaims = [JwtClaimTypes.Role, JwtClaimTypes.Subject, JwtClaimTypes.Email, "timezone"],
+                    ApiSecrets =
+                    [
                         new Secret(secretString.Sha256())
-                    },
-                    Scopes = new List<string>
-                    {
+                    ],
+                    Scopes =
+                    [
                         Constants.ProgenyApiName, Constants.MediaApiName
-                    }
+                    ]
                 }
-            };
+            ];
         }
 
         public static List<ApiScope> ApiScopes =>
-            new List<ApiScope>
-            {
-                new ApiScope(Constants.ProgenyApiName, "KinaUna Progeny API",new List<string> {"role" }),
-                new ApiScope(Constants.MediaApiName, "KinaUna Media API",new List<string> {"role" })
-            };
+            [
+                new ApiScope(Constants.ProgenyApiName, "KinaUna Progeny API",["role"]),
+                new ApiScope(Constants.MediaApiName, "KinaUna Media API",["role"])
+            ];
 
         public static List<Client> GetClients(IConfiguration configuration)
         {
@@ -105,14 +104,16 @@ namespace KinaUna.IDP
             string webServerLocal = configuration.GetValue<string>("WebServerLocal");
             string webBlazorServerLocal = configuration.GetValue<string>("WebBlazorServerLocal");
             string secretString = configuration.GetValue<string>("SecretString");
-            List<string> corsList = new List<string>();
-            corsList.Add(Constants.WebAppUrl);
-            corsList.Add(Constants.AuthAppUrl);
-            corsList.Add(Constants.ProgenyApiUrl);
-            corsList.Add(Constants.MediaApiUrl);
-            corsList.Add("https://" + Constants.AppRootDomain);
-            return new List<Client>()
-            {
+            List<string> corsList =
+            [
+                Constants.WebAppUrl,
+                Constants.AuthAppUrl,
+                Constants.ProgenyApiUrl,
+                Constants.MediaApiUrl,
+                "https://" + Constants.AppRootDomain,
+            ];
+            return
+            [
                 new Client
                 {
                     ClientName = "KinaUnaWebBlazor",
@@ -127,15 +128,15 @@ namespace KinaUna.IDP
                     AllowOfflineAccess = true,
                     AlwaysIncludeUserClaimsInIdToken = false,
                     UpdateAccessTokenClaimsOnRefresh = true,
-                    RedirectUris = new List<string>()
-                    {
+                    RedirectUris =
+                    [
                         webServerUrl + "/signin-oidc"
 
-                    },
-                    PostLogoutRedirectUris = new List<string>()
-                    {
+                    ],
+                    PostLogoutRedirectUris =
+                    [
                         webServerUrl + "/signout-callback-oidc"
-                    },
+                    ],
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -168,15 +169,15 @@ namespace KinaUna.IDP
                     RefreshTokenExpiration = TokenExpiration.Sliding,
                     UpdateAccessTokenClaimsOnRefresh = true,
                     AllowedCorsOrigins = corsList,
-                    RedirectUris = new List<string>()
-                    {
+                    RedirectUris =
+                    [
                         webServerUrl + "/signin-oidc"
                         
-                    },
-                    PostLogoutRedirectUris = new List<string>()
-                    {
+                    ],
+                    PostLogoutRedirectUris =
+                    [
                         webServerUrl + "/signout-callback-oidc"
-                    },
+                    ],
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -209,15 +210,15 @@ namespace KinaUna.IDP
                     AllowOfflineAccess = true,
                     AlwaysIncludeUserClaimsInIdToken = false,
                     UpdateAccessTokenClaimsOnRefresh = true,
-                    RedirectUris = new List<string>()
-                    {
+                    RedirectUris =
+                    [
                         webBlazorServerLocal + "/signin-oidc"
 
-                    },
-                    PostLogoutRedirectUris = new List<string>()
-                    {
+                    ],
+                    PostLogoutRedirectUris =
+                    [
                         webBlazorServerLocal + "/signout-callback-oidc"
-                    },
+                    ],
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -246,15 +247,15 @@ namespace KinaUna.IDP
                     AllowOfflineAccess = true,
                     AlwaysIncludeUserClaimsInIdToken = false,
                     UpdateAccessTokenClaimsOnRefresh = true,
-                    RedirectUris = new List<string>()
-                    {
+                    RedirectUris =
+                    [
                         webServerLocal + "/signin-oidc"
                         
-                    },
-                    PostLogoutRedirectUris = new List<string>()
-                    {
+                    ],
+                    PostLogoutRedirectUris =
+                    [
                         webServerLocal + "/signout-callback-oidc"
-                    },
+                    ],
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -292,15 +293,15 @@ namespace KinaUna.IDP
                     //AbsoluteRefreshTokenLifetime = ...
                     UpdateAccessTokenClaimsOnRefresh = true,
                     AllowedCorsOrigins = corsList,
-                    RedirectUris = new List<string>()
-                    {
+                    RedirectUris =
+                    [
                         webServerAzureUrl + "/signin-oidc"
 
-                    },
-                    PostLogoutRedirectUris = new List<string>()
-                    {
+                    ],
+                    PostLogoutRedirectUris =
+                    [
                         webServerAzureUrl + "/signout-callback-oidc"
-                    },
+                    ],
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -440,7 +441,7 @@ namespace KinaUna.IDP
                     UpdateAccessTokenClaimsOnRefresh = true,
                     RefreshTokenUsage = TokenUsage.ReUse
                 }
-            };
+            ];
 
         }
     }

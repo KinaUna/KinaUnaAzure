@@ -68,11 +68,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             VocabularyItem.AccessLevel = vocabularyItem.AccessLevel;
             VocabularyItem.Author = vocabularyItem.Author;
-            VocabularyItem.Date = vocabularyItem.Date;
-            if (VocabularyItem.Date == null)
-            {
-                VocabularyItem.Date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
-            }
+            VocabularyItem.Date = vocabularyItem.Date ?? TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
 
             VocabularyItem.DateAdded = vocabularyItem.DateAdded;
             VocabularyItem.Description = vocabularyItem.Description;

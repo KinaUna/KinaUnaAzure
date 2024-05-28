@@ -53,24 +53,23 @@ namespace KinaUnaWeb.Services
         
         public async Task<List<SelectListItem>> GetProgenySelectList(UserInfo userInfo)
         {
-            List<SelectListItem> progenyList = new();
+            List<SelectListItem> progenyList = [];
             List<Progeny> accessList = await _progenyHttpClient.GetProgenyAdminList(userInfo.UserEmail);
-            if (accessList.Any())
-            {
-                foreach (Progeny progeny in accessList)
-                {
-                    SelectListItem selItem = new()
-                    {
-                        Text = accessList.Single(p => p.Id == progeny.Id).NickName,
-                        Value = progeny.Id.ToString()
-                    };
-                    if (progeny.Id == userInfo.ViewChild)
-                    {
-                        selItem.Selected = true;
-                    }
+            if (accessList.Count == 0) return progenyList;
 
-                    progenyList.Add(selItem);
+            foreach (Progeny progeny in accessList)
+            {
+                SelectListItem selItem = new()
+                {
+                    Text = accessList.Single(p => p.Id == progeny.Id).NickName,
+                    Value = progeny.Id.ToString()
+                };
+                if (progeny.Id == userInfo.ViewChild)
+                {
+                    selItem.Selected = true;
                 }
+
+                progenyList.Add(selItem);
             }
 
             return progenyList;

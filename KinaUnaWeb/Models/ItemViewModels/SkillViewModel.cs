@@ -8,15 +8,15 @@ namespace KinaUnaWeb.Models.ItemViewModels
     public class SkillViewModel: BaseItemsViewModel
     {
         public List<SelectListItem> ProgenyList { get; set; }
-        public Skill SkillItem { get; set; } = new Skill();
+        public Skill SkillItem { get; init; } = new Skill();
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
         
         public SkillViewModel()
         {
-            ProgenyList = new List<SelectListItem>();
-            AccessLevelList aclList = new AccessLevelList();
+            ProgenyList = [];
+            AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
             AccessLevelListDe = aclList.AccessLevelListDe;
@@ -45,7 +45,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetAccessLevelList()
         {
-            AccessLevelList accessLevelList = new AccessLevelList();
+            AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
             AccessLevelListDa = accessLevelList.AccessLevelListDa;
             AccessLevelListDe = accessLevelList.AccessLevelListDe;
@@ -67,12 +67,15 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public Skill CreateSkill()
         {
-            Skill skillItem = new Skill();
-            skillItem.ProgenyId = SkillItem.ProgenyId;
-            skillItem.Category = SkillItem.Category;
-            skillItem.Description = SkillItem.Description;
-            skillItem.Name = SkillItem.Name;
-            skillItem.SkillAddedDate = SkillItem.SkillAddedDate;
+            Skill skillItem = new()
+            {
+                ProgenyId = SkillItem.ProgenyId,
+                Category = SkillItem.Category,
+                Description = SkillItem.Description,
+                Name = SkillItem.Name,
+                SkillAddedDate = SkillItem.SkillAddedDate
+            };
+            
             if (SkillItem.SkillFirstObservation.HasValue)
             {
                 skillItem.SkillFirstObservation = TimeZoneInfo.ConvertTimeToUtc(SkillItem.SkillFirstObservation.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));

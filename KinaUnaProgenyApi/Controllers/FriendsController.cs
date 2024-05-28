@@ -29,27 +29,25 @@ namespace KinaUnaProgenyApi.Controllers
     {
         // GET api/friends/progeny/[id]
         [HttpGet]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
-            {
-                List<Friend> friendsList = await friendService.GetFriendsList(id);
-                friendsList = friendsList.Where(f => f.AccessLevel >= accessLevel).ToList();
-                if (friendsList.Any())
-                {
-                    return Ok(friendsList);
-                }
-                return NotFound();
-            }
+            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
 
-            return Unauthorized();
+            List<Friend> friendsList = await friendService.GetFriendsList(id);
+            friendsList = friendsList.Where(f => f.AccessLevel >= accessLevel).ToList();
+            if (friendsList.Count != 0)
+            {
+                return Ok(friendsList);
+            }
+            return NotFound();
+
         }
 
         // GET api/friends/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetFriendItem(int id)
         {
             Friend result = await friendService.GetFriend(id);
@@ -112,7 +110,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // PUT api/friends/5
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Friend value)
         {
             Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
@@ -162,108 +160,96 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // DELETE api/friends/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             Friend friendItem = await friendService.GetFriend(id);
-            if (friendItem != null)
+            if (friendItem == null) return NotFound();
+
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+
+            Progeny progeny = await progenyService.GetProgeny(friendItem.ProgenyId);
+            if (progeny != null)
             {
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
-                Progeny progeny = await progenyService.GetProgeny(friendItem.ProgenyId);
-                if (progeny != null)
+                if (!progeny.IsInAdminList(userEmail))
                 {
-                    if (!progeny.IsInAdminList(userEmail))
-                    {
-                        return Unauthorized();
-                    }
+                    return Unauthorized();
                 }
-                else
-                {
-                    return NotFound();
-                }
-
-                TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(friendItem.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend);
-
-                if (timeLineItem != null)
-                {
-                    _ = await timelineService.DeleteTimeLineItem(timeLineItem);
-                }
-
-                _ = await imageStore.DeleteImage(friendItem.PictureLink, BlobContainers.Friends);
-
-                _ = await friendService.DeleteFriend(friendItem);
-
-                if (timeLineItem != null)
-                {
-                    friendItem.Author = User.GetUserId();
-                    UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-                    string notificationTitle = "Friend deleted for " + progeny.NickName;
-                    string notificationMessage = userInfo.FullName() + " deleted a friend for " + progeny.NickName + ". Friend: " + friendItem.Name;
-
-                    friendItem.AccessLevel = timeLineItem.AccessLevel = 0;
-
-                    await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                    await webNotificationsService.SendFriendNotification(friendItem, userInfo, notificationTitle);
-                }
-
-                return NoContent();
             }
             else
             {
                 return NotFound();
             }
+
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(friendItem.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend);
+
+            if (timeLineItem != null)
+            {
+                _ = await timelineService.DeleteTimeLineItem(timeLineItem);
+            }
+
+            _ = await imageStore.DeleteImage(friendItem.PictureLink, BlobContainers.Friends);
+
+            _ = await friendService.DeleteFriend(friendItem);
+
+            if (timeLineItem == null) return NoContent();
+
+            friendItem.Author = User.GetUserId();
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+
+            string notificationTitle = "Friend deleted for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " deleted a friend for " + progeny.NickName + ". Friend: " + friendItem.Name;
+
+            friendItem.AccessLevel = timeLineItem.AccessLevel = 0;
+
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendFriendNotification(friendItem, userInfo, notificationTitle);
+
+            return NoContent();
+
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetFriendMobile(int id)
         {
             Friend result = await friendService.GetFriend(id);
 
-            if (result != null)
-            {
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+            if (result == null) return NotFound();
 
-                if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
-                {
-                    result.PictureLink = imageStore.UriFor(result.PictureLink, BlobContainers.Friends);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
 
-                    return Ok(result);
-                }
-            }
+            if (userAccess == null && result.ProgenyId != Constants.DefaultChildId) return NotFound();
 
-            return NotFound();
+            result.PictureLink = imageStore.UriFor(result.PictureLink, BlobContainers.Friends);
+
+            return Ok(result);
+
         }
 
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
-            {
-                List<Friend> friendsList = await friendService.GetFriendsList(id);
-                friendsList = friendsList.Where(f => f.AccessLevel >= accessLevel).ToList();
-                if (friendsList.Any())
-                {
-                    foreach (Friend friend in friendsList)
-                    {
-                        friend.PictureLink = imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
-                    }
+            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
 
-                    return Ok(friendsList);
-                }
-                return NotFound();
+            List<Friend> friendsList = await friendService.GetFriendsList(id);
+            friendsList = friendsList.Where(f => f.AccessLevel >= accessLevel).ToList();
+            if (friendsList.Count == 0) return NotFound();
+
+            foreach (Friend friend in friendsList)
+            {
+                friend.PictureLink = imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
             }
 
-            return Unauthorized();
+            return Ok(friendsList);
+
         }
 
         [HttpGet]
-        [Route("[action]/{friendId}")]
+        [Route("[action]/{friendId:int}")]
         public async Task<IActionResult> DownloadPicture(int friendId)
         {
             Friend friend = await friendService.GetFriend(friendId);
@@ -275,22 +261,17 @@ namespace KinaUnaProgenyApi.Controllers
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(friend.ProgenyId, userEmail);
+            if (userAccess == null || userAccess.AccessLevel <= 0 || !friend.PictureLink.StartsWith("http", System.StringComparison.CurrentCultureIgnoreCase)) return NotFound();
 
-
-            if (userAccess != null && userAccess.AccessLevel > 0 && friend.PictureLink.ToLower().StartsWith("http"))
+            await using (Stream stream = await GetStreamFromUrl(friend.PictureLink))
             {
-                await using (Stream stream = await GetStreamFromUrl(friend.PictureLink))
-                {
-                    friend.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Friends);
-                }
-
-                friend = await friendService.UpdateFriend(friend);
-
-                return Ok(friend);
+                friend.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Friends);
             }
 
+            friend = await friendService.UpdateFriend(friend);
 
-            return NotFound();
+            return Ok(friend);
+
 
         }
 

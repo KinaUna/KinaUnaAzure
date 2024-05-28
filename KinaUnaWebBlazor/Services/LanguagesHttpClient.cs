@@ -60,7 +60,7 @@ namespace KinaUnaWebBlazor.Services
 
         public async Task<List<KinaUnaLanguage>?> GetAllLanguages(bool updateCache = false)
         {
-            List<KinaUnaLanguage>? languageList = new List<KinaUnaLanguage>();
+            List<KinaUnaLanguage>? languageList = [];
             string? cachedLanguagesString = await _cache.GetStringAsync("AllLanguages");
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguagesString))
             {
@@ -73,15 +73,13 @@ namespace KinaUnaWebBlazor.Services
 
             string admininfoApiPath = "/api/Languages/GetAllLanguages";
             HttpResponseMessage admininfoResponse = await _httpClient.GetAsync(admininfoApiPath);
-
-            if (admininfoResponse.IsSuccessStatusCode)
+            if (!admininfoResponse.IsSuccessStatusCode) return languageList;
+            
+            string languageListAsString = await admininfoResponse.Content.ReadAsStringAsync();
+            languageList = JsonConvert.DeserializeObject<List<KinaUnaLanguage>>(languageListAsString);
+            if (languageList != null && languageList.Count != 0)
             {
-                string languageListAsString = await admininfoResponse.Content.ReadAsStringAsync();
-                languageList = JsonConvert.DeserializeObject<List<KinaUnaLanguage>>(languageListAsString);
-                if (languageList != null && languageList.Any())
-                {
-                    await _cache.SetStringAsync("AllLanguages", JsonConvert.SerializeObject(languageList));
-                }
+                await _cache.SetStringAsync("AllLanguages", JsonConvert.SerializeObject(languageList));
             }
 
             return languageList;
@@ -89,7 +87,7 @@ namespace KinaUnaWebBlazor.Services
 
         public async Task<KinaUnaLanguage?> GetLanguage(int languageId, bool updateCache = false)
         {
-            KinaUnaLanguage? language = new KinaUnaLanguage();
+            KinaUnaLanguage? language = new();
             string? cachedLanguageString = await _cache.GetStringAsync("Language" + languageId);
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguageString))
             {
@@ -102,30 +100,27 @@ namespace KinaUnaWebBlazor.Services
 
             string admininfoApiPath = "/api/Languages/GetLanguage/" + languageId;
             HttpResponseMessage admininfoResponse = await _httpClient.GetAsync(admininfoApiPath);
-
-            if (admininfoResponse.IsSuccessStatusCode)
-            {
-                string languageAsString = await admininfoResponse.Content.ReadAsStringAsync();
-                language = JsonConvert.DeserializeObject<KinaUnaLanguage>(languageAsString);
-                await _cache.SetStringAsync("Language" + languageId, JsonConvert.SerializeObject(language), _cacheExpirationLong);
-            }
+            if (!admininfoResponse.IsSuccessStatusCode) return language;
+            
+            string languageAsString = await admininfoResponse.Content.ReadAsStringAsync();
+            language = JsonConvert.DeserializeObject<KinaUnaLanguage>(languageAsString);
+            await _cache.SetStringAsync("Language" + languageId, JsonConvert.SerializeObject(language), _cacheExpirationLong);
 
             return language;
         }
 
         public async Task<KinaUnaLanguage?> AddLanguage(KinaUnaLanguage language)
         {
-            KinaUnaLanguage? addedLanguage = new KinaUnaLanguage();
+            KinaUnaLanguage? addedLanguage = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string addApiPath = "/api/Languages/AddLanguage/";
+            const string addApiPath = "/api/Languages/AddLanguage/";
             HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(language), System.Text.Encoding.UTF8, "application/json"));
-            if (addResponse.IsSuccessStatusCode)
-            {
-                string addResponseString = await addResponse.Content.ReadAsStringAsync();
-                addedLanguage = JsonConvert.DeserializeObject<KinaUnaLanguage>(addResponseString);
-            }
+            if (!addResponse.IsSuccessStatusCode) return addedLanguage;
+
+            string addResponseString = await addResponse.Content.ReadAsStringAsync();
+            addedLanguage = JsonConvert.DeserializeObject<KinaUnaLanguage>(addResponseString);
 
             return addedLanguage;
         }
@@ -133,36 +128,34 @@ namespace KinaUnaWebBlazor.Services
 
         public async Task<KinaUnaLanguage?> UpdateLanguage(KinaUnaLanguage language)
         {
-            KinaUnaLanguage? updatedLanguage = new KinaUnaLanguage();
+            KinaUnaLanguage? updatedLanguage = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string updateApiPath = "/api/Languages/UpdateLanguage/" + language.Id;
             HttpResponseMessage updateResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonConvert.SerializeObject(language), System.Text.Encoding.UTF8, "application/json"));
-            if (updateResponse.IsSuccessStatusCode)
-            {
-                string updateResponseString = await updateResponse.Content.ReadAsStringAsync();
-                updatedLanguage = JsonConvert.DeserializeObject<KinaUnaLanguage>(updateResponseString);
-            }
+            if (!updateResponse.IsSuccessStatusCode) return updatedLanguage;
+
+            string updateResponseString = await updateResponse.Content.ReadAsStringAsync();
+            updatedLanguage = JsonConvert.DeserializeObject<KinaUnaLanguage>(updateResponseString);
 
             return updatedLanguage;
         }
 
         public async Task<KinaUnaLanguage?> DeleteLanguage(KinaUnaLanguage language)
         {
-            KinaUnaLanguage? deletedLanguage = new KinaUnaLanguage();
+            KinaUnaLanguage? deletedLanguage = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string deleteApiPath = "/api/Languages/DeleteLanguage/" + language.Id;
             HttpResponseMessage deleteResponse = await _httpClient.DeleteAsync(deleteApiPath);
-            if (deleteResponse.IsSuccessStatusCode)
-            {
-                string deletedResponseString = await deleteResponse.Content.ReadAsStringAsync();
-                deletedLanguage = JsonConvert.DeserializeObject<KinaUnaLanguage>(deletedResponseString);
-                await _cache.RemoveAsync("Language" + language.Id);
-                await _cache.RemoveAsync("AllLanguages");
-            }
+            if (!deleteResponse.IsSuccessStatusCode) return deletedLanguage;
+
+            string deletedResponseString = await deleteResponse.Content.ReadAsStringAsync();
+            deletedLanguage = JsonConvert.DeserializeObject<KinaUnaLanguage>(deletedResponseString);
+            await _cache.RemoveAsync("Language" + language.Id);
+            await _cache.RemoveAsync("AllLanguages");
 
             return deletedLanguage;
         }

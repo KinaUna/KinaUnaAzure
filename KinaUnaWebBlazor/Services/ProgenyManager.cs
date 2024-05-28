@@ -67,7 +67,7 @@ namespace KinaUnaWebBlazor.Services
             _httpClient.SetBearerToken(accessToken);
             
             string userInfoApiPath = "/api/UserInfo/ByEmail/" + userEmail;
-            UserInfo? userInfo = new UserInfo();
+            UserInfo? userInfo = new();
             try
             {
                 string userInfoResponseString = await _httpClient.GetStringAsync(userInfoApiPath);
@@ -99,24 +99,26 @@ namespace KinaUnaWebBlazor.Services
                 ApplicationUser applicationUser = _userManager.Parse(_httpContextAccessor.HttpContext?.User ?? new ClaimsPrincipal());
                 if (!string.IsNullOrEmpty(applicationUser.Email))
                 {
-                    UserInfo newUserinfo = new UserInfo();
-                    newUserinfo.UserEmail = applicationUser.Email;
-                    newUserinfo.ViewChild = 0;
-                    newUserinfo.UserId = applicationUser.Id;
+                    UserInfo newUserinfo = new()
+                    {
+                        UserEmail = applicationUser.Email,
+                        ViewChild = 0,
+                        UserId = applicationUser.Id,
+                        FirstName = applicationUser.FirstName ?? "",
+                        MiddleName = applicationUser.MiddleName ?? "",
+                        LastName = applicationUser.LastName ?? "",
+                        // Todo: ProfilePicture
+                        Timezone = applicationUser.TimeZone,
+                        UserName = applicationUser.UserName,
+                        IsKinaUnaUser = true
+                    };
 
-                    newUserinfo.FirstName = applicationUser.FirstName ?? "";
-                    newUserinfo.MiddleName = applicationUser.MiddleName ?? "";
-                    newUserinfo.LastName = applicationUser.LastName ?? "";
-                    // Todo: ProfilePicture
-                    newUserinfo.Timezone = applicationUser.TimeZone;
-                    newUserinfo.UserName = applicationUser.UserName;
-                    newUserinfo.IsKinaUnaUser = true;
                     if (string.IsNullOrEmpty(newUserinfo.UserName))
                     {
                         newUserinfo.UserName = newUserinfo.UserEmail;
                     }
 
-                    string newUserinfoApiPath = "/api/UserInfo/";
+                    const string newUserinfoApiPath = "/api/UserInfo/";
                     HttpResponseMessage newUserResponse = await _httpClient.PostAsync(newUserinfoApiPath, new StringContent(JsonConvert.SerializeObject(newUserinfo), System.Text.Encoding.UTF8, "application/json"));
                     if (newUserResponse.IsSuccessStatusCode)
                     {
@@ -126,16 +128,15 @@ namespace KinaUnaWebBlazor.Services
                 }
             }
 
-            if (userInfo != null && userInfo.ViewChild == 0)
+            if (userInfo == null || userInfo.ViewChild != 0) return userInfo;
+
+            if (userInfo.ProgenyList.Count != 0)
             {
-                if (userInfo.ProgenyList.Any())
-                {
-                    await SetViewChild(userInfo.UserEmail, userInfo.ProgenyList[0].Id, userInfo.UserId);
-                }
-                else
-                {
-                    userInfo.ViewChild = Constants.DefaultChildId;
-                }
+                await SetViewChild(userInfo.UserEmail, userInfo.ProgenyList[0].Id, userInfo.UserId);
+            }
+            else
+            {
+                userInfo.ViewChild = Constants.DefaultChildId;
             }
             return userInfo;
 
@@ -144,14 +145,14 @@ namespace KinaUnaWebBlazor.Services
         public string GetImageUrl(string pictureLink, string pictureContainer)
         {
             string returnString = pictureLink;
-            if (!pictureLink.ToLower().StartsWith("http"))
+            if (!pictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
             {
                 returnString = _imageStore.UriFor(pictureLink, pictureContainer);
             }
             return returnString;
         }
 
-        public async Task<UserInfo?> UpdateUserInfo(UserInfo? userinfo)
+        private async Task<UserInfo?> UpdateUserInfo(UserInfo? userinfo)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
@@ -159,14 +160,12 @@ namespace KinaUnaWebBlazor.Services
             // Todo: ProfilePicture
             string newUserinfoApiPath = "/api/UserInfo/" + userinfo?.UserId;
             HttpResponseMessage userInfoResponse = await _httpClient.PutAsync(newUserinfoApiPath, new StringContent(JsonConvert.SerializeObject(userinfo), System.Text.Encoding.UTF8, "application/json"));
-            if (userInfoResponse.IsSuccessStatusCode)
-            {
-                string userInfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-                UserInfo? updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(userInfoAsString);
-                return updatedUserinfo;
-            }
+            if (!userInfoResponse.IsSuccessStatusCode) return new UserInfo();
 
-            return new UserInfo();
+            string userInfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
+            UserInfo? updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(userInfoAsString);
+            return updatedUserinfo;
+
         }
 
         public async Task<Progeny?> CurrentChildAsync(int progenyId, string userId)
@@ -182,31 +181,28 @@ namespace KinaUnaWebBlazor.Services
             string accessResponseString = await _httpClient.GetStringAsync(accessApiPath);
             List<UserAccess>? accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessResponseString);
 
-            if (accessList != null && accessList.Any())
+            if (accessList != null && accessList.Count != 0)
             {
                 foreach (UserAccess accessItem in accessList)
                 {
-                    if (accessItem.UserId.ToUpper() == userId.ToUpper())
+                    if (accessItem.UserId.Equals(userId, StringComparison.CurrentCultureIgnoreCase))
                     {
                         hasAccess = true;
                     }
                 }
             }
-            
-            if (!hasAccess)
-            {
-                if (child != null)
-                {
-                    child.Name = "Test Child";
-                    child.NickName = "Tester";
-                    child.Id = -1;
-                    child.Admins = "per.mogensen@live.com";
-                    child.BirthDay = DateTime.Now;
-                    child.TimeZone = TimeZoneInfo.Utc.Id;
-                    child.PictureLink = "/images/images_placeholder.png";
-                }
-            }
-            
+
+            if (hasAccess) return child;
+            if (child == null) return child;
+
+            child.Name = "Test Child";
+            child.NickName = "Tester";
+            child.Id = -1;
+            child.Admins = "per.mogensen@live.com";
+            child.BirthDay = DateTime.Now;
+            child.TimeZone = TimeZoneInfo.Utc.Id;
+            child.PictureLink = "/images/images_placeholder.png";
+
             return child;
         }
 
@@ -217,44 +213,39 @@ namespace KinaUnaWebBlazor.Services
             
             string accessApiPath = "/api/Access/AccessListByUser/" + userId;
             HttpResponseMessage accessResponse = await _httpClient.GetAsync(accessApiPath);
-            if (accessResponse.IsSuccessStatusCode)
+            if (!accessResponse.IsSuccessStatusCode) return false;
+
+            string accessAsString = await accessResponse.Content.ReadAsStringAsync();
+            List<UserAccess>? accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessAsString);
+
+            if (accessList == null || accessList.Count == 0) return userId == "Yes";
+
+            foreach (UserAccess ua in accessList)
             {
-                string accessAsString = await accessResponse.Content.ReadAsStringAsync();
-                List<UserAccess>? accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessAsString);
-
-                if (accessList != null && accessList.Any())
-                {
-                    foreach (UserAccess ua in accessList)
-                    {
-                        if (ua.AccessLevel == 0)
-                        {
-                            return true;
-                        }
-                    }
-
-                    if (accessList.Any())
-                    {
-                    }
-                }
-
-                if (userId == "Yes")
+                if (ua.AccessLevel == 0)
                 {
                     return true;
                 }
             }
-            
-            return false;
+
+            if (accessList.Count != 0)
+            {
+            }
+
+            return userId == "Yes";
         }
 
-        public async Task SetViewChild(string userEmail, int childId, string userId)
+        private async Task SetViewChild(string userEmail, int childId, string userId)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
             
-            UserInfo userinfo = new UserInfo();
-            userinfo.UserEmail = userEmail;
-            userinfo.ViewChild = childId;
-            userinfo.UserId = userId;
+            UserInfo userinfo = new()
+            {
+                UserEmail = userEmail,
+                ViewChild = childId,
+                UserId = userId
+            };
 
             string setChildApiPath = "/api/UserInfo/" + userId;
             await _httpClient.PutAsJsonAsync(setChildApiPath, userinfo);
@@ -262,33 +253,24 @@ namespace KinaUnaWebBlazor.Services
 
         public async Task<bool> IsUserLoginValid(string userId)
         {
-            if (userId != Constants.DefaultUserId && userId != "401")
-            {
-                HttpContext? currentContext = _httpContextAccessor.HttpContext;
+            if (userId == Constants.DefaultUserId || userId == "401") return false;
 
-                if (currentContext != null)
-                {
-                    string? contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+            HttpContext? currentContext = _httpContextAccessor.HttpContext;
 
-                    if (!string.IsNullOrWhiteSpace(contextAccessToken))
-                    {
-                        _httpClient.SetBearerToken(contextAccessToken);
-                        const string userinfoApiPath = "/api/UserInfo/CheckCurrentUser/";
-                        HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userinfoApiPath, new StringContent(JsonConvert.SerializeObject(userId), System.Text.Encoding.UTF8, "application/json"));
-                        if (userInfoResponse.IsSuccessStatusCode)
-                        {
-                            string userInfoResponseAsString = await userInfoResponse.Content.ReadAsStringAsync();
-                            UserInfo? userinfo = JsonConvert.DeserializeObject<UserInfo>(userInfoResponseAsString);
-                            if (userinfo?.UserId.ToUpper() == userId.ToUpper())
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
+            if (currentContext == null) return false;
 
-            return false;
+            string? contextAccessToken = await currentContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+
+            if (string.IsNullOrWhiteSpace(contextAccessToken)) return false;
+
+            _httpClient.SetBearerToken(contextAccessToken);
+            const string userinfoApiPath = "/api/UserInfo/CheckCurrentUser/";
+            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userinfoApiPath, new StringContent(JsonConvert.SerializeObject(userId), System.Text.Encoding.UTF8, "application/json"));
+            if (!userInfoResponse.IsSuccessStatusCode) return false;
+
+            string userInfoResponseAsString = await userInfoResponse.Content.ReadAsStringAsync();
+            UserInfo? userinfo = JsonConvert.DeserializeObject<UserInfo>(userInfoResponseAsString);
+            return userinfo?.UserId.Equals(userId, StringComparison.CurrentCultureIgnoreCase) ?? false;
         }
 
         public async Task<bool> IsApplicationUserValid(string userId)

@@ -53,12 +53,11 @@ namespace KinaUnaProgenyApi.Services
         private async Task<Note> SetNoteInCache(int id)
         {
             Note note = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
-            if (note != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "note" + id, JsonConvert.SerializeObject(note), _cacheOptionsSliding);
+            if (note == null) return null;
 
-                _ = await SetNotesListInCache(note.ProgenyId);
-            }
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "note" + id, JsonConvert.SerializeObject(note), _cacheOptionsSliding);
+
+            _ = await SetNotesListInCache(note.ProgenyId);
 
             return note;
         }
@@ -82,15 +81,14 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Note> UpdateNote(Note note)
         {
             Note noteToUpdate = await _context.NotesDb.SingleOrDefaultAsync(n => n.NoteId == note.NoteId);
-            if (noteToUpdate != null)
-            {
-                noteToUpdate.CopyPropertiesForUpdate(note);
+            if (noteToUpdate == null) return null;
 
-                _ = _context.NotesDb.Update(noteToUpdate);
-                _ = await _context.SaveChangesAsync();
+            noteToUpdate.CopyPropertiesForUpdate(note);
 
-                _ = await SetNoteInCache(noteToUpdate.NoteId);
-            }
+            _ = _context.NotesDb.Update(noteToUpdate);
+            _ = await _context.SaveChangesAsync();
+
+            _ = await SetNoteInCache(noteToUpdate.NoteId);
 
             return noteToUpdate;
         }
@@ -98,12 +96,14 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Note> DeleteNote(Note note)
         {
             Note noteToDelete = await _context.NotesDb.SingleOrDefaultAsync(n => n.NoteId == note.NoteId);
-            if (noteToDelete != null)
+            if (noteToDelete == null)
             {
-                _ = _context.NotesDb.Remove(noteToDelete);
-                _ = await _context.SaveChangesAsync();
+                await RemoveNoteFromCache(note.NoteId, note.ProgenyId);
+                return null;
             }
 
+            _ = _context.NotesDb.Remove(noteToDelete);
+            _ = await _context.SaveChangesAsync();
             await RemoveNoteFromCache(note.NoteId, note.ProgenyId);
 
             return note;
@@ -119,7 +119,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Note>> GetNotesList(int progenyId)
         {
             List<Note> notesList = await GetNotesListFromCache(progenyId);
-            if (!notesList.Any())
+            if (notesList.Count == 0)
             {
                 notesList = await SetNotesListInCache(progenyId);
             }
@@ -129,7 +129,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Note>> GetNotesListFromCache(int progenyId)
         {
-            List<Note> notesList = new();
+            List<Note> notesList = [];
             string cachedNotesList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "noteslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedNotesList))
             {

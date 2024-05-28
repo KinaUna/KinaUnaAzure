@@ -23,39 +23,38 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             FriendsListViewModel model = new(baseModel);
             List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
-            
-            if (friendsList.Count != 0)
+
+            if (friendsList.Count == 0) return View(model);
+
+            friendsList = [.. friendsList.OrderBy(f => f.FriendSince)];
+                
+            List<string> tagsList = [];
+                
+            foreach (Friend friend in friendsList)
             {
-                friendsList = friendsList.OrderBy(f => f.FriendSince).ToList();
-                
-                List<string> tagsList = new();
-                
-                foreach (Friend friend in friendsList)
+                FriendViewModel friendViewModel = new();
+                friendViewModel.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
+
+                friendViewModel.FriendItem.PictureLink = imageStore.UriFor(friendViewModel.FriendItem.PictureLink, "friends");
+
+                if (!string.IsNullOrEmpty(friendViewModel.Tags))
                 {
-                    FriendViewModel friendViewModel = new();
-                    friendViewModel.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
-
-                    friendViewModel.FriendItem.PictureLink = imageStore.UriFor(friendViewModel.FriendItem.PictureLink, "friends");
-
-                    if (!string.IsNullOrEmpty(friendViewModel.Tags))
+                    List<string> friendTagsList = [.. friendViewModel.Tags.Split(',')];
+                    foreach (string tagString in friendTagsList)
                     {
-                        List<string> friendTagsList = friendViewModel.Tags.Split(',').ToList();
-                        foreach (string tagString in friendTagsList)
+                        if (!tagsList.Contains(tagString.TrimStart(' ', ',').TrimEnd(' ', ',')))
                         {
-                            if (!tagsList.Contains(tagString.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                            {
-                                tagsList.Add(tagString.TrimStart(' ', ',').TrimEnd(' ', ','));
-                            }
+                            tagsList.Add(tagString.TrimStart(' ', ',').TrimEnd(' ', ','));
                         }
                     }
-
-                    model.FriendViewModelsList.Add(friendViewModel);
                 }
 
-                model.SetTags(tagsList);
-                model.TagFilter = tagFilter;
+                model.FriendViewModelsList.Add(friendViewModel);
             }
-            
+
+            model.SetTags(tagsList);
+            model.TagFilter = tagFilter;
+
             return View(model);
 
         }
@@ -77,19 +76,18 @@ namespace KinaUnaWeb.Controllers
             
             model.FriendItem.PictureLink = imageStore.UriFor(model.FriendItem.PictureLink, "friends");
 
-            List<string> tagsList = new();
+            List<string> tagsList = [];
             List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
-            foreach (Friend frn in friendsList)
+            foreach (Friend friendItem in friendsList)
             {
-                if (!string.IsNullOrEmpty(frn.Tags))
+                if (string.IsNullOrEmpty(friendItem.Tags)) continue;
+
+                List<string> friendItemTags = [.. friendItem.Tags.Split(',')];
+                foreach (string tagstring in friendItemTags)
                 {
-                    List<string> fvmTags = frn.Tags.Split(',').ToList();
-                    foreach (string tagstring in fvmTags)
+                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                     {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                        {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                        }
+                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                     }
                 }
             }
@@ -115,24 +113,22 @@ namespace KinaUnaWeb.Controllers
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
             model.SetProgenyList();
 
-            List<string> tagsList = new();
+            List<string> tagsList = [];
             foreach (SelectListItem item in model.ProgenyList)
             {
-                if (int.TryParse(item.Value, out int progenyId))
+                if (!int.TryParse(item.Value, out int progenyId)) continue;
+
+                List<Friend> friendsList = await friendsHttpClient.GetFriendsList(progenyId, 0);
+                foreach (Friend friend in friendsList)
                 {
-                    List<Friend> friendsList = await friendsHttpClient.GetFriendsList(progenyId, 0);
-                    foreach (Friend friend in friendsList)
+                    if (string.IsNullOrEmpty(friend.Tags)) continue;
+
+                    List<string> friendTagsList = [.. friend.Tags.Split(',')];
+                    foreach (string tagstring in friendTagsList)
                     {
-                        if (!string.IsNullOrEmpty(friend.Tags))
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                         {
-                            List<string> friendTagsList = friend.Tags.Split(',').ToList();
-                            foreach (string tagstring in friendTagsList)
-                            {
-                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                {
-                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                }
-                            }
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                         }
                     }
                 }
@@ -193,19 +189,18 @@ namespace KinaUnaWeb.Controllers
 
             model.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
             
-            List<string> tagsList = new();
+            List<string> tagsList = [];
             List<Friend> friendsList1 = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, 0);
             foreach (Friend friendItem in friendsList1)
             {
-                if (!string.IsNullOrEmpty(friendItem.Tags))
+                if (string.IsNullOrEmpty(friendItem.Tags)) continue;
+
+                List<string> friendTagsList = [.. friendItem.Tags.Split(',')];
+                foreach (string tagstring in friendTagsList)
                 {
-                    List<string> friendTagsList = friendItem.Tags.Split(',').ToList();
-                    foreach (string tagstring in friendTagsList)
+                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                     {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                        {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                        }
+                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                     }
                 }
             }

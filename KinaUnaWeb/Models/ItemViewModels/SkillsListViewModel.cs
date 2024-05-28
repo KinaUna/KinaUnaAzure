@@ -4,16 +4,16 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class SkillsListViewModel: BaseItemsViewModel
     {
-        public List<SkillViewModel> SkillsList { get; set; }
+        public List<SkillViewModel> SkillsList { get; init; }
         
         public SkillsListViewModel()
         {
-            SkillsList = new List<SkillViewModel>();
+            SkillsList = [];
         }
 
         public SkillsListViewModel(BaseItemsViewModel baseItemsViewModel)
         {
-            SkillsList = new List<SkillViewModel>();
+            SkillsList = [];
             SetBaseProperties(baseItemsViewModel);
         }
     }

@@ -16,14 +16,14 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public NoteViewModel()
         {
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
         }
 
         public NoteViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
             SetAccessLevelList();
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
         }
 
         public void SetAccessLevelList()
@@ -74,7 +74,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             NoteItem.Title = note.Title;
             NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(note.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
             NoteItem.Owner = note.Owner?? CurrentUser.UserId;
-            if (NoteItem.Owner.Contains("@"))
+            if (NoteItem.Owner.Contains('@'))
             {
                 NoteItem.Owner = CurrentUser.UserId;
             }
@@ -82,15 +82,17 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public Note CreateNote()
         {
-            Note note = new();
-            note.NoteId = NoteItem.NoteId;
-            note.Title = NoteItem.Title;
-            note.ProgenyId = NoteItem.ProgenyId;
-            note.CreatedDate = TimeZoneInfo.ConvertTimeToUtc(NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
-            note.Content = NoteItem.Content;
-            note.Category = NoteItem.Category;
-            note.AccessLevel = NoteItem.AccessLevel;
-            note.Owner = NoteItem.Owner;
+            Note note = new()
+            {
+                NoteId = NoteItem.NoteId,
+                Title = NoteItem.Title,
+                ProgenyId = NoteItem.ProgenyId,
+                CreatedDate = TimeZoneInfo.ConvertTimeToUtc(NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
+                Content = NoteItem.Content,
+                Category = NoteItem.Category,
+                AccessLevel = NoteItem.AccessLevel,
+                Owner = NoteItem.Owner
+            };
 
             return note;
         }

@@ -13,10 +13,8 @@ internal static class AzureClientFactoryBuilderExtensions
         {
             return builder.AddBlobServiceClient(serviceUri);
         }
-        else
-        {
-            return builder.AddBlobServiceClient(serviceUriOrConnectionString);
-        }
+
+        return builder.AddBlobServiceClient(serviceUriOrConnectionString);
     }
 
     public static IAzureClientBuilder<QueueServiceClient, QueueClientOptions> AddQueueServiceClient(this AzureClientFactoryBuilder builder, string serviceUriOrConnectionString, bool preferMsi)
@@ -25,9 +23,7 @@ internal static class AzureClientFactoryBuilderExtensions
         {
             return builder.AddQueueServiceClient(serviceUri);
         }
-        else
-        {
-            return builder.AddQueueServiceClient(serviceUriOrConnectionString);
-        }
+
+        return builder.AddQueueServiceClient(serviceUriOrConnectionString);
     }
 }

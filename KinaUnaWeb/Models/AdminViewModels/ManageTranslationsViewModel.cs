@@ -5,17 +5,9 @@ namespace KinaUnaWeb.Models.AdminViewModels
 {
     public class ManageTranslationsViewModel
     {
-        public List<TextTranslation> Translations { get; set; }
-        public List<string> PagesList { get; set; }
-        public List<string> WordsList { get; set; }
-        public List<KinaUnaLanguage> LanguagesList { get; set; }
-
-        public ManageTranslationsViewModel()
-        {
-            Translations = new List<TextTranslation>();
-            PagesList = new List<string>();
-            WordsList = new List<string>();
-            LanguagesList = new List<KinaUnaLanguage>();
-        }
+        public List<TextTranslation> Translations { get; init; } = [];
+        public List<string> PagesList { get; init; } = [];
+        public List<string> WordsList { get; init; } = [];
+        public List<KinaUnaLanguage> LanguagesList { get; set; } = [];
     }
 }

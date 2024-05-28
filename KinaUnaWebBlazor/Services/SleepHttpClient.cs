@@ -60,14 +60,12 @@ namespace KinaUnaWebBlazor.Services
 
             string sleepApiPath = "/api/Sleep/" + sleepId;
             HttpResponseMessage sleepResponse = await _httpClient.GetAsync(sleepApiPath).ConfigureAwait(false);
-            if (sleepResponse.IsSuccessStatusCode)
-            {
-                string sleepAsString = await sleepResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                Sleep? sleepItem = JsonConvert.DeserializeObject<Sleep>(sleepAsString);
-                return sleepItem;
-            }
+            if (!sleepResponse.IsSuccessStatusCode) return new Sleep();
 
-            return new Sleep();
+            string sleepAsString = await sleepResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            Sleep? sleepItem = JsonConvert.DeserializeObject<Sleep>(sleepAsString);
+            return sleepItem;
+
         }
 
         public async Task<Sleep?> AddSleep(Sleep? sleep)
@@ -75,16 +73,14 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string sleepApiPath = "/api/Sleep/";
+            const string sleepApiPath = "/api/Sleep/";
             HttpResponseMessage sleepResponse = await _httpClient.PostAsync(sleepApiPath, new StringContent(JsonConvert.SerializeObject(sleep), System.Text.Encoding.UTF8, "application/json"));
-            if (sleepResponse.IsSuccessStatusCode)
-            {
-                string sleepAsString = await sleepResponse.Content.ReadAsStringAsync();
-                sleep = JsonConvert.DeserializeObject<Sleep>(sleepAsString);
-                return sleep;
-            }
+            if (!sleepResponse.IsSuccessStatusCode) return new Sleep();
 
-            return new Sleep();
+            string sleepAsString = await sleepResponse.Content.ReadAsStringAsync();
+            sleep = JsonConvert.DeserializeObject<Sleep>(sleepAsString);
+            return sleep;
+
         }
 
         public async Task<Sleep?> UpdateSleep(Sleep? sleep)
@@ -94,14 +90,12 @@ namespace KinaUnaWebBlazor.Services
 
             string updateSleepApiPath = "/api/Sleep/" + sleep?.SleepId;
             HttpResponseMessage sleepResponse = await _httpClient.PutAsync(updateSleepApiPath, new StringContent(JsonConvert.SerializeObject(sleep), System.Text.Encoding.UTF8, "application/json"));
-            if (sleepResponse.IsSuccessStatusCode)
-            {
-                string sleepAsString = await sleepResponse.Content.ReadAsStringAsync();
-                sleep = JsonConvert.DeserializeObject<Sleep>(sleepAsString);
-                return sleep;
-            }
+            if (!sleepResponse.IsSuccessStatusCode) return new Sleep();
 
-            return new Sleep();
+            string sleepAsString = await sleepResponse.Content.ReadAsStringAsync();
+            sleep = JsonConvert.DeserializeObject<Sleep>(sleepAsString);
+            return sleep;
+
         }
 
         public async Task<bool> DeleteSleepItem(int sleepId)
@@ -111,27 +105,21 @@ namespace KinaUnaWebBlazor.Services
 
             string sleepApiPath = "/api/Sleep/" + sleepId;
             HttpResponseMessage deleteSleepResponse = await _httpClient.DeleteAsync(sleepApiPath);
-            if (deleteSleepResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            return false;
+            return deleteSleepResponse.IsSuccessStatusCode;
         }
 
         public async Task<List<Sleep>?> GetSleepList(int progenyId, int accessLevel)
         {
-            List<Sleep>? progenySleepList = new List<Sleep>();
+            List<Sleep>? progenySleepList = [];
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string sleepApiPath = "/api/Sleep/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
             HttpResponseMessage sleepResponse = await _httpClient.GetAsync(sleepApiPath);
-            if (sleepResponse.IsSuccessStatusCode)
-            {
-                string sleepAsString = await sleepResponse.Content.ReadAsStringAsync();
-                progenySleepList = JsonConvert.DeserializeObject<List<Sleep>>(sleepAsString);
-            }
+            if (!sleepResponse.IsSuccessStatusCode) return progenySleepList;
+
+            string sleepAsString = await sleepResponse.Content.ReadAsStringAsync();
+            progenySleepList = JsonConvert.DeserializeObject<List<Sleep>>(sleepAsString);
 
             return progenySleepList;
         }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
@@ -22,56 +21,48 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Parent(string id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (userEmail.ToUpper() == id.ToUpper())
+            if (!userEmail.Equals(id, System.StringComparison.CurrentCultureIgnoreCase)) return Unauthorized();
+
+            List<Progeny> progenyList = await userAccessService.GetProgenyUserIsAdmin(id);
+            if (progenyList.Count != 0)
             {
-                List<Progeny> progenyList = await userAccessService.GetProgenyUserIsAdmin(id);
-                if (progenyList.Any())
-                {
-                    return Ok(progenyList);
-                }
-                else
-                {
-                    return NotFound();
-                }
+                return Ok(progenyList);
             }
 
-            return Unauthorized();
+            return NotFound();
+
         }
 
         // GET api/progeny/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetProgeny(int id)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
+            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
+
+            Progeny result = await progenyService.GetProgeny(id);
+
+            if (result != null)
             {
-                Progeny result = await progenyService.GetProgeny(id);
-
-                if (result != null)
-                {
-                    return Ok(result);
-                }
-                return NotFound();
+                return Ok(result);
             }
+            return NotFound();
 
-            return Unauthorized();
         }
 
         // For Xamarin mobile app.
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> Mobile(int id)
         {
             Progeny result = await progenyService.GetProgeny(id);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
-            {
-                result.PictureLink = imageStore.UriFor(result.PictureLink, "progeny");
-                return Ok(result);
-            }
+            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
 
-            return Unauthorized();
+            result.PictureLink = imageStore.UriFor(result.PictureLink, "progeny");
+            return Ok(result);
+
         }
 
         // POST api/progeny
@@ -93,7 +84,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             progeny.PictureLink = value.PictureLink;
 
-            if (!progeny.PictureLink.ToLower().StartsWith("http"))
+            if (!progeny.PictureLink.StartsWith("http", System.StringComparison.CurrentCultureIgnoreCase))
             {
                 progeny.PictureLink = await progenyService.ResizeImage(progeny.PictureLink);
             }
@@ -102,7 +93,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (progeny.Admins.Contains(','))
             {
-                List<string> adminList = progeny.Admins.Split(',').ToList();
+                List<string> adminList = [.. progeny.Admins.Split(',')];
                 foreach (string adminEmail in adminList)
                 {
                     UserAccess ua = new()
@@ -137,7 +128,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // PUT api/progeny/5
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Progeny value)
         {
             Progeny progeny = await progenyService.GetProgeny(id);
@@ -173,11 +164,10 @@ namespace KinaUnaProgenyApi.Controllers
                     foreach (string email in admins)
                     {
                         UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, email.Trim());
-                        if (userAccess.AccessLevel != (int)AccessLevel.Private)
-                        {
-                            userAccess.AccessLevel = (int)AccessLevel.Private;
-                            await userAccessService.UpdateUserAccess(userAccess);
-                        }
+                        if (userAccess.AccessLevel == (int)AccessLevel.Private) continue;
+
+                        userAccess.AccessLevel = (int)AccessLevel.Private;
+                        await userAccessService.UpdateUserAccess(userAccess);
                     }
 
                     foreach (string email in oldAdmins)
@@ -191,12 +181,11 @@ namespace KinaUnaProgenyApi.Controllers
                             }
                         }
 
-                        if (!isInNewList)
-                        {
-                            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, email.Trim());
-                            userAccess.AccessLevel = (int)AccessLevel.Family;
-                            await userAccessService.UpdateUserAccess(userAccess);
-                        }
+                        if (isInNewList) continue;
+
+                        UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, email.Trim());
+                        userAccess.AccessLevel = (int)AccessLevel.Family;
+                        await userAccessService.UpdateUserAccess(userAccess);
                     }
                 }
             }
@@ -210,52 +199,44 @@ namespace KinaUnaProgenyApi.Controllers
             }
             progeny.TimeZone = value.TimeZone;
 
-            if (!progeny.PictureLink.ToLower().StartsWith("http"))
+            if (!progeny.PictureLink.StartsWith("http", System.StringComparison.CurrentCultureIgnoreCase))
             {
                 progeny.PictureLink = await progenyService.ResizeImage(progeny.PictureLink);
             }
 
             progeny = await progenyService.UpdateProgeny(progeny);
-
-
-
+            
             return Ok(progeny);
         }
 
         // DELETE api/progeny/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             // Todo: Implement confirmation mail to verify that all content really should be deleted.
             Progeny progeny = await progenyService.GetProgeny(id);
-            if (progeny != null)
+            if (progeny == null) return NotFound();
+
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (!progeny.IsInAdminList(userEmail))
             {
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-
-
-                await imageStore.DeleteImage(progeny.PictureLink, "progeny");
-
-                List<UserAccess> userAccessList = await userAccessService.GetProgenyUserAccessList(progeny.Id);
-
-                if (userAccessList.Any())
-                {
-                    foreach (UserAccess ua in userAccessList)
-                    {
-                        await userAccessService.RemoveUserAccess(ua.AccessId, ua.ProgenyId, ua.UserId);
-                    }
-                }
-
-                await progenyService.DeleteProgeny(progeny);
-                return NoContent();
+                return Unauthorized();
             }
-            else
+                
+            await imageStore.DeleteImage(progeny.PictureLink, "progeny");
+
+            List<UserAccess> userAccessList = await userAccessService.GetProgenyUserAccessList(progeny.Id);
+
+            if (userAccessList.Count != 0)
             {
-                return NotFound();
+                foreach (UserAccess ua in userAccessList)
+                {
+                    await userAccessService.RemoveUserAccess(ua.AccessId, ua.ProgenyId, ua.UserId);
+                }
             }
+
+            await progenyService.DeleteProgeny(progeny);
+            return NoContent();
 
         }
     }

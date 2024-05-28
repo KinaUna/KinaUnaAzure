@@ -14,8 +14,7 @@ namespace KinaUnaWebBlazor.Services
 
         public AuthHttpClient(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
-            IConfiguration configuration1 = configuration;
-            string clientUri = configuration1.GetValue<string>("AuthenticationServer") ?? throw new InvalidOperationException("AuthenticationServer value missing in configuration");
+            string clientUri = configuration.GetValue<string>("AuthenticationServer") ?? throw new InvalidOperationException("AuthenticationServer value missing in configuration");
             httpClient.BaseAddress = new Uri(clientUri);
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -27,20 +26,14 @@ namespace KinaUnaWebBlazor.Services
         
         public async Task<UserInfo?> CheckDeleteUser(UserInfo userInfo)
         {
-            string deleteAccountPath = "/Account/CheckDeleteKinaUnaAccount/";
+            const string deleteAccountPath = "/Account/CheckDeleteKinaUnaAccount/";
             
             HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
-            if (deleteResponse.IsSuccessStatusCode)
-            {
-                string deleteResponseAsString = await deleteResponse.Content.ReadAsStringAsync();
-                UserInfo? resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseAsString);
-                if (resultUserInfo?.UserId == userInfo.UserId)
-                {
-                    return resultUserInfo;
-                }
-            }
+            if (!deleteResponse.IsSuccessStatusCode) return new UserInfo();
 
-            return new UserInfo();
+            string deleteResponseAsString = await deleteResponse.Content.ReadAsStringAsync();
+            UserInfo? resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseAsString);
+            return resultUserInfo?.UserId == userInfo.UserId ? resultUserInfo : new UserInfo();
         }
 
         public async Task<UserInfo?> RemoveDeleteUser(UserInfo userInfo)
@@ -59,39 +52,29 @@ namespace KinaUnaWebBlazor.Services
             }
 
             _httpClient.SetBearerToken(accessToken);
-            string deleteAccountPath = "/Account/RemoveDeleteKinaUnaAccount/";
+            const string deleteAccountPath = "/Account/RemoveDeleteKinaUnaAccount/";
 
             HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
-            if (deleteResponse.IsSuccessStatusCode)
-            {
-                string deleteResponseAsString = await deleteResponse.Content.ReadAsStringAsync();
-                UserInfo? resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseAsString);
-                if (resultUserInfo?.UserId == userInfo.UserId)
-                {
-                    return resultUserInfo;
-                }
-            }
+            if (!deleteResponse.IsSuccessStatusCode) return new UserInfo();
 
-            return new UserInfo();
+            string deleteResponseAsString = await deleteResponse.Content.ReadAsStringAsync();
+            UserInfo? resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseAsString);
+            return resultUserInfo?.UserId == userInfo.UserId ? resultUserInfo : new UserInfo();
         }
 
         public async Task<bool> IsApplicationUserValid(string userId)
         {
-            string checkAccountPath = "/Account/IsApplicationUserValid/";
-            UserInfo userInfo = new UserInfo();
-            userInfo.UserId = userId;
-            HttpResponseMessage checkResponse = await _httpClient.PostAsync(checkAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
-            if (checkResponse.IsSuccessStatusCode)
+            const string checkAccountPath = "/Account/IsApplicationUserValid/";
+            UserInfo userInfo = new()
             {
-                string checkResponseAsString = await checkResponse.Content.ReadAsStringAsync();
-                UserInfo? resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(checkResponseAsString);
-                if (resultUserInfo?.UserId == userInfo.UserId)
-                {
-                    return true;
-                }
-            }
+                UserId = userId
+            };
+            HttpResponseMessage checkResponse = await _httpClient.PostAsync(checkAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
+            if (!checkResponse.IsSuccessStatusCode) return false;
 
-            return false;
+            string checkResponseAsString = await checkResponse.Content.ReadAsStringAsync();
+            UserInfo? resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(checkResponseAsString);
+            return resultUserInfo?.UserId == userInfo.UserId;
         }
     }
 }

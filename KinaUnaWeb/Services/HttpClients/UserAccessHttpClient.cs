@@ -32,19 +32,13 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string accessApiPath = "/api/Access/";
+            const string accessApiPath = "/api/Access/";
             HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(userAccess), System.Text.Encoding.UTF8, "application/json"));
-            if (accessResponse.IsSuccessStatusCode)
-            {
-                string accessAsString = await accessResponse.Content.ReadAsStringAsync();
-                userAccess = JsonConvert.DeserializeObject<UserAccess>(accessAsString);
-                if (userAccess != null)
-                {
-                    return userAccess;
-                }
-            }
+            if (!accessResponse.IsSuccessStatusCode) return new UserAccess();
 
-            return new UserAccess();
+            string accessAsString = await accessResponse.Content.ReadAsStringAsync();
+            userAccess = JsonConvert.DeserializeObject<UserAccess>(accessAsString);
+            return userAccess ?? new UserAccess();
         }
 
         public async Task<UserAccess> UpdateUserAccess(UserAccess userAccess)
@@ -54,17 +48,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string updateAccessApiPath = "/api/Access/" + userAccess.AccessId;
             HttpResponseMessage accessResponse = await _httpClient.PutAsync(updateAccessApiPath, new StringContent(JsonConvert.SerializeObject(userAccess), System.Text.Encoding.UTF8, "application/json"));
-            if (accessResponse.IsSuccessStatusCode)
-            {
-                string userAccessAsString = await accessResponse.Content.ReadAsStringAsync();
-                userAccess = JsonConvert.DeserializeObject<UserAccess>(userAccessAsString);
-                if (userAccess != null)
-                {
-                    return userAccess;
-                }
-            }
+            if (!accessResponse.IsSuccessStatusCode) return new UserAccess();
 
-            return new UserAccess();
+            string userAccessAsString = await accessResponse.Content.ReadAsStringAsync();
+            userAccess = JsonConvert.DeserializeObject<UserAccess>(userAccessAsString);
+            return userAccess ?? new UserAccess();
         }
 
         public async Task<bool> DeleteUserAccess(int userAccessId)
@@ -74,12 +62,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string accessApiPath = "/api/Access/" + userAccessId;
             HttpResponseMessage accessTokenResponse = await _httpClient.DeleteAsync(accessApiPath);
-            if (accessTokenResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            return false;
+            return accessTokenResponse.IsSuccessStatusCode;
         }
 
         public async Task<List<UserAccess>> GetProgenyAccessList(int progenyId)
@@ -87,14 +70,13 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            List<UserAccess> accessList = new();
+            List<UserAccess> accessList = [];
             string accessApiPath = "/api/Access/Progeny/" + progenyId;
             HttpResponseMessage accessResponse = await _httpClient.GetAsync(accessApiPath);
-            if (accessResponse.IsSuccessStatusCode)
-            {
-                string accessAsString = await accessResponse.Content.ReadAsStringAsync();
-                accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessAsString);
-            }
+            if (!accessResponse.IsSuccessStatusCode) return accessList;
+
+            string accessAsString = await accessResponse.Content.ReadAsStringAsync();
+            accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessAsString);
 
             return accessList;
         }
@@ -104,14 +86,13 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            List<UserAccess> accessList = new();
+            List<UserAccess> accessList = [];
             string accessApiPath = "/api/Access/AccessListByUser/" + userEmail;
             HttpResponseMessage accessResponse = await _httpClient.GetAsync(accessApiPath);
-            if (accessResponse.IsSuccessStatusCode)
-            {
-                string accessAsString = await accessResponse.Content.ReadAsStringAsync();
-                accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessAsString);
-            }
+            if (!accessResponse.IsSuccessStatusCode) return accessList;
+
+            string accessAsString = await accessResponse.Content.ReadAsStringAsync();
+            accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessAsString);
 
             return accessList;
         }
@@ -123,17 +104,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string accessApiPath = "/api/Access/" + userAccessId;
             HttpResponseMessage accessResponse = await _httpClient.GetAsync(accessApiPath);
-            if (accessResponse.IsSuccessStatusCode)
-            {
-                string accessAsString = await accessResponse.Content.ReadAsStringAsync();
-                UserAccess accessItem = JsonConvert.DeserializeObject<UserAccess>(accessAsString);
-                if (accessItem != null)
-                {
-                    return accessItem;
-                }
-            }
+            if (!accessResponse.IsSuccessStatusCode) return new UserAccess();
 
-            return new UserAccess();
+            string accessAsString = await accessResponse.Content.ReadAsStringAsync();
+            UserAccess accessItem = JsonConvert.DeserializeObject<UserAccess>(accessAsString);
+            return accessItem ?? new UserAccess();
         }
     }
 }

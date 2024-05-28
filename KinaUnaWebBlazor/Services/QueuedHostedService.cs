@@ -2,13 +2,11 @@
 {
     // Source: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services?view=aspnetcore-2.1#queued-background-tasks
 
-    public class QueuedHostedService(
-        IBackgroundTaskQueue taskQueue,
-        ILoggerFactory loggerFactory) : BackgroundService
+    public class QueuedHostedService(IBackgroundTaskQueue taskQueue, ILoggerFactory loggerFactory) : BackgroundService
     {
         private readonly ILogger _logger = loggerFactory.CreateLogger<QueuedHostedService>();
 
-        public IBackgroundTaskQueue TaskQueue { get; } = taskQueue;
+        private IBackgroundTaskQueue TaskQueue { get; } = taskQueue;
 
         protected override async Task ExecuteAsync(
             CancellationToken cancellationToken)

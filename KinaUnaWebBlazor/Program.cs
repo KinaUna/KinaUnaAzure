@@ -189,12 +189,12 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-CultureInfo[] supportedCultures = new[]
-{
+CultureInfo[] supportedCultures =
+[
     new CultureInfo("en-US"),
     new CultureInfo("da-DK"),
     new CultureInfo("de-DE"),
-};
+];
 
 RequestLocalizationOptions localizationOptions = new()
 {
@@ -217,7 +217,7 @@ app.UseAuthorization();
 
 app.UseEndpoints(endpoints =>
 {
-    endpoints.MapBlazorHub(option =>
+    _ = endpoints.MapBlazorHub(option =>
     {
         option.CloseOnAuthenticationExpiration = true; //This option is used to enable authentication expiration tracking which will close connections when a token expires
     });

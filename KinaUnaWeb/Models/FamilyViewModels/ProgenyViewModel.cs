@@ -20,8 +20,8 @@ namespace KinaUnaWeb.Models.FamilyViewModels
         public string PictureLink { get; set; }
         [Display(Name = "Administrators")]
         public string Admins { get; set; } // Comma separated list of emails.
-        public IFormFile File { get; set; }
-        public SelectListItem[] TimezoneList { get; set; }
+        public IFormFile File { get; init; }
+        public SelectListItem[] TimezoneList { get; init; }
 
         public ProgenyViewModel()
         {

@@ -6,7 +6,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
     public class HomeFeedViewModel: BaseItemsViewModel
     {
         public int ImageId { get; set; }
-        public string ImageLink { get; set; }
+        public string ImageLink { get; init; }
         public string ImageLink600 { get; set; }
         
         public string CurrentTime { get; set; }

@@ -58,9 +58,9 @@ namespace KinaUna.Data.Extensions
             try
             {
                 request.Headers.TryGetValue("Accept-Language", out StringValues headerLanguages);
-                string[] userLanguages = headerLanguages.ToArray();// .OrderByDescending(x => x.Quality ?? 1).Select(x => x.Value.ToString()).ToArray();
+                string[] userLanguages = [.. headerLanguages];
                 
-                if (userLanguages.Any())
+                if (userLanguages.Length != 0)
                 {
                     string firstLang = userLanguages.FirstOrDefault();
 
@@ -86,43 +86,23 @@ namespace KinaUna.Data.Extensions
 
         public static bool ConsentCookieSet(this HttpRequest request)
         {
-            if (request.Cookies.TryGetValue("KinaUnaConsent", out string gdprText))
-            {
-                if (string.IsNullOrEmpty(gdprText))
-                {
-                    return false;
-                }
+            if (!request.Cookies.TryGetValue("KinaUnaConsent", out string gdprText)) return false;
 
-                return true;
-            }
-
-            return false;
+            return !string.IsNullOrEmpty(gdprText);
         }
 
         public static bool HereMapsCookieSet(this HttpRequest request)
         {
-            if (request.Cookies.TryGetValue("KinaUnaConsent", out string gdprText))
-            {
-                if (!(string.IsNullOrEmpty(gdprText)) && gdprText.ToLower().Contains("heremaps"))
-                {
-                    return true;
-                }
-            }
+            if (!request.Cookies.TryGetValue("KinaUnaConsent", out string gdprText)) return false;
 
-            return false;
+            return !(string.IsNullOrEmpty(gdprText)) && gdprText.Contains("heremaps", StringComparison.CurrentCultureIgnoreCase);
         }
 
         public static bool YouTubeCookieSet(this HttpRequest request)
         {
-            if (request.Cookies.TryGetValue("KinaUnaConsent", out string gdprText))
-            {
-                if (!(string.IsNullOrEmpty(gdprText)) && gdprText.ToLower().Contains("youtube"))
-                {
-                    return true;
-                }
-            }
+            if (!request.Cookies.TryGetValue("KinaUnaConsent", out string gdprText)) return false;
 
-            return false;
+            return !string.IsNullOrEmpty(gdprText) && gdprText.Contains("youtube", StringComparison.CurrentCultureIgnoreCase);
         }
 
         public static KinaUnaLanguage GetKinaUnaLanguage(this HttpRequest request)

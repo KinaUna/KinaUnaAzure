@@ -10,20 +10,20 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class UploadVideoViewModel: BaseItemsViewModel
     {
-        public Video Video { get; set; } = new();
-        public IFormFile File { get; set; }
+        public Video Video { get; init; } = new();
+        public IFormFile File { get; init; }
         public List<SelectListItem> ProgenyList { get; set; }
-        public string FileName { get; set; }
-        public string FileLink { get; set; }
+        public string FileName { get; init; }
+        public string FileLink { get; init; }
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
-        public List<SelectListItem> LocationsList { get; set; } = new List<SelectListItem>();
-        public List<Location> ProgenyLocations { get; set; } = new List<Location>();
+        public List<SelectListItem> LocationsList { get; set; } = [];
+        public List<Location> ProgenyLocations { get; set; } = [];
 
         public UploadVideoViewModel()
         {
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
             
             AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;

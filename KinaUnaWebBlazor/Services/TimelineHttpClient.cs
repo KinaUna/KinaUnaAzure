@@ -60,14 +60,12 @@ namespace KinaUnaWebBlazor.Services
 
             string timeLineApiPath = "/api/Timeline/" + "GetTimelineItemByItemId/" + itemId + "/" + itemType;
             HttpResponseMessage timeLineResponse = await _httpClient.GetAsync(timeLineApiPath);
-            if (timeLineResponse.IsSuccessStatusCode)
-            {
-                string timeLineItemAsString = await timeLineResponse.Content.ReadAsStringAsync();
-                TimeLineItem? timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(timeLineItemAsString);
-                return timeLineItem;
-            }
+            if (!timeLineResponse.IsSuccessStatusCode) return new TimeLineItem();
 
-            return new TimeLineItem();
+            string timeLineItemAsString = await timeLineResponse.Content.ReadAsStringAsync();
+            TimeLineItem? timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(timeLineItemAsString);
+            return timeLineItem;
+
         }
 
         public async Task<TimeLineItem?> AddTimeLineItem(TimeLineItem? timeLineItem)
@@ -75,16 +73,14 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string timeLineApiPath = "/api/Timeline/";
+            const string timeLineApiPath = "/api/Timeline/";
             HttpResponseMessage timelineResponse = await _httpClient.PostAsync(timeLineApiPath, new StringContent(JsonConvert.SerializeObject(timeLineItem), System.Text.Encoding.UTF8, "application/json"));
-            if (timelineResponse.IsSuccessStatusCode)
-            {
-                string timelineLineItemAsString = await timelineResponse.Content.ReadAsStringAsync();
-                timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(timelineLineItemAsString);
-                return timeLineItem;
-            }
+            if (!timelineResponse.IsSuccessStatusCode) return new TimeLineItem();
 
-            return new TimeLineItem();
+            string timelineLineItemAsString = await timelineResponse.Content.ReadAsStringAsync();
+            timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(timelineLineItemAsString);
+            return timeLineItem;
+
         }
 
         public async Task<TimeLineItem?> UpdateTimeLineItem(TimeLineItem? timeLineItem)
@@ -94,14 +90,12 @@ namespace KinaUnaWebBlazor.Services
 
             string updateTimeLineApiPath = "/api/Timeline/" + timeLineItem?.TimeLineId;
             HttpResponseMessage timelineResponse = await _httpClient.PutAsync(updateTimeLineApiPath, new StringContent(JsonConvert.SerializeObject(timeLineItem), System.Text.Encoding.UTF8, "application/json"));
-            if (timelineResponse.IsSuccessStatusCode)
-            {
-                string timeLineItemAsString = await timelineResponse.Content.ReadAsStringAsync();
-                timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(timeLineItemAsString);
-                return timeLineItem;
-            }
+            if (!timelineResponse.IsSuccessStatusCode) return new TimeLineItem();
 
-            return new TimeLineItem();
+            string timeLineItemAsString = await timelineResponse.Content.ReadAsStringAsync();
+            timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(timeLineItemAsString);
+            return timeLineItem;
+
         }
 
         public async Task<bool> DeleteTimeLineItem(int timeLineItemId)
@@ -111,27 +105,22 @@ namespace KinaUnaWebBlazor.Services
 
             string timeLineApiPath = "/api/Timeline/" + timeLineItemId;
             HttpResponseMessage timelineResponse = await _httpClient.DeleteAsync(timeLineApiPath);
-            if (timelineResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-            return false;
+            return timelineResponse.IsSuccessStatusCode;
         }
 
         public async Task<List<TimeLineItem>?> GetTimeline(int progenyId, int accessLevel)
         {
-            List<TimeLineItem>? progenyTimeline = new List<TimeLineItem>();
+            List<TimeLineItem>? progenyTimeline = [];
             
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string timelineApiPath = "/api/Timeline/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
             HttpResponseMessage timelineResponse = await _httpClient.GetAsync(timelineApiPath);
-            if (timelineResponse.IsSuccessStatusCode)
-            {
-                string timelineAsString = await timelineResponse.Content.ReadAsStringAsync();
-                progenyTimeline = JsonConvert.DeserializeObject<List<TimeLineItem>>(timelineAsString);
-            }
+            if (!timelineResponse.IsSuccessStatusCode) return progenyTimeline;
+
+            string timelineAsString = await timelineResponse.Content.ReadAsStringAsync();
+            progenyTimeline = JsonConvert.DeserializeObject<List<TimeLineItem>>(timelineAsString);
 
             return progenyTimeline;
         }

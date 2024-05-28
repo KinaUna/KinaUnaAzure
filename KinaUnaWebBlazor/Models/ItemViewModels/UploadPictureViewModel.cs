@@ -4,10 +4,10 @@ namespace KinaUnaWebBlazor.Models.ItemViewModels
 {
     public class UploadPictureViewModel: BaseViewModel
     {
-        [Required] public List<IFormFile> Files { get; set; } = new List<IFormFile>();
+        [Required] public List<IFormFile> Files { get; set; } = [];
         [Required] public int ProgenyId { get; set; } = 0;
-        public List<string> FileNames { get; set; } = new List<string>();
-        public List<string> FileLinks { get; set; } = new List<string>();
+        public List<string> FileNames { get; set; } = [];
+        public List<string> FileLinks { get; set; } = [];
         [Required] public int AccessLevel { get; set; } = 5;
         public string Author { get; set; } = "";
         public string Owners { get; set; } = "";

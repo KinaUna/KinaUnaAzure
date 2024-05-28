@@ -24,42 +24,37 @@ namespace KinaUnaWeb.Controllers
         }
 
         
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // To protect from over posting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,PushEndpoint,PushP256DH,PushAuth")] PushDevices devices)
         {
-            if (ModelState.IsValid)
-            {
-                string userId = HttpContext.User.FindFirst("sub")?.Value;
-                devices.Name = userId;
-                _ = await messageSender.AddPushDevice(devices);
+            if (!ModelState.IsValid) return View(devices);
 
-                return RedirectToAction(nameof(Index));
-            }
+            string userId = HttpContext.User.FindFirst("sub")?.Value;
+            devices.Name = userId;
+            _ = await messageSender.AddPushDevice(devices);
 
-            return View(devices);
+            return RedirectToAction(nameof(Index));
+
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateUser([Bind("Id,Name,PushEndpoint,PushP256DH,PushAuth")] PushDevices devices)
         {
-            if (ModelState.IsValid)
-            {
-                string userId = HttpContext.User.FindFirst("sub")?.Value;
-                PushDevices existingDevice = await messageSender.GetDevice(devices);
-                if (existingDevice == null)
-                {
-                    devices.Name = userId;
-                    _ = await messageSender.AddPushDevice(devices);
-                }
+            if (!ModelState.IsValid) return RedirectToAction("EnablePush", "Account");
+            
+            PushDevices existingDevice = await messageSender.GetDevice(devices);
+            if (existingDevice != null) return RedirectToAction("MyAccount", "Account");
 
-                return RedirectToAction("MyAccount", "Account");
-            }
+            string userId = HttpContext.User.FindFirst("sub")?.Value;
+            devices.Name = userId;
+            _ = await messageSender.AddPushDevice(devices);
 
-            return RedirectToAction("EnablePush", "Account");
+            return RedirectToAction("MyAccount", "Account");
+
         }
 
         // GET: Devices/Delete/5

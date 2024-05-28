@@ -17,12 +17,12 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> FriendTypeListDa { get; set; }
         public List<SelectListItem> FriendTypeListDe { get; set; }
         public string FileName { get; set; }
-        public IFormFile File { get; set; }
+        public IFormFile File { get; init; }
         public string TagFilter { get; set; }
 
         public FriendViewModel()
         {
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
             SetAccessLevelList();
             SetFriendTypeList();
         }
@@ -86,10 +86,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 FriendAddedDate = FriendItem.FriendAddedDate
             };
 
-            if (FriendItem.FriendSince == null)
-            {
-                FriendItem.FriendSince = DateTime.UtcNow;
-            }
+            FriendItem.FriendSince ??= DateTime.UtcNow;
             friendItem.FriendSince = FriendItem.FriendSince;
 
             if (!string.IsNullOrEmpty(FriendItem.Tags))
@@ -124,7 +121,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetFriendTypeList()
         {
-            FriendTypeListEn = new List<SelectListItem>();
+            FriendTypeListEn = [];
             SelectListItem friendType1 = new()
             {
                 Text = "Personal Friend",
@@ -156,7 +153,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             FriendTypeListEn.Add(friendType4);
             FriendTypeListEn.Add(friendType5);
 
-            FriendTypeListDa = new List<SelectListItem>();
+            FriendTypeListDa = [];
             SelectListItem friendType1Da = new()
             {
                 Text = "Personlig ven",
@@ -188,7 +185,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             FriendTypeListDa.Add(friendType4Da);
             FriendTypeListDa.Add(friendType5Da);
 
-            FriendTypeListDe = new List<SelectListItem>();
+            FriendTypeListDe = [];
             SelectListItem friendType1De = new()
             {
                 Text = "Persönliche Freunde",

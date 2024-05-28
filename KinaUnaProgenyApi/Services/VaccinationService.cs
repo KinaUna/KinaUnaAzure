@@ -62,7 +62,7 @@ namespace KinaUnaProgenyApi.Services
             return vaccination;
         }
 
-        public async Task<Vaccination> SetVaccinationInCache(int id)
+        private async Task<Vaccination> SetVaccinationInCache(int id)
         {
             Vaccination vaccination = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
             if (vaccination != null)
@@ -78,14 +78,13 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Vaccination> UpdateVaccination(Vaccination vaccination)
         {
             Vaccination vaccinationToUpdate = await _context.VaccinationsDb.SingleOrDefaultAsync(v => v.VaccinationId == vaccination.VaccinationId);
-            if (vaccinationToUpdate != null)
-            {
-                vaccinationToUpdate.CopyPropertiesForUpdate(vaccination);
+            if (vaccinationToUpdate == null) return null;
 
-                _ = _context.VaccinationsDb.Update(vaccinationToUpdate);
-                _ = await _context.SaveChangesAsync();
-                _ = await SetVaccinationInCache(vaccination.VaccinationId);
-            }
+            vaccinationToUpdate.CopyPropertiesForUpdate(vaccination);
+
+            _ = _context.VaccinationsDb.Update(vaccinationToUpdate);
+            _ = await _context.SaveChangesAsync();
+            _ = await SetVaccinationInCache(vaccination.VaccinationId);
 
             return vaccinationToUpdate;
         }
@@ -93,17 +92,16 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Vaccination> DeleteVaccination(Vaccination vaccination)
         {
             Vaccination vaccinationToDelete = await _context.VaccinationsDb.SingleOrDefaultAsync(v => v.VaccinationId == vaccination.VaccinationId);
-            if (vaccinationToDelete != null)
-            {
-                _ = _context.VaccinationsDb.Remove(vaccinationToDelete);
-                _ = await _context.SaveChangesAsync();
-                await RemoveVaccinationFromCache(vaccination.VaccinationId, vaccination.ProgenyId);
-            }
+            if (vaccinationToDelete == null) return null;
+
+            _ = _context.VaccinationsDb.Remove(vaccinationToDelete);
+            _ = await _context.SaveChangesAsync();
+            await RemoveVaccinationFromCache(vaccination.VaccinationId, vaccination.ProgenyId);
 
             return vaccinationToDelete;
         }
 
-        public async Task RemoveVaccinationFromCache(int id, int progenyId)
+        private async Task RemoveVaccinationFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id);
 
@@ -113,7 +111,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Vaccination>> GetVaccinationsList(int progenyId)
         {
             List<Vaccination> vaccinationsList = await GetVaccinationListFromCache(progenyId);
-            if (!vaccinationsList.Any())
+            if (vaccinationsList.Count == 0)
             {
                 vaccinationsList = await SetVaccinationListInCache(progenyId);
             }
@@ -123,7 +121,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Vaccination>> GetVaccinationListFromCache(int progenyId)
         {
-            List<Vaccination> vaccinationsList = new();
+            List<Vaccination> vaccinationsList = [];
             string cachedVaccinationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVaccinationsList))
             {

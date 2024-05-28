@@ -114,18 +114,18 @@ namespace KinaUnaWeb.Controllers
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
-            if (ModelState.IsValid)
+
+            if (!ModelState.IsValid) return RedirectToAction("Index", "Sleep");
+
+            model.SleepItem.Progeny = model.CurrentProgeny;
+            model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeToUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeToUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            if (model.SleepItem.SleepRating == 0)
             {
-                model.SleepItem.Progeny = model.CurrentProgeny;
-                model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeToUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeToUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                if (model.SleepItem.SleepRating == 0)
-                {
-                    model.SleepItem.SleepRating = 3;
-                }
-                
-                await sleepHttpClient.UpdateSleep(model.SleepItem);
+                model.SleepItem.SleepRating = 3;
             }
+                
+            await sleepHttpClient.UpdateSleep(model.SleepItem);
             return RedirectToAction("Index", "Sleep");
         }
 

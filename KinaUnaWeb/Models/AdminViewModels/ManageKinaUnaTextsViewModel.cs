@@ -6,21 +6,13 @@ namespace KinaUnaWeb.Models.AdminViewModels
     public class ManageKinaUnaTextsViewModel : BaseViewModel
     {
 
-        public List<KinaUnaText> Texts { get; set; }
-        public List<string> PagesList { get; set; }
-        public List<string> TitlesList { get; set; }
-        public List<KinaUnaLanguage> LanguagesList { get; set; }
+        public List<KinaUnaText> Texts { get; init; } = [];
+        public List<string> PagesList { get; init; } = [];
+        public List<string> TitlesList { get; init; } = [];
+        public List<KinaUnaLanguage> LanguagesList { get; set; } = [];
         public int Language { get; set; }
-        public KinaUnaText KinaUnaText { get; set; }
-        public int MessageId { get; set; }
-        public string Text { get; set; }
-
-        public ManageKinaUnaTextsViewModel()
-        {
-            Texts = new List<KinaUnaText>();
-            PagesList = new List<string>();
-            TitlesList = new List<string>();
-            LanguagesList = new List<KinaUnaLanguage>();
-        }
+        public KinaUnaText KinaUnaText { get; init; }
+        public int MessageId { get; init; }
+        public string Text { get; init; }
     }
 }

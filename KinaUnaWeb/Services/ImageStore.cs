@@ -10,7 +10,7 @@ namespace KinaUnaWeb.Services
 {
     public class ImageStore
     {
-        readonly CloudBlobClient blobClient;
+        private readonly CloudBlobClient _blobClient;
         private readonly string _baseUri;
 
         public ImageStore(IConfiguration configuration)
@@ -18,7 +18,7 @@ namespace KinaUnaWeb.Services
             _baseUri = configuration.GetValue<string>("CloudBlobBase");
             string cloudBlobUserName = configuration.GetValue<string>("CloudBlobUserName");
             StorageCredentials credentials = new(cloudBlobUserName, configuration.GetValue<string>("BlobStorageKey"));
-            blobClient = new CloudBlobClient(new Uri(_baseUri), credentials);
+            _blobClient = new CloudBlobClient(new Uri(_baseUri), credentials);
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace KinaUnaWeb.Services
         public async Task<string> SaveImage(Stream imageStream, string containerName = "pictures")
         {
             string imageId = Guid.NewGuid().ToString();
-            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
+            CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
             CloudBlockBlob blob = container.GetBlockBlobReference(imageId);
             await blob.UploadFromStreamAsync(imageStream);
             return imageId;
@@ -44,7 +44,7 @@ namespace KinaUnaWeb.Services
         /// <returns>string: The URI for the image.</returns>
         public string UriFor(string imageId, string containerName = "pictures")
         {
-            if (string.IsNullOrEmpty(imageId) || imageId.ToLower().StartsWith("http"))
+            if (string.IsNullOrEmpty(imageId) || imageId.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
             {
                 if (string.IsNullOrEmpty(imageId))
                 {
@@ -61,7 +61,7 @@ namespace KinaUnaWeb.Services
                 SharedAccessExpiryTime = DateTime.UtcNow.AddMinutes(60)
             };
 
-            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
+            CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
             CloudBlockBlob blob = container.GetBlockBlobReference(imageId);
             string sas = blob.GetSharedAccessSignature(sasPolicy);
             return $"{_baseUri}{containerName}/{imageId}{sas}";
@@ -75,7 +75,7 @@ namespace KinaUnaWeb.Services
         /// <returns>string: The image Id (Picture.PictureLink).</returns>
         public async Task<string> DeleteImage(string imageId, string containerName = "pictures")
         {
-            if (string.IsNullOrEmpty(imageId) || imageId.ToLower().StartsWith("http"))
+            if (string.IsNullOrEmpty(imageId) || imageId.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
             {
                 if (string.IsNullOrEmpty(imageId))
                 {
@@ -84,7 +84,7 @@ namespace KinaUnaWeb.Services
                 return imageId;
             }
 
-            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
+            CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
             CloudBlockBlob blob = container.GetBlockBlobReference(imageId);
             await blob.DeleteIfExistsAsync();
             return imageId;

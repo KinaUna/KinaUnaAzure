@@ -16,13 +16,13 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string TagFilter { get; set; }
         public int? SortBy { get; set; }
 
-        public Location LocationItem { get; set; } = new();
-        public string HereMapsApiKey { get; set; } = "";
+        public Location LocationItem { get; init; } = new();
+        public string HereMapsApiKey { get; init; } = "";
 
         public LocationViewModel()
         {
-            LocationsList = new List<Location>();
-            ProgenyList = new List<SelectListItem>();
+            LocationsList = [];
+            ProgenyList = [];
             AccessLevelList accessLevelList = new();
             AccessLevelListEn = accessLevelList.AccessLevelListEn;
             AccessLevelListDa = accessLevelList.AccessLevelListDa;
@@ -33,7 +33,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             SetBaseProperties(baseItemsViewModel);
             SetAccessLevelList();
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
         }
 
         public void SetAccessLevelList()

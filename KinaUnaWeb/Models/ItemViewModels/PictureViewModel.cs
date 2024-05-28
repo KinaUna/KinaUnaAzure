@@ -7,49 +7,49 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class PictureViewModel: BaseViewModel
     {
-        public int PictureId { get; set; }
+        public int PictureId { get; init; }
 
         public string PictureLink { get; set; }
         public DateTime? PictureTime { get; set; }
-        public int? PictureRotation { get; set; }
-        public int PictureWidth { get; set; }
-        public int PictureHeight { get; set; }
+        public int? PictureRotation { get; init; }
+        public int PictureWidth { get; init; }
+        public int PictureHeight { get; init; }
 
-        public int ProgenyId { get; set; }
-        public Progeny Progeny { get; set; }
-        public string Owners { get; set; } // Comma separated list of emails.
-        public int AccessLevel { get; set; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUSers, 4= public.
-        public string Author { get; set; }
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
-        public bool IsAdmin { get; set; }
-        public int CommentThreadNumber { get; set; }
-        public List<Comment> CommentsList { get; set; }
+        public int ProgenyId { get; init; }
+        public Progeny Progeny { get; init; }
+        public string Owners { get; init; } // Comma separated list of emails.
+        public int AccessLevel { get; init; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUSers, 4= public.
+        public string Author { get; init; }
+        public List<SelectListItem> AccessLevelListEn { get; init; }
+        public List<SelectListItem> AccessLevelListDa { get; init; }
+        public List<SelectListItem> AccessLevelListDe { get; init; }
+        public bool IsAdmin { get; init; }
+        public int CommentThreadNumber { get; init; }
+        public List<Comment> CommentsList { get; init; }
         public int CommentsCount { get; set; }
-        public string Tags { get; set; }
-        public string TagFilter { get; set; }
-        public string TagsList { get; set; }
-        public string Location { get; set; }
-        public string Longtitude { get; set; }
-        public string Latitude { get; set; }
-        public string Altitude { get; set; }
-        public List<SelectListItem> LocationsList { get; set; }
-        public List<Location> ProgenyLocations { get; set; }
-        public int PictureNumber { get; set; }
-        public int PictureCount { get; set; }
-        public int PrevPicture { get; set; }
-        public int NextPicture { get; set; }
-        public string PicTime { get; set; }
-        public bool PicTimeValid { get; set; }
-        public string PicYears { get; set; }
-        public string PicMonths { get; set; }
-        public string[] PicWeeks { get; set; }
-        public string PicDays { get; set; }
-        public string PicHours { get; set; }
-        public string PicMinutes { get; set; }
-        public int SortBy { get; set; }
-        public string UserId { get; set; }
+        public string Tags { get; init; }
+        public string TagFilter { get; init; }
+        public string TagsList { get; init; }
+        public string Location { get; init; }
+        public string Longtitude { get; init; } // Todo: Fix typo in property name.
+        public string Latitude { get; init; }
+        public string Altitude { get; init; }
+        public List<SelectListItem> LocationsList { get; init; }
+        public List<Location> ProgenyLocations { get; init; }
+        public int PictureNumber { get; init; }
+        public int PictureCount { get; init; }
+        public int PrevPicture { get; init; }
+        public int NextPicture { get; init; }
+        public string PicTime { get; init; }
+        public bool PicTimeValid { get; init; }
+        public string PicYears { get; init; }
+        public string PicMonths { get; init; }
+        public string[] PicWeeks { get; init; }
+        public string PicDays { get; init; }
+        public string PicHours { get; init; }
+        public string PicMinutes { get; init; }
+        public int SortBy { get; init; }
+        public string UserId { get; init; }
         public PictureViewModel()
         {
             AccessLevelList aclList = new();

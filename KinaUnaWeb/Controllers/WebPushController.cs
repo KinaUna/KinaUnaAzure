@@ -20,7 +20,7 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
             
-            if (userEmail.ToUpper() != _adminEmail.ToUpper())
+            if (!userEmail.Equals(_adminEmail, System.StringComparison.CurrentCultureIgnoreCase))
             {
                 return RedirectToAction("Index", "Home");
             }
@@ -34,7 +34,7 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
             
-            if (userEmail.ToUpper() != _adminEmail.ToUpper())
+            if (!userEmail.Equals(_adminEmail, System.StringComparison.CurrentCultureIgnoreCase))
             {
                 return RedirectToAction("Index", "Home");
             }
@@ -45,14 +45,13 @@ namespace KinaUnaWeb.Controllers
             string vapidPublicKey = configuration["VapidPublicKey"];
             string vapidPrivateKey = configuration["VapidPrivateKey"];
 
-            if (device != null)
-            {
-                PushSubscription pushSubscription = new(device.PushEndpoint, device.PushP256DH, device.PushAuth);
-                VapidDetails vapidDetails = new("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
+            if (device == null) return View();
 
-                WebPushClient webPushClient = new();
-                await webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
-            }
+            PushSubscription pushSubscription = new(device.PushEndpoint, device.PushP256DH, device.PushAuth);
+            VapidDetails vapidDetails = new("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
+
+            WebPushClient webPushClient = new();
+            await webPushClient.SendNotificationAsync(pushSubscription, payload, vapidDetails);
 
             return View();
         }
@@ -61,7 +60,7 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
             
-            if (userEmail.ToUpper() != _adminEmail.ToUpper())
+            if (!userEmail.Equals(_adminEmail, System.StringComparison.CurrentCultureIgnoreCase))
             {
                 return RedirectToAction("Index", "Home");
             }

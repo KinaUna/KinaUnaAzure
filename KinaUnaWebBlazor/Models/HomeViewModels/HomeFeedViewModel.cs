@@ -7,7 +7,7 @@ namespace KinaUnaWebBlazor.Models.HomeViewModels
         public Progeny? Progeny { get; set; }
 
         public int UserAccessLevel { get; set; } = 5;
-        public List<CalendarItem> EventsList { get; set; } = new List<CalendarItem>();
+        public List<CalendarItem> EventsList { get; set; } = [];
         public int ImageId { get; set; } = 0;
         public string ImageLink { get; set; } = "";
         public string ImageLink600 { get; set; } = "";

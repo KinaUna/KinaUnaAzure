@@ -36,7 +36,7 @@
     private DateTime? PictureTime { get; set; }
     private LocationDataViewModel? LocationDataViewModel { get; set; }
     string _imageUrl = "";
-    List<string> _tagsList = new List<string>();
+    List<string> _tagsList = [];
     string _location = "";
     private string _pictureLink = "/Pictures/";
     private async Task UpdateImage()
@@ -67,8 +67,10 @@
                 }
                 if (!string.IsNullOrEmpty(displayPicture.Location))
                 {
-                    LocationDataViewModel = new LocationDataViewModel();
-                    LocationDataViewModel.Location = displayPicture.Location;
+                    LocationDataViewModel = new LocationDataViewModel
+                    {
+                        Location = displayPicture.Location
+                    };
                     if (!string.IsNullOrEmpty(displayPicture.Latitude))
                     {
                         LocationDataViewModel.Latitude = displayPicture.Latitude;

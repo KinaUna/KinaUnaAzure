@@ -2,7 +2,7 @@
 {
     public class BasePageParameters
     {
-        public int ProgenyId { get; set; }
+        public int ProgenyId { get; init; }
         public int LanguageId { get; set; }
         public int CurrentPageNumber { get; set; }
         public int ItemsPerPage { get; set; }

@@ -59,18 +59,17 @@ namespace KinaUnaProgenyApi.Services
         {
             Video video = await _mediaContext.VideoDb.AsNoTracking().SingleOrDefaultAsync(v => v.VideoId == id);
 
-            if (video != null)
+            if (video == null) return null;
+
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
+
+            if (video.Tags != null && video.Tags.Trim().EndsWith(','))
             {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "video" + id, JsonConvert.SerializeObject(video), _cacheOptionsSliding);
-
-                if (video.Tags != null && video.Tags.Trim().EndsWith(','))
-                {
-                    video.Tags = video.Tags.Trim().TrimEnd(',');
-                    _ = await UpdateVideo(video);
-                }
-
-                await SetVideosListInCache(video.ProgenyId);
+                video.Tags = video.Tags.Trim().TrimEnd(',');
+                _ = await UpdateVideo(video);
             }
+
+            await SetVideosListInCache(video.ProgenyId);
 
             return video;
         }
@@ -91,15 +90,14 @@ namespace KinaUnaProgenyApi.Services
             video.RemoveNullStrings();
 
             Video videoToUpdate = await _mediaContext.VideoDb.SingleOrDefaultAsync(v => v.VideoId == video.VideoId);
-            if (videoToUpdate != null)
-            {
-                videoToUpdate.CopyPropertiesForUpdate(video);
+            if (videoToUpdate == null) return null;
 
-                _ = _mediaContext.VideoDb.Update(videoToUpdate);
-                _ = await _mediaContext.SaveChangesAsync();
+            videoToUpdate.CopyPropertiesForUpdate(video);
 
-                _ = await SetVideoInCache(videoToUpdate.VideoId);
-            }
+            _ = _mediaContext.VideoDb.Update(videoToUpdate);
+            _ = await _mediaContext.SaveChangesAsync();
+
+            _ = await SetVideoInCache(videoToUpdate.VideoId);
 
             return video;
         }
@@ -107,12 +105,11 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Video> DeleteVideo(Video video)
         {
             Video videoToDelete = await _mediaContext.VideoDb.SingleOrDefaultAsync(v => v.VideoId == video.VideoId);
-            if (videoToDelete != null)
-            {
-                _mediaContext.VideoDb.Remove(videoToDelete);
-                _ = await _mediaContext.SaveChangesAsync();
-                await RemoveVideoFromCache(videoToDelete.VideoId, videoToDelete.ProgenyId);
-            }
+            if (videoToDelete == null) return null;
+
+            _mediaContext.VideoDb.Remove(videoToDelete);
+            _ = await _mediaContext.SaveChangesAsync();
+            await RemoveVideoFromCache(videoToDelete.VideoId, videoToDelete.ProgenyId);
 
             return video;
         }
@@ -126,7 +123,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Video>> GetVideosList(int progenyId)
         {
             List<Video> videosList = await GetVideosListFromCache(progenyId);
-            if (!videosList.Any())
+            if (videosList.Count == 0)
             {
                 videosList = await SetVideosListInCache(progenyId);
             }
@@ -136,7 +133,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Video>> GetVideosListFromCache(int progenyId)
         {
-            List<Video> videosList = new();
+            List<Video> videosList = [];
             string cachedVideosList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVideosList))
             {

@@ -24,14 +24,12 @@ namespace KinaUna.Data.Extensions
 
         public static bool CopyCalendarItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, CalendarItem calendarItem )
         {
-            if (currentTimeLineItem != null && calendarItem.StartTime.HasValue && calendarItem.EndTime.HasValue)
-            {
-                currentTimeLineItem.ProgenyTime = calendarItem.StartTime.Value;
-                currentTimeLineItem.AccessLevel = calendarItem.AccessLevel;
-                return true;
-            }
+            if (currentTimeLineItem == null || !calendarItem.StartTime.HasValue || !calendarItem.EndTime.HasValue) return false;
 
-            return false;
+            currentTimeLineItem.ProgenyTime = calendarItem.StartTime.Value;
+            currentTimeLineItem.AccessLevel = calendarItem.AccessLevel;
+            return true;
+
         }
 
         public static void CopyCalendarItemPropertiesForAdd(this TimeLineItem currentTimeLineItem, CalendarItem calendarItem, string userEmail)
@@ -55,27 +53,29 @@ namespace KinaUna.Data.Extensions
         public static void CopyUserAccessItemPropertiesForAdd(this TimeLineItem currentTimeLineItem, UserAccess userAccessItem)
         {
             currentTimeLineItem.ProgenyId = userAccessItem.ProgenyId;
-            currentTimeLineItem.AccessLevel = 0;
+            currentTimeLineItem.AccessLevel = userAccessItem.AccessLevel;
             currentTimeLineItem.ItemId = userAccessItem.AccessId.ToString();
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
         }
 
         public static void CopyUserAccessItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, UserAccess userAccessItem)
         {
-            currentTimeLineItem.AccessLevel = 0;
+            currentTimeLineItem.ProgenyId = userAccessItem.ProgenyId;
+            currentTimeLineItem.AccessLevel = userAccessItem.AccessLevel;
+            currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
+            currentTimeLineItem.ItemId = userAccessItem.AccessId.ToString();
+
         }
 
         public static bool CopyContactItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Contact contactItem)
         {
-            if (contactItem.DateAdded.HasValue)
-            {
-                currentTimeLineItem.ProgenyTime = contactItem.DateAdded.Value;
-                currentTimeLineItem.AccessLevel = contactItem.AccessLevel;
-                
-                return true;
-            }
+            if (!contactItem.DateAdded.HasValue) return false;
 
-            return false;
+            currentTimeLineItem.ProgenyTime = contactItem.DateAdded.Value;
+            currentTimeLineItem.AccessLevel = contactItem.AccessLevel;
+                
+            return true;
+
         }
 
         public static void CopyContactPropertiesForAdd(this TimeLineItem currentTimeLineItem, Contact contactItem)
@@ -98,15 +98,13 @@ namespace KinaUna.Data.Extensions
 
         public static bool CopyFriendItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Friend friendItem)
         {
-            if (friendItem.FriendSince.HasValue)
-            {
-                currentTimeLineItem.ProgenyTime = friendItem.FriendSince.Value;
-                currentTimeLineItem.AccessLevel = friendItem.AccessLevel;
+            if (!friendItem.FriendSince.HasValue) return false;
 
-                return true;
-            }
+            currentTimeLineItem.ProgenyTime = friendItem.FriendSince.Value;
+            currentTimeLineItem.AccessLevel = friendItem.AccessLevel;
 
-            return false;
+            return true;
+
         }
 
         public static void CopyFriendPropertiesForAdd(this TimeLineItem currentTimeLineItem, Friend friendItem)

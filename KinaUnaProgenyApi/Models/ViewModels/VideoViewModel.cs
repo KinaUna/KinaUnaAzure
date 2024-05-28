@@ -40,7 +40,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
         public TimeSpan? Duration { get; set; }
 
         public string Location { get; set; }
-        public string Longtitude { get; set; }
+        public string Longtitude { get; set; } // Todo: Fix typo in database.
         public string Latitude { get; set; }
         public string Altitude { get; set; }
         public List<SelectListItem> LocationsList { get; set; }

@@ -14,7 +14,8 @@ namespace KinaUnaProgenyApi.Services
         {
             title = title.Trim();
             page = page.Trim();
-            KinaUnaText textItem = await context.KinaUnaTexts.AsNoTracking().FirstOrDefaultAsync(t => t.Title.ToUpper() == title.Trim().ToUpper() && t.Page.ToUpper() == page.Trim().ToUpper() && t.LanguageId == languageId);
+            KinaUnaText textItem = await context.KinaUnaTexts.AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Title.Equals(title.Trim(), StringComparison.CurrentCultureIgnoreCase) && t.Page.Equals(page.Trim(), StringComparison.CurrentCultureIgnoreCase) && t.LanguageId == languageId);
 
             return textItem;
         }
@@ -40,7 +41,7 @@ namespace KinaUnaProgenyApi.Services
                 languageId = 1;
             }
 
-            List<KinaUnaText> texts = await context.KinaUnaTexts.AsNoTracking().Where(t => t.LanguageId == languageId && t.Page.ToUpper() == page.ToUpper()).ToListAsync();
+            List<KinaUnaText> texts = await context.KinaUnaTexts.AsNoTracking().Where(t => t.LanguageId == languageId && t.Page.Equals(page, StringComparison.CurrentCultureIgnoreCase)).ToListAsync();
             return texts;
         }
 
@@ -62,29 +63,27 @@ namespace KinaUnaProgenyApi.Services
             foreach (KinaUnaTextNumber tNumber in textNumbers)
             {
                 List<KinaUnaText> texts = await context.KinaUnaTexts.AsNoTracking().Where(t => t.TextId == tNumber.Id).OrderBy(t => t.LanguageId).ToListAsync();
-                if (texts.Any() && texts.Count < languages.Count)
-                {
-                    foreach (KinaUnaLanguage lang in languages)
-                    {
-                        KinaUnaText textItem = await context.KinaUnaTexts.SingleOrDefaultAsync(t => t.TextId == tNumber.Id && t.LanguageId == lang.Id);
-                        if (textItem == null)
-                        {
-                            KinaUnaText oldKinaUnaText = texts.First();
+                if (texts.Count == 0 || texts.Count >= languages.Count) continue;
 
-                            KinaUnaText newKinaUnaText = new()
-                            {
-                                Page = oldKinaUnaText.Page,
-                                Title = oldKinaUnaText.Title,
-                                Text = oldKinaUnaText.Text,
-                                Created = oldKinaUnaText.Created,
-                                Updated = oldKinaUnaText.Updated,
-                                LanguageId = lang.Id,
-                                TextId = oldKinaUnaText.TextId
-                            };
-                            _ = await context.KinaUnaTexts.AddAsync(newKinaUnaText);
-                            _ = await context.SaveChangesAsync();
-                        }
-                    }
+                foreach (KinaUnaLanguage lang in languages)
+                {
+                    KinaUnaText textItem = await context.KinaUnaTexts.SingleOrDefaultAsync(t => t.TextId == tNumber.Id && t.LanguageId == lang.Id);
+                    if (textItem != null) continue;
+
+                    KinaUnaText oldKinaUnaText = texts.First();
+
+                    KinaUnaText newKinaUnaText = new()
+                    {
+                        Page = oldKinaUnaText.Page,
+                        Title = oldKinaUnaText.Title,
+                        Text = oldKinaUnaText.Text,
+                        Created = oldKinaUnaText.Created,
+                        Updated = oldKinaUnaText.Updated,
+                        LanguageId = lang.Id,
+                        TextId = oldKinaUnaText.TextId
+                    };
+                    _ = await context.KinaUnaTexts.AddAsync(newKinaUnaText);
+                    _ = await context.SaveChangesAsync();
                 }
             }
         }
@@ -139,18 +138,16 @@ namespace KinaUnaProgenyApi.Services
                 return text;
 
             }
-            else
-            {
-                existingTextItem.Title = text.Title;
-                existingTextItem.Text = text.Text;
-                existingTextItem.Page = text.Page;
-                existingTextItem.Created = DateTime.UtcNow;
-                existingTextItem.Updated = existingTextItem.Created;
-                _ = context.KinaUnaTexts.Update(existingTextItem);
-                _ = await context.SaveChangesAsync();
 
-                return existingTextItem;
-            }
+            existingTextItem.Title = text.Title;
+            existingTextItem.Text = text.Text;
+            existingTextItem.Page = text.Page;
+            existingTextItem.Created = DateTime.UtcNow;
+            existingTextItem.Updated = existingTextItem.Created;
+            _ = context.KinaUnaTexts.Update(existingTextItem);
+            _ = await context.SaveChangesAsync();
+
+            return existingTextItem;
         }
 
         private async Task AddTextForOtherLanguages(KinaUnaText text)
@@ -158,41 +155,38 @@ namespace KinaUnaProgenyApi.Services
             List<KinaUnaLanguage> languages = await context.Languages.AsNoTracking().ToListAsync();
             foreach (KinaUnaLanguage lang in languages)
             {
-                if (lang.Id != text.LanguageId)
+                if (lang.Id == text.LanguageId) continue;
+
+                KinaUnaText textItem = await context.KinaUnaTexts.SingleOrDefaultAsync(t => t.TextId == text.TextId && t.LanguageId == lang.Id);
+                if (textItem != null) continue;
+
+                textItem = new KinaUnaText
                 {
-                    KinaUnaText textItem = await context.KinaUnaTexts.SingleOrDefaultAsync(t => t.TextId == text.TextId && t.LanguageId == lang.Id);
-                    if (textItem == null)
-                    {
-                        textItem = new KinaUnaText
-                        {
-                            LanguageId = lang.Id,
-                            Page = text.Page,
-                            Title = text.Title,
-                            Text = text.Text,
-                            TextId = text.TextId,
-                            Created = text.Created,
-                            Updated = text.Updated
-                        };
-                        _ = context.KinaUnaTexts.Add(textItem);
-                        _ = await context.SaveChangesAsync();
-                    }
-                }
+                    LanguageId = lang.Id,
+                    Page = text.Page,
+                    Title = text.Title,
+                    Text = text.Text,
+                    TextId = text.TextId,
+                    Created = text.Created,
+                    Updated = text.Updated
+                };
+                _ = context.KinaUnaTexts.Add(textItem);
+                _ = await context.SaveChangesAsync();
             }
         }
 
         public async Task<KinaUnaText> UpdateText(int id, KinaUnaText text)
         {
             KinaUnaText textItem = await context.KinaUnaTexts.SingleOrDefaultAsync(t => t.Id == id);
-            if (textItem != null)
-            {
-                textItem.LanguageId = text.LanguageId;
-                textItem.Page = text.Page.Trim();
-                textItem.Title = text.Title.Trim();
-                textItem.Text = text.Text;
-                textItem.Updated = DateTime.UtcNow;
-                _ = context.KinaUnaTexts.Update(textItem);
-                _ = await context.SaveChangesAsync();
-            }
+            if (textItem == null) return null;
+
+            textItem.LanguageId = text.LanguageId;
+            textItem.Page = text.Page.Trim();
+            textItem.Title = text.Title.Trim();
+            textItem.Text = text.Text;
+            textItem.Updated = DateTime.UtcNow;
+            _ = context.KinaUnaTexts.Update(textItem);
+            _ = await context.SaveChangesAsync();
 
             return textItem;
         }
@@ -200,10 +194,11 @@ namespace KinaUnaProgenyApi.Services
         public async Task<KinaUnaText> DeleteText(int id)
         {
             KinaUnaText textItem = await context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
-            if (textItem != null)
+            if (textItem == null) return null;
+
             {
                 List<KinaUnaText> textsList = await context.KinaUnaTexts.Where(t => t.TextId == textItem.TextId).ToListAsync();
-                if (textsList.Any())
+                if (textsList.Count != 0)
                 {
                     foreach (KinaUnaText textEntity in textsList)
                     {
@@ -219,11 +214,10 @@ namespace KinaUnaProgenyApi.Services
         public async Task<KinaUnaText> DeleteSingleText(int id)
         {
             KinaUnaText textItem = await context.KinaUnaTexts.SingleOrDefaultAsync(t => t.Id == id);
-            if (textItem != null)
-            {
-                _ = context.KinaUnaTexts.Remove(textItem);
-                _ = await context.SaveChangesAsync();
-            }
+            if (textItem == null) return null;
+
+            _ = context.KinaUnaTexts.Remove(textItem);
+            _ = await context.SaveChangesAsync();
 
             return textItem;
         }

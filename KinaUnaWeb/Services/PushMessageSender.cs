@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
@@ -26,7 +25,7 @@ namespace KinaUnaWeb.Services
             string vapidPrivateKey = configuration["VapidPrivateKey"];
 
             List<PushDevices> deviceList = await webNotificationHttpClient.GetPushDevicesListByUserId(user);
-            if (deviceList.Any())
+            if (deviceList.Count != 0)
             {
                 foreach (PushDevices dev in deviceList)
                 {
@@ -66,7 +65,7 @@ namespace KinaUnaWeb.Services
 
         public async Task<List<PushDevices>> GetAllPushDevices()
         {
-            var pushDevicesList = await webNotificationHttpClient.GetAllPushDevices();
+            List<PushDevices> pushDevicesList = await webNotificationHttpClient.GetAllPushDevices();
 
             return pushDevicesList;
         }

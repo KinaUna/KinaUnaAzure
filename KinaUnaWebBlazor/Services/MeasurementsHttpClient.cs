@@ -58,15 +58,14 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Measurement? measurementItem = new Measurement();
+            Measurement? measurementItem = new();
             string measurementsApiPath = "/api/Measurements/" + measurementId;
             HttpResponseMessage measurementResponse = await _httpClient.GetAsync(measurementsApiPath);
-            if (measurementResponse.IsSuccessStatusCode)
-            {
-                string measurementAsString = await measurementResponse.Content.ReadAsStringAsync();
+            if (!measurementResponse.IsSuccessStatusCode) return measurementItem;
 
-                measurementItem = JsonConvert.DeserializeObject<Measurement>(measurementAsString);
-            }
+            string measurementAsString = await measurementResponse.Content.ReadAsStringAsync();
+
+            measurementItem = JsonConvert.DeserializeObject<Measurement>(measurementAsString);
 
             return measurementItem;
         }
@@ -76,16 +75,14 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string measurementsApiPath = "/api/Measurements/";
+            const string measurementsApiPath = "/api/Measurements/";
             HttpResponseMessage measurementsResponse = await _httpClient.PostAsync(measurementsApiPath, new StringContent(JsonConvert.SerializeObject(measurement), System.Text.Encoding.UTF8, "application/json"));
-            if (measurementsResponse.IsSuccessStatusCode)
-            {
-                string measurementsAsString = await measurementsResponse.Content.ReadAsStringAsync();
-                measurement = JsonConvert.DeserializeObject<Measurement>(measurementsAsString);
-                return measurement;
-            }
+            if (!measurementsResponse.IsSuccessStatusCode) return new Measurement();
 
-            return new Measurement();
+            string measurementsAsString = await measurementsResponse.Content.ReadAsStringAsync();
+            measurement = JsonConvert.DeserializeObject<Measurement>(measurementsAsString);
+            return measurement;
+
         }
 
         public async Task<Measurement?> UpdateMeasurement(Measurement? measurement)
@@ -95,14 +92,12 @@ namespace KinaUnaWebBlazor.Services
 
             string updateMeasurementsApiPath = "/api/Measurements/" + measurement?.MeasurementId;
             HttpResponseMessage measurementResponse = await _httpClient.PutAsync(updateMeasurementsApiPath, new StringContent(JsonConvert.SerializeObject(measurement), System.Text.Encoding.UTF8, "application/json"));
-            if (measurementResponse.IsSuccessStatusCode)
-            {
-                string measurementAsString = await measurementResponse.Content.ReadAsStringAsync();
-                measurement = JsonConvert.DeserializeObject<Measurement>(measurementAsString);
-                return measurement;
-            }
+            if (!measurementResponse.IsSuccessStatusCode) return new Measurement();
 
-            return new Measurement();
+            string measurementAsString = await measurementResponse.Content.ReadAsStringAsync();
+            measurement = JsonConvert.DeserializeObject<Measurement>(measurementAsString);
+            return measurement;
+
         }
 
         public async Task<bool> DeleteMeasurement(int measurementId)
@@ -112,28 +107,22 @@ namespace KinaUnaWebBlazor.Services
 
             string measurementsApiPath = "/api/Measurements/" + measurementId;
             HttpResponseMessage measurementResponse = await _httpClient.DeleteAsync(measurementsApiPath);
-            if (measurementResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-            
-            return false;
+            return measurementResponse.IsSuccessStatusCode;
         }
 
         public async Task<List<Measurement>?> GetMeasurementsList(int progenyId, int accessLevel)
         {
-            List<Measurement>? progenyMeasurementsList = new List<Measurement>();
+            List<Measurement>? progenyMeasurementsList = [];
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string measurementsApiPath = "/api/measurements/progeny/" + progenyId + "?accessLevel=" + accessLevel;
             HttpResponseMessage measurementsResponse = await _httpClient.GetAsync(measurementsApiPath).ConfigureAwait(false);
-            if (measurementsResponse.IsSuccessStatusCode)
-            {
-                string measurementsAsString = await measurementsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (!measurementsResponse.IsSuccessStatusCode) return progenyMeasurementsList;
 
-                progenyMeasurementsList = JsonConvert.DeserializeObject<List<Measurement>>(measurementsAsString);
-            }
+            string measurementsAsString = await measurementsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            progenyMeasurementsList = JsonConvert.DeserializeObject<List<Measurement>>(measurementsAsString);
 
             return progenyMeasurementsList;
         }

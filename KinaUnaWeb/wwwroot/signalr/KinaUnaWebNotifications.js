@@ -31,7 +31,7 @@ function notificationItemClick(btn, event) {
             $('.navbar-toggler').trigger("click");
         }
         navMain.style.opacity = 0.8;
-        runWaitMeLeave();
+        //runWaitMeLeave();
     }
     let notificationLink = btn.getAttribute('data-notificationLink');
     window.location.href = notificationLink;

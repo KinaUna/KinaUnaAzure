@@ -22,7 +22,7 @@ namespace KinaUnaProgenyApi.Controllers
         : ControllerBase
     {
         // GET api/comments/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetComment(int id)
         {
             Comment result = await commentsService.GetComment(id);
@@ -35,29 +35,26 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
-        // GET api/comments/getcommentsbythread/5
+        // GET api/comments/GetCommentsByThread/5
         [HttpGet]
-        [Route("[action]/{threadId}")]
+        [Route("[action]/{threadId:int}")]
         public async Task<IActionResult> GetCommentsByThread(int threadId)
         {
             List<Comment> result = await commentsService.GetCommentsList(threadId);
-            if (result != null)
-            {
-                foreach (Comment comment in result)
-                {
-                    UserInfo commentAuthor = await userInfoService.GetUserInfoByUserId(comment.Author);
-                    if (commentAuthor != null)
-                    {
-                        string authorImg = commentAuthor.ProfilePicture ?? "";
-                        comment.AuthorImage = imageStore.UriFor(authorImg, "profiles");
-                        comment.DisplayName = commentAuthor.FullName();
-                    }
-                }
+            if (result == null) return NotFound();
 
-                return Ok(result);
+            foreach (Comment comment in result)
+            {
+                UserInfo commentAuthor = await userInfoService.GetUserInfoByUserId(comment.Author);
+                if (commentAuthor == null) continue;
+
+                string authorImg = commentAuthor.ProfilePicture ?? "";
+                comment.AuthorImage = imageStore.UriFor(authorImg, "profiles");
+                comment.DisplayName = commentAuthor.FullName();
             }
 
-            return NotFound();
+            return Ok(result);
+
         }
 
         // POST api/comments
@@ -103,7 +100,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // PUT api/comments/5
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Comment value)
         {
             Comment comment = await commentsService.GetComment(id);
@@ -136,27 +133,23 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // DELETE api/comments/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
 
             Comment comment = await commentsService.GetComment(id);
-            if (comment != null)
-            {
-                string userId = User.GetUserId();
-                if (userId != comment.Author)
-                {
-                    return Unauthorized();
-                }
+            if (comment == null) return NotFound();
 
-                _ = await commentsService.DeleteComment(comment);
-                await commentsService.RemoveComment(comment.CommentId, comment.CommentThreadNumber);
-                return NoContent();
-            }
-            else
+            string userId = User.GetUserId();
+            if (userId != comment.Author)
             {
-                return NotFound();
+                return Unauthorized();
             }
+
+            _ = await commentsService.DeleteComment(comment);
+            await commentsService.RemoveComment(comment.CommentId, comment.CommentThreadNumber);
+            return NoContent();
+
         }
     }
 }

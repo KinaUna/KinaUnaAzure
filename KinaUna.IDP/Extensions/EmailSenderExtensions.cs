@@ -8,6 +8,8 @@ namespace KinaUna.IDP.Extensions
     {
         public static Task SendEmailConfirmationAsync(this IEmailSender emailSender, string email, string link, string client, string language = "en")
         {
+            // Todo: Use translations API instead.
+
             string mailTitle = "Confirm your email";
             string mailText = $"Please confirm your {client} account's email address by clicking this link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>";
 
@@ -28,6 +30,7 @@ namespace KinaUna.IDP.Extensions
 
         public static Task SendEmailUpdateConfirmationAsync(this IEmailSender emailSender, string email, string link, string client, string language = "en")
         {
+            // Todo: Use translations API instead.
             string mailTitle = "Confirm your email";
             string mailText = $"Please confirm your {client} account's email address by clicking this link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>";
 
@@ -48,6 +51,7 @@ namespace KinaUna.IDP.Extensions
 
         public static Task SendEmailDeleteAsync(this IEmailSender emailSender, string email, string link, int language = 1)
         {
+            // Todo: Use translations API instead.
             string mailTitle = "Confirm delete account";
             string mailText = $"Please confirm that you want to delete your KinaUna account by clicking this link: <a href='{HtmlEncoder.Default.Encode(link)}'>link</a>";
 

@@ -3,7 +3,6 @@ using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
@@ -25,7 +24,7 @@ namespace KinaUnaWeb.Controllers
             
             if (model.MeasurementsList.Count != 0)
             {
-                model.MeasurementsList = model.MeasurementsList.OrderBy(m => m.Date).ToList();
+                model.MeasurementsList = [.. model.MeasurementsList.OrderBy(m => m.Date)];
             }
             else
             {
@@ -35,7 +34,7 @@ namespace KinaUnaWeb.Controllers
                     Date = DateTime.UtcNow,
                     CreatedDate = DateTime.UtcNow
                 };
-                model.MeasurementsList = new List<Measurement> { m };
+                model.MeasurementsList = [m];
             }
             
             return View(model);

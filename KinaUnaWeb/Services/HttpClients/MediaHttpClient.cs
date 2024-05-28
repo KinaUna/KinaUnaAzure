@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -13,6 +12,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
+    // Todo: Refactor into PictureHttpClient and VideoHttpClient.
     public class MediaHttpClient : IMediaHttpClient
     {
         private readonly HttpClient _httpClient;
@@ -39,23 +39,17 @@ namespace KinaUnaWeb.Services.HttpClients
             string pictureApiPath = "/api/Pictures/" + pictureId;
 
             HttpResponseMessage pictureResponse = await _httpClient.GetAsync(pictureApiPath);
-            if (pictureResponse.IsSuccessStatusCode)
-            {
-                string pictureAsString = await pictureResponse.Content.ReadAsStringAsync();
-                Picture picture = JsonConvert.DeserializeObject<Picture>(pictureAsString);
-                if (picture != null && picture.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
-                {
-                    picture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(picture.PictureTime.Value,
-                        TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                }
+            if (!pictureResponse.IsSuccessStatusCode) return new Picture();
 
-                if (picture != null)
-                {
-                    return picture;
-                }
+            string pictureAsString = await pictureResponse.Content.ReadAsStringAsync();
+            Picture picture = JsonConvert.DeserializeObject<Picture>(pictureAsString);
+            if (picture != null && picture.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
+            {
+                picture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(picture.PictureTime.Value,
+                    TimeZoneInfo.FindSystemTimeZoneById(timeZone));
             }
 
-            return new Picture();
+            return picture ?? new Picture();
         }
 
         public async Task<Picture> GetRandomPicture(int progenyId, int accessLevel, string timeZone)
@@ -65,23 +59,20 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string pictureApiPath = "api/Pictures/Random/" + progenyId + "/" + accessLevel;
             HttpResponseMessage pictureResponse = await _httpClient.GetAsync(pictureApiPath);
-            if (pictureResponse.IsSuccessStatusCode)
-            {
-                string pictureResponseString = await pictureResponse.Content.ReadAsStringAsync();
-                Picture resultPicture = JsonConvert.DeserializeObject<Picture>(pictureResponseString);
-                if (timeZone != "" && resultPicture != null)
-                {
-                    if (resultPicture.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
-                    {
-                        resultPicture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(resultPicture.PictureTime.Value,
-                            TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                    }
-                }
+            if (!pictureResponse.IsSuccessStatusCode) return new Picture();
 
-                return resultPicture;
+            string pictureResponseString = await pictureResponse.Content.ReadAsStringAsync();
+            Picture resultPicture = JsonConvert.DeserializeObject<Picture>(pictureResponseString);
+            if (timeZone == "" || resultPicture == null) return resultPicture;
+
+            if (resultPicture.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
+            {
+                resultPicture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(resultPicture.PictureTime.Value,
+                    TimeZoneInfo.FindSystemTimeZoneById(timeZone));
             }
 
-            return new Picture();
+            return resultPicture;
+
         }
 
         public async Task<List<Picture>> GetPictureList(int progenyId, int accessLevel, string timeZone)
@@ -91,29 +82,22 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string pictureApiPath = "/api/Pictures/Progeny/" + progenyId + "/" + accessLevel;
             HttpResponseMessage picturesResponse = await _httpClient.GetAsync(pictureApiPath);
-            if (picturesResponse.IsSuccessStatusCode)
-            {
-                string picturesListAsString = await picturesResponse.Content.ReadAsStringAsync();
-                List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(picturesListAsString);
-                if (timeZone != "" && resultPictureList != null)
-                {
-                    foreach (Picture pic in resultPictureList)
-                    {
-                        if (pic.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
-                        {
-                            pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
-                                TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                        }
-                    }
-                }
+            if (!picturesResponse.IsSuccessStatusCode) return [];
 
-                if (resultPictureList != null)
+            string picturesListAsString = await picturesResponse.Content.ReadAsStringAsync();
+            List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(picturesListAsString);
+            if (timeZone == "" || resultPictureList == null) return resultPictureList ?? [];
+
+            foreach (Picture pic in resultPictureList)
+            {
+                if (pic.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
                 {
-                    return resultPictureList;
+                    pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
+                        TimeZoneInfo.FindSystemTimeZoneById(timeZone));
                 }
             }
 
-            return new List<Picture>();
+            return resultPictureList;
         }
 
         public async Task<List<Picture>> GetAllPictures()
@@ -121,21 +105,15 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string pictureApiPath = "/api/Pictures";
+            const string pictureApiPath = "/api/Pictures";
             HttpResponseMessage picturesResponse = await _httpClient.GetAsync(pictureApiPath);
-            if (picturesResponse.IsSuccessStatusCode)
-            {
-                string pictureResponseString = await picturesResponse.Content.ReadAsStringAsync();
+            if (!picturesResponse.IsSuccessStatusCode) return [];
 
-                List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(pictureResponseString);
+            string pictureResponseString = await picturesResponse.Content.ReadAsStringAsync();
 
-                if (resultPictureList != null)
-                {
-                    return resultPictureList;
-                }
-            }
+            List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(pictureResponseString);
 
-            return new List<Picture>();
+            return resultPictureList ?? [];
         }
 
         public async Task<Picture> AddPicture(Picture picture)
@@ -143,30 +121,23 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string newPictureApiPath = "/api/Pictures/";
+            const string newPictureApiPath = "/api/Pictures/";
 
             HttpResponseMessage pictureResponse = await _httpClient.PostAsync(newPictureApiPath, new StringContent(JsonConvert.SerializeObject(picture), Encoding.UTF8, "application/json"));
-            if (pictureResponse.IsSuccessStatusCode)
-            {
-                string pictureAsString = await pictureResponse.Content.ReadAsStringAsync();
-                picture = JsonConvert.DeserializeObject<Picture>(pictureAsString);
-                if (picture != null)
-                {
-                    string newPictureUri = "/api/Pictures/ByLink/" + picture.PictureLink;
-                    HttpResponseMessage newPictureResponse = await _httpClient.GetAsync(newPictureUri);
-                    if (newPictureResponse.IsSuccessStatusCode)
-                    {
-                        string newPictureAsString = await newPictureResponse.Content.ReadAsStringAsync();
-                        Picture newPicture = JsonConvert.DeserializeObject<Picture>(newPictureAsString);
-                        if (newPicture != null)
-                        {
-                            return newPicture;
-                        }
-                    }
-                }
-            }
+            if (!pictureResponse.IsSuccessStatusCode) return new Picture();
 
-            return new Picture();
+            string pictureAsString = await pictureResponse.Content.ReadAsStringAsync();
+            picture = JsonConvert.DeserializeObject<Picture>(pictureAsString);
+            if (picture == null) return new Picture();
+
+            string newPictureUri = "/api/Pictures/ByLink/" + picture.PictureLink;
+            HttpResponseMessage newPictureResponse = await _httpClient.GetAsync(newPictureUri);
+            if (!newPictureResponse.IsSuccessStatusCode) return new Picture();
+
+            string newPictureAsString = await newPictureResponse.Content.ReadAsStringAsync();
+            Picture newPicture = JsonConvert.DeserializeObject<Picture>(newPictureAsString);
+            return newPicture ?? new Picture();
+
         }
 
         public async Task<Picture> UpdatePicture(Picture picture)
@@ -177,17 +148,11 @@ namespace KinaUnaWeb.Services.HttpClients
             string updatePictureApiPath = "/api/Pictures/" + picture.PictureId;
 
             HttpResponseMessage pictureResponse = await _httpClient.PutAsync(updatePictureApiPath, new StringContent(JsonConvert.SerializeObject(picture), Encoding.UTF8, "application/json"));
-            if (pictureResponse.IsSuccessStatusCode)
-            {
-                string pictureAsString = await pictureResponse.Content.ReadAsStringAsync();
-                picture = JsonConvert.DeserializeObject<Picture>(pictureAsString);
-                if (picture != null)
-                {
-                    return picture;
-                }
-            }
+            if (!pictureResponse.IsSuccessStatusCode) return new Picture();
 
-            return new Picture();
+            string pictureAsString = await pictureResponse.Content.ReadAsStringAsync();
+            picture = JsonConvert.DeserializeObject<Picture>(pictureAsString);
+            return picture ?? new Picture();
         }
 
         public async Task<bool> DeletePicture(int pictureId)
@@ -198,12 +163,7 @@ namespace KinaUnaWeb.Services.HttpClients
             string deletePictureApiPath = "/api/Pictures/" + pictureId;
 
             HttpResponseMessage deletePictureResponse = await _httpClient.DeleteAsync(deletePictureApiPath);
-            if (deletePictureResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            return false;
+            return deletePictureResponse.IsSuccessStatusCode;
         }
 
         public async Task<bool> AddPictureComment(Comment comment)
@@ -211,15 +171,10 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string newCommentApiPath = "/api/Comments/";
+            const string newCommentApiPath = "/api/Comments/";
 
             HttpResponseMessage newCommentResponse = await _httpClient.PostAsync(newCommentApiPath, new StringContent(JsonConvert.SerializeObject(comment), Encoding.UTF8, "application/json")).ConfigureAwait(false);
-            if (newCommentResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            return false;
+            return newCommentResponse.IsSuccessStatusCode;
         }
 
         public async Task<bool> DeletePictureComment(int commentId)
@@ -230,12 +185,7 @@ namespace KinaUnaWeb.Services.HttpClients
             string deleteCommentApiPath = "/api/Comments/" + commentId;
 
             HttpResponseMessage newCommentResponse = await _httpClient.DeleteAsync(deleteCommentApiPath).ConfigureAwait(false);
-            if (newCommentResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            return false;
+            return newCommentResponse.IsSuccessStatusCode;
         }
 
         public async Task<PicturePageViewModel> GetPicturePage(int pageSize, int id, int progenyId, int userAccessLevel, int sortBy, string tagFilter, string timeZone)
@@ -250,30 +200,23 @@ namespace KinaUnaWeb.Services.HttpClients
             }
 
             HttpResponseMessage picturePageResponse = await _httpClient.GetAsync(pageApiPath);
-            if (picturePageResponse.IsSuccessStatusCode)
+            if (!picturePageResponse.IsSuccessStatusCode) return new PicturePageViewModel();
+
+            string pageResponseString = await picturePageResponse.Content.ReadAsStringAsync();
+
+            PicturePageViewModel model = JsonConvert.DeserializeObject<PicturePageViewModel>(pageResponseString);
+            if (timeZone == "" || model == null || model.PicturesList.Count == 0) return model ?? new PicturePageViewModel();
+
+            foreach (Picture pic in model.PicturesList)
             {
-                string pageResponseString = await picturePageResponse.Content.ReadAsStringAsync();
-
-                PicturePageViewModel model = JsonConvert.DeserializeObject<PicturePageViewModel>(pageResponseString);
-                if (timeZone != "" && model != null && model.PicturesList.Any())
+                if (pic.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
                 {
-                    foreach (Picture pic in model.PicturesList)
-                    {
-                        if (pic.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
-                        {
-                            pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
-                                TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                        }
-                    }
-                }
-
-                if (model != null)
-                {
-                    return model;
+                    pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
+                        TimeZoneInfo.FindSystemTimeZoneById(timeZone));
                 }
             }
 
-            return new PicturePageViewModel();
+            return model;
         }
 
         public async Task<PictureViewModel> GetPictureViewModel(int id, int userAccessLevel, int sortBy, string timeZone, string tagFilter = "")
@@ -283,35 +226,27 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string pageApiPath = "/api/Pictures/PictureViewModel/" + id + "/" + userAccessLevel + "?sortBy=" + sortBy + "&tagFilter=" + tagFilter;
             HttpResponseMessage picturesResponse = await _httpClient.GetAsync(pageApiPath);
-            if (picturesResponse.IsSuccessStatusCode)
+            if (!picturesResponse.IsSuccessStatusCode) return new PictureViewModel();
+
+            string picturesViewModelAsString = await picturesResponse.Content.ReadAsStringAsync();
+            PictureViewModel pictureViewModel = JsonConvert.DeserializeObject<PictureViewModel>(picturesViewModelAsString);
+            if (timeZone == "" || pictureViewModel == null) return pictureViewModel ?? new PictureViewModel();
+
+            if (pictureViewModel.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
             {
-                string picturesViewModelAsString = await picturesResponse.Content.ReadAsStringAsync();
-                PictureViewModel pictureViewModel = JsonConvert.DeserializeObject<PictureViewModel>(picturesViewModelAsString);
-                if (timeZone != "" && pictureViewModel != null)
-                {
-                    if (pictureViewModel.PictureTime.HasValue && !string.IsNullOrEmpty(timeZone))
-                    {
-                        pictureViewModel.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pictureViewModel.PictureTime.Value,
-                            TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                    }
-
-                    if (pictureViewModel.CommentsList.Count > 0 && !string.IsNullOrEmpty(timeZone))
-                    {
-                        foreach (Comment cmnt in pictureViewModel.CommentsList)
-                        {
-                            cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created,
-                                TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                        }
-                    }
-                }
-
-                if (pictureViewModel != null)
-                {
-                    return pictureViewModel;
-                }
+                pictureViewModel.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pictureViewModel.PictureTime.Value,
+                    TimeZoneInfo.FindSystemTimeZoneById(timeZone));
             }
 
-            return new PictureViewModel();
+            if (pictureViewModel.CommentsList.Count <= 0 || string.IsNullOrEmpty(timeZone)) return pictureViewModel;
+
+            foreach (Comment cmnt in pictureViewModel.CommentsList)
+            {
+                cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created,
+                    TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+            }
+
+            return pictureViewModel;
         }
 
         public async Task<VideoPageViewModel> GetVideoPage(int pageSize, int id, int progenyId, int userAccessLevel, int sortBy, string tagFilter, string timeZone)
@@ -329,30 +264,23 @@ namespace KinaUnaWeb.Services.HttpClients
             pageApiPath = pageApiPath + "&timeZone=" + timeZone;
 
             HttpResponseMessage videoResponse = await _httpClient.GetAsync(pageApiPath);
-            if (videoResponse.IsSuccessStatusCode)
+            if (!videoResponse.IsSuccessStatusCode) return new VideoPageViewModel();
+
+            string videoPageAsString = await videoResponse.Content.ReadAsStringAsync();
+            VideoPageViewModel model = JsonConvert.DeserializeObject<VideoPageViewModel>(videoPageAsString);
+
+            if (model == null || string.IsNullOrEmpty(timeZone) || model.VideosList.Count == 0) return model ?? new VideoPageViewModel();
+
+            foreach (Video vid in model.VideosList)
             {
-                string videoPageAsString = await videoResponse.Content.ReadAsStringAsync();
-                VideoPageViewModel model = JsonConvert.DeserializeObject<VideoPageViewModel>(videoPageAsString);
 
-                if (model != null && !string.IsNullOrEmpty(timeZone) && model.VideosList.Any())
+                if (vid.VideoTime.HasValue)
                 {
-                    foreach (Video vid in model.VideosList)
-                    {
-
-                        if (vid.VideoTime.HasValue)
-                        {
-                            vid.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(vid.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                        }
-                    }
-                }
-
-                if (model != null)
-                {
-                    return model;
+                    vid.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(vid.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
                 }
             }
 
-            return new VideoPageViewModel();
+            return model;
         }
 
         public async Task<VideoViewModel> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone, string tagFilter = "")
@@ -363,34 +291,26 @@ namespace KinaUnaWeb.Services.HttpClients
             string pageApiPath = "/api/Videos/VideoViewModel/" + id + "/" + userAccessLevel + "?sortBy=" + sortBy + "&tagFilter=" + tagFilter;
 
             HttpResponseMessage videoViewModelResponse = await _httpClient.GetAsync(pageApiPath);
-            if (videoViewModelResponse.IsSuccessStatusCode)
+            if (!videoViewModelResponse.IsSuccessStatusCode) return new VideoViewModel();
+
+            string videoViewModelAsString = await videoViewModelResponse.Content.ReadAsStringAsync();
+            VideoViewModel videoViewModel = JsonConvert.DeserializeObject<VideoViewModel>(videoViewModelAsString);
+
+            if (videoViewModel == null || string.IsNullOrEmpty(timeZone)) return videoViewModel ?? new VideoViewModel();
+
+            if (videoViewModel.VideoTime.HasValue)
             {
-                string videoViewModelAsString = await videoViewModelResponse.Content.ReadAsStringAsync();
-                VideoViewModel videoViewModel = JsonConvert.DeserializeObject<VideoViewModel>(videoViewModelAsString);
-
-                if (videoViewModel != null && !string.IsNullOrEmpty(timeZone))
-                {
-                    if (videoViewModel.VideoTime.HasValue)
-                    {
-                        videoViewModel.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(videoViewModel.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                    }
-
-                    if (videoViewModel.CommentsList.Count > 0)
-                    {
-                        foreach (Comment cmnt in videoViewModel.CommentsList)
-                        {
-                            cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                        }
-                    }
-                }
-
-                if (videoViewModel != null)
-                {
-                    return videoViewModel;
-                }
+                videoViewModel.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(videoViewModel.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
             }
 
-            return new VideoViewModel();
+            if (videoViewModel.CommentsList.Count <= 0) return videoViewModel;
+
+            foreach (Comment cmnt in videoViewModel.CommentsList)
+            {
+                cmnt.Created = TimeZoneInfo.ConvertTimeFromUtc(cmnt.Created, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
+            }
+
+            return videoViewModel;
         }
 
         public async Task<Video> GetVideo(int videoId, string timeZone)
@@ -401,26 +321,22 @@ namespace KinaUnaWeb.Services.HttpClients
             string videoApiPath = "/api/Videos/" + videoId;
 
             HttpResponseMessage videoResponse = await _httpClient.GetAsync(videoApiPath);
-            if (videoResponse.IsSuccessStatusCode)
-            {
-                string videoAsString = await videoResponse.Content.ReadAsStringAsync();
-                Video resultVideo = JsonConvert.DeserializeObject<Video>(videoAsString);
-                if (resultVideo != null)
-                {
-                    if (!string.IsNullOrEmpty(timeZone))
-                    {
-                        if (resultVideo.VideoTime.HasValue)
-                        {
-                            resultVideo.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(resultVideo.VideoTime.Value,
-                                TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                        }
-                    }
+            if (!videoResponse.IsSuccessStatusCode) return new Video();
 
-                    return resultVideo;
-                }
+            string videoAsString = await videoResponse.Content.ReadAsStringAsync();
+            Video resultVideo = JsonConvert.DeserializeObject<Video>(videoAsString);
+            if (resultVideo == null) return new Video();
+
+            if (string.IsNullOrEmpty(timeZone)) return resultVideo;
+
+            if (resultVideo.VideoTime.HasValue)
+            {
+                resultVideo.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(resultVideo.VideoTime.Value,
+                    TimeZoneInfo.FindSystemTimeZoneById(timeZone));
             }
 
-            return new Video();
+            return resultVideo;
+
         }
 
         public async Task<List<Video>> GetVideoList(int progenyId, int accessLevel, string timeZone)
@@ -430,28 +346,21 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string videoApiPath = "/api/Videos/Progeny/" + progenyId + "/" + accessLevel;
             HttpResponseMessage videosListReponse = await _httpClient.GetAsync(videoApiPath);
-            if (videosListReponse.IsSuccessStatusCode)
-            {
-                string videoListAsString = await videosListReponse.Content.ReadAsStringAsync();
-                List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoListAsString);
-                if (resultVideoList != null && !string.IsNullOrEmpty(timeZone))
-                {
-                    foreach (Video vid in resultVideoList)
-                    {
-                        if (vid.VideoTime.HasValue)
-                        {
-                            vid.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(vid.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
-                        }
-                    }
-                }
+            if (!videosListReponse.IsSuccessStatusCode) return [];
 
-                if (resultVideoList != null)
+            string videoListAsString = await videosListReponse.Content.ReadAsStringAsync();
+            List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoListAsString);
+            if (resultVideoList == null || string.IsNullOrEmpty(timeZone)) return resultVideoList ?? [];
+
+            foreach (Video vid in resultVideoList)
+            {
+                if (vid.VideoTime.HasValue)
                 {
-                    return resultVideoList;
+                    vid.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(vid.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(timeZone));
                 }
             }
 
-            return new List<Video>();
+            return resultVideoList;
         }
 
         public async Task<List<Video>> GetAllVideos()
@@ -459,40 +368,28 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string videoApiPath = "/api/Videos";
+            const string videoApiPath = "/api/Videos";
             HttpResponseMessage videosResponse = await _httpClient.GetAsync(videoApiPath);
-            if (videosResponse.IsSuccessStatusCode)
-            {
-                string videoResponseString = await videosResponse.Content.ReadAsStringAsync();
+            if (!videosResponse.IsSuccessStatusCode) return [];
 
-                List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoResponseString);
-                if (resultVideoList != null)
-                {
-                    return resultVideoList;
-                }
-            }
+            string videoResponseString = await videosResponse.Content.ReadAsStringAsync();
 
-            return new List<Video>();
+            List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videoResponseString);
+            return resultVideoList ?? [];
         }
         public async Task<Video> AddVideo(Video video)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string newVideoApiPath = "/api/Videos/";
+            const string newVideoApiPath = "/api/Videos/";
 
             HttpResponseMessage newVideoResponse = await _httpClient.PostAsync(newVideoApiPath, new StringContent(JsonConvert.SerializeObject(video), Encoding.UTF8, "application/json"));
-            if (newVideoResponse.IsSuccessStatusCode)
-            {
-                string videoAsString = await newVideoResponse.Content.ReadAsStringAsync();
-                video = JsonConvert.DeserializeObject<Video>(videoAsString);
-                if (video != null)
-                {
-                    return video;
-                }
-            }
+            if (!newVideoResponse.IsSuccessStatusCode) return new Video();
 
-            return new Video();
+            string videoAsString = await newVideoResponse.Content.ReadAsStringAsync();
+            video = JsonConvert.DeserializeObject<Video>(videoAsString);
+            return video ?? new Video();
         }
 
         public async Task<Video> UpdateVideo(Video video)
@@ -502,17 +399,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string updateVideoApiPath = "/api/Videos/" + video.VideoId;
             HttpResponseMessage videoResponse = await _httpClient.PutAsync(updateVideoApiPath, new StringContent(JsonConvert.SerializeObject(video), Encoding.UTF8, "application/json"));
-            if (videoResponse.IsSuccessStatusCode)
-            {
-                string videoAsString = await videoResponse.Content.ReadAsStringAsync();
-                video = JsonConvert.DeserializeObject<Video>(videoAsString);
-                if (video != null)
-                {
-                    return video;
-                }
-            }
+            if (!videoResponse.IsSuccessStatusCode) return new Video();
 
-            return new Video();
+            string videoAsString = await videoResponse.Content.ReadAsStringAsync();
+            video = JsonConvert.DeserializeObject<Video>(videoAsString);
+            return video ?? new Video();
         }
 
         public async Task<bool> DeleteVideo(int videoId)
@@ -523,12 +414,7 @@ namespace KinaUnaWeb.Services.HttpClients
             string deleteVideoApiPath = "/api/videos/" + videoId;
 
             HttpResponseMessage deleteVideoResponse = await _httpClient.DeleteAsync(deleteVideoApiPath).ConfigureAwait(false);
-            if (deleteVideoResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            return false;
+            return deleteVideoResponse.IsSuccessStatusCode;
         }
 
         public async Task<bool> AddVideoComment(Comment comment)
@@ -536,14 +422,9 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string newCommentApiPath = "/api/comments/";
+            const string newCommentApiPath = "/api/comments/";
             HttpResponseMessage newCommentResponse = await _httpClient.PostAsync(newCommentApiPath, new StringContent(JsonConvert.SerializeObject(comment), Encoding.UTF8, "application/json")).ConfigureAwait(false);
-            if (newCommentResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            return false;
+            return newCommentResponse.IsSuccessStatusCode;
         }
 
         public async Task<bool> DeleteVideoComment(int commentId)
@@ -553,12 +434,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string deleteCommentApiPath = "/api/comments/" + commentId;
             HttpResponseMessage newCommentResponse = await _httpClient.DeleteAsync(deleteCommentApiPath).ConfigureAwait(false);
-            if (newCommentResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            return false;
+            return newCommentResponse.IsSuccessStatusCode;
         }
     }
 }

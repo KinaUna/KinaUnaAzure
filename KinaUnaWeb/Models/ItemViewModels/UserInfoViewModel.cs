@@ -12,31 +12,31 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class UserInfoViewModel: BaseViewModel
     {
-        public int Id { get; set; }
+        public int Id { get; init; }
         public string UserId { get; set; }
         public string UserEmail { get; set; }
         public string UserName { get; set; }
         public string FirstName { get; set; }
         public string MiddleName { get; set; }
         public string LastName { get; set; }
-        public int ViewChild { get; set; }
-        public string Timezone { get; set; }
+        public int ViewChild { get; init; }
+        public string Timezone { get; init; }
         public string ProfilePicture { get; set; }
-        public IFormFile File { get; set; }
+        public IFormFile File { get; init; }
         [NotMapped]
-        public string PhoneNumber { get; set; }
+        public string PhoneNumber { get; init; }
         [NotMapped]
         public bool IsEmailConfirmed { get; set; }
         [NotMapped]
-        public string JoinDate { get; set; }
+        public string JoinDate { get; init; }
         [NotMapped]
-        public List<Progeny> ProgenyList { get; set; }
+        public List<Progeny> ProgenyList { get; init; }
         [NotMapped]
-        public bool CanUserAddItems { get; set; }
+        public bool CanUserAddItems { get; init; }
         [NotMapped]
-        public List<UserAccess> AccessList { get; set; }
+        public List<UserAccess> AccessList { get; init; }
         [NotMapped]
-        public SelectListItem[] TimezoneList { get; set; }
+        public SelectListItem[] TimezoneList { get; init; }
         [NotMapped]
         public string ChangeLink { get; set; }
         public UserInfoViewModel()

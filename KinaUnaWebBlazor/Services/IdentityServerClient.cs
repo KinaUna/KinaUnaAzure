@@ -16,7 +16,8 @@ namespace KinaUnaWebBlazor.Services
 			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		}
 
-		public async Task<string> RequestClientCredentialsTokenAsync()
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2254:Template should be a static expression", Justification = "<Pending>")]
+        public async Task<string> RequestClientCredentialsTokenAsync()
 		{
 			// request the access token token
 			TokenResponse tokenResponse = await _httpClient.RequestClientCredentialsTokenAsync(_tokenRequest);

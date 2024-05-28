@@ -71,12 +71,11 @@ namespace KinaUnaProgenyApi.Services
         private async Task<TimeLineItem> SetTimeLineItemInCache(int id)
         {
             TimeLineItem timeLineItem = await _context.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(t => t.TimeLineId == id);
-            if (timeLineItem != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
-                _ = await SetTimeLineItemByItemIdInCache(timeLineItem.ItemId, timeLineItem.ItemType);
-                _ = await SetTimeLineListInCache(timeLineItem.ProgenyId);
-            }
+            if (timeLineItem == null) return null;
+
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id, JsonConvert.SerializeObject(timeLineItem), _cacheOptionsSliding);
+            _ = await SetTimeLineItemByItemIdInCache(timeLineItem.ItemId, timeLineItem.ItemType);
+            _ = await SetTimeLineListInCache(timeLineItem.ProgenyId);
 
             return timeLineItem;
         }
@@ -84,15 +83,14 @@ namespace KinaUnaProgenyApi.Services
         public async Task<TimeLineItem> UpdateTimeLineItem(TimeLineItem item)
         {
             TimeLineItem timeLineItemToUpdate = await _context.TimeLineDb.SingleOrDefaultAsync(ti => ti.TimeLineId == item.TimeLineId);
-            if (timeLineItemToUpdate != null)
-            {
-                timeLineItemToUpdate.CopyPropertiesForUpdate(item);
+            if (timeLineItemToUpdate == null) return null;
 
-                _ = _context.TimeLineDb.Update(timeLineItemToUpdate);
-                _ = await _context.SaveChangesAsync();
+            timeLineItemToUpdate.CopyPropertiesForUpdate(item);
 
-                _ = await SetTimeLineItemInCache(item.TimeLineId);
-            }
+            _ = _context.TimeLineDb.Update(timeLineItemToUpdate);
+            _ = await _context.SaveChangesAsync();
+
+            _ = await SetTimeLineItemInCache(item.TimeLineId);
 
             return item;
         }
@@ -152,7 +150,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<TimeLineItem>> GetTimeLineList(int progenyId)
         {
             List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(progenyId);
-            if (!timeLineList.Any())
+            if (timeLineList.Count == 0)
             {
                 timeLineList = await SetTimeLineListInCache(progenyId);
             }
@@ -162,7 +160,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<TimeLineItem>> GetTimeLineListFromCache(int progenyId)
         {
-            List<TimeLineItem> timeLineList = new();
+            List<TimeLineItem> timeLineList = [];
             string cachedTimeLineList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelinelist" + progenyId);
             if (!string.IsNullOrEmpty(cachedTimeLineList))
             {

@@ -58,15 +58,13 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Contact? contactItem = new Contact();
+            Contact? contactItem = new();
             string contactsApiPath = "/api/Contacts/" + contactId;
             HttpResponseMessage contactResponse = await _httpClient.GetAsync(contactsApiPath).ConfigureAwait(false);
-            if (contactResponse.IsSuccessStatusCode)
-            {
-                string contactAsString = await contactResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (!contactResponse.IsSuccessStatusCode) return contactItem;
 
-                contactItem = JsonConvert.DeserializeObject<Contact>(contactAsString);
-            }
+            string contactAsString = await contactResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            contactItem = JsonConvert.DeserializeObject<Contact>(contactAsString);
 
             return contactItem;
         }
@@ -76,16 +74,14 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string contactsApiPath = "/api/Contacts/";
+            const string contactsApiPath = "/api/Contacts/";
             HttpResponseMessage contactResponse = await _httpClient.PostAsync(contactsApiPath, new StringContent(JsonConvert.SerializeObject(contact), System.Text.Encoding.UTF8, "application/json"));
-            if (contactResponse.IsSuccessStatusCode)
-            {
-                string contactAsString = await contactResponse.Content.ReadAsStringAsync();
-                contact = JsonConvert.DeserializeObject<Contact>(contactAsString);
-                return contact;
-            }
+            if (!contactResponse.IsSuccessStatusCode) return new Contact();
 
-            return new Contact();
+            string contactAsString = await contactResponse.Content.ReadAsStringAsync();
+            contact = JsonConvert.DeserializeObject<Contact>(contactAsString);
+            return contact;
+
         }
 
         public async Task<Contact?> UpdateContact(Contact contact)
@@ -112,17 +108,16 @@ namespace KinaUnaWebBlazor.Services
 
         public async Task<List<Contact>?> GetContactsList(int progenyId, int accessLevel)
         {
-            List<Contact>? progenyContactsList = new List<Contact>();
+            List<Contact>? progenyContactsList = [];
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string contactsApiPath = "/api/Contacts/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
             HttpResponseMessage contactsResponse = await _httpClient.GetAsync(contactsApiPath).ConfigureAwait(false);
-            if (contactsResponse.IsSuccessStatusCode)
-            {
-                string contactsAsString = await contactsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                progenyContactsList = JsonConvert.DeserializeObject<List<Contact>>(contactsAsString);
-            }
+            if (!contactsResponse.IsSuccessStatusCode) return progenyContactsList;
+
+            string contactsAsString = await contactsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            progenyContactsList = JsonConvert.DeserializeObject<List<Contact>>(contactsAsString);
 
             return progenyContactsList;
         }

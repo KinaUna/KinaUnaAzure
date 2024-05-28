@@ -14,7 +14,7 @@ namespace KinaUnaWebBlazor.Controllers
     {
         [AllowAnonymous]
         [HttpGet]
-        [Route("[action]/{languageId}")]
+        [Route("[action]/{languageId:int}")]
         public async Task<IActionResult> SetLanguageId(int languageId, [FromQuery] string returnUrl)
         {
             if (languageId > 0)

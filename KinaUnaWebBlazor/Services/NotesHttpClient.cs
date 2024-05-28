@@ -58,14 +58,13 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Note? noteItem = new Note();
+            Note? noteItem = new();
             string notesApiPath = "/api/Notes/" + noteId;
             HttpResponseMessage noteResponse = await _httpClient.GetAsync(notesApiPath);
-            if (noteResponse.IsSuccessStatusCode)
-            {
-                string noteAsString = await noteResponse.Content.ReadAsStringAsync();
-                noteItem = JsonConvert.DeserializeObject<Note>(noteAsString);
-            }
+            if (!noteResponse.IsSuccessStatusCode) return noteItem;
+
+            string noteAsString = await noteResponse.Content.ReadAsStringAsync();
+            noteItem = JsonConvert.DeserializeObject<Note>(noteAsString);
 
             return noteItem;
         }
@@ -75,16 +74,14 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string notesApiPath = "/api/Notes/";
+            const string notesApiPath = "/api/Notes/";
             HttpResponseMessage notesResponse = await _httpClient.PostAsync(notesApiPath, new StringContent(JsonConvert.SerializeObject(note), System.Text.Encoding.UTF8, "application/json"));
-            if (notesResponse.IsSuccessStatusCode)
-            {
-                string notesAsString = await notesResponse.Content.ReadAsStringAsync();
-                note = JsonConvert.DeserializeObject<Note>(notesAsString);
-                return note;
-            }
+            if (!notesResponse.IsSuccessStatusCode) return new Note();
 
-            return new Note();
+            string notesAsString = await notesResponse.Content.ReadAsStringAsync();
+            note = JsonConvert.DeserializeObject<Note>(notesAsString);
+            return note;
+
         }
 
         public async Task<Note?> UpdateNote(Note? note)
@@ -94,14 +91,12 @@ namespace KinaUnaWebBlazor.Services
 
             string updateApiPath = "/api/Notes/" + note?.NoteId;
             HttpResponseMessage noteResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonConvert.SerializeObject(note), System.Text.Encoding.UTF8, "application/json"));
-            if (noteResponse.IsSuccessStatusCode)
-            {
-                string noteAsString = await noteResponse.Content.ReadAsStringAsync();
-                note = JsonConvert.DeserializeObject<Note>(noteAsString);
-                return note;
-            }
+            if (!noteResponse.IsSuccessStatusCode) return new Note();
 
-            return new Note();
+            string noteAsString = await noteResponse.Content.ReadAsStringAsync();
+            note = JsonConvert.DeserializeObject<Note>(noteAsString);
+            return note;
+
         }
 
         public async Task<bool> DeleteNote(int noteId)
@@ -111,27 +106,21 @@ namespace KinaUnaWebBlazor.Services
 
             string notesApiPath = "/api/Notes/" + noteId;
             HttpResponseMessage noteResponse = await _httpClient.DeleteAsync(notesApiPath);
-            if (noteResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            return false;
+            return noteResponse.IsSuccessStatusCode;
         }
 
         public async Task<List<Note>?> GetNotesList(int progenyId, int accessLevel)
         {
-            List<Note>? progenyNotesList = new List<Note>();
+            List<Note>? progenyNotesList = [];
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string notesApiPath = "/api/Notes/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
             HttpResponseMessage notesResponse = await _httpClient.GetAsync(notesApiPath);
-            if (notesResponse.IsSuccessStatusCode)
-            {
-                string notesAsString = await notesResponse.Content.ReadAsStringAsync();
-                progenyNotesList = JsonConvert.DeserializeObject<List<Note>>(notesAsString);
-            }
+            if (!notesResponse.IsSuccessStatusCode) return progenyNotesList;
+
+            string notesAsString = await notesResponse.Content.ReadAsStringAsync();
+            progenyNotesList = JsonConvert.DeserializeObject<List<Note>>(notesAsString);
 
             return progenyNotesList;
         }

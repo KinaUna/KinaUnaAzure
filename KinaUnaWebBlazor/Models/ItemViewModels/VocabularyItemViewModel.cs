@@ -13,10 +13,10 @@ namespace KinaUnaWebBlazor.Models.ItemViewModels
         public DateTime DateAdded { get; set; } = DateTime.UtcNow;
         public string Author { get; set; } = string.Empty;
         public int ProgenyId { get; set; } = 0;
-        public Progeny Progeny { get; set; } = new Progeny();
+        public Progeny Progeny { get; set; } = new();
         public bool IsAdmin { get; set; } = false;
         public int AccessLevel { get; set; } = 5;
-        public VocabularyItem VocabularyItem { get; set; } = new VocabularyItem();
+        public VocabularyItem VocabularyItem { get; set; } = new();
     }
 
     public class WordDateCount

@@ -66,14 +66,13 @@ namespace KinaUnaWeb.Models.FamilyViewModels
             FirstName = "No user found";
             MiddleName = "No user found";
             LastName = "No user found";
-            
-            if (userInfo != null)
-            {
-                UserName = userInfo.UserName;
-                FirstName = userInfo.FirstName;
-                MiddleName = userInfo.MiddleName;
-                LastName = userInfo.LastName;
-            }
+
+            if (userInfo == null) return;
+
+            UserName = userInfo.UserName;
+            FirstName = userInfo.FirstName;
+            MiddleName = userInfo.MiddleName;
+            LastName = userInfo.LastName;
         }
 
         public UserAccess CreateUserAccess()

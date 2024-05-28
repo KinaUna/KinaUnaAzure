@@ -64,12 +64,11 @@ namespace KinaUnaProgenyApi.Services
         private async Task<VocabularyItem> SetVocabularyItemInCache(int id)
         {
             VocabularyItem vocabularyItem = await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == id);
-            if (vocabularyItem != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id, JsonConvert.SerializeObject(vocabularyItem), _cacheOptions);
+            if (vocabularyItem == null) return null;
 
-                _ = await SetVocabularyListInCache(vocabularyItem.ProgenyId);
-            }
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id, JsonConvert.SerializeObject(vocabularyItem), _cacheOptions);
+
+            _ = await SetVocabularyListInCache(vocabularyItem.ProgenyId);
 
             return vocabularyItem;
         }
@@ -77,15 +76,14 @@ namespace KinaUnaProgenyApi.Services
         public async Task<VocabularyItem> UpdateVocabularyItem(VocabularyItem vocabularyItem)
         {
             VocabularyItem vocabularyItemToUpdate = await _context.VocabularyDb.SingleOrDefaultAsync(v => v.WordId == vocabularyItem.WordId);
-            if (vocabularyItemToUpdate != null)
-            {
-                vocabularyItemToUpdate.CopyPropertiesForUpdate(vocabularyItem);
+            if (vocabularyItemToUpdate == null) return null;
 
-                _ = _context.VocabularyDb.Update(vocabularyItemToUpdate);
-                _ = await _context.SaveChangesAsync();
+            vocabularyItemToUpdate.CopyPropertiesForUpdate(vocabularyItem);
 
-                _ = await SetVocabularyItemInCache(vocabularyItemToUpdate.WordId);
-            }
+            _ = _context.VocabularyDb.Update(vocabularyItemToUpdate);
+            _ = await _context.SaveChangesAsync();
+
+            _ = await SetVocabularyItemInCache(vocabularyItemToUpdate.WordId);
 
 
             return vocabularyItemToUpdate;
@@ -94,17 +92,16 @@ namespace KinaUnaProgenyApi.Services
         public async Task<VocabularyItem> DeleteVocabularyItem(VocabularyItem vocabularyItem)
         {
             VocabularyItem vocabularyItemToDelete = await _context.VocabularyDb.SingleOrDefaultAsync(v => v.WordId == vocabularyItem.WordId);
-            if (vocabularyItemToDelete != null)
-            {
-                _ = _context.VocabularyDb.Remove(vocabularyItemToDelete);
-                _ = await _context.SaveChangesAsync();
-                await RemoveVocabularyItemFromCache(vocabularyItem.WordId, vocabularyItem.ProgenyId);
-            }
+            if (vocabularyItemToDelete == null) return null;
+
+            _ = _context.VocabularyDb.Remove(vocabularyItemToDelete);
+            _ = await _context.SaveChangesAsync();
+            await RemoveVocabularyItemFromCache(vocabularyItem.WordId, vocabularyItem.ProgenyId);
 
             return vocabularyItem;
         }
 
-        public async Task RemoveVocabularyItemFromCache(int id, int progenyId)
+        private async Task RemoveVocabularyItemFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id);
 

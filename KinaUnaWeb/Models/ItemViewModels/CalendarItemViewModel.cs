@@ -15,14 +15,14 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public CalendarItemViewModel()
         {
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
         }
 
         public CalendarItemViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
 
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
         }
         
         public void SetCalendarItem(CalendarItem eventItem)

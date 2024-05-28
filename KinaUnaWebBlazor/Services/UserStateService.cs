@@ -13,7 +13,7 @@ namespace KinaUnaWebBlazor.Services
         {
             get
             {
-                if(_currentLanguageId != null && _currentLanguageId.Value > 0 )
+                if(_currentLanguageId is > 0 )
                 {
                     return _currentLanguageId.Value;
                 }
@@ -31,11 +31,10 @@ namespace KinaUnaWebBlazor.Services
             get => _currentUser;
             private set
             {
-                if (value != null && value.Id != _currentUser?.Id)
-                {
-                    _currentUser = value;
-                    this.CurrentUserChanged?.Invoke(this, _currentUser);
-                }
+                if (value == null || value.Id == _currentUser?.Id) return;
+
+                _currentUser = value;
+                CurrentUserChanged?.Invoke(this, _currentUser);
             } }
 
         public Progeny? CurrentProgeny
@@ -43,11 +42,10 @@ namespace KinaUnaWebBlazor.Services
             get => _currentProgeny;
             private set
             {
-                if (value != null && value.Id != _currentProgeny?.Id)
-                {
-                    _currentProgeny = value;
-                    this.CurrentProgenyChanged?.Invoke(this, _currentProgeny);
-                }
+                if (value == null || value.Id == _currentProgeny?.Id) return;
+
+                _currentProgeny = value;
+                CurrentProgenyChanged?.Invoke(this, _currentProgeny);
             }
         }
 

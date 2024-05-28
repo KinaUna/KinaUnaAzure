@@ -37,12 +37,11 @@ namespace KinaUnaWeb.Services.HttpClients
             Friend friendItem = new();
             string friendsApiPath = "/api/Friends/" + friendId;
             HttpResponseMessage friendResponse = await _httpClient.GetAsync(friendsApiPath).ConfigureAwait(false);
-            if (friendResponse.IsSuccessStatusCode)
-            {
-                string friendAsString = await friendResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (!friendResponse.IsSuccessStatusCode) return friendItem;
 
-                friendItem = JsonConvert.DeserializeObject<Friend>(friendAsString);
-            }
+            string friendAsString = await friendResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            friendItem = JsonConvert.DeserializeObject<Friend>(friendAsString);
 
             return friendItem;
         }
@@ -54,14 +53,12 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string friendsApiPath = "/api/Friends/";
             HttpResponseMessage friendResponse = await _httpClient.PostAsync(friendsApiPath, new StringContent(JsonConvert.SerializeObject(friend), System.Text.Encoding.UTF8, "application/json"));
-            if (friendResponse.IsSuccessStatusCode)
-            {
-                string friendAsString = await friendResponse.Content.ReadAsStringAsync();
-                friend = JsonConvert.DeserializeObject<Friend>(friendAsString);
-                return friend;
-            }
+            if (!friendResponse.IsSuccessStatusCode) return new Friend();
 
-            return new Friend();
+            string friendAsString = await friendResponse.Content.ReadAsStringAsync();
+            friend = JsonConvert.DeserializeObject<Friend>(friendAsString);
+            return friend;
+
         }
 
         public async Task<Friend> UpdateFriend(Friend friend)
@@ -71,14 +68,12 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string updateFriendApiPath = "/api/Friends/" + friend.FriendId;
             HttpResponseMessage friendResponse = await _httpClient.PutAsync(updateFriendApiPath, new StringContent(JsonConvert.SerializeObject(friend), System.Text.Encoding.UTF8, "application/json"));
-            if (friendResponse.IsSuccessStatusCode)
-            {
-                string friendAsString = await friendResponse.Content.ReadAsStringAsync();
-                friend = JsonConvert.DeserializeObject<Friend>(friendAsString);
-                return friend;
-            }
+            if (!friendResponse.IsSuccessStatusCode) return new Friend();
 
-            return new Friend();
+            string friendAsString = await friendResponse.Content.ReadAsStringAsync();
+            friend = JsonConvert.DeserializeObject<Friend>(friendAsString);
+            return friend;
+
         }
 
         public async Task<bool> DeleteFriend(int friendId)
@@ -88,32 +83,26 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string friendsApiPath = "/api/Friends/" + friendId;
             HttpResponseMessage friendResponse = await _httpClient.DeleteAsync(friendsApiPath).ConfigureAwait(false);
-            if (friendResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            return false;
+            return friendResponse.IsSuccessStatusCode;
         }
 
         public async Task<List<Friend>> GetFriendsList(int progenyId, int accessLevel, string tagFilter = "")
         {
-            List<Friend> progenyFriendsList = new();
+            List<Friend> progenyFriendsList = [];
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string friendsApiPath = "/api/Friends/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
             HttpResponseMessage friendsResponse = await _httpClient.GetAsync(friendsApiPath).ConfigureAwait(false);
-            if (friendsResponse.IsSuccessStatusCode)
+            if (!friendsResponse.IsSuccessStatusCode) return progenyFriendsList;
+
+            string friendsAsString = await friendsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            progenyFriendsList = JsonConvert.DeserializeObject<List<Friend>>(friendsAsString);
+
+            if (!string.IsNullOrEmpty(tagFilter))
             {
-                string friendsAsString = await friendsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-                progenyFriendsList = JsonConvert.DeserializeObject<List<Friend>>(friendsAsString);
-
-                if (!string.IsNullOrEmpty(tagFilter))
-                {
-                    progenyFriendsList = progenyFriendsList.Where(c => c.Tags != null && c.Tags.ToUpper().Contains(tagFilter.ToUpper())).ToList();
-                }
+                progenyFriendsList = progenyFriendsList.Where(c => c.Tags != null && c.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).ToList();
             }
 
             return progenyFriendsList;

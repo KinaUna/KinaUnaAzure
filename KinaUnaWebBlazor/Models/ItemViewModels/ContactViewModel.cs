@@ -23,7 +23,7 @@ namespace KinaUnaWebBlazor.Models.ItemViewModels
         public int ProgenyId { get; set; } = 0;
         public bool IsAdmin { get; set; } = false;
         public string Context { get; set; } = "";
-        public Address Address { get; set; } = new Address();
+        public Address Address { get; set; } = new();
         public string AddressLine1 { get; set; } = "";
         public string AddressLine2 { get; set; } = "";
         public string City { get; set; } = "";
@@ -36,6 +36,6 @@ namespace KinaUnaWebBlazor.Models.ItemViewModels
         public string TagsList { get; set; } = "";
         public string TagFilter { get; set; } = "";
         public DateTime? DateAdded { get; set; }
-        public Contact Contact { get; set; } = new Contact();
+        public Contact Contact { get; set; } = new();
     }
 }

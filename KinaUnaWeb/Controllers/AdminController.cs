@@ -38,24 +38,22 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = HttpContext.User.FindFirst("email")?.Value ?? Constants.DefaultUserEmail;
             
-            if (userEmail.ToUpper() != _adminEmail.ToUpper())
+            if (!userEmail.Equals(_adminEmail, StringComparison.CurrentCultureIgnoreCase))
             {
                 return RedirectToAction("Index", "Home");
             }
 
             List<UserInfo> deletedUserInfosList = await userInfosHttpClient.GetDeletedUserInfos();
-            if (deletedUserInfosList.Any())
+            if (deletedUserInfosList.Count == 0) return View();
+
+            foreach (UserInfo deletedUserInfo in deletedUserInfosList)
             {
-                foreach (UserInfo deletedUserInfo in deletedUserInfosList)
+                if (!deletedUserInfo.Deleted || deletedUserInfo.DeletedTime >= DateTime.UtcNow - TimeSpan.FromDays(30)) continue;
+
+                UserInfo authResponseUserInfo = await authHttpClient.CheckDeleteUser(deletedUserInfo);
+                if (authResponseUserInfo != null && authResponseUserInfo.UserId == deletedUserInfo.UserId && deletedUserInfo.Deleted && deletedUserInfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30))
                 {
-                    if (deletedUserInfo.Deleted && deletedUserInfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30))
-                    {
-                        UserInfo authResponseUserInfo = await authHttpClient.CheckDeleteUser(deletedUserInfo);
-                        if (authResponseUserInfo != null && authResponseUserInfo.UserId == deletedUserInfo.UserId && deletedUserInfo.Deleted && deletedUserInfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30))
-                        {
-                            await userInfosHttpClient.RemoveUserInfoForGood(deletedUserInfo);
-                        }
-                    }
+                    await userInfosHttpClient.RemoveUserInfoForGood(deletedUserInfo);
                 }
             }
 
@@ -185,8 +183,8 @@ namespace KinaUnaWeb.Controllers
             ManageTranslationsViewModel model = new()
             {
                 Translations = await translationsHttpClient.GetAllTranslations(),
-                PagesList = new List<string>(),
-                WordsList = new List<string>()
+                PagesList = [],
+                WordsList = []
             };
 
             foreach (TextTranslation translationItem in model.Translations)
@@ -217,8 +215,8 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.Translations = await translationsHttpClient.GetAllTranslations();
-            model.Translations = model.Translations.Where(t => t.Page.Trim().ToUpper() == model.Page.Trim().ToUpper()).ToList();
-            model.Translations = model.Translations.OrderBy(t => t.Word).ThenBy(t => t.LanguageId).ToList();
+            model.Translations = model.Translations.Where(t => t.Page.Trim().Equals(model.Page.Trim(), StringComparison.CurrentCultureIgnoreCase)).ToList();
+            model.Translations = [.. model.Translations.OrderBy(t => t.Word).ThenBy(t => t.LanguageId)];
 
             model.LanguagesList = await languagesHttpClient.GetAllLanguages();
 
@@ -281,15 +279,13 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditText(int id, string returnUrl = "")
         {
             UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
-            if (userInfo != null && userInfo.IsKinaUnaAdmin)
-            {
-                KinaUnaText model = await pageTextsHttpClient.GetPageTextById(id);
-                model.ReturnUrl = returnUrl;
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
-                return PartialView("_EditTextPartial", model);
-            }
+            KinaUnaText model = await pageTextsHttpClient.GetPageTextById(id);
+            model.ReturnUrl = returnUrl;
 
-            return RedirectToAction("Index", "Home");
+            return PartialView("_EditTextPartial", model);
+
         }
 
         [Authorize]
@@ -298,31 +294,28 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditText([FromForm] KinaUnaText model)
         {
             UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
-            if (userInfo != null && userInfo.IsKinaUnaAdmin)
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
+
+            KinaUnaText updateText = await pageTextsHttpClient.GetPageTextById(model.Id);
+            updateText.Text = model.Text;
+            KinaUnaText updatedText = await pageTextsHttpClient.UpdatePageText(updateText);
+
+            // Update caches
+            await pageTextsHttpClient.GetPageTextById(updatedText.Id, true);
+            List<KinaUnaLanguage> languages = await languagesHttpClient.GetAllLanguages();
+            foreach (KinaUnaLanguage lang in languages)
             {
-                KinaUnaText updateText = await pageTextsHttpClient.GetPageTextById(model.Id);
-                updateText.Text = model.Text;
-                KinaUnaText updatedText = await pageTextsHttpClient.UpdatePageText(updateText);
-
-                // Update caches
-                await pageTextsHttpClient.GetPageTextById(updatedText.Id, true);
-                List<KinaUnaLanguage> languages = await languagesHttpClient.GetAllLanguages();
-                foreach (KinaUnaLanguage lang in languages)
-                {
-                    _ = await pageTextsHttpClient.GetPageTextByTitle(updatedText.Title, updatedText.Page, lang.Id, true);
-                    await pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
-                }
-
-                if (string.IsNullOrEmpty(model.ReturnUrl))
-                {
-                    return PartialView("_EditTextPartial", updateText);
-                }
-                
-                return Redirect(model.ReturnUrl);
-                
+                _ = await pageTextsHttpClient.GetPageTextByTitle(updatedText.Title, updatedText.Page, lang.Id, true);
+                await pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
             }
 
-            return RedirectToAction("Index", "Home");
+            if (string.IsNullOrEmpty(model.ReturnUrl))
+            {
+                return PartialView("_EditTextPartial", updateText);
+            }
+                
+            return Redirect(model.ReturnUrl);
+
         }
 
         [Authorize]
@@ -330,19 +323,17 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditTextTranslation(int textId, int languageId)
         {
             UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
-            if (userInfo != null && userInfo.IsKinaUnaAdmin)
-            {
-                List<KinaUnaText> allTexts = await pageTextsHttpClient.GetAllKinaUnaTexts(languageId, true);
-                KinaUnaText textToEdit = allTexts.SingleOrDefault(t => t.TextId == textId && t.LanguageId == languageId);
-                //if (textToEdit != null)
-                //{
-                //    textToEdit.Text = "";
-                //}
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
-                return Json(textToEdit);
-            }
+            List<KinaUnaText> allTexts = await pageTextsHttpClient.GetAllKinaUnaTexts(languageId, true);
+            KinaUnaText textToEdit = allTexts.SingleOrDefault(t => t.TextId == textId && t.LanguageId == languageId);
+            //if (textToEdit != null)
+            //{
+            //    textToEdit.Text = "";
+            //}
 
-            return RedirectToAction("Index", "Home");
+            return Json(textToEdit);
+
         }
 
         [Authorize]
@@ -352,28 +343,28 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditTextTranslation([FromForm] KinaUnaText model)
         {
             UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
-            if (userInfo != null && userInfo.IsKinaUnaAdmin)
-            {
-                KinaUnaText updateText = await pageTextsHttpClient.GetPageTextById(model.Id);
-                updateText.Text = model.Text;
-                KinaUnaText updatedText = await pageTextsHttpClient.UpdatePageText(updateText);
-                
-                // Update caches
-                await pageTextsHttpClient.GetPageTextById(updatedText.Id, true);
-                List<KinaUnaLanguage> languages = await languagesHttpClient.GetAllLanguages();
-                foreach (KinaUnaLanguage lang in languages)
-                {
-                    _ = await pageTextsHttpClient.GetPageTextByTitle(updatedText.Title, updatedText.Page, lang.Id, true);
-                    await pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
-                }
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
-                return Json(updatedText);
+            KinaUnaText updateText = await pageTextsHttpClient.GetPageTextById(model.Id);
+            updateText.Text = model.Text;
+            KinaUnaText updatedText = await pageTextsHttpClient.UpdatePageText(updateText);
+                
+            // Update caches
+            await pageTextsHttpClient.GetPageTextById(updatedText.Id, true);
+            List<KinaUnaLanguage> languages = await languagesHttpClient.GetAllLanguages();
+            foreach (KinaUnaLanguage lang in languages)
+            {
+                _ = await pageTextsHttpClient.GetPageTextByTitle(updatedText.Title, updatedText.Page, lang.Id, true);
+                await pageTextsHttpClient.GetAllKinaUnaTexts(lang.Id, true);
             }
 
-            return RedirectToAction("Index", "Home");
+            return Json(updatedText);
+
         }
 
         [HttpPost]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "ASP0019:Suggest using IHeaderDictionary.Append or the indexer", Justification = "From Syncfusion Sample")]
+        // ReSharper disable once InconsistentNaming
         public async Task<ActionResult> SaveRtfFile(IList<IFormFile> UploadFiles)
         {
             try
@@ -411,42 +402,40 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> ManageTexts()
         {
             UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
-            if (userInfo != null && userInfo.IsKinaUnaAdmin)
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
+
+            ManageKinaUnaTextsViewModel model = new()
             {
-                ManageKinaUnaTextsViewModel model = new()
+                LanguageId = Request.GetLanguageIdFromCookie(),
+                Texts = await pageTextsHttpClient.GetAllKinaUnaTexts(1),
+                PagesList = [],
+                TitlesList = []
+            };
+            foreach (KinaUnaText textItem in model.Texts)
+            {
+                if (!model.PagesList.Contains(textItem.Page))
                 {
-                    LanguageId = Request.GetLanguageIdFromCookie(),
-                    Texts = await pageTextsHttpClient.GetAllKinaUnaTexts(1),
-                    PagesList = new List<string>(),
-                    TitlesList = new List<string>()
-                };
-                foreach (KinaUnaText textItem in model.Texts)
-                {
-                    if (!model.PagesList.Contains(textItem.Page))
-                    {
-                        model.PagesList.Add(textItem.Page);
-                    }
-
-                    if (!model.TitlesList.Contains(textItem.Title))
-                    {
-                        model.TitlesList.Add(textItem.Title);
-                    }
+                    model.PagesList.Add(textItem.Page);
                 }
 
-                model.LanguagesList = await languagesHttpClient.GetAllLanguages();
-                KinaUnaLanguage selectedLanguage = model.LanguagesList.SingleOrDefault(l => l.Id == model.LanguageId);
-                if (selectedLanguage != null)
+                if (!model.TitlesList.Contains(textItem.Title))
                 {
-                    model.Language = model.LanguagesList.IndexOf(selectedLanguage);
+                    model.TitlesList.Add(textItem.Title);
                 }
-                else
-                {
-                    model.Language = 0;
-                }
-                return View(model);
             }
 
-            return RedirectToAction("Index", "Home");
+            model.LanguagesList = await languagesHttpClient.GetAllLanguages();
+            KinaUnaLanguage selectedLanguage = model.LanguagesList.SingleOrDefault(l => l.Id == model.LanguageId);
+            if (selectedLanguage != null)
+            {
+                model.Language = model.LanguagesList.IndexOf(selectedLanguage);
+            }
+            else
+            {
+                model.Language = 0;
+            }
+            return View(model);
+
         }
         public IActionResult SendAdminMessage()
         {
@@ -462,12 +451,12 @@ namespace KinaUnaWeb.Controllers
             string userId = User.FindFirst("sub")?.Value ?? "NoUser";
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
             string userTimeZone = User.FindFirst("timezone")?.Value ?? "NoUser";
-            if (userEmail.ToUpper() != _adminEmail.ToUpper())
+            if (!userEmail.Equals(_adminEmail, StringComparison.CurrentCultureIgnoreCase))
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            if (userEmail.ToUpper() == _adminEmail.ToUpper())
+            if (userEmail.Equals(_adminEmail, StringComparison.CurrentCultureIgnoreCase))
             {
                 if (notification.To == "OnlineUsers")
                 {
@@ -521,7 +510,7 @@ namespace KinaUnaWeb.Controllers
             // Todo: Implement Admin as role instead
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
             string userId = User.FindFirst("sub")?.Value ?? "NoUser";
-            if (userEmail.ToUpper() != _adminEmail.ToUpper())
+            if (!userEmail.Equals(_adminEmail, StringComparison.CurrentCultureIgnoreCase))
             {
                 return RedirectToAction("Index", "Home");
             }
@@ -538,7 +527,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SendPush(PushNotification notification)
         {
             string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
-            if (userEmail.ToUpper() != _adminEmail.ToUpper())
+            if (!userEmail.Equals(_adminEmail, StringComparison.CurrentCultureIgnoreCase))
             {
                 return RedirectToAction("Index", "Home");
             }

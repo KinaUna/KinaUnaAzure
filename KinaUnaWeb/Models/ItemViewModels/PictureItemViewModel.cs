@@ -7,7 +7,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class PictureItemViewModel: BaseItemsViewModel
     {
-        public Picture Picture { get; set; } = new();
+        public Picture Picture { get; init; } = new();
         
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
@@ -32,7 +32,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string PicMinutes { get; set; }
         public int SortBy { get; set; }
 
-        public string HereMapsApiKey { get; set; } = "";
+        public string HereMapsApiKey { get; init; } = "";
 
         public PictureItemViewModel()
         {
@@ -56,7 +56,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Picture.AccessLevel = pictureViewModel.AccessLevel;
             Picture.Author = pictureViewModel.Author;
             CommentThreadNumber = Picture.CommentThreadNumber = pictureViewModel.CommentThreadNumber;
-            CommentsList = Picture.Comments = pictureViewModel.CommentsList ?? new List<Comment>();
+            CommentsList = Picture.Comments = pictureViewModel.CommentsList ?? [];
             Picture.Location = pictureViewModel.Location;
             Picture.Latitude = pictureViewModel.Latitude;
             Picture.Longtitude = pictureViewModel.Longtitude;

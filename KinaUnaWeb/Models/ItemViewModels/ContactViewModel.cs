@@ -13,14 +13,14 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
         public string FileName { get; set; }
-        public IFormFile File { get; set; }
+        public IFormFile File { get; init; }
         public string TagFilter { get; set; }
-        public Address AddressItem { get; set; } = new();
+        public Address AddressItem { get; init; } = new();
         public Contact ContactItem { get; set; } = new();
         
         public ContactViewModel()
         {
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
             SetAccessLevelList();
         }
 
@@ -28,7 +28,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             SetBaseProperties(baseItemsViewModel);
             SetAccessLevelList();
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
         }
 
         public ContactViewModel(Contact contact, bool isAdmin, UserInfo userInfo)
@@ -36,7 +36,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             CurrentUser = userInfo;
             SetPropertiesFromContact(contact, isAdmin);
             SetAccessLevelList();
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
         }
 
         public void SetProgenyList()
@@ -103,16 +103,15 @@ namespace KinaUnaWeb.Models.ItemViewModels
             DateTime tempTime = contact.DateAdded ?? DateTime.UtcNow;
             ContactItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(tempTime, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
 
-            if (contact.Address != null)
-            {
-                ContactItem.AddressIdNumber = contact.AddressIdNumber;
-                AddressItem.AddressLine1 = contact.Address.AddressLine1;
-                AddressItem.AddressLine2 = contact.Address.AddressLine2;
-                AddressItem.City = contact.Address.City;
-                AddressItem.State = contact.Address.State;
-                AddressItem.PostalCode = contact.Address.PostalCode;
-                AddressItem.Country = contact.Address.Country;
-            }
+            if (contact.Address == null) return;
+
+            ContactItem.AddressIdNumber = contact.AddressIdNumber;
+            AddressItem.AddressLine1 = contact.Address.AddressLine1;
+            AddressItem.AddressLine2 = contact.Address.AddressLine2;
+            AddressItem.City = contact.Address.City;
+            AddressItem.State = contact.Address.State;
+            AddressItem.PostalCode = contact.Address.PostalCode;
+            AddressItem.Country = contact.Address.Country;
         }
 
         public Contact CreateContact()
@@ -152,19 +151,18 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 contactItem.Tags = ContactItem.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
             }
 
-            if (AddressItem.AddressLine1 + AddressItem.AddressLine2 + AddressItem.City + AddressItem.Country + AddressItem.PostalCode + AddressItem.State != "")
+            if (AddressItem.AddressLine1 + AddressItem.AddressLine2 + AddressItem.City + AddressItem.Country + AddressItem.PostalCode + AddressItem.State == "") return contactItem;
+
+            Address address = new()
             {
-                Address address = new()
-                {
-                    AddressLine1 = AddressItem.AddressLine1,
-                    AddressLine2 = AddressItem.AddressLine2,
-                    City = AddressItem.City,
-                    PostalCode = AddressItem.PostalCode,
-                    State = AddressItem.State,
-                    Country = AddressItem.Country
-                };
-                contactItem.Address = address;
-            }
+                AddressLine1 = AddressItem.AddressLine1,
+                AddressLine2 = AddressItem.AddressLine2,
+                City = AddressItem.City,
+                PostalCode = AddressItem.PostalCode,
+                State = AddressItem.State,
+                Country = AddressItem.Country
+            };
+            contactItem.Address = address;
 
             return contactItem;
         }

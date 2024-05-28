@@ -4,7 +4,7 @@
 @inject UserStateService UserStateService
 @implements IDisposable
 
-<PageTitle>@_pageTitle</PageTitle>
+<PageTitle>@PageTitle</PageTitle>
 <Div Margin="Margin.Is3.FromTop.Is2.FromBottom">
     <img src="/images/KinaUnaLogo_246x80.png"/>
 </Div>
@@ -88,7 +88,7 @@
 
 @code
 {
-    readonly string _pageTitle = "Home";
+    private const string PageTitle = "Home";
     Progeny? Progeny { get; set; }
     UserInfo? UserInfo { get; set; }
 
@@ -102,10 +102,9 @@
 
     private void UserStateServiceOnCurrentProgenyChanged(object? sender, Progeny e)
     {
-        if (Progeny?.Id != e.Id) { 
-            Progeny = e;
-            StateHasChanged();
-        }
+        if (Progeny?.Id == e.Id) return;
+        Progeny = e;
+        StateHasChanged();
     }
 
     private void UserStateServiceOnCurrentUserChanged(object? sender, UserInfo e)

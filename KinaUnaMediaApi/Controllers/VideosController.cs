@@ -41,12 +41,12 @@ namespace KinaUnaMediaApi.Controllers
             if (!string.IsNullOrEmpty(tagFilter))
             {
                 allItems = await videosService.GetVideosList(progenyId);
-                allItems = allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToList();
+                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.VideoTime)];
             }
             else
             {
                 allItems = await videosService.GetVideosList(progenyId); 
-                allItems = allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToList();
+                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime)];
             }
 
             if (sortBy == 1)
@@ -56,7 +56,7 @@ namespace KinaUnaMediaApi.Controllers
 
             int videoCounter = 1;
             int vidCount = allItems.Count;
-            List<string> tagsList = new List<string>();
+            List<string> tagsList = [];
             foreach (Video vid in allItems)
             {
                 if (sortBy == 1)
@@ -69,9 +69,9 @@ namespace KinaUnaMediaApi.Controllers
                 }
                 
                 videoCounter++;
-                if (!String.IsNullOrEmpty(vid.Tags))
+                if (!string.IsNullOrEmpty(vid.Tags))
                 {
-                    List<string> pvmTags = vid.Tags.Split(',').ToList();
+                    List<string> pvmTags = [.. vid.Tags.Split(',')];
                     foreach (string tagstring in pvmTags)
                     {
                         if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
@@ -81,23 +81,21 @@ namespace KinaUnaMediaApi.Controllers
                     }
                 }
 
-                if (vid.Duration != null)
-                {
-                    vid.DurationHours = vid.Duration.Value.Hours.ToString();
-                    vid.DurationMinutes = vid.Duration.Value.Minutes.ToString();
-                    vid.DurationSeconds = vid.Duration.Value.Seconds.ToString();
-                    if (vid.DurationSeconds.Length == 1)
-                    {
-                        vid.DurationSeconds = "0" + vid.DurationSeconds;
-                    }
-                    if (vid.Duration.Value.Hours != 0)
-                    {
-                        if (vid.DurationMinutes.Length == 1)
-                        {
-                            vid.DurationMinutes = "0" + vid.DurationMinutes;
-                        }
+                if (vid.Duration == null) continue;
 
-                    }
+                vid.DurationHours = vid.Duration.Value.Hours.ToString();
+                vid.DurationMinutes = vid.Duration.Value.Minutes.ToString();
+                vid.DurationSeconds = vid.Duration.Value.Seconds.ToString();
+                if (vid.DurationSeconds.Length == 1)
+                {
+                    vid.DurationSeconds = "0" + vid.DurationSeconds;
+                }
+
+                if (vid.Duration.Value.Hours == 0) continue;
+
+                if (vid.DurationMinutes.Length == 1)
+                {
+                    vid.DurationMinutes = "0" + vid.DurationMinutes;
                 }
             }
             
@@ -110,12 +108,14 @@ namespace KinaUnaMediaApi.Controllers
             {
                 vid.Comments = await commentsService.GetCommentsList(vid.CommentThreadNumber);
             }
-            VideoPageViewModel model = new VideoPageViewModel();
-            model.VideosList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
-            model.TagFilter = tagFilter;
+            VideoPageViewModel model = new()
+            {
+                VideosList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy,
+                TagFilter = tagFilter
+            };
             string tList = "";
             foreach (string tstr in tagsList)
             {
@@ -126,116 +126,114 @@ namespace KinaUnaMediaApi.Controllers
             return Ok(model);
         }
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> VideoViewModel(int id, int accessLevel, [FromQuery] int sortBy = 1)
         {
-            Video video = await videosService.GetVideo(id); 
-            if (video != null)
+            Video video = await videosService.GetVideo(id);
+            if (video == null) return NotFound();
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail); 
+            if (userAccess == null && video.ProgenyId != Constants.DefaultChildId)
             {
-                // Check if user should be allowed access.
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail); 
-                if (userAccess == null && video.ProgenyId != Constants.DefaultChildId)
-                {
-                    return Unauthorized();
-                }
-
-                VideoViewModel model = new VideoViewModel();
-                model.VideoId = video.VideoId;
-                model.VideoType = video.VideoType;
-                model.VideoTime = video.VideoTime;
-                model.Duration = video.Duration;
-                model.ProgenyId = video.ProgenyId;
-                model.Owners = video.Owners;
-                model.VideoLink = video.VideoLink;
-                model.ThumbLink = video.ThumbLink;
-                model.AccessLevel = video.AccessLevel;
-                model.Author = video.Author;
-                model.AccessLevelListEn[video.AccessLevel].Selected = true;
-                model.AccessLevelListDa[video.AccessLevel].Selected = true;
-                model.AccessLevelListDe[video.AccessLevel].Selected = true;
-                model.CommentThreadNumber = video.CommentThreadNumber;
-                model.Tags = video.Tags;
-                model.VideoNumber = 1;
-                model.VideoCount = 1;
-                model.CommentsList = await commentsService.GetCommentsList(video.CommentThreadNumber); 
-                model.Location = video.Location;
-                model.Longtitude = video.Longtitude;
-                model.Latitude = video.Latitude;
-                model.Altitude = video.Latitude;
-                model.TagsList = "";
-                List<string> tagsList = new List<string>();
-                List<Video> videosList = await videosService.GetVideosList(video.ProgenyId); 
-                videosList = videosList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToList();
-                if (videosList.Any())
-                {
-                    int currentIndex = 0;
-                    int indexer = 0;
-                    foreach (Video vid in videosList)
-                    {
-                        if (vid.VideoId == video.VideoId)
-                        {
-                            currentIndex = indexer;
-                        }
-                        indexer++;
-                        if (!String.IsNullOrEmpty(vid.Tags))
-                        {
-                            List<string> pvmTags = vid.Tags.Split(',').ToList();
-                            foreach (string tagstring in pvmTags)
-                            {
-                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                {
-                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                }
-                            }
-                        }
-                    }
-                    model.VideoNumber = currentIndex + 1;
-                    model.VideoCount = videosList.Count;
-                    if(currentIndex > 0)
-                    {
-                        model.PrevVideo = videosList[currentIndex - 1].VideoId;
-                    }
-                    else
-                    {
-                        model.PrevVideo = videosList.Last().VideoId;
-                    }
-
-                    if (currentIndex + 1 < videosList.Count)
-                    {
-                        model.NextVideo = videosList[currentIndex + 1].VideoId;
-                    }
-                    else
-                    {
-                        model.NextVideo = videosList.First().VideoId;
-                    }
-
-                    if (sortBy == 1)
-                    {
-                        int tempVal = model.NextVideo;
-                        model.NextVideo = model.PrevVideo;
-                        model.PrevVideo = tempVal;
-                    }
-                   
-                }
-                string tagItems = "[";
-                if (tagsList.Any())
-                {
-                    foreach (string tagstring in tagsList)
-                    {
-                        tagItems = tagItems + "'" + tagstring + "',";
-                    }
-
-                    tagItems = tagItems.Remove(tagItems.Length - 1);
-                    tagItems = tagItems + "]";
-                }
-
-                model.TagsList = tagItems;
-
-                return Ok(model);
+                return Unauthorized();
             }
 
-            return NotFound();
+            VideoViewModel model = new()
+            {
+                VideoId = video.VideoId,
+                VideoType = video.VideoType,
+                VideoTime = video.VideoTime,
+                Duration = video.Duration,
+                ProgenyId = video.ProgenyId,
+                Owners = video.Owners,
+                VideoLink = video.VideoLink,
+                ThumbLink = video.ThumbLink,
+                AccessLevel = video.AccessLevel,
+                Author = video.Author
+            };
+            model.AccessLevelListEn[video.AccessLevel].Selected = true;
+            model.AccessLevelListDa[video.AccessLevel].Selected = true;
+            model.AccessLevelListDe[video.AccessLevel].Selected = true;
+            model.CommentThreadNumber = video.CommentThreadNumber;
+            model.Tags = video.Tags;
+            model.VideoNumber = 1;
+            model.VideoCount = 1;
+            model.CommentsList = await commentsService.GetCommentsList(video.CommentThreadNumber); 
+            model.Location = video.Location;
+            model.Longtitude = video.Longtitude;
+            model.Latitude = video.Latitude;
+            model.Altitude = video.Latitude;
+            model.TagsList = "";
+            List<string> tagsList = [];
+            List<Video> videosList = await videosService.GetVideosList(video.ProgenyId); 
+            videosList = [.. videosList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime)];
+
+            if (videosList.Count != 0)
+            {
+                int currentIndex = 0;
+                int indexer = 0;
+                foreach (Video vid in videosList)
+                {
+                    if (vid.VideoId == video.VideoId)
+                    {
+                        currentIndex = indexer;
+                    }
+                    indexer++;
+                    if (string.IsNullOrEmpty(vid.Tags)) continue;
+
+                    List<string> pvmTags = [.. vid.Tags.Split(',')];
+                    foreach (string tagstring in pvmTags)
+                    {
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                        {
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                        }
+                    }
+                }
+                model.VideoNumber = currentIndex + 1;
+                model.VideoCount = videosList.Count;
+                if(currentIndex > 0)
+                {
+                    model.PrevVideo = videosList[currentIndex - 1].VideoId;
+                }
+                else
+                {
+                    model.PrevVideo = videosList.Last().VideoId;
+                }
+
+                if (currentIndex + 1 < videosList.Count)
+                {
+                    model.NextVideo = videosList[currentIndex + 1].VideoId;
+                }
+                else
+                {
+                    model.NextVideo = videosList.First().VideoId;
+                }
+
+                if (sortBy == 1)
+                {
+                    (model.NextVideo, model.PrevVideo) = (model.PrevVideo, model.NextVideo);
+                }
+                   
+            }
+            string tagItems = "[";
+            if (tagsList.Count != 0)
+            {
+                foreach (string tagstring in tagsList)
+                {
+                    tagItems = tagItems + "'" + tagstring + "',";
+                }
+
+                tagItems = tagItems.Remove(tagItems.Length - 1);
+                tagItems += "]";
+            }
+
+            model.TagsList = tagItems;
+
+            return Ok(model);
+
         }
 
         // GET api/videos/progeny/[id]/[accessLevel]
@@ -254,12 +252,11 @@ namespace KinaUnaMediaApi.Controllers
 
             List<Video> videosList = await videosService.GetVideosList(id);
             videosList = videosList.Where(v => v.AccessLevel >= accessLevel).ToList();
-            if (videosList.Any())
+            if (videosList.Count == 0) return Ok(videosList);
+
+            foreach (Video video in videosList)
             {
-                foreach (Video video in videosList)
-                {
-                    video.Comments = await commentsService.GetCommentsList(video.CommentThreadNumber); 
-                }
+                video.Comments = await commentsService.GetCommentsList(video.CommentThreadNumber); 
             }
             return Ok(videosList);
         }
@@ -270,42 +267,38 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> GetVideo(int id)
         {
             Video result = await videosService.GetVideo(id);
-            if (result != null)
+            if (result == null) return NotFound();
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+
+            if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
             {
-                // Check if user should be allowed access.
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-                if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
-                {
-                    return Unauthorized();
-                }
-
-                return Ok(result);
+                return Unauthorized();
             }
 
-            return NotFound();
+            return Ok(result);
+
         }
 
         [HttpGet("[action]/{videoLink}/{progenyId}")]
         public async Task<IActionResult> ByLink(string videoLink, int progenyId)
         {
             Video result = await videosService.GetVideoByLink(videoLink, progenyId);
-            if (result != null)
+            if (result == null) return NotFound();
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+
+            if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
             {
-                // Check if user should be allowed access.
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-                if (userAccess == null && result.ProgenyId != Constants.DefaultChildId)
-                {
-                    return Unauthorized();
-                }
-
-                return Ok(result);
+                return Unauthorized();
             }
 
-            return NotFound();
+            return Ok(result);
+
         }
 
         // POST api/videos
@@ -335,11 +328,13 @@ namespace KinaUnaMediaApi.Controllers
                 UserInfo userinfo = await dataService.GetUserInfoByEmail(User.GetEmail());
                 string title = "New Video added for " + prog.NickName;
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new video for " + prog.NickName;
-                TimeLineItem tItem = new TimeLineItem();
-                tItem.ProgenyId = model.ProgenyId;
-                tItem.ItemId = model.VideoId.ToString();
-                tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
-                tItem.AccessLevel = model.AccessLevel;
+                TimeLineItem tItem = new()
+                {
+                    ProgenyId = model.ProgenyId,
+                    ItemId = model.VideoId.ToString(),
+                    ItemType = (int)KinaUnaTypes.TimeLineType.Video,
+                    AccessLevel = model.AccessLevel
+                };
                 await azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
 
                 return Ok(model);
@@ -389,11 +384,13 @@ namespace KinaUnaMediaApi.Controllers
             UserInfo userinfo = await dataService.GetUserInfoByEmail(User.GetEmail());
             string title = "Video Edited for " + prog.NickName;
             string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a video for " + prog.NickName;
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = video.ProgenyId;
-            tItem.ItemId = video.VideoId.ToString();
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
-            tItem.AccessLevel = video.AccessLevel;
+            TimeLineItem tItem = new()
+            {
+                ProgenyId = video.ProgenyId,
+                ItemId = video.VideoId.ToString(),
+                ItemType = (int)KinaUnaTypes.TimeLineType.Video,
+                AccessLevel = video.AccessLevel
+            };
             await azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
 
             return Ok(video);
@@ -404,54 +401,51 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             Video video = await videosService.GetVideo(id);
-            if (video != null)
+            if (video == null) return NotFound();
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail);
+
+            if (userAccess == null || userAccess.AccessLevel > 0)
             {
-                // Check if user should be allowed access.
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail);
-
-                if (userAccess == null || userAccess.AccessLevel > 0)
-                {
-                    return Unauthorized();
-                }
-
-                List<Comment> comments = await commentsService.GetCommentsList(video.CommentThreadNumber);
-                if (comments.Any())
-                {
-                    foreach (Comment deletedComment in comments)
-                    {
-                        _ = await commentsService.DeleteComment(deletedComment);
-                        await commentsService.RemoveComment(deletedComment.CommentId, deletedComment.CommentThreadNumber);
-                    }
-                }
-
-                CommentThread cmntThread = await commentsService.GetCommentThread(video.CommentThreadNumber);
-                if (cmntThread != null)
-                {
-                    _ = await commentsService.DeleteCommentThread(cmntThread);
-                    await commentsService.RemoveCommentsList(video.CommentThreadNumber);
-                }
-
-                _ = await videosService.DeleteVideo(video);
-                await videosService.RemoveVideo(video.VideoId, video.ProgenyId);
-
-                Progeny prog = await dataService.GetProgeny(video.ProgenyId);
-                UserInfo userinfo = await dataService.GetUserInfoByEmail(User.GetEmail());
-                string title = "Video deleted for " + prog.NickName;
-                string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a video for " + prog.NickName;
-                TimeLineItem tItem = new TimeLineItem();
-                tItem.ProgenyId = video.ProgenyId;
-                tItem.ItemId = video.VideoId.ToString();
-                tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Video;
-                tItem.AccessLevel = 0;
-                await azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
-
-                return NoContent();
+                return Unauthorized();
             }
-            else
+
+            List<Comment> comments = await commentsService.GetCommentsList(video.CommentThreadNumber);
+            if (comments.Count != 0)
             {
-                return NotFound();
+                foreach (Comment deletedComment in comments)
+                {
+                    _ = await commentsService.DeleteComment(deletedComment);
+                    await commentsService.RemoveComment(deletedComment.CommentId, deletedComment.CommentThreadNumber);
+                }
             }
+
+            CommentThread cmntThread = await commentsService.GetCommentThread(video.CommentThreadNumber);
+            if (cmntThread != null)
+            {
+                _ = await commentsService.DeleteCommentThread(cmntThread);
+                await commentsService.RemoveCommentsList(video.CommentThreadNumber);
+            }
+
+            _ = await videosService.DeleteVideo(video);
+            await videosService.RemoveVideo(video.VideoId, video.ProgenyId);
+
+            Progeny prog = await dataService.GetProgeny(video.ProgenyId);
+            UserInfo userinfo = await dataService.GetUserInfoByEmail(User.GetEmail());
+            string title = "Video deleted for " + prog.NickName;
+            string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a video for " + prog.NickName;
+            TimeLineItem tItem = new()
+            {
+                ProgenyId = video.ProgenyId,
+                ItemId = video.VideoId.ToString(),
+                ItemType = (int)KinaUnaTypes.TimeLineType.Video,
+                AccessLevel = 0
+            };
+            await azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
+
+            return NoContent();
 
         }
 
@@ -492,12 +486,12 @@ namespace KinaUnaMediaApi.Controllers
 
             List<Video> allItems;
             allItems = await videosService.GetVideosList(progenyId);
-            List<string> tagsList = new List<string>();
+            List<string> tagsList = [];
             foreach (Video vid in allItems)
             {
-                if (!String.IsNullOrEmpty(vid.Tags))
+                if (!string.IsNullOrEmpty(vid.Tags))
                 {
-                    List<string> pvmTags = vid.Tags.Split(',').ToList();
+                    List<string> pvmTags = [.. vid.Tags.Split(',')];
                     foreach (string tagstring in pvmTags)
                     {
                         if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
@@ -510,11 +504,11 @@ namespace KinaUnaMediaApi.Controllers
             if (!string.IsNullOrEmpty(tagFilter))
             {
 
-                allItems = allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToList();
+                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.VideoTime)];
             }
             else
             {
-                allItems = allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToList();
+                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime)];
             }
 
             if (sortBy == 1)
@@ -546,13 +540,12 @@ namespace KinaUnaMediaApi.Controllers
                     {
                         vid.DurationSeconds = "0" + vid.DurationSeconds;
                     }
-                    if (vid.Duration.Value.Hours != 0)
-                    {
-                        if (vid.DurationMinutes.Length == 1)
-                        {
-                            vid.DurationMinutes = "0" + vid.DurationMinutes;
-                        }
 
+                    if (vid.Duration.Value.Hours == 0) continue;
+
+                    if (vid.DurationMinutes.Length == 1)
+                    {
+                        vid.DurationMinutes = "0" + vid.DurationMinutes;
                     }
                 }
             }
@@ -563,12 +556,14 @@ namespace KinaUnaMediaApi.Controllers
             {
                 vid.Comments = await commentsService.GetCommentsList(vid.CommentThreadNumber);
             }
-            VideoPageViewModel model = new VideoPageViewModel();
-            model.VideosList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
-            model.TagFilter = tagFilter;
+            VideoPageViewModel model = new()
+            {
+                VideosList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy,
+                TagFilter = tagFilter
+            };
             string tList = "";
             foreach (string tstr in tagsList)
             {

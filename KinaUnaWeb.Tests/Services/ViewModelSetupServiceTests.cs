@@ -36,8 +36,8 @@ namespace KinaUnaWeb.Tests.Services
             _progenyHttpClientMock.Setup(p => p.GetProgeny(1)).ReturnsAsync(testProgeny);
 
 
-            List<UserAccess> testAccessList = new();
-            UserAccess testUserAccess = new UserAccess
+            List<UserAccess> testAccessList = [];
+            UserAccess testUserAccess = new()
             {
                 AccessId = 1,
                 AccessLevel = 1,

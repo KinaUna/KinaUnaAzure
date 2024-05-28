@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -38,26 +37,25 @@ namespace KinaUnaProgenyApi.Controllers
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             bool allowAccess = false;
-            if (userEmail.ToUpper() == id.ToUpper())
+            if (userEmail.Equals(id, StringComparison.CurrentCultureIgnoreCase))
             {
                 allowAccess = true;
             }
             else
             {
                 List<Progeny> progenyList = await userAccessService.GetProgenyUserIsAdmin(userEmail);
-                if (progenyList.Any())
+                if (progenyList.Count != 0)
                 {
                     foreach (Progeny progeny in progenyList)
                     {
                         List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(progeny.Id);
-                        if (accessList.Any())
+                        if (accessList.Count == 0) continue;
+
+                        foreach (UserAccess userAccess in accessList)
                         {
-                            foreach (UserAccess userAccess in accessList)
+                            if (userAccess.UserId.Equals(id, StringComparison.CurrentCultureIgnoreCase))
                             {
-                                if (userAccess.UserId.ToUpper() == id.ToUpper())
-                                {
-                                    allowAccess = true;
-                                }
+                                allowAccess = true;
                             }
                         }
                     }
@@ -69,23 +67,22 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 userInfo.CanUserAddItems = false;
                 userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
-                userInfo.ProgenyList = new List<Progeny>();
-                if (userInfo.AccessList.Any())
+                userInfo.ProgenyList = [];
+                if (userInfo.AccessList.Count == 0) return Ok(userInfo);
+
+                foreach (UserAccess userAccess in userInfo.AccessList)
                 {
-                    foreach (UserAccess userAccess in userInfo.AccessList)
+                    Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
+                    userInfo.ProgenyList.Add(progeny);
+                    if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
                     {
-                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
-                        userInfo.ProgenyList.Add(progeny);
-                        if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
-                        {
-                            userInfo.CanUserAddItems = true;
-                        }
+                        userInfo.CanUserAddItems = true;
                     }
                 }
             }
             else
             {
-                if (userEmail.ToUpper() == id.ToUpper())
+                if (userEmail.Equals(id, StringComparison.CurrentCultureIgnoreCase))
                 {
                     UserInfo userinfoToAdd = new()
                     {
@@ -95,7 +92,7 @@ namespace KinaUnaProgenyApi.Controllers
                         Timezone = Constants.DefaultTimezone,
                         UserName = User.GetUserUserName()
                     };
-                    if (String.IsNullOrEmpty(userinfoToAdd.UserName))
+                    if (string.IsNullOrEmpty(userinfoToAdd.UserName))
                     {
                         userinfoToAdd.UserName = userinfoToAdd.UserEmail;
                     }
@@ -105,17 +102,16 @@ namespace KinaUnaProgenyApi.Controllers
                     userInfo = await userInfoService.GetUserInfoByEmail(id);
                     userInfo.CanUserAddItems = false;
                     userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
-                    userInfo.ProgenyList = new List<Progeny>();
-                    if (userInfo.AccessList.Any())
+                    userInfo.ProgenyList = [];
+                    if (userInfo.AccessList.Count == 0) return Ok(userInfo);
+
+                    foreach (UserAccess userAccess in userInfo.AccessList)
                     {
-                        foreach (UserAccess userAccess in userInfo.AccessList)
+                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
+                        userInfo.ProgenyList.Add(progeny);
+                        if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
                         {
-                            Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
-                            userInfo.ProgenyList.Add(progeny);
-                            if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
-                            {
-                                userInfo.CanUserAddItems = true;
-                            }
+                            userInfo.CanUserAddItems = true;
                         }
                     }
                 }
@@ -127,8 +123,8 @@ namespace KinaUnaProgenyApi.Controllers
                         UserEmail = "Unknown",
                         CanUserAddItems = false,
                         UserId = "Unknown",
-                        AccessList = new List<UserAccess>(),
-                        ProgenyList = new List<Progeny>()
+                        AccessList = [],
+                        ProgenyList = []
                     };
                 }
 
@@ -143,26 +139,25 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             bool allowAccess = false;
-            if (userEmail.ToUpper() == id.ToUpper())
+            if (userEmail.Equals(id, StringComparison.CurrentCultureIgnoreCase))
             {
                 allowAccess = true;
             }
             else
             {
                 List<Progeny> progenyList = await userAccessService.GetProgenyUserIsAdmin(userEmail);
-                if (progenyList.Any())
+                if (progenyList.Count != 0)
                 {
                     foreach (Progeny progeny in progenyList)
                     {
                         List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(progeny.Id);
-                        if (accessList.Any())
+                        if (accessList.Count == 0) continue;
+
+                        foreach (UserAccess userAccess in accessList)
                         {
-                            foreach (UserAccess userAccess in accessList)
+                            if (userAccess.UserId.Equals(id, StringComparison.CurrentCultureIgnoreCase))
                             {
-                                if (userAccess.UserId.ToUpper() == id.ToUpper())
-                                {
-                                    allowAccess = true;
-                                }
+                                allowAccess = true;
                             }
                         }
                     }
@@ -174,23 +169,22 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 userInfo.CanUserAddItems = false;
                 userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
-                userInfo.ProgenyList = new List<Progeny>();
-                if (userInfo.AccessList.Any())
+                userInfo.ProgenyList = [];
+                if (userInfo.AccessList.Count == 0) return Ok(userInfo);
+
+                foreach (UserAccess userAccess in userInfo.AccessList)
                 {
-                    foreach (UserAccess userAccess in userInfo.AccessList)
+                    Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
+                    userInfo.ProgenyList.Add(progeny);
+                    if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
                     {
-                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
-                        userInfo.ProgenyList.Add(progeny);
-                        if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
-                        {
-                            userInfo.CanUserAddItems = true;
-                        }
+                        userInfo.CanUserAddItems = true;
                     }
                 }
             }
             else
             {
-                if (userEmail.ToUpper() == id.ToUpper())
+                if (userEmail.Equals(id, StringComparison.CurrentCultureIgnoreCase))
                 {
                     UserInfo userInfoToAdd = new()
                     {
@@ -209,17 +203,16 @@ namespace KinaUnaProgenyApi.Controllers
                     userInfo = await userInfoService.GetUserInfoByEmail(id);
                     userInfo.CanUserAddItems = false;
                     userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
-                    userInfo.ProgenyList = new List<Progeny>();
-                    if (userInfo.AccessList.Any())
+                    userInfo.ProgenyList = [];
+                    if (userInfo.AccessList.Count == 0) return Ok(userInfo);
+
+                    foreach (UserAccess userAccess in userInfo.AccessList)
                     {
-                        foreach (UserAccess userAccess in userInfo.AccessList)
+                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
+                        userInfo.ProgenyList.Add(progeny);
+                        if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
                         {
-                            Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
-                            userInfo.ProgenyList.Add(progeny);
-                            if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
-                            {
-                                userInfo.CanUserAddItems = true;
-                            }
+                            userInfo.CanUserAddItems = true;
                         }
                     }
                 }
@@ -231,8 +224,8 @@ namespace KinaUnaProgenyApi.Controllers
                         UserEmail = "Unknown",
                         CanUserAddItems = false,
                         UserId = "Unknown",
-                        AccessList = new List<UserAccess>(),
-                        ProgenyList = new List<Progeny>()
+                        AccessList = [],
+                        ProgenyList = []
                     };
                 }
 
@@ -242,32 +235,31 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // GET api/userinfo/id
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetInfo(int id)
         {
             UserInfo userInfo = await userInfoService.GetUserInfoById(id);
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             bool allowAccess = false;
-            if (userEmail.ToUpper() == userInfo.UserEmail.ToUpper())
+            if (userEmail.Equals(userInfo.UserEmail, StringComparison.CurrentCultureIgnoreCase))
             {
                 allowAccess = true;
             }
             else
             {
                 List<Progeny> progenyList = await userAccessService.GetProgenyUserIsAdmin(userEmail);
-                if (progenyList.Any())
+                if (progenyList.Count != 0)
                 {
                     foreach (Progeny progeny in progenyList)
                     {
                         List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(progeny.Id);
-                        if (accessList.Any())
+                        if (accessList.Count == 0) continue;
+
+                        foreach (UserAccess userAccess in accessList)
                         {
-                            foreach (UserAccess userAccess in accessList)
+                            if (userAccess.UserId.Equals(userInfo.UserEmail, StringComparison.CurrentCultureIgnoreCase))
                             {
-                                if (userAccess.UserId.ToUpper() == userInfo.UserEmail.ToUpper())
-                                {
-                                    allowAccess = true;
-                                }
+                                allowAccess = true;
                             }
                         }
                     }
@@ -278,17 +270,16 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 userInfo.CanUserAddItems = false;
                 userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
-                userInfo.ProgenyList = new List<Progeny>();
-                if (userInfo.AccessList.Any())
+                userInfo.ProgenyList = [];
+                if (userInfo.AccessList.Count == 0) return Ok(userInfo);
+
+                foreach (UserAccess ua in userInfo.AccessList)
                 {
-                    foreach (UserAccess ua in userInfo.AccessList)
+                    Progeny progeny = await progenyService.GetProgeny(ua.ProgenyId);
+                    userInfo.ProgenyList.Add(progeny);
+                    if (ua.AccessLevel == 0 || ua.CanContribute)
                     {
-                        Progeny progeny = await progenyService.GetProgeny(ua.ProgenyId);
-                        userInfo.ProgenyList.Add(progeny);
-                        if (ua.AccessLevel == 0 || ua.CanContribute)
-                        {
-                            userInfo.CanUserAddItems = true;
-                        }
+                        userInfo.CanUserAddItems = true;
                     }
                 }
             }
@@ -300,8 +291,8 @@ namespace KinaUnaProgenyApi.Controllers
                     UserEmail = "Unknown",
                     CanUserAddItems = false,
                     UserId = "Unknown",
-                    AccessList = new List<UserAccess>(),
-                    ProgenyList = new List<Progeny>()
+                    AccessList = [],
+                    ProgenyList = []
                 };
             }
             return Ok(userInfo);
@@ -317,30 +308,30 @@ namespace KinaUnaProgenyApi.Controllers
                 UserEmail = "Unknown",
                 CanUserAddItems = false,
                 UserId = "Unknown",
-                AccessList = new List<UserAccess>(),
-                ProgenyList = new List<Progeny>()
+                AccessList = [],
+                ProgenyList = []
             };
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
 
             bool allowAccess = false;
-            if (userEmail.ToUpper() == userInfo.UserEmail?.ToUpper())
+            if (userEmail.Equals(userInfo.UserEmail?.ToUpper(), StringComparison.CurrentCultureIgnoreCase))
             {
                 allowAccess = true;
             }
             else
             {
                 List<Progeny> progenyList = await userAccessService.GetProgenyUserIsAdmin(userEmail);
-                if (progenyList.Any())
+                if (progenyList.Count != 0)
                 {
                     foreach (Progeny progeny in progenyList)
                     {
                         List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(progeny.Id);
-                        if (accessList.Any())
+                        if (accessList.Count != 0)
                         {
                             foreach (UserAccess userAccess in accessList)
                             {
-                                if (userInfo.UserEmail != null && userAccess.UserId.ToUpper() == userInfo.UserEmail.ToUpper())
+                                if (userInfo.UserEmail != null && userAccess.UserId.Equals(userInfo.UserEmail, StringComparison.CurrentCultureIgnoreCase))
                                 {
                                     allowAccess = true;
                                 }
@@ -354,17 +345,16 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 userInfo.CanUserAddItems = false;
                 userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
-                userInfo.ProgenyList = new List<Progeny>();
-                if (userInfo.AccessList.Any())
+                userInfo.ProgenyList = [];
+                if (userInfo.AccessList.Count == 0) return Ok(userInfo);
+
+                foreach (UserAccess userAccess in userInfo.AccessList)
                 {
-                    foreach (UserAccess userAccess in userInfo.AccessList)
+                    Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
+                    userInfo.ProgenyList.Add(progeny);
+                    if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
                     {
-                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
-                        userInfo.ProgenyList.Add(progeny);
-                        if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
-                        {
-                            userInfo.CanUserAddItems = true;
-                        }
+                        userInfo.CanUserAddItems = true;
                     }
                 }
             }
@@ -376,8 +366,8 @@ namespace KinaUnaProgenyApi.Controllers
                     UserEmail = "Unknown",
                     CanUserAddItems = false,
                     UserId = "Unknown",
-                    AccessList = new List<UserAccess>(),
-                    ProgenyList = new List<Progeny>()
+                    AccessList = [],
+                    ProgenyList = []
                 };
             }
             return Ok(userInfo);
@@ -392,32 +382,31 @@ namespace KinaUnaProgenyApi.Controllers
                 UserEmail = "Unknown",
                 CanUserAddItems = false,
                 UserId = "Unknown",
-                AccessList = new List<UserAccess>(),
-                ProgenyList = new List<Progeny>()
+                AccessList = [],
+                ProgenyList = []
             };
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
 
             bool allowAccess = false;
-            if (userEmail.ToUpper() == userInfo.UserEmail?.ToUpper())
+            if (userEmail.Equals(userInfo.UserEmail?.ToUpper(), StringComparison.CurrentCultureIgnoreCase))
             {
                 allowAccess = true;
             }
             else
             {
                 List<Progeny> progenyList = await userAccessService.GetProgenyUserIsAdmin(userEmail);
-                if (progenyList.Any())
+                if (progenyList.Count != 0)
                 {
                     foreach (Progeny progeny in progenyList)
                     {
                         List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(progeny.Id);
-                        if (accessList.Any())
+                        if (accessList.Count == 0) continue;
+
+                        foreach (UserAccess userAccess in accessList)
                         {
-                            foreach (UserAccess userAccess in accessList)
+                            if (userInfo.UserEmail != null && userAccess.UserId.Equals(userInfo.UserEmail, StringComparison.CurrentCultureIgnoreCase))
                             {
-                                if (userInfo.UserEmail != null && userAccess.UserId.ToUpper() == userInfo.UserEmail.ToUpper())
-                                {
-                                    allowAccess = true;
-                                }
+                                allowAccess = true;
                             }
                         }
                     }
@@ -428,17 +417,16 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 userInfo.CanUserAddItems = false;
                 userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
-                userInfo.ProgenyList = new List<Progeny>();
-                if (userInfo.AccessList.Any())
+                userInfo.ProgenyList = [];
+                if (userInfo.AccessList.Count == 0) return Ok(userInfo);
+
+                foreach (UserAccess userAccess in userInfo.AccessList)
                 {
-                    foreach (UserAccess userAccess in userInfo.AccessList)
+                    Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
+                    userInfo.ProgenyList.Add(progeny);
+                    if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
                     {
-                        Progeny progeny = await progenyService.GetProgeny(userAccess.ProgenyId);
-                        userInfo.ProgenyList.Add(progeny);
-                        if (userAccess.AccessLevel == 0 || userAccess.CanContribute)
-                        {
-                            userInfo.CanUserAddItems = true;
-                        }
+                        userInfo.CanUserAddItems = true;
                     }
                 }
             }
@@ -450,8 +438,8 @@ namespace KinaUnaProgenyApi.Controllers
                     UserEmail = "Unknown",
                     CanUserAddItems = false,
                     UserId = "Unknown",
-                    AccessList = new List<UserAccess>(),
-                    ProgenyList = new List<Progeny>()
+                    AccessList = [],
+                    ProgenyList = []
                 };
             }
             return Ok(userInfo);
@@ -463,14 +451,12 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            if (currentUserInfo.IsKinaUnaAdmin)
-            {
-                List<UserInfo> result = await userInfoService.GetAllUserInfos();
+            if (!currentUserInfo.IsKinaUnaAdmin) return Ok(new List<UserInfo>());
 
-                return Ok(result);
-            }
+            List<UserInfo> result = await userInfoService.GetAllUserInfos();
 
-            return Ok(new List<UserInfo>());
+            return Ok(result);
+
         }
 
         [HttpPost("[action]/")]
@@ -478,7 +464,7 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo userInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            if (userInfo.UserEmail.ToUpper() == userEmail.ToUpper() && !userInfo.Deleted)
+            if (userInfo.UserEmail.Equals(userEmail, StringComparison.CurrentCultureIgnoreCase) && !userInfo.Deleted)
             {
                 return Ok(userInfo);
             }
@@ -511,7 +497,7 @@ namespace KinaUnaProgenyApi.Controllers
             userInfo.DeletedTime = DateTime.UtcNow;
             userInfo.UpdatedTime = DateTime.UtcNow;
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (userEmail.ToUpper() != userInfo.UserEmail.ToUpper())
+            if (!userEmail.Equals(userInfo.UserEmail, StringComparison.CurrentCultureIgnoreCase))
             {
                 return Unauthorized();
             }
@@ -520,8 +506,8 @@ namespace KinaUnaProgenyApi.Controllers
 
             userInfo.AccessList = await userAccessService.GetUsersUserAccessList(userEmail);
 
-            userInfo.ProgenyList = new List<Progeny>();
-            if (userInfo.AccessList.Any())
+            userInfo.ProgenyList = [];
+            if (userInfo.AccessList.Count != 0)
             {
                 foreach (UserAccess userAccess in userInfo.AccessList)
                 {
@@ -555,7 +541,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Only allow the user themselves to change their user info.
             bool allowAccess = false;
-            if (userEmail.ToUpper() == userInfo.UserEmail.ToUpper())
+            if (userEmail.Equals(userInfo.UserEmail, StringComparison.CurrentCultureIgnoreCase))
             {
                 allowAccess = true;
             }
@@ -600,7 +586,7 @@ namespace KinaUnaProgenyApi.Controllers
                 if (!string.IsNullOrEmpty(userInfo.ProfilePicture))
                 {
                     string oldPictureLink = userInfo.ProfilePicture;
-                    if (!oldPictureLink.ToLower().StartsWith("http") && !string.IsNullOrEmpty(oldPictureLink))
+                    if (!oldPictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !string.IsNullOrEmpty(oldPictureLink))
                     {
                         if (oldPictureLink != value.ProfilePicture)
                         {
@@ -625,56 +611,53 @@ namespace KinaUnaProgenyApi.Controllers
 
             // Todo: This should be done via api instead of direct database access.
             ApplicationUser user = await appDbContext.Users.SingleOrDefaultAsync(u => u.Id == userInfo.UserId);
-            if (user != null)
-            {
-                user.FirstName = userInfo.FirstName;
-                user.MiddleName = userInfo.MiddleName;
-                user.LastName = userInfo.LastName;
-                user.UserName = userInfo.UserName;
-                user.TimeZone = userInfo.Timezone;
+            if (user == null) return Ok(userInfo);
 
-                _ = appDbContext.Users.Update(user);
+            user.FirstName = userInfo.FirstName;
+            user.MiddleName = userInfo.MiddleName;
+            user.LastName = userInfo.LastName;
+            user.UserName = userInfo.UserName;
+            user.TimeZone = userInfo.Timezone;
 
-                _ = await appDbContext.SaveChangesAsync();
-            }
+            _ = appDbContext.Users.Update(user);
+
+            _ = await appDbContext.SaveChangesAsync();
 
             return Ok(userInfo);
         }
 
         // DELETE api/progeny/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             UserInfo userInfo = await userInfoService.GetUserInfoById(id);
 
-            if (userInfo != null && userInfo.Deleted && userInfo.DeletedTime < (DateTime.UtcNow - TimeSpan.FromDays(30)))
+            if (userInfo == null || !userInfo.Deleted || userInfo.DeletedTime >= (DateTime.UtcNow - TimeSpan.FromDays(30))) return NotFound();
+
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (!userEmail.Equals(userInfo.UserEmail, StringComparison.CurrentCultureIgnoreCase))
             {
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                if (userEmail.ToUpper() != userInfo.UserEmail.ToUpper())
-                {
-                    return Unauthorized();
-                }
-
-                _ = await imageStore.DeleteImage(userInfo.ProfilePicture, BlobContainers.Profiles);
-
-                List<UserAccess> accessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
-                foreach (UserAccess access in accessList)
-                {
-                    await userAccessService.RemoveUserAccess(access.AccessId, access.ProgenyId, access.UserId);
-                }
-
-                List<MobileNotification> notificationsList = await dataService.GetUsersMobileNotifications(userInfo.UserId, "");
-                foreach (MobileNotification notification in notificationsList)
-                {
-                    _ = await dataService.DeleteMobileNotification(notification);
-                }
-
-                _ = await userInfoService.DeleteUserInfo(userInfo);
-
-                return NoContent();
+                return Unauthorized();
             }
 
-            return NotFound();
+            _ = await imageStore.DeleteImage(userInfo.ProfilePicture, BlobContainers.Profiles);
+
+            List<UserAccess> accessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
+            foreach (UserAccess access in accessList)
+            {
+                await userAccessService.RemoveUserAccess(access.AccessId, access.ProgenyId, access.UserId);
+            }
+
+            List<MobileNotification> notificationsList = await dataService.GetUsersMobileNotifications(userInfo.UserId, "");
+            foreach (MobileNotification notification in notificationsList)
+            {
+                _ = await dataService.DeleteMobileNotification(notification);
+            }
+
+            _ = await userInfoService.DeleteUserInfo(userInfo);
+
+            return NoContent();
+
         }
 
         [HttpGet("[action]/")]
@@ -683,13 +666,11 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            if (currentUserInfo.IsKinaUnaAdmin)
-            {
-                List<UserInfo> deletedUsersList = await userInfoService.GetDeletedUserInfos();
-                return Ok(deletedUsersList);
-            }
+            if (!currentUserInfo.IsKinaUnaAdmin) return Unauthorized();
 
-            return Unauthorized();
+            List<UserInfo> deletedUsersList = await userInfoService.GetDeletedUserInfos();
+            return Ok(deletedUsersList);
+
         }
     }
 }

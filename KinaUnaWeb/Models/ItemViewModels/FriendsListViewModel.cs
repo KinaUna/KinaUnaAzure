@@ -4,17 +4,17 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class FriendsListViewModel: BaseItemsViewModel
     {
-        public List<FriendViewModel> FriendViewModelsList { get; set; }
+        public List<FriendViewModel> FriendViewModelsList { get; init; }
         public string TagFilter { get; set; }
 
         public FriendsListViewModel()
         {
-            FriendViewModelsList = new List<FriendViewModel>();
+            FriendViewModelsList = [];
         }
 
         public FriendsListViewModel(BaseItemsViewModel baseItemsViewModel)
         {
-            FriendViewModelsList = new List<FriendViewModel>();
+            FriendViewModelsList = [];
             SetBaseProperties(baseItemsViewModel);
         }
     }

@@ -6,7 +6,7 @@ namespace KinaUna.Data.Models
 {
     public class Comment
     {
-        public int CommentId { get; set; }
+        public int CommentId { get; init; }
         public int CommentThreadNumber { get; set; }
         [MaxLength(4096)] 
         public string CommentText { get; set; }

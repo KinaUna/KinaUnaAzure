@@ -23,7 +23,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             ContactListViewModel model = new(baseModel);
             
-            List<string> tagsList = new();
+            List<string> tagsList = [];
 
             List<Contact> contactList = await contactsHttpClient.GetContactsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
             
@@ -40,8 +40,8 @@ namespace KinaUnaWeb.Controllers
                     
                     if (!string.IsNullOrEmpty(contactViewModel.Tags))
                     {
-                        List<string> cvmTags = contactViewModel.Tags.Split(',').ToList();
-                        foreach (string tagString in cvmTags)
+                        List<string> contactTagsList = [.. contactViewModel.Tags.Split(',')];
+                        foreach (string tagString in contactTagsList)
                         {
                             string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
                             if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Contains(trimmedTagString))
@@ -57,7 +57,7 @@ namespace KinaUnaWeb.Controllers
 
                 }
                 
-                model.ContactsList = model.ContactsList.OrderBy(m => m.ContactItem.DisplayName).ToList();
+                model.ContactsList = [.. model.ContactsList.OrderBy(m => m.ContactItem.DisplayName)];
 
                 model.SetTags(tagsList);
             }
@@ -89,20 +89,19 @@ namespace KinaUnaWeb.Controllers
 
             model.ContactItem.PictureLink = imageStore.UriFor(model.ContactItem.PictureLink, "contacts");
 
-            List<string> tagsList = new();
+            List<string> tagsList = [];
             List<Contact> contactsList1 = await contactsHttpClient.GetContactsList(model.CurrentProgenyId, model.CurrentAccessLevel); 
             foreach (Contact cont in contactsList1)
             {
-                if (!string.IsNullOrEmpty(cont.Tags))
+                if (string.IsNullOrEmpty(cont.Tags)) continue;
+
+                List<string> contactTagsList = [.. cont.Tags.Split(',')];
+                foreach (string tagString in contactTagsList)
                 {
-                    List<string> cvmTags = cont.Tags.Split(',').ToList();
-                    foreach (string tagString in cvmTags)
+                    string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
+                    if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Contains(trimmedTagString))
                     {
-                        string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
-                        if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Contains(trimmedTagString))
-                        {
-                            tagsList.Add(trimmedTagString);
-                        }
+                        tagsList.Add(trimmedTagString);
                     }
                 }
             }

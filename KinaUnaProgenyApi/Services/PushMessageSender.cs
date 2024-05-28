@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using WebPush;
@@ -25,7 +24,7 @@ namespace KinaUnaProgenyApi.Services
             string vapidPrivateKey = configuration["VapidPrivateKey"];
 
             List<PushDevices> deviceList = await dataService.GetPushDevicesListByUserId(user);
-            if (deviceList.Any())
+            if (deviceList.Count != 0)
             {
                 foreach (PushDevices dev in deviceList)
                 {
@@ -65,7 +64,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<List<PushDevices>> GetAllPushDevices()
         {
-            var pushDevicesList = await dataService.GetAllPushDevices();
+            List<PushDevices> pushDevicesList = await dataService.GetAllPushDevices();
 
             return pushDevicesList;
         }

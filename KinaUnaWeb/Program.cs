@@ -20,24 +20,22 @@ namespace KinaUnaWeb
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((context, config) =>
                 {
-                    if (context.HostingEnvironment.IsProduction())
-                    {
-                        string keyVaultEndpoint = Constants.KeyVaultEndPoint;
-                        if (!string.IsNullOrEmpty(keyVaultEndpoint))
-                        {
-                            config.Build();
+                    if (!context.HostingEnvironment.IsProduction()) return;
 
-                            AzureServiceTokenProvider azureServiceTokenProvider = new();
-                            KeyVaultClient keyVaultClient = new(
-                                new KeyVaultClient.AuthenticationCallback(
-                                    azureServiceTokenProvider.KeyVaultTokenCallback));
+                    const string keyVaultEndpoint = Constants.KeyVaultEndPoint;
+                    if (string.IsNullOrEmpty(keyVaultEndpoint)) return;
 
-                            config.AddAzureKeyVault(
-                                keyVaultEndpoint,
-                                keyVaultClient,
-                                new DefaultKeyVaultSecretManager());
-                        }
-                    }
+                    config.Build();
+
+                    AzureServiceTokenProvider azureServiceTokenProvider = new();
+                    KeyVaultClient keyVaultClient = new(
+                        new KeyVaultClient.AuthenticationCallback(
+                            azureServiceTokenProvider.KeyVaultTokenCallback));
+
+                    config.AddAzureKeyVault(
+                        keyVaultEndpoint,
+                        keyVaultClient,
+                        new DefaultKeyVaultSecretManager());
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

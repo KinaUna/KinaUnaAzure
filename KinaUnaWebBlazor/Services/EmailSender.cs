@@ -15,14 +15,18 @@ namespace KinaUnaWebBlazor.Services
         /// <returns></returns>
         public Task SendEmailAsync(string email, string subject, string message)
         {
-            SmtpClient client = new SmtpClient(configuration.GetValue<string>("SmtpServer"));
-            client.UseDefaultCredentials = false;
-            client.Credentials = new NetworkCredential(configuration.GetValue<string>("SmtpUsername"), configuration.GetValue<string>("SupportMailPassword"));
-            client.EnableSsl = true;
-            client.Port = 587;
+            SmtpClient client = new(configuration.GetValue<string>("SmtpServer"))
+            {
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(configuration.GetValue<string>("SmtpUsername"), configuration.GetValue<string>("SupportMailPassword")),
+                EnableSsl = true,
+                Port = 587
+            };
 
-            MailMessage mailMessage = new MailMessage();
-            mailMessage.From = new MailAddress(configuration.GetValue<string>("SmtpFrom") ?? throw new KeyNotFoundException("Key SmtpFrom not found. Check if it is defined in the configuration"), "Support - " + Constants.AppName);
+            MailMessage mailMessage = new()
+            {
+                From = new MailAddress(configuration.GetValue<string>("SmtpFrom") ?? throw new KeyNotFoundException("Key SmtpFrom not found. Check if it is defined in the configuration"), "Support - " + Constants.AppName)
+            };
             mailMessage.To.Add(email);
             mailMessage.Body = message;
             mailMessage.IsBodyHtml = true;

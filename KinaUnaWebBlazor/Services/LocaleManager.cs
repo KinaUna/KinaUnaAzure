@@ -9,9 +9,11 @@ namespace KinaUnaWebBlazor.Services
     {
         public async Task<SetLanguageIdViewModel> GetLanguageModel(int currentLanguageId)
         {
-            SetLanguageIdViewModel languageIdModel = new SetLanguageIdViewModel();
-            languageIdModel.LanguageList = await languagesHttpClient.GetAllLanguages();
-            languageIdModel.SelectedId = currentLanguageId;
+            SetLanguageIdViewModel languageIdModel = new()
+            {
+                LanguageList = await languagesHttpClient.GetAllLanguages(),
+                SelectedId = currentLanguageId
+            };
 
             return languageIdModel;
 

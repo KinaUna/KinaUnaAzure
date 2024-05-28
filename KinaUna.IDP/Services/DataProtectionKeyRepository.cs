@@ -14,7 +14,7 @@ namespace KinaUna.IDP.Services
     {
         public IReadOnlyCollection<XElement> GetAllElements()
         {
-            return new ReadOnlyCollection<XElement>(context.DataProtectionKeys.Select(k => XElement.Parse(k.XmlData)).ToList());
+            return new ReadOnlyCollection<XElement>([.. context.DataProtectionKeys.Select(k => XElement.Parse(k.XmlData))]);
         }
 
         public void StoreElement(XElement element, string friendlyName)

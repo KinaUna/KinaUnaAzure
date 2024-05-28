@@ -134,7 +134,7 @@ namespace KinaUnaWebBlazor.Services
                 return resultPictureList;
             }
 
-            return new List<Picture>();
+            return [];
         }
 
         public async Task<List<Picture>?> GetAllPictures()
@@ -153,7 +153,7 @@ namespace KinaUnaWebBlazor.Services
                 return resultPictureList;
             }
 
-            return new List<Picture>();
+            return [];
         }
 
         public async Task<Picture?> AddPicture(Picture? picture)
@@ -264,7 +264,7 @@ namespace KinaUnaWebBlazor.Services
                 string pageResponseString = await picturePageResponse.Content.ReadAsStringAsync();
 
                 PicturePageViewModel? model = JsonConvert.DeserializeObject<PicturePageViewModel>(pageResponseString);
-                if (model != null && timeZone != "" && model.PicturesList.Any())
+                if (model != null && timeZone != "" && model.PicturesList.Count != 0)
                 {
                     foreach (Picture pic in model.PicturesList)
                     {
@@ -341,7 +341,7 @@ namespace KinaUnaWebBlazor.Services
                 string videoPageAsString = await videoResponse.Content.ReadAsStringAsync();
                 VideoPageViewModel? model = JsonConvert.DeserializeObject<VideoPageViewModel>(videoPageAsString);
 
-                if (model != null && timeZone != "" && model.VideosList.Any())
+                if (model != null && timeZone != "" && model.VideosList.Count != 0)
                 {
                     foreach (Video vid in model.VideosList)
                     {
@@ -447,7 +447,7 @@ namespace KinaUnaWebBlazor.Services
                 return resultVideoList;
             }
 
-            return new List<Video>();
+            return [];
         }
 
         public async Task<List<Video>?> GetAllVideos()
@@ -465,7 +465,7 @@ namespace KinaUnaWebBlazor.Services
                 return resultVideoList;
             }
 
-            return new List<Video>();
+            return [];
         }
         public async Task<Video?> AddVideo(Video? video)
         {

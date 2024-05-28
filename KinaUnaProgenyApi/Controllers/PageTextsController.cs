@@ -16,7 +16,7 @@ namespace KinaUnaProgenyApi.Controllers
     public class PageTextsController(IUserInfoService userInfoService, IKinaUnaTextService kinaUnaTextService) : ControllerBase
     {
         [AllowAnonymous]
-        [HttpGet("[action]/{title}/{page}/{languageId}")]
+        [HttpGet("[action]/{title}/{page}/{languageId:int}")]
         public async Task<IActionResult> ByTitle(string title, string page, int languageId)
         {
             KinaUnaText textItem = await kinaUnaTextService.GetTextByTitle(title, page, languageId);
@@ -24,7 +24,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetTextById(int id)
         {
             KinaUnaText textItem = await kinaUnaTextService.GetTextById(id);
@@ -33,7 +33,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("[action]/{textId}/{languageId}")]
+        [HttpGet("[action]/{textId:int}/{languageId:int}")]
         public async Task<IActionResult> GetTextByTextId(int textId, int languageId)
         {
             KinaUnaText textItem = await kinaUnaTextService.GetTextByTextId(textId, languageId);
@@ -43,7 +43,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        [Route("[action]/{page}/{languageId}")]
+        [Route("[action]/{page}/{languageId:int}")]
         public async Task<IActionResult> PageTexts(string page, int languageId)
         {
 
@@ -54,7 +54,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        [Route("[action]/{languageId}")]
+        [Route("[action]/{languageId:int}")]
         public async Task<IActionResult> GetAllTexts(int languageId)
         {
             List<KinaUnaText> texts = await kinaUnaTextService.GetAllPageTextsList(languageId);
@@ -78,67 +78,59 @@ namespace KinaUnaProgenyApi.Controllers
         {
             string userId = User.GetUserId();
 
-            if (await userInfoService.IsAdminUserId(userId))
-            {
-                KinaUnaText addedText = await kinaUnaTextService.AddText(value);
+            if (!await userInfoService.IsAdminUserId(userId)) return Unauthorized();
 
-                return Ok(addedText);
-            }
+            KinaUnaText addedText = await kinaUnaTextService.AddText(value);
 
-            return Unauthorized();
+            return Ok(addedText);
+
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] KinaUnaText value)
         {
             string userId = User.GetUserId();
 
-            if (await userInfoService.IsAdminUserId(userId))
-            {
-                KinaUnaText updatedText = await kinaUnaTextService.UpdateText(id, value);
-                if (updatedText != null)
-                {
-                    return Ok(updatedText);
-                }
+            if (!await userInfoService.IsAdminUserId(userId)) return Unauthorized();
 
-                return NotFound();
+            KinaUnaText updatedText = await kinaUnaTextService.UpdateText(id, value);
+            if (updatedText != null)
+            {
+                return Ok(updatedText);
             }
 
-            return Unauthorized();
+            return NotFound();
+
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             string userId = User.GetUserId();
 
-            if (await userInfoService.IsAdminUserId(userId))
+            if (!await userInfoService.IsAdminUserId(userId)) return Unauthorized();
+
+            KinaUnaText textItem = await kinaUnaTextService.DeleteText(id);
+            if (textItem != null)
             {
-                KinaUnaText textItem = await kinaUnaTextService.DeleteText(id);
-                if (textItem != null)
-                {
-                    return Ok(textItem);
+                return Ok(textItem);
 
-                }
-                return NotFound();
             }
-
-            return Unauthorized();
+            return NotFound();
 
         }
 
-        [HttpDelete("[action]/{id}")]
+        [HttpDelete("[action]/{id:int}")]
         public async Task<IActionResult> DeleteSingleItem(int id)
         {
             string userId = User.GetUserId();
 
-            if (await userInfoService.IsAdminUserId(userId))
+            if (!await userInfoService.IsAdminUserId(userId)) return NotFound();
+
+            KinaUnaText textItem = await kinaUnaTextService.DeleteSingleText(id);
+            if (textItem != null)
             {
-                KinaUnaText textItem = await kinaUnaTextService.DeleteSingleText(id);
-                if (textItem != null)
-                {
-                    return Ok(textItem);
-                }
+                return Ok(textItem);
             }
 
             return NotFound();

@@ -17,6 +17,7 @@ namespace KinaUnaWeb.Controllers
     public class CalendarController(ICalendarsHttpClient calendarsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
         [AllowAnonymous]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> Index(int? id, int childId = 0)
         {
 
@@ -120,12 +121,12 @@ namespace KinaUnaWeb.Controllers
                 // Todo: Show no access info.
                 return RedirectToAction("Index");
             }
-            if (ModelState.IsValid)
-            {
-                CalendarItem editedEvent = model.CreateCalendarItem();
+
+            if (!ModelState.IsValid) return RedirectToAction("Index", "Calendar");
+
+            CalendarItem editedEvent = model.CreateCalendarItem();
                 
-                await calendarsHttpClient.UpdateCalendarItem(editedEvent);
-            }
+            await calendarsHttpClient.UpdateCalendarItem(editedEvent);
 
             return RedirectToAction("Index", "Calendar");
         }
@@ -177,7 +178,7 @@ namespace KinaUnaWeb.Controllers
             TimelineList timelineList = new();
             List<CalendarItem> upcomingCalendarItems = await calendarsHttpClient.GetCalendarList(parameters.ProgenyId, 0);
             upcomingCalendarItems = upcomingCalendarItems.Where(c => c.EndTime > DateTime.UtcNow).ToList();
-            upcomingCalendarItems = upcomingCalendarItems.OrderBy(c => c.StartTime).ToList();
+            upcomingCalendarItems = [.. upcomingCalendarItems.OrderBy(c => c.StartTime)];
             
             timelineList.AllItemsCount = upcomingCalendarItems.Count;
             timelineList.RemainingItemsCount = upcomingCalendarItems.Count - parameters.Skip - parameters.Count;

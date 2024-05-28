@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -35,7 +34,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
         private async Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false)
         {
-            List<KinaUnaLanguage> languageList = new();
+            List<KinaUnaLanguage> languageList = [];
             string cachedLanguagesString = await _cache.GetStringAsync("AllLanguages");
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguagesString))
             {
@@ -46,17 +45,16 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
             _httpClient.SetBearerToken(accessToken);
 
-            string languageApiPath = "/api/Languages/GetAllLanguages";
+            const string languageApiPath = "/api/Languages/GetAllLanguages";
             HttpResponseMessage languageResponse = await _httpClient.GetAsync(languageApiPath);
 
-            if (languageResponse.IsSuccessStatusCode)
+            if (!languageResponse.IsSuccessStatusCode) return languageList;
+
+            string languageListAsString = await languageResponse.Content.ReadAsStringAsync();
+            languageList = JsonConvert.DeserializeObject<List<KinaUnaLanguage>>(languageListAsString);
+            if (languageList != null && languageList.Count != 0)
             {
-                string languageListAsString = await languageResponse.Content.ReadAsStringAsync();
-                languageList = JsonConvert.DeserializeObject<List<KinaUnaLanguage>>(languageListAsString);
-                if (languageList != null && languageList.Any())
-                {
-                    await _cache.SetStringAsync("AllLanguages", JsonConvert.SerializeObject(languageList));
-                }
+                await _cache.SetStringAsync("AllLanguages", JsonConvert.SerializeObject(languageList));
             }
 
             return languageList;
@@ -78,33 +76,32 @@ namespace KinaUnaWeb.Services.HttpClients
                 string pageTextsApiPath = "/api/PageTexts/ByTitle/" + title + "/" + page + "/" + languageId;
                 HttpResponseMessage pageTextsResponse = await _httpClient.GetAsync(pageTextsApiPath);
 
-                if (pageTextsResponse.IsSuccessStatusCode)
-                {
-                    string kinaUnaTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
-                    text = JsonConvert.DeserializeObject<KinaUnaText>(kinaUnaTextAsString);
-                    if (text == null || text.Id == 0)
-                    {
-                        KinaUnaText newKinaUnaText = new()
-                        {
-                            Title = title,
-                            Page = page,
-                            LanguageId = languageId,
-                            Text = ""
-                        };
-                        text = await AddPageText(newKinaUnaText);
-                    }
+                if (!pageTextsResponse.IsSuccessStatusCode) return text;
 
-                    if (text != null)
+                string kinaUnaTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
+                text = JsonConvert.DeserializeObject<KinaUnaText>(kinaUnaTextAsString);
+                if (text == null || text.Id == 0)
+                {
+                    KinaUnaText newKinaUnaText = new()
                     {
-                        await _cache.SetStringAsync("PageText" + title + "&Page" + page + "&Lang" + languageId, JsonConvert.SerializeObject(text), _cacheExpirationLong);
-                    }
+                        Title = title,
+                        Page = page,
+                        LanguageId = languageId,
+                        Text = ""
+                    };
+                    text = await AddPageText(newKinaUnaText);
+                }
+
+                if (text != null)
+                {
+                    await _cache.SetStringAsync("PageText" + title + "&Page" + page + "&Lang" + languageId, JsonConvert.SerializeObject(text), _cacheExpirationLong);
                 }
             }
 
             return text;
         }
 
-        public async Task<KinaUnaText> AddPageText(KinaUnaText textItem)
+        private async Task<KinaUnaText> AddPageText(KinaUnaText textItem)
         {
             KinaUnaText addedTextItem = new();
             textItem.Text ??= "";
@@ -112,23 +109,21 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string addApiPath = "/api/PageTexts/";
+            const string addApiPath = "/api/PageTexts/";
             HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(textItem), System.Text.Encoding.UTF8, "application/json"));
-            if (addResponse.IsSuccessStatusCode)
+            if (!addResponse.IsSuccessStatusCode) return addedTextItem;
+
+            string addResponseString = await addResponse.Content.ReadAsStringAsync();
+            addedTextItem = JsonConvert.DeserializeObject<KinaUnaText>(addResponseString);
+            if (addedTextItem == null) return null;
+
+            List<KinaUnaLanguage> languages = await GetAllLanguages();
+            foreach (KinaUnaLanguage language in languages)
             {
-                string addResponseString = await addResponse.Content.ReadAsStringAsync();
-                addedTextItem = JsonConvert.DeserializeObject<KinaUnaText>(addResponseString);
-                if (addedTextItem != null)
-                {
-                    List<KinaUnaLanguage> languages = await GetAllLanguages();
-                    foreach (KinaUnaLanguage language in languages)
-                    {
-                        KinaUnaText pText = await GetPageTextByTextId(addedTextItem.TextId, language.Id, true);
-                        await _cache.RemoveAsync("PageText&TextId" + pText.TextId + "&Language" + language.Id);
-                        await _cache.RemoveAsync("PageText" + pText.Title + "&Page" + addedTextItem.Page + "&Lang" + language.Id);
-                        await _cache.RemoveAsync("PageTextsForPage" + addedTextItem.Page + "&Lang" + language.Id);
-                    }
-                }
+                KinaUnaText pText = await GetPageTextByTextId(addedTextItem.TextId, language.Id, true);
+                await _cache.RemoveAsync("PageText&TextId" + pText.TextId + "&Language" + language.Id);
+                await _cache.RemoveAsync("PageText" + pText.Title + "&Page" + addedTextItem.Page + "&Lang" + language.Id);
+                await _cache.RemoveAsync("PageTextsForPage" + addedTextItem.Page + "&Lang" + language.Id);
             }
 
             return addedTextItem;
@@ -150,18 +145,17 @@ namespace KinaUnaWeb.Services.HttpClients
                 string pageTextsApiPath = "/api/PageTexts/GetTextById/" + id;
                 HttpResponseMessage pageTextsResponse = await _httpClient.GetAsync(pageTextsApiPath);
 
-                if (pageTextsResponse.IsSuccessStatusCode)
-                {
-                    string kinaUnaTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
-                    text = JsonConvert.DeserializeObject<KinaUnaText>(kinaUnaTextAsString);
-                    await _cache.SetStringAsync("PageText&Id" + id, JsonConvert.SerializeObject(text), _cacheExpirationLong);
-                }
+                if (!pageTextsResponse.IsSuccessStatusCode) return text;
+
+                string kinaUnaTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
+                text = JsonConvert.DeserializeObject<KinaUnaText>(kinaUnaTextAsString);
+                await _cache.SetStringAsync("PageText&Id" + id, JsonConvert.SerializeObject(text), _cacheExpirationLong);
             }
 
             return text;
         }
 
-        public async Task<KinaUnaText> GetPageTextByTextId(int textId, int languageId, bool updateCache = false)
+        private async Task<KinaUnaText> GetPageTextByTextId(int textId, int languageId, bool updateCache = false)
         {
             KinaUnaText text = new();
             string cachedText = await _cache.GetStringAsync("PageText&TextId" + textId + "&Language" + languageId);
@@ -177,12 +171,11 @@ namespace KinaUnaWeb.Services.HttpClients
                 string pageTextsApiPath = "/api/PageTexts/GetTextByTextId/" + textId + "/" + languageId;
                 HttpResponseMessage pageTextsResponse = await _httpClient.GetAsync(pageTextsApiPath);
 
-                if (pageTextsResponse.IsSuccessStatusCode)
-                {
-                    string kinaUnaTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
-                    text = JsonConvert.DeserializeObject<KinaUnaText>(kinaUnaTextAsString);
-                    await _cache.SetStringAsync("PageText&TextId" + textId + "&Language" + languageId, JsonConvert.SerializeObject(text), _cacheExpirationLong);
-                }
+                if (!pageTextsResponse.IsSuccessStatusCode) return text;
+
+                string kinaUnaTextAsString = await pageTextsResponse.Content.ReadAsStringAsync();
+                text = JsonConvert.DeserializeObject<KinaUnaText>(kinaUnaTextAsString);
+                await _cache.SetStringAsync("PageText&TextId" + textId + "&Language" + languageId, JsonConvert.SerializeObject(text), _cacheExpirationLong);
             }
 
             return text;
@@ -196,18 +189,17 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string textsApiPath = "/api/PageTexts/" + kinaUnaText.Id;
             HttpResponseMessage updateResponse = await _httpClient.PutAsync(textsApiPath, new StringContent(JsonConvert.SerializeObject(kinaUnaText), System.Text.Encoding.UTF8, "application/json"));
-            if (updateResponse.IsSuccessStatusCode)
-            {
-                string updateResponseString = await updateResponse.Content.ReadAsStringAsync();
-                updatedTextItem = JsonConvert.DeserializeObject<KinaUnaText>(updateResponseString);
-            }
+            if (!updateResponse.IsSuccessStatusCode) return updatedTextItem;
+
+            string updateResponseString = await updateResponse.Content.ReadAsStringAsync();
+            updatedTextItem = JsonConvert.DeserializeObject<KinaUnaText>(updateResponseString);
 
             return updatedTextItem;
         }
 
         public async Task<List<KinaUnaText>> GetAllKinaUnaTexts(int languageId = 0, bool updateCache = false)
         {
-            List<KinaUnaText> allKinaUnaTexts = new();
+            List<KinaUnaText> allKinaUnaTexts = [];
             string cachedTextsList = await _cache.GetStringAsync("AllKinaUnaTexts" + "&Lang" + languageId);
             if (!updateCache && languageId != 0 && !string.IsNullOrEmpty(cachedTextsList))
             {
@@ -220,13 +212,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
                 string admininfoApiPath = "/api/PageTexts/GetAllTexts/" + languageId;
                 HttpResponseMessage admininfoResponse = await _httpClient.GetAsync(admininfoApiPath);
+                if (!admininfoResponse.IsSuccessStatusCode) return allKinaUnaTexts;
 
-                if (admininfoResponse.IsSuccessStatusCode)
-                {
-                    string textsListAsString = await admininfoResponse.Content.ReadAsStringAsync();
-                    allKinaUnaTexts = JsonConvert.DeserializeObject<List<KinaUnaText>>(textsListAsString);
-                    await _cache.SetStringAsync("AllKinaUnaTexts" + "&Lang" + languageId, JsonConvert.SerializeObject(allKinaUnaTexts), _cacheExpirationLong);
-                }
+                string textsListAsString = await admininfoResponse.Content.ReadAsStringAsync();
+                allKinaUnaTexts = JsonConvert.DeserializeObject<List<KinaUnaText>>(textsListAsString);
+                await _cache.SetStringAsync("AllKinaUnaTexts" + "&Lang" + languageId, JsonConvert.SerializeObject(allKinaUnaTexts), _cacheExpirationLong);
             }
 
             return allKinaUnaTexts;

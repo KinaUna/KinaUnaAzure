@@ -4,6 +4,6 @@ namespace KinaUnaWebBlazor.Models.ItemViewModels
 {
     public class WebNotificationViewModel: BaseViewModel
     {
-        public WebNotification WebNotification { get; set; } = new WebNotification();
+        public WebNotification WebNotification { get; set; } = new();
     }
 }

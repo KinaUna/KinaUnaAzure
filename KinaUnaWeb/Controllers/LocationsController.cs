@@ -33,28 +33,26 @@ namespace KinaUnaWeb.Controllers
             {
                 HereMapsApiKey = _hereMapsApiKey
             };
-            List<string> tagsList = new();
+            List<string> tagsList = [];
 
             List<Location> locationsList = await locationsHttpClient.GetLocationsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
             
-            if (locationsList.Any())
+            if (locationsList.Count != 0)
             {
-                model.LocationsList = new List<Location>();
+                model.LocationsList = [];
                 foreach (Location loc in locationsList)
                 {
-                    if (loc.AccessLevel == (int)AccessLevel.Public || loc.AccessLevel >= model.CurrentAccessLevel)
+                    if (loc.AccessLevel != (int)AccessLevel.Public && loc.AccessLevel < model.CurrentAccessLevel) continue;
+
+                    model.LocationsList.Add(loc);
+                    if (string.IsNullOrEmpty(loc.Tags)) continue;
+
+                    List<string> locTags = [.. loc.Tags.Split(',')];
+                    foreach (string tagstring in locTags)
                     {
-                        model.LocationsList.Add(loc);
-                        if (!string.IsNullOrEmpty(loc.Tags))
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                         {
-                            List<string> locTags = loc.Tags.Split(',').ToList();
-                            foreach (string tagstring in locTags)
-                            {
-                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                {
-                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                }
-                            }
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                         }
                     }
                 }
@@ -78,12 +76,11 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             LocationViewModel model = new(baseModel)
             {
-                LocationsList = new List<Location>()
+                LocationsList = [],
+                HereMapsApiKey = _hereMapsApiKey
             };
 
-            model.HereMapsApiKey = _hereMapsApiKey;
-
-            List<string> tagsList = new();
+            List<string> tagsList = [];
             
             List<Picture> pictures = await mediaHttpClient.GetPictureList(model.CurrentProgenyId, model.CurrentAccessLevel, model.CurrentUser.Timezone);
             
@@ -94,11 +91,11 @@ namespace KinaUnaWeb.Controllers
             else
             {
                 pictures = pictures.FindAll(p =>
-                    !string.IsNullOrEmpty(p.Longtitude) && p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper()));
+                    !string.IsNullOrEmpty(p.Longtitude) && p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase));
             }
-            pictures = pictures.OrderBy(p => p.PictureTime).ToList();
+            pictures = [.. pictures.OrderBy(p => p.PictureTime)];
 
-            List<Picture> locPictures = new();
+            List<Picture> locPictures = [];
             foreach (Picture pic in pictures)
             {
                 Location picLoc = new();
@@ -121,27 +118,25 @@ namespace KinaUnaWeb.Controllers
                     validCoords = false;
                 }
 
-                if (validCoords && (pic.AccessLevel == (int)AccessLevel.Public || pic.AccessLevel >= model.CurrentAccessLevel))
-                {
-                    picLoc.LocationId = pic.PictureId;
-                    model.LocationsList.Add(picLoc);
-                    locPictures.Add(pic);
-                }
+                if (!validCoords || (pic.AccessLevel != (int)AccessLevel.Public && pic.AccessLevel < model.CurrentAccessLevel)) continue;
+
+                picLoc.LocationId = pic.PictureId;
+                model.LocationsList.Add(picLoc);
+                locPictures.Add(pic);
             }
 
-            if (model.LocationsList.Any())
+            if (model.LocationsList.Count != 0)
             {
                 foreach (Picture locPic in locPictures)
                 {
-                    if (!string.IsNullOrEmpty(locPic.Tags))
+                    if (string.IsNullOrEmpty(locPic.Tags)) continue;
+
+                    List<string> locTags = [.. locPic.Tags.Split(',')];
+                    foreach (string tagstring in locTags)
                     {
-                        List<string> locTags = locPic.Tags.Split(',').ToList();
-                        foreach (string tagstring in locTags)
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                         {
-                            if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                            {
-                                tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                            }
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                         }
                     }
                 }
@@ -162,7 +157,7 @@ namespace KinaUnaWeb.Controllers
                 HereMapsApiKey = _hereMapsApiKey
             };
 
-            List<string> tagsList = new();
+            List<string> tagsList = [];
 
             if (model.CurrentUser == null)
             {
@@ -174,22 +169,21 @@ namespace KinaUnaWeb.Controllers
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
                 List<Progeny> accessList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
-                if (accessList.Any())
+                if (accessList.Count != 0)
                 {
                     foreach (Progeny progeny in accessList)
                     {
                         List<Location> locList1 = await locationsHttpClient.GetLocationsList(progeny.Id, 0);
                         foreach (Location loc in locList1)
                         {
-                            if (!string.IsNullOrEmpty(loc.Tags))
+                            if (string.IsNullOrEmpty(loc.Tags)) continue;
+
+                            List<string> locTags = [.. loc.Tags.Split(',')];
+                            foreach (string tagstring in locTags)
                             {
-                                List<string> locTags = loc.Tags.Split(',').ToList();
-                                foreach (string tagstring in locTags)
+                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                                 {
-                                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                    {
-                                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                    }
+                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                                 }
                             }
                         }
@@ -232,21 +226,23 @@ namespace KinaUnaWeb.Controllers
         {
             Location location = await locationsHttpClient.GetLocation(itemId);
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
-            LocationViewModel model = new(baseModel);
-            model.HereMapsApiKey = _hereMapsApiKey;
+            LocationViewModel model = new(baseModel)
+            {
+                HereMapsApiKey = _hereMapsApiKey
+            };
 
             if (model.CurrentUser == null)
             {
                 return RedirectToAction("Index");
             }
 
-            List<string> tagsList = new();
+            List<string> tagsList = [];
             if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
             {
                 model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
 
                 List<Progeny> accessList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
-                if (accessList.Any())
+                if (accessList.Count != 0)
                 {
                     foreach (Progeny progeny in accessList)
                     {
@@ -254,15 +250,14 @@ namespace KinaUnaWeb.Controllers
                         List<Location> locList1 = await locationsHttpClient.GetLocationsList(progeny.Id, 0);
                         foreach (Location locationItem in locList1)
                         {
-                            if (!string.IsNullOrEmpty(locationItem.Tags))
+                            if (string.IsNullOrEmpty(locationItem.Tags)) continue;
+
+                            List<string> locTags = [.. locationItem.Tags.Split(',')];
+                            foreach (string tagstring in locTags)
                             {
-                                List<string> locTags = locationItem.Tags.Split(',').ToList();
-                                foreach (string tagstring in locTags)
+                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                                 {
-                                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                    {
-                                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                    }
+                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                                 }
                             }
                         }

@@ -31,17 +31,16 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            List<string> resultTagsList = new();
+            List<string> resultTagsList = [];
 
             string tagsApiPath = "/api/AutoSuggests/GetTagsAutoSuggestList/" + progenyId + "/" + accessLevel;
 
             HttpResponseMessage tagsResponse = await _httpClient.GetAsync(tagsApiPath).ConfigureAwait(false);
-            if (tagsResponse.IsSuccessStatusCode)
-            {
-                string tagsListAsString = await tagsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (!tagsResponse.IsSuccessStatusCode) return resultTagsList;
 
-                resultTagsList = JsonConvert.DeserializeObject<List<string>>(tagsListAsString);
-            }
+            string tagsListAsString = await tagsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            resultTagsList = JsonConvert.DeserializeObject<List<string>>(tagsListAsString);
 
             return resultTagsList;
         }
@@ -51,17 +50,16 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            List<string> resultContextsList = new();
+            List<string> resultContextsList = [];
 
             string contextsApiPath = "/api/AutoSuggests/GetContextAutoSuggestList/" + progenyId + "/" + accessLevel;
 
             HttpResponseMessage contextsResponse = await _httpClient.GetAsync(contextsApiPath).ConfigureAwait(false);
-            if (contextsResponse.IsSuccessStatusCode)
-            {
-                string contextsListAsString = await contextsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (!contextsResponse.IsSuccessStatusCode) return resultContextsList;
 
-                resultContextsList = JsonConvert.DeserializeObject<List<string>>(contextsListAsString);
-            }
+            string contextsListAsString = await contextsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            resultContextsList = JsonConvert.DeserializeObject<List<string>>(contextsListAsString);
 
             return resultContextsList;
         }
@@ -71,17 +69,16 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            List<string> resultLocationsList = new();
+            List<string> resultLocationsList = [];
 
             string locationsApiPath = "/api/AutoSuggests/GetLocationAutoSuggestList/" + progenyId + "/" + accessLevel;
 
             HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath).ConfigureAwait(false);
-            if (locationsResponse.IsSuccessStatusCode)
-            {
-                string locationsListAsString = await locationsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (!locationsResponse.IsSuccessStatusCode) return resultLocationsList;
 
-                resultLocationsList = JsonConvert.DeserializeObject<List<string>>(locationsListAsString);
-            }
+            string locationsListAsString = await locationsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            resultLocationsList = JsonConvert.DeserializeObject<List<string>>(locationsListAsString);
 
             return resultLocationsList;
         }
@@ -91,17 +88,16 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            List<string> resultCategoriesList = new();
+            List<string> resultCategoriesList = [];
 
             string categoriesApiPath = "/api/AutoSuggests/GetCategoryAutoSuggestList/" + progenyId + "/" + accessLevel;
 
             HttpResponseMessage categoriesResponse = await _httpClient.GetAsync(categoriesApiPath).ConfigureAwait(false);
-            if (categoriesResponse.IsSuccessStatusCode)
-            {
-                string categoriesListAsString = await categoriesResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (!categoriesResponse.IsSuccessStatusCode) return resultCategoriesList;
 
-                resultCategoriesList = JsonConvert.DeserializeObject<List<string>>(categoriesListAsString);
-            }
+            string categoriesListAsString = await categoriesResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            resultCategoriesList = JsonConvert.DeserializeObject<List<string>>(categoriesListAsString);
 
             return resultCategoriesList;
         }

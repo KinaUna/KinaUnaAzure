@@ -67,7 +67,7 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Progeny? progeny = new Progeny();
+            Progeny? progeny = new();
             string progenyApiPath = "/api/Progeny/" + progenyId;
 
             try
@@ -105,14 +105,12 @@ namespace KinaUnaWebBlazor.Services
 
             string newProgenyApiPath = "/api/Progeny/";
             HttpResponseMessage progenyResponse = await _httpClient.PostAsync(newProgenyApiPath, new StringContent(JsonConvert.SerializeObject(progeny), System.Text.Encoding.UTF8, "application/json"));
-            if (progenyResponse.IsSuccessStatusCode)
-            {
-                string newProgeny = await progenyResponse.Content.ReadAsStringAsync();
+            if (!progenyResponse.IsSuccessStatusCode) return new Progeny();
 
-                return JsonConvert.DeserializeObject<Progeny>(newProgeny);
-            }
+            string newProgeny = await progenyResponse.Content.ReadAsStringAsync();
 
-            return new Progeny();
+            return JsonConvert.DeserializeObject<Progeny>(newProgeny);
+
         }
 
         public async Task<Progeny?> UpdateProgeny(Progeny progeny)
@@ -122,13 +120,11 @@ namespace KinaUnaWebBlazor.Services
 
             string updateProgenyApiPath = "/api/Progeny/" + progeny.Id;
             HttpResponseMessage progenyResponse = await _httpClient.PutAsync(updateProgenyApiPath, new StringContent(JsonConvert.SerializeObject(progeny), System.Text.Encoding.UTF8, "application/json"));
-            if (progenyResponse.IsSuccessStatusCode)
-            {
-                string updateProgenyResponseString = await progenyResponse.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<Progeny>(updateProgenyResponseString);
-            }
+            if (!progenyResponse.IsSuccessStatusCode) return new Progeny();
 
-            return new Progeny();
+            string updateProgenyResponseString = await progenyResponse.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<Progeny>(updateProgenyResponseString);
+
         }
 
         public async Task<bool> DeleteProgeny(int progenyId)
@@ -138,12 +134,7 @@ namespace KinaUnaWebBlazor.Services
 
             string progenyApiPath = "/api/Progeny/" + progenyId;
             HttpResponseMessage progenyResponse = await _httpClient.DeleteAsync(progenyApiPath);
-            if (progenyResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-            
-            return false;
+            return progenyResponse.IsSuccessStatusCode;
         }
 
         public async Task<List<Progeny>?> GetProgenyAdminList(string email)
@@ -151,52 +142,49 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string accessApiPath = "/api/Access/AdminListByUserPost/";
+            const string accessApiPath = "/api/Access/AdminListByUserPost/";
             string id = email;
-            List<Progeny>? accessList = new List<Progeny>();
+            List<Progeny>? accessList = [];
             HttpResponseMessage accessResponse = await _httpClient.PostAsync(accessApiPath, new StringContent(JsonConvert.SerializeObject(id), System.Text.Encoding.UTF8, "application/json")).ConfigureAwait(false);
-            if (accessResponse.IsSuccessStatusCode)
-            {
-                string accessResponseString = await accessResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                accessList = JsonConvert.DeserializeObject<List<Progeny>>(accessResponseString);
-            }
-            
+            if (!accessResponse.IsSuccessStatusCode) return accessList;
+
+            string accessResponseString = await accessResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            accessList = JsonConvert.DeserializeObject<List<Progeny>>(accessResponseString);
+
             return accessList;
         }
         
         public async Task<List<TimeLineItem>?> GetProgenyLatestPosts(int progenyId, int accessLevel)
         {
-            List<TimeLineItem>? progenyPosts = new List<TimeLineItem>();
+            List<TimeLineItem>? progenyPosts = [];
 
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string latestApiPath = "/api/Timeline/ProgenyLatest/" + progenyId + "/" + accessLevel + "/5/0";
             HttpResponseMessage latestResponse = await _httpClient.GetAsync(latestApiPath).ConfigureAwait(false);
-            if (latestResponse.IsSuccessStatusCode)
-            {
-                string latestAsString = await latestResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (!latestResponse.IsSuccessStatusCode) return progenyPosts;
 
-                progenyPosts = JsonConvert.DeserializeObject<List<TimeLineItem>>(latestAsString);
-            }
+            string latestAsString = await latestResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            progenyPosts = JsonConvert.DeserializeObject<List<TimeLineItem>>(latestAsString);
 
             return progenyPosts;
         }
 
         public async Task<List<TimeLineItem>?> GetProgenyYearAgo(int progenyId, int accessLevel)
         {
-            List<TimeLineItem>? yearAgoPosts = new List<TimeLineItem>();
+            List<TimeLineItem>? yearAgoPosts = [];
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string yearAgoApiPath = "/api/Timeline/ProgenyYearAgo/" + progenyId + "/" + accessLevel;
             HttpResponseMessage yearAgoResponse = await _httpClient.GetAsync(yearAgoApiPath).ConfigureAwait(false);
-            if (yearAgoResponse.IsSuccessStatusCode)
-            {
-                string yearAgoAsString = await yearAgoResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (!yearAgoResponse.IsSuccessStatusCode) return yearAgoPosts;
 
-                yearAgoPosts = JsonConvert.DeserializeObject<List<TimeLineItem>>(yearAgoAsString);
-            }
+            string yearAgoAsString = await yearAgoResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            yearAgoPosts = JsonConvert.DeserializeObject<List<TimeLineItem>>(yearAgoAsString);
 
             return yearAgoPosts;
         }

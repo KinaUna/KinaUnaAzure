@@ -9,22 +9,22 @@ namespace KinaUnaWeb.Models.ItemViewModels
     public class UploadPictureViewModel: BaseItemsViewModel
     {
         [Required]
-        public List<IFormFile> Files { get; set; }
+        public List<IFormFile> Files { get; init; }
         public List<SelectListItem> ProgenyList { get; set; }
-        public List<string> FileNames { get; set; }
-        public List<string> FileLinks { get; set; }
+        public List<string> FileNames { get; init; }
+        public List<string> FileLinks { get; init; }
         [Required]
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
-        public double Longtitude1 { get; set; }
-        public double Latitude1 { get; set; }
-        public string Altitude { get; set; }
-        public Picture Picture { get; set; } = new();
+        public double Longtitude1 { get; init; } // Todo: Fix typo in property name
+        public double Latitude1 { get; init; }
+        public string Altitude { get; init; }
+        public Picture Picture { get; init; } = new();
 
         public UploadPictureViewModel()
         {
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
             AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;

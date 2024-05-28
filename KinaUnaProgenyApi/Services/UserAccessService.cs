@@ -39,7 +39,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Progeny>> GetProgenyUserIsAdminFromCache(string email)
         {
-            List<Progeny> progenyList = new();
+            List<Progeny> progenyList = [];
             string cachedProgenyList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progenywhereadmin" + email);
             if (!string.IsNullOrEmpty(cachedProgenyList))
             {
@@ -70,7 +70,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<UserAccess>> GetProgenyUserAccessListFromCache(int progenyId)
         {
-            List<UserAccess> accessList = new();
+            List<UserAccess> accessList = [];
             string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "accessList" + progenyId);
             if (!string.IsNullOrEmpty(cachedAccessList))
             {
@@ -109,7 +109,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<UserAccess>> GetUsersUserAccessListFromCache(string email)
         {
-            List<UserAccess> accessList = new();
+            List<UserAccess> accessList = [];
             string cachedAccessList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "usersaccesslist" + email.ToUpper());
             if (!string.IsNullOrEmpty(cachedAccessList))
             {
@@ -119,6 +119,7 @@ namespace KinaUnaProgenyApi.Services
             return accessList;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "StringComparison seems to break Db queries.")]
         public async Task<List<UserAccess>> SetUsersUserAccessListInCache(string email)
         {
             List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.UserId.ToUpper() == email.ToUpper()).ToListAsync();
@@ -184,36 +185,32 @@ namespace KinaUnaProgenyApi.Services
             _ = await SetProgenyUserAccessListInCache(userAccess.ProgenyId);
             _ = await SetProgenyUserIsAdminInCache(userAccess.UserId);
 
-            if (userAccess.AccessLevel == (int)AccessLevel.Private && !userAccess.Progeny.IsInAdminList(userAccess.UserId))
-            {
-                userAccess.Progeny.Admins = userAccess.Progeny.Admins + ", " + userAccess.UserId.ToUpper();
-                await UpdateProgenyAdmins(userAccess.Progeny);
-            }
+            if (userAccess.AccessLevel != (int)AccessLevel.Private || userAccess.Progeny.IsInAdminList(userAccess.UserId)) return userAccess;
+
+            userAccess.Progeny.Admins = userAccess.Progeny.Admins + ", " + userAccess.UserId.ToUpper();
+            await UpdateProgenyAdmins(userAccess.Progeny);
             return userAccess;
         }
 
         public async Task<UserAccess> UpdateUserAccess(UserAccess userAccess)
         {
             UserAccess userAccessToUpdate = await _context.UserAccessDb.SingleOrDefaultAsync(ua => ua.AccessId == userAccess.AccessId);
-            if (userAccessToUpdate != null)
-            {
-                userAccessToUpdate.CopyForUpdate(userAccess);
+            if (userAccessToUpdate == null) return null;
 
-                _ = _context.UserAccessDb.Update(userAccessToUpdate);
-                _ = await _context.SaveChangesAsync();
+            userAccessToUpdate.CopyForUpdate(userAccess);
 
-                _ = await SetUserAccessInCache(userAccessToUpdate.AccessId);
-                _ = await SetUsersUserAccessListInCache(userAccessToUpdate.UserId);
-                _ = await SetProgenyUserAccessListInCache(userAccessToUpdate.ProgenyId);
-                _ = await SetProgenyUserIsAdminInCache(userAccessToUpdate.UserId);
+            _ = _context.UserAccessDb.Update(userAccessToUpdate);
+            _ = await _context.SaveChangesAsync();
 
-                if (userAccess.AccessLevel == (int)AccessLevel.Private && !userAccess.Progeny.IsInAdminList(userAccess.UserId))
-                {
+            _ = await SetUserAccessInCache(userAccessToUpdate.AccessId);
+            _ = await SetUsersUserAccessListInCache(userAccessToUpdate.UserId);
+            _ = await SetProgenyUserAccessListInCache(userAccessToUpdate.ProgenyId);
+            _ = await SetProgenyUserIsAdminInCache(userAccessToUpdate.UserId);
 
-                    userAccess.Progeny.Admins = userAccess.Progeny.Admins + ", " + userAccess.UserId.ToUpper();
-                    await UpdateProgenyAdmins(userAccess.Progeny);
-                }
-            }
+            if (userAccess.AccessLevel != (int)AccessLevel.Private || userAccess.Progeny.IsInAdminList(userAccess.UserId)) return userAccessToUpdate;
+
+            userAccess.Progeny.Admins = userAccess.Progeny.Admins + ", " + userAccess.UserId.ToUpper();
+            await UpdateProgenyAdmins(userAccess.Progeny);
 
             return userAccessToUpdate;
         }
@@ -279,6 +276,7 @@ namespace KinaUnaProgenyApi.Services
             return userAccess;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "StringComparison seems to break Db queries.")]
         private async Task<UserAccess> SetProgenyUserAccessForUserInCache(int progenyId, string userEmail)
         {
             UserAccess userAccess = await _context.UserAccessDb.SingleOrDefaultAsync(u => u.ProgenyId == progenyId && u.UserId.ToUpper() == userEmail.ToUpper());

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -29,12 +28,7 @@ namespace KinaUna.IDP.Controllers
         {
             ConsentViewModel vm = await BuildViewModelAsync(returnUrl);
             ViewData["ReturnUrl"] = returnUrl;
-            if (vm != null)
-            {
-                return View("Index", vm);
-            }
-
-            return View("Error");
+            return vm != null ? View("Index", vm) : View("Error");
         }
 
         /// <summary>
@@ -85,25 +79,19 @@ namespace KinaUna.IDP.Controllers
             }
 
             ConsentViewModel vm = await BuildViewModelAsync(model.ReturnUrl, model);
-            if (vm != null)
-            {
-                return View("Index", vm);
-            }
-
-            return View("Error");
+            return vm != null ? View("Index", vm) : View("Error");
         }
 
-        async Task<ConsentViewModel> BuildViewModelAsync(string returnUrl, ConsentInputModel model = null)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2253:Named placeholders should not be numeric values", Justification = "<Pending>")]
+        private async Task<ConsentViewModel> BuildViewModelAsync(string returnUrl, ConsentInputModel model = null)
         {
             AuthorizationRequest request = await interaction.GetAuthorizationContextAsync(returnUrl);
             if (request != null)
             {
                 return CreateConsentViewModel(model, returnUrl, request);
             }
-            else
-            {
-                logger.LogError("No consent request matching request: {0}", returnUrl);
-            }
+
+            logger.LogError("No consent request matching request: {0}", returnUrl);
 
             return null;
         }
@@ -112,10 +100,10 @@ namespace KinaUna.IDP.Controllers
             ConsentInputModel model, string returnUrl,
             AuthorizationRequest request)
         {
-            ConsentViewModel vm = new ConsentViewModel
+            ConsentViewModel vm = new()
             {
                 RememberConsent = model?.RememberConsent ?? true,
-                ScopesConsented = model?.ScopesConsented ?? Enumerable.Empty<string>(),
+                ScopesConsented = model?.ScopesConsented ?? [],
                 
                 ReturnUrl = returnUrl,
 
@@ -127,15 +115,14 @@ namespace KinaUna.IDP.Controllers
 
             vm.IdentityScopes = request.ValidatedResources.Resources.IdentityResources.Select(x => CreateScopeViewModel(x, vm.ScopesConsented.Contains(x.Name) || model == null)).ToArray();
 
-            List<ScopeViewModel> apiScopes = new List<ScopeViewModel>();
+            List<ScopeViewModel> apiScopes = [];
             foreach (ParsedScopeValue parsedScope in request.ValidatedResources.ParsedScopes)
             {
                 ApiScope apiScope = request.ValidatedResources.Resources.FindApiScope(parsedScope.ParsedName);
-                if (apiScope != null)
-                {
-                    ScopeViewModel scopeVm = CreateScopeViewModel(parsedScope, apiScope, vm.ScopesConsented.Contains(parsedScope.RawValue) || model == null);
-                    apiScopes.Add(scopeVm);
-                }
+                if (apiScope == null) continue;
+
+                ScopeViewModel scopeVm = CreateScopeViewModel(parsedScope, apiScope, vm.ScopesConsented.Contains(parsedScope.RawValue) || model == null);
+                apiScopes.Add(scopeVm);
             }
             if (ConsentOptions.EnableOfflineAccess && request.ValidatedResources.Resources.OfflineAccess)
             {
@@ -146,7 +133,7 @@ namespace KinaUna.IDP.Controllers
             return vm;
         }
 
-        private ScopeViewModel CreateScopeViewModel(IdentityResource identity, bool check)
+        private static ScopeViewModel CreateScopeViewModel(IdentityResource identity, bool check)
         {
             return new ScopeViewModel
             {
@@ -162,7 +149,7 @@ namespace KinaUna.IDP.Controllers
         public ScopeViewModel CreateScopeViewModel(ParsedScopeValue parsedScopeValue, ApiScope apiScope, bool check)
         {
             string displayName = apiScope.DisplayName ?? apiScope.Name;
-            if (!String.IsNullOrWhiteSpace(parsedScopeValue.ParsedParameter))
+            if (!string.IsNullOrWhiteSpace(parsedScopeValue.ParsedParameter))
             {
                 displayName += ":" + parsedScopeValue.ParsedParameter;
             }
@@ -178,7 +165,7 @@ namespace KinaUna.IDP.Controllers
             };
         }
 
-        private ScopeViewModel GetOfflineAccessScope(bool check)
+        private static ScopeViewModel GetOfflineAccessScope(bool check)
         {
             return new ScopeViewModel
             {
@@ -189,15 +176,16 @@ namespace KinaUna.IDP.Controllers
                 Checked = check
             };
         }
-        
-        public static class ConsentOptions
-        {
-            public static bool EnableOfflineAccess = true;
-            public static string OfflineAccessDisplayName = "Offline Access";
-            public static string OfflineAccessDescription = "Access to your applications and resources, even when you are offline";
 
-            public static readonly string MustChooseOneErrorMessage = "You must pick at least one permission";
-            public static readonly string InvalidSelectionErrorMessage = "Invalid selection";
+        private static class ConsentOptions
+        {
+            public const bool EnableOfflineAccess = true;
+
+            public const string OfflineAccessDisplayName = "Offline Access";
+            public const string OfflineAccessDescription = "Access to your applications and resources, even when you are offline";
+
+            //public static readonly string MustChooseOneErrorMessage = "You must pick at least one permission";
+            //public static readonly string InvalidSelectionErrorMessage = "Invalid selection";
         }
     }
 }

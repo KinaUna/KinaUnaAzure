@@ -1093,7 +1093,7 @@ namespace KinaUnaWeb.Controllers
             //}
 
             string fileName = Constants.AppName + "_Data_" + prog.NickName + ".xlsx";
-            string fileType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            const string fileType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             stream.Position = 0;
 
             return File(stream, fileType, fileName);

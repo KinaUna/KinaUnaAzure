@@ -10,7 +10,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public NotificationsListViewModel()
         {
-            NotificationsList = new List<WebNotification>();
+            NotificationsList = [];
         }
 
         public NotificationsListViewModel(BaseItemsViewModel baseItemsViewModel)

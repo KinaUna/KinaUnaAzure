@@ -5,26 +5,26 @@ namespace KinaUna.Data.Contexts
 {
     public class ProgenyDbContext(DbContextOptions<ProgenyDbContext> options) : DbContext(options)
     {
-        public DbSet<Progeny> ProgenyDb { get; set; }
-        public DbSet<UserAccess> UserAccessDb { get; set; }
-        public DbSet<TimeLineItem> TimeLineDb { get; set; }
-        public DbSet<UserInfo> UserInfoDb { get; set; }
-        public DbSet<Location> LocationsDb { get; set; }
-        public DbSet<CalendarItem> CalendarDb { get; set; }
-        public DbSet<VocabularyItem> VocabularyDb { get; set; }
-        public DbSet<Skill> SkillsDb { get; set; }
-        public DbSet<Friend> FriendsDb { get; set; }
-        public DbSet<Measurement> MeasurementsDb { get; set; }
-        public DbSet<Sleep> SleepDb { get; set; }
-        public DbSet<Note> NotesDb { get; set; }
-        public DbSet<Contact> ContactsDb { get; set; }
-        public DbSet<Address> AddressDb { get; set; }
-        public DbSet<Vaccination> VaccinationsDb { get; set; }
-        public DbSet<MobileNotification> MobileNotificationsDb { get; set; }
-        public DbSet<UserInfo> DeletedUsers { get; set; }
-        public DbSet<TextTranslation> TextTranslations { get; set; }
-        public DbSet<KinaUnaLanguage> Languages { get; set; }
-        public DbSet<KinaUnaText> KinaUnaTexts { get; set; }
-        public DbSet<KinaUnaTextNumber> KinaUnaTextNumbers { get; set; }
+        public DbSet<Progeny> ProgenyDb { get; init; }
+        public DbSet<UserAccess> UserAccessDb { get; init; }
+        public DbSet<TimeLineItem> TimeLineDb { get; init; }
+        public DbSet<UserInfo> UserInfoDb { get; init; }
+        public DbSet<Location> LocationsDb { get; init; }
+        public DbSet<CalendarItem> CalendarDb { get; init; }
+        public DbSet<VocabularyItem> VocabularyDb { get; init; }
+        public DbSet<Skill> SkillsDb { get; init; }
+        public DbSet<Friend> FriendsDb { get; init; }
+        public DbSet<Measurement> MeasurementsDb { get; init; }
+        public DbSet<Sleep> SleepDb { get; init; }
+        public DbSet<Note> NotesDb { get; init; }
+        public DbSet<Contact> ContactsDb { get; init; }
+        public DbSet<Address> AddressDb { get; init; }
+        public DbSet<Vaccination> VaccinationsDb { get; init; }
+        public DbSet<MobileNotification> MobileNotificationsDb { get; init; }
+        public DbSet<UserInfo> DeletedUsers { get; init; }
+        public DbSet<TextTranslation> TextTranslations { get; init; }
+        public DbSet<KinaUnaLanguage> Languages { get; init; }
+        public DbSet<KinaUnaText> KinaUnaTexts { get; init; }
+        public DbSet<KinaUnaTextNumber> KinaUnaTextNumbers { get; init; }
     }
 }

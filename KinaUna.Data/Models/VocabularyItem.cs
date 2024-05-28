@@ -19,7 +19,7 @@ namespace KinaUna.Data.Models
         [NotMapped]
         public Progeny Progeny { get; set; }
 
-        public int AccessLevel { get; set; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUSers, 4= public.
+        public int AccessLevel { get; set; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUsers, 4= public.
 
         [NotMapped]
         public int VocabularyItemNumber { get; set; }

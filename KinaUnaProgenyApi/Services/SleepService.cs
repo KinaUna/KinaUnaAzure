@@ -65,12 +65,11 @@ namespace KinaUnaProgenyApi.Services
         private async Task<Sleep> SetSleepInCache(int id)
         {
             Sleep sleep = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == id);
-            if (sleep != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id, JsonConvert.SerializeObject(sleep), _cacheOptionsSliding);
+            if (sleep == null) return null;
 
-                _ = await SetSleepListInCache(sleep.ProgenyId);
-            }
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id, JsonConvert.SerializeObject(sleep), _cacheOptionsSliding);
+
+            _ = await SetSleepListInCache(sleep.ProgenyId);
 
             return sleep;
         }
@@ -78,15 +77,14 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Sleep> UpdateSleep(Sleep sleep)
         {
             Sleep sleepToUpdate = await _context.SleepDb.SingleOrDefaultAsync(s => s.SleepId == sleep.SleepId);
-            if (sleepToUpdate != null)
-            {
-                sleepToUpdate.CopyPropertiesForUpdate(sleep);
+            if (sleepToUpdate == null) return null;
 
-                _ = _context.SleepDb.Update(sleepToUpdate);
-                _ = await _context.SaveChangesAsync();
+            sleepToUpdate.CopyPropertiesForUpdate(sleep);
 
-                _ = await SetSleepInCache(sleepToUpdate.SleepId);
-            }
+            _ = _context.SleepDb.Update(sleepToUpdate);
+            _ = await _context.SaveChangesAsync();
+
+            _ = await SetSleepInCache(sleepToUpdate.SleepId);
 
             return sleepToUpdate;
         }
@@ -94,13 +92,12 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Sleep> DeleteSleep(Sleep sleep)
         {
             Sleep sleepToDelete = await _context.SleepDb.SingleOrDefaultAsync(s => s.SleepId == sleep.SleepId);
-            if (sleepToDelete != null)
-            {
-                _ = _context.SleepDb.Remove(sleepToDelete);
-                _ = await _context.SaveChangesAsync();
+            if (sleepToDelete == null) return null;
 
-                await RemoveSleep(sleepToDelete.SleepId, sleepToDelete.ProgenyId);
-            }
+            _ = _context.SleepDb.Remove(sleepToDelete);
+            _ = await _context.SaveChangesAsync();
+
+            await RemoveSleep(sleepToDelete.SleepId, sleepToDelete.ProgenyId);
 
             return sleep;
         }
@@ -115,7 +112,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Sleep>> GetSleepList(int progenyId)
         {
             List<Sleep> sleepList = await GetSleepListFromCache(progenyId);
-            if (!sleepList.Any())
+            if (sleepList.Count == 0)
             {
                 sleepList = await SetSleepListInCache(progenyId);
             }
@@ -125,7 +122,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Sleep>> GetSleepListFromCache(int progenyId)
         {
-            List<Sleep> sleepList = new();
+            List<Sleep> sleepList = [];
             string cachedSleepList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "sleeplist" + progenyId);
             if (!string.IsNullOrEmpty(cachedSleepList))
             {

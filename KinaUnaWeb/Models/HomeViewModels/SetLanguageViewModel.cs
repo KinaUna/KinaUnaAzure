@@ -5,14 +5,14 @@ namespace KinaUnaWeb.Models.HomeViewModels
 {
     public class SetLanguageIdViewModel
     {
-        public List<KinaUnaLanguage> LanguageList { get; set; }
-        public int SelectedId { get; set; }
+        public List<KinaUnaLanguage> LanguageList { get; init; }
+        public int SelectedId { get; init; }
         public string ReturnUrl { get; set; } = string.Empty;
     }
 
     public class UserMenuViewModel
     {
-        public int LanguageId { get; set; }
-        public UserInfo UserInfo { get; set; }
+        public int LanguageId { get; init; }
+        public UserInfo UserInfo { get; init; }
     }
 }

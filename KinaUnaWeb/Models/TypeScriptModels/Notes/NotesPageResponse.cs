@@ -7,6 +7,6 @@ namespace KinaUnaWeb.Models.TypeScriptModels.Notes
         public int PageNumber { get; set; }
         public int TotalPages { get; set; }
         public int TotalItems { get; set; }
-        public List<int> NotesList { get; set; } = new List<int>();
+        public List<int> NotesList { get; set; } = [];
     }
 }

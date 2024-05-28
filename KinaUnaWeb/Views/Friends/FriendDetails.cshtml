@@ -11,12 +11,14 @@
     string parentFriend = await LocaleManager.GetTranslation("Parent", PageNames.Friends, Model.LanguageId);
     string familyFriend = await LocaleManager.GetTranslation("Family", PageNames.Friends, Model.LanguageId);
     string caretakerFriend = await LocaleManager.GetTranslation("Caretaker", PageNames.Friends, Model.LanguageId);
-    List<string> typeList = new List<string>();
-    typeList.Add(personalFriend);
-    typeList.Add(toyFriend);
-    typeList.Add(parentFriend);
-    typeList.Add(familyFriend);
-    typeList.Add(caretakerFriend);
+    List<string> typeList =
+    [
+        personalFriend,
+        toyFriend,
+        parentFriend,
+        familyFriend,
+        caretakerFriend
+    ];
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="row">
@@ -25,7 +27,7 @@
             <div class="card text-white bg-primary mr-auto">
                 <div class="card-header card-header-rose card-title h4">@Model.FriendItem.Name</div>
                 <div class="card-body">
-                    <img class="img-thumbnail" style="max-height: 80vh; max-width: 95vw; background: black; margin-bottom: 10px;" src="@Model.FriendItem.PictureLink" />
+                    <img class="img-thumbnail" style="max-height: 80vh; max-width: 95vw; background: black; margin-bottom: 10px;" src="@Model.FriendItem.PictureLink" alt="@Model.FriendItem.Name"/>
                 </div>
                 <div class="card-body">
                     <div align="left">

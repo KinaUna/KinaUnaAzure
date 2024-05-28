@@ -15,7 +15,7 @@ namespace KinaUnaProgenyApi.Controllers
         // Todo: Security check, verify that users can view/change addresses.
 
         // GET api/addresses/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetAddressItem(int id)
         {
             Address result = await locationService.GetAddressItem(id);
@@ -32,7 +32,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // PUT api/addresses/5
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Address value)
         {
             Address addressItem = await locationService.GetAddressItem(id);
@@ -47,20 +47,16 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // DELETE api/addresses/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             Address addressItem = await locationService.GetAddressItem(id);
-            if (addressItem != null)
-            {
-                await locationService.RemoveAddressItem(id);
+            if (addressItem == null) return NotFound();
 
-                return NoContent();
-            }
-            else
-            {
-                return NotFound();
-            }
+            await locationService.RemoveAddressItem(id);
+
+            return NoContent();
+
         }
     }
 }

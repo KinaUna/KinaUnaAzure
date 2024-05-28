@@ -33,20 +33,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(accessToken);
 
             const string userInfoApiPath = "api/UserInfo/UserInfoByEmail/";
-            string id = email;
-            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(id), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(email), System.Text.Encoding.UTF8, "application/json"));
+            if (!userInfoResponse.IsSuccessStatusCode) return new UserInfo();
 
-            UserInfo userInfo = new();
-            if (userInfoResponse.IsSuccessStatusCode)
-            {
-                string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-                userInfo = JsonConvert.DeserializeObject<UserInfo>(userinfoAsString);
-                if (userInfo != null)
-                {
-                    return userInfo;
-                }
-            }
-
+            string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
+            UserInfo userInfo = JsonConvert.DeserializeObject<UserInfo>(userinfoAsString);
             return userInfo;
         }
 
@@ -55,21 +46,13 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string userInfoApiPath = "api/UserInfo/ByUserIdPost/";
-            string id = userId;
-            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(id), System.Text.Encoding.UTF8, "application/json"));
-
-            if (userInfoResponse.IsSuccessStatusCode)
-            {
-                string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-                UserInfo userInfo = JsonConvert.DeserializeObject<UserInfo>(userinfoAsString);
-                if (userInfo != null)
-                {
-                    return userInfo;
-                }
-            }
-
-            return new UserInfo();
+            const string userInfoApiPath = "api/UserInfo/ByUserIdPost/";
+            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(userId), System.Text.Encoding.UTF8, "application/json"));
+            if (!userInfoResponse.IsSuccessStatusCode) return new UserInfo();
+            
+            string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
+            UserInfo userInfo = JsonConvert.DeserializeObject<UserInfo>(userinfoAsString);
+            return userInfo ?? new UserInfo();
         }
 
         public async Task<UserInfo> AddUserInfo(UserInfo userInfo)
@@ -77,20 +60,13 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string newUserInfoApiPath = "/api/UserInfo/";
+            const string newUserInfoApiPath = "/api/UserInfo/";
             HttpResponseMessage newUserInfoResponse = await _httpClient.PostAsync(newUserInfoApiPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
+            if (!newUserInfoResponse.IsSuccessStatusCode) return new UserInfo();
 
-            if (newUserInfoResponse.IsSuccessStatusCode)
-            {
-                string newUserResponseString = await newUserInfoResponse.Content.ReadAsStringAsync();
-                UserInfo addedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
-                if (addedUserinfo != null)
-                {
-                    return addedUserinfo;
-                }
-            }
-
-            return new UserInfo();
+            string newUserResponseString = await newUserInfoResponse.Content.ReadAsStringAsync();
+            UserInfo addedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
+            return addedUserinfo ?? new UserInfo();
         }
 
         public async Task<UserInfo> UpdateUserInfo(UserInfo userInfo)
@@ -98,20 +74,13 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string newUserInfoApiPath = "/api/UserInfo/";
+            const string newUserInfoApiPath = "/api/UserInfo/";
             HttpResponseMessage newUserInfoResponse = await _httpClient.PutAsync(newUserInfoApiPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
-
-            if (newUserInfoResponse.IsSuccessStatusCode)
-            {
-                string newUserResponseString = await newUserInfoResponse.Content.ReadAsStringAsync();
-                UserInfo updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
-                if (updatedUserinfo != null)
-                {
-                    return updatedUserinfo;
-                }
-            }
-
-            return new UserInfo();
+            if (!newUserInfoResponse.IsSuccessStatusCode) return new UserInfo();
+            
+            string newUserResponseString = await newUserInfoResponse.Content.ReadAsStringAsync();
+            UserInfo updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
+            return updatedUserinfo ?? new UserInfo();
         }
 
         public async Task<UserInfo> DeleteUserInfo(UserInfo userInfo)
@@ -124,31 +93,23 @@ namespace KinaUnaWeb.Services.HttpClients
             string deleteApiPath = "/api/UserInfo/" + userInfo.UserId;
 
             HttpResponseMessage deleteResponse = await _httpClient.PutAsync(deleteApiPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
-            if (deleteResponse.IsSuccessStatusCode)
-            {
-                string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
-                UserInfo deletedUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseString);
-                if (deletedUserInfo != null)
-                {
-                    return deletedUserInfo;
-                }
-            }
+            if (!deleteResponse.IsSuccessStatusCode) return new UserInfo();
 
-            return new UserInfo();
+            string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
+            UserInfo deletedUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseString);
+            return deletedUserInfo ?? new UserInfo();
         }
 
         public async Task<UserInfo> CheckCurrentUser(string userId)
         {
             const string userinfoApiPath = "/api/UserInfo/CheckCurrentUser/";
             HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userinfoApiPath, new StringContent(JsonConvert.SerializeObject(userId), System.Text.Encoding.UTF8, "application/json"));
-            if (userInfoResponse.IsSuccessStatusCode)
-            {
-                string userInfoResponseAsString = await userInfoResponse.Content.ReadAsStringAsync();
-                UserInfo userInfo = JsonConvert.DeserializeObject<UserInfo>(userInfoResponseAsString);
-                return userInfo;
-            }
+            if (!userInfoResponse.IsSuccessStatusCode) return new UserInfo();
 
-            return new UserInfo();
+            string userInfoResponseAsString = await userInfoResponse.Content.ReadAsStringAsync();
+            UserInfo userInfo = JsonConvert.DeserializeObject<UserInfo>(userInfoResponseAsString);
+            return userInfo;
+
         }
 
         public async Task<List<UserInfo>> GetDeletedUserInfos()
@@ -156,14 +117,13 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string userInfoApiPath = "/api/UserInfo/GetDeletedUserInfos/";
+            const string userInfoApiPath = "/api/UserInfo/GetDeletedUserInfos/";
             HttpResponseMessage userInfoResponse = await _httpClient.GetAsync(userInfoApiPath);
-            List<UserInfo> userInfosList = new();
-            if (userInfoResponse.IsSuccessStatusCode)
-            {
-                string userInfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-                userInfosList = JsonConvert.DeserializeObject<List<UserInfo>>(userInfoAsString);
-            }
+            List<UserInfo> userInfosList = [];
+            if (!userInfoResponse.IsSuccessStatusCode) return userInfosList;
+
+            string userInfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
+            userInfosList = JsonConvert.DeserializeObject<List<UserInfo>>(userInfoAsString);
 
             return userInfosList;
         }
@@ -177,11 +137,10 @@ namespace KinaUnaWeb.Services.HttpClients
             string deleteApiPath = "/api/UserInfo/" + userInfo.UserId;
 
             HttpResponseMessage deleteResponse = await _httpClient.DeleteAsync(deleteApiPath);
-            if (deleteResponse.IsSuccessStatusCode)
-            {
-                string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
-                deletedUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseString);
-            }
+            if (!deleteResponse.IsSuccessStatusCode) return deletedUserInfo;
+
+            string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
+            deletedUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseString);
 
             return deletedUserInfo;
         }

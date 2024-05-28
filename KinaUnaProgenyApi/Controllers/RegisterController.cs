@@ -114,14 +114,13 @@ namespace KinaUnaProgenyApi.Controllers
 
         private static void ReturnGoneIfHubResponseIsGone(MessagingException e)
         {
-            if (e.InnerException is WebException webex)
+            if (e.InnerException is not WebException webex) return;
+
+            if (webex.Status == WebExceptionStatus.ProtocolError)
             {
-                if (webex.Status == WebExceptionStatus.ProtocolError)
-                {
-                    HttpWebResponse response = (HttpWebResponse)webex.Response;
-                    if (response != null && response.StatusCode == HttpStatusCode.Gone)
-                        throw new HttpRequestException(HttpStatusCode.Gone.ToString());
-                }
+                HttpWebResponse response = (HttpWebResponse)webex.Response;
+                if (response != null && response.StatusCode == HttpStatusCode.Gone)
+                    throw new HttpRequestException(HttpStatusCode.Gone.ToString());
             }
         }
 
@@ -130,14 +129,13 @@ namespace KinaUnaProgenyApi.Controllers
         {
             CollectionQueryResult<RegistrationDescription> regList = (CollectionQueryResult<RegistrationDescription>)await _hub.GetRegistrationsByChannelAsync(handle, 1);
 
-            if (regList.Any())
+            if (!regList.Any()) return "NO_DATA";
+
+            foreach (RegistrationDescription regItem in regList)
             {
-                foreach (RegistrationDescription regItem in regList)
+                if (regItem.PnsHandle == handle)
                 {
-                    if (regItem.PnsHandle == handle)
-                    {
-                        return regItem.RegistrationId;
-                    }
+                    return regItem.RegistrationId;
                 }
             }
 

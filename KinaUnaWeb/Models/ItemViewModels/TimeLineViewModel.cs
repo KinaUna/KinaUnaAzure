@@ -5,9 +5,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class TimeLineViewModel: BaseItemsViewModel
     {
-        public List<TimeLineItem> TimeLineItems { get; set; }
-        public int SortBy { get; set; }
-        public int Items { get; set; }
+        public List<TimeLineItem> TimeLineItems { get; init; }
+        public int SortBy { get; init; }
+        public int Items { get; init; }
 
         public TimeLineViewModel()
         {

@@ -62,10 +62,7 @@ namespace KinaUnaWeb.Controllers
             }
 
 
-            if (model.VocabularyItem.Date == null)
-            {
-                model.VocabularyItem.Date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
+            model.VocabularyItem.Date ??= TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
             model.VocabularyItem.Author = model.CurrentUser.UserId;
 
@@ -107,10 +104,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            if (model.VocabularyItem.Date == null)
-            {
-                model.VocabularyItem.Date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-            }
+            model.VocabularyItem.Date ??= TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
             await wordsHttpClient.UpdateWord(model.VocabularyItem);
 

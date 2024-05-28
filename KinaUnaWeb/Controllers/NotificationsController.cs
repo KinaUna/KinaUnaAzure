@@ -27,38 +27,36 @@ namespace KinaUnaWeb.Controllers
             
             model.NotificationsList = await webNotificationsService.GetUsersNotifications(model.CurrentUser.UserId);
             
-            if (model.NotificationsList.Any())
+            if (model.NotificationsList.Count != 0)
             {
-                model.NotificationsList = model.NotificationsList.OrderBy(n => n.DateTime).ToList();
+                model.NotificationsList = [.. model.NotificationsList.OrderBy(n => n.DateTime)];
                 model.NotificationsList.Reverse();
                 foreach (WebNotification notif in model.NotificationsList)
                 {
                     notif.DateTime = TimeZoneInfo.ConvertTimeFromUtc(notif.DateTime,
                         TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                     notif.DateTimeString = notif.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
-                    if (!notif.Icon.StartsWith("/"))
+                    if (!notif.Icon.StartsWith('/'))
                     {
                         notif.Icon = imageStore.UriFor(notif.Icon, "profiles");
                     }
                 }
             }
 
-            if (Id != 0)
+            if (Id == 0) return View(model);
+
+            WebNotification notification = await webNotificationsService.GetNotificationById(Id);
+            if (notification == null || notification.To != model.CurrentUser.UserId) return View(model);
+
+            notification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(notification.DateTime,
+                TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            notification.DateTimeString = notification.DateTime.ToString("dd-MMM-yyyy HH:mm");
+            model.SelectedNotification = notification;
+            if (!notification.Icon.StartsWith('/'))
             {
-                WebNotification notification = await webNotificationsService.GetNotificationById(Id);
-                if (notification != null && notification.To == model.CurrentUser.UserId)
-                {
-                    notification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(notification.DateTime,
-                        TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                    notification.DateTimeString = notification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                    model.SelectedNotification = notification;
-                    if (!notification.Icon.StartsWith("/"))
-                    {
-                        notification.Icon = imageStore.UriFor(notification.Icon, "profiles");
-                    }
-                }
+                notification.Icon = imageStore.UriFor(notification.Icon, "profiles");
             }
-            
+
             return View(model);
         }
 
@@ -67,7 +65,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             WebNotificationViewModel model = new(baseModel);
             
-            if (!notification.Icon.StartsWith("/"))
+            if (!notification.Icon.StartsWith('/'))
             {
                 notification.Icon = imageStore.UriFor(notification.Icon, "profiles");
             }
@@ -85,7 +83,7 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             WebNotificationViewModel model = new(baseModel);
             
-            if (!notification.Icon.StartsWith("/"))
+            if (!notification.Icon.StartsWith('/'))
             {
                 notification.Icon = imageStore.UriFor(notification.Icon, "profiles");
             }
@@ -103,16 +101,14 @@ namespace KinaUnaWeb.Controllers
             string userId = User.GetUserId() ?? "NoUser";
             WebNotification updateNotification = await webNotificationsService.GetNotificationById(Id);
 
-            if (updateNotification != null)
-            {
-                if (userId == updateNotification.To)
-                {
-                    updateNotification.IsRead = false;
-                    updateNotification = await webNotificationsService.UpdateNotification(updateNotification);
+            if (updateNotification == null) return Ok();
 
-                    await hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
-                }
-            }
+            if (userId != updateNotification.To) return Ok();
+
+            updateNotification.IsRead = false;
+            updateNotification = await webNotificationsService.UpdateNotification(updateNotification);
+
+            await hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
 
             return Ok();
         }
@@ -122,17 +118,15 @@ namespace KinaUnaWeb.Controllers
             string userId = User.GetUserId() ?? "NoUser";
             WebNotification updateNotification = await webNotificationsService.GetNotificationById(Id);
 
-            if (updateNotification != null)
-            {
-                if (userId == updateNotification.To)
-                {
-                    updateNotification.IsRead = true;
-                    
-                    updateNotification = await webNotificationsService.UpdateNotification(updateNotification);
+            if (updateNotification == null) return Ok();
 
-                    await hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
-                }
-            }
+            if (userId != updateNotification.To) return Ok();
+
+            updateNotification.IsRead = true;
+                    
+            updateNotification = await webNotificationsService.UpdateNotification(updateNotification);
+
+            await hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
 
             return Ok();
         }
@@ -142,14 +136,12 @@ namespace KinaUnaWeb.Controllers
             string userId = User.GetUserId() ?? "NoUser";
             WebNotification updateNotification = await webNotificationsService.GetNotificationById(Id);
 
-            if (updateNotification != null)
-            {
-                if (userId == updateNotification.To)
-                {
-                    await webNotificationsService.RemoveNotification(updateNotification);
-                    await hubContext.Clients.User(userId).SendAsync("DeleteMessage", JsonConvert.SerializeObject(updateNotification));
-                }
-            }
+            if (updateNotification == null) return Ok();
+
+            if (userId != updateNotification.To) return Ok();
+
+            await webNotificationsService.RemoveNotification(updateNotification);
+            await hubContext.Clients.User(userId).SendAsync("DeleteMessage", JsonConvert.SerializeObject(updateNotification));
 
             return Ok();
         }

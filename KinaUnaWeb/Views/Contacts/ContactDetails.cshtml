@@ -11,7 +11,7 @@
         <div class="card-header bg-contact-header text-white"><h5>@Model.ContactItem.DisplayName</h5></div>
         <div class="card-body">
             <div class="card-text" style="max-width: 705px;">
-                <img class="img-thumbnail mx-auto d-block" style="max-height: 600px; max-width: 100%; background: black;" src="@Model.ContactItem.PictureLink" />
+                <img class="img-thumbnail mx-auto d-block" style="max-height: 600px; max-width: 100%; background: black;" src="@Model.ContactItem.PictureLink" alt="Contact Picture"/>
                 <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("First name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.FirstName</div>
                 <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Middle name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.MiddleName</div>
                 <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Last name:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.LastName</div>

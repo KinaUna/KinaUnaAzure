@@ -12,9 +12,9 @@ namespace KinaUnaWebBlazor.Models.ItemViewModels
         public DateTime SkillAddedDate { get; set; } = DateTime.UtcNow;
         public string Author { get; set; } = "";
         public int ProgenyId { get; set; } = 0;
-        public Progeny Progeny { get; set; } = new Progeny();
+        public Progeny Progeny { get; set; } = new();
         public bool IsAdmin { get; set; } = false;
-        public Skill Skill { get; set; } = new Skill();
+        public Skill Skill { get; set; } = new();
         public int AccessLevel { get; set; } = 5;
     }
 }

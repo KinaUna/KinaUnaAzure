@@ -28,26 +28,26 @@ namespace KinaUnaProgenyApi.Controllers
     {
         // GET api/calendar/progeny/[id]
         [HttpGet]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
+            if (userAccess == null && id != Constants.DefaultChildId) return NotFound();
+
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id);
+            calendarList = calendarList.Where(c => c.AccessLevel >= accessLevel).ToList();
+            if (calendarList.Count != 0)
             {
-                List<CalendarItem> calendarList = await calendarService.GetCalendarList(id);
-                calendarList = calendarList.Where(c => c.AccessLevel >= accessLevel).ToList();
-                if (calendarList.Any())
-                {
-                    return Ok(calendarList);
-                }
+                return Ok(calendarList);
             }
 
             return NotFound();
         }
 
         [HttpGet]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyInterval(int id, [FromQuery] string start, [FromQuery] string end, [FromQuery] int accessLevel = 5)
         {
             bool startParsed = DateTime.TryParseExact(start, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime startDate);
@@ -55,32 +55,30 @@ namespace KinaUnaProgenyApi.Controllers
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
 
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId && startParsed && endParsed)
+            if (userAccess == null && (id != Constants.DefaultChildId || !startParsed || !endParsed)) return NotFound();
+
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id);
+            calendarList = calendarList.Where(c => userAccess != null && c.AccessLevel >= userAccess.AccessLevel && c.EndTime > startDate && c.StartTime < endDate).ToList();
+            if (calendarList.Count != 0)
             {
-                List<CalendarItem> calendarList = await calendarService.GetCalendarList(id);
-                calendarList = calendarList.Where(c => userAccess != null && c.AccessLevel >= userAccess.AccessLevel && c.EndTime > startDate && c.StartTime < endDate).ToList();
-                if (calendarList.Any())
-                {
-                    return Ok(calendarList);
-                }
+                return Ok(calendarList);
             }
 
             return NotFound();
         }
 
         // GET api/calendar/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCalendarItem(int id)
         {
             CalendarItem result = await calendarService.GetCalendarItem(id);
-            if (result != null)
+            if (result == null) return NotFound();
+
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+            if ((userAccess != null && userAccess.AccessLevel <= result.AccessLevel) || result.ProgenyId == Constants.DefaultChildId)
             {
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-                if ((userAccess != null && userAccess.AccessLevel <= result.AccessLevel) || result.ProgenyId == Constants.DefaultChildId)
-                {
-                    return Ok(result);
-                }
+                return Ok(result);
             }
 
             return NotFound();
@@ -127,7 +125,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // PUT api/calendar/5
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] CalendarItem value)
         {
             CalendarItem calendarItem = await calendarService.GetCalendarItem(id);
@@ -155,94 +153,86 @@ namespace KinaUnaProgenyApi.Controllers
 
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(calendarItem.EventId.ToString(), (int)KinaUnaTypes.TimeLineType.Calendar);
 
-            if (timeLineItem != null && timeLineItem.CopyCalendarItemPropertiesForUpdate(calendarItem))
-            {
-                _ = await timelineService.UpdateTimeLineItem(timeLineItem);
+            if (timeLineItem == null || !timeLineItem.CopyCalendarItemPropertiesForUpdate(calendarItem)) return Ok(calendarItem);
 
-                UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-                string notificationTitle = "Calendar edited for " + progeny.NickName;
-                string notificationMessage = userInfo.FullName() + " edited a calendar item for " + progeny.NickName;
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-                await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                await webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
-            }
+            string notificationTitle = "Calendar edited for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " edited a calendar item for " + progeny.NickName;
+
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
 
             return Ok(calendarItem);
         }
 
         // DELETE api/calendar/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             CalendarItem calendarItem = await calendarService.GetCalendarItem(id);
-            if (calendarItem != null)
+            if (calendarItem == null) return NotFound();
+
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+
+            Progeny progeny = await progenyService.GetProgeny(calendarItem.ProgenyId);
+            if (progeny != null)
             {
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
-                Progeny progeny = await progenyService.GetProgeny(calendarItem.ProgenyId);
-                if (progeny != null)
+                if (!progeny.IsInAdminList(userEmail))
                 {
-                    if (!progeny.IsInAdminList(userEmail))
-                    {
-                        return Unauthorized();
-                    }
+                    return Unauthorized();
                 }
-                else
-                {
-                    return NotFound();
-                }
-
-                TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(calendarItem.EventId.ToString(), (int)KinaUnaTypes.TimeLineType.Calendar);
-                if (timeLineItem != null)
-                {
-                    _ = await timelineService.DeleteTimeLineItem(timeLineItem);
-                }
-
-                await calendarService.DeleteCalendarItem(calendarItem);
-
-                if (timeLineItem != null)
-                {
-                    UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-                    string notificationTitle = "Calendar item deleted for " + progeny.NickName;
-                    string notificationMessage = userInfo.FullName() + " deleted a calendar item for " + progeny.NickName + ". Event: " + calendarItem.Title;
-
-                    calendarItem.AccessLevel = timeLineItem.AccessLevel = 0;
-
-                    await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                    await webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
-                }
-
-                return NoContent();
             }
             else
             {
                 return NotFound();
             }
+
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(calendarItem.EventId.ToString(), (int)KinaUnaTypes.TimeLineType.Calendar);
+            if (timeLineItem != null)
+            {
+                _ = await timelineService.DeleteTimeLineItem(timeLineItem);
+            }
+
+            await calendarService.DeleteCalendarItem(calendarItem);
+
+            if (timeLineItem == null) return NoContent();
+
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+
+            string notificationTitle = "Calendar item deleted for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " deleted a calendar item for " + progeny.NickName + ". Event: " + calendarItem.Title;
+
+            calendarItem.AccessLevel = timeLineItem.AccessLevel = 0;
+
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
+
+            return NoContent();
+
         }
 
         [HttpGet]
-        [Route("[action]/{progenyId}/{accessLevel}")]
+        [Route("[action]/{progenyId:int}/{accessLevel:int}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> EventList(int progenyId, int accessLevel)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
+            if (userAccess == null && progenyId != Constants.DefaultChildId) return NotFound();
 
-            if (userAccess != null || progenyId == Constants.DefaultChildId)
-            {
-                List<CalendarItem> calendarList = await calendarService.GetCalendarList(progenyId);
-                calendarList = calendarList.Where(c => userAccess != null && c.EndTime > DateTime.UtcNow && c.AccessLevel >= userAccess.AccessLevel).ToList();
-                calendarList = calendarList.OrderBy(e => e.StartTime).ToList();
-                calendarList = calendarList.Take(8).ToList();
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(progenyId);
+            calendarList = calendarList.Where(c => userAccess != null && c.EndTime > DateTime.UtcNow && c.AccessLevel >= userAccess.AccessLevel).ToList();
+            calendarList = [.. calendarList.OrderBy(e => e.StartTime)];
+            calendarList = calendarList.Take(8).ToList();
 
-                return Ok(calendarList);
-            }
+            return Ok(calendarList);
 
-            return NotFound();
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetItemMobile(int id)
         {
             CalendarItem calendarItem = await calendarService.GetCalendarItem(id);
@@ -258,24 +248,23 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess != null)
-            {
-                List<CalendarItem> calendarList = await calendarService.GetCalendarList(id);
-                calendarList = calendarList.Where(c => c.AccessLevel >= userAccess.AccessLevel).ToList();
-                if (calendarList.Any())
-                {
-                    return Ok(calendarList);
-                }
 
-                return NotFound();
+            if (userAccess == null) return Unauthorized();
+            List<CalendarItem> calendarList = await calendarService.GetCalendarList(id);
+            calendarList = calendarList.Where(c => c.AccessLevel >= userAccess.AccessLevel).ToList();
+            if (calendarList.Count != 0)
+            {
+                return Ok(calendarList);
             }
 
-            return Unauthorized();
+            return NotFound();
+
         }
     }
 }

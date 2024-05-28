@@ -7,11 +7,11 @@ namespace KinaUnaProgenyApi.Models
 {
     public class SleepDetailsModel
     {
-        public List<Sleep> SleepList { get; set; }
+        public List<Sleep> SleepList { get; private set; }
 
         public void CreateSleepList(Sleep currentSleep, List<Sleep> allSleepList, int accessLevel, int sortOrder, string userTimeZone)
         {
-            List<Sleep> sleepList = new();
+            List<Sleep> sleepList = [];
             foreach (Sleep sleep in allSleepList)
             {
                 if (sleep.AccessLevel >= accessLevel)
@@ -22,14 +22,14 @@ namespace KinaUnaProgenyApi.Models
 
             if (sortOrder == 0)
             {
-                sleepList = sleepList.OrderBy(s => s.SleepStart).ToList();
+                sleepList = [.. sleepList.OrderBy(s => s.SleepStart)];
             }
             else
             {
-                sleepList = sleepList.OrderByDescending(s => s.SleepStart).ToList();
+                sleepList = [.. sleepList.OrderByDescending(s => s.SleepStart)];
             }
 
-            SleepList = new List<Sleep> { currentSleep };
+            SleepList = [currentSleep];
 
             int currentSleepIndex = sleepList.IndexOf(currentSleep);
             if (currentSleepIndex > 0)

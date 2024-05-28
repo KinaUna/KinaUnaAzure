@@ -59,15 +59,14 @@ namespace KinaUnaProgenyApi.Services
             return skill;
         }
 
-        public async Task<Skill> SetSkillInCache(int id)
+        private async Task<Skill> SetSkillInCache(int id)
         {
             Skill skill = await _context.SkillsDb.AsNoTracking().SingleOrDefaultAsync(s => s.SkillId == id);
-            if (skill != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + id, JsonConvert.SerializeObject(skill), _cacheOptionsSliding);
+            if (skill == null) return null;
 
-                _ = await SetSkillsListInCache(skill.ProgenyId);
-            }
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + id, JsonConvert.SerializeObject(skill), _cacheOptionsSliding);
+
+            _ = await SetSkillsListInCache(skill.ProgenyId);
 
             return skill;
         }
@@ -75,15 +74,14 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Skill> UpdateSkill(Skill skill)
         {
             Skill skillToUpdate = await _context.SkillsDb.SingleOrDefaultAsync(s => s.SkillId == skill.SkillId);
-            if (skillToUpdate != null)
-            {
-                skillToUpdate.CopyPropertiesForUpdate(skill);
+            if (skillToUpdate == null) return null;
 
-                _ = _context.SkillsDb.Update(skillToUpdate);
-                _ = await _context.SaveChangesAsync();
+            skillToUpdate.CopyPropertiesForUpdate(skill);
 
-                _ = await SetSkillInCache(skill.SkillId);
-            }
+            _ = _context.SkillsDb.Update(skillToUpdate);
+            _ = await _context.SaveChangesAsync();
+
+            _ = await SetSkillInCache(skill.SkillId);
 
             return skillToUpdate;
         }
@@ -91,16 +89,16 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Skill> DeleteSkill(Skill skill)
         {
             Skill skillToDelete = await _context.SkillsDb.SingleOrDefaultAsync(s => s.SkillId == skill.SkillId);
-            if (skillToDelete != null)
-            {
-                _ = _context.SkillsDb.Remove(skillToDelete);
-                _ = await _context.SaveChangesAsync();
-                await RemoveSkillFromCache(skill.SkillId, skill.ProgenyId);
-            }
+            if (skillToDelete == null) return null;
+
+            _ = _context.SkillsDb.Remove(skillToDelete);
+            _ = await _context.SaveChangesAsync();
+            await RemoveSkillFromCache(skill.SkillId, skill.ProgenyId);
 
             return skillToDelete;
         }
-        public async Task RemoveSkillFromCache(int id, int progenyId)
+
+        private async Task RemoveSkillFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "skill" + id);
 
@@ -110,7 +108,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Skill>> GetSkillsList(int progenyId)
         {
             List<Skill> skillsList = await GetSkillsListFromCache(progenyId);
-            if (!skillsList.Any())
+            if (skillsList.Count == 0)
             {
                 skillsList = await SetSkillsListInCache(progenyId);
             }
@@ -120,7 +118,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Skill>> GetSkillsListFromCache(int progenyId)
         {
-            List<Skill> skillsList = new();
+            List<Skill> skillsList = [];
             string cachedSkillsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "skillslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedSkillsList))
             {

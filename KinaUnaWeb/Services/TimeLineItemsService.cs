@@ -60,11 +60,10 @@ namespace KinaUnaWeb.Services
                     CalendarItem evt = await calendarsHttpClient.GetCalendarItem(itemId);
                     if (evt != null && evt.EventId > 0)
                     {
-                        if (evt.StartTime.HasValue && evt.EndTime.HasValue)
-                        {
-                            evt.StartTime = TimeZoneInfo.ConvertTimeFromUtc(evt.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                            evt.EndTime = TimeZoneInfo.ConvertTimeFromUtc(evt.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                        }
+                        if (!evt.StartTime.HasValue || !evt.EndTime.HasValue) return new TimeLineItemPartialViewModel("_TimeLineEventPartial", evt);
+
+                        evt.StartTime = TimeZoneInfo.ConvertTimeFromUtc(evt.StartTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+                        evt.EndTime = TimeZoneInfo.ConvertTimeFromUtc(evt.EndTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
                         return new TimeLineItemPartialViewModel("_TimeLineEventPartial", evt);
                     }
                 }
@@ -164,10 +163,7 @@ namespace KinaUnaWeb.Services
                     Contact cnt = await contactsHttpClient.GetContact(itemId);
                     if (cnt != null && cnt.ContactId > 0)
                     {
-                        if (cnt.DateAdded == null)
-                        {
-                            cnt.DateAdded = DateTime.UtcNow;
-                        }
+                        cnt.DateAdded ??= DateTime.UtcNow;
 
                         cnt.PictureLink = imageStore.UriFor(cnt.PictureLink, "contacts");
 

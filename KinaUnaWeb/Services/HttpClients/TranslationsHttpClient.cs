@@ -32,12 +32,10 @@ namespace KinaUnaWeb.Services.HttpClients
             httpClient.DefaultRequestVersion = new Version(2, 0);
 
         }
-
-
-
+        
         private async Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false)
         {
-            List<KinaUnaLanguage> languageList = new();
+            List<KinaUnaLanguage> languageList = [];
             string cachedLanguagesString = await _cache.GetStringAsync("AllLanguages");
             if (!updateCache && !string.IsNullOrEmpty(cachedLanguagesString))
             {
@@ -48,7 +46,7 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken(true);
             _httpClient.SetBearerToken(accessToken);
 
-            string admininfoApiPath = "/api/Languages/GetAllLanguages";
+            const string admininfoApiPath = "/api/Languages/GetAllLanguages";
             HttpResponseMessage admininfoResponse = await _httpClient.GetAsync(admininfoApiPath);
 
             if (admininfoResponse.IsSuccessStatusCode)
@@ -57,7 +55,7 @@ namespace KinaUnaWeb.Services.HttpClients
                 languageList = JsonConvert.DeserializeObject<List<KinaUnaLanguage>>(languageListAsString);
             }
 
-            if (languageList != null && languageList.Any())
+            if (languageList != null && languageList.Count != 0)
             {
                 await _cache.SetStringAsync("AllLanguages", JsonConvert.SerializeObject(languageList));
             }
@@ -95,7 +93,7 @@ namespace KinaUnaWeb.Services.HttpClients
                     string translationsListAsString = await translationResponse.Content.ReadAsStringAsync();
                     translationsList = JsonConvert.DeserializeObject<List<TextTranslation>>(translationsListAsString);
 
-                    if (translationsList != null && translationsList.Any())
+                    if (translationsList != null && translationsList.Count != 0)
                     {
                         await _cache.SetStringAsync("PageTranslations" + page + "&Lang" + languageId, JsonConvert.SerializeObject(translationsList), _cacheExpirationLong);
                         TextTranslation textTranslation = translationsList.FirstOrDefault(t => t.Word == word && t.Page == page && t.LanguageId == languageId);
@@ -107,18 +105,17 @@ namespace KinaUnaWeb.Services.HttpClients
                 }
             }
 
-            if (string.IsNullOrEmpty(translation))
+            if (!string.IsNullOrEmpty(translation)) return translation;
+
+            TextTranslation translationItem = new()
             {
-                TextTranslation translationItem = new()
-                {
-                    LanguageId = languageId,
-                    Translation = word,
-                    Page = page,
-                    Word = word
-                };
-                translationItem = await AddTranslation(translationItem);
-                translation = translationItem.Translation;
-            }
+                LanguageId = languageId,
+                Translation = word,
+                Page = page,
+                Word = word
+            };
+            translationItem = await AddTranslation(translationItem);
+            translation = translationItem.Translation;
             return translation;
 
         }
@@ -129,21 +126,19 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string addApiPath = "/api/Translations/";
+            const string addApiPath = "/api/Translations/";
             HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(translation), System.Text.Encoding.UTF8, "application/json"));
-            if (addResponse.IsSuccessStatusCode)
+            if (!addResponse.IsSuccessStatusCode) return addedTranslation;
+
+            string addResponseString = await addResponse.Content.ReadAsStringAsync();
+            addedTranslation = JsonConvert.DeserializeObject<TextTranslation>(addResponseString);
+
+            List<KinaUnaLanguage> languages = await GetAllLanguages();
+            foreach (KinaUnaLanguage language in languages)
             {
-                string addResponseString = await addResponse.Content.ReadAsStringAsync();
-                addedTranslation = JsonConvert.DeserializeObject<TextTranslation>(addResponseString);
-
-                List<KinaUnaLanguage> languages = await GetAllLanguages();
-                foreach (KinaUnaLanguage language in languages)
-                {
-                    await _cache.RemoveAsync("PageTranslations" + translation.Page + "&Lang" + language.Id);
-                    _ = await GetAllTranslations(language.Id, true);
-                }
+                await _cache.RemoveAsync("PageTranslations" + translation.Page + "&Lang" + language.Id);
+                _ = await GetAllTranslations(language.Id, true);
             }
-
 
             return addedTranslation;
         }
@@ -156,11 +151,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string addApiPath = "/api/Translations/" + translation.Id;
             HttpResponseMessage updateResponse = await _httpClient.PutAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(translation), System.Text.Encoding.UTF8, "application/json"));
-            if (updateResponse.IsSuccessStatusCode)
-            {
-                string addResponseString = await updateResponse.Content.ReadAsStringAsync();
-                addedTranslation = JsonConvert.DeserializeObject<TextTranslation>(addResponseString);
-            }
+            if (!updateResponse.IsSuccessStatusCode) return addedTranslation;
+
+            string addResponseString = await updateResponse.Content.ReadAsStringAsync();
+            addedTranslation = JsonConvert.DeserializeObject<TextTranslation>(addResponseString);
 
             return addedTranslation;
         }
@@ -173,12 +167,10 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string addApiPath = "/api/Translations/" + translation.Id;
             HttpResponseMessage deleteResponse = await _httpClient.DeleteAsync(addApiPath);
-            if (deleteResponse.IsSuccessStatusCode)
-            {
-                string deleteResponseString = await _httpClient.DeleteAsync(addApiPath).Result.Content.ReadAsStringAsync();
-                deletedTranslation = JsonConvert.DeserializeObject<TextTranslation>(deleteResponseString);
-            }
+            if (!deleteResponse.IsSuccessStatusCode) return deletedTranslation;
 
+            string deleteResponseString = await _httpClient.DeleteAsync(addApiPath).Result.Content.ReadAsStringAsync();
+            deletedTranslation = JsonConvert.DeserializeObject<TextTranslation>(deleteResponseString);
 
             return deletedTranslation;
         }
@@ -191,16 +183,15 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string addApiPath = "/api/Translations/DeleteSingleItem/" + translation.Id;
             HttpResponseMessage deleteResponse = await _httpClient.DeleteAsync(addApiPath);
-            if (deleteResponse.IsSuccessStatusCode)
+            if (!deleteResponse.IsSuccessStatusCode) return deletedTranslation;
+
+            string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
+            deletedTranslation = JsonConvert.DeserializeObject<TextTranslation>(deleteResponseString);
+            List<KinaUnaLanguage> languages = await GetAllLanguages();
+            foreach (KinaUnaLanguage language in languages)
             {
-                string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
-                deletedTranslation = JsonConvert.DeserializeObject<TextTranslation>(deleteResponseString);
-                List<KinaUnaLanguage> languages = await GetAllLanguages();
-                foreach (KinaUnaLanguage language in languages)
-                {
-                    if (deletedTranslation != null) await _cache.RemoveAsync("PageTranslations" + deletedTranslation.Page + "&Lang" + language.Id);
-                    _ = await GetAllTranslations(language.Id, true).ConfigureAwait(false);
-                }
+                if (deletedTranslation != null) await _cache.RemoveAsync("PageTranslations" + deletedTranslation.Page + "&Lang" + language.Id);
+                _ = await GetAllTranslations(language.Id, true).ConfigureAwait(false);
             }
 
             return deletedTranslation;
@@ -208,7 +199,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<List<TextTranslation>> GetAllTranslations(int languageId = 0, bool updateCache = false)
         {
-            List<TextTranslation> translationsList = new();
+            List<TextTranslation> translationsList = [];
             string cachedTranslationsList = await _cache.GetStringAsync("AllTranslations" + "&Lang" + languageId);
             if (!updateCache && languageId != 0 && !string.IsNullOrEmpty(cachedTranslationsList))
             {
@@ -221,13 +212,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
                 string admininfoApiPath = "/api/Translations/GetAllTranslations/" + languageId;
                 HttpResponseMessage admininfoResponse = await _httpClient.GetAsync(admininfoApiPath);
+                if (!admininfoResponse.IsSuccessStatusCode) return translationsList;
 
-                if (admininfoResponse.IsSuccessStatusCode)
-                {
-                    string translationsListAsString = await admininfoResponse.Content.ReadAsStringAsync();
-                    translationsList = JsonConvert.DeserializeObject<List<TextTranslation>>(translationsListAsString);
-                    await _cache.SetStringAsync("AllTranslations" + "&Lang" + languageId, JsonConvert.SerializeObject(translationsList), _cacheExpirationLong);
-                }
+                string translationsListAsString = await admininfoResponse.Content.ReadAsStringAsync();
+                translationsList = JsonConvert.DeserializeObject<List<TextTranslation>>(translationsListAsString);
+                await _cache.SetStringAsync("AllTranslations" + "&Lang" + languageId, JsonConvert.SerializeObject(translationsList), _cacheExpirationLong);
             }
 
             return translationsList;
@@ -249,12 +238,11 @@ namespace KinaUnaWeb.Services.HttpClients
                 string admininfoApiPath = "/api/Translations/GetTranslationById/" + id;
                 HttpResponseMessage admininfoResponse = await _httpClient.GetAsync(admininfoApiPath);
 
-                if (admininfoResponse.IsSuccessStatusCode)
-                {
-                    string translationAsString = await admininfoResponse.Content.ReadAsStringAsync();
-                    textTranslation = JsonConvert.DeserializeObject<TextTranslation>(translationAsString);
-                    await _cache.SetStringAsync("TranslationById" + id, JsonConvert.SerializeObject(textTranslation), _cacheExpirationLong);
-                }
+                if (!admininfoResponse.IsSuccessStatusCode) return textTranslation;
+
+                string translationAsString = await admininfoResponse.Content.ReadAsStringAsync();
+                textTranslation = JsonConvert.DeserializeObject<TextTranslation>(translationAsString);
+                await _cache.SetStringAsync("TranslationById" + id, JsonConvert.SerializeObject(textTranslation), _cacheExpirationLong);
             }
 
             return textTranslation;

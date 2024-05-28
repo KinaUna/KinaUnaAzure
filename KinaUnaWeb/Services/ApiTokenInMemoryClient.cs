@@ -32,8 +32,8 @@ namespace KinaUnaWeb.Services
 
         private class AccessTokenItem
         {
-            public string AccessToken { get; set; } = string.Empty;
-            public DateTime ExpiresIn { get; set; }
+            public string AccessToken { get; init; } = string.Empty;
+            public DateTime ExpiresIn { get; init; }
         }
 
         private readonly ConcurrentDictionary<string, AccessTokenItem> _accessTokens = new();
@@ -48,41 +48,39 @@ namespace KinaUnaWeb.Services
             _configuration = configuration;
         }
 
-        private async Task<string> GetApiToken(string api_name, string api_scope, string secret)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2254:Template should be a static expression", Justification = "<Pending>")]
+        private async Task<string> GetApiToken(string apiName, string apiScope, string secret)
         {
-            if (_accessTokens.ContainsKey(api_name))
+            if (_accessTokens.ContainsKey(apiName))
             {
-                AccessTokenItem accessToken = _accessTokens.GetValueOrDefault(api_name);
+                AccessTokenItem accessToken = _accessTokens.GetValueOrDefault(apiName);
                 if (accessToken != null)
                 {
                     if (accessToken.ExpiresIn > DateTime.UtcNow)
                     {
                         return accessToken.AccessToken;
                     }
-                    else
-                    {
-                        // remove
-                        _accessTokens.TryRemove(api_name, out AccessTokenItem _);
-                    }
+
+                    // remove
+                    _accessTokens.TryRemove(apiName, out AccessTokenItem _);
                 }
             }
 
-            _logger.LogDebug($"GetApiToken new from STS for {api_name}");
+            _logger.LogDebug($"GetApiToken new from STS for {apiName}");
 
             // add
-            AccessTokenItem newAccessToken = await GetNewApiToken(api_name, api_scope, secret);
-            _accessTokens.TryAdd(api_name, newAccessToken);
+            AccessTokenItem newAccessToken = await GetNewApiToken(apiName, apiScope, secret);
+            _accessTokens.TryAdd(apiName, newAccessToken);
 
             return newAccessToken.AccessToken;
         }
 
-        private async Task<AccessTokenItem> GetNewApiToken(string api_name, string api_scope, string secret)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2254:Template should be a static expression", Justification = "<Pending>")]
+        private async Task<AccessTokenItem> GetNewApiToken(string apiName, string apiScope, string secret)
         {
             try
             {
-                DiscoveryDocumentResponse disco = await HttpClientDiscoveryExtensions.GetDiscoveryDocumentAsync(
-                    _httpClient,
-                    _authConfigurations.Value.StsServer);
+                DiscoveryDocumentResponse disco = await _httpClient.GetDiscoveryDocumentAsync(_authConfigurations.Value.StsServer);
 
                 if (disco.IsError)
                 {
@@ -90,25 +88,23 @@ namespace KinaUnaWeb.Services
                     throw new ApplicationException($"Status code: {disco.IsError}, Error: {disco.Error}");
                 }
 
-                TokenResponse tokenResponse = await HttpClientTokenRequestExtensions.RequestClientCredentialsTokenAsync(_httpClient, new ClientCredentialsTokenRequest
+                TokenResponse tokenResponse = await _httpClient.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
                 {
-                    Scope = api_scope,
+                    Scope = apiScope,
                     ClientSecret = secret,
                     Address = disco.TokenEndpoint,
-                    ClientId = api_name
+                    ClientId = apiName
                 });
 
-                if (tokenResponse.IsError)
-                {
-                    _logger.LogError($"tokenResponse.IsError Status code: {tokenResponse.IsError}, Error: {tokenResponse.Error}");
-                    throw new ApplicationException($"Status code: {tokenResponse.IsError}, Error: {tokenResponse.Error}");
-                }
+                if (!tokenResponse.IsError)
+                    return new AccessTokenItem
+                    {
+                        ExpiresIn = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn),
+                        AccessToken = tokenResponse.AccessToken
+                    };
 
-                return new AccessTokenItem
-                {
-                    ExpiresIn = DateTime.UtcNow.AddSeconds(tokenResponse.ExpiresIn),
-                    AccessToken = tokenResponse.AccessToken
-                };
+                _logger.LogError($"tokenResponse.IsError Status code: {tokenResponse.IsError}, Error: {tokenResponse.Error}");
+                throw new ApplicationException($"Status code: {tokenResponse.IsError}, Error: {tokenResponse.Error}");
 
             }
             catch (Exception e)

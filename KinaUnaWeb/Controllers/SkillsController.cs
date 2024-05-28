@@ -25,16 +25,15 @@ namespace KinaUnaWeb.Controllers
             
             if (skillsList.Count != 0)
             {
-                skillsList = skillsList.OrderBy(s => s.SkillFirstObservation).ToList();
+                skillsList = [.. skillsList.OrderBy(s => s.SkillFirstObservation)];
                 
                 foreach (Skill skill in skillsList)
                 {
-                    if (skill.AccessLevel >= model.CurrentAccessLevel)
-                    {
-                        SkillViewModel skillViewModel = new(baseModel);
-                        skillViewModel.SetPropertiesFromSkillItem(skill, model.IsCurrentUserProgenyAdmin);
-                        model.SkillsList.Add(skillViewModel);
-                    }
+                    if (skill.AccessLevel < model.CurrentAccessLevel) continue;
+
+                    SkillViewModel skillViewModel = new(baseModel);
+                    skillViewModel.SetPropertiesFromSkillItem(skill, model.IsCurrentUserProgenyAdmin);
+                    model.SkillsList.Add(skillViewModel);
 
                 }
             }
@@ -113,10 +112,8 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            if (skill.SkillFirstObservation == null)
-            {
-                skill.SkillFirstObservation = DateTime.UtcNow; 
-            }
+            skill.SkillFirstObservation ??= DateTime.UtcNow;
+
             model.SetPropertiesFromSkillItem(skill, model.IsCurrentUserProgenyAdmin);
             
             model.SetAccessLevelList();

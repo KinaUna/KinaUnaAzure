@@ -63,14 +63,14 @@ namespace KinaUna.IDP.Data
             //    context.SaveChanges();
             //}
 
-            if (!context.ApiScopes.Any())
+            if (context.ApiScopes.Any()) return;
+
+            foreach (ApiScope resource in Config.ApiScopes)
             {
-                foreach (ApiScope resource in Config.ApiScopes)
-                {
-                    context.ApiScopes.Add(resource.ToEntity());
-                }
-                context.SaveChanges();
+                context.ApiScopes.Add(resource.ToEntity());
             }
+            context.SaveChanges();
+            
         }
     }
 }

@@ -22,7 +22,7 @@
 
     [Parameter]
     public Progeny? Progeny { get; set; }
-    readonly ProgenyAgeDataViewModel _viewModel = new ProgenyAgeDataViewModel();
+    readonly ProgenyAgeDataViewModel _viewModel = new();
 
     private string _wasString = "was";
     private string _pictureTakenString = "Photo taken:";
@@ -50,9 +50,7 @@
         _hoursOldString = await UserStateService.GetTranslation("hours old.", PageNames.Home);
 
         _minutesOldString = "minutes old";
-        if(Progeny == null){
-            Progeny = UserStateService.CurrentProgeny;
-        }
+        Progeny ??= UserStateService.CurrentProgeny;
 
         if (Progeny != null && !string.IsNullOrEmpty(Progeny.TimeZone))
         {
@@ -77,11 +75,10 @@
     }
     private void UserStateServiceOnCurrentProgenyChanged(object? sender, Progeny e)
     {
-        if (e.Id > 0)
-        {
-            Progeny = e;
-            StateHasChanged();
-        }
+        if (e.Id <= 0) return;
+
+        Progeny = e;
+        StateHasChanged();
     }
 
     public void Dispose()

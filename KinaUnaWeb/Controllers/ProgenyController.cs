@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
@@ -32,7 +31,7 @@ namespace KinaUnaWeb.Controllers
         IAutoSuggestsHttpClient autoSuggestsHttpClient)
         : Controller
     {
-        private readonly string _defaultUser = Constants.DefaultUserEmail;
+        private const string DefaultUser = Constants.DefaultUserEmail;
 
         public IActionResult Index()
         {
@@ -113,7 +112,7 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> EditProgeny(ProgenyViewModel model)
         {
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? _defaultUser;
+            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? DefaultUser;
             UserInfo userinfo = await userInfosHttpClient.GetUserInfo(userEmail);
             Progeny prog = await progenyHttpClient.GetProgeny(model.ProgenyId);
             if (!prog.IsInAdminList(userinfo.UserEmail))
@@ -173,7 +172,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<Picture> photoList = await mediaHttpClient.GetPictureList(model.Id, (int)AccessLevel.Private, userinfo.Timezone);
-            if (photoList.Any())
+            if (photoList.Count != 0)
             {
                 foreach (Picture picture in photoList)
                 {
@@ -189,7 +188,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<Video> videoList = await mediaHttpClient.GetVideoList(model.Id, 0, userinfo.Timezone);
-            if (videoList.Any())
+            if (videoList.Count != 0)
             {
                 foreach (Video video in videoList)
                 {
@@ -204,7 +203,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<CalendarItem> eventsList = await calendarsHttpClient.GetCalendarList(model.Id, 0);
-            if (eventsList.Any())
+            if (eventsList.Count != 0)
             {
                 foreach (CalendarItem evt in eventsList)
                 {
@@ -219,7 +218,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<VocabularyItem> vocabList = await wordsHttpClient.GetWordsList(model.Id, 0);
-            if (vocabList.Any())
+            if (vocabList.Count != 0)
             {
                 foreach (VocabularyItem voc in vocabList)
                 {
@@ -235,7 +234,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<Skill> skillList = await skillsHttpClient.GetSkillsList(model.Id, 0);
-            if (skillList.Any())
+            if (skillList.Count != 0)
             {
                 foreach (Skill skill in skillList)
                 {
@@ -252,7 +251,7 @@ namespace KinaUnaWeb.Controllers
 
             List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.Id, 0);
 
-            if (friendsList.Any())
+            if (friendsList.Count != 0)
             {
                 foreach (Friend friend in friendsList)
                 {
@@ -270,7 +269,7 @@ namespace KinaUnaWeb.Controllers
 
             List<Measurement> measurementsList = await measurementsHttpClient.GetMeasurementsList(model.Id, 0);
 
-            if (measurementsList.Any())
+            if (measurementsList.Count != 0)
             {
                 foreach (Measurement measurement in measurementsList)
                 {
@@ -287,7 +286,7 @@ namespace KinaUnaWeb.Controllers
 
             List<Sleep> sleepList = await sleepHttpClient.GetSleepList(model.Id, 0);
             
-            if (sleepList.Any())
+            if (sleepList.Count != 0)
             {
                 foreach (Sleep sleep in sleepList)
                 {
@@ -304,7 +303,7 @@ namespace KinaUnaWeb.Controllers
 
             List<Note> notesList = await notesClient.GetNotesList(model.Id, 0);
 
-            if (notesList.Any())
+            if (notesList.Count != 0)
             {
                 foreach (Note note in notesList)
                 {
@@ -322,7 +321,7 @@ namespace KinaUnaWeb.Controllers
 
             List<Contact> contactsList = await contactsHttpClient.GetContactsList(model.Id, 0);
             
-            if (contactsList.Any())
+            if (contactsList.Count != 0)
             {
                 foreach (Contact contact in contactsList)
                 {
@@ -341,7 +340,7 @@ namespace KinaUnaWeb.Controllers
 
             List<Vaccination> vaccinationsList = await vaccinationsHttpClient.GetVaccinationsList(model.Id, 0);
 
-            if (vaccinationsList.Any())
+            if (vaccinationsList.Count != 0)
             {
                 foreach (Vaccination vaccination in vaccinationsList)
                 {
@@ -357,7 +356,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             List<Location> locationsList = await locationsHttpClient.GetLocationsList(model.Id, 0);
-            if (locationsList.Any())
+            if (locationsList.Count != 0)
             {
                 foreach (Location location in locationsList)
                 {

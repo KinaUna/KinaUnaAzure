@@ -15,28 +15,27 @@ namespace KinaUna.Data.Extensions
         
         public static void RemoveNullStrings(this Video video)
         {
-            if (video != null)
-            {
-                video.Altitude ??= "";
+            if (video == null) return;
 
-                video.Tags ??= "";
+            video.Altitude ??= "";
 
-                video.Author ??= "";
+            video.Tags ??= "";
 
-                video.Latitude ??= "";
+            video.Author ??= "";
 
-                video.Location ??= "";
+            video.Latitude ??= "";
 
-                video.Longtitude ??= "";
+            video.Location ??= "";
 
-                video.Owners ??= "";
+            video.Longtitude ??= "";
 
-                video.ThumbLink ??= "";
+            video.Owners ??= "";
 
-                video.VideoLink ??= "";
+            video.ThumbLink ??= "";
+
+            video.VideoLink ??= "";
                 
-                video.TimeZone ??= "";
-            }
+            video.TimeZone ??= "";
         }
 
         public static void CopyPropertiesForUpdate(this Video currentVideo, Video otherVideo, bool parseDuration = false)

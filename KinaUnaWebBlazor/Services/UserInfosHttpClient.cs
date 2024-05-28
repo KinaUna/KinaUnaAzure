@@ -59,18 +59,15 @@ namespace KinaUnaWebBlazor.Services
             _httpClient.SetBearerToken(accessToken);
 
             const string userInfoApiPath = "api/UserInfo/UserInfoByEmail/";
-            string id = email;
-            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(id), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(email), System.Text.Encoding.UTF8, "application/json"));
 
-            UserInfo? userInfo = new UserInfo();
-            if (userInfoResponse.IsSuccessStatusCode)
-            {
-                string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-                userInfo = JsonConvert.DeserializeObject<UserInfo>(userinfoAsString);
-                return userInfo;
-            }
+            UserInfo? userInfo = new();
+            if (!userInfoResponse.IsSuccessStatusCode) return userInfo;
 
+            string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
+            userInfo = JsonConvert.DeserializeObject<UserInfo>(userinfoAsString);
             return userInfo;
+
         }
 
         public async Task<UserInfo?> GetUserInfoByUserId(string userId)
@@ -78,35 +75,28 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string userInfoApiPath = "api/UserInfo/ByUserIdPost/";
-            string id = userId;
-            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(id), System.Text.Encoding.UTF8, "application/json"));
-            
-            if (userInfoResponse.IsSuccessStatusCode)
-            {
-                string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-                UserInfo? userInfo = JsonConvert.DeserializeObject<UserInfo>(userinfoAsString);
-                return userInfo;
-            }
+            const string userInfoApiPath = "api/UserInfo/ByUserIdPost/";
+            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(userId), System.Text.Encoding.UTF8, "application/json"));
+            if (!userInfoResponse.IsSuccessStatusCode) return new UserInfo();
 
-            return new UserInfo();
+            string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
+            UserInfo? userInfo = JsonConvert.DeserializeObject<UserInfo>(userinfoAsString);
+            return userInfo;
+
         }
         public async Task<UserInfo?> UpdateUserInfo(UserInfo userInfo)
         {
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
             
-            string newUserInfoApiPath = "/api/UserInfo/";
+            const string newUserInfoApiPath = "/api/UserInfo/";
             HttpResponseMessage newUserInfoResponse = await _httpClient.PutAsync(newUserInfoApiPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
-            
-            if (newUserInfoResponse.IsSuccessStatusCode)
-            {
-                string newUserResponseString = await newUserInfoResponse.Content.ReadAsStringAsync();
-                UserInfo? updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
-                return updatedUserinfo;
-            }
-            
-            return new UserInfo();
+
+            if (!newUserInfoResponse.IsSuccessStatusCode) return new UserInfo();
+            string newUserResponseString = await newUserInfoResponse.Content.ReadAsStringAsync();
+            UserInfo? updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
+            return updatedUserinfo;
+
         }
 
         public async Task<UserInfo?> DeleteUserInfo(UserInfo userInfo)
@@ -119,14 +109,12 @@ namespace KinaUnaWebBlazor.Services
             string deleteApiPath = "/api/UserInfo/" + userInfo.UserId;
 
             HttpResponseMessage deleteResponse = await _httpClient.PutAsync(deleteApiPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
-            if (deleteResponse.IsSuccessStatusCode)
-            {
-                string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
-                UserInfo? deletedUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseString);
-                return deletedUserInfo;
-            }
+            if (!deleteResponse.IsSuccessStatusCode) return new UserInfo();
 
-            return new UserInfo();
+            string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
+            UserInfo? deletedUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseString);
+            return deletedUserInfo;
+
         }
 
         public async Task<List<UserInfo>?> GetDeletedUserInfos()
@@ -136,30 +124,28 @@ namespace KinaUnaWebBlazor.Services
 
             string userInfoApiPath = "/api/UserInfo/GetDeletedUserInfos/";
             HttpResponseMessage userInfoResponse = await _httpClient.GetAsync(userInfoApiPath);
-            List<UserInfo>? userInfosList = new List<UserInfo>();
-            if (userInfoResponse.IsSuccessStatusCode)
-            {
-                string userInfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-                userInfosList = JsonConvert.DeserializeObject<List<UserInfo>>(userInfoAsString);
-            }
+            List<UserInfo>? userInfosList = [];
+            if (!userInfoResponse.IsSuccessStatusCode) return userInfosList;
+
+            string userInfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
+            userInfosList = JsonConvert.DeserializeObject<List<UserInfo>>(userInfoAsString);
 
             return userInfosList;
         }
 
         public async Task<UserInfo?> RemoveUserInfoForGood(UserInfo userInfo)
         {
-            UserInfo? deletedUserInfo = new UserInfo();
+            UserInfo? deletedUserInfo = new();
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string deleteApiPath = "/api/UserInfo/" + userInfo.UserId;
 
             HttpResponseMessage deleteResponse = await _httpClient.DeleteAsync(deleteApiPath);
-            if (deleteResponse.IsSuccessStatusCode)
-            {
-                string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
-                deletedUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseString);
-            }
+            if (!deleteResponse.IsSuccessStatusCode) return deletedUserInfo;
+
+            string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
+            deletedUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseString);
 
             return deletedUserInfo;
         }

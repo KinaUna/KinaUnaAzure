@@ -52,12 +52,11 @@ namespace KinaUnaProgenyApi.Services
         private async Task<Measurement> SetMeasurementInCache(int id)
         {
             Measurement measurement = await _context.MeasurementsDb.AsNoTracking().SingleOrDefaultAsync(m => m.MeasurementId == id);
-            if (measurement != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurement" + id, JsonConvert.SerializeObject(measurement), _cacheOptionsSliding);
+            if (measurement == null) return null;
 
-                _ = await SetMeasurementsListInCache(measurement.ProgenyId);
-            }
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "measurement" + id, JsonConvert.SerializeObject(measurement), _cacheOptionsSliding);
+
+            _ = await SetMeasurementsListInCache(measurement.ProgenyId);
 
             return measurement;
         }
@@ -78,15 +77,14 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Measurement> UpdateMeasurement(Measurement measurement)
         {
             Measurement measurementToUpdate = await _context.MeasurementsDb.SingleOrDefaultAsync(m => m.MeasurementId == measurement.MeasurementId);
-            if (measurementToUpdate != null)
-            {
-                measurementToUpdate.CopyPropertiesForUpdate(measurement);
+            if (measurementToUpdate == null) return null;
 
-                _ = _context.MeasurementsDb.Update(measurementToUpdate);
-                _ = await _context.SaveChangesAsync();
+            measurementToUpdate.CopyPropertiesForUpdate(measurement);
 
-                _ = await SetMeasurementInCache(measurement.MeasurementId);
-            }
+            _ = _context.MeasurementsDb.Update(measurementToUpdate);
+            _ = await _context.SaveChangesAsync();
+
+            _ = await SetMeasurementInCache(measurement.MeasurementId);
 
             return measurementToUpdate;
         }
@@ -94,13 +92,12 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Measurement> DeleteMeasurement(Measurement measurement)
         {
             Measurement measurementToDelete = await _context.MeasurementsDb.SingleOrDefaultAsync(m => m.MeasurementId == measurement.MeasurementId);
-            if (measurementToDelete != null)
-            {
-                _ = _context.MeasurementsDb.Remove(measurementToDelete);
-                _ = await _context.SaveChangesAsync();
+            if (measurementToDelete == null) return null;
 
-                await RemoveMeasurementFromCache(measurement.MeasurementId, measurement.ProgenyId);
-            }
+            _ = _context.MeasurementsDb.Remove(measurementToDelete);
+            _ = await _context.SaveChangesAsync();
+
+            await RemoveMeasurementFromCache(measurement.MeasurementId, measurement.ProgenyId);
 
 
             return measurement;
@@ -115,7 +112,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Measurement>> GetMeasurementsList(int progenyId)
         {
             List<Measurement> measurementsList = await GetMeasurementsListFromCache(progenyId);
-            if (!measurementsList.Any())
+            if (measurementsList.Count == 0)
             {
                 measurementsList = await SetMeasurementsListInCache(progenyId);
             }
@@ -125,7 +122,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Measurement>> GetMeasurementsListFromCache(int progenyId)
         {
-            List<Measurement> measurementsList = new();
+            List<Measurement> measurementsList = [];
             string cachedMeasurementsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "measurementslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedMeasurementsList))
             {

@@ -12,13 +12,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 {
     public class CommentsServiceTests
     {
-        private readonly Mock<IPicturesService> _picturesServiceMock;
-        private readonly Mock<IVideosService> _videosServiceMock;
-        public CommentsServiceTests()
-        {
-            _picturesServiceMock = new();
-            _videosServiceMock = new();
-        }
+        private readonly Mock<IPicturesService> _picturesServiceMock = new();
+        private readonly Mock<IVideosService> _videosServiceMock = new();
 
         [Fact]
         public async Task GetComment_Should_Return_Comment_Object_When_Id_Is_Valid()

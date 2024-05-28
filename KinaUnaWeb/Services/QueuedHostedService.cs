@@ -14,7 +14,7 @@ namespace KinaUnaWeb.Services
     {
         private readonly ILogger _logger = loggerFactory.CreateLogger<QueuedHostedService>();
 
-        public IBackgroundTaskQueue TaskQueue { get; } = taskQueue;
+        private IBackgroundTaskQueue TaskQueue { get; } = taskQueue;
 
         protected override async Task ExecuteAsync(
             CancellationToken cancellationToken)

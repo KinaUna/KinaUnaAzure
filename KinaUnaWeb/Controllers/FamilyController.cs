@@ -2,7 +2,6 @@
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
@@ -20,11 +19,11 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             FamilyViewModel model = new(baseModel)
             {
-                Family = new()
+                Family = new Family()
             };
             model.Family.Children = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
 
-            if (model.Family.Children != null && model.Family.Children.Any())
+            if (model.Family.Children != null && model.Family.Children.Count != 0)
             {
                 foreach (Progeny progeny in model.Family.Children)
                 {

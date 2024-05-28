@@ -111,20 +111,18 @@
 
     private void UserStateServiceOnCurrentProgenyChanged(object? sender, Progeny e)
     {
-        if (e.Id > 0)
-        {
-            Progeny = e;
-            StateHasChanged();
-        }
+        if (e.Id <= 0) return;
+
+        Progeny = e;
+        StateHasChanged();
     }
 
     private void UserStateServiceOnCurrentUserChanged(object? sender, UserInfo e)
     {
-        if (UserInfo?.Id != e.Id)
-        {
-            UserInfo = e;
-            StateHasChanged();
-        }
+        if (UserInfo?.Id == e.Id) return;
+
+        UserInfo = e;
+        StateHasChanged();
     }
 
     public void Dispose()

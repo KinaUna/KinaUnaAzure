@@ -28,28 +28,26 @@ namespace KinaUnaProgenyApi.Controllers
     {
         // GET api/locations/progeny/[id]
         [HttpGet]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
-            {
-                List<Location> locationsList = await locationService.GetLocationsList(id);
-                locationsList = locationsList.Where(l => l.AccessLevel >= accessLevel).ToList();
-                if (locationsList.Any())
-                {
-                    return Ok(locationsList);
-                }
+            if (userAccess == null && id != Constants.DefaultChildId) return Unauthorized();
 
-                return NotFound();
+            List<Location> locationsList = await locationService.GetLocationsList(id);
+            locationsList = locationsList.Where(l => l.AccessLevel >= accessLevel).ToList();
+            if (locationsList.Count != 0)
+            {
+                return Ok(locationsList);
             }
 
-            return Unauthorized();
+            return NotFound();
+
         }
 
         // GET api/locations/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetLocationItem(int id)
         {
             Location
@@ -106,7 +104,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // PUT api/timeline/5
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Location value)
         {
             Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
@@ -151,75 +149,71 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // DELETE api/timeline/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             Location location = await locationService.GetLocation(id);
-            if (location != null)
+            if (location == null) return NotFound();
+
+            Progeny progeny = await progenyService.GetProgeny(location.ProgenyId);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            if (progeny != null)
             {
-                Progeny progeny = await progenyService.GetProgeny(location.ProgenyId);
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                if (progeny != null)
+                if (!progeny.IsInAdminList(userEmail))
                 {
-                    if (!progeny.IsInAdminList(userEmail))
-                    {
-                        return Unauthorized();
-                    }
+                    return Unauthorized();
                 }
-                else
-                {
-                    return NotFound();
-                }
-
-                TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
-                if (timeLineItem != null)
-                {
-                    _ = await timelineService.DeleteTimeLineItem(timeLineItem);
-                }
-
-                _ = await locationService.DeleteLocation(location);
-
-                if (timeLineItem != null)
-                {
-                    location.Author = User.GetUserId();
-                    UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-                    string notificationTitle = "Location deleted for " + progeny.NickName;
-                    string notificationMessage = userInfo.FullName() + " deleted a location for " + progeny.NickName + ". Location: " + location.Name;
-                    location.AccessLevel = timeLineItem.AccessLevel = 0;
-
-                    await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                    await webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
-                }
-
-                return NoContent();
+            }
+            else
+            {
+                return NotFound();
             }
 
-            return NotFound();
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
+            if (timeLineItem != null)
+            {
+                _ = await timelineService.DeleteTimeLineItem(timeLineItem);
+            }
+
+            _ = await locationService.DeleteLocation(location);
+
+            if (timeLineItem == null) return NoContent();
+
+            location.Author = User.GetUserId();
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+
+            string notificationTitle = "Location deleted for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " deleted a location for " + progeny.NickName + ". Location: " + location.Name;
+            location.AccessLevel = timeLineItem.AccessLevel = 0;
+
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
+
+            return NoContent();
+
         }
 
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetLocationMobile(int id)
         {
             Location result = await locationService.GetLocation(id);
-            if (result != null)
+            if (result == null) return NotFound();
+
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+
+            if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
             {
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-                if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
-                {
-                    return Ok(result);
-                }
-
-                return Unauthorized();
+                return Ok(result);
             }
 
-            return NotFound();
+            return Unauthorized();
+
         }
 
         [HttpGet("[action]")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetLocationsListPage([FromQuery] int pageSize = 8,
             [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId,
             [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
@@ -239,7 +233,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<Location> allItems = await locationService.GetLocationsList(progenyId);
-            allItems = allItems.OrderBy(v => v.Date).ToList();
+            allItems = [.. allItems.OrderBy(v => v.Date)];
 
             if (sortBy == 1)
             {

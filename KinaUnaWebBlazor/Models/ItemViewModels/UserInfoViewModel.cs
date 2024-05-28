@@ -21,9 +21,9 @@ namespace KinaUnaWebBlazor.Models.ItemViewModels
         [NotMapped] public string PhoneNumber { get; set; } = string.Empty;
         [NotMapped] public bool IsEmailConfirmed { get; set; } = false;
         [NotMapped] public string JoinDate { get; set; } = string.Empty;
-        [NotMapped] public List<Progeny> ProgenyList { get; set; } = new List<Progeny>();
+        [NotMapped] public List<Progeny> ProgenyList { get; set; } = [];
         [NotMapped] public bool CanUserAddItems { get; set; } = false;
-        [NotMapped] public List<UserAccess> AccessList { get; set; } = new List<UserAccess>();
+        [NotMapped] public List<UserAccess> AccessList { get; set; } = [];
         [NotMapped] public SelectListItem[] TimezoneList { get; set; }
         [NotMapped] public string ChangeLink { get; set; } = string.Empty;
         public UserInfoViewModel()

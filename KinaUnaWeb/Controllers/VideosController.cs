@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
@@ -84,10 +83,10 @@ namespace KinaUnaWeb.Controllers
             }
             if (model.IsCurrentUserProgenyAdmin)
             {
-                model.ProgenyLocations = new List<Location>();
+                model.ProgenyLocations = [];
                 model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId, model.CurrentAccessLevel);
-                model.LocationsList = new List<SelectListItem>();
-                if (model.ProgenyLocations.Any())
+                model.LocationsList = [];
+                if (model.ProgenyLocations.Count != 0)
                 {
                     foreach (Location loc in model.ProgenyLocations)
                     {
@@ -134,10 +133,10 @@ namespace KinaUnaWeb.Controllers
                 model.Video.Author = model.CurrentUser.UserId;
                 model.Video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
-                model.ProgenyLocations = new List<Location>();
+                model.ProgenyLocations = [];
                 model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId, model.CurrentAccessLevel);
-                model.LocationsList = new List<SelectListItem>();
-                if (model.ProgenyLocations.Any())
+                model.LocationsList = [];
+                if (model.ProgenyLocations.Count != 0)
                 {
                     foreach (Location loc in model.ProgenyLocations)
                     {
@@ -283,19 +282,16 @@ namespace KinaUnaWeb.Controllers
             
             bool commentAdded = await mediaHttpClient.AddVideoComment(comment);
 
-            if (commentAdded)
+            if (!commentAdded) return RedirectToRoute(new { controller = "Videos", action = "Video", id = model.ItemId, childId = model.CurrentProgenyId });
+
+            if (model.CurrentProgeny == null) return RedirectToRoute(new { controller = "Videos", action = "Video", id = model.ItemId, childId = model.CurrentProgenyId });
+
+            string imgLink = Constants.WebAppUrl + "/Videos/Video/" + model.ItemId + "?childId=" + model.CurrentProgenyId;
+            List<string> emails = [.. model.CurrentProgeny.Admins.Split(",")];
+            foreach (string toMail in emails)
             {
-                if (model.CurrentProgeny != null)
-                {
-                    string imgLink = Constants.WebAppUrl + "/Videos/Video/" + model.ItemId + "?childId=" + model.CurrentProgenyId;
-                    List<string> emails = model.CurrentProgeny.Admins.Split(",").ToList();
-                    foreach (string toMail in emails)
-                    {
-                        await emailSender.SendEmailAsync(toMail, "New Comment on " + model.CurrentProgeny.NickName + "'s Video",
-                           "A comment was added to " + model.CurrentProgeny.NickName + "'s video by " + comment.DisplayName + ":<br/><br/>" + comment.CommentText + "<br/><br/>Video Link: <a href=\"" + imgLink + "\">" + imgLink + "</a>");
-                    }
-                    
-                }
+                await emailSender.SendEmailAsync(toMail, "New Comment on " + model.CurrentProgeny.NickName + "'s Video",
+                    "A comment was added to " + model.CurrentProgeny.NickName + "'s video by " + comment.DisplayName + ":<br/><br/>" + comment.CommentText + "<br/><br/>Video Link: <a href=\"" + imgLink + "\">" + imgLink + "</a>");
             }
 
             return RedirectToRoute(new { controller = "Videos", action = "Video", id = model.ItemId, childId = model.CurrentProgenyId });

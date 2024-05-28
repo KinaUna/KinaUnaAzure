@@ -6,7 +6,7 @@ namespace KinaUna.Data.Models
 {
     public class KinaUnaText
     {
-        public int Id { get; set; }
+        public int Id { get; init; }
         public int TextId { get; set; }
         public int LanguageId { get; set; }
         public string Page { get; set; } = string.Empty;
@@ -21,7 +21,7 @@ namespace KinaUna.Data.Models
 
     public class KinaUnaTextNumber
     {
-        [Key] public int Id { get; set; }
+        [Key] public int Id { get; init; }
         public int DefaultLanguage { get; set; }
     }
 }

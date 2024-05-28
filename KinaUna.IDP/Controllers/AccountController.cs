@@ -126,7 +126,7 @@ namespace KinaUna.IDP.Controllers
             return View(vm);
         }
 
-        static LoginViewModel BuildLoginViewModel(string returnUrl, AuthorizationRequest context)
+        private static LoginViewModel BuildLoginViewModel(string returnUrl, AuthorizationRequest context)
         {
             return new LoginViewModel
             {
@@ -135,7 +135,7 @@ namespace KinaUna.IDP.Controllers
             };
         }
 
-        async Task<LoginViewModel> BuildLoginViewModelAsync(LoginViewModel model)
+        private async Task<LoginViewModel> BuildLoginViewModelAsync(LoginViewModel model)
         {
             AuthorizationRequest loginContext = await interaction.GetAuthorizationContextAsync(model.ReturnUrl);
             LoginViewModel vm = BuildLoginViewModel(model.ReturnUrl, loginContext);
@@ -213,6 +213,7 @@ namespace KinaUna.IDP.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2254:Template should be a static expression", Justification = "<Pending>")]
         public async Task<IActionResult> Logout(LogoutViewModel model)
         {
             string idp = User.FindFirst(JwtClaimTypes.IdentityProvider)?.Value;
@@ -244,7 +245,7 @@ namespace KinaUna.IDP.Controllers
             // set this so UI rendering sees an anonymous user
             HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
 
-            // get context information (client name, post logout redirect URI and iframe for federated signout)
+            // get context information (client name, post logout redirect URI and iframe for federated sign out)
             LogoutRequest logout = await interaction.GetLogoutContextAsync(model.LogoutId);
             if (logout.PostLogoutRedirectUri == null)
             {
@@ -318,7 +319,7 @@ namespace KinaUna.IDP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
         {
-            string clientId = "KinaUna";
+            const string clientId = "KinaUna";
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
@@ -349,18 +350,16 @@ namespace KinaUna.IDP.Controllers
                 
             }
 
-            if (returnUrl != null)
+            if (returnUrl == null) return RedirectToAction("Index", "Home");
+
+            if (ModelState.IsValid)
             {
-                if (ModelState.IsValid)
-                {
-                    return RedirectToAction("RegConfirm", "Account", new { returnUrl });
-                }
+                return RedirectToAction("RegConfirm", "Account", new { returnUrl });
+            }
                     
                 
-                return View(model);
-            }
+            return View(model);
 
-            return RedirectToAction("Index", "Home");
         }
 
         [HttpGet]
@@ -386,44 +385,40 @@ namespace KinaUna.IDP.Controllers
         [HttpPost]
         public async Task<IActionResult> ChangeEmail(string NewEmail, string OldEmail, string Language = "en", string client="KinaUna")
         {
-            
-            if (User.Identity != null && User.Identity.IsAuthenticated)
-            {
-                ApplicationUser user = await context.Users.SingleOrDefaultAsync(u => u.Email.Equals(OldEmail, StringComparison.CurrentCultureIgnoreCase));
-                ApplicationUser test =
-                    await context.Users.SingleOrDefaultAsync(u => u.Email.Equals(NewEmail, StringComparison.CurrentCultureIgnoreCase));
-                if (user != null)
-                {
-                    ChangeEmailViewModel model = new()
-                    {
-                        OldEmail = OldEmail,
-                        NewEmail = NewEmail,
-                        ErrorMessage = ""
-                    };
-                    if (test != null)
-                    {
-                        string errorMsg =
-                            "Error: This email is already in use by another account. Please delete the account with this email address before assigning this email address to your account.";
-                        if (Language == "da")
-                        {
-                            errorMsg =
-                                "Fejl: Denne emailadresse er allerede i brug for en anden konto. Slet venligst den anden konto før du opdaterer denne konto med emailaddressen.";
-                        }
-                        if (Language == "de")
-                        {
-                            errorMsg =
-                                "Fehler: E-Mail wird von einem anderen Konto verwendet.";
-                        }
-                        model.ErrorMessage = errorMsg;
-                    }
-                    model.UserId = user.Id;
-                    model.Client = client;
-                    return View(model);
-                }
-            }
+            if (User.Identity == null || !User.Identity.IsAuthenticated) return RedirectToAction("Register");
 
-            return RedirectToAction("Register");
-            
+            ApplicationUser user = await context.Users.SingleOrDefaultAsync(u => u.Email.Equals(OldEmail, StringComparison.CurrentCultureIgnoreCase));
+            ApplicationUser test =
+                await context.Users.SingleOrDefaultAsync(u => u.Email.Equals(NewEmail, StringComparison.CurrentCultureIgnoreCase));
+            if (user == null) return RedirectToAction("Register");
+
+            ChangeEmailViewModel model = new()
+            {
+                OldEmail = OldEmail,
+                NewEmail = NewEmail,
+                ErrorMessage = ""
+            };
+            if (test != null)
+            {
+                // Todo: Use translations API instead.
+                string errorMsg =
+                    "Error: This email is already in use by another account. Please delete the account with this email address before assigning this email address to your account.";
+                if (Language == "da")
+                {
+                    errorMsg =
+                        "Fejl: Denne emailadresse er allerede i brug for en anden konto. Slet venligst den anden konto før du opdaterer denne konto med emailaddressen.";
+                }
+                if (Language == "de")
+                {
+                    errorMsg =
+                        "Fehler: E-Mail wird von einem anderen Konto verwendet.";
+                }
+                model.ErrorMessage = errorMsg;
+            }
+            model.UserId = user.Id;
+            model.Client = client;
+            return View(model);
+
 
         }
 
@@ -431,62 +426,63 @@ namespace KinaUna.IDP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendConfirmationMail(string UserId, string NewEmail, string OldEmail, string Language, string Client="KinaUna")
         {
-            if (User.Identity != null && User.Identity.IsAuthenticated)
+            if (User.Identity == null || !User.Identity.IsAuthenticated) return RedirectToAction("Register");
+
+            ApplicationUser user = await context.Users.SingleOrDefaultAsync(u => u.Id == UserId);
+            ApplicationUser test =
+                await context.Users.SingleOrDefaultAsync(u => u.Email.Equals(NewEmail, StringComparison.CurrentCultureIgnoreCase));
+
+            if (user == null || user.Id != UserId) return RedirectToAction("Register");
+
             {
-                string client = Client;
-                ApplicationUser user = await context.Users.SingleOrDefaultAsync(u => u.Id == UserId);
-                ApplicationUser test =
-                    await context.Users.SingleOrDefaultAsync(u => u.Email.Equals(NewEmail, StringComparison.CurrentCultureIgnoreCase));
-                
-                if (user != null && user.Id == UserId)
+                if (test != null)
                 {
-                    if (test != null)
+                    ChangeEmailViewModel model = new()
                     {
-                        ChangeEmailViewModel model = new()
-                        {
-                            OldEmail = OldEmail,
-                            NewEmail = NewEmail
-                        };
-                        string errorMsg =
-                            "Error: This email is already in use by another account. Please delete the account with this email address before assigning this email address to your account.";
-                        if (Language == "da")
-                        {
-                            errorMsg =
-                                "Fejl: Denne emailadresse er allerede i brug for en anden konto. Slet venligst den anden konto før du opdaterer denne konto med emailaddressen.";
-                        }
-                        if (Language == "de")
-                        {
-                            errorMsg =
-                                "Fehler: E-Mail wird von einem anderen Konto verwendet.";
-                        }
-                        model.ErrorMessage = errorMsg;
-                        model.UserId = user.Id;
-                        return View("ChangeEmail", model);
-                    }
-                    string code = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                    string callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, client, Language);
-                    await emailSender.SendEmailUpdateConfirmationAsync(NewEmail, callbackUrl + "&newEmail=" + NewEmail + "&oldEmail=" + OldEmail, client, Language);
+                        OldEmail = OldEmail,
+                        NewEmail = NewEmail
+                    };
 
-                    UserInfo userinfo = await progContext.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == user.Id);
-                    if (userinfo != null)
+                    // Todo: Use translations API instead.
+                    string errorMsg =
+                        "Error: This email is already in use by another account. Please delete the account with this email address before assigning this email address to your account.";
+                    if (Language == "da")
                     {
-                        userinfo.UserEmail = NewEmail;
-                        progContext.UserInfoDb.Update(userinfo);
-                        await progContext.SaveChangesAsync();
+                        errorMsg =
+                            "Fejl: Denne emailadresse er allerede i brug for en anden konto. Slet venligst den anden konto før du opdaterer denne konto med emailaddressen.";
                     }
-                    user.Email = NewEmail;
-                    context.Users.Update(user);
-                    await context.SaveChangesAsync();
-
-                    return RedirectToAction("VerificationMailSent");
+                    if (Language == "de")
+                    {
+                        errorMsg =
+                            "Fehler: E-Mail wird von einem anderen Konto verwendet.";
+                    }
+                    model.ErrorMessage = errorMsg;
+                    model.UserId = user.Id;
+                    return View("ChangeEmail", model);
                 }
+                string code = await userManager.GenerateEmailConfirmationTokenAsync(user);
+                string callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, Client, Language);
+                await emailSender.SendEmailUpdateConfirmationAsync(NewEmail, callbackUrl + "&newEmail=" + NewEmail + "&oldEmail=" + OldEmail, Client, Language);
+
+                UserInfo userinfo = await progContext.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == user.Id);
+                if (userinfo != null)
+                {
+                    userinfo.UserEmail = NewEmail;
+                    progContext.UserInfoDb.Update(userinfo);
+                    await progContext.SaveChangesAsync();
+                }
+                user.Email = NewEmail;
+                context.Users.Update(user);
+                await context.SaveChangesAsync();
+
+                return RedirectToAction("VerificationMailSent");
             }
 
-            return RedirectToAction("Register");
         }
 
         [HttpGet]
         [AllowAnonymous]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ConfirmEmail(string userId, string code, string newEmail = "", string oldEmail = "", string client = "KinaUna", string language="")
         {
             if (userId == null || code == null)
@@ -548,7 +544,7 @@ namespace KinaUna.IDP.Controllers
                 }
                 else
                 {
-                    string clientType = "KinaUna";
+                    const string clientType = "KinaUna";
                     await emailSender.SendEmailAsync(configuration.GetValue<string>("AdminEmail"), "New User Confirmed Email", "A user confirmed the email with this email address: " + user.Email, clientType);
                 }
 
@@ -582,40 +578,40 @@ namespace KinaUna.IDP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid) return View(model);
+
+            ApplicationUser user = await userManager.FindByEmailAsync(model.Email);
+            if (user == null || !(await userManager.IsEmailConfirmedAsync(user)))
             {
-                ApplicationUser user = await userManager.FindByEmailAsync(model.Email);
-                if (user == null || !(await userManager.IsEmailConfirmedAsync(user)))
-                {
-                    // Don't reveal that the user does not exist or is not confirmed
-                    return RedirectToAction(nameof(ForgotPasswordConfirmation));
-                }
-
-                // For more information on how to enable account confirmation and password reset please
-                // visit https://go.microsoft.com/fwlink/?LinkID=532713
-                string code = await userManager.GeneratePasswordResetTokenAsync(user);
-                string callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
-                string emailTitle = "Reset Kina Una Password";
-                string emailText = $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>";
-
-                if (model.Language == "da")
-                {
-                    emailTitle = "Nulstil Kina Una password";
-                    emailText = $"Nulstil dit Kina Una password ved at klikke på dette link: <a href='{callbackUrl}'>link</a>";
-                }
-                if (model.Language == "de")
-                {
-                    emailTitle = "Kina Una passwort rücksetzen";
-                    emailText = $"Setzen Sie Ihr Passwort zurück, indem Sie auf diesen Link klicken: <a href='{callbackUrl}'>link</a>";
-                }
-
-                await emailSender.SendEmailAsync(model.Email, emailTitle,
-                    emailText, "KinaUna");
+                // Don't reveal that the user does not exist or is not confirmed
                 return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
 
+            // For more information on how to enable account confirmation and password reset please
+            // visit https://go.microsoft.com/fwlink/?LinkID=532713
+            string code = await userManager.GeneratePasswordResetTokenAsync(user);
+            string callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
+
+            // Todo: Use translations API instead.
+            string emailTitle = "Reset KinaUna Password";
+            string emailText = $"Please reset your KinaUna password by clicking here: <a href='{callbackUrl}'>link</a>";
+
+            if (model.Language == "da")
+            {
+                emailTitle = "Nulstil KinaUna password";
+                emailText = $"Nulstil dit KinaUna password ved at klikke på dette link: <a href='{callbackUrl}'>link</a>";
+            }
+            if (model.Language == "de")
+            {
+                emailTitle = "KinaUna passwort rücksetzen";
+                emailText = $"Setzen Sie Ihr KinaUna Passwort zurück, indem Sie auf diesen Link klicken: <a href='{callbackUrl}'>link</a>";
+            }
+
+            await emailSender.SendEmailAsync(model.Email, emailTitle,
+                emailText, "KinaUna");
+            return RedirectToAction(nameof(ForgotPasswordConfirmation));
+
             // If we got this far, something failed, redisplay form
-            return View(model);
         }
 
         [HttpGet]
@@ -645,6 +641,7 @@ namespace KinaUna.IDP.Controllers
             {
                 return View(model);
             }
+
             ApplicationUser user = await userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
@@ -694,6 +691,8 @@ namespace KinaUna.IDP.Controllers
 
             await signInManager.SignInAsync(user, isPersistent: false);
             logger.LogInformation("User changed their password successfully.");
+
+            // Todo: Use translations API instead.
             string statusMsg = "Your password has been changed.";
             if (model.Language == "da")
             {
@@ -747,17 +746,16 @@ namespace KinaUna.IDP.Controllers
                 logger.LogInformation("User with ID {UserId} logged in with 2fa.", user.Id);
                 return RedirectToLocal(returnUrl);
             }
-            else if (result.IsLockedOut)
+
+            if (result.IsLockedOut)
             {
                 logger.LogWarning("User with ID {UserId} account locked out.", user.Id);
                 return RedirectToAction(nameof(Lockout));
             }
-            else
-            {
-                logger.LogWarning("Invalid authenticator code entered for user with ID {UserId}.", user.Id);
-                ModelState.AddModelError(string.Empty, "Invalid authenticator code.");
-                return View();
-            }
+
+            logger.LogWarning("Invalid authenticator code entered for user with ID {UserId}.", user.Id);
+            ModelState.AddModelError(string.Empty, "Invalid authenticator code.");
+            return View();
         }
 
         [HttpGet]
@@ -839,34 +837,32 @@ namespace KinaUna.IDP.Controllers
                 // return RedirectToLocal(returnUrl);
                 return Redirect(returnUrl ?? Constants.WebAppUrl);
             }
+
+            // If user does not already exist, invite User to register.
+            SignInResult result = await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
+            if (result.Succeeded)
+            {
+                logger.LogInformation(5, "User logged in with {Name} provider.", info.LoginProvider);
+                // return RedirectToLocal(returnUrl);
+                return Redirect(returnUrl ?? Constants.WebAppUrl);
+            }
+
+            //if (result.RequiresTwoFactor)
+            //{
+            //    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl });
+            //}
+
+            if (result.IsLockedOut)
+            {
+                return View("Lockout");
+            }
             else
             {
-                // If user does not already exists, invite User to register.
-                SignInResult result = await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
-                if (result.Succeeded)
-                {
-                    logger.LogInformation(5, "User logged in with {Name} provider.", info.LoginProvider);
-                    // return RedirectToLocal(returnUrl);
-                    return Redirect(returnUrl ?? Constants.WebAppUrl);
-                }
-
-                //if (result.RequiresTwoFactor)
-                //{
-                //    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl });
-                //}
-
-                if (result.IsLockedOut)
-                {
-                    return View("Lockout");
-                }
-                else
-                {
-                    // If the user does not have an account, then ask the user to create an account.
-                    ViewData["ReturnUrl"] = returnUrl;
-                    ViewData["LoginProvider"] = info.LoginProvider;
-                    email = info.Principal.FindFirstValue(ClaimTypes.Email);
-                    return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
-                }
+                // If the user does not have an account, then ask the user to create an account.
+                ViewData["ReturnUrl"] = returnUrl;
+                ViewData["LoginProvider"] = info.LoginProvider;
+                email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
             }
         }
 
@@ -934,36 +930,28 @@ namespace KinaUna.IDP.Controllers
         public async Task<IActionResult> IsApplicationUserValid([FromBody] UserInfo userInfo)
         {
             ApplicationUser user = await userManager.FindByIdAsync(userInfo.UserId);
-            if (user != null)
-            {
-                return Ok(userInfo);
-            }
-
-            return Ok(new UserInfo());
+            return Ok(user != null ? userInfo : new UserInfo());
         }
 
         [HttpPost]
         public async Task<IActionResult> RemoveDeleteKinaUnaAccount([FromBody] UserInfo userInfo)
         {
             ApplicationUser user = await userManager.Users.SingleOrDefaultAsync(u => u.Id == User.GetUserId());
-            if (user != null && user.Id != Constants.DefaultUserId && user.Id == userInfo.UserId)
-            {
-                UserInfo deletedUserInfo = await progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == userInfo.UserId);
-                if (deletedUserInfo != null)
-                {
-                    UserInfo restoredDeleteUserInfo = new()
-                    {
-                        UserId = deletedUserInfo.UserId,
-                        DeletedTime = deletedUserInfo.DeletedTime,
-                        Deleted = deletedUserInfo.Deleted
-                    };
+            if (user == null || user.Id == Constants.DefaultUserId || user.Id != userInfo.UserId) return Ok(new UserInfo());
 
-                    progContext.DeletedUsers.Remove(deletedUserInfo);
-                    return Ok(restoredDeleteUserInfo);
-                }
-            }
-            
-            return Ok(new UserInfo());
+            UserInfo deletedUserInfo = await progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == userInfo.UserId);
+            if (deletedUserInfo == null) return Ok(new UserInfo());
+
+            UserInfo restoredDeleteUserInfo = new()
+            {
+                UserId = deletedUserInfo.UserId,
+                DeletedTime = deletedUserInfo.DeletedTime,
+                Deleted = deletedUserInfo.Deleted
+            };
+
+            progContext.DeletedUsers.Remove(deletedUserInfo);
+            return Ok(restoredDeleteUserInfo);
+
         }
         
         public async Task<IActionResult> DeleteAccount()
@@ -973,43 +961,42 @@ namespace KinaUna.IDP.Controllers
             //model.RegionId = Request.GetRegionIdFromCookie();
 
             ApplicationUser user = await userManager.Users.SingleOrDefaultAsync(u => u.Id == User.GetUserId());
-            if (user != null && user.Id != Constants.DefaultUserId)
-            {
-                model.Email = user.Email;
-                string code = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                string callbackUrl = Url.EmailDeleteAccountLink(user.Id, code, Request.Scheme);
-                await emailSender.SendEmailDeleteAsync(model.Email, callbackUrl, model.LanguageId);
+            if (user == null || user.Id == Constants.DefaultUserId) return View(model);
 
-                UserInfo userInfo = await progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == user.Id);
-                if (userInfo != null && !string.IsNullOrEmpty(userInfo.UserId))
-                {
-                    userInfo.UserName = user.UserName;
-                    userInfo.UserId = user.Id;
-                    userInfo.UserEmail = user.Email;
-                    userInfo.Deleted = false;
-                    userInfo.DeletedTime = DateTime.UtcNow;
-                    userInfo.UpdatedTime = DateTime.UtcNow;
-                    userInfo.ProfilePicture = JsonConvert.SerializeObject(user);
-                    progContext.DeletedUsers.Update(userInfo);
-                    await progContext.SaveChangesAsync();
-                }
-                else
-                {
-                    userInfo = new UserInfo
-                    {
-                        UserName = user.UserName,
-                        UserId = user.Id,
-                        UserEmail = user.Email,
-                        Deleted = false,
-                        DeletedTime = DateTime.UtcNow,
-                        UpdatedTime = DateTime.UtcNow,
-                        ProfilePicture = JsonConvert.SerializeObject(user)
-                    };
-                    await progContext.DeletedUsers.AddAsync(userInfo);
-                    await progContext.SaveChangesAsync();
-                }
+            model.Email = user.Email;
+            string code = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            string callbackUrl = Url.EmailDeleteAccountLink(user.Id, code, Request.Scheme);
+            await emailSender.SendEmailDeleteAsync(model.Email, callbackUrl, model.LanguageId);
+
+            UserInfo userInfo = await progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == user.Id);
+            if (userInfo != null && !string.IsNullOrEmpty(userInfo.UserId))
+            {
+                userInfo.UserName = user.UserName;
+                userInfo.UserId = user.Id;
+                userInfo.UserEmail = user.Email;
+                userInfo.Deleted = false;
+                userInfo.DeletedTime = DateTime.UtcNow;
+                userInfo.UpdatedTime = DateTime.UtcNow;
+                userInfo.ProfilePicture = JsonConvert.SerializeObject(user);
+                progContext.DeletedUsers.Update(userInfo);
+                await progContext.SaveChangesAsync();
             }
-            
+            else
+            {
+                userInfo = new UserInfo
+                {
+                    UserName = user.UserName,
+                    UserId = user.Id,
+                    UserEmail = user.Email,
+                    Deleted = false,
+                    DeletedTime = DateTime.UtcNow,
+                    UpdatedTime = DateTime.UtcNow,
+                    ProfilePicture = JsonConvert.SerializeObject(user)
+                };
+                await progContext.DeletedUsers.AddAsync(userInfo);
+                await progContext.SaveChangesAsync();
+            }
+
 
             return View(model);
         }
@@ -1027,21 +1014,18 @@ namespace KinaUna.IDP.Controllers
 
             ApplicationUser user = await userManager.FindByIdAsync(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
             IdentityResult result = await userManager.ConfirmEmailAsync(user, code);
-            if (result.Succeeded)
-            {
-                UserInfo userInfo = await progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == user.Id);
-                if (userInfo != null)
-                {
-                    userInfo.Deleted = true;
-                    userInfo.DeletedTime = DateTime.UtcNow;
-                    userInfo.UpdatedTime = DateTime.UtcNow;
-                    progContext.DeletedUsers.Update(userInfo);
-                    await progContext.SaveChangesAsync();
-                    await userManager.DeleteAsync(user);
-                    await signInManager.SignOutAsync();
-                }
+            if (!result.Succeeded) return View(model);
 
-            }
+            UserInfo userInfo = await progContext.DeletedUsers.SingleOrDefaultAsync(u => u.UserId == user.Id);
+            if (userInfo == null) return View(model);
+
+            userInfo.Deleted = true;
+            userInfo.DeletedTime = DateTime.UtcNow;
+            userInfo.UpdatedTime = DateTime.UtcNow;
+            progContext.DeletedUsers.Update(userInfo);
+            await progContext.SaveChangesAsync();
+            await userManager.DeleteAsync(user);
+            await signInManager.SignOutAsync();
 
             return View(model);
         }

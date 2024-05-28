@@ -24,7 +24,7 @@ namespace KinaUnaWebBlazor.Services
             public DateTime ExpiresIn { get; set; }
         }
 
-        private ConcurrentDictionary<string, AccessTokenItem> _accessTokens = new ConcurrentDictionary<string, AccessTokenItem>();
+        private readonly ConcurrentDictionary<string, AccessTokenItem> _accessTokens = new();
 
         public ApiTokenInMemoryClient(IOptions<AuthConfigurations> authConfigurations, IHttpClientFactory httpClientFactory, ILoggerFactory loggerFactory)
         {
@@ -34,41 +34,39 @@ namespace KinaUnaWebBlazor.Services
             _logger = loggerFactory.CreateLogger<ApiTokenInMemoryClient>();
         }
 
-        public async Task<string> GetApiToken(string api_name, string api_scope, string secret)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2254:Template should be a static expression", Justification = "<Pending>")]
+        public async Task<string> GetApiToken(string apiName, string apiScope, string secret)
         {
-            if (_accessTokens.ContainsKey(api_name))
+            if (_accessTokens.ContainsKey(apiName))
             {
-                AccessTokenItem? accessToken = _accessTokens.GetValueOrDefault(api_name);
+                AccessTokenItem? accessToken = _accessTokens.GetValueOrDefault(apiName);
                 if (accessToken != null)
                 {
                     if (accessToken.ExpiresIn > DateTime.UtcNow)
                     {
                         return accessToken.AccessToken;
                     }
-                    else
-                    {
-                        // remove
-                        _accessTokens.TryRemove(api_name, out AccessTokenItem? _);
-                    }
+
+                    // remove
+                    _accessTokens.TryRemove(apiName, out AccessTokenItem? _);
                 }
             }
 
-            _logger.LogDebug($"GetApiToken new from STS for {api_name}");
+            _logger.LogDebug($"GetApiToken new from STS for {apiName}");
 
             // add
-            AccessTokenItem newAccessToken = await getApiToken(api_name, api_scope, secret);
-            _accessTokens.TryAdd(api_name, newAccessToken);
+            AccessTokenItem newAccessToken = await GetApiTokenInternal(apiName, apiScope, secret);
+            _accessTokens.TryAdd(apiName, newAccessToken);
 
             return newAccessToken.AccessToken;
         }
 
-        private async Task<AccessTokenItem> getApiToken(string api_name, string api_scope, string secret)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2254:Template should be a static expression", Justification = "<Pending>")]
+        private async Task<AccessTokenItem> GetApiTokenInternal(string apiName, string apiScope, string secret)
         {
             try
             {
-                DiscoveryDocumentResponse disco = await HttpClientDiscoveryExtensions.GetDiscoveryDocumentAsync(
-                    _httpClient,
-                    _authConfigurations.Value.StsServer);
+                DiscoveryDocumentResponse disco = await _httpClient.GetDiscoveryDocumentAsync(_authConfigurations.Value.StsServer);
 
                 if (disco.IsError)
                 {
@@ -76,12 +74,12 @@ namespace KinaUnaWebBlazor.Services
                     throw new ApplicationException($"Status code: {disco.IsError}, Error: {disco.Error}");
                 }
 
-                TokenResponse tokenResponse = await HttpClientTokenRequestExtensions.RequestClientCredentialsTokenAsync(_httpClient, new ClientCredentialsTokenRequest
+                TokenResponse tokenResponse = await _httpClient.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
                 {
-                    Scope = api_scope,
+                    Scope = apiScope,
                     ClientSecret = secret,
                     Address = disco.TokenEndpoint,
-                    ClientId = api_name
+                    ClientId = apiName
                 });
 
                 if (tokenResponse.IsError)

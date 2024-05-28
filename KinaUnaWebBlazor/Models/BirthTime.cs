@@ -2,12 +2,10 @@
 
 namespace KinaUnaWebBlazor.Models
 {
-    public class BirthTime(DateTime bday, TimeZoneInfo bdayTz)
+    public class BirthTime(DateTime birthday, TimeZoneInfo birthdayTimezone)
     {
-        private DateTime _birthDay = TimeZoneInfo.ConvertTimeToUtc(bday, bdayTz);
-        private readonly DateTime _currentDateTime = DateTime.UtcNow; // TimeZoneInfo.ConvertTimeToUtc(DateTime.Now);
-
-        public string CurrentTime => TimeZoneInfo.ConvertTimeFromUtc(_currentDateTime, bdayTz).ToString("dd MMMM yyyy HH:mm:ss");
+        private readonly DateTime _birthDay = TimeZoneInfo.ConvertTimeToUtc(birthday, birthdayTimezone);
+        private readonly DateTime _currentDateTime = DateTime.UtcNow;
 
 
         public string CalcYears()
@@ -21,7 +19,7 @@ namespace KinaUnaWebBlazor.Models
 
         public string CalcMonths()
         {
-            int ageMonths = GetTotalMonthsFrom(_currentDateTime, _birthDay);
+            int ageMonths = GetTotalMonthsBetweenDates(_currentDateTime, _birthDay);
 
             return ageMonths.ToString();
         }
@@ -30,9 +28,7 @@ namespace KinaUnaWebBlazor.Models
         {
             int ageWeeks = (DateTime.Today.ToUniversalTime() - new DateTime(_birthDay.Year, _birthDay.Month, _birthDay.Day)).Days / 7;
             int ageWeeksDays = (DateTime.Today.ToUniversalTime() - new DateTime(_birthDay.Year, _birthDay.Month, _birthDay.Day)).Days % 7;
-            string[] ageWeeksResult = new string[2];
-            ageWeeksResult[0] = ageWeeks.ToString();
-            ageWeeksResult[1] = ageWeeksDays.ToString();
+            string[] ageWeeksResult = [ageWeeks.ToString(), ageWeeksDays.ToString()];
             return ageWeeksResult;
         }
 
@@ -56,20 +52,20 @@ namespace KinaUnaWebBlazor.Models
 
         public string CalcNextBirthday()
         {
-            int nextBday;
+            int nextBirthday;
 
             if (DateTime.Today.ToUniversalTime() < new DateTime(_currentDateTime.Year, _birthDay.Month, _birthDay.Day))
             {
-                nextBday = (new DateTime(_currentDateTime.Year, _birthDay.Month, _birthDay.Day, 0, 0, 0, DateTimeKind.Utc) -
+                nextBirthday = (new DateTime(_currentDateTime.Year, _birthDay.Month, _birthDay.Day, 0, 0, 0, DateTimeKind.Utc) -
                             new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc)).Days;
             }
             else
             {
-                nextBday = (new DateTime(_currentDateTime.Year + 1, _birthDay.Month, _birthDay.Day, 0, 0, 0, DateTimeKind.Utc) -
+                nextBirthday = (new DateTime(_currentDateTime.Year + 1, _birthDay.Month, _birthDay.Day, 0, 0, 0, DateTimeKind.Utc) -
                             new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc)).Days;
             }
 
-            return nextBday.ToString();
+            return nextBirthday.ToString();
         }
 
         public string[] CalcMileStoneWeeks()
@@ -77,10 +73,8 @@ namespace KinaUnaWebBlazor.Models
             double ageWeeks = Math.Floor((_currentDateTime - _birthDay).TotalDays / 7);
             double milestone = Math.Pow(10, Math.Ceiling(Math.Log10(ageWeeks)));
             DateTime milestoneDate = _birthDay + TimeSpan.FromDays(milestone * 7);
-            string[] cmsw = new string[2];
-            cmsw[0] = milestone.ToString(CultureInfo.InvariantCulture);
-            cmsw[1] = milestoneDate.ToString("dddd, dd MMMM yyyy");
-            return cmsw;
+            string[] mileStoneWeeksResult = [milestone.ToString(CultureInfo.InvariantCulture), milestoneDate.ToString("dddd, dd MMMM yyyy")];
+            return mileStoneWeeksResult;
         }
 
         public string[] CalcMileStoneDays()
@@ -88,10 +82,8 @@ namespace KinaUnaWebBlazor.Models
             double ageDays = (_currentDateTime - _birthDay).TotalDays;
             double milestone = Math.Pow(10, Math.Ceiling(Math.Log10(ageDays)));
             DateTime milestoneDate = _birthDay + TimeSpan.FromDays(milestone);
-            string[] cmsw = new string[2];
-            cmsw[0] = milestone.ToString(CultureInfo.InvariantCulture);
-            cmsw[1] = milestoneDate.ToString("dddd, dd MMMM yyyy");
-            return cmsw;
+            string[] mileStoneDaysResult = [milestone.ToString(CultureInfo.InvariantCulture), milestoneDate.ToString("dddd, dd MMMM yyyy")];
+            return mileStoneDaysResult;
         }
 
         public string[] CalcMileStoneHours()
@@ -99,10 +91,8 @@ namespace KinaUnaWebBlazor.Models
             double ageHours = (_currentDateTime - _birthDay).TotalHours;
             double milestone = Math.Pow(10, Math.Ceiling(Math.Log10(ageHours)));
             DateTime milestoneDate = _birthDay + TimeSpan.FromHours(milestone);
-            string[] cmsw = new string[2];
-            cmsw[0] = milestone.ToString(CultureInfo.InvariantCulture);
-            cmsw[1] = milestoneDate.ToString("dddd, dd MMMM yyyy HH:mm");
-            return cmsw;
+            string[] mileStoneHoursResult = [milestone.ToString(CultureInfo.InvariantCulture), milestoneDate.ToString("dddd, dd MMMM yyyy HH:mm")];
+            return mileStoneHoursResult;
 
         }
 
@@ -111,17 +101,15 @@ namespace KinaUnaWebBlazor.Models
             double ageMinutes = (_currentDateTime - _birthDay).TotalMinutes;
             double milestone = Math.Pow(10, Math.Ceiling(Math.Log10(ageMinutes)));
             DateTime milestoneDate = _birthDay + TimeSpan.FromMinutes(milestone);
-            string[] cmsw = new string[2];
-            cmsw[0] = milestone.ToString(CultureInfo.InvariantCulture);
-            cmsw[1] = milestoneDate.ToString("dddd, dd MMMM yyyy HH:mm");
-            return cmsw;
+            string[] mileStoneMinutesResult = [milestone.ToString(CultureInfo.InvariantCulture), milestoneDate.ToString("dddd, dd MMMM yyyy HH:mm")];
+            return mileStoneMinutesResult;
 
         }
 
-        public static int GetTotalMonthsFrom(DateTime dt1, DateTime dt2)
+        private static int GetTotalMonthsBetweenDates(DateTime firstDateTime, DateTime secondDateTime)
         {
-            DateTime earlyDate = (dt1 > dt2) ? dt2.Date : dt1.Date;
-            DateTime lateDate = (dt1 > dt2) ? dt1.Date : dt2.Date;
+            DateTime earlyDate = (firstDateTime > secondDateTime) ? secondDateTime.Date : firstDateTime.Date;
+            DateTime lateDate = (firstDateTime > secondDateTime) ? firstDateTime.Date : secondDateTime.Date;
 
             // Start with 1 month's difference and keep incrementing
             // until we overshoot the late date

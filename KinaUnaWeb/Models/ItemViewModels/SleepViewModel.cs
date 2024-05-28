@@ -26,7 +26,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public SleepViewModel()
         {
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
             AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
@@ -78,7 +78,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void SetRatingList()
         {
-            RatingList = new List<SelectListItem>();
+            RatingList = [];
             SelectListItem selItem1 = new()
             {
                 Text = "1",
@@ -158,136 +158,131 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public void ProcessSleepListData(List<Sleep> sleepList)
         {
-            SleepList = new List<Sleep>();
-            ChartList = new List<Sleep>();
+            SleepList = [];
+            ChartList = [];
             SleepTotal = TimeSpan.Zero;
             SleepLastYear = TimeSpan.Zero;
             SleepLastMonth = TimeSpan.Zero;
 
             DateTime yearAgo = new(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
-            if (sleepList.Count != 0)
+            if (sleepList.Count == 0) return;
+
+            foreach (Sleep sleep in sleepList)
             {
-                foreach (Sleep sleep in sleepList)
+                if (sleep.AccessLevel < CurrentAccessLevel) continue;
+
+                // Calculate average sleep.
+                bool isLessThanYear = sleep.SleepEnd > yearAgo;
+                bool isLessThanMonth = sleep.SleepEnd > monthAgo;
+                sleep.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+                sleep.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+                DateTimeOffset startOffset = new(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepStart));
+                DateTimeOffset endOffset = new(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepEnd));
+                sleep.SleepDuration = endOffset - startOffset;
+
+                SleepTotal += sleep.SleepDuration;
+                if (isLessThanYear)
                 {
-                    if (sleep.AccessLevel >= CurrentAccessLevel)
+                    SleepLastYear += sleep.SleepDuration;
+                }
+
+                if (isLessThanMonth)
+                {
+                    SleepLastMonth += sleep.SleepDuration;
+                }
+
+                // Calculate chart values
+                double durationStartDate = 0.0;
+                if (sleep.SleepStart.Date == sleep.SleepEnd.Date)
+                {
+                    durationStartDate += sleep.SleepDuration.TotalMinutes;
+                    Sleep slpItem = ChartList.SingleOrDefault(s => s.SleepStart.Date == sleep.SleepStart.Date);
+                    if (slpItem != null)
                     {
-                        // Calculate average sleep.
-                        bool isLessThanYear = sleep.SleepEnd > yearAgo;
-                        bool isLessThanMonth = sleep.SleepEnd > monthAgo;
-                        sleep.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
-                        sleep.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
-                        DateTimeOffset startOffset = new(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepStart));
-                        DateTimeOffset endOffset = new(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepEnd));
-                        sleep.SleepDuration = endOffset - startOffset;
-
-                        SleepTotal += sleep.SleepDuration;
-                        if (isLessThanYear)
+                        slpItem.SleepDuration += TimeSpan.FromMinutes(durationStartDate);
+                    }
+                    else
+                    {
+                        Sleep newSleep = new()
                         {
-                            SleepLastYear += sleep.SleepDuration;
-                        }
-
-                        if (isLessThanMonth)
-                        {
-                            SleepLastMonth += sleep.SleepDuration;
-                        }
-
-                        // Calculate chart values
-                        double durationStartDate = 0.0;
-                        if (sleep.SleepStart.Date == sleep.SleepEnd.Date)
-                        {
-                            durationStartDate += sleep.SleepDuration.TotalMinutes;
-                            Sleep slpItem = ChartList.SingleOrDefault(s => s.SleepStart.Date == sleep.SleepStart.Date);
-                            if (slpItem != null)
-                            {
-                                slpItem.SleepDuration += TimeSpan.FromMinutes(durationStartDate);
-                            }
-                            else
-                            {
-                                Sleep newSleep = new()
-                                {
-                                    SleepStart = sleep.SleepStart,
-                                    SleepDuration = TimeSpan.FromMinutes(durationStartDate)
-                                };
-                                ChartList.Add(newSleep);
-                            }
-                        }
-                        else
-                        {
-                            DateTimeOffset sOffset = new(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepStart));
-                            DateTimeOffset s2Offset = new(sleep.SleepStart.Date + TimeSpan.FromDays(1), TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)
-                                    .GetUtcOffset(sleep.SleepStart.Date + TimeSpan.FromDays(1)));
-                            DateTimeOffset eOffset = new(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepEnd));
-                            DateTimeOffset e2Offset = new(sleep.SleepEnd.Date, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)
-                                    .GetUtcOffset(sleep.SleepEnd.Date));
-                            TimeSpan sDateDuration = s2Offset - sOffset;
-                            TimeSpan eDateDuration = eOffset - e2Offset;
-                            durationStartDate = sleep.SleepDuration.TotalMinutes - (eDateDuration.TotalMinutes);
-                            double durationEndDate = sleep.SleepDuration.TotalMinutes - sDateDuration.TotalMinutes;
-                            Sleep chartItemOverlappingWithStart = ChartList.SingleOrDefault(s => s.SleepStart.Date == sleep.SleepStart.Date);
-                            if (chartItemOverlappingWithStart != null)
-                            {
-                                chartItemOverlappingWithStart.SleepDuration += TimeSpan.FromMinutes(durationStartDate);
-                            }
-                            else
-                            {
-                                Sleep chartItemToAdd = new()
-                                {
-                                    SleepStart = sleep.SleepStart,
-                                    SleepDuration = TimeSpan.FromMinutes(durationStartDate)
-                                };
-                                ChartList.Add(chartItemToAdd);
-                            }
-
-                            Sleep chartItemOverlappingWithEnd = ChartList.SingleOrDefault(s => s.SleepStart.Date == sleep.SleepEnd.Date);
-                            if (chartItemOverlappingWithEnd != null)
-                            {
-                                chartItemOverlappingWithEnd.SleepDuration += TimeSpan.FromMinutes(durationEndDate);
-                            }
-                            else
-                            {
-                                Sleep chartItemToAdd = new()
-                                {
-                                    SleepStart = sleep.SleepEnd,
-                                    SleepDuration = TimeSpan.FromMinutes(durationEndDate)
-                                };
-                                ChartList.Add(chartItemToAdd);
-                            }
-                        }
-
-                        SleepList.Add(sleep);
+                            SleepStart = sleep.SleepStart,
+                            SleepDuration = TimeSpan.FromMinutes(durationStartDate)
+                        };
+                        ChartList.Add(newSleep);
                     }
                 }
-                SleepList = SleepList.OrderBy(s => s.SleepStart).ToList();
-                ChartList = ChartList.OrderBy(s => s.SleepStart).ToList();
+                else
+                {
+                    DateTimeOffset sOffset = new(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepStart));
+                    DateTimeOffset s2Offset = new(sleep.SleepStart.Date + TimeSpan.FromDays(1), TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)
+                        .GetUtcOffset(sleep.SleepStart.Date + TimeSpan.FromDays(1)));
+                    DateTimeOffset eOffset = new(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone).GetUtcOffset(sleep.SleepEnd));
+                    DateTimeOffset e2Offset = new(sleep.SleepEnd.Date, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)
+                        .GetUtcOffset(sleep.SleepEnd.Date));
+                    TimeSpan sDateDuration = s2Offset - sOffset;
+                    TimeSpan eDateDuration = eOffset - e2Offset;
+                    durationStartDate = sleep.SleepDuration.TotalMinutes - (eDateDuration.TotalMinutes);
+                    double durationEndDate = sleep.SleepDuration.TotalMinutes - sDateDuration.TotalMinutes;
+                    Sleep chartItemOverlappingWithStart = ChartList.SingleOrDefault(s => s.SleepStart.Date == sleep.SleepStart.Date);
+                    if (chartItemOverlappingWithStart != null)
+                    {
+                        chartItemOverlappingWithStart.SleepDuration += TimeSpan.FromMinutes(durationStartDate);
+                    }
+                    else
+                    {
+                        Sleep chartItemToAdd = new()
+                        {
+                            SleepStart = sleep.SleepStart,
+                            SleepDuration = TimeSpan.FromMinutes(durationStartDate)
+                        };
+                        ChartList.Add(chartItemToAdd);
+                    }
 
-                TotalAverage = SleepTotal / (DateTime.UtcNow - SleepList.First().SleepStart).TotalDays;
-                LastYearAverage = SleepLastYear / (DateTime.UtcNow - yearAgo).TotalDays;
-                LastMonthAverage = SleepLastMonth / 30;
+                    Sleep chartItemOverlappingWithEnd = ChartList.SingleOrDefault(s => s.SleepStart.Date == sleep.SleepEnd.Date);
+                    if (chartItemOverlappingWithEnd != null)
+                    {
+                        chartItemOverlappingWithEnd.SleepDuration += TimeSpan.FromMinutes(durationEndDate);
+                    }
+                    else
+                    {
+                        Sleep chartItemToAdd = new()
+                        {
+                            SleepStart = sleep.SleepEnd,
+                            SleepDuration = TimeSpan.FromMinutes(durationEndDate)
+                        };
+                        ChartList.Add(chartItemToAdd);
+                    }
+                }
+
+                SleepList.Add(sleep);
             }
+            SleepList = [.. SleepList.OrderBy(s => s.SleepStart)];
+            ChartList = [.. ChartList.OrderBy(s => s.SleepStart)];
+
+            TotalAverage = SleepTotal / (DateTime.UtcNow - SleepList.First().SleepStart).TotalDays;
+            LastYearAverage = SleepLastYear / (DateTime.UtcNow - yearAgo).TotalDays;
+            LastMonthAverage = SleepLastMonth / 30;
         }
 
         public void ProcessSleepCalendarList(List<Sleep> sleepList)
         {
-            SleepList = new List<Sleep>();
+            SleepList = [];
+            if (sleepList.Count == 0) return;
 
-            if (sleepList.Count != 0)
+            foreach (Sleep sleep in sleepList)
             {
-                foreach (Sleep sleep in sleepList)
-                {
-                    if (sleep.AccessLevel >= CurrentAccessLevel)
-                    {
-                        sleep.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
-                        sleep.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
-                        sleep.SleepDuration = sleep.SleepEnd - sleep.SleepStart;
-                        sleep.StartString = sleep.SleepStart.ToString("yyyy-MM-dd") + "T" + sleep.SleepStart.ToString("HH:mm:ss");
-                        sleep.EndString = sleep.SleepEnd.ToString("yyyy-MM-dd") + "T" + sleep.SleepEnd.ToString("HH:mm:ss");
-                        SleepList.Add(sleep);
-                    }
-                }
+                if (sleep.AccessLevel < CurrentAccessLevel) continue;
 
-                SleepList = SleepList.OrderBy(s => s.SleepStart).ToList();
+                sleep.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+                sleep.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+                sleep.SleepDuration = sleep.SleepEnd - sleep.SleepStart;
+                sleep.StartString = sleep.SleepStart.ToString("yyyy-MM-dd") + "T" + sleep.SleepStart.ToString("HH:mm:ss");
+                sleep.EndString = sleep.SleepEnd.ToString("yyyy-MM-dd") + "T" + sleep.SleepEnd.ToString("HH:mm:ss");
+                SleepList.Add(sleep);
             }
+
+            SleepList = [.. SleepList.OrderBy(s => s.SleepStart)];
         }
     }
 }

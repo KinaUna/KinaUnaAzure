@@ -33,7 +33,7 @@
 
         }
 
-        if (userEmail.ToUpper() != _userEmail.ToUpper())
+        if (!string.Equals(userEmail, _userEmail, StringComparison.CurrentCultureIgnoreCase))
         {
             await UserStateService.SetUser(userEmail);
             StateHasChanged();

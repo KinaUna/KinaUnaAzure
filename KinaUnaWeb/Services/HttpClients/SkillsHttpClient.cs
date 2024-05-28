@@ -36,17 +36,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string skillsApiPath = "/api/Skills/" + skillId;
             HttpResponseMessage skillResponse = await _httpClient.GetAsync(skillsApiPath);
-            if (skillResponse.IsSuccessStatusCode)
-            {
-                string skillAsString = await skillResponse.Content.ReadAsStringAsync();
-                Skill skillItem = JsonConvert.DeserializeObject<Skill>(skillAsString);
-                if (skillItem != null)
-                {
-                    return skillItem;
-                }
-            }
+            if (!skillResponse.IsSuccessStatusCode) return new Skill();
 
-            return new Skill();
+            string skillAsString = await skillResponse.Content.ReadAsStringAsync();
+            Skill skillItem = JsonConvert.DeserializeObject<Skill>(skillAsString);
+            return skillItem ?? new Skill();
         }
 
         public async Task<Skill> AddSkill(Skill skill)
@@ -54,19 +48,13 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string skillsApiPath = "/api/Skills/";
+            const string skillsApiPath = "/api/Skills/";
             HttpResponseMessage skillsResponse = await _httpClient.PostAsync(skillsApiPath, new StringContent(JsonConvert.SerializeObject(skill), System.Text.Encoding.UTF8, "application/json"));
-            if (skillsResponse.IsSuccessStatusCode)
-            {
-                string skillsAsString = await skillsResponse.Content.ReadAsStringAsync();
-                skill = JsonConvert.DeserializeObject<Skill>(skillsAsString);
-                if (skill != null)
-                {
-                    return skill;
-                }
-            }
+            if (!skillsResponse.IsSuccessStatusCode) return new Skill();
 
-            return new Skill();
+            string skillsAsString = await skillsResponse.Content.ReadAsStringAsync();
+            skill = JsonConvert.DeserializeObject<Skill>(skillsAsString);
+            return skill ?? new Skill();
         }
 
         public async Task<Skill> UpdateSkill(Skill skill)
@@ -76,14 +64,12 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string updateSkillsApiPath = "/api/Skills/" + skill.SkillId;
             HttpResponseMessage skillResponse = await _httpClient.PutAsync(updateSkillsApiPath, new StringContent(JsonConvert.SerializeObject(skill), System.Text.Encoding.UTF8, "application/json"));
-            if (!skillResponse.IsSuccessStatusCode)
-            {
-                string skillAsString = await skillResponse.Content.ReadAsStringAsync();
-                skill = JsonConvert.DeserializeObject<Skill>(skillAsString);
-                return skill;
-            }
+            if (skillResponse.IsSuccessStatusCode) return new Skill();
 
-            return new Skill();
+            string skillAsString = await skillResponse.Content.ReadAsStringAsync();
+            skill = JsonConvert.DeserializeObject<Skill>(skillAsString);
+            return skill;
+
         }
 
         public async Task<bool> DeleteSkill(int skillId)
@@ -93,28 +79,22 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string skillsApiPath = "/api/Skills/" + skillId;
             HttpResponseMessage skillResponse = await _httpClient.DeleteAsync(skillsApiPath);
-            if (skillResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            return false;
+            return skillResponse.IsSuccessStatusCode;
         }
 
         public async Task<List<Skill>> GetSkillsList(int progenyId, int accessLevel)
         {
-            List<Skill> progenySkillsList = new();
+            List<Skill> progenySkillsList = [];
 
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string skillsApiPath = "/api/Skills/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
             HttpResponseMessage skillsResponse = await _httpClient.GetAsync(skillsApiPath);
-            if (skillsResponse.IsSuccessStatusCode)
-            {
-                string skillsAsString = await skillsResponse.Content.ReadAsStringAsync();
-                progenySkillsList = JsonConvert.DeserializeObject<List<Skill>>(skillsAsString);
-            }
+            if (!skillsResponse.IsSuccessStatusCode) return progenySkillsList;
+
+            string skillsAsString = await skillsResponse.Content.ReadAsStringAsync();
+            progenySkillsList = JsonConvert.DeserializeObject<List<Skill>>(skillsAsString);
 
             return progenySkillsList;
         }

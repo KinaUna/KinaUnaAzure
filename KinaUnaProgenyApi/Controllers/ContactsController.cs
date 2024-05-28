@@ -30,26 +30,25 @@ namespace KinaUnaProgenyApi.Controllers
     {
         // GET api/contacts/progeny/[id]
         [HttpGet]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
-            if (userAccess != null || id == Constants.DefaultChildId)
+            if (userAccess == null && id != Constants.DefaultChildId) return NotFound();
+
+            List<Contact> contactsList = await contactService.GetContactsList(id);
+            contactsList = contactsList.Where(c => c.AccessLevel >= (userAccess?.AccessLevel ?? accessLevel)).ToList();
+            if (contactsList.Count != 0)
             {
-                List<Contact> contactsList = await contactService.GetContactsList(id);
-                contactsList = contactsList.Where(c => c.AccessLevel >= (userAccess?.AccessLevel ?? accessLevel)).ToList();
-                if (contactsList.Any())
-                {
-                    return Ok(contactsList);
-                }
+                return Ok(contactsList);
             }
 
             return NotFound();
         }
 
         // GET api/contacts/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetContactItem(int id)
         {
             Contact result = await contactService.GetContact(id);
@@ -116,7 +115,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // PUT api/contacts/5
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Contact value)
         {
             Contact contactItem = await contactService.GetContact(id);
@@ -178,107 +177,100 @@ namespace KinaUnaProgenyApi.Controllers
             contactItem.Author = User.GetUserId();
 
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(contactItem.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
-            if (timeLineItem != null && timeLineItem.CopyContactItemPropertiesForUpdate(contactItem))
-            {
-                _ = await timelineService.UpdateTimeLineItem(timeLineItem);
-                UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-                string notificationTitle = "Contact edited for " + progeny.NickName;
-                string notificationMessage = userInfo.FullName() + " edited a contact for " + progeny.NickName;
+            if (timeLineItem == null || !timeLineItem.CopyContactItemPropertiesForUpdate(contactItem)) return Ok(contactItem);
 
-                await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                await webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
-            }
+            _ = await timelineService.UpdateTimeLineItem(timeLineItem);
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            string notificationTitle = "Contact edited for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " edited a contact for " + progeny.NickName;
+
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
 
             return Ok(contactItem);
         }
 
         // DELETE api/contacts/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             Contact contactItem = await contactService.GetContact(id);
-            if (contactItem != null)
+            if (contactItem == null) return NotFound();
+
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            Progeny progeny = await progenyService.GetProgeny(contactItem.ProgenyId);
+            if (progeny != null)
             {
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                Progeny progeny = await progenyService.GetProgeny(contactItem.ProgenyId);
-                if (progeny != null)
+                if (!progeny.IsInAdminList(userEmail))
                 {
-                    if (!progeny.IsInAdminList(userEmail))
-                    {
-                        return Unauthorized();
-                    }
+                    return Unauthorized();
                 }
-                else
-                {
-                    return NotFound();
-                }
-
-                TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(contactItem.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
-                if (timeLineItem != null)
-                {
-                    _ = await timelineService.DeleteTimeLineItem(timeLineItem);
-                }
-
-                if (contactItem.AddressIdNumber != null)
-                {
-                    Address address = await locationService.GetAddressItem(contactItem.AddressIdNumber.Value);
-                    if (address != null)
-                    {
-                        await locationService.RemoveAddressItem(address.AddressId);
-                    }
-                }
-
-                await imageStore.DeleteImage(contactItem.PictureLink, BlobContainers.Contacts);
-
-                _ = await contactService.DeleteContact(contactItem);
-
-                contactItem.Author = User.GetUserId();
-                UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-                string notificationTitle = "Contact deleted for " + progeny.NickName;
-                string notificationMessage = userInfo.FullName() + " deleted a contact for " + progeny.NickName + ". Contact: " + contactItem.DisplayName;
-
-                if (timeLineItem != null)
-                {
-                    contactItem.AccessLevel = timeLineItem.AccessLevel = 0;
-                    await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-                    await webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
-                }
-
-                return NoContent();
+            }
+            else
+            {
+                return NotFound();
             }
 
-            return NotFound();
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(contactItem.ContactId.ToString(), (int)KinaUnaTypes.TimeLineType.Contact);
+            if (timeLineItem != null)
+            {
+                _ = await timelineService.DeleteTimeLineItem(timeLineItem);
+            }
+
+            if (contactItem.AddressIdNumber != null)
+            {
+                Address address = await locationService.GetAddressItem(contactItem.AddressIdNumber.Value);
+                if (address != null)
+                {
+                    await locationService.RemoveAddressItem(address.AddressId);
+                }
+            }
+
+            await imageStore.DeleteImage(contactItem.PictureLink, BlobContainers.Contacts);
+
+            _ = await contactService.DeleteContact(contactItem);
+
+            contactItem.Author = User.GetUserId();
+            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+
+            string notificationTitle = "Contact deleted for " + progeny.NickName;
+            string notificationMessage = userInfo.FullName() + " deleted a contact for " + progeny.NickName + ". Contact: " + contactItem.DisplayName;
+
+            if (timeLineItem == null) return NoContent();
+
+            contactItem.AccessLevel = timeLineItem.AccessLevel = 0;
+            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            await webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
+
+            return NoContent();
+
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetContactMobile(int id)
         {
-            Contact result = await contactService.GetContact(id);
+            Contact contact = await contactService.GetContact(id);
 
-            if (result != null)
+            if (contact == null) return NotFound();
+
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(contact.ProgenyId, userEmail);
+
+            if (userAccess == null && contact.ProgenyId != Constants.DefaultChildId) return NotFound();
+
+            if (contact.AddressIdNumber.HasValue)
             {
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
-
-                if (userAccess != null || result.ProgenyId == Constants.DefaultChildId)
-                {
-                    if (result.AddressIdNumber.HasValue)
-                    {
-                        result.Address = await locationService.GetAddressItem(result.AddressIdNumber.Value);
-                    }
-
-                    result.PictureLink = imageStore.UriFor(result.PictureLink, BlobContainers.Contacts);
-
-                    return Ok(result);
-                }
+                contact.Address = await locationService.GetAddressItem(contact.AddressIdNumber.Value);
             }
 
-            return NotFound();
+            contact.PictureLink = imageStore.UriFor(contact.PictureLink, BlobContainers.Contacts);
+
+            return Ok(contact);
+
         }
 
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
         {
             List<Contact> contactsList = await contactService.GetContactsList(id);
@@ -286,26 +278,23 @@ namespace KinaUnaProgenyApi.Controllers
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+            if ((userAccess == null && id != Constants.DefaultChildId) || contactsList.Count == 0) return Ok(new List<Contact>());
 
-            if ((userAccess != null || id == Constants.DefaultChildId) && contactsList.Any())
+            foreach (Contact contact in contactsList)
             {
-                foreach (Contact contact in contactsList)
+                if (contact.AddressIdNumber.HasValue)
                 {
-                    if (contact.AddressIdNumber.HasValue)
-                    {
-                        contact.Address = await locationService.GetAddressItem(contact.AddressIdNumber.Value);
-                    }
-
-                    contact.PictureLink = imageStore.UriFor(contact.PictureLink, BlobContainers.Contacts);
+                    contact.Address = await locationService.GetAddressItem(contact.AddressIdNumber.Value);
                 }
-                return Ok(contactsList);
-            }
 
-            return Ok(new List<Contact>());
+                contact.PictureLink = imageStore.UriFor(contact.PictureLink, BlobContainers.Contacts);
+            }
+            return Ok(contactsList);
+
         }
 
         [HttpGet]
-        [Route("[action]/{contactId}")]
+        [Route("[action]/{contactId:int}")]
         public async Task<IActionResult> DownloadPicture(int contactId)
         {
             Contact contact = await contactService.GetContact(contactId);
@@ -316,20 +305,17 @@ namespace KinaUnaProgenyApi.Controllers
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
             UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(contact.ProgenyId, userEmail);
+            if (userAccess == null || userAccess.AccessLevel <= 0 || !contact.PictureLink.StartsWith("http", System.StringComparison.CurrentCultureIgnoreCase)) return NotFound();
 
-            if (userAccess != null && userAccess.AccessLevel > 0 && contact.PictureLink.ToLower().StartsWith("http"))
+            await using (Stream stream = await GetStreamFromUrl(contact.PictureLink))
             {
-                await using (Stream stream = await GetStreamFromUrl(contact.PictureLink))
-                {
-                    contact.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Contacts);
-                }
-
-                contact = await contactService.UpdateContact(contact);
-
-                return Ok(contact);
+                contact.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Contacts);
             }
 
-            return NotFound();
+            contact = await contactService.UpdateContact(contact);
+
+            return Ok(contact);
+
         }
 
         private static async Task<Stream> GetStreamFromUrl(string url)

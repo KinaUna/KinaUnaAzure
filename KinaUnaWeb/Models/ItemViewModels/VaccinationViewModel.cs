@@ -8,7 +8,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
     public class VaccinationViewModel: BaseItemsViewModel
     {
         public List<SelectListItem> ProgenyList { get; set; }
-        public List<Vaccination> VaccinationList { get; set; } = new();
+        public List<Vaccination> VaccinationList { get; set; } = [];
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
@@ -17,7 +17,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public VaccinationViewModel()
         {
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
             AccessLevelList aclList = new();
             AccessLevelListEn = aclList.AccessLevelListEn;
             AccessLevelListDa = aclList.AccessLevelListDa;
@@ -79,7 +79,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                     }
                 }
 
-                VaccinationList = VaccinationList.OrderBy(v => v.VaccinationDate).ToList();
+                VaccinationList = [.. VaccinationList.OrderBy(v => v.VaccinationDate)];
             }
         }
 

@@ -33,12 +33,7 @@ namespace KinaUna.Data.Extensions
                 return false;
             }
 
-            if (currentAddress.AddressLine1 + currentAddress.AddressLine2 + currentAddress.City + currentAddress.Country + currentAddress.PostalCode + currentAddress.State != "")
-            {
-                return true;
-            }
-
-            return false;
+            return currentAddress.AddressLine1 + currentAddress.AddressLine2 + currentAddress.City + currentAddress.Country + currentAddress.PostalCode + currentAddress.State != "";
         }
     }
 }

@@ -10,8 +10,6 @@ namespace KinaUnaWeb.Services.HttpClients
     /// </summary>
     public interface IProgenyHttpClient
     {
-        //Task<HttpClient> GetClient();
-
         /// <summary>
         /// Gets progeny from the progeny's id.
         /// </summary>

@@ -15,30 +15,29 @@ namespace KinaUna.Data.Extensions
         
         public static void RemoveNullStrings(this Picture picture)
         {
-            if (picture != null)
-            {
-                picture.Altitude ??= "";
+            if (picture == null) return;
 
-                picture.Tags ??= "";
+            picture.Altitude ??= "";
 
-                picture.Author ??= "";
+            picture.Tags ??= "";
 
-                picture.Latitude ??= "";
+            picture.Author ??= "";
 
-                picture.Location ??= "";
+            picture.Latitude ??= "";
 
-                picture.Longtitude ??= "";
+            picture.Location ??= "";
 
-                picture.Owners ??= "";
+            picture.Longtitude ??= "";
 
-                picture.PictureLink1200 ??= "";
+            picture.Owners ??= "";
 
-                picture.PictureLink ??= "";
+            picture.PictureLink1200 ??= "";
 
-                picture.PictureLink600 ??= "";
+            picture.PictureLink ??= "";
 
-                picture.TimeZone ??= "";
-            }
+            picture.PictureLink600 ??= "";
+
+            picture.TimeZone ??= "";
         }
 
         public static void CopyPropertiesForUpdate(this Picture currentPicture, Picture otherPicture)
@@ -124,7 +123,7 @@ namespace KinaUna.Data.Extensions
             }
         }
 
-        public static void ApplyPlacholderProperties(this Picture picture)
+        public static void ApplyPlaceholderProperties(this Picture picture)
         {
             Progeny progeny = new();
             progeny.ApplyPlaceHolderProperties();

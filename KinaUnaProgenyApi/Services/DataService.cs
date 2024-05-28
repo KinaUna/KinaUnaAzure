@@ -25,22 +25,21 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<MobileNotification> UpdateMobileNotification(MobileNotification notification)
         {
-            MobileNotification updatedNotification = await progenyDbContext.MobileNotificationsDb.SingleOrDefaultAsync(mn => mn.NotificationId == notification.NotificationId);
-            if (updatedNotification != null)
-            {
-                updatedNotification.IconLink = notification.IconLink;
-                updatedNotification.Title = notification.Title;
-                updatedNotification.ItemId = notification.ItemId;
-                updatedNotification.ItemType = notification.ItemType;
-                updatedNotification.Language = notification.Language;
-                updatedNotification.Message = notification.Message;
-                updatedNotification.Read = notification.Read;
-                updatedNotification.Time = notification.Time;
-                updatedNotification.UserId = notification.UserId;
+            MobileNotification notificationToUpdate = await progenyDbContext.MobileNotificationsDb.SingleOrDefaultAsync(mn => mn.NotificationId == notification.NotificationId);
+            if (notificationToUpdate == null) return null;
 
-                _ = progenyDbContext.MobileNotificationsDb.Update(updatedNotification);
-                _ = await progenyDbContext.SaveChangesAsync();
-            }
+            notificationToUpdate.IconLink = notification.IconLink;
+            notificationToUpdate.Title = notification.Title;
+            notificationToUpdate.ItemId = notification.ItemId;
+            notificationToUpdate.ItemType = notification.ItemType;
+            notificationToUpdate.Language = notification.Language;
+            notificationToUpdate.Message = notification.Message;
+            notificationToUpdate.Read = notification.Read;
+            notificationToUpdate.Time = notification.Time;
+            notificationToUpdate.UserId = notification.UserId;
+
+            _ = progenyDbContext.MobileNotificationsDb.Update(notificationToUpdate);
+            _ = await progenyDbContext.SaveChangesAsync();
 
             return notification;
         }
@@ -48,17 +47,16 @@ namespace KinaUnaProgenyApi.Services
         public async Task<MobileNotification> DeleteMobileNotification(MobileNotification notification)
         {
             MobileNotification notificationToDelete = await progenyDbContext.MobileNotificationsDb.SingleOrDefaultAsync(mn => mn.NotificationId == notification.NotificationId);
-            if (notificationToDelete != null)
-            {
-                _ = progenyDbContext.MobileNotificationsDb.Remove(notificationToDelete);
-                _ = await progenyDbContext.SaveChangesAsync();
-            }
+            if (notificationToDelete == null) return null;
+
+            _ = progenyDbContext.MobileNotificationsDb.Remove(notificationToDelete);
+            _ = await progenyDbContext.SaveChangesAsync();
 
             return notification;
         }
         public async Task<List<MobileNotification>> GetUsersMobileNotifications(string userId, string language)
         {
-            List<MobileNotification> notifications = await progenyDbContext.MobileNotificationsDb.Where(n => n.UserId == userId && n.Language.ToUpper() == language.ToUpper()).ToListAsync();
+            List<MobileNotification> notifications = await progenyDbContext.MobileNotificationsDb.Where(n => n.UserId == userId && n.Language.Equals(language, System.StringComparison.CurrentCultureIgnoreCase)).ToListAsync();
             if (string.IsNullOrEmpty(language))
             {
                 notifications = await progenyDbContext.MobileNotificationsDb.Where(n => n.UserId == userId).ToListAsync();
@@ -72,7 +70,7 @@ namespace KinaUnaProgenyApi.Services
             PushDevices existingDevice = await GetPushDevice(device);
             if (existingDevice != null)
             {
-                return existingDevice;
+                return null;
             }
 
             webDbContext.PushDevices.Add(device);
@@ -102,7 +100,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<List<PushDevices>> GetAllPushDevices()
         {
-            var pushDevicesList = await webDbContext.PushDevices.ToListAsync();
+            List<PushDevices> pushDevicesList = await webDbContext.PushDevices.ToListAsync();
 
             return pushDevicesList;
         }

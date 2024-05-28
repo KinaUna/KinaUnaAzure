@@ -18,17 +18,17 @@ namespace KinaUna.IDP.Controllers
     //[EnableCors("KinaUnaCors")]
     public class HomeController(IIdentityServerInteractionService interaction, IRedirectService redirectSvc, IWebHostEnvironment env) : Controller
     {
-        public IActionResult Index(string returnUrl)
+        public IActionResult Index()
         {
             return View();
         }
 
         public IActionResult ReturnToOriginalApplication(string returnUrl)
         {
-            if (returnUrl != null)
-                return Redirect(redirectSvc.ExtractRedirectUriFromReturnUrl(returnUrl));
-            else
+            if (returnUrl == null)
                 return RedirectToAction("Index", "Home");
+            
+            return Redirect(redirectSvc.ExtractRedirectUriFromReturnUrl(returnUrl));
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace KinaUna.IDP.Controllers
         /// </summary>
         public async Task<IActionResult> Error(string errorId)
         {
-            ErrorViewModel vm = new ErrorViewModel();
+            ErrorViewModel vm = new();
 
             // retrieve error details from identityserver
             ErrorMessage message = await interaction.GetErrorContextAsync(errorId);

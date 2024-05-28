@@ -25,7 +25,7 @@ namespace KinaUnaProgenyApi.Services
             _mediaContext = mediaContext;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
-            _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(96, 0, 0)); // Expire after 24 hours.
+            _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(96, 0, 0)); // Expire after 96 hours.
             _picturesService = picturesService;
             _videosService = videosService;
         }
@@ -51,25 +51,23 @@ namespace KinaUnaProgenyApi.Services
         {
             Comment comment = await _mediaContext.CommentsDb.AsNoTracking().SingleOrDefaultAsync(c => c.CommentId == commentId);
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
-            if (comment != null)
-            {
-                await SetCommentsList(comment.CommentThreadNumber);
+            if (comment == null) return null;
 
-                Picture picture = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.CommentThreadNumber == comment.CommentThreadNumber);
-                if (picture != null)
-                {
-                    await _picturesService.SetPictureInCache(picture.PictureId);
-                    await _picturesService.SetPicturesListInCache(picture.ProgenyId);
-                }
-                else
-                {
-                    Video video = await _mediaContext.VideoDb.SingleOrDefaultAsync(p => p.CommentThreadNumber == comment.CommentThreadNumber);
-                    if (video != null)
-                    {
-                        await _videosService.SetVideoInCache(video.VideoId);
-                        await _videosService.SetVideosListInCache(video.ProgenyId);
-                    }
-                }
+            await SetCommentsList(comment.CommentThreadNumber);
+
+            Picture picture = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.CommentThreadNumber == comment.CommentThreadNumber);
+            if (picture != null)
+            {
+                await _picturesService.SetPictureInCache(picture.PictureId);
+                await _picturesService.SetPicturesListInCache(picture.ProgenyId);
+            }
+            else
+            {
+                Video video = await _mediaContext.VideoDb.SingleOrDefaultAsync(p => p.CommentThreadNumber == comment.CommentThreadNumber);
+                if (video == null) return null;
+
+                await _videosService.SetVideoInCache(video.VideoId);
+                await _videosService.SetVideosListInCache(video.ProgenyId);
             }
 
             return comment;
@@ -136,13 +134,12 @@ namespace KinaUnaProgenyApi.Services
             await _mediaContext.SaveChangesAsync();
 
             CommentThread cmntThread = await _mediaContext.CommentThreadsDb.SingleOrDefaultAsync(c => c.Id == commentToAdd.CommentThreadNumber);
-            if (cmntThread != null)
-            {
-                cmntThread.CommentsCount += 1;
-                _mediaContext.CommentThreadsDb.Update(cmntThread);
-                await _mediaContext.SaveChangesAsync();
-                await SetCommentsList(cmntThread.Id);
-            }
+            if (cmntThread == null) return commentToAdd;
+
+            cmntThread.CommentsCount += 1;
+            _mediaContext.CommentThreadsDb.Update(cmntThread);
+            await _mediaContext.SaveChangesAsync();
+            await SetCommentsList(cmntThread.Id);
 
             return commentToAdd;
         }
@@ -150,15 +147,14 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Comment> UpdateComment(Comment comment)
         {
             Comment commentToUpdate = await _mediaContext.CommentsDb.SingleOrDefaultAsync(c => c.CommentId == comment.CommentId);
-            if (commentToUpdate != null)
-            {
-                commentToUpdate.CopyPropertiesForUpdate(comment);
-                _mediaContext.CommentsDb.Update(commentToUpdate);
+            if (commentToUpdate == null) return null;
 
-                await _mediaContext.SaveChangesAsync();
+            commentToUpdate.CopyPropertiesForUpdate(comment);
+            _mediaContext.CommentsDb.Update(commentToUpdate);
 
-                await SetComment(comment.CommentId);
-            }
+            await _mediaContext.SaveChangesAsync();
+
+            await SetComment(comment.CommentId);
 
             return commentToUpdate;
         }
@@ -174,14 +170,13 @@ namespace KinaUnaProgenyApi.Services
 
             await _mediaContext.SaveChangesAsync();
 
-            if (cmntThread != null && cmntThread.CommentsCount > 0)
-            {
-                cmntThread.CommentsCount -= 1;
-                _mediaContext.CommentThreadsDb.Update(cmntThread);
-                await _mediaContext.SaveChangesAsync();
+            if (cmntThread == null || cmntThread.CommentsCount <= 0) return null;
 
-                await SetCommentsList(cmntThread.Id);
-            }
+            cmntThread.CommentsCount -= 1;
+            _mediaContext.CommentThreadsDb.Update(cmntThread);
+            await _mediaContext.SaveChangesAsync();
+
+            await SetCommentsList(cmntThread.Id);
 
             return comment;
         }

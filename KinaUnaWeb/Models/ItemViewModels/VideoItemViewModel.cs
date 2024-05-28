@@ -7,7 +7,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class VideoItemViewModel : BaseItemsViewModel
     {
-        public Video Video { get; set; } = new();
+        public Video Video { get; init; } = new();
         public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> AccessLevelListDa { get; set; }
         public List<SelectListItem> AccessLevelListDe { get; set; }
@@ -32,7 +32,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string VidHours { get; set; }
         public string VidMinutes { get; set; }
 
-        public string HereMapsApiKey { get; set; } = "";
+        public string HereMapsApiKey { get; init; } = "";
 
         public VideoItemViewModel()
         {

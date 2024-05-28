@@ -6,7 +6,7 @@ namespace KinaUna.Data.Models
     public class UserAccess
     {
         [Key]
-        public int AccessId { get; set; }
+        public int AccessId { get; init; }
         public int ProgenyId { get; set; }
         public string UserId { get; set; }
         public int AccessLevel { get; set; }

@@ -6,7 +6,7 @@ namespace KinaUna.Data.Models
     public class MobileNotification
     {
         [Key]
-        public int NotificationId { get; set; }
+        public int NotificationId { get; init; }
         public string UserId { get; set; }
         public string ItemId { get; set; }
         public int ItemType { get; set; }

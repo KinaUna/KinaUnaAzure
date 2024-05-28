@@ -25,7 +25,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        [Route("[action]/{languageId}")]
+        [Route("[action]/{languageId:int}")]
         public async Task<IActionResult> GetLanguage(int languageId)
         {
             KinaUnaLanguage language = await languagesService.GetLanguage(languageId);
@@ -38,60 +38,52 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> AddLanguage([FromBody] KinaUnaLanguage language)
         {
             string userId = User.GetUserId();
+            if (!await userInfoService.IsAdminUserId(userId)) return Unauthorized();
 
-            if (await userInfoService.IsAdminUserId(userId))
-            {
-                language.Name = language.Name?.Trim();
-                await languagesService.AddLanguage(language);
+            language.Name = language.Name?.Trim();
+            await languagesService.AddLanguage(language);
 
-                return Ok(language);
-            }
-
-            return Unauthorized();
+            return Ok(language);
         }
 
         [Authorize]
         [HttpPut]
-        [Route("[action]/{languageId}")]
+        [Route("[action]/{languageId:int}")]
         public async Task<IActionResult> UpdateLanguage(int languageId, [FromBody] KinaUnaLanguage value)
         {
             string userId = User.GetUserId();
 
-            if (await userInfoService.IsAdminUserId(userId))
+            if (!await userInfoService.IsAdminUserId(userId)) return Unauthorized();
+
+            KinaUnaLanguage language = await languagesService.GetLanguage(languageId);
+            if (language == null)
             {
-                KinaUnaLanguage language = await languagesService.GetLanguage(languageId);
-                if (language == null)
-                {
-                    return NotFound();
-                }
-
-                language = await languagesService.UpdateLanguage(value);
-
-                return Ok(language);
+                return NotFound();
             }
 
-            return Unauthorized();
+            language = await languagesService.UpdateLanguage(value);
+
+            return Ok(language);
+
         }
 
         [Authorize]
         [HttpDelete]
-        [Route("[action]/{languageId}")]
+        [Route("[action]/{languageId:int}")]
         public async Task<IActionResult> DeleteLanguage(int languageId)
         {
             string userId = User.GetUserId();
 
-            if (await userInfoService.IsAdminUserId(userId))
-            {
-                KinaUnaLanguage deletedLanguage = await languagesService.DeleteLanguage(languageId);
-                if (deletedLanguage.Id == -1)
-                {
-                    return NotFound();
-                }
+            if (!await userInfoService.IsAdminUserId(userId)) return Unauthorized();
 
-                return Ok(deletedLanguage);
+            KinaUnaLanguage deletedLanguage = await languagesService.DeleteLanguage(languageId);
+            if (deletedLanguage == null)
+            {
+                return NotFound();
             }
 
-            return Unauthorized();
+            return Ok(deletedLanguage);
+
         }
     }
 }

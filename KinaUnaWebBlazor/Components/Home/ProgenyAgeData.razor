@@ -27,7 +27,7 @@
 
     private Progeny? Progeny { get; set; }
 
-    readonly ProgenyAgeDataViewModel _viewModel = new ProgenyAgeDataViewModel();
+    readonly ProgenyAgeDataViewModel _viewModel = new();
 
     private string _isNowString = "is now";
     private string _willBeString = "will be";
@@ -71,43 +71,41 @@
         UpdateTimeData();
     }
 
-    private void UpdateTimeData(){
-        if (Progeny != null && !string.IsNullOrEmpty(Progeny.TimeZone))
-        {
-            BirthTime progBirthTime;
-            if (!string.IsNullOrEmpty(Progeny.NickName) && Progeny.BirthDay.HasValue)
-            {
-                progBirthTime = new BirthTime(Progeny.BirthDay.Value,
-                    TimeZoneInfo.FindSystemTimeZoneById(Progeny.TimeZone));
-            }
-            else
-            {
-                progBirthTime = new BirthTime(new DateTime(2018, 02, 18, 18, 02, 00), TimeZoneInfo.FindSystemTimeZoneById(Progeny.TimeZone));
-            }
+    private void UpdateTimeData()
+    {
+        if (Progeny == null || string.IsNullOrEmpty(Progeny.TimeZone)) return;
 
-            _viewModel.Years = progBirthTime.CalcYears();
-            _viewModel.Months = progBirthTime.CalcMonths();
-            _viewModel.Weeks = progBirthTime.CalcWeeks();
-            _viewModel.Days = progBirthTime.CalcDays();
-            _viewModel.Hours = progBirthTime.CalcHours();
-            _viewModel.Minutes = progBirthTime.CalcMinutes();
-            _viewModel.NextBirthday = progBirthTime.CalcNextBirthday();
-            _viewModel.MinutesMileStone = progBirthTime.CalcMileStoneMinutes();
-            _viewModel.HoursMileStone = progBirthTime.CalcMileStoneHours();
-            _viewModel.DaysMileStone = progBirthTime.CalcMileStoneDays();
-            _viewModel.WeeksMileStone = progBirthTime.CalcMileStoneWeeks();
+        BirthTime progBirthTime;
+        if (!string.IsNullOrEmpty(Progeny.NickName) && Progeny.BirthDay.HasValue)
+        {
+            progBirthTime = new BirthTime(Progeny.BirthDay.Value,
+                TimeZoneInfo.FindSystemTimeZoneById(Progeny.TimeZone));
         }
+        else
+        {
+            progBirthTime = new BirthTime(new DateTime(2018, 02, 18, 18, 02, 00), TimeZoneInfo.FindSystemTimeZoneById(Progeny.TimeZone));
+        }
+
+        _viewModel.Years = progBirthTime.CalcYears();
+        _viewModel.Months = progBirthTime.CalcMonths();
+        _viewModel.Weeks = progBirthTime.CalcWeeks();
+        _viewModel.Days = progBirthTime.CalcDays();
+        _viewModel.Hours = progBirthTime.CalcHours();
+        _viewModel.Minutes = progBirthTime.CalcMinutes();
+        _viewModel.NextBirthday = progBirthTime.CalcNextBirthday();
+        _viewModel.MinutesMileStone = progBirthTime.CalcMileStoneMinutes();
+        _viewModel.HoursMileStone = progBirthTime.CalcMileStoneHours();
+        _viewModel.DaysMileStone = progBirthTime.CalcMileStoneDays();
+        _viewModel.WeeksMileStone = progBirthTime.CalcMileStoneWeeks();
     }
 
     private void UserStateServiceOnCurrentProgenyChanged(object? sender, Progeny e)
     {
-        if (e.Id > 0)
-        {
-            Progeny = e;
-            UpdateTimeData();
-            StateHasChanged();
+        if (e.Id <= 0) return;
 
-        }
+        Progeny = e;
+        UpdateTimeData();
+        StateHasChanged();
     }
 
     public void Dispose()

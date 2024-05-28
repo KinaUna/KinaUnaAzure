@@ -31,17 +31,16 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<UserInfo> CheckDeleteUser(UserInfo userInfo)
         {
-            string deleteAccountPath = "/Account/CheckDeleteKinaUnaAccount/";
+            const string deleteAccountPath = "/Account/CheckDeleteKinaUnaAccount/";
 
             HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
-            if (deleteResponse.IsSuccessStatusCode)
+            if (!deleteResponse.IsSuccessStatusCode) return new UserInfo();
+
+            string deleteResponseAsString = await deleteResponse.Content.ReadAsStringAsync();
+            UserInfo resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseAsString);
+            if (resultUserInfo != null && resultUserInfo.UserId == userInfo.UserId)
             {
-                string deleteResponseAsString = await deleteResponse.Content.ReadAsStringAsync();
-                UserInfo resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseAsString);
-                if (resultUserInfo != null && resultUserInfo.UserId == userInfo.UserId)
-                {
-                    return resultUserInfo;
-                }
+                return resultUserInfo;
             }
 
             return new UserInfo();
@@ -63,17 +62,16 @@ namespace KinaUnaWeb.Services.HttpClients
             }
 
             _httpClient.SetBearerToken(accessToken);
-            string deleteAccountPath = "/Account/RemoveDeleteKinaUnaAccount/";
+            const string deleteAccountPath = "/Account/RemoveDeleteKinaUnaAccount/";
 
             HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
-            if (deleteResponse.IsSuccessStatusCode)
+            if (!deleteResponse.IsSuccessStatusCode) return new UserInfo();
+
+            string deleteResponseAsString = await deleteResponse.Content.ReadAsStringAsync();
+            UserInfo resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseAsString);
+            if (resultUserInfo != null && resultUserInfo.UserId == userInfo.UserId)
             {
-                string deleteResponseAsString = await deleteResponse.Content.ReadAsStringAsync();
-                UserInfo resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseAsString);
-                if (resultUserInfo != null && resultUserInfo.UserId == userInfo.UserId)
-                {
-                    return resultUserInfo;
-                }
+                return resultUserInfo;
             }
 
             return new UserInfo();
@@ -81,24 +79,18 @@ namespace KinaUnaWeb.Services.HttpClients
 
         public async Task<bool> IsApplicationUserValid(string userId)
         {
-            string checkAccountPath = "/Account/IsApplicationUserValid/";
+            const string checkAccountPath = "/Account/IsApplicationUserValid/";
             UserInfo userInfo = new()
             {
                 UserId = userId
             };
 
             HttpResponseMessage checkResponse = await _httpClient.PostAsync(checkAccountPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
-            if (checkResponse.IsSuccessStatusCode)
-            {
-                string checkResponseAsString = await checkResponse.Content.ReadAsStringAsync();
-                UserInfo resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(checkResponseAsString);
-                if (resultUserInfo != null && resultUserInfo.UserId == userInfo.UserId)
-                {
-                    return true;
-                }
-            }
+            if (!checkResponse.IsSuccessStatusCode) return false;
 
-            return false;
+            string checkResponseAsString = await checkResponse.Content.ReadAsStringAsync();
+            UserInfo resultUserInfo = JsonConvert.DeserializeObject<UserInfo>(checkResponseAsString);
+            return resultUserInfo != null && resultUserInfo.UserId == userInfo.UserId;
         }
     }
 }

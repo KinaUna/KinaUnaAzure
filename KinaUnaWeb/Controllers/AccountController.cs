@@ -153,7 +153,7 @@ namespace KinaUnaWeb.Controllers
             userInfo.CopyPropertiesFromUserInfoViewModel(model);
             
             bool emailChanged = false;
-            if (userInfo.UserEmail.ToUpper() != model.UserEmail.ToUpper())
+            if (!userInfo.UserEmail.Equals(model.UserEmail, StringComparison.CurrentCultureIgnoreCase))
             {
                 model.IsEmailConfirmed = false;
                 emailChanged = true;
@@ -277,20 +277,19 @@ namespace KinaUnaWeb.Controllers
             model.LanguageId = Request.GetLanguageIdFromCookie();
 
             UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
-            if (userInfo != null && userInfo.UserEmail.ToUpper() == User.GetEmail().ToUpper())
-            {
-                model.UserId = userInfo.UserId;
-                model.UserEmail = userInfo.UserEmail;
-                model.FirstName = userInfo.FirstName;
-                model.MiddleName = userInfo.MiddleName;
-                model.LastName = userInfo.LastName;
-                model.UserName = userInfo.UserName;
+            if (userInfo == null || !userInfo.UserEmail.Equals(User.GetEmail(), StringComparison.CurrentCultureIgnoreCase)) return Redirect(model.ChangeLink);
 
-                _ = await userInfosHttpClient.DeleteUserInfo(userInfo);
+            model.UserId = userInfo.UserId;
+            model.UserEmail = userInfo.UserEmail;
+            model.FirstName = userInfo.FirstName;
+            model.MiddleName = userInfo.MiddleName;
+            model.LastName = userInfo.LastName;
+            model.UserName = userInfo.UserName;
 
-                model.ChangeLink = configuration["AuthenticationServer"] + "/Account/DeleteAccount";
-            }
-            
+            _ = await userInfosHttpClient.DeleteUserInfo(userInfo);
+
+            model.ChangeLink = configuration["AuthenticationServer"] + "/Account/DeleteAccount";
+
             return Redirect(model.ChangeLink);
         }
 

@@ -2,12 +2,12 @@
 
 namespace KinaUna.IDP.Services
 {
-    public class RedirectService : IRedirectService
+    public partial class RedirectService : IRedirectService
     {
         public string ExtractRedirectUriFromReturnUrl(string url)
         {
             string decodedUrl = System.Net.WebUtility.HtmlDecode(url);
-            string[] results = Regex.Split(decodedUrl, "redirect_uri=");
+            string[] results = RedirectRegex().Split(decodedUrl);
             if (results.Length < 2)
                 return "";
 
@@ -27,5 +27,8 @@ namespace KinaUna.IDP.Services
 
             return result.Replace("%3A", ":").Replace("%2F", "/").Replace("&", "");
         }
+
+        [GeneratedRegex("redirect_uri=")]
+        private static partial Regex RedirectRegex();
     }
 }

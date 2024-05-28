@@ -7,20 +7,24 @@ namespace KinaUna.IDP.Services
 {
     public class EmailSender(IConfiguration configuration) : IEmailSender
     {
-        public Task SendEmailAsync(string email, string subject, string message, string authclient)
+        public Task SendEmailAsync(string email, string subject, string message, string authClient)
         {
-            SmtpClient client = new SmtpClient(configuration.GetValue<string>("SmtpServer"));
-            client.UseDefaultCredentials = false;
-            client.Credentials = new NetworkCredential(configuration.GetValue<string>("SmtpUserName"), configuration.GetValue<string>("SupportMailPassword"));
-            client.EnableSsl = true;
-            client.Port = 587;
+            SmtpClient client = new(configuration.GetValue<string>("SmtpServer"))
+            {
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(configuration.GetValue<string>("SmtpUserName"), configuration.GetValue<string>("SupportMailPassword")),
+                EnableSsl = true,
+                Port = 587
+            };
 
-            MailMessage mailMessage = new MailMessage();
-            mailMessage.From = new MailAddress(configuration.GetValue<string>("SmtpFrom"), "Support - " + authclient);
+            MailMessage mailMessage = new()
+            {
+                From = new MailAddress(configuration.GetValue<string>("SmtpFrom"), "Support - " + authClient),
+                Body = message,
+                IsBodyHtml = true,
+                Subject = subject
+            };
             mailMessage.To.Add(email);
-            mailMessage.Body = message;
-            mailMessage.IsBodyHtml = true;
-            mailMessage.Subject = subject;
 
             try
             {

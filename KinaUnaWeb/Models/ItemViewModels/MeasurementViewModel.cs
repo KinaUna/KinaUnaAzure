@@ -15,13 +15,13 @@ namespace KinaUnaWeb.Models.ItemViewModels
         
         public MeasurementViewModel()
         {
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
             SetAccessLevelList();
         }
 
         public MeasurementViewModel(BaseItemsViewModel baseItemsViewModel)
         {
-            ProgenyList = new List<SelectListItem>();
+            ProgenyList = [];
             SetBaseProperties(baseItemsViewModel);
             SetAccessLevelList();
         }

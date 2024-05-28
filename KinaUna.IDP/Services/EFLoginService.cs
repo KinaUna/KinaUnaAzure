@@ -10,15 +10,13 @@ namespace KinaUna.IDP.Services
         {
             ApplicationUser appUser = await userManager.FindByEmailAsync(user);
 
-            if (appUser != null)
-            {
-                if (string.IsNullOrEmpty(appUser.UserName))
-                {
-                    appUser.UserName = appUser.Email;
-                    await userManager.UpdateAsync(appUser);
-                }
-            }
-            
+            if (appUser == null) return null;
+
+            if (!string.IsNullOrEmpty(appUser.UserName)) return appUser;
+
+            appUser.UserName = appUser.Email;
+            await userManager.UpdateAsync(appUser);
+
 
             return appUser;
         }

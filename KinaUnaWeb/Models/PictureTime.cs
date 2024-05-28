@@ -9,18 +9,18 @@ namespace KinaUnaWeb.Models
 
         public string PictureDateTime => _pictureUtcTime.ToString("dd MMMM yyyy HH:mm");
 
-        public PictureTime(DateTime bday, DateTime? pictureTaken, TimeZoneInfo bdayTz)
+        public PictureTime(DateTime birthday, DateTime? pictureTaken, TimeZoneInfo birthdayTimezone)
         {
-            _birthDayUtc = TimeZoneInfo.ConvertTimeToUtc(bday, bdayTz);
+            _birthDayUtc = TimeZoneInfo.ConvertTimeToUtc(birthday, birthdayTimezone);
 
 
             if (pictureTaken != null)
             {
-                _pictureUtcTime = pictureTaken.Value;  //TimeZoneInfo.ConvertTimeToUtc((DateTime)pictureTaken, bdayTz);
+                _pictureUtcTime = pictureTaken.Value;  //TimeZoneInfo.ConvertTimeToUtc((DateTime)pictureTaken, birthdayTimezone);
             }
             else
             {
-                _pictureUtcTime = TimeZoneInfo.ConvertTimeToUtc(bday, bdayTz);
+                _pictureUtcTime = TimeZoneInfo.ConvertTimeToUtc(birthday, birthdayTimezone);
             }
         }
 
@@ -36,7 +36,7 @@ namespace KinaUnaWeb.Models
 
         public string CalcMonths()
         {
-            int ageMonths = GetTotalMonthsFrom(_pictureUtcTime, _birthDayUtc);
+            int ageMonths = GetTotalMonthsBetweenDates(_pictureUtcTime, _birthDayUtc);
 
             return ageMonths.ToString();
         }
@@ -45,9 +45,7 @@ namespace KinaUnaWeb.Models
         {
             int ageWeeks = (new DateTime(_pictureUtcTime.Year, _pictureUtcTime.Month, _pictureUtcTime.Day) - new DateTime(_birthDayUtc.Year, _birthDayUtc.Month, _birthDayUtc.Day)).Days / 7;
             int ageWeeksDays = (new DateTime(_pictureUtcTime.Year, _pictureUtcTime.Month, _pictureUtcTime.Day) - new DateTime(_birthDayUtc.Year, _birthDayUtc.Month, _birthDayUtc.Day)).Days % 7;
-            string[] ageWeeksResult = new string[2];
-            ageWeeksResult[0] = ageWeeks.ToString();
-            ageWeeksResult[1] = ageWeeksDays.ToString();
+            string[] ageWeeksResult = [ageWeeks.ToString(), ageWeeksDays.ToString()];
             return ageWeeksResult;
         }
 
@@ -70,11 +68,10 @@ namespace KinaUnaWeb.Models
         }
 
 
-
-        public static int GetTotalMonthsFrom(DateTime dt1, DateTime dt2)
+        private static int GetTotalMonthsBetweenDates(DateTime firstDateTime, DateTime secondDateTime)
         {
-            DateTime earlyDate = (dt1 > dt2) ? dt2.Date : dt1.Date;
-            DateTime lateDate = (dt1 > dt2) ? dt1.Date : dt2.Date;
+            DateTime earlyDate = (firstDateTime > secondDateTime) ? secondDateTime.Date : firstDateTime.Date;
+            DateTime lateDate = (firstDateTime > secondDateTime) ? firstDateTime.Date : secondDateTime.Date;
 
             // Start with 1 month's difference and keep incrementing
             // until we overshoot the late date

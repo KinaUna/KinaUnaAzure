@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -32,7 +31,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
         public string TagsList { get; set; }
         public string TagFilter { get; set; }
         public string Location { get; set; }
-        public string Longtitude { get; set; }
+        public string Longtitude { get; set; } // Todo: Fix typo in variable name.
         public string Latitude { get; set; }
         public string Altitude { get; set; }
         public List<SelectListItem> LocationsList { get; set; }
@@ -73,7 +72,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
         {
             string tagItems = "[";
 
-            if (tagsList.Any())
+            if (tagsList.Count != 0)
             {
                 foreach (string tagstring in tagsList)
                 {

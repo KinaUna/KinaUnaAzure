@@ -14,6 +14,7 @@ namespace KinaUna.IDP.Services
 {
     public class ProfileService(UserManager<ApplicationUser> userManager) : IProfileService
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "<Pending>")]
         public async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
             ClaimsPrincipal subject = context.Subject ?? throw new ArgumentNullException(nameof(context.Subject));
@@ -21,16 +22,14 @@ namespace KinaUna.IDP.Services
             if (subjectIdClaim != null)
             {
                 string subjectId = subjectIdClaim.Value;
-                ApplicationUser user = await userManager.FindByIdAsync(subjectId);
-                if (user == null)
-                    throw new ArgumentException("Invalid subject identifier");
-
+                ApplicationUser user = await userManager.FindByIdAsync(subjectId) ?? throw new ArgumentException("Invalid subject identifier");
                 IEnumerable<Claim> claims = GetClaimsFromUser(user);
                 context.IssuedClaims = claims.ToList();
             }
 
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "<Pending>")]
         public async Task IsActiveAsync(IsActiveContext context)
         {
             ClaimsPrincipal subject = context.Subject ?? throw new ArgumentNullException(nameof(context.Subject));
@@ -65,19 +64,19 @@ namespace KinaUna.IDP.Services
 
         }
 
-        private IEnumerable<Claim> GetClaimsFromUser(ApplicationUser user)
+        private List<Claim> GetClaimsFromUser(ApplicationUser user)
         {
             if (user == null || string.IsNullOrEmpty(user.UserName) || string.IsNullOrEmpty(user.Email))
             {
-                return new List<Claim>();
+                return [];
             }
 
-            List<Claim> claims = new List<Claim>
-            {
+            List<Claim> claims =
+            [
                 new Claim(JwtClaimTypes.Subject, user.Id),
                 new Claim(JwtClaimTypes.PreferredUserName, user.UserName),
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName)
-            };
+            ];
 
             if (!string.IsNullOrWhiteSpace(user.FirstName))
                 claims.Add(new Claim("firstname", user.FirstName));
@@ -109,20 +108,20 @@ namespace KinaUna.IDP.Services
 
             if (userManager.SupportsUserEmail)
             {
-                claims.AddRange(new[]
-                {
+                claims.AddRange(
+                [
                     new Claim(JwtClaimTypes.Email, user.Email),
                     new Claim(JwtClaimTypes.EmailVerified, user.EmailConfirmed ? "true" : "false", ClaimValueTypes.Boolean)
-                });
+                ]);
             }
 
             if (userManager.SupportsUserPhoneNumber && !string.IsNullOrWhiteSpace(user.PhoneNumber))
             {
-                claims.AddRange(new[]
-                {
+                claims.AddRange(
+                [
                     new Claim(JwtClaimTypes.PhoneNumber, user.PhoneNumber),
                     new Claim(JwtClaimTypes.PhoneNumberVerified, user.PhoneNumberConfirmed ? "true" : "false", ClaimValueTypes.Boolean)
-                });
+                ]);
             }
 
             return claims;

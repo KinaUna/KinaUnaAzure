@@ -11,13 +11,13 @@ namespace KinaUnaWebBlazor.Models.ItemViewModels
         public int? VideoRotation { get; set; }
         public int VideoNumber { get; set; } = 0;
         public int ProgenyId { get; set; } = 0;
-        public Progeny Progeny { get; set; } = new Progeny();
+        public Progeny Progeny { get; set; } = new();
         public string Owners { get; set; } = string.Empty; // Comma separated list of emails.
         public int AccessLevel { get; set; } = 5; // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUSers, 4= public.
         public string Author { get; set; } = string.Empty;
         public bool IsAdmin { get; set; } = false;
         public int CommentThreadNumber { get; set; } = 0;
-        public List<Comment> CommentsList { get; set; } = new List<Comment>();
+        public List<Comment> CommentsList { get; set; } = [];
         public int CommentsCount { get; set; } = 0;
         public int VideoType { get; set; } = 0;
         public string Tags { get; set; } = string.Empty;
@@ -34,7 +34,7 @@ namespace KinaUnaWebBlazor.Models.ItemViewModels
         public string Longtitude { get; set; } = string.Empty;
         public string Latitude { get; set; } = string.Empty;
         public string Altitude { get; set; } = string.Empty;
-        public List<Location> ProgenyLocations { get; set; } = new List<Location>();
+        public List<Location> ProgenyLocations { get; set; } = [];
         public int VideoCount { get; set; } = 0;
         public int PrevVideo { get; set; } = 0;
         public int NextVideo { get; set; } = 0;

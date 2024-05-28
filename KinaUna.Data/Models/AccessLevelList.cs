@@ -47,7 +47,7 @@ namespace KinaUna.Data.Models
             };
             SelectListItem selItem5 = new()
             {
-                Text = "Registrered Users",
+                Text = "Registered Users",
                 Value = "4"
             };
             SelectListItem selItem6 = new()
@@ -55,15 +55,15 @@ namespace KinaUna.Data.Models
                 Text = "Public/Anyone",
                 Value = "5"
             };
-            AccessLevelListEn = new List<SelectListItem>
-            {
+            AccessLevelListEn =
+            [
                 selItem1,
                 selItem2,
                 selItem3,
                 selItem4,
                 selItem5,
                 selItem6
-            };
+            ];
 
             SelectListItem selItemDa1 = new()
             {
@@ -95,15 +95,15 @@ namespace KinaUna.Data.Models
                 Text = "Offentlig/alle",
                 Value = "5"
             };
-            AccessLevelListDa = new List<SelectListItem>
-            {
+            AccessLevelListDa =
+            [
                 selItemDa1,
                 selItemDa2,
                 selItemDa3,
                 selItemDa4,
                 selItemDa5,
                 selItemDa6
-            };
+            ];
 
             SelectListItem selItemDe1 = new()
             {
@@ -135,15 +135,15 @@ namespace KinaUna.Data.Models
                 Text = "Allen zugänglich",
                 Value = "5"
             };
-            AccessLevelListDe = new List<SelectListItem>
-            {
+            AccessLevelListDe =
+            [
                 selItemDe1,
                 selItemDe2,
                 selItemDe3,
                 selItemDe4,
                 selItemDe5,
                 selItemDe6
-            };
+            ];
         }
     }
 }

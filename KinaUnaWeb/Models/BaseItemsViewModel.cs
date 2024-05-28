@@ -9,7 +9,7 @@ namespace KinaUnaWeb.Models;
 public class BaseItemsViewModel : BaseViewModel
 {
     public int CurrentProgenyId { get; set; }
-    public int CurrentAccessLevel { get; set; }
+    public int CurrentAccessLevel { get; private set; }
     public Progeny CurrentProgeny { get; set; }
     public List<UserAccess> CurrentProgenyAccessList { get; set; }
     public bool IsCurrentUserProgenyAdmin { get; set; }
@@ -37,18 +37,17 @@ public class BaseItemsViewModel : BaseViewModel
 
         if (CurrentProgenyAccessList.Count != 0)
         {
-            UserAccess userAccess = CurrentProgenyAccessList.SingleOrDefault(u => u.UserId.ToUpper() == CurrentUser.UserEmail.ToUpper());
+            UserAccess userAccess = CurrentProgenyAccessList.SingleOrDefault(u => u.UserId.Equals(CurrentUser.UserEmail, System.StringComparison.CurrentCultureIgnoreCase));
             if (userAccess != null)
             {
                 CurrentAccessLevel = userAccess.AccessLevel;
             }
         }
 
-        if (CurrentProgeny.IsInAdminList(CurrentUser.UserEmail))
-        {
-            IsCurrentUserProgenyAdmin = true;
-            CurrentAccessLevel = (int)AccessLevel.Private;
-        }
+        if (!CurrentProgeny.IsInAdminList(CurrentUser.UserEmail)) return;
+
+        IsCurrentUserProgenyAdmin = true;
+        CurrentAccessLevel = (int)AccessLevel.Private;
     }
 
     public void SetBaseProperties(BaseItemsViewModel baseItemsViewModel)
@@ -65,7 +64,7 @@ public class BaseItemsViewModel : BaseViewModel
     public void SetTagList(List<string> tagsList)
     {
         string tagItems = "[";
-        if (tagsList.Any())
+        if (tagsList.Count != 0)
         {
             foreach (string tagstring in tagsList)
             {

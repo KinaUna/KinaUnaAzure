@@ -5,19 +5,19 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class NotesListViewModel: BaseItemsViewModel
     {
-        public List<NoteViewModel> NotesList { get; set; }
-        public NotesPageParameters NotesPageParameters { get; set; }
+        public List<NoteViewModel> NotesList { get; init; }
+        public NotesPageParameters NotesPageParameters { get; init; }
         public NotesListViewModel()
         {
-            NotesList = new List<NoteViewModel>();
+            NotesList = [];
         }
 
         public NotesListViewModel(BaseItemsViewModel baseItemsViewModel)
         {
-            NotesList = new List<NoteViewModel>();
+            NotesList = [];
             SetBaseProperties(baseItemsViewModel);
 
-            NotesPageParameters = new()
+            NotesPageParameters = new NotesPageParameters
             {
                 ProgenyId = CurrentProgenyId,
                 CurrentPageNumber = 0,

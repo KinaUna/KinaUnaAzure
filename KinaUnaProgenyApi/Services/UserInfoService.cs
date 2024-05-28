@@ -91,15 +91,15 @@ namespace KinaUnaProgenyApi.Services
             return userinfo;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "StringComparison seems to break Db queries.")]
         public async Task<UserInfo> SetUserInfoByEmail(string userEmail)
         {
             UserInfo userinfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
-            if (userinfo != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper(), JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userinfo.UserId, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userinfo.Id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
-            }
+            if (userinfo == null) return null;
+
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper(), JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userinfo.UserId, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userinfo.Id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
 
             return userinfo;
         }
@@ -115,6 +115,7 @@ namespace KinaUnaProgenyApi.Services
             return userinfo;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "StringComparison seems to break Db queries.")]
         private async Task<UserInfo> SetUserInfoByUserId(string userId)
         {
             UserInfo userinfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == userId.ToUpper());
@@ -213,15 +214,9 @@ namespace KinaUnaProgenyApi.Services
         public async Task<bool> IsAdminUserId(string userId)
         {
             UserInfo userInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == userId);
-            if (userInfo != null)
-            {
-                if (userInfo.IsKinaUnaAdmin)
-                {
-                    return true;
-                }
-            }
+            if (userInfo == null) return false;
 
-            return false;
+            return userInfo.IsKinaUnaAdmin;
         }
     }
 }

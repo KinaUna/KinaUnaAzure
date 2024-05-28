@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Models;
@@ -66,16 +65,15 @@ namespace KinaUnaWeb.Services
                 
             }
 
-            if (userInfo != null && userInfo.ViewChild == 0)
+            if (userInfo == null || userInfo.ViewChild != 0) return userInfo;
+
+            if (userInfo.ProgenyList.Count != 0)
             {
-                if (userInfo.ProgenyList.Any())
-                {
-                    await SetViewChild(userInfo.UserEmail, userInfo.ProgenyList[0].Id);
-                }
-                else
-                {
-                    userInfo.ViewChild = Constants.DefaultChildId;
-                }
+                await SetViewChild(userInfo.UserEmail, userInfo.ProgenyList[0].Id);
+            }
+            else
+            {
+                userInfo.ViewChild = Constants.DefaultChildId;
             }
             return userInfo;
 
@@ -103,16 +101,10 @@ namespace KinaUnaWeb.Services
 
         public async Task<bool> IsUserLoginValid(string userId)
         {
-            if (userId != Constants.DefaultUserId && userId != "401")
-            {
-                UserInfo userinfo = await userInfosHttpClient.CheckCurrentUser(userId);
-                if (userinfo?.UserId.ToUpper() == userId.ToUpper())
-                {
-                    return true;
-                }
-            }
+            if (userId == Constants.DefaultUserId || userId == "401") return false;
 
-            return false;
+            UserInfo userinfo = await userInfosHttpClient.CheckCurrentUser(userId);
+            return userinfo != null && (userinfo.UserId.ToUpper()).Equals(userId, StringComparison.CurrentCultureIgnoreCase);
         }
 
         public async Task<bool> IsApplicationUserValid(string userId)

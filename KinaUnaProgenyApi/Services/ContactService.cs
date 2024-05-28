@@ -64,12 +64,11 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Contact> SetContactInCache(int id)
         {
             Contact contact = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
-            if (contact != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id, JsonConvert.SerializeObject(contact), _cacheOptionsSliding);
+            if (contact == null) return null;
 
-                _ = await SetContactsListInCache(contact.ProgenyId);
-            }
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id, JsonConvert.SerializeObject(contact), _cacheOptionsSliding);
+
+            _ = await SetContactsListInCache(contact.ProgenyId);
 
             return contact;
         }
@@ -77,50 +76,47 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Contact> UpdateContact(Contact contact)
         {
             Contact contactToUpdate = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contact.ContactId);
-            if (contactToUpdate != null)
-            {
-                contactToUpdate.AccessLevel = contact.AccessLevel;
-                contactToUpdate.Active = contact.Active;
-                contactToUpdate.AddressIdNumber = contact.AddressIdNumber;
-                contactToUpdate.Address = contact.Address;
-                contactToUpdate.ProgenyId = contact.ProgenyId;
-                contactToUpdate.AddressString = contact.AddressString;
-                contactToUpdate.Author = contact.Author;
-                contactToUpdate.Context = contact.Context;
-                contactToUpdate.DateAdded = contact.DateAdded;
-                contactToUpdate.DisplayName = contact.DisplayName;
-                contactToUpdate.FirstName = contact.FirstName;
-                contactToUpdate.MiddleName = contact.MiddleName;
-                contactToUpdate.LastName = contact.LastName;
-                contactToUpdate.PictureLink = contact.PictureLink;
-                contactToUpdate.Email1 = contact.Email1;
-                contactToUpdate.Email2 = contact.Email2;
-                contactToUpdate.PhoneNumber = contact.PhoneNumber;
-                contactToUpdate.MobileNumber = contact.MobileNumber;
-                contactToUpdate.Notes = contact.Notes;
-                contactToUpdate.Progeny = contact.Progeny;
-                contactToUpdate.Tags = contact.Tags;
-                contactToUpdate.Website = contact.Website;
+            if (contactToUpdate == null) return null;
 
-                _context.ContactsDb.Update(contactToUpdate);
-                _ = await _context.SaveChangesAsync();
+            contactToUpdate.AccessLevel = contact.AccessLevel;
+            contactToUpdate.Active = contact.Active;
+            contactToUpdate.AddressIdNumber = contact.AddressIdNumber;
+            contactToUpdate.Address = contact.Address;
+            contactToUpdate.ProgenyId = contact.ProgenyId;
+            contactToUpdate.AddressString = contact.AddressString;
+            contactToUpdate.Author = contact.Author;
+            contactToUpdate.Context = contact.Context;
+            contactToUpdate.DateAdded = contact.DateAdded;
+            contactToUpdate.DisplayName = contact.DisplayName;
+            contactToUpdate.FirstName = contact.FirstName;
+            contactToUpdate.MiddleName = contact.MiddleName;
+            contactToUpdate.LastName = contact.LastName;
+            contactToUpdate.PictureLink = contact.PictureLink;
+            contactToUpdate.Email1 = contact.Email1;
+            contactToUpdate.Email2 = contact.Email2;
+            contactToUpdate.PhoneNumber = contact.PhoneNumber;
+            contactToUpdate.MobileNumber = contact.MobileNumber;
+            contactToUpdate.Notes = contact.Notes;
+            contactToUpdate.Progeny = contact.Progeny;
+            contactToUpdate.Tags = contact.Tags;
+            contactToUpdate.Website = contact.Website;
 
-                _ = await SetContactInCache(contactToUpdate.ContactId);
-            }
+            _context.ContactsDb.Update(contactToUpdate);
+            _ = await _context.SaveChangesAsync();
 
-
+            _ = await SetContactInCache(contactToUpdate.ContactId);
+            
             return contact;
         }
 
         public async Task<Contact> DeleteContact(Contact contact)
         {
             Contact contactToDelete = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contact.ContactId);
-            if (contactToDelete != null)
-            {
-                _context.ContactsDb.Remove(contactToDelete);
-                _ = await _context.SaveChangesAsync();
-                await RemoveContactFromCache(contact.ContactId, contact.ProgenyId);
-            }
+            if (contactToDelete == null) return null;
+
+            _context.ContactsDb.Remove(contactToDelete);
+            _ = await _context.SaveChangesAsync();
+            await RemoveContactFromCache(contact.ContactId, contact.ProgenyId);
 
             return contact;
         }
@@ -134,7 +130,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Contact>> GetContactsList(int progenyId)
         {
             List<Contact> contactsList = await GetContactsListFromCache(progenyId);
-            if (!contactsList.Any())
+            if (contactsList.Count == 0)
             {
                 contactsList = await SetContactsListInCache(progenyId);
             }
@@ -144,7 +140,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Contact>> GetContactsListFromCache(int progenyId)
         {
-            List<Contact> contactsList = new();
+            List<Contact> contactsList = [];
             string cachedContactsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "contactslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedContactsList))
             {

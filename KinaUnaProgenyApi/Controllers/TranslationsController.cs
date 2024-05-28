@@ -15,7 +15,7 @@ namespace KinaUnaProgenyApi.Controllers
     public class TranslationsController(IUserInfoService userInfoService, ITextTranslationService textTranslationService) : ControllerBase
     {
         [AllowAnonymous]
-        [HttpGet("[action]/{languageId}")]
+        [HttpGet("[action]/{languageId:int}")]
         public async Task<IActionResult> GetAllTranslations(int languageId)
         {
             List<TextTranslation> translations = await textTranslationService.GetAllTranslations(languageId);
@@ -24,7 +24,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetTranslationById(int id)
         {
             TextTranslation translation = await textTranslationService.GetTranslationById(id);
@@ -33,37 +33,36 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("[action]/{word}/{page}/{languageId}")]
+        [HttpGet("[action]/{word}/{page}/{languageId:int}")]
         public async Task<IActionResult> GetTranslationByWord(string word, string page, int languageId)
         {
             TextTranslation translation = await textTranslationService.GetTranslationByWord(word, page, languageId);
-            if (translation == null)
+            if (translation != null) return Ok(translation);
+
+            TextTranslation translationItem = new()
             {
-                TextTranslation translationItem = new()
-                {
-                    LanguageId = languageId,
-                    Word = word,
-                    Page = page,
-                    Translation = word
-                };
+                LanguageId = languageId,
+                Word = word,
+                Page = page,
+                Translation = word
+            };
 
-                string userId = User.GetUserId();
+            string userId = User.GetUserId();
 
-                if (await userInfoService.IsAdminUserId(userId))
-                {
-                    translation = await textTranslationService.AddTranslation(translationItem);
-                }
-                else
-                {
-                    translation = translationItem;
-                }
+            if (await userInfoService.IsAdminUserId(userId))
+            {
+                translation = await textTranslationService.AddTranslation(translationItem);
+            }
+            else
+            {
+                translation = translationItem;
             }
             return Ok(translation);
         }
 
         [AllowAnonymous]
         [HttpGet]
-        [Route("[action]/{languageId}/{page}")]
+        [Route("[action]/{languageId:int}/{page}")]
         public async Task<IActionResult> PageTranslations(int languageId, string page)
         {
             List<TextTranslation> translations = await textTranslationService.GetPageTranslations(languageId, page);
@@ -89,45 +88,40 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(value);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] TextTranslation value)
         {
             string userId = User.GetUserId();
 
-            if (await userInfoService.IsAdminUserId(userId))
-            {
-                TextTranslation translation = await textTranslationService.UpdateTranslation(id, value);
-                if (translation != null)
-                {
-                    return Ok(translation);
-                }
+            if (!await userInfoService.IsAdminUserId(userId)) return Unauthorized();
 
-                return NotFound();
+            TextTranslation translation = await textTranslationService.UpdateTranslation(id, value);
+            if (translation != null)
+            {
+                return Ok(translation);
             }
 
-            return Unauthorized();
+            return NotFound();
+
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             string userId = User.GetUserId();
 
-            if (await userInfoService.IsAdminUserId(userId))
-            {
-                TextTranslation translation = await textTranslationService.DeleteTranslation(id);
-                if (translation != null)
-                {
-                    return Ok(translation);
-                }
-                return NotFound();
-            }
+            if (!await userInfoService.IsAdminUserId(userId)) return Unauthorized();
 
-            return Unauthorized();
+            TextTranslation translation = await textTranslationService.DeleteTranslation(id);
+            if (translation != null)
+            {
+                return Ok(translation);
+            }
+            return NotFound();
 
         }
 
-        [HttpDelete("[action]/{id}")]
+        [HttpDelete("[action]/{id:int}")]
         public async Task<IActionResult> DeleteSingleItem(int id)
         {
             TextTranslation translation = await textTranslationService.DeleteSingleTranslation(id);

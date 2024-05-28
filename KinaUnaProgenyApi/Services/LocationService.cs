@@ -52,12 +52,11 @@ namespace KinaUnaProgenyApi.Services
         private async Task<Location> SetLocationInCache(int id)
         {
             Location location = await _context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == id);
-            if (location != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "location" + id, JsonConvert.SerializeObject(location), _cacheOptionsSliding);
+            if (location == null) return null;
 
-                _ = await SetLocationsListInCache(location.ProgenyId);
-            }
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "location" + id, JsonConvert.SerializeObject(location), _cacheOptionsSliding);
+
+            _ = await SetLocationsListInCache(location.ProgenyId);
 
             return location;
         }
@@ -78,15 +77,14 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Location> UpdateLocation(Location location)
         {
             Location locationToUpdate = await _context.LocationsDb.SingleOrDefaultAsync(l => l.LocationId == location.LocationId);
-            if (locationToUpdate != null)
-            {
-                locationToUpdate.CopyPropertiesForUpdate(location);
+            if (locationToUpdate == null) return null;
 
-                _ = _context.LocationsDb.Update(locationToUpdate);
-                _ = await _context.SaveChangesAsync();
+            locationToUpdate.CopyPropertiesForUpdate(location);
 
-                _ = await SetLocationInCache(locationToUpdate.LocationId);
-            }
+            _ = _context.LocationsDb.Update(locationToUpdate);
+            _ = await _context.SaveChangesAsync();
+
+            _ = await SetLocationInCache(locationToUpdate.LocationId);
 
             return locationToUpdate;
         }
@@ -94,13 +92,12 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Location> DeleteLocation(Location location)
         {
             Location locationToDelete = await _context.LocationsDb.SingleOrDefaultAsync(l => l.LocationId == location.LocationId);
-            if (locationToDelete != null)
-            {
-                _ = _context.LocationsDb.Remove(locationToDelete);
-                _ = await _context.SaveChangesAsync();
+            if (locationToDelete == null) return null;
 
-                await RemoveLocationFromCache(location.LocationId, location.ProgenyId);
-            }
+            _ = _context.LocationsDb.Remove(locationToDelete);
+            _ = await _context.SaveChangesAsync();
+
+            await RemoveLocationFromCache(location.LocationId, location.ProgenyId);
 
             return location;
         }
@@ -115,7 +112,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Location>> GetLocationsList(int progenyId)
         {
             List<Location> locationsList = await GetLocationsListFromCache(progenyId);
-            if (!locationsList.Any())
+            if (locationsList.Count == 0)
             {
                 locationsList = await SetLocationsListInCache(progenyId);
             }
@@ -125,7 +122,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Location>> GetLocationsListFromCache(int progenyId)
         {
-            List<Location> locationsList = new();
+            List<Location> locationsList = [];
             string cachedLocationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "locationslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedLocationsList))
             {
@@ -189,15 +186,14 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Address> UpdateAddressItem(Address addressItem)
         {
             Address addressToUpdate = await _context.AddressDb.SingleOrDefaultAsync(a => a.AddressId == addressItem.AddressId);
-            if (addressToUpdate != null)
-            {
-                addressToUpdate.CopyPropertiesForUpdate(addressItem);
+            if (addressToUpdate == null) return null;
 
-                _ = _context.AddressDb.Update(addressToUpdate);
-                _ = await _context.SaveChangesAsync();
+            addressToUpdate.CopyPropertiesForUpdate(addressItem);
 
-                _ = await SetAddressItemInCache(addressItem.AddressId);
-            }
+            _ = _context.AddressDb.Update(addressToUpdate);
+            _ = await _context.SaveChangesAsync();
+
+            _ = await SetAddressItemInCache(addressItem.AddressId);
 
             return addressToUpdate;
         }

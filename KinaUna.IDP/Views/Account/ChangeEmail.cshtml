@@ -13,11 +13,9 @@
     Model.ErrorMessage = await LocaleManager.GetTranslation("Old email is not valid.", PageNames.Account, languageId);
     Model.OldEmail = "";
 }
-@if (Model.NewEmail == null)
-{
-    Model.NewEmail = "";
+@{
+    Model.NewEmail ??= "";
 }
-
 <div class="row">
     <div class="col-md-10">
         <form asp-action="SendConfirmationMail" method="post">

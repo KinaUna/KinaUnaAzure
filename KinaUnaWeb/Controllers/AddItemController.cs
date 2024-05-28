@@ -35,26 +35,27 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpPost]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "ASP0019:Suggest using IHeaderDictionary.Append or the indexer", Justification = "From Syncfusion samples.")]
+        // ReSharper disable once InconsistentNaming
         public async Task<ActionResult> SaveRtfFile(IList<IFormFile> UploadFiles)
         {
             try
             {
                 foreach (IFormFile file in UploadFiles)
                 {
-                    if (UploadFiles.Any())
-                    {
-                        string filename;
-                        await using (Stream stream = file.OpenReadStream())
-                        {
-                            filename = await imageStore.SaveImage(stream, BlobContainers.Notes);
-                        }
+                    if (!UploadFiles.Any()) continue;
 
-                        string resultName = imageStore.UriFor(filename, BlobContainers.Notes);
-                        Response.Clear();
-                        Response.ContentType = "application/json; charset=utf-8";
-                        Response.Headers.Add("name", resultName);
-                        Response.StatusCode = 204;
+                    string filename;
+                    await using (Stream stream = file.OpenReadStream())
+                    {
+                        filename = await imageStore.SaveImage(stream, BlobContainers.Notes);
                     }
+
+                    string resultName = imageStore.UriFor(filename, BlobContainers.Notes);
+                    Response.Clear();
+                    Response.ContentType = "application/json; charset=utf-8";
+                    Response.Headers.Add("name", resultName);
+                    Response.StatusCode = 204;
                 }
             }
             catch (Exception)

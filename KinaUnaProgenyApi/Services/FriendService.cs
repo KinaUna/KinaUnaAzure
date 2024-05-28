@@ -51,12 +51,11 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Friend> SetFriendInCache(int id)
         {
             Friend friend = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
-            if (friend != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friend" + id, JsonConvert.SerializeObject(friend), _cacheOptionsSliding);
+            if (friend == null) return null;
 
-                _ = await SetFriendsListInCache(friend.ProgenyId);
-            }
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friend" + id, JsonConvert.SerializeObject(friend), _cacheOptionsSliding);
+
+            _ = await SetFriendsListInCache(friend.ProgenyId);
 
             return friend;
         }
@@ -78,26 +77,25 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Friend> UpdateFriend(Friend friend)
         {
             Friend friendToUpdate = await _context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == friend.FriendId);
-            if (friendToUpdate != null)
-            {
-                friendToUpdate.ProgenyId = friend.ProgenyId;
-                friendToUpdate.PictureLink = friend.PictureLink;
-                friendToUpdate.Author = friend.Author;
-                friendToUpdate.Name = friend.Name;
-                friendToUpdate.Description = friend.Description;
-                friendToUpdate.Context = friend.Context;
-                friendToUpdate.FriendAddedDate = friend.FriendAddedDate;
-                friendToUpdate.FriendSince = friend.FriendSince;
-                friendToUpdate.Notes = friend.Notes;
-                friendToUpdate.AccessLevel = friend.AccessLevel;
-                friendToUpdate.Tags = friend.Tags;
-                friendToUpdate.Type = friend.Type;
-                friendToUpdate.Progeny = friend.Progeny;
+            if (friendToUpdate == null) return null;
 
-                _ = _context.FriendsDb.Update(friendToUpdate);
-                _ = await _context.SaveChangesAsync();
-                _ = await SetFriendInCache(friend.FriendId);
-            }
+            friendToUpdate.ProgenyId = friend.ProgenyId;
+            friendToUpdate.PictureLink = friend.PictureLink;
+            friendToUpdate.Author = friend.Author;
+            friendToUpdate.Name = friend.Name;
+            friendToUpdate.Description = friend.Description;
+            friendToUpdate.Context = friend.Context;
+            friendToUpdate.FriendAddedDate = friend.FriendAddedDate;
+            friendToUpdate.FriendSince = friend.FriendSince;
+            friendToUpdate.Notes = friend.Notes;
+            friendToUpdate.AccessLevel = friend.AccessLevel;
+            friendToUpdate.Tags = friend.Tags;
+            friendToUpdate.Type = friend.Type;
+            friendToUpdate.Progeny = friend.Progeny;
+
+            _ = _context.FriendsDb.Update(friendToUpdate);
+            _ = await _context.SaveChangesAsync();
+            _ = await SetFriendInCache(friend.FriendId);
 
 
             return friend;
@@ -106,12 +104,11 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Friend> DeleteFriend(Friend friend)
         {
             Friend friendToDelete = await _context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == friend.FriendId);
-            if (friendToDelete != null)
-            {
-                _ = _context.FriendsDb.Remove(friendToDelete);
-                _ = await _context.SaveChangesAsync();
-                await RemoveFriendFromCache(friend.FriendId, friend.ProgenyId);
-            }
+            if (friendToDelete == null) return null;
+
+            _ = _context.FriendsDb.Remove(friendToDelete);
+            _ = await _context.SaveChangesAsync();
+            await RemoveFriendFromCache(friend.FriendId, friend.ProgenyId);
 
             return friend;
         }
@@ -126,7 +123,7 @@ namespace KinaUnaProgenyApi.Services
         {
             List<Friend> friendsList = await GetFriendsListFromCache(progenyId);
 
-            if (friendsList == null || !friendsList.Any())
+            if (friendsList == null || friendsList.Count == 0)
             {
                 friendsList = await SetFriendsListInCache(progenyId);
             }
@@ -136,7 +133,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Friend>> GetFriendsListFromCache(int progenyId)
         {
-            List<Friend> friendsList = new();
+            List<Friend> friendsList = [];
             string cachedFriendsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "friendslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedFriendsList))
             {

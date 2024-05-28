@@ -9,13 +9,13 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public ContactListViewModel()
         {
-            ContactsList = new List<ContactViewModel>();
+            ContactsList = [];
         }
 
         public ContactListViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
-            ContactsList = new List<ContactViewModel>();
+            ContactsList = [];
         }
     }
 }

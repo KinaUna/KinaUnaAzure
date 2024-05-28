@@ -73,12 +73,10 @@ namespace KinaUnaProgenyApi.Services
             await RemoveProgenyFromCache(progeny.Id);
 
             Progeny progenyToDelete = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progeny.Id);
-            if (progenyToDelete != null)
-            {
-                _context.ProgenyDb.Remove(progenyToDelete);
-                await _context.SaveChangesAsync();
+            if (progenyToDelete == null) return null;
 
-            }
+            _context.ProgenyDb.Remove(progenyToDelete);
+            await _context.SaveChangesAsync();
 
             return progenyToDelete;
         }
@@ -119,7 +117,7 @@ namespace KinaUnaProgenyApi.Services
         {
             MemoryStream memoryStream = await _imageStore.GetStream(imageId, BlobContainers.Progeny);
             memoryStream.Position = 0;
-            int maxWidthAndHeight = 250;
+            const int maxWidthAndHeight = 250;
             using MagickImage image = new(memoryStream);
             if (image.Width <= maxWidthAndHeight && image.Height <= maxWidthAndHeight)
             {
@@ -128,18 +126,16 @@ namespace KinaUnaProgenyApi.Services
 
             if (image.Width > maxWidthAndHeight)
             {
-                int newWidth = maxWidthAndHeight;
                 int newHeight = (maxWidthAndHeight / image.Width) * image.Height;
 
-                image.Resize(newWidth, newHeight);
+                image.Resize(maxWidthAndHeight, newHeight);
             }
 
             if (image.Height > maxWidthAndHeight)
             {
-                int newHeight = maxWidthAndHeight;
                 int newWidth = (maxWidthAndHeight / image.Width) * image.Height;
 
-                image.Resize(newWidth, newHeight);
+                image.Resize(newWidth, maxWidthAndHeight);
             }
 
             image.Strip();

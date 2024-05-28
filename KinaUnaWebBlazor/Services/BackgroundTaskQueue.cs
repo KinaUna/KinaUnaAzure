@@ -10,17 +10,13 @@ namespace KinaUnaWebBlazor.Services
     /// </summary>
     public class BackgroundTaskQueue : IBackgroundTaskQueue
     {
-        private ConcurrentQueue<Func<CancellationToken, Task>?> _workItems =
-            new ConcurrentQueue<Func<CancellationToken, Task>?>();
-        private SemaphoreSlim _signal = new SemaphoreSlim(0);
+        private readonly ConcurrentQueue<Func<CancellationToken, Task>?> _workItems = new();
+        private readonly SemaphoreSlim _signal = new(0);
 
         public void QueueBackgroundWorkItem(
             Func<CancellationToken, Task>? workItem)
         {
-            if (workItem == null)
-            {
-                throw new ArgumentNullException(nameof(workItem));
-            }
+            ArgumentNullException.ThrowIfNull(workItem);
 
             _workItems.Enqueue(workItem);
             _signal.Release();

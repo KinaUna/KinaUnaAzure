@@ -21,7 +21,6 @@ namespace KinaUnaWeb.Services
             return languageIdModel;
 
         }
-
         
         public async Task<string> GetTranslation(string word, string page, int languageId)
         {

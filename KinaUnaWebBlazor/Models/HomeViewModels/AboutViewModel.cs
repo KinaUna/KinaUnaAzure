@@ -4,6 +4,6 @@ namespace KinaUnaWebBlazor.Models.HomeViewModels
 {
     public class AboutViewModel: BaseViewModel
     {
-        public KinaUnaText KinaUnaText { get; set; } = new KinaUnaText();
+        public KinaUnaText KinaUnaText { get; set; } = new();
     }
 }

@@ -236,12 +236,12 @@ namespace KinaUnaWeb
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(Configuration["SyncfusionKey"]);
             
             app.UseCookiePolicy();
-            CultureInfo[] supportedCultures = new[]
-            {
+            CultureInfo[] supportedCultures =
+            [
                 new CultureInfo("en-US"),
                 new CultureInfo("da-DK"),
                 new CultureInfo("de-DE"),
-            };
+            ];
 
             RequestLocalizationOptions localizationOptions = new()
             {

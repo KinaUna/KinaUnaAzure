@@ -65,13 +65,12 @@ namespace KinaUnaProgenyApi.Services
         private async Task<CalendarItem> SetCalendarItemInCache(int id)
         {
             CalendarItem calendarItem = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == id);
-            if (calendarItem != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id, JsonConvert.SerializeObject(calendarItem), _cacheOptionsSliding);
+            if (calendarItem == null) return null;
 
-                List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == calendarItem.ProgenyId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + calendarItem.ProgenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
-            }
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id, JsonConvert.SerializeObject(calendarItem), _cacheOptionsSliding);
+
+            List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == calendarItem.ProgenyId).ToListAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + calendarItem.ProgenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
 
             return calendarItem;
         }
@@ -80,21 +79,20 @@ namespace KinaUnaProgenyApi.Services
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id);
 
-            List<CalendarItem> calendarList = _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToList();
+            List<CalendarItem> calendarList = [.. _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId)];
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
         }
 
         public async Task<CalendarItem> UpdateCalendarItem(CalendarItem item)
         {
             CalendarItem calendarItemToUpdate = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
-            if (calendarItemToUpdate != null)
-            {
-                calendarItemToUpdate.CopyPropertiesForUpdate(item);
+            if (calendarItemToUpdate == null) return null;
 
-                _ = _context.CalendarDb.Update(calendarItemToUpdate);
-                _ = await _context.SaveChangesAsync();
-                _ = await SetCalendarItemInCache(calendarItemToUpdate.EventId);
-            }
+            calendarItemToUpdate.CopyPropertiesForUpdate(item);
+
+            _ = _context.CalendarDb.Update(calendarItemToUpdate);
+            _ = await _context.SaveChangesAsync();
+            _ = await SetCalendarItemInCache(calendarItemToUpdate.EventId);
 
             return calendarItemToUpdate;
         }
@@ -102,13 +100,12 @@ namespace KinaUnaProgenyApi.Services
         public async Task<CalendarItem> DeleteCalendarItem(CalendarItem item)
         {
             CalendarItem calendarItemToDelete = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
-            if (calendarItemToDelete != null)
-            {
-                _ = _context.CalendarDb.Remove(calendarItemToDelete);
-                _ = await _context.SaveChangesAsync();
+            if (calendarItemToDelete == null) return null;
 
-                await RemoveCalendarItemFromCache(item.EventId, item.ProgenyId);
-            }
+            _ = _context.CalendarDb.Remove(calendarItemToDelete);
+            _ = await _context.SaveChangesAsync();
+
+            await RemoveCalendarItemFromCache(item.EventId, item.ProgenyId);
 
             return item;
         }
@@ -126,7 +123,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<CalendarItem>> GetCalendarListFromCache(int progenyId)
         {
-            List<CalendarItem> calendarList = new();
+            List<CalendarItem> calendarList = [];
             string cachedCalendar = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId);
             if (!string.IsNullOrEmpty(cachedCalendar))
             {

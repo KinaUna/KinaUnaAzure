@@ -34,17 +34,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string vaccinationsApiPath = "/api/Vaccinations/" + vaccinationId;
             HttpResponseMessage vaccinationResponse = await _httpClient.GetAsync(vaccinationsApiPath);
-            if (vaccinationResponse.IsSuccessStatusCode)
-            {
-                string vaccinationAsString = await vaccinationResponse.Content.ReadAsStringAsync();
-                Vaccination vaccinationItem = JsonConvert.DeserializeObject<Vaccination>(vaccinationAsString);
-                if (vaccinationItem != null)
-                {
-                    return vaccinationItem;
-                }
-            }
+            if (!vaccinationResponse.IsSuccessStatusCode) return new Vaccination();
 
-            return new Vaccination();
+            string vaccinationAsString = await vaccinationResponse.Content.ReadAsStringAsync();
+            Vaccination vaccinationItem = JsonConvert.DeserializeObject<Vaccination>(vaccinationAsString);
+            return vaccinationItem ?? new Vaccination();
         }
 
         public async Task<Vaccination> AddVaccination(Vaccination vaccination)
@@ -52,19 +46,13 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string vaccinationsApiPath = "/api/Vaccinations/";
+            const string vaccinationsApiPath = "/api/Vaccinations/";
             HttpResponseMessage vaccinationResponse = await _httpClient.PostAsync(vaccinationsApiPath, new StringContent(JsonConvert.SerializeObject(vaccination), System.Text.Encoding.UTF8, "application/json"));
-            if (vaccinationResponse.IsSuccessStatusCode)
-            {
-                string vaccinationAsString = await vaccinationResponse.Content.ReadAsStringAsync();
-                vaccination = JsonConvert.DeserializeObject<Vaccination>(vaccinationAsString);
-                if (vaccination != null)
-                {
-                    return vaccination;
-                }
-            }
+            if (!vaccinationResponse.IsSuccessStatusCode) return new Vaccination();
 
-            return new Vaccination();
+            string vaccinationAsString = await vaccinationResponse.Content.ReadAsStringAsync();
+            vaccination = JsonConvert.DeserializeObject<Vaccination>(vaccinationAsString);
+            return vaccination ?? new Vaccination();
         }
 
         public async Task<Vaccination> UpdateVaccination(Vaccination vaccination)
@@ -74,17 +62,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string updateVaccinationsApiPath = "/api/Vaccinations/" + vaccination.VaccinationId;
             HttpResponseMessage vaccinationResponse = await _httpClient.PutAsync(updateVaccinationsApiPath, new StringContent(JsonConvert.SerializeObject(vaccination), System.Text.Encoding.UTF8, "application/json"));
-            if (vaccinationResponse.IsSuccessStatusCode)
-            {
-                string vaccinationAsString = await vaccinationResponse.Content.ReadAsStringAsync();
-                vaccination = JsonConvert.DeserializeObject<Vaccination>(vaccinationAsString);
-                if (vaccination != null)
-                {
-                    return vaccination;
-                }
-            }
+            if (!vaccinationResponse.IsSuccessStatusCode) return new Vaccination();
 
-            return new Vaccination();
+            string vaccinationAsString = await vaccinationResponse.Content.ReadAsStringAsync();
+            vaccination = JsonConvert.DeserializeObject<Vaccination>(vaccinationAsString);
+            return vaccination ?? new Vaccination();
         }
 
         public async Task<bool> DeleteVaccination(int vaccinationId)
@@ -94,27 +76,21 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string vaccinationsApiPath = "/api/Vaccinations/" + vaccinationId;
             HttpResponseMessage vaccinationResponse = await _httpClient.DeleteAsync(vaccinationsApiPath);
-            if (vaccinationResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            return false;
+            return vaccinationResponse.IsSuccessStatusCode;
         }
 
         public async Task<List<Vaccination>> GetVaccinationsList(int progenyId, int accessLevel)
         {
-            List<Vaccination> progenyVaccinationsList = new();
+            List<Vaccination> progenyVaccinationsList = [];
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
             string vaccinationsApiPath = "/api/Vaccinations/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
             HttpResponseMessage vaccinationsResponse = await _httpClient.GetAsync(vaccinationsApiPath);
-            if (vaccinationsResponse.IsSuccessStatusCode)
-            {
-                string vaccinationsAsString = await vaccinationsResponse.Content.ReadAsStringAsync();
-                progenyVaccinationsList = JsonConvert.DeserializeObject<List<Vaccination>>(vaccinationsAsString);
-            }
+            if (!vaccinationsResponse.IsSuccessStatusCode) return progenyVaccinationsList;
+
+            string vaccinationsAsString = await vaccinationsResponse.Content.ReadAsStringAsync();
+            progenyVaccinationsList = JsonConvert.DeserializeObject<List<Vaccination>>(vaccinationsAsString);
 
             return progenyVaccinationsList;
         }

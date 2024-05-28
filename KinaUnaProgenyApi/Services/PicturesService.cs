@@ -41,11 +41,14 @@ namespace KinaUnaProgenyApi.Services
                 picture = await SetPictureInCache(id);
             }
 
-            if (picture != null && picture.PictureRotation == null)
+            if (picture == null) return null;
+            if (picture.PictureRotation != null)
             {
-                picture.PictureRotation = 0;
-                await UpdatePicture(picture);
+                return picture;
             }
+
+            picture.PictureRotation = 0;
+            await UpdatePicture(picture);
 
             return picture;
         }
@@ -85,7 +88,6 @@ namespace KinaUnaProgenyApi.Services
                 IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
                 {
-                    int rotation;
                     try
                     {
 
@@ -95,11 +97,7 @@ namespace KinaUnaProgenyApi.Services
 
                         if (gpsLongtitude != null && gpsLatitude != null)
                         {
-                            Rational[] longValues = gpsLongtitude.GetValue() as Rational[];
-                            Rational[] latValues = gpsLatitude.GetValue() as Rational[];
-
-
-                            if (longValues != null && (longValues[0].Denominator != 0 && longValues[1].Denominator != 0 &&
+                            if (gpsLongtitude.GetValue() is Rational[] longValues && (longValues[0].Denominator != 0 && longValues[1].Denominator != 0 &&
                                                        longValues[2].Denominator != 0))
                             {
                                 double long0 = longValues[0].Numerator / (double)longValues[0].Denominator;
@@ -112,7 +110,7 @@ namespace KinaUnaProgenyApi.Services
                                 picture.Longtitude = "";
                             }
 
-                            if (latValues != null && (latValues[0].Denominator != 0 && latValues[1].Denominator != 0 &&
+                            if (gpsLatitude.GetValue() is Rational[] latValues && (latValues[0].Denominator != 0 && latValues[1].Denominator != 0 &&
                                                       latValues[2].Denominator != 0))
                             {
                                 double lat0 = latValues[0].Numerator / (double)latValues[0].Denominator;
@@ -172,7 +170,7 @@ namespace KinaUnaProgenyApi.Services
 
                     try
                     {
-                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
+                        int rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
                         switch (rotation)
                         {
                             case 1:
@@ -206,7 +204,7 @@ namespace KinaUnaProgenyApi.Services
                         if (!string.IsNullOrEmpty(date))
                         {
                             picture.PictureTime = new DateTime(
-                                int.Parse(date.Substring(0, 4)), // year
+                                int.Parse(date[..4]), // year
                                 int.Parse(date.Substring(5, 2)), // month
                                 int.Parse(date.Substring(8, 2)), // day
                                 int.Parse(date.Substring(11, 2)), // hour
@@ -279,7 +277,7 @@ namespace KinaUnaProgenyApi.Services
 
                 if (picture.PictureWidth > 600)
                 {
-                    int newWidth = 600;
+                    const int newWidth = 600;
                     int newHeight = (600 / picture.PictureWidth) * picture.PictureHeight;
 
                     image.Resize(newWidth, newHeight);
@@ -306,7 +304,7 @@ namespace KinaUnaProgenyApi.Services
 
                 if (picture.PictureWidth > 1200)
                 {
-                    int newWidth = 1200;
+                    const int newWidth = 1200;
                     int newHeight = (1200 / picture.PictureWidth) * picture.PictureHeight;
 
                     image.Resize(newWidth, newHeight);
@@ -326,12 +324,11 @@ namespace KinaUnaProgenyApi.Services
                     TimeZoneInfo.FindSystemTimeZoneById(picture.TimeZone));
             }
 
-            if (picture.Longtitude != "" && picture.Latitude != "")
+            if (picture.Longtitude == "" || picture.Latitude == "") return picture;
+
+            if (string.IsNullOrEmpty(picture.Location))
             {
-                if (string.IsNullOrEmpty(picture.Location))
-                {
-                    picture.Location = picture.Latitude + ", " + picture.Longtitude;
-                }
+                picture.Location = picture.Latitude + ", " + picture.Longtitude;
             }
 
             return picture;
@@ -585,18 +582,17 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Picture> SetPictureInCache(int id)
         {
             Picture picture = await _mediaContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == id);
-            if (picture != null)
+            if (picture == null) return null;
+
+            if (picture.Tags != null && picture.Tags.Trim().EndsWith(','))
             {
-                if (picture.Tags != null && picture.Tags.Trim().EndsWith(','))
-                {
-                    picture.Tags = picture.Tags.Trim().TrimEnd(',');
-                    _ = await UpdatePicture(picture);
-                }
-
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id, JsonConvert.SerializeObject(picture), _cacheOptionsSliding);
-
-                _ = await SetPicturesListInCache(picture.ProgenyId);
+                picture.Tags = picture.Tags.Trim().TrimEnd(',');
+                _ = await UpdatePicture(picture);
             }
+
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id, JsonConvert.SerializeObject(picture), _cacheOptionsSliding);
+
+            _ = await SetPicturesListInCache(picture.ProgenyId);
 
             return picture;
         }
@@ -605,18 +601,16 @@ namespace KinaUnaProgenyApi.Services
         {
             picture.RemoveNullStrings();
             Picture pictureToUpdate = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.PictureId == picture.PictureId);
-            if (pictureToUpdate != null)
-            {
-                pictureToUpdate.CopyPropertiesForUpdate(picture);
+            if (pictureToUpdate == null) return null;
 
-                _ = _mediaContext.PicturesDb.Update(pictureToUpdate);
-                _ = await _mediaContext.SaveChangesAsync();
-                _ = await SetPictureInCache(pictureToUpdate.PictureId);
+            pictureToUpdate.CopyPropertiesForUpdate(picture);
 
-                return pictureToUpdate;
-            }
+            _ = _mediaContext.PicturesDb.Update(pictureToUpdate);
+            _ = await _mediaContext.SaveChangesAsync();
+            _ = await SetPictureInCache(pictureToUpdate.PictureId);
 
-            return picture;
+            return pictureToUpdate;
+
         }
 
         public async Task<Picture> DeletePicture(Picture picture)
@@ -642,7 +636,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Picture>> GetPicturesList(int progenyId)
         {
             List<Picture> picturesList = await GetPicturesListFromCache(progenyId);
-            if (!picturesList.Any())
+            if (picturesList.Count == 0)
             {
                 picturesList = await SetPicturesListInCache(progenyId);
             }
@@ -652,7 +646,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<Picture>> GetPicturesListFromCache(int progenyId)
         {
-            List<Picture> picturesList = new();
+            List<Picture> picturesList = [];
             string cachedPicturesList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedPicturesList))
             {

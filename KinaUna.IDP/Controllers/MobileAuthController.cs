@@ -14,7 +14,7 @@ namespace KinaUna.IDP.Controllers
     [ApiController]
     public class MobileAuthController : ControllerBase
     {
-        const string callbackScheme = "kinaunaxamarinclients";
+        private const string CallbackScheme = "kinaunaxamarinclients";
 
         [HttpGet("{scheme}")]
         public async Task Get([FromRoute] string scheme)
@@ -32,11 +32,10 @@ namespace KinaUna.IDP.Controllers
             else
             {
                 IEnumerable<Claim> claims = auth.Principal.Identities.FirstOrDefault()?.Claims;
-                string email;
-                email = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+                string email = claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
                 // Get parameters to send back to the callback
-                Dictionary<string, string> qs = new Dictionary<string, string>
+                Dictionary<string, string> qs = new()
                 {
                     { "access_token", auth.Properties.GetTokenValue("access_token") },
                     { "refresh_token", auth.Properties.GetTokenValue("refresh_token") ?? string.Empty },
@@ -45,7 +44,7 @@ namespace KinaUna.IDP.Controllers
                 };
 
                 // Build the result url
-                string url = callbackScheme + "://#" + string.Join(
+                string url = CallbackScheme + "://#" + string.Join(
                     "&",
                     qs.Where(kvp => !string.IsNullOrEmpty(kvp.Value) && kvp.Value != "-1")
                         .Select(kvp => $"{WebUtility.UrlEncode(kvp.Key)}={WebUtility.UrlEncode(kvp.Value)}"));

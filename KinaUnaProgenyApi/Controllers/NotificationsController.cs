@@ -27,12 +27,9 @@ namespace KinaUnaProgenyApi.Controllers
                 return new HttpResponseMessage(HttpStatusCode.Unauthorized);
             }
 
-            string[] userTag = new string[2];
-            userTag[0] = "username:" + to_tag;
-            userTag[1] = "from:" + user;
-
-            Microsoft.Azure.NotificationHubs.NotificationOutcome outcome = null;
-            HttpStatusCode ret = HttpStatusCode.InternalServerError;
+            string[] userTag = ["username:" + to_tag, "from:" + user];
+            Microsoft.Azure.NotificationHubs.NotificationOutcome notificationOutcome = null;
+            HttpStatusCode returnStatusCode = HttpStatusCode.InternalServerError;
 
             switch (pns.ToLower())
             {
@@ -40,34 +37,33 @@ namespace KinaUnaProgenyApi.Controllers
                     // Windows 8.1 / Windows Phone 8.1
                     string toast = @"<toast><visual><binding template=""ToastText01""><text id=""1"">" +
                                    "From " + user + ": " + message + "</text></binding></visual></toast>";
-                    outcome = await azureNotifications.Hub.SendWindowsNativeNotificationAsync(toast, userTag);
+                    notificationOutcome = await azureNotifications.Hub.SendWindowsNativeNotificationAsync(toast, userTag);
                     break;
                 case "apns":
                     // iOS
                     string alert = "{\"aps\":{\"alert\":\"" + "From " + user + ": " + message + "\"}}";
-                    outcome = await azureNotifications.Hub.SendAppleNativeNotificationAsync(alert, userTag);
+                    notificationOutcome = await azureNotifications.Hub.SendAppleNativeNotificationAsync(alert, userTag);
                     break;
                 case "fcm":
                     // Android
                     string notif = "{ \"data\" : {\"message\":\"" + "From " + user + ": " + message + "\"}}";
-                    outcome = await azureNotifications.Hub.SendFcmNativeNotificationAsync(notif, userTag);
+                    notificationOutcome = await azureNotifications.Hub.SendFcmNativeNotificationAsync(notif, userTag);
                     break;
             }
 
-            if (outcome != null)
+            if (notificationOutcome == null) return new HttpResponseMessage(returnStatusCode);
+
+            if (!((notificationOutcome.State == Microsoft.Azure.NotificationHubs.NotificationOutcomeState.Abandoned) ||
+                  (notificationOutcome.State == Microsoft.Azure.NotificationHubs.NotificationOutcomeState.Unknown)))
             {
-                if (!((outcome.State == Microsoft.Azure.NotificationHubs.NotificationOutcomeState.Abandoned) ||
-                      (outcome.State == Microsoft.Azure.NotificationHubs.NotificationOutcomeState.Unknown)))
-                {
-                    ret = HttpStatusCode.OK;
-                }
+                returnStatusCode = HttpStatusCode.OK;
             }
 
-            return new HttpResponseMessage(ret);
+            return new HttpResponseMessage(returnStatusCode);
         }
 
         [HttpGet]
-        [Route("[action]/{count}/{start}/{language}")]
+        [Route("[action]/{count:int}/{start:int}/{language}")]
         public async Task<IActionResult> Latest(int count, int start = 0, string language = "EN")
         {
             string userId = User.GetUserId();
@@ -77,31 +73,30 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<MobileNotification> notifications = await dataService.GetUsersMobileNotifications(userId, language);
+            if (notifications.Count == 0) return Ok(notifications);
 
-            if (notifications.Any())
+            if (start > notifications.Count)
             {
-                if (start > notifications.Count)
-                {
-                    return Ok(new List<MobileNotification>());
-                }
-                notifications = notifications.OrderByDescending(n => n.Time).ToList();
-                notifications = notifications.Skip(start).Take(count).ToList();
-                foreach (MobileNotification notif in notifications)
-                {
-                    if (string.IsNullOrEmpty(notif.IconLink))
-                    {
-                        notif.IconLink = Constants.ProfilePictureUrl;
-                    }
+                return Ok(new List<MobileNotification>());
+            }
 
-                    notif.IconLink = imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
+            notifications = [.. notifications.OrderByDescending(n => n.Time)];
+            notifications = notifications.Skip(start).Take(count).ToList();
+            foreach (MobileNotification notif in notifications)
+            {
+                if (string.IsNullOrEmpty(notif.IconLink))
+                {
+                    notif.IconLink = Constants.ProfilePictureUrl;
                 }
+
+                notif.IconLink = imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
             }
 
             return Ok(notifications);
         }
 
         [HttpGet]
-        [Route("[action]/{count}/{start}/{language}")]
+        [Route("[action]/{count:int}/{start:int}/{language}")]
         public async Task<IActionResult> Unread(int count, int start = 0, string language = "EN")
         {
             string userId = User.GetUserId();
@@ -112,30 +107,29 @@ namespace KinaUnaProgenyApi.Controllers
 
             List<MobileNotification> notifications = await dataService.GetUsersMobileNotifications(userId, language);
             notifications = notifications.Where(n => n.Read == false).ToList();
+            if (notifications.Count == 0) return Ok(notifications);
 
-            if (notifications.Any())
+            if (start > notifications.Count)
             {
-                if (start > notifications.Count)
-                {
-                    return Ok(new List<MobileNotification>());
-                }
-                notifications = notifications.OrderByDescending(n => n.Time).ToList();
-                notifications = notifications.Skip(start).Take(count).ToList();
-                foreach (MobileNotification notif in notifications)
-                {
-                    if (string.IsNullOrEmpty(notif.IconLink))
-                    {
-                        notif.IconLink = Constants.ProfilePictureUrl;
-                    }
+                return Ok(new List<MobileNotification>());
+            }
 
-                    notif.IconLink = imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
+            notifications = [.. notifications.OrderByDescending(n => n.Time)];
+            notifications = notifications.Skip(start).Take(count).ToList();
+            foreach (MobileNotification notif in notifications)
+            {
+                if (string.IsNullOrEmpty(notif.IconLink))
+                {
+                    notif.IconLink = Constants.ProfilePictureUrl;
                 }
+
+                notif.IconLink = imageStore.UriFor(notif.IconLink, BlobContainers.Profiles);
             }
 
             return Ok(notifications);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] MobileNotification value)
         {
             string userId = User.GetUserId();
@@ -145,20 +139,17 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             MobileNotification mobileNotification = await dataService.GetMobileNotification(id);
+            if (mobileNotification == null || mobileNotification.UserId != userId) return Ok(value);
+            
+            mobileNotification.Read = value.Read;
+            mobileNotification = await dataService.UpdateMobileNotification(mobileNotification);
 
-            if (mobileNotification != null && mobileNotification.UserId == userId)
-            {
-                mobileNotification.Read = value.Read;
-                mobileNotification = await dataService.UpdateMobileNotification(mobileNotification);
+            return Ok(mobileNotification);
 
-                return Ok(mobileNotification);
-            }
-
-            return Ok(value);
         }
 
         // DELETE api/notifications/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             MobileNotification mobileNotification = await dataService.GetMobileNotification(id);
@@ -171,10 +162,8 @@ namespace KinaUnaProgenyApi.Controllers
 
                 return NoContent();
             }
-            else
-            {
-                return NotFound();
-            }
+
+            return NotFound();
         }
 
         [HttpPost]
@@ -276,7 +265,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
         public async Task<IActionResult> GetWebNotificationById(int id)
         {
             WebNotification webNotification = await dataService.GetWebNotificationById(id);

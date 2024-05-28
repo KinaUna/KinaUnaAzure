@@ -145,12 +145,11 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetViewChild(int childId)
         {
-            if (User.Identity != null && User.Identity.IsAuthenticated)
-            {
-                UserInfo userinfo = await userInfosHttpClient.GetUserInfo(User.GetEmail());
-                userinfo.ViewChild = childId;
-                await userInfosHttpClient.SetViewChild(User.GetUserId(), userinfo);
-            }
+            if (User.Identity == null || !User.Identity.IsAuthenticated) return RedirectToAction("Index", new { childId });
+
+            UserInfo userinfo = await userInfosHttpClient.GetUserInfo(User.GetEmail());
+            userinfo.ViewChild = childId;
+            await userInfosHttpClient.SetViewChild(User.GetUserId(), userinfo);
 
             // return Redirect(returnUrl);
             return RedirectToAction("Index", new{ childId });

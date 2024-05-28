@@ -64,7 +64,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="23.1.42" />
+    <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="25.2.5" />
     <PackageReference Include="WebPush" Version="1.0.12" />
   </ItemGroup>
 

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
@@ -90,8 +89,8 @@ namespace KinaUnaWeb.Controllers
             if (model.IsCurrentUserProgenyAdmin)
             {
                 model.ProgenyLocations = await locationsHttpClient.GetProgenyLocations(model.CurrentProgenyId, model.CurrentAccessLevel);
-                model.LocationsList = new List<SelectListItem>();
-                if (model.ProgenyLocations.Any())
+                model.LocationsList = [];
+                if (model.ProgenyLocations.Count != 0)
                 {
                     foreach (Location loc in model.ProgenyLocations)
                     {
@@ -144,14 +143,14 @@ namespace KinaUnaWeb.Controllers
                 });
             }
 
-            List<Picture> pictureList = new();
+            List<Picture> pictureList = [];
             UploadPictureViewModel result = new()
             {
                 LanguageId = model.LanguageId,
-                FileLinks = new List<string>(),
-                FileNames = new List<string>()
+                FileLinks = [],
+                FileNames = []
             };
-            if (model.Files.Any())
+            if (model.Files.Count != 0)
             {
                 foreach (IFormFile formFile in model.Files)
                 {
@@ -177,7 +176,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            if (pictureList.Any())
+            if (pictureList.Count != 0)
             {
                 foreach (Picture pic in pictureList)
                 {
@@ -283,19 +282,17 @@ namespace KinaUnaWeb.Controllers
             
             bool commentAdded = await mediaHttpClient.AddPictureComment(comment);
 
-            if (commentAdded)
-            {
-                if (model.CurrentProgeny != null)
-                {
-                    string imgLink = Constants.WebAppUrl + "/Pictures/Picture/" + model.ItemId + "?childId=" + model.CurrentProgenyId;
-                    List<string> emails = model.CurrentProgeny.Admins.Split(",").ToList();
+            if (!commentAdded) return RedirectToRoute(new { controller = "Pictures", action = "Picture", id = model.ItemId, childId = model.CurrentProgenyId, sortBy = model.SortBy });
 
-                    foreach (string toMail in emails)
-                    {
-                        await emailSender.SendEmailAsync(toMail, "New Comment on " + model.CurrentProgeny.NickName + "'s Picture",
-                           "A comment was added to " + model.CurrentProgeny.NickName + "'s picture by " + comment.DisplayName + ":<br/><br/>" + comment.CommentText + "<br/><br/>Picture Link: <a href=\"" + imgLink + "\">" + imgLink + "</a>");
-                    }
-                }
+            if (model.CurrentProgeny == null) return RedirectToRoute(new { controller = "Pictures", action = "Picture", id = model.ItemId, childId = model.CurrentProgenyId, sortBy = model.SortBy });
+
+            string imgLink = Constants.WebAppUrl + "/Pictures/Picture/" + model.ItemId + "?childId=" + model.CurrentProgenyId;
+            List<string> emails = [.. model.CurrentProgeny.Admins.Split(",")];
+
+            foreach (string toMail in emails)
+            {
+                await emailSender.SendEmailAsync(toMail, "New Comment on " + model.CurrentProgeny.NickName + "'s Picture",
+                    "A comment was added to " + model.CurrentProgeny.NickName + "'s picture by " + comment.DisplayName + ":<br/><br/>" + comment.CommentText + "<br/><br/>Picture Link: <a href=\"" + imgLink + "\">" + imgLink + "</a>");
             }
 
             return RedirectToRoute(new { controller = "Pictures", action = "Picture", id = model.ItemId, childId = model.CurrentProgenyId, sortBy = model.SortBy });

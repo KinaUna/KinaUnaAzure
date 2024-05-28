@@ -58,14 +58,13 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Location? locationItem = new Location();
+            Location? locationItem = new();
             string locationsApiPath = "/api/Locations/" + locationId;
             HttpResponseMessage locationResponse = await _httpClient.GetAsync(locationsApiPath);
-            if (locationResponse.IsSuccessStatusCode)
-            {
-                string locationAsString = await locationResponse.Content.ReadAsStringAsync();
-                locationItem = JsonConvert.DeserializeObject<Location>(locationAsString);
-            }
+            if (!locationResponse.IsSuccessStatusCode) return locationItem;
+
+            string locationAsString = await locationResponse.Content.ReadAsStringAsync();
+            locationItem = JsonConvert.DeserializeObject<Location>(locationAsString);
 
             return locationItem;
         }
@@ -75,16 +74,14 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string locationsApiPath = "/api/Locations/";
+            const string locationsApiPath = "/api/Locations/";
             HttpResponseMessage locationsResponse = await _httpClient.PostAsync(locationsApiPath, new StringContent(JsonConvert.SerializeObject(location), System.Text.Encoding.UTF8, "application/json"));
-            if (locationsResponse.IsSuccessStatusCode)
-            {
-                string locationsAsString = await locationsResponse.Content.ReadAsStringAsync();
-                location = JsonConvert.DeserializeObject<Location>(locationsAsString);
-                return location;
-            }
+            if (!locationsResponse.IsSuccessStatusCode) return new Location();
 
-            return new Location();
+            string locationsAsString = await locationsResponse.Content.ReadAsStringAsync();
+            location = JsonConvert.DeserializeObject<Location>(locationsAsString);
+            return location;
+
         }
 
         public async Task<Location?> UpdateLocation(Location? location)
@@ -94,14 +91,12 @@ namespace KinaUnaWebBlazor.Services
             
             string updateApiPath = "/api/Locations/" + location?.LocationId;
             HttpResponseMessage locationResponse = await _httpClient.PutAsync(updateApiPath, new StringContent(JsonConvert.SerializeObject(location), System.Text.Encoding.UTF8, "application/json"));
-            if (locationResponse.IsSuccessStatusCode)
-            {
-                string locationAsString = await locationResponse.Content.ReadAsStringAsync();
-                location = JsonConvert.DeserializeObject<Location>(locationAsString);
-                return location;
-            }
+            if (!locationResponse.IsSuccessStatusCode) return new Location();
 
-            return new Location();
+            string locationAsString = await locationResponse.Content.ReadAsStringAsync();
+            location = JsonConvert.DeserializeObject<Location>(locationAsString);
+            return location;
+
         }
 
         public async Task<bool> DeleteLocation(int locationId)
@@ -111,47 +106,40 @@ namespace KinaUnaWebBlazor.Services
 
             string locationsApiPath = "/api/Locations/" + locationId;
             HttpResponseMessage locationResponse = await _httpClient.DeleteAsync(locationsApiPath);
-            if (locationResponse.IsSuccessStatusCode)
-            {
-                return true;
-            }
-
-            return false;
+            return locationResponse.IsSuccessStatusCode;
         }
 
         public async Task<List<Location>?> GetProgenyLocations(int progenyId, int accessLevel)
         {
-            List<Location>? progenyLocations = new List<Location>();
+            List<Location>? progenyLocations = [];
 
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string locationsApiPath = "/api/Locations/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
             HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath);
-            if (locationsResponse.IsSuccessStatusCode)
-            {
-                string locationsAsString = await locationsResponse.Content.ReadAsStringAsync();
+            if (!locationsResponse.IsSuccessStatusCode) return progenyLocations;
 
-                progenyLocations = JsonConvert.DeserializeObject<List<Location>>(locationsAsString);
-            }
+            string locationsAsString = await locationsResponse.Content.ReadAsStringAsync();
+
+            progenyLocations = JsonConvert.DeserializeObject<List<Location>>(locationsAsString);
 
             return progenyLocations;
         }
 
         public async Task<List<Location>?> GetLocationsList(int progenyId, int accessLevel)
         {
-            List<Location>? progenyLocationsList = new List<Location>();
+            List<Location>? progenyLocationsList = [];
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
             string locationsApiPath = "/api/Locations/Progeny/" + progenyId + "?accessLevel=" + accessLevel;
             HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath);
-            if (locationsResponse.IsSuccessStatusCode)
-            {
-                string locationsAsString = await locationsResponse.Content.ReadAsStringAsync();
+            if (!locationsResponse.IsSuccessStatusCode) return progenyLocationsList;
 
-                progenyLocationsList = JsonConvert.DeserializeObject<List<Location>>(locationsAsString);
-            }
+            string locationsAsString = await locationsResponse.Content.ReadAsStringAsync();
+
+            progenyLocationsList = JsonConvert.DeserializeObject<List<Location>>(locationsAsString);
 
             return progenyLocationsList;
         }
@@ -161,15 +149,14 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            Address? addressItem = new Address();
+            Address? addressItem = new();
             string addressApiPath = "/api/Addresses/" + addressId;
             HttpResponseMessage addressResponse = await _httpClient.GetAsync(addressApiPath);
-            if (addressResponse.IsSuccessStatusCode)
-            {
-                string addressAsString = await addressResponse.Content.ReadAsStringAsync();
+            if (!addressResponse.IsSuccessStatusCode) return addressItem;
 
-                addressItem = JsonConvert.DeserializeObject<Address>(addressAsString);
-            }
+            string addressAsString = await addressResponse.Content.ReadAsStringAsync();
+
+            addressItem = JsonConvert.DeserializeObject<Address>(addressAsString);
 
             return addressItem;
         }
@@ -179,16 +166,14 @@ namespace KinaUnaWebBlazor.Services
             string accessToken = await GetNewToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string addressApiPath = "/api/Addresses/";
+            const string addressApiPath = "/api/Addresses/";
             HttpResponseMessage addressResponse = await _httpClient.PostAsync(addressApiPath, new StringContent(JsonConvert.SerializeObject(address), System.Text.Encoding.UTF8, "application/json"));
-            if (addressResponse.IsSuccessStatusCode)
-            {
-                string addressAsString = await addressResponse.Content.ReadAsStringAsync();
-                Address? addressResult = JsonConvert.DeserializeObject<Address>(addressAsString);
-                return addressResult;
-            }
+            if (!addressResponse.IsSuccessStatusCode) return new Address();
 
-            return new Address();
+            string addressAsString = await addressResponse.Content.ReadAsStringAsync();
+            Address? addressResult = JsonConvert.DeserializeObject<Address>(addressAsString);
+            return addressResult;
+
         }
 
         public async Task<Address?> UpdateAddress(Address address)
@@ -198,14 +183,12 @@ namespace KinaUnaWebBlazor.Services
 
             string updateAddressApiPath = "/api/Addresses/" + address.AddressId;
             HttpResponseMessage addressResponse = await _httpClient.PutAsync(updateAddressApiPath, new StringContent(JsonConvert.SerializeObject(address), System.Text.Encoding.UTF8, "application/json"));
-            if (addressResponse.IsSuccessStatusCode)
-            {
-                string addressAsString = await addressResponse.Content.ReadAsStringAsync();
-                Address? resultAddress = JsonConvert.DeserializeObject<Address>(addressAsString);
-                return resultAddress;
-            }
+            if (!addressResponse.IsSuccessStatusCode) return new Address();
 
-            return new Address();
+            string addressAsString = await addressResponse.Content.ReadAsStringAsync();
+            Address? resultAddress = JsonConvert.DeserializeObject<Address>(addressAsString);
+            return resultAddress;
+
         }
     }
 }

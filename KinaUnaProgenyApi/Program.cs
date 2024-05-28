@@ -12,7 +12,6 @@ namespace KinaUnaProgenyApi
     {
         public static void Main(string[] args)
         {
-            // CreateWebHostBuilder(args).Build().Run();
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -22,21 +21,20 @@ namespace KinaUnaProgenyApi
                 {
                     if (context.HostingEnvironment.IsProduction())
                     {
-                        string keyVaultEndpoint = Constants.KeyVaultEndPoint;
-                        if (!string.IsNullOrEmpty(keyVaultEndpoint))
-                        {
-                            config.Build();
+                        const string keyVaultEndpoint = Constants.KeyVaultEndPoint;
+                        if (string.IsNullOrEmpty(keyVaultEndpoint)) return;
 
-                            AzureServiceTokenProvider azureServiceTokenProvider = new();
-                            KeyVaultClient keyVaultClient = new(
-                                new KeyVaultClient.AuthenticationCallback(
-                                    azureServiceTokenProvider.KeyVaultTokenCallback));
+                        config.Build();
 
-                            config.AddAzureKeyVault(
-                                keyVaultEndpoint,
-                                keyVaultClient,
-                                new DefaultKeyVaultSecretManager());
-                        }
+                        AzureServiceTokenProvider azureServiceTokenProvider = new();
+                        KeyVaultClient keyVaultClient = new(
+                            new KeyVaultClient.AuthenticationCallback(
+                                azureServiceTokenProvider.KeyVaultTokenCallback));
+
+                        config.AddAzureKeyVault(
+                            keyVaultEndpoint,
+                            keyVaultClient,
+                            new DefaultKeyVaultSecretManager());
                     }
                 })
                 .ConfigureWebHostDefaults(webBuilder =>

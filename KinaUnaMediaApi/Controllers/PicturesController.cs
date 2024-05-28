@@ -55,13 +55,12 @@ namespace KinaUnaMediaApi.Controllers
             if (!string.IsNullOrEmpty(tagFilter))
             {
                 allItems = await picturesService.GetPicturesList(progenyId);
-                allItems = allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper()))
-                    .OrderBy(p => p.PictureTime).ToList();
+                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.PictureTime)];
             }
             else
             {
                 allItems = await picturesService.GetPicturesList(progenyId);
-                allItems = allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToList();
+                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime)];
             }
 
             if (sortBy == 1)
@@ -71,7 +70,7 @@ namespace KinaUnaMediaApi.Controllers
 
             int pictureCounter = 1;
             int picCount = allItems.Count;
-            List<string> tagsList = new List<string>();
+            List<string> tagsList = [];
             foreach (Picture pic in allItems)
             {
                 if (sortBy == 1)
@@ -84,15 +83,14 @@ namespace KinaUnaMediaApi.Controllers
                 }
                 
                 pictureCounter++;
-                if (!String.IsNullOrEmpty(pic.Tags))
+                if (string.IsNullOrEmpty(pic.Tags)) continue;
+
+                List<string> pvmTags = [.. pic.Tags.Split(',')];
+                foreach (string tagstring in pvmTags)
                 {
-                    List<string> pvmTags = pic.Tags.Split(',').ToList();
-                    foreach (string tagstring in pvmTags)
+                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                     {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                        {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                        }
+                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                     }
                 }
             }
@@ -106,12 +104,14 @@ namespace KinaUnaMediaApi.Controllers
             {
                 pic.Comments = await commentsService.GetCommentsList(pic.CommentThreadNumber);
             }
-            PicturePageViewModel model = new PicturePageViewModel();
-            model.PicturesList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
-            model.TagFilter = tagFilter;
+            PicturePageViewModel model = new()
+            {
+                PicturesList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy,
+                TagFilter = tagFilter
+            };
             string tList = "";
             foreach (string tstr in tagsList)
             {
@@ -123,119 +123,116 @@ namespace KinaUnaMediaApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> PictureViewModel(int id, int accessLevel, [FromQuery] int sortBy = 1)
         {
-            Picture picture = await picturesService.GetPicture(id); 
-            
-            if (picture != null)
+            Picture picture = await picturesService.GetPicture(id);
+
+            if (picture == null) return NotFound();
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail); 
+
+            if (userAccess == null && picture.ProgenyId != Constants.DefaultChildId)
             {
-                // Check if user should be allowed access.
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail); 
-
-                if (userAccess == null && picture.ProgenyId != Constants.DefaultChildId)
-                {
-                    return Unauthorized();
-                }
-
-                PictureViewModel model = new PictureViewModel();
-                model.PictureId = picture.PictureId;
-                model.PictureTime = picture.PictureTime;
-                model.ProgenyId = picture.ProgenyId;
-                model.Owners = picture.Owners;
-                model.PictureLink = picture.PictureLink1200;
-                model.AccessLevel = picture.AccessLevel;
-                model.Author = picture.Author;
-                model.AccessLevelListEn[picture.AccessLevel].Selected = true;
-                model.AccessLevelListDa[picture.AccessLevel].Selected = true;
-                model.AccessLevelListDe[picture.AccessLevel].Selected = true;
-                model.CommentThreadNumber = picture.CommentThreadNumber;
-                model.Tags = picture.Tags;
-                model.Location = picture.Location;
-                model.Latitude = picture.Latitude;
-                model.Longtitude = picture.Longtitude;
-                model.Altitude = picture.Altitude;
-                model.PictureNumber = 1;
-                model.PictureCount = 1;
-                model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber); 
-                model.TagsList = "";
-                List<string> tagsList = new List<string>();
-                List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId); 
-                pictureList = pictureList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToList();
-                if (pictureList.Any())
-                {
-                    int currentIndex = 0;
-                    int indexer = 0;
-                    foreach (Picture pic in pictureList)
-                    {
-                        if (pic.PictureId == picture.PictureId)
-                        {
-                            currentIndex = indexer;
-                        }
-                        indexer++;
-                        if (!String.IsNullOrEmpty(pic.Tags))
-                        {
-                            List<string> pvmTags = pic.Tags.Split(',').ToList();
-                            foreach (string tagstring in pvmTags)
-                            {
-                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                {
-                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                }
-                            }
-                        }
-                    }
-                    model.PictureNumber = currentIndex + 1;
-                    model.PictureCount = pictureList.Count;
-                    if(currentIndex > 0)
-                    {
-                        model.PrevPicture = pictureList[currentIndex - 1].PictureId;
-                    }
-                    else
-                    {
-                        model.PrevPicture = pictureList.Last().PictureId;
-                    }
-
-                    if (currentIndex + 1 < pictureList.Count)
-                    {
-                        model.NextPicture = pictureList[currentIndex + 1].PictureId;
-                    }
-                    else
-                    {
-                        model.NextPicture = pictureList.First().PictureId;
-                    }
-
-                    if (sortBy == 1)
-                    {
-                        int tempVal = model.NextPicture;
-                        model.NextPicture = model.PrevPicture;
-                        model.PrevPicture = tempVal;
-                    }
-                   
-                }
-                string tagItems = "[";
-                if (tagsList.Any())
-                {
-                    foreach (string tagstring in tagsList)
-                    {
-                        tagItems = tagItems + "'" + tagstring + "',";
-                    }
-
-                    tagItems = tagItems.Remove(tagItems.Length - 1);
-                    tagItems = tagItems + "]";
-                }
-
-                model.TagsList = tagItems;
-                return Ok(model);
+                return Unauthorized();
             }
 
-            return NotFound();
+            PictureViewModel model = new()
+            {
+                PictureId = picture.PictureId,
+                PictureTime = picture.PictureTime,
+                ProgenyId = picture.ProgenyId,
+                Owners = picture.Owners,
+                PictureLink = picture.PictureLink1200,
+                AccessLevel = picture.AccessLevel,
+                Author = picture.Author
+            };
+            model.AccessLevelListEn[picture.AccessLevel].Selected = true;
+            model.AccessLevelListDa[picture.AccessLevel].Selected = true;
+            model.AccessLevelListDe[picture.AccessLevel].Selected = true;
+            model.CommentThreadNumber = picture.CommentThreadNumber;
+            model.Tags = picture.Tags;
+            model.Location = picture.Location;
+            model.Latitude = picture.Latitude;
+            model.Longtitude = picture.Longtitude;
+            model.Altitude = picture.Altitude;
+            model.PictureNumber = 1;
+            model.PictureCount = 1;
+            model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber); 
+            model.TagsList = "";
+            List<string> tagsList = [];
+            List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId); 
+            pictureList = [.. pictureList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime)];
+            if (pictureList.Count != 0)
+            {
+                int currentIndex = 0;
+                int indexer = 0;
+                foreach (Picture pic in pictureList)
+                {
+                    if (pic.PictureId == picture.PictureId)
+                    {
+                        currentIndex = indexer;
+                    }
+                    indexer++;
+                    if (string.IsNullOrEmpty(pic.Tags)) continue;
+
+                    List<string> pvmTags = [.. pic.Tags.Split(',')];
+                    foreach (string tagstring in pvmTags)
+                    {
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                        {
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                        }
+                    }
+                }
+                model.PictureNumber = currentIndex + 1;
+                model.PictureCount = pictureList.Count;
+                if(currentIndex > 0)
+                {
+                    model.PrevPicture = pictureList[currentIndex - 1].PictureId;
+                }
+                else
+                {
+                    model.PrevPicture = pictureList.Last().PictureId;
+                }
+
+                if (currentIndex + 1 < pictureList.Count)
+                {
+                    model.NextPicture = pictureList[currentIndex + 1].PictureId;
+                }
+                else
+                {
+                    model.NextPicture = pictureList.First().PictureId;
+                }
+
+                if (sortBy == 1)
+                {
+                    (model.PrevPicture, model.NextPicture) = (model.NextPicture, model.PrevPicture);
+                }
+
+            }
+            string tagItems = "[";
+            if (tagsList.Count != 0)
+            {
+                foreach (string tagstring in tagsList)
+                {
+                    tagItems = tagItems + "'" + tagstring + "',";
+                }
+
+                tagItems = tagItems.Remove(tagItems.Length - 1);
+                tagItems += "]";
+            }
+
+            model.TagsList = tagItems;
+            return Ok(model);
+
         }
 
         // GET api/pictures/progeny/[id]/[accessLevel]
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> Progeny(int id, int accessLevel)
         {
             // Check if user should be allowed access.
@@ -249,20 +246,20 @@ namespace KinaUnaMediaApi.Controllers
 
             List<Picture> picturesList = await picturesService.GetPicturesList(id); 
             picturesList = picturesList.Where(p => p.AccessLevel >= accessLevel).ToList();
-            if (picturesList.Any())
+            if (picturesList.Count != 0)
             {
                 foreach (Picture pic in picturesList)
                 {
                     pic.Comments = await commentsService.GetCommentsList(pic.CommentThreadNumber);
-                    if (!pic.PictureLink.ToLower().StartsWith("http"))
+                    if (!pic.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                     {
                         pic.PictureLink = imageStore.UriFor(pic.PictureLink);
                     }
-                    if (!pic.PictureLink1200.ToLower().StartsWith("http"))
+                    if (!pic.PictureLink1200.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                     {
                         pic.PictureLink1200 = imageStore.UriFor(pic.PictureLink1200);
                     }
-                    if (!pic.PictureLink600.ToLower().StartsWith("http"))
+                    if (!pic.PictureLink600.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                     {
                         pic.PictureLink600 = imageStore.UriFor(pic.PictureLink600);
                     }
@@ -270,19 +267,23 @@ namespace KinaUnaMediaApi.Controllers
 
                 return Ok(picturesList);
             }
-            Progeny progeny = new Progeny();
-            progeny.Name = Constants.AppName;
-            progeny.Admins = configuration.GetValue<string>("AdminEmail");
-            progeny.NickName = Constants.AppName;
-            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+            Progeny progeny = new()
+            {
+                Name = Constants.AppName,
+                Admins = configuration.GetValue<string>("AdminEmail"),
+                NickName = Constants.AppName,
+                BirthDay = new DateTime(2018, 2, 18, 18, 2, 0),
 
-            progeny.Id = 0;
-            progeny.TimeZone = Constants.DefaultTimezone;
-            Picture tempPicture = new Picture();
-            tempPicture.ProgenyId = 0;
-            tempPicture.Progeny = progeny;
-            tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
+                Id = 0,
+                TimeZone = Constants.DefaultTimezone
+            };
+            Picture tempPicture = new()
+            {
+                ProgenyId = 0,
+                Progeny = progeny,
+                AccessLevel = 5,
+                PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg"
+            };
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
@@ -312,19 +313,23 @@ namespace KinaUnaMediaApi.Controllers
                 return Ok(picture);
             }
 
-            Progeny progeny = new Progeny();
-            progeny.Name = Constants.AppName;
-            progeny.Admins = configuration.GetValue<string>("AdminEmail");
-            progeny.NickName = Constants.AppName;
-            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+            Progeny progeny = new()
+            {
+                Name = Constants.AppName,
+                Admins = configuration.GetValue<string>("AdminEmail"),
+                NickName = Constants.AppName,
+                BirthDay = new DateTime(2018, 2, 18, 18, 2, 0),
 
-            progeny.Id = 0;
-            progeny.TimeZone = Constants.DefaultTimezone;
-            Picture tempPicture = new Picture();
-            tempPicture.ProgenyId = 0;
-            tempPicture.Progeny = progeny;
-            tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
+                Id = 0,
+                TimeZone = Constants.DefaultTimezone
+            };
+            Picture tempPicture = new()
+            {
+                ProgenyId = 0,
+                Progeny = progeny,
+                AccessLevel = 5,
+                PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg"
+            };
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
@@ -332,7 +337,7 @@ namespace KinaUnaMediaApi.Controllers
         }
 
         // GET api/pictures/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetPicture(int id)
         {
             Picture result = await picturesService.GetPicture(id); 
@@ -349,19 +354,23 @@ namespace KinaUnaMediaApi.Controllers
                 return Ok(result);
             }
 
-            Progeny progeny = new Progeny();
-            progeny.Name = Constants.AppName;
-            progeny.Admins = configuration.GetValue<string>("AdminEmail");
-            progeny.NickName = Constants.AppName;
-            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+            Progeny progeny = new()
+            {
+                Name = Constants.AppName,
+                Admins = configuration.GetValue<string>("AdminEmail"),
+                NickName = Constants.AppName,
+                BirthDay = new DateTime(2018, 2, 18, 18, 2, 0),
 
-            progeny.Id = 0;
-            progeny.TimeZone = Constants.DefaultTimezone;
-            Picture tempPicture = new Picture();
-            tempPicture.ProgenyId = 0;
-            tempPicture.Progeny = progeny;
-            tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
+                Id = 0,
+                TimeZone = Constants.DefaultTimezone
+            };
+            Picture tempPicture = new()
+            {
+                ProgenyId = 0,
+                Progeny = progeny,
+                AccessLevel = 5,
+                PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg"
+            };
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
 
@@ -384,12 +393,11 @@ namespace KinaUnaMediaApi.Controllers
             MemoryStream memoryStream = await imageStore.GetStream(model.PictureLink);
             memoryStream.Position = 0;
             
-            using (MagickImage image = new MagickImage(memoryStream))
+            using (MagickImage image = new(memoryStream))
             {
                 IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
                 {
-                    int rotation;
                     try
                     {
 
@@ -399,12 +407,8 @@ namespace KinaUnaMediaApi.Controllers
 
                         if (gpsLongtitude != null && gpsLatitude != null)
                         {
-                            Rational[] longValues = gpsLongtitude.GetValue() as Rational[];
-                            Rational[] latValues = gpsLatitude.GetValue() as Rational[];
-
-
-                            if (longValues != null && (longValues[0].Denominator != 0 && longValues[1].Denominator != 0 &&
-                                                       longValues[2].Denominator != 0))
+                            if (gpsLongtitude.GetValue() is Rational[] longValues && longValues[0].Denominator != 0 && longValues[1].Denominator != 0 &&
+                                                       longValues[2].Denominator != 0)
                             {
                                 double long0 = longValues[0].Numerator / (double)longValues[0].Denominator;
                                 double long1 = longValues[1].Numerator / (double)longValues[1].Denominator;
@@ -416,8 +420,8 @@ namespace KinaUnaMediaApi.Controllers
                                 model.Longtitude = "";
                             }
 
-                            if (latValues != null && (latValues[0].Denominator != 0 && latValues[1].Denominator != 0 &&
-                                                      latValues[2].Denominator != 0))
+                            if (gpsLatitude.GetValue() is Rational[] latValues && latValues[0].Denominator != 0 && latValues[1].Denominator != 0 &&
+                                                      latValues[2].Denominator != 0)
                             {
                                 double lat0 = latValues[0].Numerator / (double)latValues[0].Denominator;
                                 double lat1 = latValues[1].Numerator / (double)latValues[1].Denominator;
@@ -476,23 +480,15 @@ namespace KinaUnaMediaApi.Controllers
 
                     try
                     {
-                        rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
-                        switch (rotation)
+                        int rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
+                        model.PictureRotation = rotation switch
                         {
-                            case 1:
-                                model.PictureRotation = 0;
-                                break;
-                            case 3:
-                                model.PictureRotation = 180;
-                                break;
-                            case 6:
-                                model.PictureRotation = 90;
-                                break;
-                            case 8:
-                                model.PictureRotation = 270;
-                                break;
-
-                        }
+                            1 => 0,
+                            3 => 180,
+                            6 => 90,
+                            8 => 270,
+                            _ => model.PictureRotation
+                        };
                     }
                     catch (ArgumentNullException)
                     {
@@ -503,14 +499,13 @@ namespace KinaUnaMediaApi.Controllers
                         model.PictureRotation = 0;
                     }
 
-
                     try
                     {
                         string date = profile.GetValue(ExifTag.DateTimeOriginal)?.Value;
                         if (!string.IsNullOrEmpty(date))
                         {
                             model.PictureTime = new DateTime(
-                                int.Parse(date.Substring(0, 4)), // year
+                                int.Parse(date[..4]), // year
                                 int.Parse(date.Substring(5, 2)), // month
                                 int.Parse(date.Substring(8, 2)), // day
                                 int.Parse(date.Substring(11, 2)), // hour
@@ -583,7 +578,7 @@ namespace KinaUnaMediaApi.Controllers
 
                 if (model.PictureWidth > 600)
                 {
-                    int newWidth = 600;
+                    const int newWidth = 600;
                     int newHeight = (600 / model.PictureWidth) * model.PictureHeight;
 
                     image.Resize(newWidth, newHeight);
@@ -591,15 +586,13 @@ namespace KinaUnaMediaApi.Controllers
 
                 image.Strip();
 
-                using (MemoryStream memStream = new MemoryStream())
-                {
-                    image.Write(memStream);
-                    memStream.Position = 0;
-                    model.PictureLink600 = await imageStore.SaveImage(memStream);
-                }
+                using MemoryStream memStream = new();
+                await image.WriteAsync(memStream);
+                memStream.Position = 0;
+                model.PictureLink600 = await imageStore.SaveImage(memStream);
             }
 
-            using (MagickImage image = new MagickImage(memoryStream))
+            using (MagickImage image = new(memoryStream))
             {
                 if (model.PictureRotation != null)
                 {
@@ -612,20 +605,18 @@ namespace KinaUnaMediaApi.Controllers
 
                 if (model.PictureWidth > 1200)
                 {
-                    int newWidth = 1200;
+                    const int newWidth = 1200;
                     int newHeight = (1200 / model.PictureWidth) * model.PictureHeight;
 
                     image.Resize(newWidth, newHeight);
                 }
 
                 image.Strip();
-                
-                using (MemoryStream memStream = new MemoryStream())
-                {
-                    image.Write(memStream);
-                    memStream.Position = 0;
-                    model.PictureLink1200 = await imageStore.SaveImage(memStream);
-                }
+
+                using MemoryStream memStream = new();
+                await image.WriteAsync(memStream);
+                memStream.Position = 0;
+                model.PictureLink1200 = await imageStore.SaveImage(memStream);
             }
 
             if (model.PictureTime != null)
@@ -654,18 +645,20 @@ namespace KinaUnaMediaApi.Controllers
             UserInfo userinfo = await dataService.GetUserInfoByEmail(User.GetEmail());
             string title = "New Photo added for " + prog.NickName;
             string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " added a new photo for " + prog.NickName;
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = model.ProgenyId;
-            tItem.ItemId = model.PictureId.ToString();
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Photo;
-            tItem.AccessLevel = model.AccessLevel;
+            TimeLineItem tItem = new()
+            {
+                ProgenyId = model.ProgenyId,
+                ItemId = model.PictureId.ToString(),
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                AccessLevel = model.AccessLevel
+            };
             await azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
 
             return Ok(model);
         }
 
         // PUT api/pictures/5
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Picture value)
         {
             Picture picture = await picturesService.GetPicture(id);
@@ -706,11 +699,13 @@ namespace KinaUnaMediaApi.Controllers
             UserInfo userinfo = await dataService.GetUserInfoByEmail(User.GetEmail());
             string title = "Photo Edited for " + prog.NickName;
             string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " edited a photo for " + prog.NickName;
-            TimeLineItem tItem = new TimeLineItem();
-            tItem.ProgenyId = picture.ProgenyId;
-            tItem.ItemId = picture.PictureId.ToString();
-            tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Photo;
-            tItem.AccessLevel = picture.AccessLevel;
+            TimeLineItem tItem = new()
+            {
+                ProgenyId = picture.ProgenyId,
+                ItemId = picture.PictureId.ToString(),
+                ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                AccessLevel = picture.AccessLevel
+            };
             await azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
 
             return Ok(picture);
@@ -733,7 +728,7 @@ namespace KinaUnaMediaApi.Controllers
                 }
 
                 List<Comment> comments = await commentsService.GetCommentsList(picture.CommentThreadNumber);
-                if (comments.Any())
+                if (comments.Count != 0)
                 {
                     foreach (Comment deletedComment in comments)
                     {
@@ -747,7 +742,7 @@ namespace KinaUnaMediaApi.Controllers
                 {
                     await commentsService.RemoveCommentsList(picture.CommentThreadNumber);
                 }
-                if (!picture.PictureLink.ToLower().StartsWith("http"))
+                if (!picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                 {
                     await imageStore.DeleteImage(picture.PictureLink);
                     await imageStore.DeleteImage(picture.PictureLink600);
@@ -761,11 +756,13 @@ namespace KinaUnaMediaApi.Controllers
                 UserInfo userinfo = await dataService.GetUserInfoByEmail(User.GetEmail());
                 string title = "Photo deleted for " + prog.NickName;
                 string message = userinfo.FirstName + " " + userinfo.MiddleName + " " + userinfo.LastName + " deleted a photo for " + prog.NickName;
-                TimeLineItem tItem = new TimeLineItem();
-                tItem.ProgenyId = picture.ProgenyId;
-                tItem.ItemId = picture.PictureId.ToString();
-                tItem.ItemType = (int)KinaUnaTypes.TimeLineType.Photo;
-                tItem.AccessLevel = 0;
+                TimeLineItem tItem = new()
+                {
+                    ProgenyId = picture.ProgenyId,
+                    ItemId = picture.PictureId.ToString(),
+                    ItemType = (int)KinaUnaTypes.TimeLineType.Photo,
+                    AccessLevel = 0
+                };
                 await azureNotifications.ProgenyUpdateNotification(title, message, tItem, userinfo.ProfilePicture);
 
                 return NoContent();
@@ -779,7 +776,7 @@ namespace KinaUnaMediaApi.Controllers
 
         // GET api/pictures/random/[Progeny id]?accessLevel=5
         [HttpGet]
-        [Route("[action]/{progenyId}/{accessLevel}")]
+        [Route("[action]/{progenyId:int}/{accessLevel:int}")]
         public async Task<IActionResult> Random(int progenyId, int accessLevel)
         {
             // Check if user should be allowed access.
@@ -793,9 +790,9 @@ namespace KinaUnaMediaApi.Controllers
 
             List<Picture> picturesList = await picturesService.GetPicturesList(progenyId);
             picturesList = picturesList.Where(p => p.AccessLevel >= accessLevel).ToList();
-            if (picturesList.Any())
+            if (picturesList.Count != 0)
             {
-                Random r = new Random();
+                Random r = new();
                 int pictureNumber = r.Next(0, picturesList.Count);
 
                 Picture picture = picturesList[pictureNumber];
@@ -803,26 +800,30 @@ namespace KinaUnaMediaApi.Controllers
                 return Ok(picture);
             }
 
-            Progeny progeny = new Progeny();
-            progeny.Name = Constants.AppName;
-            progeny.Admins = configuration.GetValue<string>("AdminEmail");
-            progeny.NickName = Constants.AppName;
-            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+            Progeny progeny = new()
+            {
+                Name = Constants.AppName,
+                Admins = configuration.GetValue<string>("AdminEmail"),
+                NickName = Constants.AppName,
+                BirthDay = new DateTime(2018, 2, 18, 18, 2, 0),
 
-            progeny.Id = 0;
-            progeny.TimeZone = Constants.DefaultTimezone;
-            Picture tempPicture = new Picture();
-            tempPicture.ProgenyId = 0;
-            tempPicture.Progeny = progeny ;
-            tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
+                Id = 0,
+                TimeZone = Constants.DefaultTimezone
+            };
+            Picture tempPicture = new()
+            {
+                ProgenyId = 0,
+                Progeny = progeny,
+                AccessLevel = 5,
+                PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg"
+            };
             tempPicture.ProgenyId = progeny.Id;
             tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
             return Ok(tempPicture);
         }
 
         [HttpGet]
-        [Route("[action]/{progenyId}/{accessLevel}")]
+        [Route("[action]/{progenyId:int}/{accessLevel:int}")]
         public async Task<IActionResult> RandomMobile(int progenyId, int accessLevel)
         {
             // Check if user should be allowed access.
@@ -836,43 +837,46 @@ namespace KinaUnaMediaApi.Controllers
 
             List<Picture> picturesList = await picturesService.GetPicturesList(progenyId);
             picturesList = picturesList.Where(p => p.AccessLevel >= accessLevel).ToList();
-            if (picturesList.Any())
+            if (picturesList.Count != 0)
             {
-                Random r = new Random();
+                Random r = new();
                 int pictureNumber = r.Next(0, picturesList.Count);
 
                 Picture picture = picturesList[pictureNumber];
-                if (!picture.PictureLink.ToLower().StartsWith("http"))
-                {
-                    picture.PictureLink = imageStore.UriFor(picture.PictureLink);
-                    picture.PictureLink1200 = imageStore.UriFor(picture.PictureLink1200);
-                    picture.PictureLink600 = imageStore.UriFor(picture.PictureLink600);
-                }
-                
+                if (picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase)) return Ok(picture);
+
+                picture.PictureLink = imageStore.UriFor(picture.PictureLink);
+                picture.PictureLink1200 = imageStore.UriFor(picture.PictureLink1200);
+                picture.PictureLink600 = imageStore.UriFor(picture.PictureLink600);
+
                 return Ok(picture);
             }
 
-            Progeny progeny = new Progeny();
-            progeny.Name = Constants.AppName;
-            progeny.Admins = configuration.GetValue<string>("AdminEmail");
-            progeny.NickName = Constants.AppName;
-            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
-            progeny.Id = 0;
-            progeny.TimeZone = Constants.DefaultTimezone;
+            Progeny progeny = new()
+            {
+                Name = Constants.AppName,
+                Admins = configuration.GetValue<string>("AdminEmail"),
+                NickName = Constants.AppName,
+                BirthDay = new DateTime(2018, 2, 18, 18, 2, 0),
+                Id = 0,
+                TimeZone = Constants.DefaultTimezone
+            };
 
-            Picture tempPicture = new Picture();
-            tempPicture.ProgenyId = progenyId;
-            tempPicture.Progeny = progeny;
-            tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
-            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
-            tempPicture.PictureLink1200 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
-            tempPicture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
+            Picture tempPicture = new()
+            {
+                ProgenyId = progenyId,
+                Progeny = progeny,
+                AccessLevel = 5,
+                PictureLink = Constants.WebAppUrl + "/photodb/0/default_temp.jpg",
+                PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg",
+                PictureLink1200 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg",
+                PictureTime = new DateTime(2018, 9, 1, 12, 00, 00)
+            };
             return Ok(tempPicture);
         }
 
         // GET api/pictures/5
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetPictureMobile(int id)
         {
             Picture result = await picturesService.GetPicture(id);
@@ -887,28 +891,31 @@ namespace KinaUnaMediaApi.Controllers
                     return Unauthorized();
                 }
 
-                if (!result.PictureLink.ToLower().StartsWith("http"))
-                {
-                    result.PictureLink = imageStore.UriFor(result.PictureLink);
-                    result.PictureLink1200 = imageStore.UriFor(result.PictureLink1200);
-                    result.PictureLink600 = imageStore.UriFor(result.PictureLink600);
-                }
+                if (result.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase)) return Ok(result);
+
+                result.PictureLink = imageStore.UriFor(result.PictureLink);
+                result.PictureLink1200 = imageStore.UriFor(result.PictureLink1200);
+                result.PictureLink600 = imageStore.UriFor(result.PictureLink600);
                 return Ok(result);
             }
 
-            Progeny progeny = new Progeny();
-            progeny.Name = Constants.AppName;
-            progeny.Admins = configuration.GetValue<string>("AdminEmail");
-            progeny.NickName = Constants.AppName;
-            progeny.BirthDay = new DateTime(2018, 2, 18, 18, 2, 0);
+            Progeny progeny = new()
+            {
+                Name = Constants.AppName,
+                Admins = configuration.GetValue<string>("AdminEmail"),
+                NickName = Constants.AppName,
+                BirthDay = new DateTime(2018, 2, 18, 18, 2, 0),
 
-            progeny.Id = 0;
-            progeny.TimeZone = Constants.DefaultTimezone;
-            Picture tempPicture = new Picture();
-            tempPicture.ProgenyId = 0;
-            tempPicture.Progeny = progeny;
-            tempPicture.AccessLevel = 5;
-            tempPicture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
+                Id = 0,
+                TimeZone = Constants.DefaultTimezone
+            };
+            Picture tempPicture = new()
+            {
+                ProgenyId = 0,
+                Progeny = progeny,
+                AccessLevel = 5,
+                PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg"
+            };
             tempPicture.PictureLink1200 = tempPicture.PictureLink600;
             tempPicture.PictureLink = tempPicture.PictureLink600;
             tempPicture.ProgenyId = progeny.Id;
@@ -935,31 +942,29 @@ namespace KinaUnaMediaApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Picture> allItems;
-            allItems = await picturesService.GetPicturesList(progenyId);
-            List<string> tagsList = new List<string>();
+            List<Picture> allItems = await picturesService.GetPicturesList(progenyId);
+            List<string> tagsList = [];
             foreach (Picture pic in allItems)
             {
-                if (!String.IsNullOrEmpty(pic.Tags))
+                if (string.IsNullOrEmpty(pic.Tags)) continue;
+
+                List<string> pvmTags = [.. pic.Tags.Split(',')];
+                foreach (string tagstring in pvmTags)
                 {
-                    List<string> pvmTags = pic.Tags.Split(',').ToList();
-                    foreach (string tagstring in pvmTags)
+                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                     {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                        {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                        }
+                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                     }
                 }
             }
             if (!string.IsNullOrEmpty(tagFilter))
             {
                 
-                allItems = allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToList();
+                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.PictureTime)];
             }
             else
             {
-                allItems = allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToList();
+                allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime)];
             }
 
             if (sortBy == 1)
@@ -993,25 +998,27 @@ namespace KinaUnaMediaApi.Controllers
             foreach (Picture pic in itemsOnPage)
             {
                 pic.Comments = await commentsService.GetCommentsList(pic.CommentThreadNumber);
-                if (!pic.PictureLink.ToLower().StartsWith("http"))
+                if (!pic.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                 {
                     pic.PictureLink = imageStore.UriFor(pic.PictureLink);
                 }
-                if (!pic.PictureLink1200.ToLower().StartsWith("http"))
+                if (!pic.PictureLink1200.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                 {
                     pic.PictureLink1200 = imageStore.UriFor(pic.PictureLink1200);
                 }
-                if (!pic.PictureLink600.ToLower().StartsWith("http"))
+                if (!pic.PictureLink600.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                 {
                     pic.PictureLink600 = imageStore.UriFor(pic.PictureLink600);
                 }
             }
-            PicturePageViewModel model = new PicturePageViewModel();
-            model.PicturesList = itemsOnPage;
-            model.TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize);
-            model.PageNumber = pageIndex;
-            model.SortBy = sortBy;
-            model.TagFilter = tagFilter;
+            PicturePageViewModel model = new()
+            {
+                PicturesList = itemsOnPage,
+                TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
+                PageNumber = pageIndex,
+                SortBy = sortBy,
+                TagFilter = tagFilter
+            };
             string tList = "";
             foreach (string tstr in tagsList)
             {
@@ -1023,223 +1030,218 @@ namespace KinaUnaMediaApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> PictureViewModelMobile(int id, int accessLevel=5, [FromQuery] int sortBy = 1)
         {
             Picture picture = await picturesService.GetPicture(id);
 
-            if (picture != null)
+            if (picture == null) return NotFound();
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
+
+            if (userAccess == null)
             {
-                // Check if user should be allowed access.
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
-
-                if (userAccess == null)
-                {
-                    return Unauthorized();
-                }
-
-                PictureViewModel model = new PictureViewModel();
-                model.PictureId = picture.PictureId;
-                model.PictureTime = picture.PictureTime;
-                model.ProgenyId = picture.ProgenyId;
-                model.Owners = picture.Owners;
-                model.PictureLink = picture.PictureLink1200;
-                if (!model.PictureLink.ToLower().StartsWith("http"))
-                {
-                    model.PictureLink = imageStore.UriFor(model.PictureLink);
-                }
-                model.AccessLevel = picture.AccessLevel;
-                model.Author = picture.Author;
-                model.CommentThreadNumber = picture.CommentThreadNumber;
-                model.Tags = picture.Tags;
-                model.Location = picture.Location;
-                model.Latitude = picture.Latitude;
-                model.Longtitude = picture.Longtitude;
-                model.Altitude = picture.Altitude;
-                model.PictureNumber = 1;
-                model.PictureCount = 1;
-                model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
-                model.TagsList = "";
-                List<string> tagsList = new List<string>();
-                List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId);
-                pictureList = pictureList.Where(p => p.AccessLevel >= userAccess.AccessLevel).OrderBy(p => p.PictureTime).ToList();
-                if (pictureList.Any())
-                {
-                    int currentIndex = 0;
-                    int indexer = 0;
-                    foreach (Picture pic in pictureList)
-                    {
-                        if (pic.PictureId == picture.PictureId)
-                        {
-                            currentIndex = indexer;
-                        }
-                        indexer++;
-                        if (!String.IsNullOrEmpty(pic.Tags))
-                        {
-                            List<string> pvmTags = pic.Tags.Split(',').ToList();
-                            foreach (string tagstring in pvmTags)
-                            {
-                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                {
-                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                }
-                            }
-                        }
-                    }
-                    model.PictureNumber = currentIndex + 1;
-                    model.PictureCount = pictureList.Count;
-                    if (currentIndex > 0)
-                    {
-                        model.PrevPicture = pictureList[currentIndex - 1].PictureId;
-                    }
-                    else
-                    {
-                        model.PrevPicture = pictureList.Last().PictureId;
-                    }
-
-                    if (currentIndex + 1 < pictureList.Count)
-                    {
-                        model.NextPicture = pictureList[currentIndex + 1].PictureId;
-                    }
-                    else
-                    {
-                        model.NextPicture = pictureList.First().PictureId;
-                    }
-
-                    if (sortBy == 1)
-                    {
-                        int tempVal = model.NextPicture;
-                        model.NextPicture = model.PrevPicture;
-                        model.PrevPicture = tempVal;
-                    }
-
-                }
-                string tagItems = "[";
-                if (tagsList.Any())
-                {
-                    foreach (string tagstring in tagsList)
-                    {
-                        tagItems = tagItems + "'" + tagstring + "',";
-                    }
-
-                    tagItems = tagItems.Remove(tagItems.Length - 1);
-                    tagItems = tagItems + "]";
-                }
-
-                model.TagsList = tagItems;
-                return Ok(model);
+                return Unauthorized();
             }
 
-            return NotFound();
+            PictureViewModel model = new()
+            {
+                PictureId = picture.PictureId,
+                PictureTime = picture.PictureTime,
+                ProgenyId = picture.ProgenyId,
+                Owners = picture.Owners,
+                PictureLink = picture.PictureLink1200
+            };
+            if (!model.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
+            {
+                model.PictureLink = imageStore.UriFor(model.PictureLink);
+            }
+            model.AccessLevel = picture.AccessLevel;
+            model.Author = picture.Author;
+            model.CommentThreadNumber = picture.CommentThreadNumber;
+            model.Tags = picture.Tags;
+            model.Location = picture.Location;
+            model.Latitude = picture.Latitude;
+            model.Longtitude = picture.Longtitude;
+            model.Altitude = picture.Altitude;
+            model.PictureNumber = 1;
+            model.PictureCount = 1;
+            model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
+            model.TagsList = "";
+            List<string> tagsList = [];
+            List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId);
+            pictureList = [.. pictureList.Where(p => p.AccessLevel >= userAccess.AccessLevel).OrderBy(p => p.PictureTime)];
+            if (pictureList.Count != 0)
+            {
+                int currentIndex = 0;
+                int indexer = 0;
+                foreach (Picture pic in pictureList)
+                {
+                    if (pic.PictureId == picture.PictureId)
+                    {
+                        currentIndex = indexer;
+                    }
+                    indexer++;
+                    if (string.IsNullOrEmpty(pic.Tags)) continue;
+
+                    List<string> pvmTags = [.. pic.Tags.Split(',')];
+                    foreach (string tagstring in pvmTags)
+                    {
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                        {
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                        }
+                    }
+                }
+                model.PictureNumber = currentIndex + 1;
+                model.PictureCount = pictureList.Count;
+                if (currentIndex > 0)
+                {
+                    model.PrevPicture = pictureList[currentIndex - 1].PictureId;
+                }
+                else
+                {
+                    model.PrevPicture = pictureList.Last().PictureId;
+                }
+
+                if (currentIndex + 1 < pictureList.Count)
+                {
+                    model.NextPicture = pictureList[currentIndex + 1].PictureId;
+                }
+                else
+                {
+                    model.NextPicture = pictureList.First().PictureId;
+                }
+
+                if (sortBy == 1)
+                {
+                    (model.NextPicture, model.PrevPicture) = (model.PrevPicture, model.NextPicture);
+                }
+
+            }
+            string tagItems = "[";
+            if (tagsList.Count != 0)
+            {
+                foreach (string tagstring in tagsList)
+                {
+                    tagItems = tagItems + "'" + tagstring + "',";
+                }
+
+                tagItems = tagItems.Remove(tagItems.Length - 1);
+                tagItems += "]";
+            }
+
+            model.TagsList = tagItems;
+            return Ok(model);
+
         }
 
         [HttpGet]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
         public async Task<IActionResult> PictureViewModelMaui(int id)
         {
             Picture picture = await picturesService.GetPicture(id);
 
-            if (picture != null)
+            if (picture == null) return NotFound();
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
+
+            if (userAccess == null)
             {
-                // Check if user should be allowed access.
-                string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-                UserAccess userAccess = await dataService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
-
-                if (userAccess == null)
-                {
-                    return Unauthorized();
-                }
-
-                PictureViewModel model = new PictureViewModel();
-                model.PictureId = picture.PictureId;
-                model.PictureTime = picture.PictureTime;
-                model.ProgenyId = picture.ProgenyId;
-                model.Owners = picture.Owners;
-                model.PictureLink = picture.PictureLink1200;
-                if (!model.PictureLink.ToLower().StartsWith("http"))
-                {
-                    model.PictureLink = imageStore.UriFor(model.PictureLink);
-                }
-                model.AccessLevel = picture.AccessLevel;
-                model.Author = picture.Author;
-                model.CommentThreadNumber = picture.CommentThreadNumber;
-                model.Tags = picture.Tags;
-                model.Location = picture.Location;
-                model.Latitude = picture.Latitude;
-                model.Longtitude = picture.Longtitude;
-                model.Altitude = picture.Altitude;
-                model.PictureNumber = 1;
-                model.PictureCount = 1;
-                model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
-                model.TagsList = "";
-                List<string> tagsList = new List<string>();
-                List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId);
-                pictureList = pictureList.Where(p => p.AccessLevel >= userAccess.AccessLevel).OrderBy(p => p.PictureTime).ToList();
-                if (pictureList.Any())
-                {
-                    int currentIndex = 0;
-                    int indexer = 0;
-                    foreach (Picture pic in pictureList)
-                    {
-                        if (pic.PictureId == picture.PictureId)
-                        {
-                            currentIndex = indexer;
-                        }
-                        indexer++;
-                        if (!String.IsNullOrEmpty(pic.Tags))
-                        {
-                            List<string> pvmTags = pic.Tags.Split(',').ToList();
-                            foreach (string tagstring in pvmTags)
-                            {
-                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                {
-                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                }
-                            }
-                        }
-                    }
-                    model.PictureNumber = currentIndex + 1;
-                    model.PictureCount = pictureList.Count;
-                    if (currentIndex > 0)
-                    {
-                        model.PrevPicture = pictureList[currentIndex - 1].PictureId;
-                    }
-                    else
-                    {
-                        model.PrevPicture = pictureList.Last().PictureId;
-                    }
-
-                    if (currentIndex + 1 < pictureList.Count)
-                    {
-                        model.NextPicture = pictureList[currentIndex + 1].PictureId;
-                    }
-                    else
-                    {
-                        model.NextPicture = pictureList.First().PictureId;
-                    }
-
-                    int tempVal = model.NextPicture;
-                    model.NextPicture = model.PrevPicture;
-                    model.PrevPicture = tempVal;
-                }
-                string tagItems = "[";
-                if (tagsList.Any())
-                {
-                    foreach (string tagstring in tagsList)
-                    {
-                        tagItems = tagItems + "'" + tagstring + "',";
-                    }
-
-                    tagItems = tagItems.Remove(tagItems.Length - 1);
-                    tagItems = tagItems + "]";
-                }
-
-                model.TagsList = tagItems;
-                return Ok(model);
+                return Unauthorized();
             }
 
-            return NotFound();
+            PictureViewModel model = new()
+            {
+                PictureId = picture.PictureId,
+                PictureTime = picture.PictureTime,
+                ProgenyId = picture.ProgenyId,
+                Owners = picture.Owners,
+                PictureLink = picture.PictureLink1200
+            };
+            if (!model.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
+            {
+                model.PictureLink = imageStore.UriFor(model.PictureLink);
+            }
+            model.AccessLevel = picture.AccessLevel;
+            model.Author = picture.Author;
+            model.CommentThreadNumber = picture.CommentThreadNumber;
+            model.Tags = picture.Tags;
+            model.Location = picture.Location;
+            model.Latitude = picture.Latitude;
+            model.Longtitude = picture.Longtitude;
+            model.Altitude = picture.Altitude;
+            model.PictureNumber = 1;
+            model.PictureCount = 1;
+            model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
+            model.TagsList = "";
+            List<string> tagsList = [];
+            List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId);
+            pictureList = [.. pictureList.Where(p => p.AccessLevel >= userAccess.AccessLevel).OrderBy(p => p.PictureTime)];
+            if (pictureList.Count != 0)
+            {
+                int currentIndex = 0;
+                int indexer = 0;
+                foreach (Picture pic in pictureList)
+                {
+                    if (pic.PictureId == picture.PictureId)
+                    {
+                        currentIndex = indexer;
+                    }
+                    indexer++;
+                    if (string.IsNullOrEmpty(pic.Tags)) continue;
+
+                    List<string> pvmTags = [.. pic.Tags.Split(',')];
+                    foreach (string tagstring in pvmTags)
+                    {
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                        {
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                        }
+                    }
+                }
+                model.PictureNumber = currentIndex + 1;
+                model.PictureCount = pictureList.Count;
+                if (currentIndex > 0)
+                {
+                    model.PrevPicture = pictureList[currentIndex - 1].PictureId;
+                }
+                else
+                {
+                    model.PrevPicture = pictureList.Last().PictureId;
+                }
+
+                if (currentIndex + 1 < pictureList.Count)
+                {
+                    model.NextPicture = pictureList[currentIndex + 1].PictureId;
+                }
+                else
+                {
+                    model.NextPicture = pictureList.First().PictureId;
+                }
+
+                (model.NextPicture, model.PrevPicture) = (model.PrevPicture, model.NextPicture);
+            }
+            string tagItems = "[";
+            if (tagsList.Count != 0)
+            {
+                foreach (string tagstring in tagsList)
+                {
+                    tagItems = tagItems + "'" + tagstring + "',";
+                }
+
+                tagItems = tagItems.Remove(tagItems.Length - 1);
+                tagItems += "]";
+            }
+
+            model.TagsList = tagItems;
+            return Ok(model);
+
         }
 
         [Route("[action]")]
@@ -1266,7 +1268,7 @@ namespace KinaUnaMediaApi.Controllers
         {
             string pictureLink;
 
-            using (MagickImage image = new MagickImage(file.OpenReadStream()))
+            using (MagickImage image = new(file.OpenReadStream()))
             {
                 IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
@@ -1317,12 +1319,10 @@ namespace KinaUnaMediaApi.Controllers
                 image.Resize(newWidth, newHeight);
                 image.Strip();
 
-                using (MemoryStream memStream = new MemoryStream())
-                {
-                    await image.WriteAsync(memStream);
-                    memStream.Position = 0;
-                    pictureLink = await imageStore.SaveImage(memStream, BlobContainers.Progeny);
-                }
+                using MemoryStream memStream = new();
+                await image.WriteAsync(memStream);
+                memStream.Position = 0;
+                pictureLink = await imageStore.SaveImage(memStream, BlobContainers.Progeny);
             }
             
             if (pictureLink != "")
@@ -1339,7 +1339,7 @@ namespace KinaUnaMediaApi.Controllers
         {
             string pictureLink;
 
-            using (MagickImage image = new MagickImage(file.OpenReadStream()))
+            using (MagickImage image = new(file.OpenReadStream()))
             {
                 IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
@@ -1390,12 +1390,10 @@ namespace KinaUnaMediaApi.Controllers
                 image.Resize(newWidth, newHeight);
                 image.Strip();
 
-                using (MemoryStream memStream = new MemoryStream())
-                {
-                    await image.WriteAsync(memStream);
-                    memStream.Position = 0;
-                    pictureLink = await imageStore.SaveImage(memStream, BlobContainers.Profiles);
-                }
+                using MemoryStream memStream = new();
+                await image.WriteAsync(memStream);
+                memStream.Position = 0;
+                pictureLink = await imageStore.SaveImage(memStream, BlobContainers.Profiles);
             }
 
             if (pictureLink != "")
@@ -1412,7 +1410,7 @@ namespace KinaUnaMediaApi.Controllers
         {
             string pictureLink;
 
-            using (MagickImage image = new MagickImage(file.OpenReadStream()))
+            using (MagickImage image = new(file.OpenReadStream()))
             {
                 IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
@@ -1463,12 +1461,10 @@ namespace KinaUnaMediaApi.Controllers
                 image.Resize(newWidth, newHeight);
                 image.Strip();
 
-                using (MemoryStream memStream = new MemoryStream())
-                {
-                    await image.WriteAsync(memStream);
-                    memStream.Position = 0;
-                    pictureLink = await imageStore.SaveImage(memStream, BlobContainers.Friends);
-                }
+                using MemoryStream memStream = new();
+                await image.WriteAsync(memStream);
+                memStream.Position = 0;
+                pictureLink = await imageStore.SaveImage(memStream, BlobContainers.Friends);
             }
 
             if (pictureLink != "")
@@ -1485,7 +1481,7 @@ namespace KinaUnaMediaApi.Controllers
         {
             string pictureLink;
 
-            using (MagickImage image = new MagickImage(file.OpenReadStream()))
+            using (MagickImage image = new(file.OpenReadStream()))
             {
                 IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
@@ -1536,12 +1532,10 @@ namespace KinaUnaMediaApi.Controllers
                 image.Resize(newWidth, newHeight);
                 image.Strip();
 
-                using (MemoryStream memStream = new MemoryStream())
-                {
-                    await image.WriteAsync(memStream);
-                    memStream.Position = 0;
-                    pictureLink = await imageStore.SaveImage(memStream, BlobContainers.Contacts);
-                }
+                using MemoryStream memStream = new();
+                await image.WriteAsync(memStream);
+                memStream.Position = 0;
+                pictureLink = await imageStore.SaveImage(memStream, BlobContainers.Contacts);
             }
 
             if (pictureLink != "")
@@ -1557,7 +1551,7 @@ namespace KinaUnaMediaApi.Controllers
         public async Task<IActionResult> UploadNoteImage([FromForm] IFormFile file)
         {
             string pictureLink;
-            using (Stream stream = file.OpenReadStream())
+            await using (Stream stream = file.OpenReadStream())
             {
                 pictureLink = await imageStore.SaveImage(stream, BlobContainers.Notes);
                 pictureLink = imageStore.UriFor(pictureLink, BlobContainers.Notes);
@@ -1578,7 +1572,7 @@ namespace KinaUnaMediaApi.Controllers
             string result = "";
             if (!string.IsNullOrEmpty(id))
             {
-                if (!id.ToLower().StartsWith("http"))
+                if (!id.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
                 {
                     result = imageStore.UriFor(id, "profiles");
                 }
@@ -1607,7 +1601,7 @@ namespace KinaUnaMediaApi.Controllers
             
             List<Picture> allItems = await picturesService.GetPicturesList(id);
             allItems = allItems.Where(p => p.AccessLevel >= accessLevel).ToList();
-            List<string> autoSuggestList = new List<string>();
+            List<string> autoSuggestList = [];
             foreach (Picture picture in allItems)
             {
                 if (!string.IsNullOrEmpty(picture.Location))
@@ -1636,7 +1630,7 @@ namespace KinaUnaMediaApi.Controllers
             return Ok(autoSuggestList);
         }
 
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         [HttpGet]
         public async Task<IActionResult> GetTagsAutoSuggestList(int id, int accessLevel)
         {
@@ -1652,18 +1646,17 @@ namespace KinaUnaMediaApi.Controllers
 
             List<Picture> allItems = await picturesService.GetPicturesList(id);
             allItems = allItems.Where(p => p.AccessLevel >= accessLevel).ToList();
-            List<string> autoSuggestList = new List<string>();
+            List<string> autoSuggestList = [];
             foreach (Picture picture in allItems)
             {
-                if (!string.IsNullOrEmpty(picture.Tags))
+                if (string.IsNullOrEmpty(picture.Tags)) continue;
+
+                List<string> tagsList = [.. picture.Tags.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = picture.Tags.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -1672,15 +1665,14 @@ namespace KinaUnaMediaApi.Controllers
             allVideos = allVideos.Where(p => p.AccessLevel >= accessLevel).ToList();
             foreach (Video video in allVideos)
             {
-                if (!string.IsNullOrEmpty(video.Tags))
+                if (string.IsNullOrEmpty(video.Tags)) continue;
+
+                List<string> tagsList = [.. video.Tags.Split(',')];
+                foreach (string tagString in tagsList)
                 {
-                    List<string> tagsList = video.Tags.Split(',').ToList();
-                    foreach (string tagString in tagsList)
+                    if (!autoSuggestList.Contains(tagString.Trim()))
                     {
-                        if (!autoSuggestList.Contains(tagString.Trim()))
-                        {
-                            autoSuggestList.Add(tagString.Trim());
-                        }
+                        autoSuggestList.Add(tagString.Trim());
                     }
                 }
             }
@@ -1692,11 +1684,11 @@ namespace KinaUnaMediaApi.Controllers
 
         // Download pictures to StorageBlob from Url
         [HttpGet]
-        [Route("[action]/{pictureId}")]
+        [Route("[action]/{pictureId:int}")]
         public async Task<IActionResult> DownloadPicture(int pictureId)
         {
             Picture picture = await picturesService.GetPicture(pictureId);
-            if (picture != null && picture.PictureLink.ToLower().StartsWith("http"))
+            if (picture != null && picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
             {
                 // Check if user should be allowed access.
                 string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -1733,7 +1725,7 @@ namespace KinaUnaMediaApi.Controllers
 
         private static async Task<Stream> GetStreamFromUrl(string url)
         {
-            using HttpClient client = new HttpClient();
+            using HttpClient client = new();
             using HttpResponseMessage response = await client.GetAsync(url);
             
             return await response.Content.ReadAsStreamAsync();

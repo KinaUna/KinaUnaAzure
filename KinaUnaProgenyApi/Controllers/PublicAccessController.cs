@@ -43,12 +43,12 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> Get()
         {
             Progeny prog = await progenyService.GetProgeny(Constants.DefaultChildId);
-            List<Progeny> resultList = new() { prog };
+            List<Progeny> resultList = [prog];
 
             return Ok(resultList);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetProgeny(int id)
         {
@@ -59,12 +59,12 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> Access(int id)
         {
             List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(Constants.DefaultChildId);
-            if (accessList.Any())
+            if (accessList.Count != 0)
             {
                 foreach (UserAccess ua in accessList)
                 {
@@ -84,10 +84,8 @@ namespace KinaUnaProgenyApi.Controllers
                 }
                 return Ok(accessList);
             }
-            else
-            {
-                return NotFound();
-            }
+
+            return NotFound();
 
         }
 
@@ -95,7 +93,7 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyListByUser(string id)
         {
-            List<Progeny> result = new();
+            List<Progeny> result = [];
             Progeny prog = await progenyService.GetProgeny(Constants.DefaultChildId);
             result.Add(prog);
             return Ok(result);
@@ -103,38 +101,33 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{progenyId}/{accessLevel}")]
+        [Route("[action]/{progenyId:int}/{accessLevel:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> EventList(int progenyId, int accessLevel)
         {
             List<CalendarItem> model = await calendarService.GetCalendarList(Constants.DefaultChildId);
-            model = model.Where(e => e.EndTime > DateTime.UtcNow && e.AccessLevel >= 5).OrderBy(e => e.StartTime).ToList();
+            model = [.. model.Where(e => e.EndTime > DateTime.UtcNow && e.AccessLevel >= 5).OrderBy(e => e.StartTime)];
             model = model.Take(5).ToList();
 
             return Ok(model);
         }
 
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}/{count}/{start}")]
+        [Route("[action]/{id:int}/{accessLevel:int}/{count:int}/{start:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyLatest(int id, int accessLevel = 5, int count = 5, int start = 0)
         {
             List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(Constants.DefaultChildId);
-            timeLineList = timeLineList.Where(t => t.AccessLevel >= 5 && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime).ToList();
-            if (timeLineList.Any())
-            {
-                timeLineList.Reverse();
+            timeLineList = [.. timeLineList.Where(t => t.AccessLevel >= 5 && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime)];
+            if (timeLineList.Count == 0) return Ok(new List<TimeLineItem>());
 
-                return Ok(timeLineList.Skip(start).Take(count));
-            }
-            else
-            {
-                return Ok(new List<TimeLineItem>());
-            }
+            timeLineList.Reverse();
+
+            return Ok(timeLineList.Skip(start).Take(count));
 
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetCalendarItemMobile(int id)
         {
             CalendarItem result = await calendarService.GetCalendarItem(id);
@@ -156,24 +149,22 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyCalendarMobile(int id, int accessLevel = 5)
         {
             List<CalendarItem> calendarList = await calendarService.GetCalendarList(Constants.DefaultChildId);
             calendarList = calendarList.Where(c => c.AccessLevel >= 5).ToList();
-            if (calendarList.Any())
+            if (calendarList.Count != 0)
             {
                 return Ok(calendarList);
             }
-            else
-            {
-                return NotFound();
-            }
+
+            return NotFound();
 
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetContactMobile(int id)
         {
             Contact result = await contactService.GetContact(id);
@@ -199,49 +190,40 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyContactsMobile(int id, int accessLevel = 5)
         {
             List<Contact> contactsList = await contactService.GetContactsList(Constants.DefaultChildId);
             contactsList = contactsList.Where(c => c.AccessLevel >= 5).ToList();
-            if (contactsList.Any())
+            if (contactsList.Count == 0) return Ok(new List<Contact>());
+
+            foreach (Contact cont in contactsList)
             {
-                foreach (Contact cont in contactsList)
-                {
-                    cont.PictureLink = imageStore.UriFor(cont.PictureLink, BlobContainers.Contacts);
-                }
-                return Ok(contactsList);
+                cont.PictureLink = imageStore.UriFor(cont.PictureLink, BlobContainers.Contacts);
             }
-            else
-            {
-                return Ok(new List<Contact>());
-            }
+            return Ok(contactsList);
 
         }
 
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyFriendsMobile(int id, int accessLevel = 5)
         {
             List<Friend> friendsList = await friendService.GetFriendsList(Constants.DefaultChildId);
             friendsList = friendsList.Where(c => c.AccessLevel >= 5).ToList();
-            if (friendsList.Any())
+            if (friendsList.Count == 0) return Ok(new List<Contact>());
+
+            foreach (Friend frn in friendsList)
             {
-                foreach (Friend frn in friendsList)
-                {
-                    frn.PictureLink = imageStore.UriFor(frn.PictureLink, BlobContainers.Friends);
-                }
-                return Ok(friendsList);
+                frn.PictureLink = imageStore.UriFor(frn.PictureLink, BlobContainers.Friends);
             }
-            else
-            {
-                return Ok(new List<Contact>());
-            }
+            return Ok(friendsList);
+
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetLocationMobile(int id)
         {
             Location result = await locationService.GetLocation(id);
@@ -259,7 +241,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetVocabularyItemMobile(int id)
         {
             VocabularyItem result = await vocabularyService.GetVocabularyItem(id);
@@ -277,7 +259,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetSkillMobile(int id)
         {
             Skill result = await skillService.GetSkill(id);
@@ -295,7 +277,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetFriendMobile(int id)
         {
             Friend result = await friendService.GetFriend(id);
@@ -319,57 +301,55 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetMeasurementMobile(int id)
         {
             Measurement result = await measurementService.GetMeasurement(id);
-            if (result.ProgenyId != Constants.DefaultChildId)
+            if (result.ProgenyId == Constants.DefaultChildId) return Ok(result);
+
+            result = new Measurement
             {
-                result = new Measurement
-                {
-                    AccessLevel = 5,
-                    ProgenyId = Constants.DefaultChildId,
-                    Circumference = 0
-                };
-                UserInfo adminInfo = await userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
-                result.Author = adminInfo?.UserId ?? "Unknown Author";
-                result.CreatedDate = DateTime.UtcNow;
-                result.Height = 1;
-                result.Weight = 1;
-                result.Date = DateTime.UtcNow;
-            }
+                AccessLevel = 5,
+                ProgenyId = Constants.DefaultChildId,
+                Circumference = 0
+            };
+            UserInfo adminInfo = await userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
+            result.Author = adminInfo?.UserId ?? "Unknown Author";
+            result.CreatedDate = DateTime.UtcNow;
+            result.Height = 1;
+            result.Weight = 1;
+            result.Date = DateTime.UtcNow;
             return Ok(result);
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetSleepMobile(int id)
         {
             Sleep result = await sleepService.GetSleep(id);
-            if (result.ProgenyId != Constants.DefaultChildId)
+            if (result.ProgenyId == Constants.DefaultChildId) return Ok(result);
+
+            result = new Sleep
             {
-                result = new Sleep
-                {
-                    AccessLevel = 5,
-                    ProgenyId = Constants.DefaultChildId
-                };
-                UserInfo adminInfo = await userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
-                result.Author = adminInfo?.UserId ?? "Unknown Author";
-                result.CreatedDate = DateTime.UtcNow;
-                result.SleepStart = DateTime.UtcNow - TimeSpan.FromHours(1);
-                result.SleepEnd = DateTime.UtcNow + TimeSpan.FromHours(2);
-                result.SleepRating = 3;
-            }
+                AccessLevel = 5,
+                ProgenyId = Constants.DefaultChildId
+            };
+            UserInfo adminInfo = await userInfoService.GetUserInfoByEmail(Constants.DefaultUserEmail);
+            result.Author = adminInfo?.UserId ?? "Unknown Author";
+            result.CreatedDate = DateTime.UtcNow;
+            result.SleepStart = DateTime.UtcNow - TimeSpan.FromHours(1);
+            result.SleepEnd = DateTime.UtcNow + TimeSpan.FromHours(2);
+            result.SleepRating = 3;
             return Ok(result);
         }
 
         [HttpGet]
-        [Route("[action]/{progenyId}/{accessLevel}/{start}")]
+        [Route("[action]/{progenyId:int}/{accessLevel:int}/{start:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
             List<Sleep> model = await sleepService.GetSleepList(Constants.DefaultChildId);
             model = model.Where(s => s.AccessLevel >= 5).ToList();
-            model = model.OrderByDescending(s => s.SleepStart).ToList();
+            model = [.. model.OrderByDescending(s => s.SleepStart)];
             model = model.Skip(start).Take(25).ToList();
             return Ok(model);
         }
@@ -378,7 +358,7 @@ namespace KinaUnaProgenyApi.Controllers
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetSleepStatsMobile(int progenyId, int accessLevel)
         {
-            string userTimeZone = Constants.DefaultTimezone;
+            const string userTimeZone = Constants.DefaultTimezone;
             SleepStatsModel model = new()
             {
                 SleepTotal = TimeSpan.Zero,
@@ -386,7 +366,7 @@ namespace KinaUnaProgenyApi.Controllers
                 SleepLastMonth = TimeSpan.Zero
             };
             List<Sleep> sList = await sleepService.GetSleepList(Constants.DefaultChildId);
-            List<Sleep> sleepList = new();
+            List<Sleep> sleepList = [];
             DateTime yearAgo = new(DateTime.UtcNow.Year - 1, DateTime.UtcNow.Month, DateTime.UtcNow.Day, DateTime.UtcNow.Hour, DateTime.UtcNow.Minute, 0);
             DateTime monthAgo = DateTime.UtcNow - TimeSpan.FromDays(30);
             if (sList.Count != 0)
@@ -422,7 +402,7 @@ namespace KinaUnaProgenyApi.Controllers
                         sleepList.Add(s);
                     }
                 }
-                sleepList = sleepList.OrderBy(s => s.SleepStart).ToList();
+                sleepList = [.. sleepList.OrderBy(s => s.SleepStart)];
 
                 model.TotalAverage = model.SleepTotal / (DateTime.UtcNow - sleepList.First().SleepStart).TotalDays;
                 model.LastYearAverage = model.SleepLastYear / (DateTime.UtcNow - yearAgo).TotalDays;
@@ -439,13 +419,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
-        [HttpGet("[action]/{progenyId}/{accessLevel}")]
+        [HttpGet("[action]/{progenyId:int}/{accessLevel:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
         {
-            string userTimeZone = Constants.DefaultTimezone;
+            const string userTimeZone = Constants.DefaultTimezone;
             List<Sleep> sList = await sleepService.GetSleepList(Constants.DefaultChildId);
-            List<Sleep> chartList = new();
+            List<Sleep> chartList = [];
             foreach (Sleep chartItem in sList)
             {
                 double durationStartDate = 0.0;
@@ -516,12 +496,12 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            List<Sleep> model = chartList.OrderBy(s => s.SleepStart).ToList();
+            List<Sleep> model = [.. chartList.OrderBy(s => s.SleepStart)];
 
             return Ok(model);
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetNoteMobile(int id)
         {
             Note result = await noteService.GetNote(id);
@@ -539,7 +519,7 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetVaccinationMobile(int id)
         {
             Vaccination result = await vaccinationService.GetVaccination(id);
@@ -557,22 +537,18 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> ProgenyYearAgo(int id, int accessLevel = 5)
         {
             List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(Constants.DefaultChildId);
-            timeLineList = timeLineList
-                .Where(t => t.AccessLevel >= 5 && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day).OrderBy(t => t.ProgenyTime).ToList();
-            if (timeLineList.Any())
-            {
-                timeLineList.Reverse();
-                return Ok(timeLineList);
-            }
-            else
-            {
-                return Ok(new List<TimeLineItem>());
-            }
+            timeLineList = [.. timeLineList
+                .Where(t => t.AccessLevel >= 5 && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day).OrderBy(t => t.ProgenyTime)];
+            if (timeLineList.Count == 0) return Ok(new List<TimeLineItem>());
+
+            timeLineList.Reverse();
+            return Ok(timeLineList);
+
         }
 
         [HttpGet("[action]")]
@@ -586,7 +562,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<Note> allItems = await noteService.GetNotesList(Constants.DefaultChildId);
-            allItems = allItems.Where(n => n.AccessLevel == 5).OrderBy(v => v.CreatedDate).ToList();
+            allItems = [.. allItems.Where(n => n.AccessLevel == 5).OrderBy(v => v.CreatedDate)];
 
             if (sortBy == 1)
             {
@@ -636,7 +612,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<Sleep> allItems = await sleepService.GetSleepList(Constants.DefaultChildId);
-            allItems = allItems.Where(s => s.AccessLevel == 5).OrderBy(s => s.SleepStart).ToList();
+            allItems = [.. allItems.Where(s => s.AccessLevel == 5).OrderBy(s => s.SleepStart)];
 
             if (sortBy == 1)
             {
@@ -675,87 +651,83 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
-        [HttpGet("[action]/{sleepId}/{accessLevel}/{sortOrder}")]
+        [HttpGet("[action]/{sleepId:int}/{accessLevel:int}/{sortOrder:int}")]
         public async Task<IActionResult> GetSleepDetails(int sleepId, int accessLevel, int sortOrder)
         {
 
             Sleep currentSleep = await sleepService.GetSleep(sleepId);
-            if (currentSleep != null && currentSleep.ProgenyId == Constants.DefaultChildId)
+            if (currentSleep == null || currentSleep.ProgenyId != Constants.DefaultChildId) return Unauthorized();
+
+            const string userTimeZone = Constants.DefaultTimezone;
+            List<Sleep> sList = await sleepService.GetSleepList(currentSleep.ProgenyId);
+            List<Sleep> sleepList = [];
+            foreach (Sleep s in sList)
             {
-                string userTimeZone = Constants.DefaultTimezone;
-                List<Sleep> sList = await sleepService.GetSleepList(currentSleep.ProgenyId);
-                List<Sleep> sleepList = new();
-                foreach (Sleep s in sList)
+                if (s.AccessLevel >= accessLevel)
                 {
-                    if (s.AccessLevel >= accessLevel)
-                    {
-                        sleepList.Add(s);
-                    }
+                    sleepList.Add(s);
                 }
-
-                if (sortOrder == 0)
-                {
-                    sleepList = sleepList.OrderBy(s => s.SleepStart).ToList();
-                }
-                else
-                {
-                    sleepList = sleepList.OrderByDescending(s => s.SleepStart).ToList();
-                }
-
-                List<Sleep> model = new() { currentSleep };
-
-                int currentSleepIndex = sleepList.IndexOf(currentSleep);
-                if (currentSleepIndex > 0)
-                {
-                    model.Add(sleepList[currentSleepIndex - 1]);
-                }
-                else
-                {
-                    model.Add(sleepList[^1]);
-                }
-
-                if (sleepList.Count < currentSleepIndex + 1)
-                {
-                    model.Add(sleepList[currentSleepIndex + 1]);
-                }
-                else
-                {
-                    model.Add(sleepList[0]);
-                }
-
-                foreach (Sleep s in model)
-                {
-                    DateTimeOffset sOffset = new(s.SleepStart,
-                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
-                    DateTimeOffset eOffset = new(s.SleepEnd,
-                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
-                    s.SleepDuration = eOffset - sOffset;
-                }
-
-                return Ok(model);
             }
 
-            return Unauthorized();
+            if (sortOrder == 0)
+            {
+                sleepList = [.. sleepList.OrderBy(s => s.SleepStart)];
+            }
+            else
+            {
+                sleepList = [.. sleepList.OrderByDescending(s => s.SleepStart)];
+            }
+
+            List<Sleep> model = [currentSleep];
+
+            int currentSleepIndex = sleepList.IndexOf(currentSleep);
+            if (currentSleepIndex > 0)
+            {
+                model.Add(sleepList[currentSleepIndex - 1]);
+            }
+            else
+            {
+                model.Add(sleepList[^1]);
+            }
+
+            if (sleepList.Count < currentSleepIndex + 1)
+            {
+                model.Add(sleepList[currentSleepIndex + 1]);
+            }
+            else
+            {
+                model.Add(sleepList[0]);
+            }
+
+            foreach (Sleep s in model)
+            {
+                DateTimeOffset sOffset = new(s.SleepStart,
+                    TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
+                DateTimeOffset eOffset = new(s.SleepEnd,
+                    TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
+                s.SleepDuration = eOffset - sOffset;
+            }
+
+            return Ok(model);
+
         }
 
         [HttpGet]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> LocationsList(int id, [FromQuery] int accessLevel = 5)
         {
-            if (id == Constants.DefaultChildId)
-            {
-                List<Location> locationsList = await locationService.GetLocationsList(id);
-                locationsList = locationsList.Where(l => l.AccessLevel == 5).ToList();
-                if (locationsList.Any())
-                {
-                    return Ok(locationsList);
-                }
+            if (id != Constants.DefaultChildId) return Unauthorized();
 
-                return NotFound();
+            List<Location> locationsList = await locationService.GetLocationsList(id);
+            locationsList = locationsList.Where(l => l.AccessLevel == 5).ToList();
+            if (locationsList.Count != 0)
+            {
+                return Ok(locationsList);
             }
 
-            return Unauthorized();
+            return NotFound();
+
         }
 
         [HttpGet("[action]")]
@@ -776,7 +748,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<Location> allItems = await locationService.GetLocationsList(progenyId);
-            allItems = allItems.OrderBy(v => v.Date).ToList();
+            allItems = [.. allItems.OrderBy(v => v.Date)];
 
             if (sortBy == 1)
             {
@@ -830,7 +802,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<Measurement> allItems = await measurementService.GetMeasurementsList(progenyId);
-            allItems = allItems.OrderBy(m => m.Date).ToList();
+            allItems = [.. allItems.OrderBy(m => m.Date)];
 
             if (sortBy == 1)
             {
@@ -870,21 +842,19 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
         public async Task<IActionResult> MeasurementsList(int id, [FromQuery] int accessLevel = 5)
         {
-            if (id == Constants.DefaultChildId)
-            {
-                List<Measurement> measurementsList = await measurementService.GetMeasurementsList(id);
-                measurementsList = measurementsList.Where(m => m.AccessLevel >= accessLevel).ToList();
-                if (measurementsList.Any())
-                {
-                    return Ok(measurementsList);
-                }
-                return NotFound();
-            }
+            if (id != Constants.DefaultChildId) return Unauthorized();
 
-            return Unauthorized();
+            List<Measurement> measurementsList = await measurementService.GetMeasurementsList(id);
+            measurementsList = measurementsList.Where(m => m.AccessLevel >= accessLevel).ToList();
+            if (measurementsList.Count != 0)
+            {
+                return Ok(measurementsList);
+            }
+            return NotFound();
+
         }
 
         [HttpGet("[action]")]
@@ -902,7 +872,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<Skill> allItems = await skillService.GetSkillsList(progenyId);
-            allItems = allItems.OrderBy(s => s.SkillFirstObservation).ToList();
+            allItems = [.. allItems.OrderBy(s => s.SkillFirstObservation)];
 
             if (sortBy == 1)
             {
@@ -956,7 +926,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             List<VocabularyItem> allItems = await vocabularyService.GetVocabularyList(progenyId);
-            allItems = allItems.OrderBy(v => v.Date).ToList();
+            allItems = [.. allItems.OrderBy(v => v.Date)];
 
             if (sortBy == 1)
             {
@@ -996,50 +966,46 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
         public async Task<IActionResult> VocabularyList(int id, [FromQuery] int accessLevel = 5)
         {
-            if (id == Constants.DefaultChildId)
-            {
-                List<VocabularyItem> wordList = await vocabularyService.GetVocabularyList(id);
-                wordList = wordList.Where(w => w.AccessLevel >= accessLevel).ToList();
-                if (wordList.Any())
-                {
-                    return Ok(wordList);
-                }
-                return NotFound();
-            }
+            if (id != Constants.DefaultChildId) return Unauthorized();
 
-            return Unauthorized();
+            List<VocabularyItem> wordList = await vocabularyService.GetVocabularyList(id);
+            wordList = wordList.Where(w => w.AccessLevel >= accessLevel).ToList();
+            if (wordList.Count != 0)
+            {
+                return Ok(wordList);
+            }
+            return NotFound();
+
         }
 
         [HttpGet]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
         public async Task<IActionResult> VaccinationsList(int id, [FromQuery] int accessLevel = 5)
         {
-            if (id == Constants.DefaultChildId)
-            {
-                List<Vaccination> vaccinationsList = await vaccinationService.GetVaccinationsList(id);
-                vaccinationsList = vaccinationsList.Where(v => v.AccessLevel >= accessLevel).ToList();
-                if (vaccinationsList.Any())
-                {
-                    return Ok(vaccinationsList);
-                }
+            if (id != Constants.DefaultChildId) return Unauthorized();
 
-                return NotFound();
+            List<Vaccination> vaccinationsList = await vaccinationService.GetVaccinationsList(id);
+            vaccinationsList = vaccinationsList.Where(v => v.AccessLevel >= accessLevel).ToList();
+            if (vaccinationsList.Count != 0)
+            {
+                return Ok(vaccinationsList);
             }
 
-            return Unauthorized();
+            return NotFound();
+
         }
 
         [HttpGet]
-        [Route("[action]/{progenyId}/{accessLevel}")]
+        [Route("[action]/{progenyId:int}/{accessLevel:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> RandomPictureMobile(int progenyId, int accessLevel)
         {
             List<Picture> picturesList = await picturesService.GetPicturesList(Constants.DefaultChildId);
             picturesList = picturesList.Where(p => p.AccessLevel >= 5).ToList();
-            if (picturesList.Any())
+            if (picturesList.Count != 0)
             {
                 Random r = new();
                 int pictureNumber = r.Next(0, picturesList.Count);
@@ -1075,7 +1041,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // GET api/pictures/5
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetPictureMobile(int id)
         {
             Picture result = await picturesService.GetPicture(id);
@@ -1129,12 +1095,12 @@ namespace KinaUnaProgenyApi.Controllers
             if (!string.IsNullOrEmpty(tagFilter))
             {
                 allItems = await picturesService.GetPicturesList(Constants.DefaultChildId);
-                allItems = allItems.Where(p => p.AccessLevel >= 5 && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.PictureTime).ToList();
+                allItems = [.. allItems.Where(p => p.AccessLevel >= 5 && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.PictureTime)];
             }
             else
             {
                 allItems = await picturesService.GetPicturesList(2);
-                allItems = allItems.Where(p => p.AccessLevel >= 5).OrderBy(p => p.PictureTime).ToList();
+                allItems = [.. allItems.Where(p => p.AccessLevel >= 5).OrderBy(p => p.PictureTime)];
             }
 
             if (sortBy == 1)
@@ -1144,7 +1110,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             int pictureCounter = 1;
             int picCount = allItems.Count;
-            List<string> tagsList = new();
+            List<string> tagsList = [];
             foreach (Picture pic in allItems)
             {
                 if (sortBy == 1)
@@ -1157,15 +1123,14 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 pictureCounter++;
-                if (!String.IsNullOrEmpty(pic.Tags))
+                if (string.IsNullOrEmpty(pic.Tags)) continue;
+
+                List<string> pvmTags = [.. pic.Tags.Split(',')];
+                foreach (string tagstring in pvmTags)
                 {
-                    List<string> pvmTags = pic.Tags.Split(',').ToList();
-                    foreach (string tagstring in pvmTags)
+                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                     {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                        {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                        }
+                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                     }
                 }
             }
@@ -1201,112 +1166,104 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> PictureViewModelMobile(int id, int accessLevel, [FromQuery] int sortBy = 1)
         {
 
             Picture picture = await picturesService.GetPicture(id);
 
-            if (picture != null)
+            if (picture == null || picture.ProgenyId != Constants.DefaultChildId) return NotFound();
+            
+            PictureViewModel model = new()
             {
-                if (picture.ProgenyId != Constants.DefaultChildId)
+                PictureId = picture.PictureId,
+                PictureTime = picture.PictureTime,
+                ProgenyId = picture.ProgenyId,
+                Owners = picture.Owners,
+                PictureLink = picture.PictureLink1200
+            };
+            model.PictureLink = imageStore.UriFor(model.PictureLink);
+            model.AccessLevel = picture.AccessLevel;
+            model.Author = picture.Author;
+            model.CommentThreadNumber = picture.CommentThreadNumber;
+            model.Tags = picture.Tags;
+            model.Location = picture.Location;
+            model.Latitude = picture.Latitude;
+            model.Longtitude = picture.Longtitude;
+            model.Altitude = picture.Altitude;
+            model.PictureNumber = 1;
+            model.PictureCount = 1;
+            model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
+            model.TagsList = "";
+            List<string> tagsList = [];
+            List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId);
+            pictureList = [.. pictureList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime)];
+            if (pictureList.Count != 0)
+            {
+                int currentIndex = 0;
+                int indexer = 0;
+                foreach (Picture pic in pictureList)
                 {
-                    return NotFound();
-                }
-
-                PictureViewModel model = new()
-                {
-                    PictureId = picture.PictureId,
-                    PictureTime = picture.PictureTime,
-                    ProgenyId = picture.ProgenyId,
-                    Owners = picture.Owners,
-                    PictureLink = picture.PictureLink1200
-                };
-                model.PictureLink = imageStore.UriFor(model.PictureLink);
-                model.AccessLevel = picture.AccessLevel;
-                model.Author = picture.Author;
-                model.CommentThreadNumber = picture.CommentThreadNumber;
-                model.Tags = picture.Tags;
-                model.Location = picture.Location;
-                model.Latitude = picture.Latitude;
-                model.Longtitude = picture.Longtitude;
-                model.Altitude = picture.Altitude;
-                model.PictureNumber = 1;
-                model.PictureCount = 1;
-                model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
-                model.TagsList = "";
-                List<string> tagsList = new();
-                List<Picture> pictureList = await picturesService.GetPicturesList(picture.ProgenyId);
-                pictureList = pictureList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime).ToList();
-                if (pictureList.Any())
-                {
-                    int currentIndex = 0;
-                    int indexer = 0;
-                    foreach (Picture pic in pictureList)
+                    if (pic.PictureId == picture.PictureId)
                     {
-                        if (pic.PictureId == picture.PictureId)
+                        currentIndex = indexer;
+                    }
+                    indexer++;
+                    if (string.IsNullOrEmpty(pic.Tags)) continue;
+
+                    List<string> pvmTags = [.. pic.Tags.Split(',')];
+                    foreach (string tagstring in pvmTags)
+                    {
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                         {
-                            currentIndex = indexer;
-                        }
-                        indexer++;
-                        if (!String.IsNullOrEmpty(pic.Tags))
-                        {
-                            List<string> pvmTags = pic.Tags.Split(',').ToList();
-                            foreach (string tagstring in pvmTags)
-                            {
-                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                {
-                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                }
-                            }
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                         }
                     }
-                    model.PictureNumber = currentIndex + 1;
-                    model.PictureCount = pictureList.Count;
-                    if (currentIndex > 0)
-                    {
-                        model.PrevPicture = pictureList[currentIndex - 1].PictureId;
-                    }
-                    else
-                    {
-                        model.PrevPicture = pictureList.Last().PictureId;
-                    }
-
-                    if (currentIndex + 1 < pictureList.Count)
-                    {
-                        model.NextPicture = pictureList[currentIndex + 1].PictureId;
-                    }
-                    else
-                    {
-                        model.NextPicture = pictureList.First().PictureId;
-                    }
-
-                    if (sortBy == 1)
-                    {
-                        (model.PrevPicture, model.NextPicture) = (model.NextPicture, model.PrevPicture);
-                    }
-
                 }
-                string tagItems = "[";
-                if (tagsList.Any())
+                model.PictureNumber = currentIndex + 1;
+                model.PictureCount = pictureList.Count;
+                if (currentIndex > 0)
                 {
-                    foreach (string tagstring in tagsList)
-                    {
-                        tagItems = tagItems + "'" + tagstring + "',";
-                    }
-
-                    tagItems = tagItems.Remove(tagItems.Length - 1);
-                    tagItems += "]";
+                    model.PrevPicture = pictureList[currentIndex - 1].PictureId;
+                }
+                else
+                {
+                    model.PrevPicture = pictureList.Last().PictureId;
                 }
 
-                model.TagsList = tagItems;
-                return Ok(model);
+                if (currentIndex + 1 < pictureList.Count)
+                {
+                    model.NextPicture = pictureList[currentIndex + 1].PictureId;
+                }
+                else
+                {
+                    model.NextPicture = pictureList.First().PictureId;
+                }
+
+                if (sortBy == 1)
+                {
+                    (model.PrevPicture, model.NextPicture) = (model.NextPicture, model.PrevPicture);
+                }
+
+            }
+            string tagItems = "[";
+            if (tagsList.Count != 0)
+            {
+                foreach (string tagstring in tagsList)
+                {
+                    tagItems = tagItems + "'" + tagstring + "',";
+                }
+
+                tagItems = tagItems.Remove(tagItems.Length - 1);
+                tagItems += "]";
             }
 
-            return NotFound();
+            model.TagsList = tagItems;
+            return Ok(model);
+
         }
 
-        [HttpGet("[action]/{id}")]
+        [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetVideoMobile(int id)
         {
             Video result = await videosService.GetVideo(id);
@@ -1335,12 +1292,12 @@ namespace KinaUnaProgenyApi.Controllers
             if (tagFilter != "")
             {
                 allItems = await videosService.GetVideosList(Constants.DefaultChildId);
-                allItems = allItems.Where(p => p.AccessLevel >= 5 && p.Tags.ToUpper().Contains(tagFilter.ToUpper())).OrderBy(p => p.VideoTime).ToList();
+                allItems = [.. allItems.Where(p => p.AccessLevel >= 5 && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.VideoTime)];
             }
             else
             {
                 allItems = await videosService.GetVideosList(Constants.DefaultChildId);
-                allItems = allItems.Where(p => p.AccessLevel >= 5).OrderBy(p => p.VideoTime).ToList();
+                allItems = [.. allItems.Where(p => p.AccessLevel >= 5).OrderBy(p => p.VideoTime)];
             }
 
             if (sortBy == 1)
@@ -1350,7 +1307,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             int videoCounter = 1;
             int vidCount = allItems.Count;
-            List<string> tagsList = new();
+            List<string> tagsList = [];
             foreach (Video vid in allItems)
             {
                 if (sortBy == 1)
@@ -1363,9 +1320,9 @@ namespace KinaUnaProgenyApi.Controllers
                 }
 
                 videoCounter++;
-                if (!String.IsNullOrEmpty(vid.Tags))
+                if (!string.IsNullOrEmpty(vid.Tags))
                 {
-                    List<string> pvmTags = vid.Tags.Split(',').ToList();
+                    List<string> pvmTags = [.. vid.Tags.Split(',')];
                     foreach (string tagstring in pvmTags)
                     {
                         if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
@@ -1375,23 +1332,21 @@ namespace KinaUnaProgenyApi.Controllers
                     }
                 }
 
-                if (vid.Duration != null)
-                {
-                    vid.DurationHours = vid.Duration.Value.Hours.ToString();
-                    vid.DurationMinutes = vid.Duration.Value.Minutes.ToString();
-                    vid.DurationSeconds = vid.Duration.Value.Seconds.ToString();
-                    if (vid.DurationSeconds.Length == 1)
-                    {
-                        vid.DurationSeconds = "0" + vid.DurationSeconds;
-                    }
-                    if (vid.Duration.Value.Hours != 0)
-                    {
-                        if (vid.DurationMinutes.Length == 1)
-                        {
-                            vid.DurationMinutes = "0" + vid.DurationMinutes;
-                        }
+                if (vid.Duration == null) continue;
 
-                    }
+                vid.DurationHours = vid.Duration.Value.Hours.ToString();
+                vid.DurationMinutes = vid.Duration.Value.Minutes.ToString();
+                vid.DurationSeconds = vid.Duration.Value.Seconds.ToString();
+                if (vid.DurationSeconds.Length == 1)
+                {
+                    vid.DurationSeconds = "0" + vid.DurationSeconds;
+                }
+
+                if (vid.Duration.Value.Hours == 0) continue;
+
+                if (vid.DurationMinutes.Length == 1)
+                {
+                    vid.DurationMinutes = "0" + vid.DurationMinutes;
                 }
             }
 
@@ -1423,137 +1378,128 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> VideoViewModelMobile(int id, int accessLevel, [FromQuery] int sortBy = 1)
         {
 
             Video video = await videosService.GetVideo(id);
 
-            if (video != null)
+            if (video == null || video.ProgenyId != Constants.DefaultChildId) return NotFound();
+            
+            VideoViewModel model = new()
             {
-                if (video.ProgenyId != Constants.DefaultChildId)
+                VideoId = video.VideoId,
+                VideoType = video.VideoType,
+                VideoTime = video.VideoTime,
+                Duration = video.Duration,
+                ProgenyId = video.ProgenyId,
+                Owners = video.Owners,
+                VideoLink = video.VideoLink,
+                ThumbLink = video.ThumbLink,
+                AccessLevel = video.AccessLevel,
+                Author = video.Author
+            };
+            model.AccessLevelListEn[video.AccessLevel].Selected = true;
+            model.AccessLevelListDa[video.AccessLevel].Selected = true;
+            model.AccessLevelListDe[video.AccessLevel].Selected = true;
+            model.CommentThreadNumber = video.CommentThreadNumber;
+            model.Tags = video.Tags;
+            model.VideoNumber = 1;
+            model.VideoCount = 1;
+            model.CommentsList = await commentsService.GetCommentsList(video.CommentThreadNumber);
+            model.Location = video.Location;
+            model.Longtitude = video.Longtitude;
+            model.Latitude = video.Latitude;
+            model.Altitude = video.Latitude;
+            model.TagsList = "";
+            List<string> tagsList = [];
+            List<Video> videosList = await videosService.GetVideosList(video.ProgenyId);
+            videosList = [.. videosList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime)];
+            if (videosList.Count != 0)
+            {
+                int currentIndex = 0;
+                int indexer = 0;
+                foreach (Video vid in videosList)
                 {
-                    return NotFound();
-                }
-
-                VideoViewModel model = new()
-                {
-                    VideoId = video.VideoId,
-                    VideoType = video.VideoType,
-                    VideoTime = video.VideoTime,
-                    Duration = video.Duration,
-                    ProgenyId = video.ProgenyId,
-                    Owners = video.Owners,
-                    VideoLink = video.VideoLink,
-                    ThumbLink = video.ThumbLink,
-                    AccessLevel = video.AccessLevel,
-                    Author = video.Author
-                };
-                model.AccessLevelListEn[video.AccessLevel].Selected = true;
-                model.AccessLevelListDa[video.AccessLevel].Selected = true;
-                model.AccessLevelListDe[video.AccessLevel].Selected = true;
-                model.CommentThreadNumber = video.CommentThreadNumber;
-                model.Tags = video.Tags;
-                model.VideoNumber = 1;
-                model.VideoCount = 1;
-                model.CommentsList = await commentsService.GetCommentsList(video.CommentThreadNumber);
-                model.Location = video.Location;
-                model.Longtitude = video.Longtitude;
-                model.Latitude = video.Latitude;
-                model.Altitude = video.Latitude;
-                model.TagsList = "";
-                List<string> tagsList = new();
-                List<Video> videosList = await videosService.GetVideosList(video.ProgenyId);
-                videosList = videosList.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.VideoTime).ToList();
-                if (videosList.Any())
-                {
-                    int currentIndex = 0;
-                    int indexer = 0;
-                    foreach (Video vid in videosList)
+                    if (vid.VideoId == video.VideoId)
                     {
-                        if (vid.VideoId == video.VideoId)
+                        currentIndex = indexer;
+                    }
+                    indexer++;
+                    if (string.IsNullOrEmpty(vid.Tags)) continue;
+
+                    List<string> pvmTags = [.. vid.Tags.Split(',')];
+                    foreach (string tagstring in pvmTags)
+                    {
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                         {
-                            currentIndex = indexer;
-                        }
-                        indexer++;
-                        if (!String.IsNullOrEmpty(vid.Tags))
-                        {
-                            List<string> pvmTags = vid.Tags.Split(',').ToList();
-                            foreach (string tagstring in pvmTags)
-                            {
-                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                {
-                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                }
-                            }
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                         }
                     }
-                    model.VideoNumber = currentIndex + 1;
-                    model.VideoCount = videosList.Count;
-                    if (currentIndex > 0)
-                    {
-                        model.PrevVideo = videosList[currentIndex - 1].VideoId;
-                    }
-                    else
-                    {
-                        model.PrevVideo = videosList.Last().VideoId;
-                    }
-
-                    if (currentIndex + 1 < videosList.Count)
-                    {
-                        model.NextVideo = videosList[currentIndex + 1].VideoId;
-                    }
-                    else
-                    {
-                        model.NextVideo = videosList.First().VideoId;
-                    }
-
-                    if (sortBy == 1)
-                    {
-                        (model.NextVideo, model.PrevVideo) = (model.PrevVideo, model.NextVideo);
-                    }
-
                 }
-                string tagItems = "[";
-                if (tagsList.Any())
+                model.VideoNumber = currentIndex + 1;
+                model.VideoCount = videosList.Count;
+                if (currentIndex > 0)
                 {
-                    foreach (string tagstring in tagsList)
-                    {
-                        tagItems = tagItems + "'" + tagstring + "',";
-                    }
-
-                    tagItems = tagItems.Remove(tagItems.Length - 1);
-                    tagItems += "]";
+                    model.PrevVideo = videosList[currentIndex - 1].VideoId;
+                }
+                else
+                {
+                    model.PrevVideo = videosList.Last().VideoId;
                 }
 
-                model.TagsList = tagItems;
+                if (currentIndex + 1 < videosList.Count)
+                {
+                    model.NextVideo = videosList[currentIndex + 1].VideoId;
+                }
+                else
+                {
+                    model.NextVideo = videosList.First().VideoId;
+                }
 
-                return Ok(model);
+                if (sortBy == 1)
+                {
+                    (model.NextVideo, model.PrevVideo) = (model.PrevVideo, model.NextVideo);
+                }
+
+            }
+            string tagItems = "[";
+            if (tagsList.Count != 0)
+            {
+                foreach (string tagstring in tagsList)
+                {
+                    tagItems = tagItems + "'" + tagstring + "',";
+                }
+
+                tagItems = tagItems.Remove(tagItems.Length - 1);
+                tagItems += "]";
             }
 
-            return NotFound();
+            model.TagsList = tagItems;
+
+            return Ok(model);
+
         }
 
         [HttpGet]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
         public async Task<IActionResult> PictureTagsList(int id)
         {
             string tagListString = "";
-            List<string> tagsList = new();
+            List<string> tagsList = [];
             List<Picture> pictureList = await picturesService.GetPicturesList(id);
-            if (pictureList.Any())
+            if (pictureList.Count != 0)
             {
                 foreach (Picture pic in pictureList)
                 {
-                    if (!String.IsNullOrEmpty(pic.Tags))
+                    if (string.IsNullOrEmpty(pic.Tags)) continue;
+
+                    List<string> pvmTags = [.. pic.Tags.Split(',')];
+                    foreach (string tagstring in pvmTags)
                     {
-                        List<string> pvmTags = pic.Tags.Split(',').ToList();
-                        foreach (string tagstring in pvmTags)
+                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                         {
-                            if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                            {
-                                tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                            }
+                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
                         }
                     }
                 }
@@ -1564,7 +1510,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             string tagItems = "[";
-            if (tagsList.Any())
+            if (tagsList.Count != 0)
             {
                 foreach (string tagstring in tagsList)
                 {

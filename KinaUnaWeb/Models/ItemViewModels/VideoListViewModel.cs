@@ -7,15 +7,15 @@ namespace KinaUnaWeb.Models.ItemViewModels
     {
         public int PageNumber { get; set; }
         public int TotalPages { get; set; }
-        public int PageSize { get; set; }
+        public int PageSize { get; init; }
         public int PreviousPage { get; set; }
         public int NextPage { get; set; }
         public int Back5Pages { get; set; }
         public int Forward5Pages { get; set; }
         public int PageNumberIfSortChanges { get; set; }
-        public int SortBy { get; set; }
+        public int SortBy { get; init; }
         public List<Video> VideosList { get; set; }
-        public string TagFilter { get; set; }
+        public string TagFilter { get; init; }
 
 
         public VideoListViewModel()

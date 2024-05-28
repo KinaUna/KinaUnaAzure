@@ -26,32 +26,30 @@ namespace KinaUnaProgenyApi.Services
             List<UserAccess> userList = await userAccessService.GetProgenyUserAccessList(timeLineItem.ProgenyId);
             foreach (UserAccess userAcces in userList)
             {
-                if (userAcces.AccessLevel <= timeLineItem.AccessLevel)
+                if (userAcces.AccessLevel > timeLineItem.AccessLevel) continue;
+
+                UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userAcces.UserId);
+                if (userInfo == null) continue;
+
+                MobileNotification notification = new()
                 {
-                    UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userAcces.UserId);
-                    if (userInfo != null)
-                    {
-                        MobileNotification notification = new()
-                        {
-                            UserId = userInfo.UserId,
-                            IconLink = iconLink,
-                            ItemId = timeLineItem.ItemId,
-                            ItemType = timeLineItem.ItemType,
-                            Language = "EN",
-                            Message = message,
-                            Title = title,
-                            Time = DateTime.UtcNow,
-                            Read = false
-                        };
+                    UserId = userInfo.UserId,
+                    IconLink = iconLink,
+                    ItemId = timeLineItem.ItemId,
+                    ItemType = timeLineItem.ItemType,
+                    Language = "EN",
+                    Message = message,
+                    Title = title,
+                    Time = DateTime.UtcNow,
+                    Read = false
+                };
 
-                        _ = await dataService.AddMobileNotification(notification);
+                _ = await dataService.AddMobileNotification(notification);
 
 
-                        string userTag = "userEmail:" + userAcces.UserId.ToUpper();
-                        _ = await Hub.SendFcmNativeNotificationAsync(payload.ToString(Newtonsoft.Json.Formatting.None), userTag);
-                        _ = await Hub.SendAppleNativeNotificationAsync(alert, userTag);
-                    }
-                }
+                string userTag = "userEmail:" + userAcces.UserId.ToUpper();
+                _ = await Hub.SendFcmNativeNotificationAsync(payload.ToString(Newtonsoft.Json.Formatting.None), userTag);
+                _ = await Hub.SendAppleNativeNotificationAsync(alert, userTag);
             }
 
         }

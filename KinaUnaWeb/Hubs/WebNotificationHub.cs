@@ -41,18 +41,18 @@ namespace KinaUnaWeb.Hubs
 
                 notifications = notifications.OrderByDescending(n => n.DateTime).Skip(start - 1).Take(count).ToList();
 
-                if (notifications.Any())
+                if (notifications.Count != 0)
                 {
-                    foreach (WebNotification webn in notifications)
+                    foreach (WebNotification webNotification in notifications)
                     {
-                        if (string.IsNullOrEmpty(webn.Link))
+                        if (string.IsNullOrEmpty(webNotification.Link))
                         {
-                            webn.Link = "/Notifications?Id=" + webn.Id;
+                            webNotification.Link = "/Notifications?Id=" + webNotification.Id;
                         }
-                        webn.DateTime = TimeZoneInfo.ConvertTimeFromUtc(webn.DateTime,
+                        webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(webNotification.DateTime,
                             TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-                        webn.DateTimeString = webn.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                        string sendResult = JsonConvert.SerializeObject(webn);
+                        webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Custom format.
+                        string sendResult = JsonConvert.SerializeObject(webNotification);
                         await Clients.Caller.SendAsync("ReceiveMessage", sendResult);
                     }
                 }
@@ -191,7 +191,9 @@ namespace KinaUnaWeb.Hubs
         {
             string userEmail = Context.GetHttpContext()?.User.FindFirst("email")?.Value ?? "NoUser";
             string userTimeZone = Context.GetHttpContext()?.User.FindFirst("timezone")?.Value ?? "Romance Standard Time";
-            if (userEmail.ToUpper() == "PER.MOGENSEN@GMAIL.COM")
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfo(userEmail);
+
+            if (userInfo.IsKinaUnaAdmin)
             {
                 if (notification.To == "OnlineUsers")
                 {

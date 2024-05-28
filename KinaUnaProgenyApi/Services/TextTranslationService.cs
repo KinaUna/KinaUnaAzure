@@ -30,6 +30,7 @@ namespace KinaUnaProgenyApi.Services
             return translation;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "StringComparison seems to break Db queries.")]
         public async Task<List<TextTranslation>> GetPageTranslations(int languageId, string pageName)
         {
             List<TextTranslation> translations = await context.TextTranslations.AsNoTracking().Where(t => t.LanguageId == languageId && t.Page.ToUpper() == pageName.ToUpper()).ToListAsync();
@@ -63,34 +64,31 @@ namespace KinaUnaProgenyApi.Services
             List<KinaUnaLanguage> languages = await context.Languages.AsNoTracking().ToListAsync();
             foreach (KinaUnaLanguage lang in languages)
             {
-                if (lang.Id != translation.LanguageId)
+                if (lang.Id == translation.LanguageId) continue;
+
+                TextTranslation translationItem = await context.TextTranslations.SingleOrDefaultAsync(t => t.Word == translation.Word && t.Page == translation.Page && t.LanguageId == lang.Id);
+                if (translationItem != null) continue;
+
+                translationItem = new TextTranslation
                 {
-                    TextTranslation translationItem = await context.TextTranslations.SingleOrDefaultAsync(t => t.Word == translation.Word && t.Page == translation.Page && t.LanguageId == lang.Id);
-                    if (translationItem == null)
-                    {
-                        translationItem = new TextTranslation
-                        {
-                            LanguageId = lang.Id,
-                            Page = translation.Page,
-                            Word = translation.Word,
-                            Translation = translation.Translation
-                        };
-                        _ = context.TextTranslations.Add(translationItem);
-                        _ = await context.SaveChangesAsync();
-                    }
-                }
+                    LanguageId = lang.Id,
+                    Page = translation.Page,
+                    Word = translation.Word,
+                    Translation = translation.Translation
+                };
+                _ = context.TextTranslations.Add(translationItem);
+                _ = await context.SaveChangesAsync();
             }
         }
 
         public async Task<TextTranslation> UpdateTranslation(int id, TextTranslation translation)
         {
             TextTranslation translationItem = await context.TextTranslations.SingleOrDefaultAsync(t => t.Id == id);
-            if (translationItem != null)
-            {
-                translationItem.Translation = translation.Translation;
-                _ = context.TextTranslations.Update(translationItem);
-                _ = await context.SaveChangesAsync();
-            }
+            if (translationItem == null) return null;
+
+            translationItem.Translation = translation.Translation;
+            _ = context.TextTranslations.Update(translationItem);
+            _ = await context.SaveChangesAsync();
 
             return translationItem;
         }
@@ -98,10 +96,10 @@ namespace KinaUnaProgenyApi.Services
         public async Task<TextTranslation> DeleteTranslation(int id)
         {
             TextTranslation translation = await context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
-            if (translation != null)
+            if (translation == null) return null;
             {
                 List<TextTranslation> translationsList = await context.TextTranslations.Where(t => t.Word == translation.Word && t.Page == translation.Page).ToListAsync();
-                if (translationsList.Any())
+                if (translationsList.Count != 0)
                 {
                     foreach (TextTranslation textTranslation in translationsList)
                     {
@@ -118,11 +116,10 @@ namespace KinaUnaProgenyApi.Services
         public async Task<TextTranslation> DeleteSingleTranslation(int id)
         {
             TextTranslation translation = await context.TextTranslations.SingleOrDefaultAsync(t => t.Id == id);
-            if (translation != null)
-            {
-                _ = context.TextTranslations.Remove(translation);
-                _ = await context.SaveChangesAsync();
-            }
+            if (translation == null) return null;
+
+            _ = context.TextTranslations.Remove(translation);
+            _ = await context.SaveChangesAsync();
 
             return translation;
         }

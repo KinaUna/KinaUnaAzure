@@ -37,7 +37,7 @@ namespace KinaUna.IDP.Data
                     .Where(ru => ru.RedirectUri.EndsWith("/o2c.html"))
                     .ToList();
 
-                if (oldRedirects.Any())
+                if (oldRedirects.Count != 0)
                 {
                     foreach (ClientRedirectUri ru in oldRedirects)
                     {
