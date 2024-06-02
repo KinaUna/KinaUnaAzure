@@ -17,9 +17,9 @@ namespace KinaUnaProgenyApi.Services
         private readonly string _baseUri = configuration.GetValue<string>("CloudBlobBase");
         private readonly string _cloudBlobUserName = configuration.GetValue<string>("CloudBlobUserName");
 
-        public async Task<string> SaveImage(Stream imageStream, string containerName = "pictures")
+        public async Task<string> SaveImage(Stream imageStream, string containerName = "pictures", string fileFormat = ".jpg")
         {
-            string imageId = Guid.NewGuid().ToString();
+            string imageId = Guid.NewGuid() + fileFormat;
             BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
 
             BlobClient blob = container.GetBlobClient(imageId);

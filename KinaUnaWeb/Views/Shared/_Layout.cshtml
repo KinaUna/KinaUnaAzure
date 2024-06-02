@@ -144,7 +144,7 @@
                                 if (prog.Id != child.Id)
                                 {
                                     <div class="dropdown-item">
-                                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-returnUrl="@returnUrl" method="post">
+                                        <form class="form-inline-fullwidth" asp-area="" asp-controller="Home" asp-action="SetViewChild" asp-route-childId="@prog.Id" asp-route-languageId="@languageId" asp-route-returnUrl="@returnUrl" method="post">
                                             <button type="submit" class="btn btn-link btn-block text-white text-left leavePage">
                                                 @{
                                                     string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";

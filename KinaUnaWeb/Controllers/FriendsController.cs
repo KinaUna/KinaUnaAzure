@@ -160,7 +160,8 @@ namespace KinaUnaWeb.Controllers
             if (model.File != null)
             {
                 await using Stream stream = model.File.OpenReadStream();
-                friendItem.PictureLink = await imageStore.SaveImage(stream, "friends");
+                string fileFormat = Path.GetExtension(model.File.FileName);
+                friendItem.PictureLink = await imageStore.SaveImage(stream, "friends", fileFormat);
             }
             else
             {
@@ -234,7 +235,8 @@ namespace KinaUnaWeb.Controllers
                 model.FileName = model.File.FileName;
                 await using (Stream stream = model.File.OpenReadStream())
                 {
-                    editedFriend.PictureLink = await imageStore.SaveImage(stream, "friends");
+                    string fileFormat = Path.GetExtension(model.File.FileName);
+                    editedFriend.PictureLink = await imageStore.SaveImage(stream, "friends", fileFormat);
                 }
 
                 await imageStore.DeleteImage(originalFriend.PictureLink, "friends");

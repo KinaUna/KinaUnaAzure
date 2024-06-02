@@ -5,7 +5,7 @@ namespace KinaUnaProgenyApi.Services;
 
 public interface IImageStore
 {
-    Task<string> SaveImage(Stream imageStream, string containerName = "pictures");
+    Task<string> SaveImage(Stream imageStream, string containerName = "pictures", string fileFormat = ".jpg");
     string UriFor(string imageId, string containerName = "pictures");
     Task<MemoryStream> GetStream(string imageId, string containerName = "pictures");
     Task<string> DeleteImage(string imageId, string containerName = "pictures");

@@ -10,7 +10,6 @@ namespace KinaUna.Data.Models
     {
         [Required]
         public int PictureId { get; set; }
-
         [Required]
         [MaxLength(400)]
         public string PictureLink { get; set; }

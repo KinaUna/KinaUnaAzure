@@ -63,6 +63,11 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
+            if (picture.PictureId == 0)
+            {
+                picture.PictureId = id;
+            }
+
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
             PictureItemViewModel model = new(baseModel)
             {
@@ -167,7 +172,8 @@ namespace KinaUnaWeb.Controllers
 
                     await using (Stream stream = formFile.OpenReadStream())
                     {
-                        picture.PictureLink = await imageStore.SaveImage(stream);
+                        string fileFormat = Path.GetExtension(formFile.FileName);
+                        picture.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Pictures, fileFormat);
                     }
 
                     Picture newPicture = await mediaHttpClient.AddPicture(picture);

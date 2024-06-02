@@ -10,6 +10,7 @@ namespace KinaUnaProgenyApi.Services
         Task<Picture> GetPicture(int id);
         Task<Picture> GetPictureByLink(string link);
         Task<Picture> AddPicture(Picture picture);
+        Task<Picture> UpdatePictureLinkWithExtension(Picture picture);
         Task<Picture> ProcessPicture(Picture picture);
         Task<string> ProcessProgenyPicture(IFormFile file);
         Task<string> ProcessProfilePicture(IFormFile file);

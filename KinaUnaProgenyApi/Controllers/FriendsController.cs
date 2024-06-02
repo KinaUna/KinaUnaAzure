@@ -265,7 +265,37 @@ namespace KinaUnaProgenyApi.Controllers
 
             await using (Stream stream = await GetStreamFromUrl(friend.PictureLink))
             {
-                friend.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Friends);
+                string fileFormat = "";
+                if (friend.PictureLink.ToLower().EndsWith(".jpg"))
+                {
+                    fileFormat = ".jpg";
+                }
+
+                if (friend.PictureLink.ToLower().EndsWith(".png"))
+                {
+                    fileFormat = ".png";
+                }
+
+                if (friend.PictureLink.ToLower().EndsWith(".gif"))
+                {
+                    fileFormat = ".gif";
+                }
+
+                if (friend.PictureLink.ToLower().EndsWith(".jpeg"))
+                {
+                    fileFormat = ".jpg";
+                }
+
+                if (friend.PictureLink.ToLower().EndsWith(".bmp"))
+                {
+                    fileFormat = ".bmp";
+                }
+
+                if (friend.PictureLink.ToLower().EndsWith(".tif"))
+                {
+                    fileFormat = ".tif";
+                }
+                friend.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Friends, fileFormat);
             }
 
             friend = await friendService.UpdateFriend(friend);

@@ -166,7 +166,8 @@ namespace KinaUnaWeb.Controllers
             if (model.File != null && model.File.Name != string.Empty)
             {
                 await using Stream stream = model.File.OpenReadStream();
-                userInfo.ProfilePicture = await imageStore.SaveImage(stream, BlobContainers.Profiles);
+                string fileFormat = Path.GetExtension(model.File.FileName);
+                userInfo.ProfilePicture = await imageStore.SaveImage(stream, BlobContainers.Profiles, fileFormat);
             }
 
             await userInfosHttpClient.UpdateUserInfo(userInfo);

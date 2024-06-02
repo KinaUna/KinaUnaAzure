@@ -13,6 +13,7 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaWeb.Controllers
@@ -24,7 +25,8 @@ namespace KinaUnaWeb.Controllers
         IWebHostEnvironment env,
         IUserInfosHttpClient userInfosHttpClient,
         ILanguagesHttpClient languagesHttpClient,
-        IViewModelSetupService viewModelSetupService)
+        IViewModelSetupService viewModelSetupService,
+        IDistributedCache cache)
         : Controller
     {
         [AllowAnonymous]
@@ -143,13 +145,15 @@ namespace KinaUnaWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetViewChild(int childId)
+        public async Task<IActionResult> SetViewChild(int childId, int languageId = 1)
         {
             if (User.Identity == null || !User.Identity.IsAuthenticated) return RedirectToAction("Index", new { childId });
 
             UserInfo userinfo = await userInfosHttpClient.GetUserInfo(User.GetEmail());
             userinfo.ViewChild = childId;
             await userInfosHttpClient.SetViewChild(User.GetUserId(), userinfo);
+
+            await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userinfo.UserEmail.ToUpper() + "_progeny_" + 0);
 
             // return Redirect(returnUrl);
             return RedirectToAction("Index", new{ childId });

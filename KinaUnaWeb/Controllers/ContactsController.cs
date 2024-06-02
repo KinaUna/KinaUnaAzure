@@ -151,7 +151,8 @@ namespace KinaUnaWeb.Controllers
             {
                 model.FileName = model.File.FileName;
                 await using Stream stream = model.File.OpenReadStream();
-                contactItem.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Contacts);
+                string fileFormat = Path.GetExtension(model.File.FileName);
+                contactItem.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Contacts, fileFormat);
             }
             else
             {
@@ -212,7 +213,8 @@ namespace KinaUnaWeb.Controllers
                 model.FileName = model.File.FileName;
                 await using (Stream stream = model.File.OpenReadStream())
                 {
-                    editedContact.PictureLink = await imageStore.SaveImage(stream, "contacts");
+                    string fileFormat = Path.GetExtension(model.File.FileName);
+                    editedContact.PictureLink = await imageStore.SaveImage(stream, "contacts", fileFormat);
                 }
 
                 await imageStore.DeleteImage(originalContact.PictureLink, "contacts");

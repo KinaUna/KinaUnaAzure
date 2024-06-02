@@ -376,7 +376,8 @@ namespace KinaUnaWeb.Controllers
                         string filename;
                         await using (Stream stream = file.OpenReadStream())
                         {
-                            filename = await imageStore.SaveImage(stream, BlobContainers.KinaUnaTexts);
+                            string fileFormat = Path.GetExtension(file.FileName);
+                            filename = await imageStore.SaveImage(stream, BlobContainers.KinaUnaTexts, fileFormat);
                         }
 
                         string resultName = imageStore.UriFor(filename, BlobContainers.KinaUnaTexts);

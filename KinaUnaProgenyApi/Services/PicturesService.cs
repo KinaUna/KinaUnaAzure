@@ -42,6 +42,7 @@ namespace KinaUnaProgenyApi.Services
             }
 
             if (picture == null) return null;
+            
             if (picture.PictureRotation != null)
             {
                 return picture;
@@ -78,6 +79,143 @@ namespace KinaUnaProgenyApi.Services
             return pictureToAdd;
         }
 
+        public async Task<Picture> UpdatePictureLinkWithExtension(Picture picture)
+        {
+            string originalPictureLink = picture.PictureLink;
+            string originalPictureLink600 = picture.PictureLink600;
+            string originalPictureLink1200 = picture.PictureLink1200;
+
+            MemoryStream memoryStream = await _imageStore.GetStream(picture.PictureLink);
+            memoryStream.Position = 0;
+
+            using (MagickImage image = new(memoryStream))
+            {
+                string pictureFormat = "";
+                switch (image.Format)
+                {
+                    case MagickFormat.Jpg:
+                        pictureFormat += ".jpg";
+                        break;
+                    case MagickFormat.Jpeg:
+                        pictureFormat += ".jpg";
+                        break;
+                    case MagickFormat.Png:
+                        pictureFormat += ".png";
+                        break;
+                    case MagickFormat.Gif:
+                        pictureFormat += ".gif";
+                        break;
+                    case MagickFormat.Bmp:
+                        pictureFormat += ".bmp";
+                        break;
+                    case MagickFormat.Tiff:
+                        pictureFormat += ".tiff";
+                        break;
+                    case MagickFormat.Tga:
+                        pictureFormat += ".tga";
+                        break;
+
+                    default:
+                        pictureFormat = "";
+                        break;
+                }
+
+                using MemoryStream memStream = new();
+                await image.WriteAsync(memStream);
+                memStream.Position = 0;
+                picture.PictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Pictures, pictureFormat);
+            }
+
+            MemoryStream memoryStream600 = await _imageStore.GetStream(picture.PictureLink600);
+            memoryStream600.Position = 0;
+
+            using (MagickImage image600 = new(memoryStream600))
+            {
+                string pictureFormat = "";
+                switch (image600.Format)
+                {
+                    case MagickFormat.Jpg:
+                        pictureFormat += ".jpg";
+                        break;
+                    case MagickFormat.Jpeg:
+                        pictureFormat += ".jpg";
+                        break;
+                    case MagickFormat.Png:
+                        pictureFormat += ".png";
+                        break;
+                    case MagickFormat.Gif:
+                        pictureFormat += ".gif";
+                        break;
+                    case MagickFormat.Bmp:
+                        pictureFormat += ".bmp";
+                        break;
+                    case MagickFormat.Tiff:
+                        pictureFormat += ".tiff";
+                        break;
+                    case MagickFormat.Tga:
+                        pictureFormat += ".tga";
+                        break;
+
+                    default:
+                        pictureFormat = "";
+                        break;
+                }
+
+                using MemoryStream memStream600 = new();
+                await image600.WriteAsync(memStream600);
+                memStream600.Position = 0;
+                picture.PictureLink600 = await _imageStore.SaveImage(memStream600, BlobContainers.Pictures, pictureFormat);
+            }
+
+            MemoryStream memoryStream1200 = await _imageStore.GetStream(picture.PictureLink1200);
+            memoryStream1200.Position = 0;
+
+            using (MagickImage image1200 = new(memoryStream1200))
+            {
+                string pictureFormat = "";
+                switch (image1200.Format)
+                {
+                    case MagickFormat.Jpg:
+                        pictureFormat += ".jpg";
+                        break;
+                    case MagickFormat.Jpeg:
+                        pictureFormat += ".jpg";
+                        break;
+                    case MagickFormat.Png:
+                        pictureFormat += ".png";
+                        break;
+                    case MagickFormat.Gif:
+                        pictureFormat += ".gif";
+                        break;
+                    case MagickFormat.Bmp:
+                        pictureFormat += ".bmp";
+                        break;
+                    case MagickFormat.Tiff:
+                        pictureFormat += ".tiff";
+                        break;
+                    case MagickFormat.Tga:
+                        pictureFormat += ".tga";
+                        break;
+
+                    default:
+                        pictureFormat = "";
+                        break;
+                }
+
+                using MemoryStream memStream1200 = new();
+                await image1200.WriteAsync(memStream1200);
+                memStream1200.Position = 0;
+                picture.PictureLink1200 = await _imageStore.SaveImage(memStream1200, BlobContainers.Pictures, pictureFormat);
+            }
+
+            picture = await UpdatePicture(picture);
+            await _imageStore.DeleteImage(originalPictureLink, BlobContainers.Pictures);
+            await _imageStore.DeleteImage(originalPictureLink600, BlobContainers.Pictures);
+            await _imageStore.DeleteImage(originalPictureLink1200, BlobContainers.Pictures);
+
+            return picture;
+        }
+
         public async Task<Picture> ProcessPicture(Picture picture)
         {
             MemoryStream memoryStream = await _imageStore.GetStream(picture.PictureLink);
@@ -85,6 +223,36 @@ namespace KinaUnaProgenyApi.Services
 
             using (MagickImage image = new(memoryStream))
             {
+                string pictureFormat = "";
+                switch (image.Format)
+                {
+                    case MagickFormat.Jpg:
+                        pictureFormat += ".jpg";
+                        break;
+                    case MagickFormat.Jpeg:
+                        pictureFormat += ".jpg";
+                        break;
+                    case MagickFormat.Png:
+                        pictureFormat += ".png";
+                        break;
+                    case MagickFormat.Gif:
+                        pictureFormat += ".gif";
+                        break;
+                    case MagickFormat.Bmp:
+                        pictureFormat += ".bmp";
+                        break;
+                    case MagickFormat.Tiff:
+                        pictureFormat += ".tiff";
+                        break;
+                    case MagickFormat.Tga:
+                        pictureFormat += ".tga";
+                        break;
+
+                    default:
+                        pictureFormat = "";
+                        break;
+                }
+
                 IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
                 {
@@ -196,8 +364,7 @@ namespace KinaUnaProgenyApi.Services
                     {
                         picture.PictureRotation = 0;
                     }
-
-
+                    
                     try
                     {
                         string date = profile.GetValue(ExifTag.DateTimeOriginal)?.Value;
@@ -288,11 +455,42 @@ namespace KinaUnaProgenyApi.Services
                 using MemoryStream memStream = new();
                 await image.WriteAsync(memStream);
                 memStream.Position = 0;
-                picture.PictureLink600 = await _imageStore.SaveImage(memStream);
+                
+                picture.PictureLink600 = await _imageStore.SaveImage(memStream, BlobContainers.Pictures, pictureFormat);
             }
 
             using (MagickImage image = new(memoryStream))
             {
+                string pictureFormat = "";
+                switch (image.Format)
+                {
+                    case MagickFormat.Jpg:
+                        pictureFormat += ".jpg";
+                        break;
+                    case MagickFormat.Jpeg:
+                        pictureFormat += ".jpg";
+                        break;
+                    case MagickFormat.Png:
+                        pictureFormat += ".png";
+                        break;
+                    case MagickFormat.Gif:
+                        pictureFormat += ".gif";
+                        break;
+                    case MagickFormat.Bmp:
+                        pictureFormat += ".bmp";
+                        break;
+                    case MagickFormat.Tiff:
+                        pictureFormat += ".tiff";
+                        break;
+                    case MagickFormat.Tga:
+                        pictureFormat += ".tga";
+                        break;
+
+                    default:
+                        pictureFormat = "";
+                        break;
+                }
+
                 if (picture.PictureRotation != null)
                 {
                     if (picture.PictureRotation != 0)
@@ -315,7 +513,7 @@ namespace KinaUnaProgenyApi.Services
                 using MemoryStream memStream = new();
                 await image.WriteAsync(memStream);
                 memStream.Position = 0;
-                picture.PictureLink1200 = await _imageStore.SaveImage(memStream);
+                picture.PictureLink1200 = await _imageStore.SaveImage(memStream,BlobContainers.Pictures, pictureFormat);
             }
 
             if (picture.PictureTime != null)
@@ -337,6 +535,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<string> ProcessProgenyPicture(IFormFile file)
         {
             using MagickImage image = new(file.OpenReadStream());
+            
             IExifProfile profile = image.GetExifProfile();
             if (profile != null)
             {
@@ -389,7 +588,38 @@ namespace KinaUnaProgenyApi.Services
             using MemoryStream memStream = new();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
-            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Progeny);
+
+            string pictureFormat = "";
+            switch (image.Format)
+            {
+                case MagickFormat.Jpg:
+                    pictureFormat += ".jpg";
+                    break;
+                case MagickFormat.Jpeg:
+                    pictureFormat += ".jpg";
+                    break;
+                case MagickFormat.Png:
+                    pictureFormat += ".png";
+                    break;
+                case MagickFormat.Gif:
+                    pictureFormat += ".gif";
+                    break;
+                case MagickFormat.Bmp:
+                    pictureFormat += ".bmp";
+                    break;
+                case MagickFormat.Tiff:
+                    pictureFormat += ".tiff";
+                    break;
+                case MagickFormat.Tga:
+                    pictureFormat += ".tga";
+                    break;
+
+                default:
+                    pictureFormat = "";
+                    break;
+            }
+
+            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Progeny, pictureFormat);
 
             return pictureLink;
         }
@@ -449,7 +679,38 @@ namespace KinaUnaProgenyApi.Services
             using MemoryStream memStream = new();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
-            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Profiles);
+
+            string pictureFormat = "";
+            switch (image.Format)
+            {
+                case MagickFormat.Jpg:
+                    pictureFormat += ".jpg";
+                    break;
+                case MagickFormat.Jpeg:
+                    pictureFormat += ".jpg";
+                    break;
+                case MagickFormat.Png:
+                    pictureFormat += ".png";
+                    break;
+                case MagickFormat.Gif:
+                    pictureFormat += ".gif";
+                    break;
+                case MagickFormat.Bmp:
+                    pictureFormat += ".bmp";
+                    break;
+                case MagickFormat.Tiff:
+                    pictureFormat += ".tiff";
+                    break;
+                case MagickFormat.Tga:
+                    pictureFormat += ".tga";
+                    break;
+
+                default:
+                    pictureFormat = "";
+                    break;
+            }
+
+            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Profiles, pictureFormat);
 
             return pictureLink;
         }
@@ -509,7 +770,38 @@ namespace KinaUnaProgenyApi.Services
             using MemoryStream memStream = new();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
-            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Friends);
+
+            string pictureFormat = "";
+            switch (image.Format)
+            {
+                case MagickFormat.Jpg:
+                    pictureFormat += ".jpg";
+                    break;
+                case MagickFormat.Jpeg:
+                    pictureFormat += ".jpg";
+                    break;
+                case MagickFormat.Png:
+                    pictureFormat += ".png";
+                    break;
+                case MagickFormat.Gif:
+                    pictureFormat += ".gif";
+                    break;
+                case MagickFormat.Bmp:
+                    pictureFormat += ".bmp";
+                    break;
+                case MagickFormat.Tiff:
+                    pictureFormat += ".tiff";
+                    break;
+                case MagickFormat.Tga:
+                    pictureFormat += ".tga";
+                    break;
+
+                default:
+                    pictureFormat = "";
+                    break;
+            }
+
+            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Friends, pictureFormat);
 
             return pictureLink;
         }
@@ -569,8 +861,39 @@ namespace KinaUnaProgenyApi.Services
             using MemoryStream memStream = new();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
-            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Contacts);
 
+            string pictureFormat = "";
+            switch (image.Format)
+            {
+                case MagickFormat.Jpg:
+                    pictureFormat += ".jpg";
+                    break;
+                case MagickFormat.Jpeg:
+                    pictureFormat += ".jpg";
+                    break;
+                case MagickFormat.Png:
+                    pictureFormat += ".png";
+                    break;
+                case MagickFormat.Gif:
+                    pictureFormat += ".gif";
+                    break;
+                case MagickFormat.Bmp:
+                    pictureFormat += ".bmp";
+                    break;
+                case MagickFormat.Tiff:
+                    pictureFormat += ".tiff";
+                    break;
+                case MagickFormat.Tga:
+                    pictureFormat += ".tga";
+                    break;
+
+                default:
+                    pictureFormat = "";
+                    break;
+            }
+
+            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Contacts, pictureFormat);
+            
             return pictureLink;
         }
         public async Task<Picture> GetPictureByLink(string link)
@@ -590,6 +913,18 @@ namespace KinaUnaProgenyApi.Services
                 _ = await UpdatePicture(picture);
             }
 
+            if (!picture.PictureLink.ToLower().StartsWith("http") && !picture.PictureLink.Contains('.')) // Some pictures do not have file extensions. If they don't, update the links.
+            {
+                try
+                {
+                    picture = await UpdatePictureLinkWithExtension(picture);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
+            
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id, JsonConvert.SerializeObject(picture), _cacheOptionsSliding);
 
             _ = await SetPicturesListInCache(picture.ProgenyId);

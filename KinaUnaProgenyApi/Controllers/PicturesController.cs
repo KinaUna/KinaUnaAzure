@@ -814,7 +814,8 @@ namespace KinaUnaProgenyApi.Controllers
             string pictureLink;
             await using (Stream stream = file.OpenReadStream())
             {
-                pictureLink = await imageStore.SaveImage(stream);
+                string fileFormat = Path.GetExtension(file.FileName);
+                pictureLink = await imageStore.SaveImage(stream, BlobContainers.Pictures, fileFormat);
             }
 
             if (pictureLink != "")
@@ -888,7 +889,8 @@ namespace KinaUnaProgenyApi.Controllers
             string pictureLink;
             await using (Stream stream = file.OpenReadStream())
             {
-                pictureLink = await imageStore.SaveImage(stream, BlobContainers.Notes);
+                string fileFormat = Path.GetExtension(file.FileName);
+                pictureLink = await imageStore.SaveImage(stream, BlobContainers.Notes, fileFormat);
                 pictureLink = imageStore.UriFor(pictureLink, BlobContainers.Notes);
             }
 
@@ -1029,17 +1031,110 @@ namespace KinaUnaProgenyApi.Controllers
 
             await using (Stream stream = await GetStreamFromUrl(picture.PictureLink))
             {
-                picture.PictureLink = await imageStore.SaveImage(stream);
+                string fileFormat = "";
+                if (picture.PictureLink.ToLower().EndsWith(".jpg"))
+                {
+                    fileFormat = ".jpg";
+                }
+
+                if (picture.PictureLink.ToLower().EndsWith(".png"))
+                {
+                    fileFormat = ".png";
+                }
+
+                if (picture.PictureLink.ToLower().EndsWith(".gif"))
+                {
+                    fileFormat = ".gif";
+                }
+
+                if (picture.PictureLink.ToLower().EndsWith(".jpeg"))
+                {
+                    fileFormat = ".jpg";
+                }
+
+                if (picture.PictureLink.ToLower().EndsWith(".bmp"))
+                {
+                    fileFormat = ".bmp";
+                }
+
+                if (picture.PictureLink.ToLower().EndsWith(".tif"))
+                {
+                    fileFormat = ".tif";
+                }
+
+                picture.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Pictures, fileFormat);
             }
 
             await using (Stream stream = await GetStreamFromUrl(picture.PictureLink600))
             {
-                picture.PictureLink600 = await imageStore.SaveImage(stream);
+                string fileFormat = "";
+                if (picture.PictureLink600.ToLower().EndsWith(".jpg"))
+                {
+                    fileFormat = ".jpg";
+                }
+
+                if (picture.PictureLink600.ToLower().EndsWith(".png"))
+                {
+                    fileFormat = ".png";
+                }
+
+                if (picture.PictureLink600.ToLower().EndsWith(".gif"))
+                {
+                    fileFormat = ".gif";
+                }
+
+                if (picture.PictureLink600.ToLower().EndsWith(".jpeg"))
+                {
+                    fileFormat = ".jpg";
+                }
+
+                if (picture.PictureLink600.ToLower().EndsWith(".bmp"))
+                {
+                    fileFormat = ".bmp";
+                }
+
+                if (picture.PictureLink600.ToLower().EndsWith(".tif"))
+                {
+                    fileFormat = ".tif";
+                }
+
+                picture.PictureLink600 = await imageStore.SaveImage(stream, BlobContainers.Pictures, fileFormat);
             }
 
             await using (Stream stream = await GetStreamFromUrl(picture.PictureLink1200))
             {
-                picture.PictureLink1200 = await imageStore.SaveImage(stream);
+                string fileFormat = "";
+                if (picture.PictureLink1200.ToLower().EndsWith(".jpg"))
+                {
+                    fileFormat = ".jpg";
+                }
+
+                if (picture.PictureLink1200.ToLower().EndsWith(".png"))
+                {
+                    fileFormat = ".png";
+                }
+
+                if (picture.PictureLink1200.ToLower().EndsWith(".gif"))
+                {
+                    fileFormat = ".gif";
+                }
+
+                if (picture.PictureLink1200.ToLower().EndsWith(".jpeg"))
+                {
+                    fileFormat = ".jpg";
+                }
+
+                if (picture.PictureLink1200.ToLower().EndsWith(".bmp"))
+                {
+                    fileFormat = ".bmp";
+                }
+
+                if (picture.PictureLink1200.ToLower().EndsWith(".tif"))
+                {
+                    fileFormat = ".tif";
+                }
+
+                picture.PictureLink1200 = await imageStore.SaveImage(stream, BlobContainers.Pictures, fileFormat);
             }
 
             picture = await picturesService.UpdatePicture(picture);

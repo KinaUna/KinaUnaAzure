@@ -71,7 +71,8 @@ namespace KinaUnaWeb.Controllers
             if (model.File != null)
             {
                 await using Stream stream = model.File.OpenReadStream();
-                prog.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Progeny);
+                string fileFormat = Path.GetExtension(model.File.FileName);
+                prog.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Progeny, fileFormat);
             }
             else
             {
@@ -133,7 +134,8 @@ namespace KinaUnaWeb.Controllers
                 string oldPictureLink = prog.PictureLink;
                 await using (Stream stream = model.File.OpenReadStream())
                 {
-                    prog.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Progeny);
+                    string fileFormat = Path.GetExtension(model.File.FileName);
+                    prog.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Progeny, fileFormat);
                 }
 
                 await imageStore.DeleteImage(oldPictureLink, BlobContainers.Progeny);

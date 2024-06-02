@@ -51,7 +51,10 @@ namespace KinaUna.Data.Extensions
             currentPicture.PictureWidth = otherPicture.PictureWidth;
             currentPicture.PictureRotation = otherPicture.PictureRotation;
             currentPicture.PictureNumber = otherPicture.PictureNumber;
-            
+            currentPicture.PictureLink = otherPicture.PictureLink;
+            currentPicture.PictureLink600 = otherPicture.PictureLink600;
+            currentPicture.PictureLink1200 = otherPicture.PictureLink1200;
+
             if (!string.IsNullOrEmpty(otherPicture.Tags))
             {
                 currentPicture.Tags = otherPicture.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');

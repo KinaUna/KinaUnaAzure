@@ -146,7 +146,37 @@ namespace KinaUnaProgenyApi.Services
 
             await _imageStore.DeleteImage(imageId, BlobContainers.Progeny);
 
-            imageId = await _imageStore.SaveImage(memStream, BlobContainers.Progeny);
+            string pictureFormat = "";
+            switch (image.Format)
+            {
+                case MagickFormat.Jpg:
+                    pictureFormat += ".jpg";
+                    break;
+                case MagickFormat.Jpeg:
+                    pictureFormat += ".jpg";
+                    break;
+                case MagickFormat.Png:
+                    pictureFormat += ".png";
+                    break;
+                case MagickFormat.Gif:
+                    pictureFormat += ".gif";
+                    break;
+                case MagickFormat.Bmp:
+                    pictureFormat += ".bmp";
+                    break;
+                case MagickFormat.Tiff:
+                    pictureFormat += ".tiff";
+                    break;
+                case MagickFormat.Tga:
+                    pictureFormat += ".tga";
+                    break;
+
+                default:
+                    pictureFormat = "";
+                    break;
+            }
+
+            imageId = await _imageStore.SaveImage(memStream, BlobContainers.Progeny, pictureFormat);
 
             return imageId;
         }

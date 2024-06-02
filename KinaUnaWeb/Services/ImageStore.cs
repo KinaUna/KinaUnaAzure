@@ -26,10 +26,11 @@ namespace KinaUnaWeb.Services
         /// </summary>
         /// <param name="imageStream">Stream: The stream for the image file.</param>
         /// <param name="containerName">string: The name of the Azure Storage Blob Container. Default: pictures</param>
+        /// <param name="fileFormat">string: the file extension for the image file</param>
         /// <returns>string: The file name (Picture.PictureLink)</returns>
-        public async Task<string> SaveImage(Stream imageStream, string containerName = "pictures")
+        public async Task<string> SaveImage(Stream imageStream, string containerName = "pictures", string fileFormat = ".jpg")
         {
-            string imageId = Guid.NewGuid().ToString();
+            string imageId = Guid.NewGuid() + fileFormat;
             CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
             CloudBlockBlob blob = container.GetBlockBlobReference(imageId);
             await blob.UploadFromStreamAsync(imageStream);
