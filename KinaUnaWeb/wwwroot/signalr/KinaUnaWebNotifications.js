@@ -2,6 +2,7 @@
 let notificationsCount = 0;
 let notificationsMenuDiv = document.getElementById('notificationsMenu');
 let notificationsList = document.getElementById('notificationsList');
+let recentNotificationsList = document.getElementById('webNotificationsDiv');
 let notifationsCounter = document.getElementById('notificationsCounter');
 let notificationsIcon = document.getElementById('notificationBellIcon');
 let menuToggler = document.getElementById('navMainMenuButton');
@@ -110,29 +111,10 @@ function countNotifications() {
         togglerCounter.style.display = 'block';
     }
 }
-function updateNotification(parsedMessage, newData) {
-    let itemsToRemove = document.getElementsByClassName('notifId' + parsedMessage.Id);
-    if (itemsToRemove.length > 0) {
-        for (var i = itemsToRemove.length - 1; i >= 0; --i) {
-            let parentBtn = itemsToRemove[i].closest('.notification-button');
-            let parentDiv = parentBtn.parentNode;
-            parentBtn.outerHTML = newData;
-            if (parsedMessage.IsRead) {
-                if (!parentDiv.classList.contains('bg-dark')) {
-                    parentDiv.classList.add('bg-dark');
-                }
-            } else {
-                if (parentDiv.classList.contains('bg-dark')) {
-                    parentDiv.classList.remove('bg-dark');
-                }
-            }
-        }
-    }
-    countNotifications();
-}
+
 
 function clearNotifications() {
-    let itemsToRemove = document.getElementsByClassName('notification-item');
+    let itemsToRemove = notificationsList.getElementsByClassName('notification-item');
     if (itemsToRemove.length > 0) {
         for (var i = itemsToRemove.length - 1; i >= 0; --i) {
             let parentDiv = itemsToRemove[i].closest('div');
@@ -149,17 +131,24 @@ function clearNotifications() {
 }
 
 function sortNotifications() {
-    var s = document.getElementById('notificationsList');
-    Array.prototype.slice.call(s.children)
-        .map(function (x) { return s.removeChild(x); })
-        .sort(function (x, y) { return y.getAttribute('data-notificationTime') - x.getAttribute('data-notificationTime'); })
-        .forEach(function (x) { s.appendChild(x); });
+    if (notificationsList !== null) {
+        Array.prototype.slice.call(notificationsList.children)
+            .map(function (x) { return notificationsList.removeChild(x); })
+            .sort(function (x, y) { return y.getAttribute('data-notificationTime') - x.getAttribute('data-notificationTime'); })
+            .forEach(function (x) { notificationsList.appendChild(x); });
+    }
+
+    if (recentNotificationsList !== null) {
+        Array.prototype.slice.call(recentNotificationsList.children)
+            .map(function (x) { return recentNotificationsList.removeChild(x); })
+            .sort(function (x, y) { return y.getAttribute('data-notificationTime') - x.getAttribute('data-notificationTime'); })
+            .forEach(function (x) { recentNotificationsList.appendChild(x); });
+    }
 }
 
 let checkConnectionInterval;
 let checkNotifications;
 let signalRdisconnected = false;
-let checkNotificationsCount = 0;
 
 connection = new signalR.HubConnectionBuilder()
     .withUrl('/webnotificationhub')
@@ -171,7 +160,6 @@ connection = new signalR.HubConnectionBuilder()
 connection.onclose(function () {
     signalRdisconnected = true;
     console.log('SignalR connection closed, reconnecting.');
-    checkNotificationsCount = 0;
     clearInterval(checkNotifications);
     clearNotifications();
     checkConnectionInterval = setInterval(function() {
@@ -181,19 +169,18 @@ connection.onclose(function () {
 
 connection.on('UserInfo',
     function (info) {
-        checkNotificationsCount = 0;
         console.log(info);
     });
 
 connection.on('ReceiveMessage',
     function(message) {
-        checkNotificationsCount = 0;
         if (signalRdisconnected) {
             clearInterval(checkConnectionInterval);
             checkNotifications = setInterval(getNotifications(), 300000);
             signalRdisconnected = false;
         }
         let parsedMessage = JSON.parse(message);
+        
         $.ajax({
             type: 'GET',
             url: '/Notifications/ShowNotification',
@@ -201,10 +188,8 @@ connection.on('ReceiveMessage',
             datatype: 'html',
             async: true,
             success: function (data) {
-                let tempData = notificationsList.innerHTML;
-                notificationsList.innerHTML = data + tempData;
-                sortNotifications();
-                countNotifications();
+                removeNotificationDiv(parsedMessage);
+                addNotificationDiv(data);
             },
                 error: function (jqXhr, textStatus, errorThrown) {
                     console.log(textStatus, errorThrown);
@@ -213,51 +198,89 @@ connection.on('ReceiveMessage',
     }
 );
 
-connection.on('UpdateMessage',
-    function(message) {
-        checkNotificationsCount = 0;
-        let parsedMessage = JSON.parse(message);
-        $.ajax({
-            type: 'GET',
-            url: '/Notifications/ShowUpdatedNotification',
-            data: parsedMessage,
-            datatype: 'html',
-            async: true,
-            success: function (data) {
-                signalRdisconnected = false;
-                updateNotification(parsedMessage, data);
-            },
-            error: function (jqXhr, textStatus, errorThrown) {
-                console.log(textStatus, errorThrown);
-            }
+function addNotificationDiv(data) {
+    if (notificationsList !== null) {
+        let tempData = notificationsList.innerHTML;
+        notificationsList.innerHTML = data + tempData;
+        
+    }
+
+    if (recentNotificationsList !== null) {
+        let tempData = recentNotificationsList.innerHTML;
+        recentNotificationsList.innerHTML = data + tempData;
+    }
+
+    sortNotifications();
+    countNotifications();
+}
+
+function removeNotificationDiv(parsedMessage) {
+    if (notificationsList !== null) {
+        const notificationsInMenu = notificationsList.querySelectorAll('.notification-item');
+        notificationsInMenu.forEach((notificationItem) => {
+            let childDiv = notificationItem.firstElementChild;
+            let notificationIdAttribute = childDiv.getAttribute('data-notificationId');
+            if (notificationIdAttribute) {
+                let notificationToRemoveId = parseInt(notificationIdAttribute);
+                if (notificationToRemoveId == parsedMessage.Id) {
+                    let parentDiv = notificationItem.closest('.notification-item');
+                    if (parentDiv !== null) {
+                        parentDiv.remove();
+                    }
+                }
+            };
+
         });
     }
-);
+
+    if (recentNotificationsList !== null) {
+        const notificationsInRecents = recentNotificationsList.querySelectorAll('.notification-item');
+        notificationsInRecents.forEach((notificationItem) => {
+            let childDiv = notificationItem.firstElementChild;
+            let notificationIdAttribute = childDiv.getAttribute('data-notificationId');
+            if (notificationIdAttribute) {
+                let notificationToRemoveId = parseInt(notificationIdAttribute);
+                if (notificationToRemoveId == parsedMessage.Id) {
+                    let parentDiv = notificationItem.closest('.notification-item');
+                    if (parentDiv !== null) {
+                        parentDiv.remove();
+                    }
+                }
+            };
+
+        });
+    }
+}
 
 connection.on('DeleteMessage',
     function (message) {
-        checkNotificationsCount = 0;
         let parsedMessage = JSON.parse(message);
-        let itemsToRemove = document.getElementsByClassName('notifId' + parsedMessage.Id);
-        if (itemsToRemove.length > 0) {
-            for (var i = itemsToRemove.length - 1; i >= 0; --i) {
-                let parentBtn = itemsToRemove[i].closest('.notification-button');
-                parentBtn.parentNode.outerHTML = "";
-            }
-        }
+        removeNotificationDiv(parsedMessage);
+        sortNotifications();
         countNotifications();
     }
 );
-let getNotifications = function () {
-    if (checkNotificationsCount > 1) {
-        if (connection.connection.connectionState === 1) {
-            signalRdisconnected = false;
-            clearNotifications();
-            connection.invoke('GetUpdateForUser', 10, 1).catch(err => console.error(err.toString()));
-        } else {
-            signalRdisconnected = true;
 
+connection.on('MarkAllReadMessage',
+    function () {
+        if (signalRdisconnected) {
+            clearInterval(checkConnectionInterval);
+            checkNotifications = setInterval(getNotifications(), 300000);
+            signalRdisconnected = false;
         }
+        getNotifications();
+        countNotifications();
+        }
+        
+    );
+let getNotifications = function () {
+    if (connection.connection.connectionState === 1) {
+        signalRdisconnected = false;
+        clearNotifications();
+        connection.invoke('GetUpdateForUser', 10, 1).catch(err => console.error(err.toString()));
+    } else {
+        signalRdisconnected = true;
+
     }
 };
 

@@ -1,4 +1,4 @@
-﻿import * as LocaleHelper from '../localization.js';
+﻿import * as LocaleHelper from '../localization-v1.js';
 
 declare var syncfusionReference: any;
 declare var isCurrentUserProgenyAdmin: boolean;

@@ -22,5 +22,7 @@ namespace KinaUnaProgenyApi.Services
         Task RemoveWebNotification(WebNotification notification);
         Task<WebNotification> GetWebNotificationById(int id);
         Task<List<WebNotification>> GetUsersWebNotifications(string userId);
+        Task<List<WebNotification>> GetLatestWebNotifications(string userId, int start, int count, bool unreadOnly);
+        Task<int> GetUsersNotificationsCount(string userId);
     }
 }

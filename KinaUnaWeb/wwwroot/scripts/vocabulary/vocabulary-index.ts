@@ -1,4 +1,4 @@
-import { setMomentLocale } from '../data-tools.js';
+import { setMomentLocale } from '../data-tools-v1.js';
 
 declare var vocabularyData: any;
 declare var vocabularyChartLabel: string;

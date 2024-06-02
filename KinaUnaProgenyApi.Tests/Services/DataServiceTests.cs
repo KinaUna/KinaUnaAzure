@@ -3,6 +3,9 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUnaProgenyApi.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace KinaUnaProgenyApi.Tests.Services
 {
@@ -36,8 +39,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetMobileNotification_Should_Return_MobileNotification_Object_When_Id_Is_Valid2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             MobileNotification resultNotification1 = await dataService.GetMobileNotification(1);
             
@@ -86,8 +91,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetMobileNotification_Should_Return_Null_When_Id_Is_Invalid2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             MobileNotification resultNotification1 = await dataService.GetMobileNotification(3);
             
@@ -118,8 +125,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("AddMobileNotification_Should_Save_MobileNotification2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             MobileNotification notificationToAdd = new()
             {
@@ -199,8 +208,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("UpdateMobileNotification_Should_Save_MobileNotification2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             MobileNotification notificationToUpdate = await dataService.GetMobileNotification(1);
             notificationToUpdate.Read = true;
@@ -268,8 +279,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("DeleteMobileNotification_Should_Remove_MobileNotification2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             int notificationItemsCountBeforeDelete = context.MobileNotificationsDb.Count();
             MobileNotification notificationToDelete = await dataService.GetMobileNotification(1);
@@ -320,8 +333,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetUsersMobileNotifications_Should_Return_List_Of_MobileNotifications_When_User_Has_Saved_MobileNotifications2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             List<MobileNotification> notificationsList = await dataService.GetUsersMobileNotifications("User1", "EN");
             MobileNotification firstNotification = notificationsList.First();
@@ -374,8 +389,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>()
                 .UseInMemoryDatabase("GetUsersMobileNotifications_Should_Return_Empty_List_Of_MobileNotifications_When_User_Has_No_Saved_MobileNotifications2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             List<MobileNotification> contactsList = await dataService.GetUsersMobileNotifications("NoUser", "EN");
             
@@ -392,8 +409,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDeviceById_Should_Return_PushDevices_Object_When_Id_Is_Valid2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -420,8 +439,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDeviceById_Should_Return_Null_When_Id_Is_Invalid2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -446,8 +467,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDevice_Should_Return_PushDevices_Object_When_Parameter_Is_Valid2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -487,8 +510,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDevice_Should_Return_Null_When_Parameter_Is_Invalid2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -522,8 +547,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDeviceByUserId_Should_Return_List_of_PushDevices_When_UserId_Is_Valid2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -563,8 +590,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetPushDeviceByUSerId_Should_Return_Empty_List_When_UserId_Is_Invalid2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -599,8 +628,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetAllPushDevices_Should_Return_List_of_PushDevices2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -640,8 +671,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("AddPushDevice_Should_Save_PushDevices_Object2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -685,8 +718,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("RemovePushDevice_Should_Remove_PushDevices_Object2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -724,8 +759,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetWebNotificationById_Should_Return_WebNotification_Object_When_Id_Is_Valid2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -759,8 +796,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetWebNotificationById_Should_Return_Null_Object_When_Id_Is_Invalid2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -789,8 +828,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetUsersWebNotifications_Should_Return_List_of_WebNotification_When_UserId_Is_Valid2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -845,8 +886,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("GetUsersWebNotifications_Should_Return_Empty_List_of_WebNotification_When_UserId_Is_Invalid2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -900,8 +943,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("AddWebNotification_Should_Save_WebNotification2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -948,8 +993,10 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("UpdateWebNotification_Should_Save_WebNotification2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -997,10 +1044,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("RemoveWebNotification_Should_Delete_WebNotification").Options;
             await using ProgenyDbContext context = new(dbOptions);
 
-            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("RemoveWebNotification_Should_Delete_WebNotification").Options;
+            DbContextOptions<WebDbContext> dbWebOptions = new DbContextOptionsBuilder<WebDbContext>().UseInMemoryDatabase("RemoveWebNotification_Should_Delete_WebNotification2").Options;
             await using WebDbContext webContext = new(dbWebOptions);
+            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
+            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, webContext);
+            DataService dataService = new(context, webContext, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -1023,16 +1072,18 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Link = "Link2",
                 Icon = "Icon2"
             };
-            webContext.Add(webNotification1);
-            webContext.Add(webNotification2);
-            await webContext.SaveChangesAsync();
 
-            WebNotification webNotificationToDelete = await dataService.GetWebNotificationById(1);
-            int countBeforeDelete = webContext.WebNotificationsDb.Count();
+
+            webNotification1 = await dataService.AddWebNotification(webNotification1);
+            _ = await dataService.AddWebNotification(webNotification2);
+
+            WebNotification webNotificationToDelete = await dataService.GetWebNotificationById(webNotification1.Id);
+
+            int countBeforeDelete = webContext.WebNotificationsDb.AsNoTracking().Count();
             
             await dataService.RemoveWebNotification(webNotificationToDelete);
             
-            int countAfterDelete = webContext.WebNotificationsDb.Count();
+            int countAfterDelete = webContext.WebNotificationsDb.AsNoTracking().Count();
 
             WebNotification resultWebNotification1 = await dataService.GetWebNotificationById(1);
 

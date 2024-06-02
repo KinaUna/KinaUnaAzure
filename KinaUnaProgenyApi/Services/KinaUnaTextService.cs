@@ -10,12 +10,13 @@ namespace KinaUnaProgenyApi.Services
 {
     public class KinaUnaTextService(ProgenyDbContext context) : IKinaUnaTextService
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "StringComparison does not work with database queries.")]
         public async Task<KinaUnaText> GetTextByTitle(string title, string page, int languageId)
         {
             title = title.Trim();
             page = page.Trim();
             KinaUnaText textItem = await context.KinaUnaTexts.AsNoTracking()
-                .FirstOrDefaultAsync(t => t.Title.Equals(title.Trim(), StringComparison.CurrentCultureIgnoreCase) && t.Page.Equals(page.Trim(), StringComparison.CurrentCultureIgnoreCase) && t.LanguageId == languageId);
+                .FirstOrDefaultAsync(t => t.Title.ToUpper() == title.ToUpper() && t.Page.ToUpper() == page.ToUpper() && t.LanguageId == languageId);
 
             return textItem;
         }
@@ -32,6 +33,7 @@ namespace KinaUnaProgenyApi.Services
             return kinaUnaText;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "<Pending>")]
         public async Task<List<KinaUnaText>> GetPageTextsList(string page, int languageId)
         {
             page = page.Trim();
@@ -41,7 +43,7 @@ namespace KinaUnaProgenyApi.Services
                 languageId = 1;
             }
 
-            List<KinaUnaText> texts = await context.KinaUnaTexts.AsNoTracking().Where(t => t.LanguageId == languageId && t.Page.Equals(page, StringComparison.CurrentCultureIgnoreCase)).ToListAsync();
+            List<KinaUnaText> texts = await context.KinaUnaTexts.AsNoTracking().Where(t => t.LanguageId == languageId && t.Page.ToUpper() == page.ToUpper()).ToListAsync();
             return texts;
         }
 
@@ -120,7 +122,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<KinaUnaText> AddSystemPageText(KinaUnaText text)
         {
-            KinaUnaText existingTextItem = await context.KinaUnaTexts.SingleOrDefaultAsync(t => t.Title == text.Title && t.Page == text.Page && t.LanguageId == text.LanguageId);
+            KinaUnaText existingTextItem = await context.KinaUnaTexts.SingleOrDefaultAsync(t => t.Title.ToUpper() == text.Title.ToUpper() && t.Page.ToUpper() == text.Page.ToUpper() && t.LanguageId == text.LanguageId);
             if (existingTextItem == null)
             {
                 KinaUnaTextNumber textNumber = new()

@@ -197,5 +197,37 @@ namespace KinaUnaWeb.Services.HttpClients
             usersWebNotifications = JsonConvert.DeserializeObject<List<WebNotification>>(notificationsListAsString);
             return usersWebNotifications;
         }
+
+        public async Task<List<WebNotification>> GetLatestWebNotifications(string user, int start = 0, int count = 10, bool unreadOnly = true)
+        {
+            List<WebNotification> usersWebNotifications = [];
+
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string apiPath = "/api/Notifications/GetLatestWebNotifications/" + user + "/" + start + "/" + count + "/" + unreadOnly;
+            HttpResponseMessage notificationsResponse = await _httpClient.GetAsync(apiPath);
+            if (!notificationsResponse.IsSuccessStatusCode) return usersWebNotifications;
+            
+            string notificationsListAsString = await notificationsResponse.Content.ReadAsStringAsync();
+            usersWebNotifications = JsonConvert.DeserializeObject<List<WebNotification>>(notificationsListAsString);
+            return usersWebNotifications;
+        }
+
+        public async Task<int> GetUsersNotificationsCount(string userId)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string apiPath = "/api/Notifications/GetUsersNotificationsCount/" + userId;
+            HttpResponseMessage notificationsResponse = await _httpClient.GetAsync(apiPath);
+
+            if (!notificationsResponse.IsSuccessStatusCode) return 0;
+
+            string notificationsCountAsString = await notificationsResponse.Content.ReadAsStringAsync();
+            int notificationsCount = JsonConvert.DeserializeObject<int>(notificationsCountAsString);
+            return notificationsCount;
+
+        }
     }
 }

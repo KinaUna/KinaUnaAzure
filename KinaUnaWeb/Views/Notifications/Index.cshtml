@@ -6,7 +6,8 @@
     ViewData["Title"] = await LocaleManager.GetTranslation("Notifications", PageNames.Notifications, Model.LanguageId);
     string deleteString = await LocaleManager.GetTranslation("Delete", PageNames.Notifications, Model.LanguageId);
 }
-<div class="ml-xl-auto mr-xl-auto col-xl-6 col-xxl-4">
+<div class="ml-xl-auto mr-xl-auto col-xl-8 col-xxl-6">
+    <btn id="markAllAsReadButton" class="btn btn-link btn-link-edit float-right">@await LocaleManager.GetTranslation("Mark all as read", PageNames.Notifications, Model.LanguageId)</btn>
     <h2>@ViewData["Title"]</h2>
 
     <div class="card" style="background: #3a2051">
@@ -29,13 +30,13 @@
             }
 
             <div class="@topDivClass">
-                <hr />
+                <hr/>
                 <div class="@topBtnClass @isReadClass text-left" data-notificationid="@Model.SelectedNotification.Id" data-notificationLink="@Model.SelectedNotification.Link">
                     <div class="notification-card">
                         <div class="media text-left">
                             <div class="float-left">
                                 <div class="img-circle" style="height: 46px; width: 46px;">
-                                    <img height="40" width="40" class="media-object rounded img-fluid" src="@Model.SelectedNotification.Icon" />
+                                    <img height="40" width="40" class="media-object rounded img-fluid" src="@Model.SelectedNotification.Icon"/>
                                 </div>
                             </div>
                             <div class="media-body">
@@ -59,60 +60,21 @@
             </div>
         }
     </div>
-    <br />
+    <br/>
+    <div id="numberOfWebNotificationsDiv" class="d-none" data-items-count="@Model.Count"></div>
     Most recent notifications:
     <div id="recentNotifications" style="background: #3a2051; margin-top: 5px;">
+        <div id="webNotificationsParentDiv" class="d-none">
+            <div id="webNotificationsDiv">
 
-        @if (Model.NotificationsList.Any())
-        {
-            foreach (WebNotification notif in Model.NotificationsList)
-            {
-                string topDivClass = "notification-item";
-                string idClass = "notifId" + notif.Id;
-                string isReadClass = "notificationUnread";
-                string markAsRead = await LocaleManager.GetTranslation("Mark as read", PageNames.Notifications, Model.LanguageId);
-                string deleteId = "notificationDeleteId" + notif.Id;
-                string topBtnClass = "btn btn-link notification-button leavePage";
-                string markAsReadIcon = "drafts";
-                string timeStamp = notif.DateTime.Ticks.ToString();
-                if (notif.IsRead)
-                {
-                    topDivClass = topDivClass + " bg-dark";
-                    isReadClass = "notificationRead";
-                    markAsRead = await LocaleManager.GetTranslation("Mark as unread", PageNames.Notifications, Model.LanguageId);
-                    topBtnClass = "btn btn-link bg-dark notification-button leavePage";
-                    markAsReadIcon = "markunread";
-                }
-
-                <div class="@topDivClass" data-notificationTime="@timeStamp">
-                    <div onClick="notificationItemClick(this, event)" class="@topBtnClass @isReadClass text-left notification-frame" data-notificationid="@notif.Id" data-notificationLink="@notif.Link">
-                        <div class="notification-card">
-                            <div class="media text-left">
-                                <div class="float-left">
-                                    <div class="img-circle" style="height: 46px; width: 46px;">
-                                        <img height="40" width="40" class="rounded img-fluid" src="@notif.Icon" />
-                                    </div>
-                                </div>
-                                <div class="media-body">
-                                    <div>
-                                        <span class="info-title text-warning">@notif.From</span> <span class="text-warning" style="white-space: nowrap;"> · @notif.DateTimeString</span>
-                                    </div>
-                                    <h6 class="text-white notification-title">@notif.Title</h6>
-                                    <p class="text-light notification-message">@notif.Message</p>
-                                    <div>
-                                        <span class="btn btn-info btn-link btn-sm @isReadClass @idClass" onClick="markRead(this, event)" data-notificationid="@notif.Id">
-                                            <i class="material-icons">@markAsReadIcon</i> @markAsRead
-                                        </span>
-                                        <span id="@deleteId" class="btn btn-danger btn-link btn-sm" onClick="removeNotification(this, event)" data-notificationid="@notif.Id">
-                                            <i class="material-icons">delete_forever</i> @deleteString
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        }
+            </div>
+        </div>
+    </div>
+    <div style="height: 150px;">
+        <button id="moreWebNotificationsButton" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
+        <div id="loadingWebNotificationsDiv" class="w-100">
+            <div class="space-50"></div>
+        </div>
     </div>
 </div>
+<script src="/js/notifications/notifications-page.js" type="module" asp-append-version="true"></script>

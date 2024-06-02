@@ -39,5 +39,19 @@ namespace KinaUnaWeb.Services
 
             return usersNotifications;
         }
+
+        public async Task<List<WebNotification>> GetLatestNotifications(string userId, int start = 0, int count = 10, bool unreadOnly = true)
+        {
+            List<WebNotification> latestNotifications = await webNotificationsHttpClient.GetLatestWebNotifications(userId, start, count, unreadOnly);
+
+            return latestNotifications;
+        }
+
+        public async Task<int> GetUsersNotificationsCount(string userId)
+        {
+            int notificationsCount = await webNotificationsHttpClient.GetUsersNotificationsCount(userId);
+
+            return notificationsCount;
+        }
     }
 }

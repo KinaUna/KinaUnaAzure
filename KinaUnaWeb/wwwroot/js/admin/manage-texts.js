@@ -1,4 +1,4 @@
-import * as pageModels from '../page-models.js';
+import * as pageModels from '../page-models-v1.js';
 let editTextTranslationCurrentTextItem = new pageModels.KinaUnaTextParameters();
 async function loadManageTextsEditTextModal(textItem) {
     const waitMeStartEvent = new Event('waitMeStart');

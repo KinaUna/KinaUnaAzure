@@ -31,15 +31,15 @@ namespace KinaUnaWeb.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task GetUpdateForUser(int count = 10, int start = 1)
+        public async Task GetUpdateForUser(int count = 10, int start = 0)
         {
             string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
             string userTimeZone = Context.GetHttpContext()?.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
             if (userId != "NoUser")
             {
-                List<WebNotification> notifications = await notificationsService.GetUsersNotifications(userId);
+                List<WebNotification> notifications = await notificationsService.GetLatestNotifications(userId, 0, 10, true);
 
-                notifications = notifications.OrderByDescending(n => n.DateTime).Skip(start - 1).Take(count).ToList();
+                notifications = notifications.OrderByDescending(n => n.DateTime).Skip(start).Take(count).ToList();
 
                 if (notifications.Count != 0)
                 {
@@ -135,7 +135,7 @@ namespace KinaUnaWeb.Hubs
 
                         updateNotification = await notificationsService.UpdateNotification(updateNotification);
 
-                        await Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
+                        await Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(updateNotification));
                     }
                 }
             }
@@ -161,7 +161,7 @@ namespace KinaUnaWeb.Hubs
 
                         updateNotification = await notificationsService.UpdateNotification(updateNotification);
 
-                        await Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
+                        await Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(updateNotification));
                     }
                 }
             }

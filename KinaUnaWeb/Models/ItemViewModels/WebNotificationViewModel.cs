@@ -4,6 +4,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class WebNotificationViewModel: BaseItemsViewModel
     {
+        public int Id { get; set; } = 0;
+        
+
         public WebNotification WebNotification { get; set; } = new();
 
         public WebNotificationViewModel()

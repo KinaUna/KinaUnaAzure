@@ -117,3 +117,23 @@ export class TimelineList {
     allItemsCount: number = 0;
     remainingItemsCount: number = 0;
 }
+
+export class WebNotification {
+    id: number = 0;
+    to: string = "";
+}
+
+export class WebNotificationViewModel {
+    id: number = 0;
+}
+
+export class WebNotficationsParameters {
+    skip: number = 0;
+    count: number = 10;
+}
+
+export class WebNotificationsList {
+    notificationsList: WebNotification[] = [];
+    allNotificationsCount: number = 0;
+    remainingItemsCount: number = 0;
+}

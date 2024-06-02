@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
+using KinaUnaWeb.Models.TypeScriptModels.Notifications;
 using KinaUnaWeb.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
@@ -20,28 +24,13 @@ namespace KinaUnaWeb.Controllers
         IViewModelSetupService viewModelSetupService)
         : Controller
     {
-        public async Task<IActionResult> Index(int Id = 0)
+        public async Task<IActionResult> Index(int Id = 0, int count = 10)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            NotificationsListViewModel model = new(baseModel);
-            
-            model.NotificationsList = await webNotificationsService.GetUsersNotifications(model.CurrentUser.UserId);
-            
-            if (model.NotificationsList.Count != 0)
+            NotificationsListViewModel model = new(baseModel)
             {
-                model.NotificationsList = [.. model.NotificationsList.OrderBy(n => n.DateTime)];
-                model.NotificationsList.Reverse();
-                foreach (WebNotification notif in model.NotificationsList)
-                {
-                    notif.DateTime = TimeZoneInfo.ConvertTimeFromUtc(notif.DateTime,
-                        TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-                    notif.DateTimeString = notif.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
-                    if (!notif.Icon.StartsWith('/'))
-                    {
-                        notif.Icon = imageStore.UriFor(notif.Icon, "profiles");
-                    }
-                }
-            }
+                Count = count
+            };
 
             if (Id == 0) return View(model);
 
@@ -60,41 +49,77 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> GetWebNotificationsPage([FromBody] WebNotificationsParameters parameters)
+        {
+            string userId = User.GetUserId() ?? Constants.DefaultUserId;
+
+            WebNotificationsList webNotificationsList = new()
+            {
+                NotificationsList = await webNotificationsService.GetLatestNotifications(userId, parameters.Skip, parameters.Count, false)
+            };
+
+            webNotificationsList.AllNotificationsCount = await webNotificationsService.GetUsersNotificationsCount(userId);
+            webNotificationsList.RemainingItemsCount = webNotificationsList.AllNotificationsCount - parameters.Skip - webNotificationsList.NotificationsList.Count;
+
+            if (webNotificationsList.NotificationsList.Count == 0) return Json(webNotificationsList);
+
+            foreach (WebNotification notif in webNotificationsList.NotificationsList)
+            {
+                notif.DateTime = TimeZoneInfo.ConvertTimeFromUtc(notif.DateTime,
+                    TimeZoneInfo.FindSystemTimeZoneById(User.GetUserTimeZone()));
+                notif.DateTimeString = notif.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
+                if (!notif.Icon.StartsWith('/'))
+                {
+                    notif.Icon = imageStore.UriFor(notif.Icon, "profiles");
+                }
+            }
+            return Json(webNotificationsList);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<ActionResult> GetWebNotificationElement([FromBody] WebNotificationViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            model.SetBaseProperties(baseModel);
+
+            model.WebNotification = await webNotificationsService.GetNotificationById(model.Id);
+
+            model.WebNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(model.WebNotification.DateTime, TimeZoneInfo.FindSystemTimeZoneById(User.GetUserTimeZone()));
+            model.WebNotification.DateTimeString = model.WebNotification.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
+            
+            if (!model.WebNotification.Icon.StartsWith('/'))
+            {
+                model.WebNotification.Icon = imageStore.UriFor(model.WebNotification.Icon, "profiles");
+            }
+            return PartialView("_GetWebNotificationElementPartial", model);
+        }
+
+
         public async Task<IActionResult> ShowNotification(WebNotification notification)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
             WebNotificationViewModel model = new(baseModel);
             
-            if (!notification.Icon.StartsWith('/'))
-            {
-                notification.Icon = imageStore.UriFor(notification.Icon, "profiles");
-            }
-
             if (model.CurrentUser.UserId == notification.To)
             {
-                model.WebNotification = notification;
+                model.WebNotification = await webNotificationsService.GetNotificationById(notification.Id);
+                model.Id = notification.Id;
             }
+
+            if (!model.WebNotification.Icon.StartsWith('/'))
+            {
+                model.WebNotification.Icon = imageStore.UriFor(model.WebNotification.Icon, "profiles");
+            }
+
+            model.WebNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(model.WebNotification.DateTime, TimeZoneInfo.FindSystemTimeZoneById(User.GetUserTimeZone()));
+            model.WebNotification.DateTimeString = model.WebNotification.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
 
             return PartialView(model);
         }
 
-        public async Task<IActionResult> ShowUpdatedNotification(WebNotification notification)
-        {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            WebNotificationViewModel model = new(baseModel);
-            
-            if (!notification.Icon.StartsWith('/'))
-            {
-                notification.Icon = imageStore.UriFor(notification.Icon, "profiles");
-            }
-
-            if (model.CurrentUser.UserId == notification.To)
-            {
-                model.WebNotification = notification;
-            }
-
-            return PartialView(model);
-        }
 
         public async Task<IActionResult> SetUnread(int Id)
         {
@@ -108,7 +133,7 @@ namespace KinaUnaWeb.Controllers
             updateNotification.IsRead = false;
             updateNotification = await webNotificationsService.UpdateNotification(updateNotification);
 
-            await hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
+            await hubContext.Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(updateNotification));
 
             return Ok();
         }
@@ -126,10 +151,38 @@ namespace KinaUnaWeb.Controllers
                     
             updateNotification = await webNotificationsService.UpdateNotification(updateNotification);
 
-            await hubContext.Clients.User(userId).SendAsync("UpdateMessage", JsonConvert.SerializeObject(updateNotification));
+            await hubContext.Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(updateNotification));
 
             return Ok();
         }
+
+        public async Task<IActionResult> SetAllRead()
+        {
+            string userId = User.GetUserId() ?? "NoUser";
+
+            List<WebNotification> unreadWebNotifications = await webNotificationsService.GetUsersNotifications(userId);
+            unreadWebNotifications = unreadWebNotifications.Where(n => !n.IsRead).ToList();
+
+            foreach (WebNotification notification in unreadWebNotifications)
+            {
+                WebNotification updateNotification = await webNotificationsService.GetNotificationById(notification.Id);
+
+                if (updateNotification == null || updateNotification.Id == 0) continue;
+
+                if (userId != updateNotification.To) continue;
+
+                updateNotification.IsRead = true;
+
+                _ = await webNotificationsService.UpdateNotification(updateNotification);
+                
+            }
+
+            //_ = Task.Run(() => Task.FromResult(BatchSetWebNotificationsToRead(unreadWebNotifications))); // Todo: Replace with a more robust solution.
+            await hubContext.Clients.User(userId).SendAsync("MarkAllReadMessage", JsonConvert.SerializeObject(userId));
+
+            return Ok();
+        }
+
 
         public async Task<IActionResult> Remove(int Id)
         {

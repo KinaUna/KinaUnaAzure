@@ -1,4 +1,4 @@
-﻿import { updateFilterButtonDisplay } from '../data-tools.js';
+﻿import { updateFilterButtonDisplay } from '../data-tools-v1.js';
 $(function () {
     const filterButtons = document.querySelectorAll('.button-checkbox');
     filterButtons.forEach((filterButtonParentSpan) => {

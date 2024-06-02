@@ -106,4 +106,28 @@ export class TimelineList {
         this.remainingItemsCount = 0;
     }
 }
-//# sourceMappingURL=page-models.js.map
+export class WebNotification {
+    constructor() {
+        this.id = 0;
+        this.to = "";
+    }
+}
+export class WebNotificationViewModel {
+    constructor() {
+        this.id = 0;
+    }
+}
+export class WebNotficationsParameters {
+    constructor() {
+        this.skip = 0;
+        this.count = 10;
+    }
+}
+export class WebNotificationsList {
+    constructor() {
+        this.notificationsList = [];
+        this.allNotificationsCount = 0;
+        this.remainingItemsCount = 0;
+    }
+}
+//# sourceMappingURL=page-models-v1.js.map

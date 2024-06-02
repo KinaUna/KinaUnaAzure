@@ -1,4 +1,4 @@
-import { setMomentLocale } from '../data-tools.js';
+import { setMomentLocale } from '../data-tools-v1.js';
 function timestamp(str) {
     return new Date(str).getTime();
 }

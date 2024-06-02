@@ -17,4 +17,6 @@ public interface IWebNotificationsHttpClient
     Task<WebNotification> RemoveWebNotification(WebNotification notification);
     Task<WebNotification> GetWebNotificationById(int id);
     Task<List<WebNotification>> GetUsersWebNotifications(string user);
+    Task<List<WebNotification>> GetLatestWebNotifications(string user, int start = 0, int count = 10, bool unreadOnly = true);
+    Task<int> GetUsersNotificationsCount(string userId);
 }

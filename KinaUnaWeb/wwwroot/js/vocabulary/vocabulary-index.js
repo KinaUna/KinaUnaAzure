@@ -1,4 +1,4 @@
-import { setMomentLocale } from '../data-tools.js';
+import { setMomentLocale } from '../data-tools-v1.js';
 let vocabularyChartContainer = document.querySelector("#chartContainer");
 if (vocabularyChartContainer != null) {
     let myChart = new Chart(vocabularyChartContainer, {

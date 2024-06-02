@@ -293,5 +293,35 @@ namespace KinaUnaProgenyApi.Controllers
 
             return Ok(webNotifications);
         }
+
+        [HttpGet]
+        [Route("[action]/{userId}/{start:int}/{count:int}/{unreadOnly:bool}")]
+        public async Task<IActionResult> GetLatestWebNotifications(string userId, int start, int count, bool unreadOnly)
+        {
+            string currentUserId = User.GetUserId() ?? "";
+            if (userId != currentUserId)
+            {
+                return Unauthorized();
+            }
+
+            List<WebNotification> notificationsList = await dataService.GetLatestWebNotifications(userId, start, count, unreadOnly);
+
+            return Ok(notificationsList);
+        }
+
+        [HttpGet]
+        [Route("[action]/{userId}")]
+        public async Task<IActionResult> GetUsersNotificationsCount(string userId)
+        {
+            string currentUserId = User.GetUserId() ?? "";
+            if (userId != currentUserId)
+            {
+                return Unauthorized();
+            }
+
+            int notificationsCount = await dataService.GetUsersNotificationsCount(userId);
+
+            return Ok(notificationsCount);
+        }
     }
 }

@@ -298,13 +298,12 @@ namespace KinaUnaWeb.Controllers
         {
             string userId = User.GetUserId();
             UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
-            if (userInfo.UserId == userId)
-            {
-                userInfo.Deleted = false;
-                _ = await userInfosHttpClient.UpdateUserInfo(userInfo);
-                _ = await authHttpClient.RemoveDeleteUser(userInfo);
-            }
-            
+            if (userInfo.UserId != userId) return RedirectToAction("Index", "Home");
+
+            userInfo.Deleted = false;
+            _ = await userInfosHttpClient.UpdateUserInfo(userInfo);
+            _ = await authHttpClient.RemoveDeleteUser(userInfo);
+
             return RedirectToAction("Index", "Home");
         }
     }
