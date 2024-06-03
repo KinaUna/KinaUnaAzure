@@ -262,6 +262,9 @@
 }
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
+    string downloadName = Model.CurrentProgeny.NickName + "_" + Model.Picture.PictureId;
+    <a asp-action="OriginalPicture" asp-route-id="@Model.Picture.PictureId" class="float-right btn btn-link text-white" download="@downloadName" >@await LocaleManager.GetTranslation("Download original picture", PageNames.Pictures, Model.LanguageId)</a>
+    
     <form asp-controller="Pictures" asp-action="AddPictureComment" role="form" method="post">
         <div class="form-group">
             <label Name="CommentText" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("New comment:", PageNames.Pictures, Model.LanguageId)</label>

@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "cldr-data": "^36.0.2"
+  },
+  "devDependencies": {
+    "@types/jquery": "^3.5.30"
   }
 }

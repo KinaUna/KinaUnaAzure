@@ -77,6 +77,7 @@ namespace KinaUnaWeb.Controllers
 
             model.SetPropertiesFromPictureViewModel(pictureViewModel);
             model.Picture.PictureLink = imageStore.UriFor(model.Picture.PictureLink);
+
             model.TagFilter = tagFilter;
             model.SortBy = sortBy;
             
@@ -112,6 +113,34 @@ namespace KinaUnaWeb.Controllers
             model.SetAccessLevelList();
 
             return View(model);
+        }
+
+        public async Task<FileContentResult> OriginalPicture(int id)
+        {
+            Picture picture = await mediaHttpClient.GetPicture(id, Constants.DefaultTimezone);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
+            if (baseModel.CurrentAccessLevel > picture.AccessLevel)
+            {
+                MemoryStream fileContentNoAccess = await imageStore.GetStream("ab5fe7cb-2a66-4785-b39a-aa4eb7953c3d.png");
+                byte[] fileContentBytesNoAccess = fileContentNoAccess.ToArray();
+                return new FileContentResult(fileContentBytesNoAccess, "image/png");
+            }
+
+            MemoryStream fileContent = await imageStore.GetStream(picture.PictureLink);
+            byte[] fileContentBytes = fileContent.ToArray();
+
+            if (picture.PictureLink.Contains(".png"))
+                return new FileContentResult(fileContentBytes, "image/png");
+            if (picture.PictureLink.Contains(".gif"))
+                return new FileContentResult(fileContentBytes, "image/gif");
+            if (picture.PictureLink.Contains(".bmp"))
+                return new FileContentResult(fileContentBytes, "image/bmp");
+            if (picture.PictureLink.Contains(".tiff"))
+                return new FileContentResult(fileContentBytes, "image/tiff");
+            if (picture.PictureLink.Contains(".webp"))
+                return new FileContentResult(fileContentBytes, "image/webp");
+            
+            return new FileContentResult(fileContentBytes, "image/jpeg");
         }
 
         public async Task<IActionResult> AddPicture()

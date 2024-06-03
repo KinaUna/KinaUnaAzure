@@ -158,7 +158,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     if (picture.PictureRotation != 0)
                     {
-                        image.Rotate(-(int)picture.PictureRotation);
+                        image.Rotate((int)picture.PictureRotation);
                     }
 
                 }
@@ -186,7 +186,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     if (picture.PictureRotation != 0)
                     {
-                        image.Rotate(-(int)picture.PictureRotation);
+                        image.Rotate((int)picture.PictureRotation);
                     }
 
                 }
@@ -234,7 +234,7 @@ namespace KinaUnaProgenyApi.Services
                 
                 if (rotation != 0)
                 {
-                    image.Rotate(-rotation);
+                    image.Rotate(rotation);
                 }
             }
 
@@ -267,7 +267,7 @@ namespace KinaUnaProgenyApi.Services
                 
                 if (rotation != 0)
                 {
-                    image.Rotate(-rotation);
+                    image.Rotate(rotation);
                 }
             }
 
@@ -300,7 +300,7 @@ namespace KinaUnaProgenyApi.Services
 
                 if (rotation != 0)
                 {
-                    image.Rotate(-rotation);
+                    image.Rotate(rotation);
                 }
             }
 
@@ -333,7 +333,7 @@ namespace KinaUnaProgenyApi.Services
 
                 if (rotation != 0)
                 {
-                    image.Rotate(-rotation);
+                    image.Rotate(rotation);
                 }
             }
 

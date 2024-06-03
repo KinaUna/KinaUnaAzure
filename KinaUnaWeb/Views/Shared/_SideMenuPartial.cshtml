@@ -32,7 +32,7 @@
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="pictures">
-                    <a class="btn-sidebar leavePage" asp-controller="Pictures" asp-action="Index">
+                    <a class="btn-sidebar leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="1">
                         <i class="material-icons sidebar-icon">photo_library</i>
                         <span class="sidebar-item-text sidebar-item-text-hide">
                             @await LocaleManager.GetTranslation("Photos", PageNames.Layout, Model.LanguageId)
@@ -40,7 +40,7 @@
                     </a>
                 </li>
                 <li class="nav-item dropdown-item sidebar-item" data-sidebar-id="videos">
-                    <a class="btn-sidebar leavePage" asp-controller="Videos" asp-action="Index">
+                    <a class="btn-sidebar leavePage" asp-controller="Videos" asp-action="Index" asp-route-id="1">
                         <i class="material-icons sidebar-icon">videocam</i>
                         <span class="sidebar-item-text sidebar-item-text-hide">
                             @await LocaleManager.GetTranslation("Videos", PageNames.Layout, Model.LanguageId)

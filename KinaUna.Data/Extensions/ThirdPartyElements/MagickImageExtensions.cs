@@ -25,6 +25,7 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
                 MagickFormat.Dds => ".dds",
                 MagickFormat.J2c => ".j2c",
                 MagickFormat.J2k => ".j2k",
+                MagickFormat.WebP => ".webp",
                 _ => "",
             };
             return fileExtension;

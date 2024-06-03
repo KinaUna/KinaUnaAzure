@@ -3,49 +3,33 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using KinaUna.Data;
-using Microsoft.Azure.Storage.Blob;
-using Microsoft.Azure.Storage.Auth;
+using Azure.Storage;
+using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
 
 namespace KinaUnaWeb.Services
 {
-    public class ImageStore
+    public class ImageStore(IConfiguration configuration)
     {
-        private readonly CloudBlobClient _blobClient;
-        private readonly string _baseUri;
+        private readonly BlobServiceClient _blobServiceClient = new(configuration.GetValue<string>("BlobStorageConnectionString"));
+        private readonly string _storageKey = configuration.GetValue<string>("BlobStorageKey");
+        private readonly string _baseUri = configuration.GetValue<string>("CloudBlobBase");
+        private readonly string _cloudBlobUserName = configuration.GetValue<string>("CloudBlobUserName");
 
-        public ImageStore(IConfiguration configuration)
-        {
-            _baseUri = configuration.GetValue<string>("CloudBlobBase");
-            string cloudBlobUserName = configuration.GetValue<string>("CloudBlobUserName");
-            StorageCredentials credentials = new(cloudBlobUserName, configuration.GetValue<string>("BlobStorageKey"));
-            _blobClient = new CloudBlobClient(new Uri(_baseUri), credentials);
-        }
-
-        /// <summary>
-        /// Saves an image file to the storage account specified in Secrets: CloudBlobBase.
-        /// </summary>
-        /// <param name="imageStream">Stream: The stream for the image file.</param>
-        /// <param name="containerName">string: The name of the Azure Storage Blob Container. Default: pictures</param>
-        /// <param name="fileFormat">string: the file extension for the image file</param>
-        /// <returns>string: The file name (Picture.PictureLink)</returns>
         public async Task<string> SaveImage(Stream imageStream, string containerName = "pictures", string fileFormat = ".jpg")
         {
             string imageId = Guid.NewGuid() + fileFormat;
-            CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
-            CloudBlockBlob blob = container.GetBlockBlobReference(imageId);
-            await blob.UploadFromStreamAsync(imageStream);
+            BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
+
+            BlobClient blob = container.GetBlobClient(imageId);
+
+            await blob.UploadAsync(imageStream);
             return imageId;
         }
 
-        /// <summary>
-        /// Gets the URI, including access signature, for an image stored in an Azure Storage Blob container.
-        /// </summary>
-        /// <param name="imageId">string: The image Id (Picture.PictureLink).</param>
-        /// <param name="containerName">string: The name of the Azure Storage Blob Container. Default: pictures</param>
-        /// <returns>string: The URI for the image.</returns>
         public string UriFor(string imageId, string containerName = "pictures")
         {
-            if (string.IsNullOrEmpty(imageId) || imageId.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
+            if (imageId.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
             {
                 if (string.IsNullOrEmpty(imageId))
                 {
@@ -55,25 +39,35 @@ namespace KinaUnaWeb.Services
                 return imageId;
             }
 
-            SharedAccessBlobPolicy sasPolicy = new()
+            StorageSharedKeyCredential credential = new(_cloudBlobUserName, _storageKey);
+            BlobSasBuilder sas = new()
             {
-                Permissions = SharedAccessBlobPermissions.Read,
-                SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-15),
-                SharedAccessExpiryTime = DateTime.UtcNow.AddMinutes(60)
+                BlobName = imageId,
+                BlobContainerName = containerName,
+                StartsOn = DateTime.UtcNow.AddMinutes(-15),
+                ExpiresOn = DateTime.UtcNow.AddMinutes(60)
             };
 
-            CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
-            CloudBlockBlob blob = container.GetBlockBlobReference(imageId);
-            string sas = blob.GetSharedAccessSignature(sasPolicy);
-            return $"{_baseUri}{containerName}/{imageId}{sas}";
+            sas.SetPermissions(BlobAccountSasPermissions.Read);
+            UriBuilder sasUri = new($"{_baseUri}{containerName}/{imageId}")
+            {
+                Query = sas.ToSasQueryParameters(credential).ToString()
+            };
+
+            return sasUri.Uri.AbsoluteUri;
         }
 
-        /// <summary>
-        /// Removes an image from the Azure Storage Blob.
-        /// </summary>
-        /// <param name="imageId">string: The image Id (Picture.PictureLink).</param>
-        /// <param name="containerName">string: The name of the Azure Storage Blob Container. Default: pictures</param>
-        /// <returns>string: The image Id (Picture.PictureLink).</returns>
+        public async Task<MemoryStream> GetStream(string imageId, string containerName = "pictures")
+        {
+            BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
+
+            BlobClient blob = container.GetBlobClient(imageId);
+            MemoryStream memoryStream = new();
+            await blob.DownloadToAsync(memoryStream).ConfigureAwait(false);
+
+            return memoryStream;
+        }
+
         public async Task<string> DeleteImage(string imageId, string containerName = "pictures")
         {
             if (string.IsNullOrEmpty(imageId) || imageId.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
@@ -82,13 +76,17 @@ namespace KinaUnaWeb.Services
                 {
                     imageId = Constants.ProfilePictureUrl;
                 }
+
                 return imageId;
             }
 
-            CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
-            CloudBlockBlob blob = container.GetBlockBlobReference(imageId);
+            BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
+
+            BlobClient blob = container.GetBlobClient(imageId);
             await blob.DeleteIfExistsAsync();
+
             return imageId;
         }
+
     }
 }

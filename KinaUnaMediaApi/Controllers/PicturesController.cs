@@ -571,7 +571,7 @@ namespace KinaUnaMediaApi.Controllers
                 {
                     if (model.PictureRotation != 0)
                     {
-                        image.Rotate(-(int)model.PictureRotation);
+                        image.Rotate((int)model.PictureRotation);
                     }
 
                 }
