@@ -8,6 +8,7 @@ using ImageMagick;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
+using KinaUna.Data.Extensions.ThirdPartyElements;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -90,40 +91,10 @@ namespace KinaUnaProgenyApi.Services
 
             using (MagickImage image = new(memoryStream))
             {
-                string pictureFormat = "";
-                switch (image.Format)
-                {
-                    case MagickFormat.Jpg:
-                        pictureFormat += ".jpg";
-                        break;
-                    case MagickFormat.Jpeg:
-                        pictureFormat += ".jpg";
-                        break;
-                    case MagickFormat.Png:
-                        pictureFormat += ".png";
-                        break;
-                    case MagickFormat.Gif:
-                        pictureFormat += ".gif";
-                        break;
-                    case MagickFormat.Bmp:
-                        pictureFormat += ".bmp";
-                        break;
-                    case MagickFormat.Tiff:
-                        pictureFormat += ".tiff";
-                        break;
-                    case MagickFormat.Tga:
-                        pictureFormat += ".tga";
-                        break;
-
-                    default:
-                        pictureFormat = "";
-                        break;
-                }
-
                 using MemoryStream memStream = new();
                 await image.WriteAsync(memStream);
                 memStream.Position = 0;
-                picture.PictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Pictures, pictureFormat);
+                picture.PictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Pictures, image.FileExtensionString());
             }
 
             MemoryStream memoryStream600 = await _imageStore.GetStream(picture.PictureLink600);
@@ -131,40 +102,10 @@ namespace KinaUnaProgenyApi.Services
 
             using (MagickImage image600 = new(memoryStream600))
             {
-                string pictureFormat = "";
-                switch (image600.Format)
-                {
-                    case MagickFormat.Jpg:
-                        pictureFormat += ".jpg";
-                        break;
-                    case MagickFormat.Jpeg:
-                        pictureFormat += ".jpg";
-                        break;
-                    case MagickFormat.Png:
-                        pictureFormat += ".png";
-                        break;
-                    case MagickFormat.Gif:
-                        pictureFormat += ".gif";
-                        break;
-                    case MagickFormat.Bmp:
-                        pictureFormat += ".bmp";
-                        break;
-                    case MagickFormat.Tiff:
-                        pictureFormat += ".tiff";
-                        break;
-                    case MagickFormat.Tga:
-                        pictureFormat += ".tga";
-                        break;
-
-                    default:
-                        pictureFormat = "";
-                        break;
-                }
-
                 using MemoryStream memStream600 = new();
                 await image600.WriteAsync(memStream600);
                 memStream600.Position = 0;
-                picture.PictureLink600 = await _imageStore.SaveImage(memStream600, BlobContainers.Pictures, pictureFormat);
+                picture.PictureLink600 = await _imageStore.SaveImage(memStream600, BlobContainers.Pictures, image600.FileExtensionString());
             }
 
             MemoryStream memoryStream1200 = await _imageStore.GetStream(picture.PictureLink1200);
@@ -172,40 +113,10 @@ namespace KinaUnaProgenyApi.Services
 
             using (MagickImage image1200 = new(memoryStream1200))
             {
-                string pictureFormat = "";
-                switch (image1200.Format)
-                {
-                    case MagickFormat.Jpg:
-                        pictureFormat += ".jpg";
-                        break;
-                    case MagickFormat.Jpeg:
-                        pictureFormat += ".jpg";
-                        break;
-                    case MagickFormat.Png:
-                        pictureFormat += ".png";
-                        break;
-                    case MagickFormat.Gif:
-                        pictureFormat += ".gif";
-                        break;
-                    case MagickFormat.Bmp:
-                        pictureFormat += ".bmp";
-                        break;
-                    case MagickFormat.Tiff:
-                        pictureFormat += ".tiff";
-                        break;
-                    case MagickFormat.Tga:
-                        pictureFormat += ".tga";
-                        break;
-
-                    default:
-                        pictureFormat = "";
-                        break;
-                }
-
                 using MemoryStream memStream1200 = new();
                 await image1200.WriteAsync(memStream1200);
                 memStream1200.Position = 0;
-                picture.PictureLink1200 = await _imageStore.SaveImage(memStream1200, BlobContainers.Pictures, pictureFormat);
+                picture.PictureLink1200 = await _imageStore.SaveImage(memStream1200, BlobContainers.Pictures, image1200.FileExtensionString());
             }
 
             picture = await UpdatePicture(picture);
@@ -223,209 +134,19 @@ namespace KinaUnaProgenyApi.Services
 
             using (MagickImage image = new(memoryStream))
             {
-                string pictureFormat = "";
-                switch (image.Format)
-                {
-                    case MagickFormat.Jpg:
-                        pictureFormat += ".jpg";
-                        break;
-                    case MagickFormat.Jpeg:
-                        pictureFormat += ".jpg";
-                        break;
-                    case MagickFormat.Png:
-                        pictureFormat += ".png";
-                        break;
-                    case MagickFormat.Gif:
-                        pictureFormat += ".gif";
-                        break;
-                    case MagickFormat.Bmp:
-                        pictureFormat += ".bmp";
-                        break;
-                    case MagickFormat.Tiff:
-                        pictureFormat += ".tiff";
-                        break;
-                    case MagickFormat.Tga:
-                        pictureFormat += ".tga";
-                        break;
-
-                    default:
-                        pictureFormat = "";
-                        break;
-                }
-
                 IExifProfile profile = image.GetExifProfile();
                 if (profile != null)
                 {
-                    try
-                    {
+                    picture.Longtitude = profile.GetLongitude();
+                    picture.Latitude = profile.GetLatitude();
+                    picture.Altitude = profile.GetAltitude();
 
-                        IExifValue gpsLongtitude = profile.GetValue(ExifTag.GPSLongitude);
-                        IExifValue gpsLatitude = profile.GetValue(ExifTag.GPSLatitude);
-                        IExifValue gpsAltitude = profile.GetValue(ExifTag.GPSAltitude);
+                    picture.PictureRotation = profile.GetRotationInDegrees();
 
-                        if (gpsLongtitude != null && gpsLatitude != null)
-                        {
-                            if (gpsLongtitude.GetValue() is Rational[] longValues && (longValues[0].Denominator != 0 && longValues[1].Denominator != 0 &&
-                                                       longValues[2].Denominator != 0))
-                            {
-                                double long0 = longValues[0].Numerator / (double)longValues[0].Denominator;
-                                double long1 = longValues[1].Numerator / (double)longValues[1].Denominator;
-                                double long2 = longValues[2].Numerator / (double)longValues[2].Denominator;
-                                picture.Longtitude = (long0 + long1 / 60.0 + long2 / 3600).ToString(CultureInfo.CurrentCulture);
-                            }
-                            else
-                            {
-                                picture.Longtitude = "";
-                            }
+                    picture.PictureTime = profile.GetDateTime();
 
-                            if (gpsLatitude.GetValue() is Rational[] latValues && (latValues[0].Denominator != 0 && latValues[1].Denominator != 0 &&
-                                                      latValues[2].Denominator != 0))
-                            {
-                                double lat0 = latValues[0].Numerator / (double)latValues[0].Denominator;
-                                double lat1 = latValues[1].Numerator / (double)latValues[1].Denominator;
-                                double lat2 = latValues[2].Numerator / (double)latValues[2].Denominator;
-                                picture.Latitude = (lat0 + lat1 / 60.0 + lat2 / 3600).ToString(CultureInfo.CurrentCulture);
-                            }
-                            else
-                            {
-                                picture.Latitude = "";
-                            }
-                        }
-                        else
-                        {
-                            picture.Longtitude = "";
-                            picture.Latitude = "";
-                        }
-
-                        if (gpsAltitude != null)
-                        {
-                            Rational altValues = (Rational)gpsAltitude.GetValue();
-                            if (altValues.Denominator != 0)
-                            {
-                                double alt0 = altValues.Numerator / (double)altValues.Denominator;
-                                picture.Altitude = alt0.ToString(CultureInfo.InvariantCulture);
-                            }
-                            else
-                            {
-                                picture.Altitude = "";
-                            }
-                        }
-                        else
-                        {
-                            picture.Altitude = "";
-                        }
-
-
-                    }
-                    catch (ArgumentNullException)
-                    {
-                        picture.Longtitude = "";
-                        picture.Latitude = "";
-                        picture.Altitude = "";
-                    }
-                    catch (NullReferenceException)
-                    {
-                        picture.Longtitude = "";
-                        picture.Latitude = "";
-                        picture.Altitude = "";
-                    }
-                    catch (Exception)
-                    {
-                        picture.Longtitude = "";
-                        picture.Latitude = "";
-                        picture.Altitude = "";
-                    }
-
-                    try
-                    {
-                        int rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
-                        switch (rotation)
-                        {
-                            case 1:
-                                picture.PictureRotation = 0;
-                                break;
-                            case 3:
-                                picture.PictureRotation = 180;
-                                break;
-                            case 6:
-                                picture.PictureRotation = 90;
-                                break;
-                            case 8:
-                                picture.PictureRotation = 270;
-                                break;
-
-                        }
-                    }
-                    catch (ArgumentNullException)
-                    {
-                        picture.PictureRotation = 0;
-                    }
-                    catch (NullReferenceException)
-                    {
-                        picture.PictureRotation = 0;
-                    }
-                    
-                    try
-                    {
-                        string date = profile.GetValue(ExifTag.DateTimeOriginal)?.Value;
-                        if (!string.IsNullOrEmpty(date))
-                        {
-                            picture.PictureTime = new DateTime(
-                                int.Parse(date[..4]), // year
-                                int.Parse(date.Substring(5, 2)), // month
-                                int.Parse(date.Substring(8, 2)), // day
-                                int.Parse(date.Substring(11, 2)), // hour
-                                int.Parse(date.Substring(14, 2)), // minute
-                                int.Parse(date.Substring(17, 2)) // second
-                            );
-                            // Todo: Check if timezone can be extracted and UTC time found?
-                        }
-                    }
-                    catch (FormatException)
-                    {
-                        picture.PictureTime = null;
-                    }
-                    catch (OverflowException)
-                    {
-                        picture.PictureTime = null;
-                    }
-                    catch (ArgumentNullException)
-                    {
-                        picture.PictureTime = null;
-                    }
-                    catch (NullReferenceException)
-                    {
-                        picture.PictureTime = null;
-                    }
-
-                    try
-                    {
-                        Number w = profile.GetValue(ExifTag.PixelXDimension).Value;
-                        Number h = profile.GetValue(ExifTag.PixelYDimension).Value;
-
-                        picture.PictureWidth = Convert.ToInt32((uint)w);
-                        picture.PictureHeight = Convert.ToInt32((uint)h);
-                    }
-                    catch (FormatException)
-                    {
-                        picture.PictureWidth = image.Width;
-                        picture.PictureHeight = image.Height;
-                    }
-                    catch (OverflowException)
-                    {
-                        picture.PictureWidth = image.Width;
-                        picture.PictureHeight = image.Height;
-                    }
-                    catch (ArgumentNullException)
-                    {
-                        picture.PictureWidth = image.Width;
-                        picture.PictureHeight = image.Height;
-                    }
-                    catch (NullReferenceException)
-                    {
-                        picture.PictureWidth = image.Width;
-                        picture.PictureHeight = image.Height;
-                    }
+                    picture.PictureWidth = profile.GetPictureWidth(image);
+                    picture.PictureHeight = profile.GetPictureHeight(image);
                 }
                 else
                 {
@@ -433,11 +154,12 @@ namespace KinaUnaProgenyApi.Services
                     picture.PictureHeight = image.Height;
 
                 }
+
                 if (picture.PictureRotation != null)
                 {
                     if (picture.PictureRotation != 0)
                     {
-                        image.Rotate((int)picture.PictureRotation);
+                        image.Rotate(-(int)picture.PictureRotation);
                     }
 
                 }
@@ -456,46 +178,16 @@ namespace KinaUnaProgenyApi.Services
                 await image.WriteAsync(memStream);
                 memStream.Position = 0;
                 
-                picture.PictureLink600 = await _imageStore.SaveImage(memStream, BlobContainers.Pictures, pictureFormat);
+                picture.PictureLink600 = await _imageStore.SaveImage(memStream, BlobContainers.Pictures, image.FileExtensionString());
             }
 
             using (MagickImage image = new(memoryStream))
             {
-                string pictureFormat = "";
-                switch (image.Format)
-                {
-                    case MagickFormat.Jpg:
-                        pictureFormat += ".jpg";
-                        break;
-                    case MagickFormat.Jpeg:
-                        pictureFormat += ".jpg";
-                        break;
-                    case MagickFormat.Png:
-                        pictureFormat += ".png";
-                        break;
-                    case MagickFormat.Gif:
-                        pictureFormat += ".gif";
-                        break;
-                    case MagickFormat.Bmp:
-                        pictureFormat += ".bmp";
-                        break;
-                    case MagickFormat.Tiff:
-                        pictureFormat += ".tiff";
-                        break;
-                    case MagickFormat.Tga:
-                        pictureFormat += ".tga";
-                        break;
-
-                    default:
-                        pictureFormat = "";
-                        break;
-                }
-
                 if (picture.PictureRotation != null)
                 {
                     if (picture.PictureRotation != 0)
                     {
-                        image.Rotate((int)picture.PictureRotation);
+                        image.Rotate(-(int)picture.PictureRotation);
                     }
 
                 }
@@ -513,7 +205,7 @@ namespace KinaUnaProgenyApi.Services
                 using MemoryStream memStream = new();
                 await image.WriteAsync(memStream);
                 memStream.Position = 0;
-                picture.PictureLink1200 = await _imageStore.SaveImage(memStream,BlobContainers.Pictures, pictureFormat);
+                picture.PictureLink1200 = await _imageStore.SaveImage(memStream,BlobContainers.Pictures, image.FileExtensionString());
             }
 
             if (picture.PictureTime != null)
@@ -539,39 +231,11 @@ namespace KinaUnaProgenyApi.Services
             IExifProfile profile = image.GetExifProfile();
             if (profile != null)
             {
-                int rotation;
-                try
-                {
-                    rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
-                    switch (rotation)
-                    {
-                        case 1:
-                            rotation = 0;
-                            break;
-                        case 3:
-                            rotation = 180;
-                            break;
-                        case 6:
-                            rotation = 90;
-                            break;
-                        case 8:
-                            rotation = 270;
-                            break;
-
-                    }
-                }
-                catch (ArgumentNullException)
-                {
-                    rotation = 0;
-                }
-                catch (NullReferenceException)
-                {
-                    rotation = 0;
-                }
-
+                int rotation = profile.GetRotationInDegrees();
+                
                 if (rotation != 0)
                 {
-                    image.Rotate(rotation);
+                    image.Rotate(-rotation);
                 }
             }
 
@@ -588,38 +252,8 @@ namespace KinaUnaProgenyApi.Services
             using MemoryStream memStream = new();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
-
-            string pictureFormat = "";
-            switch (image.Format)
-            {
-                case MagickFormat.Jpg:
-                    pictureFormat += ".jpg";
-                    break;
-                case MagickFormat.Jpeg:
-                    pictureFormat += ".jpg";
-                    break;
-                case MagickFormat.Png:
-                    pictureFormat += ".png";
-                    break;
-                case MagickFormat.Gif:
-                    pictureFormat += ".gif";
-                    break;
-                case MagickFormat.Bmp:
-                    pictureFormat += ".bmp";
-                    break;
-                case MagickFormat.Tiff:
-                    pictureFormat += ".tiff";
-                    break;
-                case MagickFormat.Tga:
-                    pictureFormat += ".tga";
-                    break;
-
-                default:
-                    pictureFormat = "";
-                    break;
-            }
-
-            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Progeny, pictureFormat);
+            
+            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Progeny, image.FileExtensionString());
 
             return pictureLink;
         }
@@ -630,39 +264,11 @@ namespace KinaUnaProgenyApi.Services
             IExifProfile profile = image.GetExifProfile();
             if (profile != null)
             {
-                int rotation;
-                try
-                {
-                    rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
-                    switch (rotation)
-                    {
-                        case 1:
-                            rotation = 0;
-                            break;
-                        case 3:
-                            rotation = 180;
-                            break;
-                        case 6:
-                            rotation = 90;
-                            break;
-                        case 8:
-                            rotation = 270;
-                            break;
-
-                    }
-                }
-                catch (ArgumentNullException)
-                {
-                    rotation = 0;
-                }
-                catch (NullReferenceException)
-                {
-                    rotation = 0;
-                }
-
+                int rotation = profile.GetRotationInDegrees();
+                
                 if (rotation != 0)
                 {
-                    image.Rotate(rotation);
+                    image.Rotate(-rotation);
                 }
             }
 
@@ -679,38 +285,8 @@ namespace KinaUnaProgenyApi.Services
             using MemoryStream memStream = new();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
-
-            string pictureFormat = "";
-            switch (image.Format)
-            {
-                case MagickFormat.Jpg:
-                    pictureFormat += ".jpg";
-                    break;
-                case MagickFormat.Jpeg:
-                    pictureFormat += ".jpg";
-                    break;
-                case MagickFormat.Png:
-                    pictureFormat += ".png";
-                    break;
-                case MagickFormat.Gif:
-                    pictureFormat += ".gif";
-                    break;
-                case MagickFormat.Bmp:
-                    pictureFormat += ".bmp";
-                    break;
-                case MagickFormat.Tiff:
-                    pictureFormat += ".tiff";
-                    break;
-                case MagickFormat.Tga:
-                    pictureFormat += ".tga";
-                    break;
-
-                default:
-                    pictureFormat = "";
-                    break;
-            }
-
-            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Profiles, pictureFormat);
+            
+            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Profiles, image.FileExtensionString());
 
             return pictureLink;
         }
@@ -721,39 +297,11 @@ namespace KinaUnaProgenyApi.Services
             IExifProfile profile = image.GetExifProfile();
             if (profile != null)
             {
-                int rotation;
-                try
-                {
-                    rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
-                    switch (rotation)
-                    {
-                        case 1:
-                            rotation = 0;
-                            break;
-                        case 3:
-                            rotation = 180;
-                            break;
-                        case 6:
-                            rotation = 90;
-                            break;
-                        case 8:
-                            rotation = 270;
-                            break;
-
-                    }
-                }
-                catch (ArgumentNullException)
-                {
-                    rotation = 0;
-                }
-                catch (NullReferenceException)
-                {
-                    rotation = 0;
-                }
+                int rotation = profile.GetRotationInDegrees();
 
                 if (rotation != 0)
                 {
-                    image.Rotate(rotation);
+                    image.Rotate(-rotation);
                 }
             }
 
@@ -770,38 +318,8 @@ namespace KinaUnaProgenyApi.Services
             using MemoryStream memStream = new();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
-
-            string pictureFormat = "";
-            switch (image.Format)
-            {
-                case MagickFormat.Jpg:
-                    pictureFormat += ".jpg";
-                    break;
-                case MagickFormat.Jpeg:
-                    pictureFormat += ".jpg";
-                    break;
-                case MagickFormat.Png:
-                    pictureFormat += ".png";
-                    break;
-                case MagickFormat.Gif:
-                    pictureFormat += ".gif";
-                    break;
-                case MagickFormat.Bmp:
-                    pictureFormat += ".bmp";
-                    break;
-                case MagickFormat.Tiff:
-                    pictureFormat += ".tiff";
-                    break;
-                case MagickFormat.Tga:
-                    pictureFormat += ".tga";
-                    break;
-
-                default:
-                    pictureFormat = "";
-                    break;
-            }
-
-            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Friends, pictureFormat);
+            
+            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Friends, image.FileExtensionString());
 
             return pictureLink;
         }
@@ -812,39 +330,11 @@ namespace KinaUnaProgenyApi.Services
             IExifProfile profile = image.GetExifProfile();
             if (profile != null)
             {
-                int rotation;
-                try
-                {
-                    rotation = Convert.ToInt32(profile.GetValue(ExifTag.Orientation)?.Value);
-                    switch (rotation)
-                    {
-                        case 1:
-                            rotation = 0;
-                            break;
-                        case 3:
-                            rotation = 180;
-                            break;
-                        case 6:
-                            rotation = 90;
-                            break;
-                        case 8:
-                            rotation = 270;
-                            break;
-
-                    }
-                }
-                catch (ArgumentNullException)
-                {
-                    rotation = 0;
-                }
-                catch (NullReferenceException)
-                {
-                    rotation = 0;
-                }
+                int rotation = profile.GetRotationInDegrees();
 
                 if (rotation != 0)
                 {
-                    image.Rotate(rotation);
+                    image.Rotate(-rotation);
                 }
             }
 
@@ -861,38 +351,8 @@ namespace KinaUnaProgenyApi.Services
             using MemoryStream memStream = new();
             await image.WriteAsync(memStream);
             memStream.Position = 0;
-
-            string pictureFormat = "";
-            switch (image.Format)
-            {
-                case MagickFormat.Jpg:
-                    pictureFormat += ".jpg";
-                    break;
-                case MagickFormat.Jpeg:
-                    pictureFormat += ".jpg";
-                    break;
-                case MagickFormat.Png:
-                    pictureFormat += ".png";
-                    break;
-                case MagickFormat.Gif:
-                    pictureFormat += ".gif";
-                    break;
-                case MagickFormat.Bmp:
-                    pictureFormat += ".bmp";
-                    break;
-                case MagickFormat.Tiff:
-                    pictureFormat += ".tiff";
-                    break;
-                case MagickFormat.Tga:
-                    pictureFormat += ".tga";
-                    break;
-
-                default:
-                    pictureFormat = "";
-                    break;
-            }
-
-            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Contacts, pictureFormat);
+            
+            string pictureLink = await _imageStore.SaveImage(memStream, BlobContainers.Contacts, image.FileExtensionString());
             
             return pictureLink;
         }
@@ -913,7 +373,7 @@ namespace KinaUnaProgenyApi.Services
                 _ = await UpdatePicture(picture);
             }
 
-            if (!picture.PictureLink.ToLower().StartsWith("http") && !picture.PictureLink.Contains('.')) // Some pictures do not have file extensions. If they don't, update the links.
+            if (!picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !picture.PictureLink.Contains('.')) // Some pictures do not have file extensions. If they don't, update the links.
             {
                 try
                 {

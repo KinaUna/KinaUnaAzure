@@ -109,6 +109,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 pic.Comments = await commentsService.GetCommentsList(pic.CommentThreadNumber);
             }
+
             PicturePageViewModel model = new()
             {
                 PicturesList = itemsOnPage,
@@ -128,7 +129,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> PictureViewModel(int id, int accessLevel, [FromQuery] int sortBy = 1, [FromQuery] string tagFilter = "")
         {
             Picture picture = await picturesService.GetPicture(id);
@@ -222,7 +223,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         // GET api/pictures/progeny/[id]/[accessLevel]
         [HttpGet]
-        [Route("[action]/{id}/{accessLevel}")]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> Progeny(int id, int accessLevel)
         {
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
@@ -244,6 +245,7 @@ namespace KinaUnaProgenyApi.Controllers
                     pic.PictureLink = imageStore.UriFor(pic.PictureLink);
                     pic.PictureLink1200 = imageStore.UriFor(pic.PictureLink1200);
                     pic.PictureLink600 = imageStore.UriFor(pic.PictureLink600);
+
                 }
 
                 return Ok(picturesList);
@@ -474,6 +476,10 @@ namespace KinaUnaProgenyApi.Controllers
                 int pictureNumber = r.Next(0, picturesList.Count);
 
                 Picture picture = picturesList[pictureNumber];
+                if (!picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !picture.PictureLink.Contains('.'))
+                {
+                    picture = await picturesService.GetPicture(picture.PictureId);
+                }
 
                 return Ok(picture);
             }
