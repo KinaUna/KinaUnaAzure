@@ -1,5 +1,4 @@
 ﻿using ImageMagick;
-using KinaUna.Data.Models;
 using System;
 using System.Globalization;
 
@@ -11,21 +10,21 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
         {
             string fileExtension = image.Format switch
             {
-                ImageMagick.MagickFormat.Jpg => ".jpg",
-                ImageMagick.MagickFormat.Jpeg => ".jpg",
-                ImageMagick.MagickFormat.Png => ".png",
-                ImageMagick.MagickFormat.Gif => ".gif",
-                ImageMagick.MagickFormat.Bmp => ".bmp",
-                ImageMagick.MagickFormat.Tiff => ".tiff",
-                ImageMagick.MagickFormat.Tga => ".tga",
-                ImageMagick.MagickFormat.Jp2 => ".jp2",
-                ImageMagick.MagickFormat.Psd => ".psd",
-                ImageMagick.MagickFormat.Pdf => ".pdf",
-                ImageMagick.MagickFormat.Eps => ".eps",
-                ImageMagick.MagickFormat.Pcx => ".pcx",
-                ImageMagick.MagickFormat.Dds => ".dds",
-                ImageMagick.MagickFormat.J2c => ".j2c",
-                ImageMagick.MagickFormat.J2k => ".j2k",
+                MagickFormat.Jpg => ".jpg",
+                MagickFormat.Jpeg => ".jpg",
+                MagickFormat.Png => ".png",
+                MagickFormat.Gif => ".gif",
+                MagickFormat.Bmp => ".bmp",
+                MagickFormat.Tiff => ".tiff",
+                MagickFormat.Tga => ".tga",
+                MagickFormat.Jp2 => ".jp2",
+                MagickFormat.Psd => ".psd",
+                MagickFormat.Pdf => ".pdf",
+                MagickFormat.Eps => ".eps",
+                MagickFormat.Pcx => ".pcx",
+                MagickFormat.Dds => ".dds",
+                MagickFormat.J2c => ".j2c",
+                MagickFormat.J2k => ".j2k",
                 _ => "",
             };
             return fileExtension;
