@@ -246,7 +246,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             Picture pictureToUpdate = await mediaHttpClient.GetPicture(model.Picture.PictureId, model.CurrentUser.Timezone);
-            pictureToUpdate.CopyPropertiesForUpdate(model.Picture);
+            pictureToUpdate.CopyPropertiesForUserUpdate(model.Picture);
             
             if (model.Picture.PictureTime != null)
             {

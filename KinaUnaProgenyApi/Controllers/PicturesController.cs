@@ -350,7 +350,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // PUT api/pictures/5
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Picture value)
         {
             Picture picture = await picturesService.GetPicture(id);
@@ -397,7 +397,7 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         // DELETE api/progeny/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             Picture picture = await picturesService.GetPicture(id);
@@ -1070,6 +1070,11 @@ namespace KinaUnaProgenyApi.Controllers
                     fileFormat = ".tif";
                 }
 
+                if (picture.PictureLink.ToLower().EndsWith(".webp"))
+                {
+                    fileFormat = ".webp";
+                }
+
                 picture.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Pictures, fileFormat);
             }
 
@@ -1106,6 +1111,11 @@ namespace KinaUnaProgenyApi.Controllers
                     fileFormat = ".tif";
                 }
 
+                if (picture.PictureLink600.ToLower().EndsWith(".webp"))
+                {
+                    fileFormat = ".webp";
+                }
+
                 picture.PictureLink600 = await imageStore.SaveImage(stream, BlobContainers.Pictures, fileFormat);
             }
 
@@ -1140,6 +1150,11 @@ namespace KinaUnaProgenyApi.Controllers
                 if (picture.PictureLink1200.ToLower().EndsWith(".tif"))
                 {
                     fileFormat = ".tif";
+                }
+
+                if (picture.PictureLink1200.ToLower().EndsWith(".webp"))
+                {
+                    fileFormat = ".webp";
                 }
 
                 picture.PictureLink1200 = await imageStore.SaveImage(stream, BlobContainers.Pictures, fileFormat);

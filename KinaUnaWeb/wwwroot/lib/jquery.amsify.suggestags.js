@@ -123,7 +123,13 @@ var suggestionItemClicked = false;
 				}
 				var listArea = '<div class="' + this.classes.listArea.substring(1) + '"></div>';
 				this.selectors.listArea = $(listArea).appendTo(this.selectors.sTagsArea);
-				$(this.selectors.listArea).width($(this.selectors.sTagsArea).width() - 3);
+				if ($(this.selectors.sTagsArea).width() > 0) {
+					$(this.selectors.listArea).width($(this.selectors.sTagsArea).width() - 3);
+				}
+				else {
+					$(this.selectors.listArea).width(200);
+				}
+								
 				var list = '<ul class="' + this.classes.list.substring(1) + '"></ul>';
 				this.selectors.list = $(list).appendTo(this.selectors.listArea);
 				this.updateSuggestionList();
@@ -161,6 +167,9 @@ var suggestionItemClicked = false;
 			setTagEvents: function () {
 				var _self = this;
 				$(this.selectors.sTagsInput).focus(function () {
+
+					$(_self.selectors.listArea).width($(_self.selectors.sTagsArea).width() - 3);
+
 					/**
 					 * Show all suggestions if setting set to true
 					 */

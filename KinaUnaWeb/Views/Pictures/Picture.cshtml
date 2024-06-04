@@ -288,7 +288,7 @@
     </div>
     <div id="editSection" style="display: none; padding: 15px;">
         <div>@await LocaleManager.GetTranslation("Edit user access, location, or date and time for this photo", PageNames.Pictures, Model.LanguageId)</div><br />
-        <form asp-controller="Pictures" asp-action="EditPicture" role="form">
+                <form asp-controller="Pictures" asp-action="EditPicture" role="form" method="post">
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
@@ -349,6 +349,7 @@
             <input asp-for="Picture.ProgenyId" class="form-control" value="@Model.Picture.ProgenyId" type="hidden" />
             <input asp-for="TagFilter" class="form-control" value="@Model.TagFilter" type="hidden" />
             <input asp-for="Picture.Author" class="form-control" value="@Model.Picture.Author" type="hidden" />
+            <input asp-for="SortBy" class="form-control" value="@Model.SortBy" type="hidden" />
             <div>
                 <div class="form-group">
                     <div class="col-auto control-label"></div>

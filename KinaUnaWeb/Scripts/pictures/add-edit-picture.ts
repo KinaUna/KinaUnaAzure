@@ -45,9 +45,7 @@ $(async function (): Promise<void> {
     if (toggleEditBtn !== null) {
         $("#toggleEditBtn").on('click', function () {
             $("#editSection").toggle(500);
-        });
-
-        
+        });        
     }
 
     copyLocationButton = document.querySelector<HTMLButtonElement>('#copyLocationButton');

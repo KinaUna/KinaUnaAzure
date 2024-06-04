@@ -40,31 +40,14 @@ namespace KinaUna.Data.Extensions
             picture.TimeZone ??= "";
         }
 
-        public static void CopyPropertiesForUpdate(this Picture currentPicture, Picture otherPicture)
+        public static void CopyPropertiesForUserUpdate(this Picture currentPicture, Picture otherPicture)
         {
+            otherPicture.RemoveNullStrings();
+
             currentPicture.AccessLevel = otherPicture.AccessLevel;
-            currentPicture.CommentThreadNumber = otherPicture.CommentThreadNumber;
-            currentPicture.TimeZone = otherPicture.TimeZone;
             currentPicture.PictureTime = otherPicture.PictureTime;
-            currentPicture.Owners = otherPicture.Owners;
-            currentPicture.PictureHeight = otherPicture.PictureHeight;
-            currentPicture.PictureWidth = otherPicture.PictureWidth;
-            currentPicture.PictureRotation = otherPicture.PictureRotation;
-            currentPicture.PictureNumber = otherPicture.PictureNumber;
-            currentPicture.PictureLink = otherPicture.PictureLink;
-            currentPicture.PictureLink600 = otherPicture.PictureLink600;
-            currentPicture.PictureLink1200 = otherPicture.PictureLink1200;
-
-            if (!string.IsNullOrEmpty(otherPicture.Tags))
-            {
-                currentPicture.Tags = otherPicture.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
-            }
-
-            if (!string.IsNullOrEmpty(otherPicture.Location))
-            {
-                currentPicture.Location = otherPicture.Location;
-            }
-
+            currentPicture.Tags = otherPicture.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
+            currentPicture.Location = otherPicture.Location.TrimEnd(',', ' ');
             if (!string.IsNullOrEmpty(otherPicture.Longtitude))
             {
                 currentPicture.Longtitude = otherPicture.Longtitude.Replace(',', '.');
@@ -79,6 +62,27 @@ namespace KinaUna.Data.Extensions
             {
                 currentPicture.Altitude = otherPicture.Altitude.Replace(',', '.');
             }
+        }
+
+        public static void CopyPropertiesForUpdate(this Picture currentPicture, Picture otherPicture)
+        {
+            otherPicture.RemoveNullStrings();
+
+            currentPicture.AccessLevel = otherPicture.AccessLevel;
+            currentPicture.CommentThreadNumber = otherPicture.CommentThreadNumber;
+            currentPicture.TimeZone = otherPicture.TimeZone;
+            currentPicture.Owners = otherPicture.Owners;
+            currentPicture.PictureRotation = otherPicture.PictureRotation;
+            currentPicture.PictureTime = otherPicture.PictureTime;
+            currentPicture.PictureNumber = otherPicture.PictureNumber;
+            currentPicture.PictureLink = otherPicture.PictureLink;
+            currentPicture.PictureLink600 = otherPicture.PictureLink600;
+            currentPicture.PictureLink1200 = otherPicture.PictureLink1200;
+            currentPicture.Tags = otherPicture.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
+            currentPicture.Location = otherPicture.Location.TrimEnd(',', ' ');
+            currentPicture.Longtitude = otherPicture.Longtitude.Replace(',', '.');
+            currentPicture.Latitude = otherPicture.Latitude.Replace(',', '.');
+            currentPicture.Altitude = otherPicture.Altitude.Replace(',', '.');
         }
 
         public static void CopyPropertiesForAdd(this Picture currentPicture, Picture otherPicture)

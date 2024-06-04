@@ -62,6 +62,7 @@
     background: white;
     border: 1px solid #dedede;
     z-index: 99;
+    min-width: 100px;
 }
 
     .amsify-suggestags-area
