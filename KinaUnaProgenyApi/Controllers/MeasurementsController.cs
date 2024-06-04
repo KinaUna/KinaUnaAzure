@@ -131,13 +131,13 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.CopyMeasurementPropertiesForUpdate(measurementItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            string notificationTitle = "Measurement edited for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " edited a measurement for " + progeny.NickName;
+            //string notificationTitle = "Measurement edited for " + progeny.NickName;
+            //string notificationMessage = userInfo.FullName() + " edited a measurement for " + progeny.NickName;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendMeasurementNotification(measurementItem, userInfo, notificationTitle);
+            //await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            //await webNotificationsService.SendMeasurementNotification(measurementItem, userInfo, notificationTitle);
 
             return Ok(measurementItem);
         }

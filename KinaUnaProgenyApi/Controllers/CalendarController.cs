@@ -157,13 +157,13 @@ namespace KinaUnaProgenyApi.Controllers
 
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            string notificationTitle = "Calendar edited for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " edited a calendar item for " + progeny.NickName;
+            //string notificationTitle = "Calendar edited for " + progeny.NickName;
+            //string notificationMessage = userInfo.FullName() + " edited a calendar item for " + progeny.NickName;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
+            // await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            // await webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
 
             return Ok(calendarItem);
         }

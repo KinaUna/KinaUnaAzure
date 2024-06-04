@@ -378,18 +378,20 @@ namespace KinaUnaProgenyApi.Controllers
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(picture.PictureId.ToString(), (int)KinaUnaTypes.TimeLineType.Photo);
             if (timeLineItem == null) return Ok(picture);
 
-            Progeny progeny = await progenyService.GetProgeny(picture.ProgenyId);
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
-
-            string notificationTitle = "Photo Edited for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " edited a photo for " + progeny.NickName;
+            
 
             timeLineItem.CopyPicturePropertiesForUpdate(picture);
 
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendPictureNotification(picture, userInfo, notificationTitle);
+            //Progeny progeny = await progenyService.GetProgeny(picture.ProgenyId);
+            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
+
+            //string notificationTitle = "Photo Edited for " + progeny.NickName;
+            //string notificationMessage = userInfo.FullName() + " edited a photo for " + progeny.NickName;
+
+            // await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            // await webNotificationsService.SendPictureNotification(picture, userInfo, notificationTitle);
 
             return Ok(picture);
         }

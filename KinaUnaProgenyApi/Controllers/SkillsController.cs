@@ -126,7 +126,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             skillItem = await skillService.UpdateSkill(value);
 
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            
 
             TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(skillItem.SkillId.ToString(), (int)KinaUnaTypes.TimeLineType.Skill);
             if (timeLineItem == null) return Ok(skillItem);
@@ -134,11 +134,12 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.CopySkillPropertiesForUpdate(skillItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            string notificationTitle = "Skill edited for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " edited a skill for " + progeny.NickName;
+            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            //string notificationTitle = "Skill edited for " + progeny.NickName;
+            //string notificationMessage = userInfo.FullName() + " edited a skill for " + progeny.NickName;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendSkillNotification(skillItem, userInfo, notificationTitle);
+            //await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            //await webNotificationsService.SendSkillNotification(skillItem, userInfo, notificationTitle);
 
             return Ok(skillItem);
         }

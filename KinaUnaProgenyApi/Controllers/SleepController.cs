@@ -137,13 +137,13 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.CopySleepPropertiesForUpdate(sleepItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            string notificationTitle = "Sleep for " + progeny.NickName + " edited";
-            string notificationMessage = userInfo.FullName() + " edited a sleep item for " + progeny.NickName;
+            //string notificationTitle = "Sleep for " + progeny.NickName + " edited";
+            //string notificationMessage = userInfo.FullName() + " edited a sleep item for " + progeny.NickName;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendSleepNotification(sleepItem, userInfo, notificationTitle);
+            //await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            //await webNotificationsService.SendSleepNotification(sleepItem, userInfo, notificationTitle);
 
             return Ok(sleepItem);
         }

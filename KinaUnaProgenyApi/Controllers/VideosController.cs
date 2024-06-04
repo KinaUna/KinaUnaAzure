@@ -391,16 +391,18 @@ namespace KinaUnaProgenyApi.Controllers
             await videosService.SetVideoInCache(video.VideoId);
             await commentsService.SetCommentsList(video.CommentThreadNumber);
 
-            Progeny progeny = await progenyService.GetProgeny(video.ProgenyId);
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
-            string notificationTitle = "Video Edited for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " edited a video for " + progeny.NickName;
+            
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyVideoPropertiesForUpdate(video);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendVideoNotification(video, userInfo, notificationTitle);
+            //Progeny progeny = await progenyService.GetProgeny(video.ProgenyId);
+            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
+            //string notificationTitle = "Video Edited for " + progeny.NickName;
+            //string notificationMessage = userInfo.FullName() + " edited a video for " + progeny.NickName;
+
+            // await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            // await webNotificationsService.SendVideoNotification(video, userInfo, notificationTitle);
             return Ok(video);
         }
 

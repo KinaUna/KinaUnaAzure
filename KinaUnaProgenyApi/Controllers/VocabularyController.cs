@@ -128,15 +128,14 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.CopyVocabularyItemPropertiesForUpdate(vocabularyItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
 
-            string notificationTitle = "Word edited for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " edited a word for " + progeny.NickName;
+            //string notificationTitle = "Word edited for " + progeny.NickName;
+            //string notificationMessage = userInfo.FullName() + " edited a word for " + progeny.NickName;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendVocabularyNotification(vocabularyItem, userInfo, notificationTitle);
-
-
+            //await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            //await webNotificationsService.SendVocabularyNotification(vocabularyItem, userInfo, notificationTitle);
+            
             return Ok(vocabularyItem);
         }
 

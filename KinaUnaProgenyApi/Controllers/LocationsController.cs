@@ -137,13 +137,13 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             location.Author = User.GetUserId();
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            
+            // UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            // string notificationTitle = "Location edited for " + progeny.NickName;
+            // string notificationMessage = userInfo.FullName() + " edited a location for " + progeny.NickName;
 
-            string notificationTitle = "Location edited for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " edited a location for " + progeny.NickName;
-
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
+            // await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            // await webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
 
             return Ok(location);
         }

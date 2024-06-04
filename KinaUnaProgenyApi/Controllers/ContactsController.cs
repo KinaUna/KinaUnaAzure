@@ -180,12 +180,13 @@ namespace KinaUnaProgenyApi.Controllers
             if (timeLineItem == null || !timeLineItem.CopyContactItemPropertiesForUpdate(contactItem)) return Ok(contactItem);
 
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            string notificationTitle = "Contact edited for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " edited a contact for " + progeny.NickName;
+            
+            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            //string notificationTitle = "Contact edited for " + progeny.NickName;
+            //string notificationMessage = userInfo.FullName() + " edited a contact for " + progeny.NickName;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
+            // await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            // await webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
 
             return Ok(contactItem);
         }

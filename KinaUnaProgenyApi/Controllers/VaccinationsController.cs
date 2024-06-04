@@ -131,15 +131,13 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.CopyVaccinationPropertiesForUpdate(vaccinationItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            string notificationTitle = "Vaccination edited for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " edited a vaccination for " + progeny.NickName;
+            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            //string notificationTitle = "Vaccination edited for " + progeny.NickName;
+            //string notificationMessage = userInfo.FullName() + " edited a vaccination for " + progeny.NickName;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendVaccinationNotification(vaccinationItem, userInfo, notificationTitle);
-
-
-
+            //await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            //await webNotificationsService.SendVaccinationNotification(vaccinationItem, userInfo, notificationTitle);
+            
             return Ok(vaccinationItem);
         }
 

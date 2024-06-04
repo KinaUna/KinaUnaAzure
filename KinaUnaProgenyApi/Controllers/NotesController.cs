@@ -131,12 +131,12 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.CopyNotePropertiesForUpdate(noteItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            string notificationTitle = "Note edited for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " edited a note for " + progeny.NickName;
+            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            //string notificationTitle = "Note edited for " + progeny.NickName;
+            //string notificationMessage = userInfo.FullName() + " edited a note for " + progeny.NickName;
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendNoteNotification(noteItem, userInfo, notificationTitle);
+            //await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
+            //await webNotificationsService.SendNoteNotification(noteItem, userInfo, notificationTitle);
 
             return Ok(noteItem);
         }
