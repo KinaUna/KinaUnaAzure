@@ -1,8 +1,8 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @model KinaUnaWeb.Models.HomeViewModels.UserMenuViewModel
 @inject ILocaleManager LocaleManager
-@inject IProgenyManager ChildManager
 @{
     string userName = Model.UserInfo.UserName;
     if (string.IsNullOrEmpty(Model.UserInfo.UserName))
@@ -16,7 +16,7 @@
             string userprofilePic = "<i class=\"material-icons ml-2 mr-1\" >person</i>";
             if (!string.IsNullOrWhiteSpace(Model.UserInfo.ProfilePicture))
             {
-                string picLink = ChildManager.GetImageUrl(Model.UserInfo.ProfilePicture, "profiles");
+                string picLink = Model.UserInfo.GetProfilePictureUrl();
                 userprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 32px; margin-top: -2px; margin-right: 6px; margin-left: 4px; border-radius: 10px;\" /img> ";
             }
         }

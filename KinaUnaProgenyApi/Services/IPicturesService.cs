@@ -10,7 +10,6 @@ namespace KinaUnaProgenyApi.Services
         Task<Picture> GetPicture(int id);
         Task<Picture> GetPictureByLink(string link);
         Task<Picture> AddPicture(Picture picture);
-        Task<Picture> UpdatePictureLinkWithExtension(Picture picture);
         Task<Picture> ProcessPicture(Picture picture);
         Task<string> ProcessProgenyPicture(IFormFile file);
         Task<string> ProcessProfilePicture(IFormFile file);
@@ -22,6 +21,6 @@ namespace KinaUnaProgenyApi.Services
         Task RemovePictureFromCache(int pictureId, int progenyId);
         Task<List<Picture>> GetPicturesList(int progenyId);
         Task<List<Picture>> SetPicturesListInCache(int progenyId);
-        Task UpdateAllPictures();
+        Task<string> UpdateItemPictureExtension(string itemPictureGuid, string container);
     }
 }

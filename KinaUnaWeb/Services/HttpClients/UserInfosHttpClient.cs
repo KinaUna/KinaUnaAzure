@@ -150,8 +150,17 @@ namespace KinaUnaWeb.Services.HttpClients
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string setChildApiPath = "/api/UserInfo/" + userId;
+            string setChildApiPath = "/api/UserInfo/GetAll" + userId;
             await _httpClient.PutAsJsonAsync(setChildApiPath, userInfo);
+        }
+
+        public async Task GetAllUserInfos()
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string userInfosApiPath = "/api/UserInfo/GetAll";
+            await _httpClient.GetAsync(userInfosApiPath);
         }
     }
 }

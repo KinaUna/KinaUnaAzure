@@ -22,7 +22,7 @@ namespace KinaUnaProgenyApi.Controllers
         IProgenyService progenyService,
         IUserInfoService userInfoService,
         IUserAccessService userAccessService,
-        IDataService dataService)
+        IDataService dataService, IPicturesService picturesService)
         : ControllerBase
     {
         // GET api/userinfo/byemail/[useremail]
@@ -454,7 +454,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (!currentUserInfo.IsKinaUnaAdmin) return Ok(new List<UserInfo>());
 
             List<UserInfo> result = await userInfoService.GetAllUserInfos();
-
+            
             return Ok(result);
 
         }

@@ -290,6 +290,22 @@ namespace KinaUnaProgenyApi.Services
             return pictureLink;
         }
 
+        public async Task<string> UpdateItemPictureExtension(string itemPictureGuid, string container)
+        {
+            MemoryStream memoryStream = await _imageStore.GetStream(itemPictureGuid, container);
+            memoryStream.Position = 0;
+
+            using MagickImage image = new(memoryStream);
+            
+            using MemoryStream memStream = new();
+            await image.WriteAsync(memStream);
+            memStream.Position = 0;
+
+            string pictureLink = await _imageStore.SaveImage(memStream, container, image.FileExtensionString());
+
+            return pictureLink;
+        }
+        
         public async Task<string> ProcessFriendPicture(IFormFile file)
         {
             using MagickImage image = new(file.OpenReadStream());

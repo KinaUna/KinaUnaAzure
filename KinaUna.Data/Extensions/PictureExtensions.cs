@@ -146,33 +146,18 @@ namespace KinaUna.Data.Extensions
 
         public static string GetPictureFileContentType(this Picture picture)
         {
-            string contentType = "image/jpeg";
-            if (picture.PictureLink.Contains(".png"))
-            {
-                contentType = "image/png";
-            }
-            else if (picture.PictureLink.Contains(".gif"))
-            {
-                contentType = "image/gif";
-            }
-            else if (picture.PictureLink.Contains(".bmp"))
-            {
-                contentType = "image/bmp";
-            }
-            else if (picture.PictureLink.Contains(".tiff"))
-            {
-                contentType = "image/tiff";
-            }
-            else if (picture.PictureLink.Contains(".webp"))
-            {
-                contentType = "image/webp";
-            }
+            string contentType = FileContentTypeHelpers.GetContentTypeString(picture.PictureLink);
 
             return contentType;
         }
 
         public static string GetPictureUrl(this Picture picture, int size)
         {
+            if (picture.PictureLink.StartsWith("http:", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return picture.PictureLink;
+            }
+
             string pictureUrl = "/Pictures/File?id=" + picture.PictureId + "&size=" + size;
 
             return pictureUrl;

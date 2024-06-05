@@ -57,6 +57,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
+            await userInfosHttpClient.GetAllUserInfos();
             return View();
         }
 

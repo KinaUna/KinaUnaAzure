@@ -17,7 +17,6 @@ namespace KinaUnaWeb.Controllers
 {
     public class VideosController(
         IMediaHttpClient mediaHttpClient,
-        ImageStore imageStore,
         IUserInfosHttpClient userInfosHttpClient,
         ILocationsHttpClient locationsHttpClient,
         IEmailSender emailSender,
@@ -72,13 +71,16 @@ namespace KinaUnaWeb.Controllers
             
             if (model.CommentsCount > 0)
             {
-                foreach (Comment cmnt in model.CommentsList)
+                foreach (Comment comment in model.CommentsList)
                 {
-                    UserInfo commentAuthor = await userInfosHttpClient.GetUserInfoByUserId(cmnt.Author);
-                    string commentAuthorProfilePicture = commentAuthor?.ProfilePicture ?? "";
-                    commentAuthorProfilePicture = imageStore.UriFor(commentAuthorProfilePicture, "profiles");
-                    cmnt.AuthorImage = commentAuthorProfilePicture;
-                    cmnt.DisplayName = commentAuthor.FullName();
+                    UserInfo commentAuthor = await userInfosHttpClient.GetUserInfoByUserId(comment.Author);
+                    if (commentAuthor == null) continue;
+                    if (commentAuthor.ProfilePicture != null)
+                    {
+                        comment.AuthorImage = commentAuthor.GetProfilePictureUrl();
+                    }
+
+                    comment.DisplayName = commentAuthor.FullName();
                 }
             }
             if (model.IsCurrentUserProgenyAdmin)

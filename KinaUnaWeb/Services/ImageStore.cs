@@ -2,10 +2,12 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Azure;
 using KinaUna.Data;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
+using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Services
 {
@@ -59,13 +61,26 @@ namespace KinaUnaWeb.Services
 
         public async Task<MemoryStream> GetStream(string imageId, string containerName = "pictures")
         {
-            BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
+            try
+            {
+                BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
 
-            BlobClient blob = container.GetBlobClient(imageId);
-            MemoryStream memoryStream = new();
-            await blob.DownloadToAsync(memoryStream).ConfigureAwait(false);
+                BlobClient blob = container.GetBlobClient(imageId);
+                MemoryStream memoryStream = new();
+                await blob.DownloadToAsync(memoryStream).ConfigureAwait(false);
 
-            return memoryStream;
+                return memoryStream;
+            }
+            catch (RequestFailedException)
+            {
+                BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(BlobContainers.Pictures);
+
+                BlobClient blob = container.GetBlobClient("ab5fe7cb-2a66-4785-b39a-aa4eb7953c3d.png");
+                MemoryStream memoryStream = new();
+                await blob.DownloadToAsync(memoryStream).ConfigureAwait(false);
+
+                return memoryStream;
+            }
         }
 
         public async Task<string> DeleteImage(string imageId, string containerName = "pictures")

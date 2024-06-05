@@ -49,5 +49,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="userInfo">UserInfo: The user's UserInfo.</param>
         /// <returns></returns>
         Task SetViewChild(string userId, UserInfo userInfo);
+
+        Task GetAllUserInfos();
     }
 }

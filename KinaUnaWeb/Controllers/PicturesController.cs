@@ -86,10 +86,14 @@ namespace KinaUnaWeb.Controllers
                 foreach(Comment comment in model.CommentsList)
                 {
                     UserInfo commentAuthor = await userInfosHttpClient.GetUserInfoByUserId(comment.Author);
-                    string commentAuthorProfilePicture = commentAuthor?.ProfilePicture ?? "";
-                    commentAuthorProfilePicture = imageStore.UriFor(commentAuthorProfilePicture, "profiles");
-                    comment.AuthorImage = commentAuthorProfilePicture;
+                    if (commentAuthor == null) continue;
+                    if (commentAuthor.ProfilePicture != null)
+                    {
+                        comment.AuthorImage = commentAuthor.GetProfilePictureUrl();
+                    }
+                        
                     comment.DisplayName = commentAuthor.FullName();
+
                 }
             }
             if (model.IsCurrentUserProgenyAdmin)
@@ -232,7 +236,7 @@ namespace KinaUnaWeb.Controllers
                 foreach (Picture pic in pictureList)
                 {
                     result.FileLinks.Add(pic.GetPictureUrl(600));
-                    result.FileNames.Add("Id: " + pic.PictureId);
+                    result.FileNames.Add(pic.PictureId.ToString());
                 }
             }
 

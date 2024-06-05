@@ -30,5 +30,30 @@ namespace KinaUna.Data.Extensions
 
             return fullName;
         }
+
+        public static string GetProfilePictureUrl(this UserInfo userInfo)
+        {
+            if (userInfo == null || userInfo.ProfilePicture == null)
+            {
+                return Constants.ProfilePictureUrl;
+            }
+
+            if (userInfo.ProfilePicture.StartsWith("http:", System.StringComparison.CurrentCultureIgnoreCase))
+            {
+                return userInfo.ProfilePicture;
+            }
+
+            string pictureUrl = "/Account/ProfilePicture/" + userInfo.UserId;
+
+            return pictureUrl;
+        }
+        
+
+        public static string GetPictureFileContentType(this UserInfo userInfo)
+        {
+            string contentType = FileContentTypeHelpers.GetContentTypeString(userInfo.ProfilePicture);
+            
+            return contentType;
+        }
     }
 }

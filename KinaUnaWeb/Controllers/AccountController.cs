@@ -110,7 +110,7 @@ namespace KinaUnaWeb.Controllers
                 userInfo.ProfilePicture = Constants.ProfilePictureUrl;
             }
 
-            userInfo.ProfilePicture = imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
+            userInfo.ProfilePicture = userInfo.GetProfilePictureUrl();
 
             UserInfoViewModel model = new()
             {
@@ -173,7 +173,7 @@ namespace KinaUnaWeb.Controllers
             await userInfosHttpClient.UpdateUserInfo(userInfo);
             
             model.ProfilePicture = userInfo.ProfilePicture;
-            model.ProfilePicture = imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
+            model.ProfilePicture = userInfo.GetProfilePictureUrl();
 
             if (emailChanged)
             {
@@ -244,7 +244,7 @@ namespace KinaUnaWeb.Controllers
                 userInfo.ProfilePicture = Constants.ProfilePictureUrl;
             }
 
-            userInfo.ProfilePicture = imageStore.UriFor(userInfo.ProfilePicture, BlobContainers.Profiles);
+            userInfo.ProfilePicture = userInfo.GetProfilePictureUrl();
 
             UserInfoViewModel model = new()
             {
@@ -306,6 +306,35 @@ namespace KinaUnaWeb.Controllers
             _ = await authHttpClient.RemoveDeleteUser(userInfo);
 
             return RedirectToAction("Index", "Home");
+        }
+
+        [AllowAnonymous]
+        public async Task<FileContentResult> ProfilePicture(string id)
+        {
+            // Todo: Access control.
+
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(id);
+            if (userInfo == null || string.IsNullOrEmpty(userInfo.ProfilePicture))
+            {
+                MemoryStream fileContentNoAccess = await imageStore.GetStream("868b62e2-6978-41a1-97dc-1cc1116f65a6.jpg");
+                byte[] fileContentBytesNoAccess = fileContentNoAccess.ToArray();
+                return new FileContentResult(fileContentBytesNoAccess, "image/jpeg");
+            }
+            MemoryStream fileContent = await imageStore.GetStream(userInfo.ProfilePicture, BlobContainers.Profiles);
+            byte[] fileContentBytes = fileContent.ToArray();
+
+            return new FileContentResult(fileContentBytes, userInfo.GetPictureFileContentType());
+        }
+
+        [AllowAnonymous]
+        public async Task<FileContentResult> ProfilePictureFromBlob(string id)
+        {
+            // Todo: Access control.
+            
+            MemoryStream fileContent = await imageStore.GetStream(id, BlobContainers.Profiles);
+            byte[] fileContentBytes = fileContent.ToArray();
+            string contentType = FileContentTypeHelpers.GetContentTypeString(id);
+            return new FileContentResult(fileContentBytes, contentType);
         }
     }
 }

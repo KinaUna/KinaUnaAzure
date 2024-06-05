@@ -48,6 +48,25 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<UserInfo> AddUserInfo(UserInfo userInfo)
         {
+            if (string.IsNullOrEmpty(userInfo.FirstName))
+            {
+                userInfo.FirstName = "";
+            }
+
+            if (string.IsNullOrEmpty(userInfo.MiddleName))
+            {
+                userInfo.MiddleName = "";
+            }
+
+            if (string.IsNullOrEmpty(userInfo.LastName))
+            {
+                userInfo.LastName = "";
+            }
+
+            if (string.IsNullOrEmpty(userInfo.ProfilePicture))
+            {
+                userInfo.ProfilePicture = Constants.ProfilePictureUrl;
+            }
             _ = _context.UserInfoDb.Add(userInfo);
             _ = await _context.SaveChangesAsync();
             _ = await SetUserInfoByEmail(userInfo.UserEmail);
@@ -136,12 +155,12 @@ namespace KinaUnaProgenyApi.Services
                 userInfoToUpdate.UserId = userInfo.UserId;
                 userInfoToUpdate.UserName = userInfo.UserName;
                 userInfoToUpdate.ViewChild = userInfo.ViewChild;
-                userInfoToUpdate.FirstName = userInfo.FirstName;
-                userInfoToUpdate.MiddleName = userInfo.MiddleName;
-                userInfoToUpdate.LastName = userInfo.LastName;
+                userInfoToUpdate.FirstName = userInfo.FirstName ?? "";
+                userInfoToUpdate.MiddleName = userInfo.MiddleName ?? "";
+                userInfoToUpdate.LastName = userInfo.LastName ?? "";
                 userInfoToUpdate.ProfilePicture = userInfo.ProfilePicture;
                 userInfoToUpdate.Timezone = userInfo.Timezone;
-                userInfoToUpdate.PhoneNumber = userInfo.PhoneNumber;
+                userInfoToUpdate.PhoneNumber = userInfo.PhoneNumber ?? "";
                 userInfoToUpdate.CanUserAddItems = userInfo.CanUserAddItems;
                 userInfoToUpdate.Deleted = userInfo.Deleted;
                 userInfoToUpdate.DeletedTime = userInfo.DeletedTime;
@@ -153,6 +172,11 @@ namespace KinaUnaProgenyApi.Services
                 userInfoToUpdate.ProgenyList = userInfo.ProgenyList;
                 userInfoToUpdate.AccessList = userInfo.AccessList;
                 userInfoToUpdate.UpdatedTime = DateTime.UtcNow;
+
+                if (string.IsNullOrEmpty(userInfo.ProfilePicture))
+                {
+                    userInfo.ProfilePicture = Constants.ProfilePictureUrl;
+                }
 
                 _ = _context.UserInfoDb.Update(userInfoToUpdate);
                 _ = await _context.SaveChangesAsync();
@@ -214,9 +238,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<bool> IsAdminUserId(string userId)
         {
             UserInfo userInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == userId);
-            if (userInfo == null) return false;
-
-            return userInfo.IsKinaUnaAdmin;
+            return userInfo != null && userInfo.IsKinaUnaAdmin;
         }
     }
 }

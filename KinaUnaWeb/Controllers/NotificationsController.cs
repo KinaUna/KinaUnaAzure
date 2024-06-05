@@ -19,7 +19,6 @@ namespace KinaUnaWeb.Controllers
 {
     public class NotificationsController(
         IHubContext<WebNotificationHub> hubContext,
-        ImageStore imageStore,
         IWebNotificationsService webNotificationsService,
         IViewModelSetupService viewModelSetupService)
         : Controller
@@ -41,11 +40,9 @@ namespace KinaUnaWeb.Controllers
                 TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             notification.DateTimeString = notification.DateTime.ToString("dd-MMM-yyyy HH:mm");
             model.SelectedNotification = notification;
-            if (!notification.Icon.StartsWith('/'))
-            {
-                notification.Icon = imageStore.UriFor(notification.Icon, "profiles");
-            }
 
+            notification.Icon = notification.GetIconUrl();
+            
             return View(model);
         }
 
@@ -70,10 +67,7 @@ namespace KinaUnaWeb.Controllers
                 notif.DateTime = TimeZoneInfo.ConvertTimeFromUtc(notif.DateTime,
                     TimeZoneInfo.FindSystemTimeZoneById(User.GetUserTimeZone()));
                 notif.DateTimeString = notif.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
-                if (!notif.Icon.StartsWith('/'))
-                {
-                    notif.Icon = imageStore.UriFor(notif.Icon, "profiles");
-                }
+                notif.Icon = notif.GetIconUrl();
             }
             return Json(webNotificationsList);
         }
@@ -89,11 +83,9 @@ namespace KinaUnaWeb.Controllers
 
             model.WebNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(model.WebNotification.DateTime, TimeZoneInfo.FindSystemTimeZoneById(User.GetUserTimeZone()));
             model.WebNotification.DateTimeString = model.WebNotification.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
-            
-            if (!model.WebNotification.Icon.StartsWith('/'))
-            {
-                model.WebNotification.Icon = imageStore.UriFor(model.WebNotification.Icon, "profiles");
-            }
+
+            model.WebNotification.Icon = model.WebNotification.GetIconUrl();
+
             return PartialView("_GetWebNotificationElementPartial", model);
         }
 
@@ -109,10 +101,7 @@ namespace KinaUnaWeb.Controllers
                 model.Id = notification.Id;
             }
 
-            if (!model.WebNotification.Icon.StartsWith('/'))
-            {
-                model.WebNotification.Icon = imageStore.UriFor(model.WebNotification.Icon, "profiles");
-            }
+            model.WebNotification.Icon = model.WebNotification.GetIconUrl();
 
             model.WebNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(model.WebNotification.DateTime, TimeZoneInfo.FindSystemTimeZoneById(User.GetUserTimeZone()));
             model.WebNotification.DateTimeString = model.WebNotification.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value

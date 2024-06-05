@@ -84,7 +84,7 @@ namespace KinaUnaWeb.Services
             string returnString = imageStore.UriFor(pictureLink, pictureContainer);
             return returnString;
         }
-
+        
         private async Task<UserInfo> UpdateUserInfo(UserInfo userInfo)
         {
             UserInfo updatedUserInfo = await userInfosHttpClient.UpdateUserInfo(userInfo);
