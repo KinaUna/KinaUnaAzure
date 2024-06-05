@@ -33,7 +33,8 @@ namespace KinaUnaWeb.Services
                     PictureViewModel picture = await mediaHttpClient.GetPictureViewModel(itemId, 0, 1, model.CurrentUser.Timezone, model.TagFilter);
                     if (picture != null && picture.PictureId > 0)
                     {
-                        picture.PictureLink = imageStore.UriFor(picture.PictureLink);
+                        string pictureUrl = "/Pictures/File?id=" + picture.PictureId + "&size=600";
+                        picture.PictureLink = pictureUrl;
                         picture.CommentsCount = picture.CommentsList.Count;
                         return new TimeLineItemPartialViewModel("_TimeLinePhotoPartial", picture);
                     }

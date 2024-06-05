@@ -48,7 +48,7 @@ namespace KinaUnaWeb.Controllers
             //model.PageSize = pageSize;
             foreach (Picture pic in model.PicturesList)
             {
-                pic.PictureLink600 = imageStore.UriFor(pic.PictureLink600);
+                pic.PictureLink600 = pic.GetPictureUrl(600);
             }
 
             return View(model);
@@ -76,7 +76,7 @@ namespace KinaUnaWeb.Controllers
             PictureViewModel pictureViewModel = await mediaHttpClient.GetPictureViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone, tagFilter);
 
             model.SetPropertiesFromPictureViewModel(pictureViewModel);
-            model.Picture.PictureLink = imageStore.UriFor(model.Picture.PictureLink);
+            model.Picture.PictureLink = model.Picture.GetPictureUrl(1200);
 
             model.TagFilter = tagFilter;
             model.SortBy = sortBy;
@@ -119,7 +119,7 @@ namespace KinaUnaWeb.Controllers
         {
             Picture picture = await mediaHttpClient.GetPicture(id, Constants.DefaultTimezone);
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
-            if (baseModel.CurrentAccessLevel > picture.AccessLevel)
+            if (baseModel.CurrentAccessLevel > picture.AccessLevel || picture.PictureId == 0)
             {
                 MemoryStream fileContentNoAccess = await imageStore.GetStream("ab5fe7cb-2a66-4785-b39a-aa4eb7953c3d.png");
                 byte[] fileContentBytesNoAccess = fileContentNoAccess.ToArray();
@@ -128,19 +128,35 @@ namespace KinaUnaWeb.Controllers
 
             MemoryStream fileContent = await imageStore.GetStream(picture.PictureLink);
             byte[] fileContentBytes = fileContent.ToArray();
-
-            if (picture.PictureLink.Contains(".png"))
-                return new FileContentResult(fileContentBytes, "image/png");
-            if (picture.PictureLink.Contains(".gif"))
-                return new FileContentResult(fileContentBytes, "image/gif");
-            if (picture.PictureLink.Contains(".bmp"))
-                return new FileContentResult(fileContentBytes, "image/bmp");
-            if (picture.PictureLink.Contains(".tiff"))
-                return new FileContentResult(fileContentBytes, "image/tiff");
-            if (picture.PictureLink.Contains(".webp"))
-                return new FileContentResult(fileContentBytes, "image/webp");
             
-            return new FileContentResult(fileContentBytes, "image/jpeg");
+            return new FileContentResult(fileContentBytes, picture.GetPictureFileContentType());
+        }
+
+        [AllowAnonymous]
+        public async Task<FileContentResult> File([FromQuery] int id, [FromQuery] int size)
+        {
+            Picture picture = await mediaHttpClient.GetPicture(id, Constants.DefaultTimezone);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
+            if (baseModel.CurrentAccessLevel > picture.AccessLevel || picture.PictureId == 0)
+            {
+                MemoryStream fileContentNoAccess = await imageStore.GetStream("ab5fe7cb-2a66-4785-b39a-aa4eb7953c3d.png");
+                byte[] fileContentBytesNoAccess = fileContentNoAccess.ToArray();
+                return new FileContentResult(fileContentBytesNoAccess, "image/png");
+            }
+            string fileName = picture.PictureLink;
+            if (size == 600)
+            {
+                fileName = picture.PictureLink600;
+            }
+            else if (size == 1200)
+            {
+                fileName = picture.PictureLink1200;
+            }
+
+            MemoryStream fileContent = await imageStore.GetStream(fileName);
+            byte[] fileContentBytes = fileContent.ToArray();
+
+            return new FileContentResult(fileContentBytes, picture.GetPictureFileContentType());
         }
 
         public async Task<IActionResult> AddPicture()
@@ -215,8 +231,8 @@ namespace KinaUnaWeb.Controllers
             {
                 foreach (Picture pic in pictureList)
                 {
-                    result.FileLinks.Add(imageStore.UriFor(pic.PictureLink600));
-                    result.FileNames.Add(imageStore.UriFor(pic.PictureLink600));
+                    result.FileLinks.Add(pic.GetPictureUrl(600));
+                    result.FileNames.Add("Id: " + pic.PictureId);
                 }
             }
 
@@ -279,7 +295,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.SetPropertiesFromPictureItem(picture);
-            model.Picture.PictureLink600 = imageStore.UriFor(model.Picture.PictureLink600);
+            model.Picture.PictureLink600 = model.Picture.GetPictureUrl(600);
             
             return View(model);
         }

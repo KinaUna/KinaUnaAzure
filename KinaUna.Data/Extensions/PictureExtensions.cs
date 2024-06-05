@@ -143,5 +143,39 @@ namespace KinaUna.Data.Extensions
             picture.PictureLink1200 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             picture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
         }
+
+        public static string GetPictureFileContentType(this Picture picture)
+        {
+            string contentType = "image/jpeg";
+            if (picture.PictureLink.Contains(".png"))
+            {
+                contentType = "image/png";
+            }
+            else if (picture.PictureLink.Contains(".gif"))
+            {
+                contentType = "image/gif";
+            }
+            else if (picture.PictureLink.Contains(".bmp"))
+            {
+                contentType = "image/bmp";
+            }
+            else if (picture.PictureLink.Contains(".tiff"))
+            {
+                contentType = "image/tiff";
+            }
+            else if (picture.PictureLink.Contains(".webp"))
+            {
+                contentType = "image/webp";
+            }
+
+            return contentType;
+        }
+
+        public static string GetPictureUrl(this Picture picture, int size)
+        {
+            string pictureUrl = "/Pictures/File?id=" + picture.PictureId + "&size=" + size;
+
+            return pictureUrl;
+        }
     }
 }

@@ -21,7 +21,6 @@ namespace KinaUnaWeb.Controllers
     [AllowAnonymous]
     public class HomeController(
         IMediaHttpClient mediaHttpClient,
-        ImageStore imageStore,
         IWebHostEnvironment env,
         IUserInfosHttpClient userInfosHttpClient,
         ILanguagesHttpClient languagesHttpClient,
@@ -63,7 +62,7 @@ namespace KinaUnaWeb.Controllers
 
             }
 
-            model.DisplayPicture.PictureLink600 = imageStore.UriFor(model.DisplayPicture.PictureLink600);
+            model.DisplayPicture.PictureLink600 = model.DisplayPicture.GetPictureUrl(600);
             model.SetDisplayPictureData();
             
             model.SetPictureTimeData();

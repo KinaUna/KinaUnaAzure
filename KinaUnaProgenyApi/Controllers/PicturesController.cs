@@ -242,9 +242,9 @@ namespace KinaUnaProgenyApi.Controllers
                 foreach (Picture pic in picturesList)
                 {
                     pic.Comments = await commentsService.GetCommentsList(pic.CommentThreadNumber);
-                    pic.PictureLink = imageStore.UriFor(pic.PictureLink);
-                    pic.PictureLink1200 = imageStore.UriFor(pic.PictureLink1200);
-                    pic.PictureLink600 = imageStore.UriFor(pic.PictureLink600);
+                    pic.PictureLink = Constants.ProgenyApiUrl + pic.GetPictureUrl(0); // imageStore.UriFor(pic.PictureLink);
+                    pic.PictureLink1200 = Constants.ProgenyApiUrl + pic.GetPictureUrl(1200); // imageStore.UriFor(pic.PictureLink1200);
+                    pic.PictureLink600 = Constants.ProgenyApiUrl + pic.GetPictureUrl(600); imageStore.UriFor(pic.PictureLink600);
 
                 }
 
@@ -307,6 +307,36 @@ namespace KinaUnaProgenyApi.Controllers
             tempPicture.ApplyPlaceholderProperties();
 
             return Ok(tempPicture);
+        }
+
+        [AllowAnonymous]
+        public async Task<FileContentResult> File([FromQuery] int id, [FromQuery] int size)
+        {
+            Picture picture = await picturesService.GetPicture(id);
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
+
+            if (userAccess == null && picture.ProgenyId != Constants.DefaultChildId || picture.PictureId == 0)
+            {
+                MemoryStream fileContentNoAccess = await imageStore.GetStream("ab5fe7cb-2a66-4785-b39a-aa4eb7953c3d.png");
+                byte[] fileContentBytesNoAccess = fileContentNoAccess.ToArray();
+                return new FileContentResult(fileContentBytesNoAccess, "image/png");
+            }
+            
+            string fileName = picture.PictureLink;
+            if (size == 600)
+            {
+                fileName = picture.PictureLink600;
+            }
+            else if (size == 1200)
+            {
+                fileName = picture.PictureLink1200;
+            }
+
+            MemoryStream fileContent = await imageStore.GetStream(fileName);
+            byte[] fileContentBytes = fileContent.ToArray();
+
+            return new FileContentResult(fileContentBytes, picture.GetPictureFileContentType());
         }
 
         // POST api/pictures
