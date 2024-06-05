@@ -1,9 +1,9 @@
-﻿using KinaUna.Data;
+﻿using System;
+using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using Azure.Identity;
+using KinaUna.Data;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.AzureKeyVault;
 using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaMediaApi
@@ -22,21 +22,20 @@ namespace KinaUnaMediaApi
                 {
                     if (context.HostingEnvironment.IsProduction())
                     {
-                        string keyVaultEndpoint = Constants.KeyVaultEndPoint;
-                        if (!string.IsNullOrEmpty(keyVaultEndpoint))
-                        {
-                            config.Build();
+                        const string keyVaultEndpoint = Constants.KeyVaultEndPoint;
+                        if (string.IsNullOrEmpty(keyVaultEndpoint)) return;
 
-                            AzureServiceTokenProvider azureServiceTokenProvider = new AzureServiceTokenProvider();
-                            KeyVaultClient keyVaultClient = new KeyVaultClient(
-                                new KeyVaultClient.AuthenticationCallback(
-                                    azureServiceTokenProvider.KeyVaultTokenCallback));
+                        config.Build();
 
-                            config.AddAzureKeyVault(
-                                keyVaultEndpoint,
-                                keyVaultClient,
-                                new DefaultKeyVaultSecretManager());
-                        }
+                        config.AddAzureKeyVault(
+                            new Uri(keyVaultEndpoint),
+                            new DefaultAzureCredential(),
+                            new AzureKeyVaultConfigurationOptions()
+                            {
+                                Manager = new KeyVaultSecretManager(),
+                                ReloadInterval = TimeSpan.FromSeconds(15)
+                            }
+                        );
                     }
                 })
                 .ConfigureWebHostDefaults(webBuilder =>

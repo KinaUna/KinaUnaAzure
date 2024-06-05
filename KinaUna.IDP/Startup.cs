@@ -23,9 +23,8 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.Storage.Auth;
-using Microsoft.Azure.Storage.Blob;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 
 namespace KinaUna.IDP
 {
@@ -82,15 +81,12 @@ namespace KinaUna.IDP
                         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
                     }));
 
-            StorageCredentials credentials = new(Configuration.GetValue<string>("CloudBlobUsername"), Configuration.GetValue<string>("BlobStorageKey"));
-            CloudBlobClient blobClient = new(new Uri(Configuration.GetValue<string>("CloudBlobBase")), credentials);
-            CloudBlobContainer container = blobClient.GetContainerReference("dataprotection");
-
-            container.CreateIfNotExistsAsync().GetAwaiter().GetResult();
+            string storageConnectionString = Configuration["BlobStorageConnectionString"];
+            new BlobContainerClient(storageConnectionString, "dataprotection").CreateIfNotExists();
 
             services.AddDataProtection()
                 .SetApplicationName("KinaUnaWebApp")
-                .PersistKeysToAzureBlobStorage(container, "kukeys.xml");
+                .PersistKeysToAzureBlobStorage(storageConnectionString, "dataprotection", "kukeys.xml" );
 
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
                 {

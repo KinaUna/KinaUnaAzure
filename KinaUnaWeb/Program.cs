@@ -1,10 +1,10 @@
-﻿using KinaUna.Data;
+﻿using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using Azure.Identity;
+using KinaUna.Data;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.AzureKeyVault;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace KinaUnaWeb
 {
@@ -27,15 +27,15 @@ namespace KinaUnaWeb
 
                     config.Build();
 
-                    AzureServiceTokenProvider azureServiceTokenProvider = new();
-                    KeyVaultClient keyVaultClient = new(
-                        new KeyVaultClient.AuthenticationCallback(
-                            azureServiceTokenProvider.KeyVaultTokenCallback));
-
                     config.AddAzureKeyVault(
-                        keyVaultEndpoint,
-                        keyVaultClient,
-                        new DefaultKeyVaultSecretManager());
+                        new Uri(keyVaultEndpoint),
+                        new DefaultAzureCredential(),
+                        new AzureKeyVaultConfigurationOptions()
+                        {
+                            Manager = new KeyVaultSecretManager(),
+                            ReloadInterval = TimeSpan.FromSeconds(15)
+                        }
+                    );
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
