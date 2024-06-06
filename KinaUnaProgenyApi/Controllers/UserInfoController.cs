@@ -22,7 +22,7 @@ namespace KinaUnaProgenyApi.Controllers
         IProgenyService progenyService,
         IUserInfoService userInfoService,
         IUserAccessService userAccessService,
-        IDataService dataService, IPicturesService picturesService)
+        IDataService dataService)
         : ControllerBase
     {
         // GET api/userinfo/byemail/[useremail]
