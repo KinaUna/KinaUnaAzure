@@ -1,5 +1,5 @@
 "use strict";
-const serviceWorkerVersion = 'v1';
+const serviceWorkerVersion = 'v2';
 const bodyContentDiv = $('.body-content');
 function runWaitMeLeave() {
     bodyContentDiv.waitMe({

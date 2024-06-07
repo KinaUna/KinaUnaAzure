@@ -235,7 +235,7 @@
     <Content Update="wwwroot\pwabuilder-sw-register.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\pwabuilder-sw-001.js">
+    <Content Update="wwwroot\pwabuilder-sw-002.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\robots.txt">

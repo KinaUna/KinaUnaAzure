@@ -35,7 +35,7 @@ namespace KinaUnaWeb.Controllers
                 FriendViewModel friendViewModel = new();
                 friendViewModel.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
 
-                friendViewModel.FriendItem.PictureLink = imageStore.UriFor(friendViewModel.FriendItem.PictureLink, "friends");
+                friendViewModel.FriendItem.PictureLink = friendViewModel.FriendItem.GetProfilePictureUrl();
 
                 if (!string.IsNullOrEmpty(friendViewModel.Tags))
                 {
@@ -74,7 +74,7 @@ namespace KinaUnaWeb.Controllers
             model.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
             
             
-            model.FriendItem.PictureLink = imageStore.UriFor(model.FriendItem.PictureLink, "friends");
+            model.FriendItem.PictureLink = model.FriendItem.GetProfilePictureUrl();
 
             List<string> tagsList = [];
             List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
@@ -96,6 +96,26 @@ namespace KinaUnaWeb.Controllers
             model.TagFilter = tagFilter;
             
             return View(model);
+        }
+
+        [AllowAnonymous]
+        public async Task<FileContentResult> ProfilePicture(int id)
+        {
+            Friend friend = await friendsHttpClient.GetFriend(id);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
+            ContactViewModel model = new(baseModel);
+
+            if (string.IsNullOrEmpty(friend.PictureLink) || friend.AccessLevel < model.CurrentAccessLevel)
+            {
+                MemoryStream fileContentNoAccess = await imageStore.GetStream("868b62e2-6978-41a1-97dc-1cc1116f65a6.jpg");
+                byte[] fileContentBytesNoAccess = fileContentNoAccess.ToArray();
+                return new FileContentResult(fileContentBytesNoAccess, "image/jpeg");
+            }
+
+            MemoryStream fileContent = await imageStore.GetStream(friend.PictureLink, BlobContainers.Friends);
+            byte[] fileContentBytes = fileContent.ToArray();
+
+            return new FileContentResult(fileContentBytes, friend.GetPictureFileContentType());
         }
 
         [HttpGet]
@@ -186,7 +206,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            friend.PictureLink = imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
+            friend.PictureLink = friend.GetProfilePictureUrl();
 
             model.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
             
@@ -264,7 +284,7 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index");
             }
 
-            friend.PictureLink = imageStore.UriFor(friend.PictureLink, BlobContainers.Friends);
+            friend.PictureLink = friend.GetProfilePictureUrl();
             model.FriendItem = friend;
 
             return View(model);

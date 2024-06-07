@@ -39,5 +39,30 @@ namespace KinaUna.Data.Extensions
             progeny.Id = 0;
             progeny.TimeZone = Constants.DefaultTimezone;
         }
+
+        public static string GetProfilePictureUrl(this Progeny progeny)
+        {
+            if (progeny == null || progeny.PictureLink == null)
+            {
+                return Constants.ProfilePictureUrl;
+            }
+
+            if (progeny.PictureLink.StartsWith("http:", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return progeny.PictureLink;
+            }
+
+            string pictureUrl = "/Progeny/ProfilePicture/" + progeny.Id;
+
+            return pictureUrl;
+        }
+
+
+        public static string GetPictureFileContentType(this Progeny progeny)
+        {
+            string contentType = FileContentTypeHelpers.GetContentTypeString(progeny.PictureLink);
+
+            return contentType;
+        }
     }
 }

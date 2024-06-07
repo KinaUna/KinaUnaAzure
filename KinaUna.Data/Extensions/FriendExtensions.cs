@@ -39,5 +39,30 @@ namespace KinaUna.Data.Extensions
             currentFriend.PictureLink = otherFriend.PictureLink;
             currentFriend.Tags = otherFriend.Tags;
         }
+
+        public static string GetProfilePictureUrl(this Friend friend)
+        {
+            if (friend == null || friend.PictureLink == null)
+            {
+                return Constants.ProfilePictureUrl;
+            }
+
+            if (friend.PictureLink.StartsWith("http:", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return friend.PictureLink;
+            }
+
+            string pictureUrl = "/Friends/ProfilePicture/" + friend.FriendId;
+
+            return pictureUrl;
+        }
+
+
+        public static string GetPictureFileContentType(this Friend friend)
+        {
+            string contentType = FileContentTypeHelpers.GetContentTypeString(friend.PictureLink);
+
+            return contentType;
+        }
     }
 }

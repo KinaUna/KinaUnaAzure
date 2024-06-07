@@ -51,7 +51,7 @@ namespace KinaUnaWeb.Controllers
                         }
                     }
 
-                    contactViewModel.ContactItem.PictureLink = imageStore.UriFor(contactViewModel.ContactItem.PictureLink, "contacts");
+                    contactViewModel.ContactItem.PictureLink = contactViewModel.ContactItem.GetProfilePictureUrl();
 
                     model.ContactsList.Add(contactViewModel);
 
@@ -87,7 +87,7 @@ namespace KinaUnaWeb.Controllers
 
             model.SetPropertiesFromContact(contact, model.IsCurrentUserProgenyAdmin);
 
-            model.ContactItem.PictureLink = imageStore.UriFor(model.ContactItem.PictureLink, "contacts");
+            model.ContactItem.PictureLink = model.ContactItem.GetProfilePictureUrl();
 
             List<string> tagsList = [];
             List<Contact> contactsList1 = await contactsHttpClient.GetContactsList(model.CurrentProgenyId, model.CurrentAccessLevel); 
@@ -112,6 +112,26 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
+        public async Task<FileContentResult> ProfilePicture(int id)
+        {
+            Contact contact = await contactsHttpClient.GetContact(id);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), contact.ProgenyId);
+            ContactViewModel model = new(baseModel);
+
+            if (string.IsNullOrEmpty(contact.PictureLink) || contact.AccessLevel < model.CurrentAccessLevel)
+            {
+                MemoryStream fileContentNoAccess = await imageStore.GetStream("868b62e2-6978-41a1-97dc-1cc1116f65a6.jpg");
+                byte[] fileContentBytesNoAccess = fileContentNoAccess.ToArray();
+                return new FileContentResult(fileContentBytesNoAccess, "image/jpeg");
+            }
+
+            MemoryStream fileContent = await imageStore.GetStream(contact.PictureLink, BlobContainers.Contacts);
+            byte[] fileContentBytes = fileContent.ToArray();
+
+            return new FileContentResult(fileContentBytes, contact.GetPictureFileContentType());
+        }
+        
         [HttpGet]
         public async Task<IActionResult> AddContact()
         {
@@ -184,7 +204,7 @@ namespace KinaUnaWeb.Controllers
             
             model.SetPropertiesFromContact(contact, model.IsCurrentUserProgenyAdmin);
 
-            model.ContactItem.PictureLink = imageStore.UriFor(contact.PictureLink, "contacts");
+            model.ContactItem.PictureLink = model.ContactItem.GetProfilePictureUrl();
             
             model.SetAccessLevelList();
 
@@ -244,7 +264,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.ContactItem = contact;
-            model.ContactItem.PictureLink = imageStore.UriFor(model.ContactItem.PictureLink, BlobContainers.Contacts);
+            model.ContactItem.PictureLink = model.ContactItem.GetProfilePictureUrl();
 
             return View(model);
         }

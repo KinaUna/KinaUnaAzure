@@ -4,10 +4,12 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.FamilyViewModels;
 using KinaUnaWeb.Models.TypeScriptModels;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaWeb.Controllers
@@ -28,7 +30,8 @@ namespace KinaUnaWeb.Controllers
         IContactsHttpClient contactsHttpClient,
         IVaccinationsHttpClient vaccinationsHttpClient,
         ILocationsHttpClient locationsHttpClient,
-        IAutoSuggestsHttpClient autoSuggestsHttpClient)
+        IAutoSuggestsHttpClient autoSuggestsHttpClient,
+        IViewModelSetupService viewModelSetupService)
         : Controller
     {
         private const string DefaultUser = Constants.DefaultUserEmail;
@@ -36,6 +39,25 @@ namespace KinaUnaWeb.Controllers
         public IActionResult Index()
         {
             return RedirectToAction("Index", "Family");
+        }
+
+        [AllowAnonymous]
+        public async Task<FileContentResult> ProfilePicture(int id)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), id);
+
+
+            if (string.IsNullOrEmpty(baseModel.CurrentProgeny.PictureLink) || baseModel.CurrentAccessLevel > (int)AccessLevel.Friends)
+            {
+                MemoryStream fileContentNoAccess = await imageStore.GetStream("868b62e2-6978-41a1-97dc-1cc1116f65a6.jpg");
+                byte[] fileContentBytesNoAccess = fileContentNoAccess.ToArray();
+                return new FileContentResult(fileContentBytesNoAccess, "image/jpeg");
+            }
+
+            MemoryStream fileContent = await imageStore.GetStream(baseModel.CurrentProgeny.PictureLink, BlobContainers.Progeny);
+            byte[] fileContentBytes = fileContent.ToArray();
+
+            return new FileContentResult(fileContentBytes, baseModel.CurrentProgeny.GetPictureFileContentType());
         }
 
         [HttpGet]
@@ -94,17 +116,21 @@ namespace KinaUnaWeb.Controllers
             string userEmail = User.GetEmail();
             model.CurrentUser = await userInfosHttpClient.GetUserInfo(userEmail);
 
-            Progeny prog = await progenyHttpClient.GetProgeny(progenyId);
+            Progeny progeny = await progenyHttpClient.GetProgeny(progenyId);
 
-            model.ProgenyId = prog.Id;
-            model.Name = prog.Name;
-            model.NickName = prog.NickName;
-            model.BirthDay = prog.BirthDay;
-            model.TimeZone = prog.TimeZone;
-            model.Admins = prog.Admins.ToUpper();
-            model.PictureLink = prog.PictureLink;
-            model.PictureLink = imageStore.UriFor(prog.PictureLink, BlobContainers.Progeny);
-            
+            model.ProgenyId = progeny.Id;
+            model.Name = progeny.Name;
+            model.NickName = progeny.NickName;
+            model.BirthDay = progeny.BirthDay;
+            model.TimeZone = progeny.TimeZone;
+            model.Admins = progeny.Admins.ToUpper();
+            model.PictureLink = progeny.GetProfilePictureUrl();
+
+            if (!progeny.IsInAdminList(model.CurrentUser.UserEmail))
+            {
+                return RedirectToAction("Index");
+            }
+
             return View(model);
         }
 

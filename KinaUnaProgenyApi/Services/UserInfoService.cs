@@ -29,7 +29,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<UserInfo>> GetAllUserInfos()
         {
             List<UserInfo> userinfo = await _context.UserInfoDb.ToListAsync();
-
+            
             return userinfo;
         }
 

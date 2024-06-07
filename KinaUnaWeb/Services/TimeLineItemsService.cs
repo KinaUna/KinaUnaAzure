@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services.HttpClients;
@@ -106,7 +107,7 @@ namespace KinaUnaWeb.Services
                     Friend frn = await friendsHttpClient.GetFriend(itemId);
                     if (frn != null && frn.FriendId > 0)
                     {
-                        frn.PictureLink = imageStore.UriFor(frn.PictureLink, "friends");
+                        frn.PictureLink = frn.GetProfilePictureUrl();
                         return new TimeLineItemPartialViewModel("_TimeLineFriendPartial", frn);
                     }
                 }
@@ -166,7 +167,7 @@ namespace KinaUnaWeb.Services
                     {
                         cnt.DateAdded ??= DateTime.UtcNow;
 
-                        cnt.PictureLink = imageStore.UriFor(cnt.PictureLink, "contacts");
+                        cnt.PictureLink = cnt.GetProfilePictureUrl();
 
                         return new TimeLineItemPartialViewModel("_TimeLineContactPartial", cnt);
                     }

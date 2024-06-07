@@ -17,7 +17,7 @@ namespace KinaUnaProgenyApi.Services
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
-
+        
         public FriendService(ProgenyDbContext context, IDistributedCache cache)
         {
             _context = context;
@@ -52,7 +52,7 @@ namespace KinaUnaProgenyApi.Services
         {
             Friend friend = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
             if (friend == null) return null;
-
+            
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "friend" + id, JsonConvert.SerializeObject(friend), _cacheOptionsSliding);
 
             _ = await SetFriendsListInCache(friend.ProgenyId);

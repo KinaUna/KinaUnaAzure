@@ -17,6 +17,7 @@ namespace KinaUnaProgenyApi.Services
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly IImageStore _imageStore;
+        
         public ProgenyService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore)
         {
             _context = context;

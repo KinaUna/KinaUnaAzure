@@ -1,4 +1,4 @@
-const serviceWorkerVersion = 'v1.00';
+const serviceWorkerVersion = 'v2';
 const bodyContentDiv: any = $('.body-content')
 function runWaitMeLeave(): void {
     

@@ -17,7 +17,7 @@ namespace KinaUnaProgenyApi.Services
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
-
+        
         public ContactService(ProgenyDbContext context, IDistributedCache cache)
         {
             _context = context;
@@ -65,7 +65,7 @@ namespace KinaUnaProgenyApi.Services
         {
             Contact contact = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
             if (contact == null) return null;
-
+            
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "contact" + id, JsonConvert.SerializeObject(contact), _cacheOptionsSliding);
 
             _ = await SetContactsListInCache(contact.ProgenyId);

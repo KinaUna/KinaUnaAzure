@@ -78,7 +78,7 @@
     <link rel="manifest" href="~/manifest.json">
     <script>
         if (typeof navigator.serviceWorker !== 'undefined') {
-            navigator.serviceWorker.register('pwabuilder-sw-001.js')
+            navigator.serviceWorker.register('pwabuilder-sw-002.js')
         }
     </script>
     @Html.Raw(JavaScriptSnippet.FullScript)
@@ -114,7 +114,7 @@
 
                 if (!string.IsNullOrWhiteSpace(child.PictureLink))
                 {
-                    string picLink = ChildManager.GetImageUrl(child.PictureLink, "progeny");
+                    string picLink = child.GetProfilePictureUrl();
                     childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 48px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 48px; object-fit: contain;\" /img> ";
                 }
                 <span class="d-lg-none selectedChildProfilePic">@Html.Raw(childprofilePic)</span>
@@ -144,7 +144,7 @@
                                                     string profilePic2 = "<i class=\"material-icons\" style=\"color: #8bda8b;\">child_care</i>";
                                                     if (!string.IsNullOrWhiteSpace(prog.PictureLink))
                                                     {
-                                                        string picLink2 = ChildManager.GetImageUrl(prog.PictureLink, "progeny");
+                                                        string picLink2 = prog.GetProfilePictureUrl();
                                                         profilePic2 = "<img src=\"" + picLink2 + "\" style=\"max-height: 36px; margin-top: -4px; margin-right: 4px; background: black; border-radius: 10px; padding: 1px; width: 40px; object-fit: contain;\" /img> ";
                                                     }
                                                 }

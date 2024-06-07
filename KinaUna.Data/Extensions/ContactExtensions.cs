@@ -66,5 +66,30 @@ namespace KinaUna.Data.Extensions
             currentContact.Website = otherContact.Website;
             currentContact.Address = otherContact.Address;
         }
+
+        public static string GetProfilePictureUrl(this Contact contact)
+        {
+            if (contact == null || contact.PictureLink == null)
+            {
+                return Constants.ProfilePictureUrl;
+            }
+
+            if (contact.PictureLink.StartsWith("http:", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return contact.PictureLink;
+            }
+
+            string pictureUrl = "/Contacts/ProfilePicture/" + contact.ContactId;
+
+            return pictureUrl;
+        }
+
+
+        public static string GetPictureFileContentType(this Contact contact )
+        {
+            string contentType = FileContentTypeHelpers.GetContentTypeString(contact.PictureLink);
+
+            return contentType;
+        }
     }
 }
