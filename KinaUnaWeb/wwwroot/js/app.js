@@ -1,4 +1,5 @@
 "use strict";
+const serviceWorkerVersion = 'v1';
 const bodyContentDiv = $('.body-content');
 function runWaitMeLeave() {
     bodyContentDiv.waitMe({
@@ -42,6 +43,13 @@ function removeServiceWorkers() {
         }
     });
 }
+function updateServiceWorkers() {
+    navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        for (let registration of registrations) {
+            registration.update();
+        }
+    });
+}
 class SideBarSetting {
     constructor() {
         this.showSidebar = false;
@@ -52,6 +60,7 @@ const sidebarSetting = new SideBarSetting();
 const sidebarElement = document.getElementById('sidebar-menu-div');
 const show_sidebar_setting_key = 'show_sidebar_setting';
 const show_sidebar_text_setting_key = 'show_sidebar_text_setting';
+const serviceWorkerVersion_key = 'service_worker_version';
 function sidebarMenuDelay(milliseconds) {
     return new Promise(resolve => {
         setTimeout(resolve, milliseconds);
@@ -184,6 +193,17 @@ function setActivePageClass() {
 function initPageSettings() {
     if (sidebarElement == null) {
         return;
+    }
+    const localStorageServiceWorkerVersion = localStorage.getItem(serviceWorkerVersion_key);
+    if (localStorageServiceWorkerVersion != null) {
+        if (localStorageServiceWorkerVersion !== serviceWorkerVersion) {
+            updateServiceWorkers();
+            localStorage.setItem(serviceWorkerVersion_key, serviceWorkerVersion);
+        }
+    }
+    else {
+        updateServiceWorkers();
+        localStorage.setItem(serviceWorkerVersion_key, serviceWorkerVersion);
     }
     sidebarElement.style.left = '-100px';
     const localStorageShowSidebarString = localStorage.getItem(show_sidebar_setting_key);

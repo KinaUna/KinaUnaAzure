@@ -6,6 +6,7 @@
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Photo gallery", PageNames.Pictures, Model.LanguageId);
     string pageString = await LocaleManager.GetTranslation("Page", PageNames.Pictures, Model.LanguageId);
     string ofString = await LocaleManager.GetTranslation("of", PageNames.Pictures, Model.LanguageId);
+    string locationString = await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId);
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="col-12 col-xl-12 col-xxl-11 col-w1900-10 col-w2500-9">
@@ -59,19 +60,24 @@
                     {
                         bgColor = "#007987";
                     }
-                    string pTime = "";
+                    string pictureTimeText = "";
                     if (item.PictureTime != null)
                     {
-                        pTime = item.PictureTime.Value.ToString("dd-MMM-yyyy HH:mm");
+                        pictureTimeText = item.PictureTime.Value.ToString("dd-MMM-yyyy HH:mm");
+                    }
+                    string altText = Model.CurrentProgeny.NickName;
+                    if (!string.IsNullOrEmpty(item.Location))
+                    {
+                        altText += " [" + locationString + ": " + item.Location + "]";
                     }
                     <a class="col-auto align-self-center p-0 m-0 leavePage" asp-area="" asp-controller="Pictures" asp-action="Picture" asp-route-id="@item.PictureId" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@Model.TagFilter">
                         <div class="photo-gallery-frame">
-                            <img data-src="@item.PictureLink600" class="photo-gallery-picture lazyload" />
+                            <img data-src="@item.PictureLink600" class="photo-gallery-picture lazyload" alt="@altText"/>
                             <div class="photo-picture-number-frame" style="background-color: @bgColor;">
                                 <span class="photo-picture-number-text">@item.PictureNumber</span>
                             </div>
                             <div class="photo-picture-time-frame">
-                                <span class="photo-picture-time-text">@pTime</span>
+                                <span class="photo-picture-time-text">@pictureTimeText</span>
                             </div>
                             <div class="photo-comments-frame">
                                 <span class="photo-comments-text"><i class="far fa-comment-alt"></i> @item.Comments.Count</span>

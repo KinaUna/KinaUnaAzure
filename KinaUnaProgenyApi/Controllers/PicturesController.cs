@@ -56,15 +56,13 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
-            List<Picture> allItems;
+            List<Picture> allItems = await picturesService.GetPicturesList(progenyId);
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                allItems = await picturesService.GetPicturesList(progenyId);
                 allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel && p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.PictureTime)];
             }
             else
             {
-                allItems = await picturesService.GetPicturesList(progenyId);
                 allItems = [.. allItems.Where(p => p.AccessLevel >= accessLevel).OrderBy(p => p.PictureTime)];
             }
 
@@ -90,8 +88,8 @@ namespace KinaUnaProgenyApi.Controllers
                 pictureCounter++;
                 if (string.IsNullOrEmpty(pic.Tags)) continue;
 
-                List<string> pvmTags = [.. pic.Tags.Split(',')];
-                foreach (string tagstring in pvmTags)
+                List<string> picturePageViewModelTagsList = [.. pic.Tags.Split(',')];
+                foreach (string tagstring in picturePageViewModelTagsList)
                 {
                     if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
                     {
@@ -118,12 +116,13 @@ namespace KinaUnaProgenyApi.Controllers
                 SortBy = sortBy,
                 TagFilter = tagFilter
             };
-            string tList = "";
-            foreach (string tstr in tagsList)
+
+            model.TagsList = "";
+            foreach (string tagString in tagsList)
             {
-                tList = tList + tstr + ",";
+                model.TagsList = model.TagsList + tagString + ",";
             }
-            model.TagsList = tList.TrimEnd(',');
+            model.TagsList = model.TagsList.TrimEnd(',');
 
             return Ok(model);
         }

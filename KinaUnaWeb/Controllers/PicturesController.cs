@@ -46,9 +46,9 @@ namespace KinaUnaWeb.Controllers
 
             //model.SortBy = sortBy;
             //model.PageSize = pageSize;
-            foreach (Picture pic in model.PicturesList)
+            foreach (Picture picture in model.PicturesList)
             {
-                pic.PictureLink600 = pic.GetPictureUrl(600);
+                picture.PictureLink600 = picture.GetPictureUrl(600);
             }
 
             return View(model);

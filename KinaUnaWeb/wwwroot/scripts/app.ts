@@ -1,3 +1,4 @@
+const serviceWorkerVersion = 'v1.00';
 const bodyContentDiv: any = $('.body-content')
 function runWaitMeLeave(): void {
     
@@ -47,6 +48,15 @@ function removeServiceWorkers(): void {
         });
 }
 
+function updateServiceWorkers(): void {
+    navigator.serviceWorker.getRegistrations().then(
+        function (registrations) {
+            for (let registration of registrations) {
+                registration.update();
+            }
+        });
+}
+
 class SideBarSetting {
     showSidebar: boolean = false;
     showSidebarText: boolean = false;
@@ -57,6 +67,7 @@ const sidebarElement = document.getElementById('sidebar-menu-div');
 
 const show_sidebar_setting_key = 'show_sidebar_setting';
 const show_sidebar_text_setting_key = 'show_sidebar_text_setting';
+const serviceWorkerVersion_key = 'service_worker_version';
 
 function sidebarMenuDelay(milliseconds: number): Promise<any> {
     return new Promise(resolve => {
@@ -206,6 +217,18 @@ function initPageSettings(): void {
     if (sidebarElement == null) {
         return;
     }
+
+    const localStorageServiceWorkerVersion = localStorage.getItem(serviceWorkerVersion_key);
+    if (localStorageServiceWorkerVersion != null) {
+        if (localStorageServiceWorkerVersion !== serviceWorkerVersion) {
+            updateServiceWorkers();
+            localStorage.setItem(serviceWorkerVersion_key, serviceWorkerVersion);
+        }
+    } else {
+        updateServiceWorkers();
+        localStorage.setItem(serviceWorkerVersion_key, serviceWorkerVersion);
+    }
+
     sidebarElement.style.left = '-100px';
     const localStorageShowSidebarString = localStorage.getItem(show_sidebar_setting_key);
     if (localStorageShowSidebarString != null) {

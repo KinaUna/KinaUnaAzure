@@ -77,11 +77,11 @@ self.addEventListener('fetch', function (event) {
     } else {
 	    cacheFirstFetch(event);
     }
-    //if (comparePaths(event.request.url, networkFirstPaths)) {
-    //    networkFirstFetch(event);
-    //} else {
-    //    cacheFirstFetch(event);
-    //}
+    if (comparePaths(event.request.url, networkFirstPaths)) {
+        networkFirstFetch(event);
+    } else {
+        cacheFirstFetch(event);
+    }
 });
 
 function cacheFirstFetch(event) {
