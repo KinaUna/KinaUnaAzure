@@ -9,7 +9,6 @@ namespace KinaUnaWeb.Services
 {
     public class TimeLineItemsService(
         IMediaHttpClient mediaHttpClient,
-        ImageStore imageStore,
         IWordsHttpClient wordsHttpClient,
         IVaccinationsHttpClient vaccinationsHttpClient,
         ISkillsHttpClient skillsHttpClient,

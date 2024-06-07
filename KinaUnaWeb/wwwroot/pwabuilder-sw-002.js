@@ -4,7 +4,7 @@ const CACHE = "kinauna-cache-v2";
 
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js');
 
-// When this file changes, change line 81 of _Layout.cshtml and version number in app.ts.
+// When this file changes, check if a change line 81 of _Layout.cshtml and version number in app.ts is needed.
 
 const offlineFallbackPage = "/offline.html";
 
@@ -31,7 +31,7 @@ if (workbox.navigationPreload.isSupported()) {
 
 workbox.routing.registerRoute(
     new RegExp('/*'),
-    new workbox.strategies.StaleWhileRevalidate({
+    new workbox.strategies.NetworkFirst({
         cacheName: CACHE
     })
 );

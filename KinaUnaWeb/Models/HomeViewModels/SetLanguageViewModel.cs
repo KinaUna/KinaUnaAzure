@@ -13,6 +13,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
     public class UserMenuViewModel
     {
         public int LanguageId { get; init; }
+        public int ProgenyId { get; init; }
         public UserInfo UserInfo { get; init; }
     }
 }

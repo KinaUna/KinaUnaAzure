@@ -31,24 +31,34 @@ namespace KinaUnaWeb.Services
 
         public async Task<BaseItemsViewModel> SetupViewModel(int languageId, string userEmail, int progenyId)
         {
-           BaseItemsViewModel viewModel = new();
-           string cachedBaseViewModel = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId);
-           if (!string.IsNullOrEmpty(cachedBaseViewModel))
-           {
-               viewModel = JsonConvert.DeserializeObject<BaseItemsViewModel>(cachedBaseViewModel);
-               return viewModel;
-           }
+            BaseItemsViewModel viewModel = new()
+            {
+                CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail)
+            };
 
-           viewModel.LanguageId = languageId;
-           viewModel.CurrentUser = await _userInfosHttpClient.GetUserInfo(userEmail);
-           viewModel.SetCurrentProgenyId(progenyId);
-           viewModel.CurrentProgeny = await _progenyHttpClient.GetProgeny(viewModel.CurrentProgenyId);
-           viewModel.CurrentProgenyAccessList = await _userAccessHttpClient.GetProgenyAccessList(viewModel.CurrentProgenyId);
-           viewModel.SetCurrentUsersAccessLevel();
+            if (progenyId == 0)
+            {
+               
+                progenyId = viewModel.CurrentUser.ViewChild;
+            }
+            
+            string cachedBaseViewModel = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId);
+            if (!string.IsNullOrEmpty(cachedBaseViewModel))
+            {
+                viewModel = JsonConvert.DeserializeObject<BaseItemsViewModel>(cachedBaseViewModel);
+                return viewModel;
+            }
 
-           await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId, JsonConvert.SerializeObject(viewModel), _cacheOptions);
+            viewModel.LanguageId = languageId;
            
-           return viewModel;
+            viewModel.SetCurrentProgenyId(progenyId);
+            viewModel.CurrentProgeny = await _progenyHttpClient.GetProgeny(viewModel.CurrentProgenyId);
+            viewModel.CurrentProgenyAccessList = await _userAccessHttpClient.GetProgenyAccessList(viewModel.CurrentProgenyId);
+            viewModel.SetCurrentUsersAccessLevel();
+
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId, JsonConvert.SerializeObject(viewModel), _cacheOptions);
+           
+            return viewModel;
         }
         
         public async Task<List<SelectListItem>> GetProgenySelectList(UserInfo userInfo)
