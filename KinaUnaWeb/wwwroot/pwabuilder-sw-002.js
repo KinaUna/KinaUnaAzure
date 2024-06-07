@@ -26,20 +26,20 @@ self.addEventListener('activate', event => {
 });
 
 if (workbox.navigationPreload.isSupported()) {
-    workbox.navigationPreload.enable();
+    workbox.navigationPreload.disable();
 }
 
-workbox.routing.registerRoute(
-    new RegExp('/*'),
-    new workbox.strategies.NetworkFirst({
-        cacheName: CACHE
-    })
-);
+//workbox.routing.registerRoute(
+//    new RegExp('/*'),
+//    new workbox.strategies.NetworkFirst({
+//        cacheName: CACHE
+//    })
+//);
 
 self.addEventListener('fetch', (event) => {
     // Check if this is a request for an image
     if (event.request.destination === 'image') {
-        event.respondWith(caches.open(cacheName).then((cache) => {
+        event.respondWith(caches.open(CACHE).then((cache) => {
             // Go to the cache first
             return cache.match(event.request.url).then((cachedResponse) => {
                 // Return a cached response if we have one
@@ -59,24 +59,42 @@ self.addEventListener('fetch', (event) => {
         }));
     }
 
-    if (event.request.mode === 'navigate') {
-        event.respondWith((async () => {
-            try {
-                const preloadResp = await event.preloadResponse;
+    if (event.request.mode === 'navigate' && !event.request.destination === 'image') {
+        //event.respondWith((async () => {
+        //    try {
+        //        const preloadResp = await event.preloadResponse;
 
-                if (preloadResp) {
-                    return preloadResp;
+        //        if (preloadResp) {
+        //            return preloadResp;
+        //        }
+
+        //        const networkResp = await fetch(event.request);
+        //        return networkResp;
+        //    } catch (error) {
+
+        //        const cache = await caches.open(CACHE);
+        //        const cachedResp = await cache.match(offlineFallbackPage);
+        //        return cachedResp;
+        //    }
+        //})());
+
+        event.respondWith(caches.open(CACHE).then((cache) => {
+            // Go to the network first
+            return fetch(event.request.url).then((fetchedResponse) => {
+                cache.put(event.request, fetchedResponse.clone());
+
+                return fetchedResponse;
+            }).catch(() => {
+                // If the network is unavailable, get
+                const cachedResponse = cache.match(event.request.url);
+                if (cachedResponse) {
+                    return cachedResponse;
                 }
 
-                const networkResp = await fetch(event.request);
-                return networkResp;
-            } catch (error) {
-
-                const cache = await caches.open(CACHE);
-                const cachedResp = await cache.match(offlineFallbackPage);
-                return cachedResp;
-            }
-        })());
+                const fallbackPage = cache.match(offlineFallbackPage);
+                return fallbackPage;
+            });
+        }));
     }
 });
 

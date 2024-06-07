@@ -50,6 +50,8 @@
         }
     }
 
+    child ??= new Progeny(){Id = Constants.DefaultChildId};
+
     UserMenuViewModel userMenuViewModel = new UserMenuViewModel { LanguageId = languageId, UserInfo = userInfo, ProgenyId = child.Id};
 }
 <html lang="@languageCode">
@@ -78,7 +80,7 @@
     <link rel="manifest" href="~/manifest.json">
     <script>
         if (typeof navigator.serviceWorker !== 'undefined') {
-            navigator.serviceWorker.register('pwabuilder-sw-002.js')
+            navigator.serviceWorker.register('/pwabuilder-sw-002.js')
         }
     </script>
     @Html.Raw(JavaScriptSnippet.FullScript)
@@ -109,16 +111,12 @@
         }
         @{
             string childprofilePic = "<i class=\"material-icons d-none\" style=\"color: #8bda8b;\">child_care</i>";
-            if (child != null)
+            if (!string.IsNullOrWhiteSpace(child.PictureLink))
             {
-
-                if (!string.IsNullOrWhiteSpace(child.PictureLink))
-                {
-                    string picLink = child.GetProfilePictureUrl();
-                    childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 48px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 48px; object-fit: contain;\" /img> ";
-                }
-                <span class="d-lg-none selectedChildProfilePic">@Html.Raw(childprofilePic)</span>
+                string picLink = child.GetProfilePictureUrl();
+                childprofilePic = "<img src=\"" + picLink + "\" style=\"max-height: 48px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 48px; object-fit: contain;\" /img> ";
             }
+            <span class="d-lg-none selectedChildProfilePic">@Html.Raw(childprofilePic)</span>
         }
         <span id="togglerNotificationsCounter" class="badge badge-danger ml-auto mr-2 d-block d-lg-none" style="position: relative; display: none; font-size: 12px;">0</span>
         <button id="navMainMenuButton" class="navbar-toggler d-block d-lg-none" style="height: 52px; border-color: transparent; outline: none" type="button" data-toggle="collapse" data-target="#navbarMainContent" aria-controls="navbarMainContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -126,7 +124,7 @@
         </button>
         <div class="collapse navbar-collapse mt-5 mt-lg-1 ml-6 ml-sm-6 ml-md-6 ml-lg-0" id="navbarMainContent" style="min-height: 52px;">
             <ul class="navbar-nav ml-1 ml-lg-2 w-100 top-menu-max-height">
-                @if (childList.Count > 1 && child != null)
+                @if (childList.Count > 1)
                 {
                     <li class="nav-item dropdown mb-2 mb-lg-0 mr-auto mr-lg-2">
                         <a id="selectChildMenuButton" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
