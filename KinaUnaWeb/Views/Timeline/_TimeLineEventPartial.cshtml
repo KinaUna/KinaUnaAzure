@@ -35,7 +35,7 @@
                     <span class="timeline-icon"><i class="material-icons">event_note</i></span>
                 </div>
                 <div class="col">
-                    <div class="timeline-title row">
+                    <div class="row text-white">
                         @if (Model.AllDay)
                         {
 
@@ -52,7 +52,7 @@
                         {
                             if (Model.StartTime.Value.Date == Model.EndTime.Value.Date)
                             {
-                                <div class="col-auto">@startDateString</div>
+                                <div class="col-auto font-weight-bold">@startDateString</div>
                                 <div class="col-auto font-weight-normal">@startTimeString - @endTimeString</div>
                             }
                             else
@@ -76,19 +76,29 @@
                             }
                         }
                     </div>
+                    <div class="timeline-title row">
+                        <div class="col-12">
+                            @Model.Title
+                        </div>
+                    </div>
                     <div class="timeline-text row text-white-50">
-                        <div class="col-auto text-white font-weight-bold"><h6>@Model.Title</h6></div>
                         @if (!string.IsNullOrEmpty(Model.Location))
                         {
-                            <div class="col-auto ml-auto text-right">@await LocaleManager.GetTranslation("Location:", PageNames.Calendar, languageId) @Model.Location</div>
-                        }
-                        @if (!string.IsNullOrEmpty(Model.Context))
-                        {
-                            <div class="col-auto ml-auto text-right">@await LocaleManager.GetTranslation("Context:", PageNames.Calendar, languageId) @Model.Context</div>
+                            <div class="col-12">@Model.Location</div>
                         }
                         @if (!string.IsNullOrEmpty(Model.Notes))
                         {
                             <div class="col-12">@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, languageId) @Model.Notes</div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Context))
+                        {
+                            List<string> contextsList = Model.Context.Split(',').ToList();
+                            <div class="col-12 mt-2 text-right">
+                                @foreach (string contextString in contextsList)
+                                {
+                                    <span class="btn context-item tag-item-sm leavePage">@contextString</span>
+                                }
+                            </div>
                         }
                     </div>
                 </div>
