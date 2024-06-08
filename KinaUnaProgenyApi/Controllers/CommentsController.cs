@@ -77,8 +77,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             Comment newComment = await commentsService.AddComment(model);
-            await commentsService.SetComment(newComment.CommentId);
-
+            
             newComment.Progeny = progeny;
             string notificationTitle = "New comment for " + newComment.Progeny.NickName;
             string notificationMessage = model.DisplayName + " added a new comment for " + newComment.Progeny.NickName;
@@ -127,8 +126,6 @@ namespace KinaUnaProgenyApi.Controllers
 
             comment = await commentsService.UpdateComment(value);
 
-            await commentsService.SetComment(comment.CommentId);
-
             return Ok(comment);
         }
 
@@ -147,7 +144,7 @@ namespace KinaUnaProgenyApi.Controllers
             }
 
             _ = await commentsService.DeleteComment(comment);
-            await commentsService.RemoveComment(comment.CommentId, comment.CommentThreadNumber);
+            
             return NoContent();
 
         }

@@ -139,6 +139,7 @@ namespace KinaUnaProgenyApi.Services
             cmntThread.CommentsCount += 1;
             _mediaContext.CommentThreadsDb.Update(cmntThread);
             await _mediaContext.SaveChangesAsync();
+            await SetComment(commentToAdd.CommentId);
             await SetCommentsList(cmntThread.Id);
 
             return commentToAdd;
@@ -175,7 +176,6 @@ namespace KinaUnaProgenyApi.Services
             cmntThread.CommentsCount -= 1;
             _mediaContext.CommentThreadsDb.Update(cmntThread);
             await _mediaContext.SaveChangesAsync();
-
             await SetCommentsList(cmntThread.Id);
 
             return comment;

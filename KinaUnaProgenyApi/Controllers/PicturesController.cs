@@ -447,7 +447,6 @@ namespace KinaUnaProgenyApi.Controllers
                 foreach (Comment deletedComment in comments)
                 {
                     await commentsService.DeleteComment(deletedComment);
-                    await commentsService.RemoveComment(deletedComment.CommentId, deletedComment.CommentThreadNumber);
                 }
             }
 

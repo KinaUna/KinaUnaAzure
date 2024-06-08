@@ -1,12 +1,5 @@
-﻿@using KinaUnaWeb.Services
-@using KinaUna.Data
-@* ReSharper disable once RedundantUsingDirective *@
-@using System.Web;
+﻿@using System.Web;
 @model Note
-@inject ILocaleManager LocaleManager
-@{
-    int languageId = LocaleManager.GetLanguageId(Context.Request);
-}
 <a class="leavePage" asp-controller="Notes" asp-action="Index">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-notes">
