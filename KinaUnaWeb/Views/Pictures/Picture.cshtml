@@ -214,13 +214,12 @@
 }
 @if (Model.CommentsList.Count > 0)
 {
-    <div>
+    <div class="w-100">
         <div>
             <h5>@await LocaleManager.GetTranslation("Comments", PageNames.Pictures, Model.LanguageId) (@Model.CommentsCount):</h5>
         </div>
-        <div class="col-md-10">
-            <div class="media-area">
-                @foreach (Comment cmnt in Model.CommentsList)
+        <div>
+            @foreach (Comment cmnt in Model.CommentsList)
                 {
                     <div class="card bg-light text-dark">
                         <div class="card-body">
@@ -256,7 +255,6 @@
                         </div>
                     </div>
                 }
-            </div>
         </div>
     </div>
 }
@@ -386,7 +384,16 @@
     </script>
     <script src="/js/pictures/add-edit-picture.js" type="module" asp-append-version="true"></script>
 }
-<br />
+@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    <div class="space-20"></div>
+    <div class="text-center">
+        @{ string downloadName = Model.CurrentProgeny.NickName + "_" + Model.Picture.PictureId; }
+        <a asp-action="OriginalPicture" asp-route-id="@Model.Picture.PictureId" class="btn btn-link text-white" download="@downloadName">@await LocaleManager.GetTranslation("Download original picture", PageNames.Pictures, Model.LanguageId)</a>
+    </div>
+    
+}
+        <div class="space-20"></div>
 <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px;">
     <div style="float: left">
         <a class="leavePage" asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.PrevPicture" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @photoString</a>

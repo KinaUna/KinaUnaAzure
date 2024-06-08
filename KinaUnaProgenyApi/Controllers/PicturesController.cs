@@ -89,11 +89,12 @@ namespace KinaUnaProgenyApi.Controllers
                 if (string.IsNullOrEmpty(pic.Tags)) continue;
 
                 List<string> picturePageViewModelTagsList = [.. pic.Tags.Split(',')];
-                foreach (string tagstring in picturePageViewModelTagsList)
+                foreach (string tagString in picturePageViewModelTagsList)
                 {
-                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                    string trimmedTag = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
+                    if (!string.IsNullOrEmpty(trimmedTag) && !tagsList.Contains(trimmedTag))
                     {
-                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                        tagsList.Add(trimmedTag);
                     }
                 }
             }
@@ -114,10 +115,9 @@ namespace KinaUnaProgenyApi.Controllers
                 TotalPages = (int)Math.Ceiling(allItems.Count / (double)pageSize),
                 PageNumber = pageIndex,
                 SortBy = sortBy,
-                TagFilter = tagFilter
+                TagFilter = tagFilter,
+                TagsList = ""
             };
-
-            model.TagsList = "";
             foreach (string tagString in tagsList)
             {
                 model.TagsList = model.TagsList + tagString + ",";
@@ -178,11 +178,12 @@ namespace KinaUnaProgenyApi.Controllers
                     if (string.IsNullOrEmpty(pic.Tags)) continue;
 
                     List<string> pvmTags = [.. pic.Tags.Split(',')];
-                    foreach (string tagstring in pvmTags)
+                    foreach (string tagString in pvmTags)
                     {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                        string trimmedTag = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
+                        if (!string.IsNullOrEmpty(trimmedTag) && !tagsList.Contains(trimmedTag))
                         {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                            tagsList.Add(trimmedTag);
                         }
                     }
                 }
@@ -413,15 +414,6 @@ namespace KinaUnaProgenyApi.Controllers
 
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            //Progeny progeny = await progenyService.GetProgeny(picture.ProgenyId);
-            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
-
-            //string notificationTitle = "Photo Edited for " + progeny.NickName;
-            //string notificationMessage = userInfo.FullName() + " edited a photo for " + progeny.NickName;
-
-            // await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            // await webNotificationsService.SendPictureNotification(picture, userInfo, notificationTitle);
-
             return Ok(picture);
         }
 
@@ -609,11 +601,12 @@ namespace KinaUnaProgenyApi.Controllers
                 if (string.IsNullOrEmpty(pic.Tags)) continue;
 
                 List<string> pictureTagsList = [.. pic.Tags.Split(',')];
-                foreach (string tagstring in pictureTagsList)
+                foreach (string tagString in pictureTagsList)
                 {
-                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                    string trimmedTag = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
+                    if (!string.IsNullOrEmpty(trimmedTag) && !tagsList.Contains(trimmedTag))
                     {
-                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                        tagsList.Add(trimmedTag);
                     }
                 }
             }
@@ -724,11 +717,12 @@ namespace KinaUnaProgenyApi.Controllers
                     if (string.IsNullOrEmpty(pic.Tags)) continue;
 
                     List<string> pvmTags = [.. pic.Tags.Split(',')];
-                    foreach (string tagstring in pvmTags)
+                    foreach (string tagString in pvmTags)
                     {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                        string trimmedTag = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
+                        if (!string.IsNullOrEmpty(trimmedTag) && !tagsList.Contains(trimmedTag))
                         {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                            tagsList.Add(trimmedTag);
                         }
                     }
                 }
@@ -806,11 +800,12 @@ namespace KinaUnaProgenyApi.Controllers
                     if (string.IsNullOrEmpty(pictureItem.Tags)) continue;
 
                     List<string> pictureTagsList = [.. pictureItem.Tags.Split(',')];
-                    foreach (string tagstring in pictureTagsList)
+                    foreach (string tagString in pictureTagsList)
                     {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                        string trimmedTag = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
+                        if (!string.IsNullOrEmpty(trimmedTag) && !tagsList.Contains(trimmedTag))
                         {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                            tagsList.Add(trimmedTag);
                         }
                     }
                 }
@@ -1020,9 +1015,10 @@ namespace KinaUnaProgenyApi.Controllers
                 List<string> tagsList = [.. picture.Tags.Split(',')];
                 foreach (string tagString in tagsList)
                 {
-                    if (!autoSuggestList.Contains(tagString.Trim()))
+                    string trimmedTag = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
+                    if (!string.IsNullOrEmpty(trimmedTag) && !tagsList.Contains(trimmedTag))
                     {
-                        autoSuggestList.Add(tagString.Trim());
+                        autoSuggestList.Add(trimmedTag);
                     }
                 }
             }
@@ -1037,9 +1033,10 @@ namespace KinaUnaProgenyApi.Controllers
                 List<string> tagsList = [.. video.Tags.Split(',')];
                 foreach (string tagString in tagsList)
                 {
-                    if (!autoSuggestList.Contains(tagString.Trim()))
+                    string trimmedTag = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
+                    if (!string.IsNullOrEmpty(trimmedTag) && !tagsList.Contains(trimmedTag))
                     {
-                        autoSuggestList.Add(tagString.Trim());
+                        autoSuggestList.Add(trimmedTag);
                     }
                 }
             }
