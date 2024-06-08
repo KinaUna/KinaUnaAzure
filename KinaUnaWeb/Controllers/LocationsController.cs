@@ -56,15 +56,15 @@ namespace KinaUnaWeb.Controllers
                         }
                     }
                 }
-            }
-            
-            model.SetTags(tagsList);
-            
-            if (sortBy == 1)
-            {
-                model.LocationsList.Reverse();
-            }
 
+                model.SetTags(tagsList);
+
+                if (sortBy == 1)
+                {
+                    model.LocationsList.Reverse();
+                }
+            }
+            
             model.SortBy = sortBy;
             model.TagFilter = tagFilter;
             return View(model);

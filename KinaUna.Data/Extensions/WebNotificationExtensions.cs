@@ -11,7 +11,7 @@ namespace KinaUna.Data.Extensions
                 return Constants.ProfilePictureUrl;
             }
 
-            if (webNotification.Icon.StartsWith("http:", System.StringComparison.CurrentCultureIgnoreCase) || webNotification.Icon.StartsWith('/'))
+            if (webNotification.Icon.StartsWith("http", System.StringComparison.CurrentCultureIgnoreCase) || webNotification.Icon.StartsWith('/'))
             {
                 return webNotification.Icon;
             }

@@ -74,7 +74,7 @@ namespace KinaUna.Data.Extensions
                 return Constants.ProfilePictureUrl;
             }
 
-            if (contact.PictureLink.StartsWith("http:", StringComparison.CurrentCultureIgnoreCase))
+            if (contact.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
             {
                 return contact.PictureLink;
             }

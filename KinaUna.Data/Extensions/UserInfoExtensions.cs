@@ -38,7 +38,7 @@ namespace KinaUna.Data.Extensions
                 return Constants.ProfilePictureUrl;
             }
 
-            if (userInfo.ProfilePicture.StartsWith("http:", System.StringComparison.CurrentCultureIgnoreCase))
+            if (userInfo.ProfilePicture.StartsWith("http", System.StringComparison.CurrentCultureIgnoreCase))
             {
                 return userInfo.ProfilePicture;
             }

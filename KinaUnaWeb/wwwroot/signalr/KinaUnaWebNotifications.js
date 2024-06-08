@@ -21,7 +21,7 @@ function notificationItemClick(btn, event) {
                     $('.navbar-toggler').trigger("click");
                 }
                 navMain.style.opacity = 0.8;
-                runWaitMeLeave();
+                // runWaitMeLeave();
             },
             error: function(jqXhr, textStatus, errorThrown) {
                 console.log(textStatus, errorThrown);
