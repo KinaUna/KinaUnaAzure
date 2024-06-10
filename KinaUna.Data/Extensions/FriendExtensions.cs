@@ -52,7 +52,7 @@ namespace KinaUna.Data.Extensions
                 return friend.PictureLink;
             }
 
-            string pictureUrl = "/Friends/ProfilePicture/" + friend.FriendId;
+            string pictureUrl = "/Friends/ProfilePicture/" + friend.FriendId + "?imageId=" + friend.PictureLink;
 
             return pictureUrl;
         }

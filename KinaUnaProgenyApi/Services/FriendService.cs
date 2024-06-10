@@ -14,13 +14,15 @@ namespace KinaUnaProgenyApi.Services
     public class FriendService : IFriendService
     {
         private readonly ProgenyDbContext _context;
+        private readonly IImageStore _imageStore;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         
-        public FriendService(ProgenyDbContext context, IDistributedCache cache)
+        public FriendService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore)
         {
             _context = context;
+            _imageStore = imageStore;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
@@ -78,6 +80,7 @@ namespace KinaUnaProgenyApi.Services
         {
             Friend friendToUpdate = await _context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == friend.FriendId);
             if (friendToUpdate == null) return null;
+            string oldPictureLink = friendToUpdate.PictureLink;
 
             friendToUpdate.ProgenyId = friend.ProgenyId;
             friendToUpdate.PictureLink = friend.PictureLink;
@@ -95,8 +98,17 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.FriendsDb.Update(friendToUpdate);
             _ = await _context.SaveChangesAsync();
-            _ = await SetFriendInCache(friend.FriendId);
 
+            if (oldPictureLink != friend.PictureLink)
+            {
+                List<Friend> friendsWithThisPicture = await _context.FriendsDb.AsNoTracking().Where(c => c.PictureLink == oldPictureLink).ToListAsync();
+                if (friendsWithThisPicture.Count == 0)
+                {
+                    await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Friends);
+                }
+            }
+
+            _ = await SetFriendInCache(friend.FriendId);
 
             return friend;
         }
@@ -110,6 +122,11 @@ namespace KinaUnaProgenyApi.Services
             _ = await _context.SaveChangesAsync();
             await RemoveFriendFromCache(friend.FriendId, friend.ProgenyId);
 
+            List<Friend> friendsWithThisPicture = await _context.FriendsDb.AsNoTracking().Where(f => f.PictureLink == friend.PictureLink).ToListAsync();
+            if (friendsWithThisPicture.Count == 0)
+            {
+                _ = _imageStore.DeleteImage(friend.PictureLink, BlobContainers.Friends);
+            }
             return friend;
         }
         public async Task RemoveFriendFromCache(int id, int progenyId)

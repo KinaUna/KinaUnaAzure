@@ -79,7 +79,7 @@ namespace KinaUna.Data.Extensions
                 return contact.PictureLink;
             }
 
-            string pictureUrl = "/Contacts/ProfilePicture/" + contact.ContactId;
+            string pictureUrl = "/Contacts/ProfilePicture/" + contact.ContactId + "?imageId=" + contact.PictureLink;
 
             return pictureUrl;
         }

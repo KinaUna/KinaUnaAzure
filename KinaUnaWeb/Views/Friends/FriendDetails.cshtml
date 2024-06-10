@@ -3,7 +3,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Friend:", PageNames.Friends, Model.LanguageId) + Model.FriendItem.Name;
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Friend:", PageNames.Friends, Model.LanguageId) + " " + Model.FriendItem.Name;
 }
 @{
     string personalFriend = await LocaleManager.GetTranslation("Personal friend", PageNames.Friends, Model.LanguageId);
@@ -11,14 +11,12 @@
     string parentFriend = await LocaleManager.GetTranslation("Parent", PageNames.Friends, Model.LanguageId);
     string familyFriend = await LocaleManager.GetTranslation("Family", PageNames.Friends, Model.LanguageId);
     string caretakerFriend = await LocaleManager.GetTranslation("Caretaker", PageNames.Friends, Model.LanguageId);
-    List<string> typeList =
-    [
-        personalFriend,
-        toyFriend,
-        parentFriend,
-        familyFriend,
-        caretakerFriend
-    ];
+    List<string> typeList = new();
+    typeList.Add(personalFriend);
+    typeList.Add(toyFriend);
+    typeList.Add(parentFriend);
+    typeList.Add(familyFriend);
+    typeList.Add(caretakerFriend);
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="row">

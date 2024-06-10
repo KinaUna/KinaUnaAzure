@@ -52,7 +52,7 @@ namespace KinaUna.Data.Extensions
                 return progeny.PictureLink;
             }
 
-            string pictureUrl = "/Progeny/ProfilePicture/" + progeny.Id;
+            string pictureUrl = "/Progeny/ProfilePicture/" + progeny.Id + "?imageId=" + progeny.PictureLink;
 
             return pictureUrl;
         }

@@ -432,6 +432,13 @@ namespace KinaUnaProgenyApi.Services
                 _ = await _mediaContext.SaveChangesAsync();
             }
 
+            List<Picture> picturesWithThisImage = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.PictureLink == picture.PictureLink).ToListAsync();
+            if (picturesWithThisImage.Count == 0)
+            {
+                await _imageStore.DeleteImage(picture.PictureLink);
+                await _imageStore.DeleteImage(picture.PictureLink600);
+                await _imageStore.DeleteImage(picture.PictureLink1200);
+            }
 
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
             return pictureToDelete;

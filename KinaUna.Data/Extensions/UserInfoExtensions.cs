@@ -43,7 +43,7 @@ namespace KinaUna.Data.Extensions
                 return userInfo.ProfilePicture;
             }
 
-            string pictureUrl = "/Account/ProfilePicture/" + userInfo.UserId;
+            string pictureUrl = "/Account/ProfilePicture/" + userInfo.UserId + "?imageId=" + userInfo.ProfilePicture;
 
             return pictureUrl;
         }

@@ -14,13 +14,15 @@ namespace KinaUnaProgenyApi.Services
     public class ContactService : IContactService
     {
         private readonly ProgenyDbContext _context;
+        private readonly IImageStore _imageStore;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         
-        public ContactService(ProgenyDbContext context, IDistributedCache cache)
+        public ContactService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore)
         {
             _context = context;
+            _imageStore = imageStore;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
@@ -77,6 +79,8 @@ namespace KinaUnaProgenyApi.Services
         {
             Contact contactToUpdate = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contact.ContactId);
             if (contactToUpdate == null) return null;
+            
+            string oldPictureLink = contactToUpdate.PictureLink;
 
             contactToUpdate.AccessLevel = contact.AccessLevel;
             contactToUpdate.Active = contact.Active;
@@ -104,6 +108,15 @@ namespace KinaUnaProgenyApi.Services
             _context.ContactsDb.Update(contactToUpdate);
             _ = await _context.SaveChangesAsync();
 
+            if (oldPictureLink != contact.PictureLink)
+            {
+                List<Contact> contactsWithThisPicture = await _context.ContactsDb.AsNoTracking().Where(c => c.PictureLink == oldPictureLink).ToListAsync();
+                if (contactsWithThisPicture.Count == 0)
+                {
+                    await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Contacts);
+                }
+            }
+
             _ = await SetContactInCache(contactToUpdate.ContactId);
             
             return contact;
@@ -118,6 +131,11 @@ namespace KinaUnaProgenyApi.Services
             _ = await _context.SaveChangesAsync();
             await RemoveContactFromCache(contact.ContactId, contact.ProgenyId);
 
+            List<Contact> contactsWithThisPicture = await _context.ContactsDb.AsNoTracking().Where(c => c.PictureLink == contactToDelete.PictureLink).ToListAsync();
+            if (contactsWithThisPicture.Count == 0)
+            {
+                await _imageStore.DeleteImage(contactToDelete.PictureLink, BlobContainers.Contacts);
+            }
             return contact;
         }
         public async Task RemoveContactFromCache(int id, int progenyId)

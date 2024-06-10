@@ -248,22 +248,19 @@ namespace KinaUnaWeb.Controllers
             }
 
             Friend editedFriend = model.CreateFriend();
+            Friend originalFriend = await friendsHttpClient.GetFriend(model.FriendItem.FriendId);
 
             if (model.File != null && model.File.Name != string.Empty)
             {
-                Friend originalFriend = await friendsHttpClient.GetFriend(model.FriendItem.FriendId);
+                
                 model.FileName = model.File.FileName;
-                await using (Stream stream = model.File.OpenReadStream())
-                {
-                    string fileFormat = Path.GetExtension(model.File.FileName);
-                    editedFriend.PictureLink = await imageStore.SaveImage(stream, "friends", fileFormat);
-                }
-
-                await imageStore.DeleteImage(originalFriend.PictureLink, "friends");
+                await using Stream stream = model.File.OpenReadStream();
+                string fileFormat = Path.GetExtension(model.File.FileName);
+                editedFriend.PictureLink = await imageStore.SaveImage(stream, "friends", fileFormat);
             }
             else
             {
-                editedFriend.PictureLink = Constants.KeepExistingLink;
+                editedFriend.PictureLink = originalFriend.PictureLink;
             }
 
             _ = await friendsHttpClient.UpdateFriend(editedFriend);

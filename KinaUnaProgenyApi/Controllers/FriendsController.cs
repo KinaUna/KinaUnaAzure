@@ -150,13 +150,6 @@ namespace KinaUnaProgenyApi.Controllers
                 _ = await timelineService.UpdateTimeLineItem(timeLineItem);
             }
 
-            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            //string notificationTitle = "Friend edited for " + progeny.NickName;
-            //string notificationMessage = userInfo.FullName() + " edited a friend for " + progeny.NickName;
-            
-            // await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            // await webNotificationsService.SendFriendNotification(friendItem, userInfo, notificationTitle);
-
             return Ok(friendItem);
         }
 
@@ -188,9 +181,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 _ = await timelineService.DeleteTimeLineItem(timeLineItem);
             }
-
-            _ = await imageStore.DeleteImage(friendItem.PictureLink, BlobContainers.Friends);
-
+            
             _ = await friendService.DeleteFriend(friendItem);
 
             if (timeLineItem == null) return NoContent();

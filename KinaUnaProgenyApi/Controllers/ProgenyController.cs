@@ -193,16 +193,8 @@ namespace KinaUnaProgenyApi.Controllers
             progeny.BirthDay = value.BirthDay;
             progeny.Name = value.Name;
             progeny.NickName = value.NickName;
-            if (!string.IsNullOrEmpty(value.PictureLink))
-            {
-                progeny.PictureLink = value.PictureLink;
-            }
             progeny.TimeZone = value.TimeZone;
-
-            if (!progeny.PictureLink.StartsWith("http", System.StringComparison.CurrentCultureIgnoreCase))
-            {
-                progeny.PictureLink = await progenyService.ResizeImage(progeny.PictureLink);
-            }
+            progeny.PictureLink = value.PictureLink;
 
             progeny = await progenyService.UpdateProgeny(progeny);
             
@@ -222,9 +214,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
-                
-            await imageStore.DeleteImage(progeny.PictureLink, "progeny");
-
+            
             List<UserAccess> userAccessList = await userAccessService.GetProgenyUserAccessList(progeny.Id);
 
             if (userAccessList.Count != 0)

@@ -153,18 +153,12 @@ namespace KinaUnaWeb.Controllers
             prog.Name = model.Name;
             prog.NickName = model.NickName;
             prog.TimeZone = model.TimeZone;
-            // Todo: check if fields are valid.
-
+            
             if (model.File != null && model.File.Name != string.Empty)
             {
-                string oldPictureLink = prog.PictureLink;
-                await using (Stream stream = model.File.OpenReadStream())
-                {
-                    string fileFormat = Path.GetExtension(model.File.FileName);
-                    prog.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Progeny, fileFormat);
-                }
-
-                await imageStore.DeleteImage(oldPictureLink, BlobContainers.Progeny);
+                await using Stream stream = model.File.OpenReadStream();
+                string fileFormat = Path.GetExtension(model.File.FileName);
+                prog.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Progeny, fileFormat);
             }
             await progenyHttpClient.UpdateProgeny(prog);
 

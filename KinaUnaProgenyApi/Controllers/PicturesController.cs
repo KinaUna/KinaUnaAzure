@@ -453,11 +453,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 await timelineService.DeleteTimeLineItem(timeLineItem);
             }
-
-            await imageStore.DeleteImage(picture.PictureLink);
-            await imageStore.DeleteImage(picture.PictureLink600);
-            await imageStore.DeleteImage(picture.PictureLink1200);
-
+            
             await picturesService.DeletePicture(picture);
             await picturesService.RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
 

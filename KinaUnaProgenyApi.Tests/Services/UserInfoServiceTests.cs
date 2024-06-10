@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace KinaUnaProgenyApi.Tests.Services
 {
@@ -60,7 +61,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
             List<UserInfo>? resultUserInfos = await userInfoService.GetAllUserInfos();
             List<UserInfo> dbUserInfos = await context.UserInfoDb.ToListAsync();
@@ -84,7 +86,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
             UserInfo resultUserInfo = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
             UserInfo resultUserInfoCached = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
@@ -124,7 +127,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
             UserInfo resultUserInfo = await userInfoService.GetUserInfoByEmail("abc@abc.com");
 
@@ -139,7 +143,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using ProgenyDbContext context = new(dbOptions);
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
             UserInfo userInfoToAdd = new()
             {
@@ -206,7 +211,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
             UserInfo userInfoToUpdate = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
             userInfoToUpdate.UserName = userInfo1.UserName + "_Changed";
@@ -282,7 +288,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
             UserInfo userInfoToDelete = await userInfoService.GetUserInfoByEmail(userInfo1.UserEmail);
 
@@ -315,7 +322,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
             UserInfo resultUserInfo = await userInfoService.GetUserInfoById(1);
             UserInfo resultUserInfoCached = await userInfoService.GetUserInfoById(1);
@@ -355,7 +363,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
             UserInfo resultUserInfo = await userInfoService.GetUserInfoById(0);
             UserInfo resultUserInfo2 = await userInfoService.GetUserInfoById(2);
@@ -384,7 +393,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
             UserInfo resultUserInfo = await userInfoService.GetUserInfoByUserId(userInfo1.UserId);
             UserInfo resultUserInfoCached = await userInfoService.GetUserInfoByUserId(userInfo1.UserId);
@@ -424,7 +434,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
             UserInfo resultUserInfo = await userInfoService.GetUserInfoByUserId("");
             UserInfo resultUserInfo2 = await userInfoService.GetUserInfoByUserId("UserId2");
@@ -484,7 +495,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
             List<UserInfo>? resultUserInfos = await userInfoService.GetDeletedUserInfos();
             List<UserInfo> dbUserInfos = await context.UserInfoDb.AsNoTracking().Where(ui => ui.Deleted).ToListAsync();
@@ -516,9 +528,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
-            var result = await userInfoService.IsAdminUserId(userInfo1.UserId);
+            bool result = await userInfoService.IsAdminUserId(userInfo1.UserId);
 
             Assert.True(result);
         }
@@ -545,9 +558,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
-            var result = await userInfoService.IsAdminUserId(userInfo1.UserId);
+            bool result = await userInfoService.IsAdminUserId(userInfo1.UserId);
 
             Assert.False(result);
         }
@@ -574,9 +588,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            UserInfoService userInfoService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            UserInfoService userInfoService = new(context, memoryCache, imageStore.Object);
 
-            var result = await userInfoService.IsAdminUserId("NoUser");
+            bool result = await userInfoService.IsAdminUserId("NoUser");
 
             Assert.False(result);
         }

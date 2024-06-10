@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using ImageMagick;
 using KinaUna.Data;
@@ -23,8 +26,8 @@ namespace KinaUnaProgenyApi.Services
             _context = context;
             _imageStore = imageStore;
             _cache = cache;
-            _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
-            _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
+            _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
+            _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
 
@@ -51,20 +54,38 @@ namespace KinaUnaProgenyApi.Services
         public async Task<Progeny> UpdateProgeny(Progeny progeny)
         {
             Progeny progenyToUpdate = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progeny.Id);
-            if (progenyToUpdate != null)
+            if (progenyToUpdate == null) return null;
+
+            string oldPictureLink = progenyToUpdate.PictureLink;
+            
+            progenyToUpdate.Admins = progeny.Admins;
+            progenyToUpdate.BirthDay = progeny.BirthDay;
+            progenyToUpdate.Name = progeny.Name;
+            progenyToUpdate.NickName = progeny.NickName;
+            progenyToUpdate.TimeZone = progeny.TimeZone;
+            if (!string.IsNullOrEmpty(progeny.PictureLink))
             {
-                progenyToUpdate.Admins = progeny.Admins;
-                progenyToUpdate.BirthDay = progeny.BirthDay;
-                progenyToUpdate.Name = progeny.Name;
-                progenyToUpdate.NickName = progeny.NickName;
                 progenyToUpdate.PictureLink = progeny.PictureLink;
-                progenyToUpdate.TimeZone = progeny.TimeZone;
-
-                _context.ProgenyDb.Update(progenyToUpdate);
-                await _context.SaveChangesAsync();
-
-                await SetProgenyInCache(progeny.Id);
             }
+
+            if (!progenyToUpdate.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
+            {
+                progenyToUpdate.PictureLink = await ResizeImage(progenyToUpdate.PictureLink);
+            }
+
+            _context.ProgenyDb.Update(progenyToUpdate);
+            await _context.SaveChangesAsync();
+
+            if (oldPictureLink != progeny.PictureLink)
+            {
+                List<Progeny> progeniesWithThisPicture = await _context.ProgenyDb.AsNoTracking().Where(c => c.PictureLink == oldPictureLink).ToListAsync();
+                if (progeniesWithThisPicture.Count == 0)
+                {
+                    await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Progeny);
+                }
+            }
+
+            await SetProgenyInCache(progeny.Id);
 
             return progenyToUpdate;
         }
@@ -79,6 +100,7 @@ namespace KinaUnaProgenyApi.Services
             _context.ProgenyDb.Remove(progenyToDelete);
             await _context.SaveChangesAsync();
 
+            await _imageStore.DeleteImage(progeny.PictureLink, "progeny");
             return progenyToDelete;
         }
 

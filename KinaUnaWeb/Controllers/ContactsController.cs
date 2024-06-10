@@ -226,23 +226,18 @@ namespace KinaUnaWeb.Controllers
             }
 
             Contact editedContact = model.CreateContact();
+            Contact originalContact = await contactsHttpClient.GetContact(editedContact.ContactId);
 
             if (model.File != null && model.File.Name != string.Empty)
             {
-                Contact originalContact = await contactsHttpClient.GetContact(model.ContactItem.ContactId);
                 model.FileName = model.File.FileName;
-                await using (Stream stream = model.File.OpenReadStream())
-                {
-                    string fileFormat = Path.GetExtension(model.File.FileName);
-                    editedContact.PictureLink = await imageStore.SaveImage(stream, "contacts", fileFormat);
-                }
-
-                await imageStore.DeleteImage(originalContact.PictureLink, "contacts");
+                await using Stream stream = model.File.OpenReadStream();
+                string fileFormat = Path.GetExtension(model.File.FileName);
+                editedContact.PictureLink = await imageStore.SaveImage(stream, "contacts", fileFormat);
             }
             else
             {
-
-                editedContact.PictureLink = Constants.KeepExistingLink;
+                editedContact.PictureLink = originalContact.PictureLink;
             }
 
             _ = await contactsHttpClient.UpdateContact(editedContact);

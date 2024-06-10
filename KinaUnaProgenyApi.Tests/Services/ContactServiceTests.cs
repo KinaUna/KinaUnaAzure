@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace KinaUnaProgenyApi.Tests.Services
 {
@@ -49,7 +50,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            ContactService contactService = new(context, memoryCache, imageStore.Object);
 
             Contact resultContact1 = await contactService.GetContact(1);
             Contact resultContact2 = await contactService.GetContact(1); // Uses cache
@@ -99,7 +101,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            ContactService contactService = new(context, memoryCache, imageStore.Object);
 
             Contact resultContact1 = await contactService.GetContact(2);
             Contact resultContact2 = await contactService.GetContact(2);
@@ -138,7 +141,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            ContactService contactService = new(context, memoryCache, imageStore.Object);
 
             Contact contactToAdd = new()
             {
@@ -239,7 +243,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            ContactService contactService = new(context, memoryCache, imageStore.Object);
 
             Contact contactToUpdate = await contactService.GetContact(1);
             contactToUpdate.AccessLevel = 5;
@@ -322,7 +327,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            ContactService contactService = new(context, memoryCache, imageStore.Object);
 
             int contactItemsCountBeforeDelete = context.ContactsDb.Count();
             Contact contactToDelete = await contactService.GetContact(1);
@@ -387,7 +393,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            ContactService contactService = new(context, memoryCache, imageStore.Object);
 
             List<Contact> contactsList = await contactService.GetContactsList(1);
             List<Contact> contactsList2 = await contactService.GetContactsList(1); // Test cached result.
@@ -456,7 +463,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            ContactService contactService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            ContactService contactService = new(context, memoryCache, imageStore.Object);
 
             List<Contact> contactsList = await contactService.GetContactsList(2);
             List<Contact> contactsList2 = await contactService.GetContactsList(2); // Test cached result.

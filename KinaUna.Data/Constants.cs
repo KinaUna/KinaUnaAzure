@@ -2,7 +2,7 @@
 {
     public static class Constants
     {
-        public const string ApiVersion = "1.1.9";
+        public const string ApiVersion = "1.1.10";
         public const bool ResetIdentityDb = true; // If set to true, the configuration in KinUna.IDP / Config.cs will be reapplied.
         public const string AppName = "KinaUna";
         public const string WebAppUrl = "https://web.kinauna.com";

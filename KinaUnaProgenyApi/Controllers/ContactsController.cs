@@ -226,9 +226,7 @@ namespace KinaUnaProgenyApi.Controllers
                     await locationService.RemoveAddressItem(address.AddressId);
                 }
             }
-
-            await imageStore.DeleteImage(contactItem.PictureLink, BlobContainers.Contacts);
-
+            
             _ = await contactService.DeleteContact(contactItem);
 
             contactItem.Author = User.GetUserId();
@@ -310,39 +308,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             await using (Stream stream = await GetStreamFromUrl(contact.PictureLink))
             {
-                string fileFormat = "";
-                if (contact.PictureLink.ToLower().EndsWith(".jpg"))
-                {
-                    fileFormat = ".jpg";
-                }
-
-                if (contact.PictureLink.ToLower().EndsWith(".png"))
-                {
-                    fileFormat = ".png";
-                }
-
-                if (contact.PictureLink.ToLower().EndsWith(".gif"))
-                {
-                    fileFormat = ".gif";
-                }
-
-                if (contact.PictureLink.ToLower().EndsWith(".jpeg"))
-                {
-                    fileFormat = ".jpg";
-                }
-
-                if (contact.PictureLink.ToLower().EndsWith(".bmp"))
-                {
-                    fileFormat = ".bmp";
-                }
-
-                if (contact.PictureLink.ToLower().EndsWith(".tif"))
-                {
-                    fileFormat = ".tif";
-                }
-                
-
-                contact.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Contacts, fileFormat);
+                contact.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Contacts, contact.GetPictureFileContentType());
             }
 
             contact = await contactService.UpdateContact(contact);

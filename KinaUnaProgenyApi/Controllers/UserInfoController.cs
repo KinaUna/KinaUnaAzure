@@ -18,7 +18,6 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class UserInfoController(
         ApplicationDbContext appDbContext,
-        IImageStore imageStore,
         IProgenyService progenyService,
         IUserInfoService userInfoService,
         IUserAccessService userAccessService,
@@ -580,24 +579,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 userInfo.Timezone = value.Timezone;
             }
-
-            if (!string.IsNullOrEmpty(value.ProfilePicture))
-            {
-                if (!string.IsNullOrEmpty(userInfo.ProfilePicture))
-                {
-                    string oldPictureLink = userInfo.ProfilePicture;
-                    if (!oldPictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !string.IsNullOrEmpty(oldPictureLink))
-                    {
-                        if (oldPictureLink != value.ProfilePicture)
-                        {
-                            await imageStore.DeleteImage(oldPictureLink, BlobContainers.Profiles);
-                        }
-                    }
-                }
-
-                userInfo.ProfilePicture = value.ProfilePicture;
-            }
-
+            
             if (value.UpdateIsAdmin)
             {
                 if (requester.IsKinaUnaAdmin)
@@ -639,9 +621,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return Unauthorized();
             }
-
-            _ = await imageStore.DeleteImage(userInfo.ProfilePicture, BlobContainers.Profiles);
-
+            
             List<UserAccess> accessList = await userAccessService.GetUsersUserAccessList(userInfo.UserEmail);
             foreach (UserAccess access in accessList)
             {

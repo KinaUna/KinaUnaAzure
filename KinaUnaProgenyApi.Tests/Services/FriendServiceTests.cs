@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace KinaUnaProgenyApi.Tests.Services
 {
@@ -46,7 +47,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            FriendService friendService = new(context, memoryCache, imageStore.Object);
 
             Friend resultFriend1 = await friendService.GetFriend(1);
             Friend resultFriend2 = await friendService.GetFriend(1); // Uses cache
@@ -93,7 +95,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            FriendService friendService = new(context, memoryCache, imageStore.Object);
 
             Friend resultFriend1 = await friendService.GetFriend(2);
             Friend resultFriend2 = await friendService.GetFriend(2); // Using cache
@@ -128,7 +131,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            FriendService friendService = new(context, memoryCache, imageStore.Object);
 
             Friend friendToAdd = new()
             {
@@ -217,7 +221,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            FriendService friendService = new(context, memoryCache, imageStore.Object);
 
             Friend friendToUpdate = await friendService.GetFriend(1);
             friendToUpdate.AccessLevel = 5;
@@ -292,7 +297,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            FriendService friendService = new(context, memoryCache, imageStore.Object);
 
             int friendItemsCountBeforeDelete = context.FriendsDb.Count();
             Friend friendToDelete = await friendService.GetFriend(1);
@@ -350,7 +356,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            FriendService friendService = new(context, memoryCache, imageStore.Object);
 
             List<Friend> friendsList = await friendService.GetFriendsList(1);
             List<Friend> friendsList2 = await friendService.GetFriendsList(1); // Test cached result.
@@ -411,7 +418,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            FriendService friendService = new(context, memoryCache);
+            Mock<IImageStore> imageStore = new();
+            FriendService friendService = new(context, memoryCache, imageStore.Object);
 
             List<Friend> friendsList = await friendService.GetFriendsList(2);
             List<Friend> friendsList2 = await friendService.GetFriendsList(2); // Test cached result.

@@ -14,16 +14,18 @@ namespace KinaUnaProgenyApi.Services
     public class UserInfoService : IUserInfoService
     {
         private readonly ProgenyDbContext _context;
+        private readonly IImageStore _imageStore;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public UserInfoService(ProgenyDbContext context, IDistributedCache cache)
+        public UserInfoService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore)
         {
             _context = context;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
+            _imageStore = imageStore;
         }
 
         public async Task<List<UserInfo>> GetAllUserInfos()
@@ -149,39 +151,47 @@ namespace KinaUnaProgenyApi.Services
         public async Task<UserInfo> UpdateUserInfo(UserInfo userInfo)
         {
             UserInfo userInfoToUpdate = await _context.UserInfoDb.SingleOrDefaultAsync(ui => ui.Id == userInfo.Id);
-            if (userInfoToUpdate != null)
+            if (userInfoToUpdate == null) return null;
+
+            string oldPictureLink = userInfoToUpdate.ProfilePicture;
+                
+            userInfoToUpdate.UserEmail = userInfo.UserEmail;
+            userInfoToUpdate.UserId = userInfo.UserId;
+            userInfoToUpdate.UserName = userInfo.UserName;
+            userInfoToUpdate.ViewChild = userInfo.ViewChild;
+            userInfoToUpdate.FirstName = userInfo.FirstName ?? "";
+            userInfoToUpdate.MiddleName = userInfo.MiddleName ?? "";
+            userInfoToUpdate.LastName = userInfo.LastName ?? "";
+            userInfoToUpdate.ProfilePicture = userInfo.ProfilePicture;
+            userInfoToUpdate.Timezone = userInfo.Timezone;
+            userInfoToUpdate.PhoneNumber = userInfo.PhoneNumber ?? "";
+            userInfoToUpdate.CanUserAddItems = userInfo.CanUserAddItems;
+            userInfoToUpdate.Deleted = userInfo.Deleted;
+            userInfoToUpdate.DeletedTime = userInfo.DeletedTime;
+            userInfoToUpdate.IsKinaUnaAdmin = userInfo.IsKinaUnaAdmin;
+            userInfoToUpdate.IsPivoqAdmin = userInfo.IsPivoqAdmin;
+            userInfoToUpdate.IsKinaUnaUser = userInfo.IsKinaUnaUser;
+            userInfoToUpdate.IsPivoqUser = userInfo.IsPivoqUser;
+            userInfoToUpdate.UpdateIsAdmin = userInfo.UpdateIsAdmin;
+            userInfoToUpdate.ProgenyList = userInfo.ProgenyList;
+            userInfoToUpdate.AccessList = userInfo.AccessList;
+            userInfoToUpdate.UpdatedTime = DateTime.UtcNow;
+
+            if (string.IsNullOrEmpty(userInfo.ProfilePicture))
             {
-                userInfoToUpdate.UserEmail = userInfo.UserEmail;
-                userInfoToUpdate.UserId = userInfo.UserId;
-                userInfoToUpdate.UserName = userInfo.UserName;
-                userInfoToUpdate.ViewChild = userInfo.ViewChild;
-                userInfoToUpdate.FirstName = userInfo.FirstName ?? "";
-                userInfoToUpdate.MiddleName = userInfo.MiddleName ?? "";
-                userInfoToUpdate.LastName = userInfo.LastName ?? "";
-                userInfoToUpdate.ProfilePicture = userInfo.ProfilePicture;
-                userInfoToUpdate.Timezone = userInfo.Timezone;
-                userInfoToUpdate.PhoneNumber = userInfo.PhoneNumber ?? "";
-                userInfoToUpdate.CanUserAddItems = userInfo.CanUserAddItems;
-                userInfoToUpdate.Deleted = userInfo.Deleted;
-                userInfoToUpdate.DeletedTime = userInfo.DeletedTime;
-                userInfoToUpdate.IsKinaUnaAdmin = userInfo.IsKinaUnaAdmin;
-                userInfoToUpdate.IsPivoqAdmin = userInfo.IsPivoqAdmin;
-                userInfoToUpdate.IsKinaUnaUser = userInfo.IsKinaUnaUser;
-                userInfoToUpdate.IsPivoqUser = userInfo.IsPivoqUser;
-                userInfoToUpdate.UpdateIsAdmin = userInfo.UpdateIsAdmin;
-                userInfoToUpdate.ProgenyList = userInfo.ProgenyList;
-                userInfoToUpdate.AccessList = userInfo.AccessList;
-                userInfoToUpdate.UpdatedTime = DateTime.UtcNow;
-
-                if (string.IsNullOrEmpty(userInfo.ProfilePicture))
-                {
-                    userInfo.ProfilePicture = Constants.ProfilePictureUrl;
-                }
-
-                _ = _context.UserInfoDb.Update(userInfoToUpdate);
-                _ = await _context.SaveChangesAsync();
+                userInfo.ProfilePicture = Constants.ProfilePictureUrl;
             }
+                
+            _ = _context.UserInfoDb.Update(userInfoToUpdate);
+            _ = await _context.SaveChangesAsync();
+
+            if (oldPictureLink != userInfo.ProfilePicture)
+            {
+                await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Profiles);
+            }
+
             _ = await SetUserInfoByEmail(userInfo.UserEmail);
+
 
             return userInfoToUpdate;
         }
@@ -196,6 +206,8 @@ namespace KinaUnaProgenyApi.Services
             }
 
             await RemoveUserInfoByEmail(userInfo.UserEmail, userInfo.UserId, userInfo.Id);
+
+            _ = await _imageStore.DeleteImage(userInfo.ProfilePicture, BlobContainers.Profiles);
 
             return userInfo;
         }
