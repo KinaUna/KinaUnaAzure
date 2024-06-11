@@ -90,6 +90,10 @@ export class TimelineParameters {
         this.skip = 0;
         this.count = 5;
         this.sortBy = 1;
+        this.year = 0;
+        this.month = 0;
+        this.day = 0;
+        this.firstItemYear = 1900;
     }
 }
 export class TimeLineItemViewModel {
@@ -104,6 +108,7 @@ export class TimelineList {
         this.timelineItems = [];
         this.allItemsCount = 0;
         this.remainingItemsCount = 0;
+        this.firstItemYear = 0;
     }
 }
 export class WebNotification {
@@ -130,4 +135,4 @@ export class WebNotificationsList {
         this.remainingItemsCount = 0;
     }
 }
-//# sourceMappingURL=page-models-v1.js.map
+//# sourceMappingURL=page-models-v2.js.map

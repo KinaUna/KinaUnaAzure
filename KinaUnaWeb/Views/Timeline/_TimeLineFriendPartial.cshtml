@@ -27,32 +27,52 @@
                     <span class="timeline-icon"><i class="material-icons">face</i></span>
                 </div>
                 <div class="col">
-                    <div class="timeline-title">
-                        <strong>
-                            @Model.Name
-                        </strong>
-                    </div>
-                    <div class="timeline-text text-white-50">
-                        <div style="max-width: 60vw; overflow: hidden;" class="float-left mr-auto">
-                            <img class="img-thumbnail lazyload" style="max-height: 200px; max-width: 200px; background: black; margin-bottom: 8px; margin-top: 8px;" data-src="@Model.PictureLink" />
+                    <div class="row">
+                        <div class="col-12 timeline-title">
+                            <strong>
+                                @Model.Name
+                            </strong>
                         </div>
-                        <div class="text-right">@await LocaleManager.GetTranslation("Type:", PageNames.Friends, languageId) @typeList[Model.Type]</div>
-                        @if (!string.IsNullOrEmpty(Model.Context))
-                        {
-                            <div class="text-right">@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, languageId) @Model.Context</div>
-                        }
-                        <div class="text-right">@await LocaleManager.GetTranslation("Friends since:", PageNames.Contacts, languageId) @Model.FriendSince.Value.ToString("dd-MMM-yyyy")</div>
-                        @if (!string.IsNullOrEmpty(Model.Tags))
-                        {
-                            List<string> tagsList = Model.Tags.Split(',').ToList();
-                            <div class="text-right">
-                                @foreach (string tagString in tagsList)
+                        <div class="col-12 timeline-text text-white-50">
+                            <div class="row">
+                                <div style="overflow: hidden;" class="col-auto">
+                                    <img class="img-thumbnail lazyload" style="max-height: 200px; max-width: 200px; background: black; margin-bottom: 8px; margin-top: 8px;" data-src="@Model.PictureLink" alt="@Model.Name"/>
+                                </div>
+                                <div class="col">
+                                    <div class="row">
+                                        <div class="col text-nowrap">@await LocaleManager.GetTranslation("Friends since:", PageNames.Contacts, languageId)</div>
+                                        <div class="col text-right text-nowrap">@Model.FriendSince.Value.ToString("dd-MMM-yyyy")</div>
+                                    </div>
+                                    <div class="space-20"></div>
+                                    <div class="row">
+                                        <div class="col text-nowrap">@await LocaleManager.GetTranslation("Type:", PageNames.Friends, languageId) </div>
+                                        <div class="col text-right text-nowrap">@typeList[Model.Type]</div>
+                                    </div>
+                                    
+                                    @if (!string.IsNullOrEmpty(Model.Context))
+                                    {
+                                        <div class="space-20"></div>
+                                        <div class="row">
+                                            <div class="col text-nowrap">@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, languageId) </div>
+                                            <div class="col text-right text-nowrap">@Model.Context</div>
+                                        </div>
+                                        
+                                    }
+                                    <div class="space-20"></div>
+                                </div>
+                                    
+                                @if (!string.IsNullOrEmpty(Model.Tags))
                                 {
-                                    <span class="btn tag-item leavePage">@tagString</span>
+                                    List<string> tagsList = Model.Tags.Split(',').ToList();
+                                    <div class=" col-12 text-right">
+                                        @foreach (string tagString in tagsList)
+                                        {
+                                            <span class="btn tag-item leavePage">@tagString</span>
+                                        }
+                                    </div>
                                 }
                             </div>
-
-                        }
+                        </div>
                     </div>
                 </div>
             </div>

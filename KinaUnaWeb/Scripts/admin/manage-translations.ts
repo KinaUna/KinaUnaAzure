@@ -1,4 +1,4 @@
-﻿import * as pageModels from '../page-models-v1.js';
+﻿import * as pageModels from '../page-models-v2.js';
 
 let currentPageTranslationItem = new pageModels.TextTranslation();
 let currentPageTranslations = new pageModels.TextTranslationPageListModel();

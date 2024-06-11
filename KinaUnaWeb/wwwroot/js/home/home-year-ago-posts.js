@@ -1,5 +1,5 @@
-import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v1.js';
-import { getCurrentProgenyId } from '../data-tools-v1.js';
+import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v2.js';
+import { getCurrentProgenyId } from '../data-tools-v2.js';
 let yearAgoItemsList = [];
 const yearAgoParameters = new TimelineParameters();
 let yearAgoProgenyId;

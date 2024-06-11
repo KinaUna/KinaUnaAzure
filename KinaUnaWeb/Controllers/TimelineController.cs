@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -16,15 +17,24 @@ namespace KinaUnaWeb.Controllers
         : Controller
     {
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, int items = 10)
+        public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, int items = 10, int year=0, int month=0, int day=0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             TimeLineViewModel model = new(baseModel)
             {
                 SortBy = sortBy,
-                Items = items
+                Items = items,
+                Year = year,
+                Month = month,
+                Day = day
             };
-            
+
+            if (year != 0) return View(model);
+
+            model.Year = DateTime.Now.Year;
+            model.Month = DateTime.Now.Month;
+            model.Day = DateTime.Now.Day;
+
             return View(model);
         }
 
@@ -36,6 +46,22 @@ namespace KinaUnaWeb.Controllers
             {
                 TimelineItems = await timelineHttpClient.GetTimeline(parameters.ProgenyId, 0, parameters.SortBy)
             };
+
+            timelineList.FirstItemYear = timelineList.TimelineItems.Min(t => t.ProgenyTime).Year;
+            if (parameters.Year != 0)
+            {
+                DateTime startDate = new(parameters.Year, parameters.Month, parameters.Day, 23, 59, 59);
+                if (parameters.SortBy == 1)
+                {
+                    
+                    timelineList.TimelineItems = timelineList.TimelineItems.Where(t => t.ProgenyTime <= startDate).ToList();
+                }
+                else
+                {
+                    startDate = new(parameters.Year, parameters.Month, parameters.Day, 0, 0, 0);
+                    timelineList.TimelineItems = timelineList.TimelineItems.Where(t => t.ProgenyTime >= startDate).ToList();
+                }
+            }
             timelineList.AllItemsCount = timelineList.TimelineItems.Count;
             timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count; 
             timelineList.TimelineItems = timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count).ToList();

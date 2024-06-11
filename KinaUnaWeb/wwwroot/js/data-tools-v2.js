@@ -1,10 +1,7 @@
-﻿import { AutoSuggestList } from './page-models-v1.js';
-
-declare let moment: any;
-let currentMomentLocale: string = 'en';
-
-export function getCurrentProgenyId(): number {
-    const progenyIdDiv = document.querySelector<HTMLDivElement>('#progenyIdDiv');
+import { AutoSuggestList } from './page-models-v2.js';
+let currentMomentLocale = 'en';
+export function getCurrentProgenyId() {
+    const progenyIdDiv = document.querySelector('#progenyIdDiv');
     if (progenyIdDiv !== null) {
         const progenyIdDivData = progenyIdDiv.dataset.progenyId;
         if (progenyIdDivData) {
@@ -13,23 +10,18 @@ export function getCurrentProgenyId(): number {
     }
     return 0;
 }
-
-export function getCurrentLanguageId(): number {
-    const languageIdDiv = document.querySelector<HTMLDivElement>('#languageIdDiv');
-
+export function getCurrentLanguageId() {
+    const languageIdDiv = document.querySelector('#languageIdDiv');
     if (languageIdDiv !== null) {
         const languageIdData = languageIdDiv.dataset.languageId;
         if (languageIdData) {
             return parseInt(languageIdData);
         }
     }
-
     return 1;
 }
-
 export function setMomentLocale() {
-    const currentMomentLocaleDiv = document.querySelector<HTMLDivElement>('#currentMomentLocaleDiv');
-
+    const currentMomentLocaleDiv = document.querySelector('#currentMomentLocaleDiv');
     if (currentMomentLocaleDiv !== null) {
         const currentLocaleData = currentMomentLocaleDiv.dataset.currentLocale;
         if (currentLocaleData) {
@@ -38,36 +30,29 @@ export function setMomentLocale() {
     }
     moment.locale(currentMomentLocale);
 }
-
 export function getZebraDateTimeFormat() {
-    const zebraDateTimeFormatDiv = document.querySelector<HTMLDivElement>('#zebraDateTimeFormatDiv');
+    const zebraDateTimeFormatDiv = document.querySelector('#zebraDateTimeFormatDiv');
     if (zebraDateTimeFormatDiv !== null) {
         const zebraDateTimeFormatData = zebraDateTimeFormatDiv.dataset.zebraDateTimeFormat;
         if (zebraDateTimeFormatData) {
             return zebraDateTimeFormatData;
         }
     }
-
     return 'd-F-Y';
 }
-
 export function getLongDateTimeFormatMoment() {
-    const longDateTimeFormatMomentDiv = document.querySelector<HTMLDivElement>('#longDateTimeFormatMomentDiv');
+    const longDateTimeFormatMomentDiv = document.querySelector('#longDateTimeFormatMomentDiv');
     if (longDateTimeFormatMomentDiv !== null) {
         const longDateTimeFormatMomentData = longDateTimeFormatMomentDiv.dataset.longDateTimeFormatMoment;
         if (longDateTimeFormatMomentData) {
             return longDateTimeFormatMomentData;
         }
     }
-
     return 'DD-MMMM-YYYY HH:mm';
 }
-
-export async function getTagsList(progenyId: number): Promise<AutoSuggestList> {
-    let tagsList: AutoSuggestList = new AutoSuggestList(progenyId);
-
-    const getTagsListParameters: AutoSuggestList = new AutoSuggestList(progenyId);
-
+export async function getTagsList(progenyId) {
+    let tagsList = new AutoSuggestList(progenyId);
+    const getTagsListParameters = new AutoSuggestList(progenyId);
     await fetch('/Progeny/GetAllProgenyTags/', {
         method: 'POST',
         body: JSON.stringify(getTagsListParameters),
@@ -80,30 +65,26 @@ export async function getTagsList(progenyId: number): Promise<AutoSuggestList> {
     }).catch(function (error) {
         console.log('Error loading tags autosuggestions. Error: ' + error);
     });
-
-    return new Promise<AutoSuggestList>(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         resolve(tagsList);
     });
 }
-
-export async function setTagsAutoSuggestList(progenyId: number, elementId: string = 'tagList') {
+export async function setTagsAutoSuggestList(progenyId, elementId = 'tagList') {
     let tagListElement = document.getElementById(elementId);
     if (tagListElement !== null) {
         const tagsList = await getTagsList(progenyId);
-                
-        ($('#' + elementId) as any).amsifySuggestags({
+        $('#' + elementId).amsifySuggestags({
             suggestions: tagsList.suggestions,
             selectOnHover: false,
             printValues: false
         });
-
-        const suggestInputElement = tagListElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
+        const suggestInputElement = tagListElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
-            suggestInputElement.tabIndex =-1;
-            suggestInputElement.addEventListener('keydown', function(this, event) {
+            suggestInputElement.tabIndex = -1;
+            suggestInputElement.addEventListener('keydown', function (event) {
                 if (event.key === "Enter") {
                     event.preventDefault();
-                    const originalInputElement = document.getElementById(elementId) as HTMLInputElement;
+                    const originalInputElement = document.getElementById(elementId);
                     if (originalInputElement !== null) {
                         if (originalInputElement.value.length > 0) {
                             originalInputElement.value += ',';
@@ -115,17 +96,13 @@ export async function setTagsAutoSuggestList(progenyId: number, elementId: strin
             });
         }
     }
-
-    return new Promise<void>(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         resolve();
     });
 }
-
-export async function getContextsList(progenyId: number): Promise<AutoSuggestList> {
-    let contextsList: AutoSuggestList = new AutoSuggestList(progenyId);
-
-    const getContextsListParameters: AutoSuggestList = new AutoSuggestList(progenyId);
-
+export async function getContextsList(progenyId) {
+    let contextsList = new AutoSuggestList(progenyId);
+    const getContextsListParameters = new AutoSuggestList(progenyId);
     await fetch('/Progeny/GetAllProgenyContexts/', {
         method: 'POST',
         body: JSON.stringify(getContextsListParameters),
@@ -138,30 +115,26 @@ export async function getContextsList(progenyId: number): Promise<AutoSuggestLis
     }).catch(function (error) {
         console.log('Error loading contexts autosuggestions. Error: ' + error);
     });
-
-    return new Promise<AutoSuggestList>(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         resolve(contextsList);
     });
 }
-
-export async function setContextAutoSuggestList(progenyId: number, elementId: string = 'contextInput') {
+export async function setContextAutoSuggestList(progenyId, elementId = 'contextInput') {
     let contextInputElement = document.getElementById(elementId);
     if (contextInputElement !== null) {
         const contextsList = await getContextsList(progenyId);
-
-        ($('#' + elementId) as any).amsifySuggestags({
+        $('#' + elementId).amsifySuggestags({
             suggestions: contextsList.suggestions,
             selectOnHover: false,
             printValues: false
         });
-
-        const suggestInputElement = contextInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
+        const suggestInputElement = contextInputElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
             suggestInputElement.tabIndex = -1;
-            suggestInputElement.addEventListener('keydown', function (this, event) {
+            suggestInputElement.addEventListener('keydown', function (event) {
                 if (event.key === "Enter") {
                     event.preventDefault();
-                    const originalInputElement = document.getElementById(elementId) as HTMLInputElement;
+                    const originalInputElement = document.getElementById(elementId);
                     if (originalInputElement !== null) {
                         if (originalInputElement.value.length > 0) {
                             originalInputElement.value += ',';
@@ -173,17 +146,13 @@ export async function setContextAutoSuggestList(progenyId: number, elementId: st
             });
         }
     }
-
-    return new Promise<void>(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         resolve();
     });
 }
-
-export async function getLocationsList(progenyId: number): Promise<AutoSuggestList> {
-    let locationsList: AutoSuggestList = new AutoSuggestList(progenyId);
-
-    const getLocationsListParameters: AutoSuggestList = new AutoSuggestList(progenyId);
-
+export async function getLocationsList(progenyId) {
+    let locationsList = new AutoSuggestList(progenyId);
+    const getLocationsListParameters = new AutoSuggestList(progenyId);
     await fetch('/Progeny/GetAllProgenyLocations/', {
         method: 'POST',
         body: JSON.stringify(getLocationsListParameters),
@@ -196,31 +165,27 @@ export async function getLocationsList(progenyId: number): Promise<AutoSuggestLi
     }).catch(function (error) {
         console.log('Error loading locations autosuggestions. Error: ' + error);
     });
-
-    return new Promise<AutoSuggestList>(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         resolve(locationsList);
     });
 }
-
-export async function setLocationAutoSuggestList(progenyId: number, elementId: string = 'locationInput') {
+export async function setLocationAutoSuggestList(progenyId, elementId = 'locationInput') {
     let locationInputElement = document.getElementById(elementId);
     if (locationInputElement !== null) {
         const locationsList = await getLocationsList(progenyId);
-
-        ($('#' + elementId) as any).amsifySuggestags({
+        $('#' + elementId).amsifySuggestags({
             suggestions: locationsList.suggestions,
             selectOnHover: false,
             printValues: false,
             tagLimit: 5
         });
-
-        const suggestInputElement = locationInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
+        const suggestInputElement = locationInputElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
             suggestInputElement.tabIndex = -1;
-            suggestInputElement.addEventListener('keydown', function (this, event) {
+            suggestInputElement.addEventListener('keydown', function (event) {
                 if (event.key === "Enter") {
                     event.preventDefault();
-                    const originalInputElement = document.getElementById(elementId) as HTMLInputElement;
+                    const originalInputElement = document.getElementById(elementId);
                     if (originalInputElement !== null) {
                         if (originalInputElement.value.length > 0) {
                             originalInputElement.value += ',';
@@ -232,17 +197,13 @@ export async function setLocationAutoSuggestList(progenyId: number, elementId: s
             });
         }
     }
-
-    return new Promise<void>(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         resolve();
     });
 }
-
-export async function getCategoriesList(progenyId: number): Promise<AutoSuggestList> {
-    let categoriesList: AutoSuggestList = new AutoSuggestList(progenyId);
-
-    const getCategoriesListParameters: AutoSuggestList = new AutoSuggestList(progenyId);
-
+export async function getCategoriesList(progenyId) {
+    let categoriesList = new AutoSuggestList(progenyId);
+    const getCategoriesListParameters = new AutoSuggestList(progenyId);
     await fetch('/Progeny/GetAllProgenyCategories/', {
         method: 'POST',
         body: JSON.stringify(getCategoriesListParameters),
@@ -255,30 +216,26 @@ export async function getCategoriesList(progenyId: number): Promise<AutoSuggestL
     }).catch(function (error) {
         console.log('Error loading categories autosuggestions. Error: ' + error);
     });
-
-    return new Promise<AutoSuggestList>(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         resolve(categoriesList);
     });
 }
-
-export async function setCategoriesAutoSuggestList(progenyId: number, elementId: string = 'categoryInput') {
+export async function setCategoriesAutoSuggestList(progenyId, elementId = 'categoryInput') {
     let categoryInputElement = document.getElementById(elementId);
     if (categoryInputElement !== null) {
         const categoriesList = await getCategoriesList(progenyId);
-
-        ($('#' + elementId) as any).amsifySuggestags({
+        $('#' + elementId).amsifySuggestags({
             suggestions: categoriesList.suggestions,
             selectOnHover: false,
             printValues: false
         });
-
-        const suggestInputElement = categoryInputElement.querySelector<HTMLInputElement>('.amsify-suggestags-input');
+        const suggestInputElement = categoryInputElement.querySelector('.amsify-suggestags-input');
         if (suggestInputElement !== null) {
             suggestInputElement.tabIndex = -1;
-            suggestInputElement.addEventListener('keydown', function (this, event) {
+            suggestInputElement.addEventListener('keydown', function (event) {
                 if (event.key === "Enter") {
                     event.preventDefault();
-                    const originalInputElement = document.getElementById(elementId) as HTMLInputElement;
+                    const originalInputElement = document.getElementById(elementId);
                     if (originalInputElement !== null) {
                         if (originalInputElement.value.length > 0) {
                             originalInputElement.value += ',';
@@ -290,30 +247,26 @@ export async function setCategoriesAutoSuggestList(progenyId: number, elementId:
             });
         }
     }
-
-    return new Promise<void>(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         resolve();
     });
 }
-
-export function hideItemsWithClass(classToHide: string) {
+export function hideItemsWithClass(classToHide) {
     const queryString = '.' + classToHide;
     const items = document.querySelectorAll(queryString);
     items.forEach((item) => {
         item.classList.add('d-none');
     });
 }
-
-export function showItemsWithClass(classToShow: string) {
+export function showItemsWithClass(classToShow) {
     const queryString = '.' + classToShow;
     const items = document.querySelectorAll(queryString);
     items.forEach((item) => {
         item.classList.remove('d-none');
     });
 }
-
-export function updateFilterButtonDisplay(button: HTMLButtonElement) {
-    const iconElement = button.querySelector<HTMLSpanElement>('.checkbox-icon');
+export function updateFilterButtonDisplay(button) {
+    const iconElement = button.querySelector('.checkbox-icon');
     if (!button.classList.contains('active') && iconElement !== null) {
         iconElement.classList.value = '';
         iconElement.classList.add('checkbox-icon');
@@ -333,17 +286,26 @@ export function updateFilterButtonDisplay(button: HTMLButtonElement) {
         }
     }
 }
-
-export function checkTimes(longDateTimeFormatMoment: string, warningStartIsAfterEndString: string) {
-    let sTime: any = moment($('#datetimepicker1').val(), longDateTimeFormatMoment);
-    let eTime: any = moment($('#datetimepicker2').val(), longDateTimeFormatMoment);
+export function checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString) {
+    let sTime = moment($('#datetimepicker1').val(), longDateTimeFormatMoment);
+    let eTime = moment($('#datetimepicker2').val(), longDateTimeFormatMoment);
     if (sTime < eTime && sTime.isValid() && eTime.isValid()) {
         $('#notification').text('');
         $('#submitBtn').prop('disabled', false);
-
-    } else {
+    }
+    else {
         $('#submitBtn').prop('disabled', true);
         $('#notification').text(warningStartIsAfterEndString);
-    };
-};
-
+    }
+    ;
+}
+;
+export function getTimeLineStartDate(longDateTimeFormatMoment) {
+    let timelineStartTimeString = moment($('#timeline-start-date-datetimepicker').val(), longDateTimeFormatMoment);
+    return timelineStartTimeString;
+}
+export function getFormattedDateString(date, timeFormat) {
+    let timeString = moment(date).format(timeFormat);
+    return timeString;
+}
+//# sourceMappingURL=data-tools-v2.js.map

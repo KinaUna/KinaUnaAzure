@@ -1,4 +1,4 @@
-import { AutoSuggestList } from './page-models-v1.js';
+﻿import { AutoSuggestList } from './page-models-v2.js';
 
 declare let moment: any;
 let currentMomentLocale: string = 'en';
@@ -346,4 +346,14 @@ export function checkTimes(longDateTimeFormatMoment: string, warningStartIsAfter
         $('#notification').text(warningStartIsAfterEndString);
     };
 };
+
+export function getTimeLineStartDate(longDateTimeFormatMoment: string): string {
+    let timelineStartTimeString: any = moment($('#timeline-start-date-datetimepicker').val(), longDateTimeFormatMoment);
+    return timelineStartTimeString;
+}
+
+export function getFormattedDateString(date: Date, timeFormat: string): string {
+    let timeString: string = moment(date).format(timeFormat);
+    return timeString;
+}
 

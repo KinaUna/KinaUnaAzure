@@ -1,4 +1,4 @@
-﻿import { setMomentLocale } from '../data-tools-v1.js';
+﻿import { setMomentLocale } from '../data-tools-v2.js';
 
 $(async function (): Promise<void> {
     setMomentLocale();

@@ -1,4 +1,4 @@
-﻿interface BaseItemParameters {
+interface BaseItemParameters {
     languageId: number;
 }
 interface BasePageParameters {
@@ -104,6 +104,10 @@ export class TimelineParameters {
     skip: number = 0;
     count: number = 5;
     sortBy: number = 1;
+    year: number = 0;
+    month: number = 0;
+    day: number = 0;
+    firstItemYear: number = 1900;
 }
 
 export class TimeLineItemViewModel {
@@ -116,6 +120,7 @@ export class TimelineList {
     timelineItems: TimelineItem[] = [];
     allItemsCount: number = 0;
     remainingItemsCount: number = 0;
+    firstItemYear: number = 0;
 }
 
 export class WebNotification {

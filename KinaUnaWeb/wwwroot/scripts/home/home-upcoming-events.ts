@@ -1,5 +1,5 @@
-import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v1.js';
-import { getCurrentProgenyId } from '../data-tools-v1.js';
+import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v2.js';
+import { getCurrentProgenyId } from '../data-tools-v2.js';
 let upcomingEventsList: TimelineItem[] = []
 const upcomingEventsParameters: TimelineParameters = new TimelineParameters();
 let upcomingEventsProgenyId: number;

@@ -54,10 +54,10 @@ namespace KinaUnaWeb.Controllers
 
             WebNotificationsList webNotificationsList = new()
             {
-                NotificationsList = await webNotificationsService.GetLatestNotifications(userId, parameters.Skip, parameters.Count, false)
+                NotificationsList = await webNotificationsService.GetLatestNotifications(userId, parameters.Skip, parameters.Count, false),
+                AllNotificationsCount = await webNotificationsService.GetUsersNotificationsCount(userId)
             };
 
-            webNotificationsList.AllNotificationsCount = await webNotificationsService.GetUsersNotificationsCount(userId);
             webNotificationsList.RemainingItemsCount = webNotificationsList.AllNotificationsCount - parameters.Skip - webNotificationsList.NotificationsList.Count;
 
             if (webNotificationsList.NotificationsList.Count == 0) return Json(webNotificationsList);

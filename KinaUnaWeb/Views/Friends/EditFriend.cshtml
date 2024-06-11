@@ -4,8 +4,8 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Edit friend", PageNames.Friends, Model.LanguageId);
-    string longDateTimeFormat = "dd-MMMM-yyyy";
-    string zebraDateTimeFormat = "d-F-Y";
+    const string longDateTimeFormat = "dd-MMMM-yyyy";
+    const string zebraDateTimeFormat = "d-F-Y";
 }
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">

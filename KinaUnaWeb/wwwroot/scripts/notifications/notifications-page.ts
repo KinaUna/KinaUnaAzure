@@ -1,4 +1,4 @@
-import { WebNotification, WebNotificationViewModel, WebNotficationsParameters, WebNotificationsList } from '../page-models-v1.js';
+import { WebNotification, WebNotificationViewModel, WebNotficationsParameters, WebNotificationsList } from '../page-models-v2.js';
 
 let webNotificationsList: WebNotification[] = [];
 const webNotificationsParameters: WebNotficationsParameters = new WebNotficationsParameters();

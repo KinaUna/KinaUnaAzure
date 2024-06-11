@@ -1,4 +1,4 @@
-import * as LocaleHelper from '../localization-v1.js';
+import * as LocaleHelper from '../localization-v2.js';
 let selectedEventId = 0;
 let currentCulture = 'en';
 function onPopupOpen(args) {

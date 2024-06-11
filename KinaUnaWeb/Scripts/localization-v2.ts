@@ -1,4 +1,4 @@
-﻿import { TextTranslation } from './page-models-v1.js';
+﻿import { TextTranslation } from './page-models-v2.js';
 
 export async function loadCldrCultureFiles(currentCulture: string, syncfusion: any): Promise<void> {
     let files =['ca-gregorian.json', 'numberingSystems.json', 'numbers.json', 'timeZoneNames.json', 'ca-islamic.json'];
