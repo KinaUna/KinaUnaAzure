@@ -221,6 +221,32 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        [HttpGet]
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> PictureElement(int id)
+        {
+            Picture picture = await picturesService.GetPicture(id);
+
+            if (picture == null) return NotFound();
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(picture.ProgenyId, userEmail);
+            
+            if ((userAccess == null && picture.ProgenyId != Constants.DefaultChildId) || (userAccess != null && userAccess.AccessLevel > picture.AccessLevel && picture.ProgenyId != Constants.DefaultChildId ))
+            {
+                return Unauthorized();
+            }
+
+            PictureViewModel model = new();
+            model.SetPicturePropertiesFromPictureItem(picture);
+            model.PictureNumber = 0;
+            model.PictureCount = 0;
+            model.CommentsList = await commentsService.GetCommentsList(picture.CommentThreadNumber);
+            model.TagsList = "";
+            return Ok(model);
+
+        }
         // GET api/pictures/progeny/[id]/[accessLevel]
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
@@ -244,10 +270,37 @@ namespace KinaUnaProgenyApi.Controllers
                     pic.Comments = await commentsService.GetCommentsList(pic.CommentThreadNumber);
                     pic.PictureLink = Constants.ProgenyApiUrl + pic.GetPictureUrl(0); // imageStore.UriFor(pic.PictureLink);
                     pic.PictureLink1200 = Constants.ProgenyApiUrl + pic.GetPictureUrl(1200); // imageStore.UriFor(pic.PictureLink1200);
-                    pic.PictureLink600 = Constants.ProgenyApiUrl + pic.GetPictureUrl(600); imageStore.UriFor(pic.PictureLink600);
+                    pic.PictureLink600 = Constants.ProgenyApiUrl + pic.GetPictureUrl(600); //imageStore.UriFor(pic.PictureLink600);
 
                 }
 
+                return Ok(picturesList);
+            }
+
+            Picture tempPicture = new();
+            tempPicture.ApplyPlaceholderProperties();
+
+            picturesList.Add(tempPicture);
+            return Ok(picturesList);
+        }
+
+        [HttpGet]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
+        public async Task<IActionResult> ProgenyPicturesList(int id, int accessLevel)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+
+            if (userAccess == null && id != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+
+            List<Picture> picturesList = await picturesService.GetPicturesList(id);
+            picturesList = picturesList.Where(p => p.AccessLevel >= accessLevel).ToList();
+
+            if (picturesList.Count != 0)
+            {
                 return Ok(picturesList);
             }
 
@@ -360,8 +413,7 @@ namespace KinaUnaProgenyApi.Controllers
             model.Author = User.GetUserId();
 
             model = await picturesService.AddPicture(model);
-
-            await picturesService.SetPictureInCache(model.PictureId);
+            
             await commentsService.SetCommentsList(model.CommentThreadNumber);
 
             Progeny progeny = await progenyService.GetProgeny(model.ProgenyId);

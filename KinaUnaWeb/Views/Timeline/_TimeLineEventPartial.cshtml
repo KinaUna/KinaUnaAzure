@@ -27,7 +27,7 @@
         endDateString = string.Empty;
     }
 }
-<a class="leavePage" asp-controller="Calendar" asp-action="ViewEvent" asp-route-eventId="@Model.EventId">
+<a class="leave-page" asp-controller="Calendar" asp-action="ViewEvent" asp-route-eventId="@Model.EventId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-calendar">
             <div class="row">
@@ -96,7 +96,7 @@
                             <div class="col-12 mt-2 text-right">
                                 @foreach (string contextString in contextsList)
                                 {
-                                    <span class="btn context-item tag-item-sm leavePage">@contextString</span>
+                                    <span class="btn context-item tag-item-sm leave-page">@contextString</span>
                                 }
                             </div>
                         }

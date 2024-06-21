@@ -1,33 +1,34 @@
-﻿import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v2.js';
-import { getCurrentProgenyId } from '../data-tools-v2.js';
+﻿import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v6.js';
+import { getCurrentProgenyId } from '../data-tools-v6.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+
 let upcomingEventsList: TimelineItem[] = []
 const upcomingEventsParameters: TimelineParameters = new TimelineParameters();
 let upcomingEventsProgenyId: number;
 let moreUpcomingEventsButton: HTMLButtonElement | null;
 
-function runWaitMeMoreUpcomingEventsButton(): void {
-    const moreItemsButton: any = $('#loadingUpcomingEventsDiv');
-    moreItemsButton.waitMe({
-        effect: 'bounce',
-        text: '',
-        bg: 'rgba(177, 77, 227, 0.0)',
-        color: '#9011a1',
-        maxSize: '',
-        waitTime: -1,
-        source: '',
-        textPos: 'vertical',
-        fontSize: '',
-        onClose: function () { }
-    });
+
+/**
+ * Starts the spinner for loading the timeline items.
+ */
+function startLoadingUpcomingItemsSpinner(): void {
+    startLoadingItemsSpinner('loading-upcoming-events-div');
 }
 
-function stopWaitMeMoreUpcomingEventsButton(): void {
-    const moreItemsButton: any = $('#loadingUpcomingEventsDiv');
-    moreItemsButton.waitMe("hide");
+/**
+ * Stops the spinner for loading the timeline items.
+ */
+function stopLoadingUpcomingItemsSpinner(): void {
+    stopLoadingItemsSpinner('loading-upcoming-events-div');
 }
 
-async function getUpcomingEventsList(parameters: TimelineParameters) {
-    runWaitMeMoreUpcomingEventsButton();
+/**
+ * Retrieves the list of upcoming calendar items, based on the parameters provided and the number of items already retrieved, then updates the page.
+ * Hides the moreUpcomingEventsButton while loading.
+ * @param parameters The parameters to use for retrieving the calendar items.
+ */
+async function getUpcomingEventsList(parameters: TimelineParameters): Promise<void> {
+    startLoadingUpcomingItemsSpinner();
     if (moreUpcomingEventsButton !== null) {
         moreUpcomingEventsButton.classList.add('d-none');
     }
@@ -44,7 +45,7 @@ async function getUpcomingEventsList(parameters: TimelineParameters) {
         if (getUpcomingEventsListResult != null) {
             const newUpcomingEventsList = (await getUpcomingEventsListResult.json()) as TimelineList;
             if (newUpcomingEventsList.timelineItems.length > 0) {
-                const upcomingEventsParentDiv = document.querySelector<HTMLDivElement>('#upcomingEventsParentDiv');
+                const upcomingEventsParentDiv = document.querySelector<HTMLDivElement>('#upcoming-events-parent-div');
                 if (upcomingEventsParentDiv !== null) {
                     upcomingEventsParentDiv.classList.remove('d-none');
                 }
@@ -61,14 +62,18 @@ async function getUpcomingEventsList(parameters: TimelineParameters) {
         console.log('Error loading TimelineList. Error: ' + error);
     });
 
-    stopWaitMeMoreUpcomingEventsButton();
+    stopLoadingUpcomingItemsSpinner();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
-async function renderUpcomingEvent(timelineItem: TimelineItem) {
+/**
+ * Fetches the HTML for a given calendar item and renders it at the end of upcoming-events-div.
+ * @param timelineItem The timelineItem object to add to the div.
+ */
+async function renderUpcomingEvent(timelineItem: TimelineItem): Promise<void> {
     const timeLineItemViewModel: TimeLineItemViewModel = new TimeLineItemViewModel();
     timeLineItemViewModel.typeId = timelineItem.itemType;
     timeLineItemViewModel.itemId = parseInt(timelineItem.itemId);
@@ -84,7 +89,7 @@ async function renderUpcomingEvent(timelineItem: TimelineItem) {
 
     if (getTimelineElementResponse.ok && getTimelineElementResponse.text !== null) {
         const timelineElementHtml = await getTimelineElementResponse.text();
-        const timelineDiv = document.querySelector<HTMLDivElement>('#upcomingEventsDiv');
+        const timelineDiv = document.querySelector<HTMLDivElement>('#upcoming-events-div');
         if (timelineDiv != null) {
             timelineDiv.insertAdjacentHTML('beforeend', timelineElementHtml);
         }
@@ -95,18 +100,31 @@ async function renderUpcomingEvent(timelineItem: TimelineItem) {
     });
 }
 
-$(async function () {
-    upcomingEventsProgenyId = getCurrentProgenyId();
-    upcomingEventsParameters.count = 5;
-    upcomingEventsParameters.skip = 0;
-    upcomingEventsParameters.progenyId = upcomingEventsProgenyId;
-
-    moreUpcomingEventsButton = document.querySelector<HTMLButtonElement>('#moreUpcomingEventsButton');
+/**
+ * Adds the event listeners for the upcoming events page.
+  */
+function setUpcomingEventsEventListeners() {
+    moreUpcomingEventsButton = document.querySelector<HTMLButtonElement>('#more-upcoming-events-button');
     if (moreUpcomingEventsButton !== null) {
         moreUpcomingEventsButton.addEventListener('click', async () => {
             getUpcomingEventsList(upcomingEventsParameters);
         });
     }
+}
+/**
+ * Initialization when the page is loaded.
+ */
+document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    upcomingEventsProgenyId = getCurrentProgenyId();
+    upcomingEventsParameters.count = 5;
+    upcomingEventsParameters.skip = 0;
+    upcomingEventsParameters.progenyId = upcomingEventsProgenyId;
+
+    setUpcomingEventsEventListeners();
 
     await getUpcomingEventsList(upcomingEventsParameters);
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 });

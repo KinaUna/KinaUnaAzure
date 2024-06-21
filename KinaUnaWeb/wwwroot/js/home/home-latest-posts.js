@@ -1,30 +1,29 @@
-import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v2.js';
-import { getCurrentProgenyId } from '../data-tools-v2.js';
+import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v6.js';
+import { getCurrentProgenyId } from '../data-tools-v6.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 let timelineItemsList = [];
 const timeLineParameters = new TimelineParameters();
 let latestPostsProgenyId;
 let moreTimelineItemsButton;
-function runWaitMeMoreTimelineItemsButton() {
-    const moreItemsButton = $('#loadingTimeLineItemsDiv');
-    moreItemsButton.waitMe({
-        effect: 'bounce',
-        text: '',
-        bg: 'rgba(177, 77, 227, 0.0)',
-        color: '#9011a1',
-        maxSize: '',
-        waitTime: -1,
-        source: '',
-        textPos: 'vertical',
-        fontSize: '',
-        onClose: function () { }
-    });
+/**
+ * Starts the spinner for loading the timeline items.
+ */
+function startLoadingTimelineItemsSpinner() {
+    startLoadingItemsSpinner('loading-latest-posts-items-div');
 }
-function stopWaitMeMoreTimelineItemsButton() {
-    const moreItemsButton = $('#loadingTimeLineItemsDiv');
-    moreItemsButton.waitMe("hide");
+/**
+ * Stops the spinner for loading the timeline items.
+ */
+function stopLoadingTimelineItemsSpinner() {
+    stopLoadingItemsSpinner('loading-latest-posts-items-div');
 }
+/**
+ * Retrieves the list of timeline items, based on the parameters provided and the number of items already retrieved, then updates the page.
+ * Hides the moreTimelineItemsButton while loading.
+ * @param parameters The parameters to use for retrieving the timeline items.
+ */
 async function getTimelineList(parameters) {
-    runWaitMeMoreTimelineItemsButton();
+    startLoadingTimelineItemsSpinner();
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.classList.add('d-none');
     }
@@ -40,7 +39,7 @@ async function getTimelineList(parameters) {
         if (getTimelineListResult != null) {
             const newTimeLineItemsList = (await getTimelineListResult.json());
             if (newTimeLineItemsList.timelineItems.length > 0) {
-                const latestPostsParentDiv = document.querySelector('#latestPostsParentDiv');
+                const latestPostsParentDiv = document.querySelector('#latest-posts-parent-div');
                 if (latestPostsParentDiv !== null) {
                     latestPostsParentDiv.classList.remove('d-none');
                 }
@@ -57,11 +56,15 @@ async function getTimelineList(parameters) {
     }).catch(function (error) {
         console.log('Error loading TimelineList. Error: ' + error);
     });
-    stopWaitMeMoreTimelineItemsButton();
+    stopLoadingTimelineItemsSpinner();
     return new Promise(function (resolve, reject) {
         resolve();
     });
 }
+/**
+ * Fetches the HTML for a given timeline item and renders it at the end of timeline-items-div.
+ * @param timelineItem The timelineItem object to add to the div.
+ */
 async function renderTimelineItem(timelineItem) {
     const timeLineItemViewModel = new TimeLineItemViewModel();
     timeLineItemViewModel.typeId = timelineItem.itemType;
@@ -76,7 +79,7 @@ async function renderTimelineItem(timelineItem) {
     });
     if (getTimelineElementResponse.ok && getTimelineElementResponse.text !== null) {
         const timelineElementHtml = await getTimelineElementResponse.text();
-        const timelineDiv = document.querySelector('#timelineItemsDiv');
+        const timelineDiv = document.querySelector('#timeline-items-div');
         if (timelineDiv != null) {
             timelineDiv.insertAdjacentHTML('beforeend', timelineElementHtml);
         }
@@ -85,17 +88,23 @@ async function renderTimelineItem(timelineItem) {
         resolve();
     });
 }
-$(async function () {
+/**
+ * Initializes page settings and sets up event listeners when page is first loaded.
+ */
+document.addEventListener('DOMContentLoaded', async function () {
     latestPostsProgenyId = getCurrentProgenyId();
     timeLineParameters.count = 5;
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = latestPostsProgenyId;
-    moreTimelineItemsButton = document.querySelector('#moreTimelineItemsButton');
+    moreTimelineItemsButton = document.querySelector('#more-latest-posts-items-button');
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.addEventListener('click', async () => {
             getTimelineList(timeLineParameters);
         });
     }
     await getTimelineList(timeLineParameters);
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 });
 //# sourceMappingURL=home-latest-posts.js.map

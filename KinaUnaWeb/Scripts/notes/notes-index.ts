@@ -1,21 +1,21 @@
-﻿import * as pageModels from '../page-models-v2.js';
+﻿import * as pageModels from '../page-models-v6.js';
 
 const notesPageSettingsStorageKey = 'notes_page_parameters'; 
 let notesPageParameters = new pageModels.NotesPageParameters();
 let notesPageParametersHistory: pageModels.NotesPageParameters[] = []; 
 const notesIndexPageParametersDiv = document.querySelector<HTMLDivElement>('#notes-index-page-parameters');
-const notesListDiv = document.querySelector<HTMLDivElement>('#notesListDiv');
-const nextNotesItemsPageButton = document.querySelector<HTMLButtonElement>('#nextNoteItemsPageButton');
-const previousNotesItemsPageButton = document.querySelector<HTMLButtonElement>('#previousNoteItemsPageButton');
-const headerNextNotesItemsPageButton = document.querySelector<HTMLButtonElement>('#headerNextNoteItemsPageButton');
-const headerPreviousNotesItemsPageButton = document.querySelector<HTMLButtonElement>('#headerPreviousNoteItemsPageButton');
-const pageNumberSpan = document.querySelector<HTMLSpanElement>('#pageNumberSpan');
-const headerPageNumberSpan = document.querySelector<HTMLSpanElement>('#headerPageNumberSpan');
-const pageTotalSpan = document.querySelector<HTMLSpanElement>('#pageTotalSpan');
-const headerPageTotalSpan = document.querySelector<HTMLSpanElement>('#headerPageTotalSpan');
+const notesListDiv = document.querySelector<HTMLDivElement>('#notes-list-div');
+const nextNotesItemsPageButton = document.querySelector<HTMLButtonElement>('#next-note-items-page-button');
+const previousNotesItemsPageButton = document.querySelector<HTMLButtonElement>('#previous-note-items-page-button');
+const headerNextNotesItemsPageButton = document.querySelector<HTMLButtonElement>('#header-next-note-items-page-button');
+const headerPreviousNotesItemsPageButton = document.querySelector<HTMLButtonElement>('#header-previous-note-items-page-button');
+const pageNumberSpan = document.querySelector<HTMLSpanElement>('#page-number-span');
+const headerPageNumberSpan = document.querySelector<HTMLSpanElement>('#header-page-number-span');
+const pageTotalSpan = document.querySelector<HTMLSpanElement>('#page-total-span');
+const headerPageTotalSpan = document.querySelector<HTMLSpanElement>('#header-page-total-span');
 const notesPageSettingsButton = document.querySelector<HTMLButtonElement>('#notes-index-page-settings-button');
-const notesPageSettingsDiv = document.querySelector<HTMLDivElement>('#pageSettingsDiv');
-const notesPageMainDiv = document.querySelector<HTMLDivElement>('#kinaunaMainDiv');
+const notesPageSettingsDiv = document.querySelector<HTMLDivElement>('#page-settings-div');
+const notesPageMainDiv = document.querySelector<HTMLDivElement>('#kinauna-main-div');
 const itemsPerPageInput = document.querySelector<HTMLInputElement>('#notes-items-per-page-input');
 const sortAscendingSettingsButton = document.querySelector<HTMLButtonElement>('#sort-notes-ascending-button');
 const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#sort-notes-descending-button');
@@ -235,7 +235,7 @@ function sortNotesPageDescending(): void {
     notesPageParameters.sort = 1;
 }
 
-$(function ():void {
+document.addEventListener('DOMContentLoaded', function (): void {
     const notesPageSettingsContentDiv = document.querySelector<HTMLDivElement>('#page-settings-content-div');
     if (notesPageSettingsContentDiv !== null) {
         notesPageSettingsDiv?.appendChild(notesPageSettingsContentDiv);
@@ -277,7 +277,7 @@ $(function ():void {
     const decreaseNotesItemsPerPageButton = document.querySelector<HTMLButtonElement>('#decrease-notes-items-per-page-button');
     const increaseNotesItemsPerPageButton = document.querySelector<HTMLButtonElement>('#increase-notes-items-per-page-button');
     const notesSaveSettingsButton = document.querySelector<HTMLButtonElement>('#notes-page-save-settings-button');
-    const closeNotesPageSettingsButton = document.querySelector<HTMLButtonElement>('#closeNotesPageSettingsButton');
+    const closeNotesPageSettingsButton = document.querySelector<HTMLButtonElement>('#close-notes-page-settings-button');
     
     if (decreaseNotesItemsPerPageButton !== null && increaseNotesItemsPerPageButton !== null &&
         notesSaveSettingsButton !== null && closeNotesPageSettingsButton !== null && sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {

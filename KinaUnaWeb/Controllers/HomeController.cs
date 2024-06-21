@@ -34,13 +34,7 @@ namespace KinaUnaWeb.Controllers
             
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             HomeFeedViewModel model = new(baseModel);
-
-            if (User.Identity != null && User.Identity.IsAuthenticated && childId == 0)
-            { 
-                childId = model.CurrentUser.ViewChild;
-                return RedirectToAction("Index", new { childId });
-            }
-
+            
             if (model.CurrentProgeny.Name == "401")
             {
                 string returnUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";

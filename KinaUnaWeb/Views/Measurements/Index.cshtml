@@ -33,7 +33,7 @@
         if (Model.IsCurrentUserProgenyAdmin)
         {
             <div class="btn-group" style="float: right;">
-                <a asp-controller="Measurements" asp-action="AddMeasurement" class="btn btn-success btn-round leavePage">
+                <a asp-controller="Measurements" asp-action="AddMeasurement" class="btn btn-success btn-round leave-page">
                     <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add measurement", PageNames.Measurements, Model.LanguageId)
                 </a>
             </div>
@@ -69,10 +69,10 @@
                             {
                                 <td>
                                     <div>
-                                        <a asp-controller="Measurements" asp-action="EditMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-info btn-round btn-sm leavePage">
+                                        <a asp-controller="Measurements" asp-action="EditMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-info btn-round btn-sm leave-page">
                                             <i class="fas fa-pencil-alt"></i>
                                         </a>
-                                        <a asp-controller="Measurements" asp-action="DeleteMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-danger btn-round btn-sm leavePage">
+                                        <a asp-controller="Measurements" asp-action="DeleteMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-danger btn-round btn-sm leave-page">
                                             <i class="fas fa-trash-alt"></i>
                                         </a>
                                     </div>
@@ -83,9 +83,9 @@
                 </tbody>
             </table>
         </div>
-        <canvas id="chartContainer" style="clear: both; height: 380px;"></canvas>
+        <canvas id="chart-container" style="clear: both; height: 380px;"></canvas>
         <br />
-        <canvas id="chartContainer2" style="clear: both; height: 380px;"></canvas>
+        <canvas id="chart-container2" style="clear: both; height: 380px;"></canvas>
         <script src="~/lib/chart.js/dist/Chart.js"></script>
         <script type="text/javascript">
             var heightData = [@foreach (Measurement heightItem in Model.MeasurementsList)

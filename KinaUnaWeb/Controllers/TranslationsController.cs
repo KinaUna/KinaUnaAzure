@@ -20,32 +20,32 @@ namespace KinaUnaWeb.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ZebraDatePicker(int languageId)
+        public async Task<IActionResult> ZebraDatePicker(int id)
         {
             ZebraDatePickerTranslations translations = new();
-            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Sunday", PageNames.CalendarTools, languageId));
-            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Monday", PageNames.CalendarTools, languageId));
-            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Tuesday", PageNames.CalendarTools, languageId));
-            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Wednesday", PageNames.CalendarTools, languageId));
-            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Thursday", PageNames.CalendarTools, languageId));
-            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Friday", PageNames.CalendarTools, languageId));
-            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Saturday", PageNames.CalendarTools, languageId));
+            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Sunday", PageNames.CalendarTools, id));
+            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Monday", PageNames.CalendarTools, id));
+            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Tuesday", PageNames.CalendarTools, id));
+            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Wednesday", PageNames.CalendarTools, id));
+            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Thursday", PageNames.CalendarTools, id));
+            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Friday", PageNames.CalendarTools, id));
+            translations.DaysArray.Add(await translationsHttpClient.GetTranslation("Saturday", PageNames.CalendarTools, id));
 
-            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("January", PageNames.CalendarTools, languageId));
-            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("February", PageNames.CalendarTools, languageId));
-            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("March", PageNames.CalendarTools, languageId));
-            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("April", PageNames.CalendarTools, languageId));
-            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("May", PageNames.CalendarTools, languageId));
-            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("June", PageNames.CalendarTools, languageId));
-            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("July", PageNames.CalendarTools, languageId));
-            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("August", PageNames.CalendarTools, languageId));
-            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("September", PageNames.CalendarTools, languageId));
-            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("October", PageNames.CalendarTools, languageId));
-            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("November", PageNames.CalendarTools, languageId));
-            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("December", PageNames.CalendarTools, languageId));
+            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("January", PageNames.CalendarTools, id));
+            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("February", PageNames.CalendarTools, id));
+            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("March", PageNames.CalendarTools, id));
+            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("April", PageNames.CalendarTools, id));
+            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("May", PageNames.CalendarTools, id));
+            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("June", PageNames.CalendarTools, id));
+            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("July", PageNames.CalendarTools, id));
+            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("August", PageNames.CalendarTools, id));
+            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("September", PageNames.CalendarTools, id));
+            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("October", PageNames.CalendarTools, id));
+            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("November", PageNames.CalendarTools, id));
+            translations.MonthsArray.Add(await translationsHttpClient.GetTranslation("December", PageNames.CalendarTools, id));
 
-            translations.TodayString = await translationsHttpClient.GetTranslation("Today", PageNames.CalendarTools, languageId);
-            translations.ClearString = await translationsHttpClient.GetTranslation("Clear", PageNames.CalendarTools, languageId);
+            translations.TodayString = await translationsHttpClient.GetTranslation("Today", PageNames.CalendarTools, id);
+            translations.ClearString = await translationsHttpClient.GetTranslation("Clear", PageNames.CalendarTools, id);
 
             return Json(translations);
         }

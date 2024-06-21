@@ -1,10 +1,13 @@
-﻿import { AutoSuggestList } from './page-models-v2.js';
+﻿import { AutoSuggestList } from './page-models-v6.js';
 
 declare let moment: any;
 let currentMomentLocale: string = 'en';
 
+/** Gets the Id of the current Progeny from the progeny-id-div's data-progeny-id attribute's value.
+  * @returns The Progeny's Id number.
+  */
 export function getCurrentProgenyId(): number {
-    const progenyIdDiv = document.querySelector<HTMLDivElement>('#progenyIdDiv');
+    const progenyIdDiv = document.querySelector<HTMLDivElement>('#progeny-id-div');
     if (progenyIdDiv !== null) {
         const progenyIdDivData = progenyIdDiv.dataset.progenyId;
         if (progenyIdDivData) {
@@ -14,8 +17,11 @@ export function getCurrentProgenyId(): number {
     return 0;
 }
 
+/** Gets the Id for the current language used from the language-id-div's data-current-locale attribute's value.
+  * @returns The Progeny's Id number.
+  */
 export function getCurrentLanguageId(): number {
-    const languageIdDiv = document.querySelector<HTMLDivElement>('#languageIdDiv');
+    const languageIdDiv = document.querySelector<HTMLDivElement>('#language-id-div');
 
     if (languageIdDiv !== null) {
         const languageIdData = languageIdDiv.dataset.languageId;
@@ -27,8 +33,10 @@ export function getCurrentLanguageId(): number {
     return 1;
 }
 
-export function setMomentLocale() {
-    const currentMomentLocaleDiv = document.querySelector<HTMLDivElement>('#currentMomentLocaleDiv');
+/** Gets the locale to use for Moment functions from the current-moment-locale-div's data-current-locale attribute's value, then applies it to Moment.
+  */
+export function setMomentLocale(): void {
+    const currentMomentLocaleDiv = document.querySelector<HTMLDivElement>('#current-moment-locale-div');
 
     if (currentMomentLocaleDiv !== null) {
         const currentLocaleData = currentMomentLocaleDiv.dataset.currentLocale;
@@ -39,8 +47,11 @@ export function setMomentLocale() {
     moment.locale(currentMomentLocale);
 }
 
-export function getZebraDateTimeFormat() {
-    const zebraDateTimeFormatDiv = document.querySelector<HTMLDivElement>('#zebraDateTimeFormatDiv');
+/** Gets the format to use with date-time-pickers from the zebra-date-time-format-div's data-zebra-date-time-format attribute's value.
+  * @returns The date-time format string.
+  */
+export function getZebraDateTimeFormat(): string {
+    const zebraDateTimeFormatDiv = document.querySelector<HTMLDivElement>('#zebra-date-time-format-div');
     if (zebraDateTimeFormatDiv !== null) {
         const zebraDateTimeFormatData = zebraDateTimeFormatDiv.dataset.zebraDateTimeFormat;
         if (zebraDateTimeFormatData) {
@@ -51,8 +62,11 @@ export function getZebraDateTimeFormat() {
     return 'd-F-Y';
 }
 
-export function getLongDateTimeFormatMoment() {
-    const longDateTimeFormatMomentDiv = document.querySelector<HTMLDivElement>('#longDateTimeFormatMomentDiv');
+/** Gets the format to used to display long date-time string from the long-date-time-format-moment-div's data-long-date-time-format-moment attribute's value.
+  * @returns The date-time format string.
+  */
+export function getLongDateTimeFormatMoment(): string {
+    const longDateTimeFormatMomentDiv = document.querySelector<HTMLDivElement>('#long-date-time-format-moment-div');
     if (longDateTimeFormatMomentDiv !== null) {
         const longDateTimeFormatMomentData = longDateTimeFormatMomentDiv.dataset.longDateTimeFormatMoment;
         if (longDateTimeFormatMomentData) {
@@ -63,6 +77,10 @@ export function getLongDateTimeFormatMoment() {
     return 'DD-MMMM-YYYY HH:mm';
 }
 
+/** Fetches the full auto-suggest list of tags for a given progenyId.
+ * @param progenyId The Id of the Progeny to get tags for.
+ * @returns The full list of tags for the Progeny.
+ */
 export async function getTagsList(progenyId: number): Promise<AutoSuggestList> {
     let tagsList: AutoSuggestList = new AutoSuggestList(progenyId);
 
@@ -86,7 +104,11 @@ export async function getTagsList(progenyId: number): Promise<AutoSuggestList> {
     });
 }
 
-export async function setTagsAutoSuggestList(progenyId: number, elementId: string = 'tagList') {
+/** Updates the autosuggest list for tags for a given progenyId, and cofigures the Amsify-Suggestags properties.
+ * @param progenyId The Id of the Progeny to set tags for.
+ * @param elementId The Id of the element to set the autosuggest list for.
+ */
+export async function setTagsAutoSuggestList(progenyId: number, elementId: string = 'tag-list'): Promise<void> {
     let tagListElement = document.getElementById(elementId);
     if (tagListElement !== null) {
         const tagsList = await getTagsList(progenyId);
@@ -120,7 +142,10 @@ export async function setTagsAutoSuggestList(progenyId: number, elementId: strin
         resolve();
     });
 }
-
+/** Fetches the full auto-suggest list of contexts for a given progenyId.
+ * @param progenyId The Id of the Progeny to get contexts for.
+ * @returns The full list of contexts for the Progeny.
+ */
 export async function getContextsList(progenyId: number): Promise<AutoSuggestList> {
     let contextsList: AutoSuggestList = new AutoSuggestList(progenyId);
 
@@ -144,7 +169,11 @@ export async function getContextsList(progenyId: number): Promise<AutoSuggestLis
     });
 }
 
-export async function setContextAutoSuggestList(progenyId: number, elementId: string = 'contextInput') {
+/** Updates the autosuggest list for contexts for a given progenyId, and cofigures the Amsify-Suggestags properties.
+ * @param progenyId The Id of the Progeny to set contexts for.
+ * @param elementId The Id of the element to set the autosuggest list for.
+ */
+export async function setContextAutoSuggestList(progenyId: number, elementId: string = 'context-input'): Promise<void> {
     let contextInputElement = document.getElementById(elementId);
     if (contextInputElement !== null) {
         const contextsList = await getContextsList(progenyId);
@@ -179,6 +208,10 @@ export async function setContextAutoSuggestList(progenyId: number, elementId: st
     });
 }
 
+/** Fetches the full auto-suggest list of locations for a given progenyId.
+ * @param progenyId The Id of the Progeny to get locations for.
+ * @returns The full list of locations for the Progeny.
+ */
 export async function getLocationsList(progenyId: number): Promise<AutoSuggestList> {
     let locationsList: AutoSuggestList = new AutoSuggestList(progenyId);
 
@@ -202,7 +235,11 @@ export async function getLocationsList(progenyId: number): Promise<AutoSuggestLi
     });
 }
 
-export async function setLocationAutoSuggestList(progenyId: number, elementId: string = 'locationInput') {
+/** Updates the autosuggest list for locations for a given progenyId, and cofigures the Amsify-Suggestags properties.
+ * @param progenyId The Id of the Progeny to set locations for.
+ * @param elementId The Id of the element to set the autosuggest list for.
+ */
+export async function setLocationAutoSuggestList(progenyId: number, elementId: string = 'location-input'): Promise<void> {
     let locationInputElement = document.getElementById(elementId);
     if (locationInputElement !== null) {
         const locationsList = await getLocationsList(progenyId);
@@ -238,6 +275,10 @@ export async function setLocationAutoSuggestList(progenyId: number, elementId: s
     });
 }
 
+/** Fetches the full auto-suggest list of categories for a given progenyId.
+ * @param progenyId The Id of the Progeny to get categories for.
+ * @returns The full list of categories for the Progeny.
+ */
 export async function getCategoriesList(progenyId: number): Promise<AutoSuggestList> {
     let categoriesList: AutoSuggestList = new AutoSuggestList(progenyId);
 
@@ -261,7 +302,11 @@ export async function getCategoriesList(progenyId: number): Promise<AutoSuggestL
     });
 }
 
-export async function setCategoriesAutoSuggestList(progenyId: number, elementId: string = 'categoryInput') {
+/** Updates the autosuggest list for categories for a given progenyId, and cofigures the Amsify-Suggestags properties.
+ * @param progenyId The Id of the Progeny to set categories for.
+ * @param elementId The Id of the element to set the autosuggest list for.
+ */
+export async function setCategoriesAutoSuggestList(progenyId: number, elementId: string = 'category-input'): Promise<void> {
     let categoryInputElement = document.getElementById(elementId);
     if (categoryInputElement !== null) {
         const categoriesList = await getCategoriesList(progenyId);
@@ -296,15 +341,20 @@ export async function setCategoriesAutoSuggestList(progenyId: number, elementId:
     });
 }
 
-export function hideItemsWithClass(classToHide: string) {
+/** Hides all items with the specified class by adding the d-none class.
+ *  @param classToHide The class of elements to hide.
+ */
+export function hideItemsWithClass(classToHide: string): void {
     const queryString = '.' + classToHide;
     const items = document.querySelectorAll(queryString);
     items.forEach((item) => {
         item.classList.add('d-none');
     });
 }
-
-export function showItemsWithClass(classToShow: string) {
+/** Shows all items with the specified class by removing the d-none class.
+ *  @param classToShow The class of elements to show.
+ */
+export function showItemsWithClass(classToShow: string): void {
     const queryString = '.' + classToShow;
     const items = document.querySelectorAll(queryString);
     items.forEach((item) => {
@@ -312,7 +362,11 @@ export function showItemsWithClass(classToShow: string) {
     });
 }
 
-export function updateFilterButtonDisplay(button: HTMLButtonElement) {
+/** Toggles show/hide all elements with the class of the button element name.
+ * If the button has the active class after toggling it, all elements are shown, else they are hidden.
+ * @param button The toggle button
+ */
+export function updateFilterButtonDisplay(button: HTMLButtonElement): void {
     const iconElement = button.querySelector<HTMLSpanElement>('.checkbox-icon');
     if (!button.classList.contains('active') && iconElement !== null) {
         iconElement.classList.value = '';
@@ -334,25 +388,57 @@ export function updateFilterButtonDisplay(button: HTMLButtonElement) {
     }
 }
 
-export function checkTimes(longDateTimeFormatMoment: string, warningStartIsAfterEndString: string) {
-    let sTime: any = moment($('#datetimepicker1').val(), longDateTimeFormatMoment);
-    let eTime: any = moment($('#datetimepicker2').val(), longDateTimeFormatMoment);
+/** Compares the date and time of two date-time-pickers, shows a warning if the second time comes before the first.
+ * @param startElementId The id of the start picker element.
+ * @param endElementId The id of the end picker element.
+ * @param pickerDateTimeFormatMoment The format string of the value used by the date-time-pickers.
+ * @param warningStartIsAfterEndString The string to display if the end value is before the start value.
+ * @returns True if the start time is before the end time, false if not.
+ */
+export function checkStartBeforeEndTime(startElementId: string, endElementId: string, pickerDateTimeFormatMoment: string, warningStartIsAfterEndString: string): boolean {
+    const startElement = document.querySelector<HTMLInputElement>(startElementId);
+    const endElement = document.querySelector<HTMLInputElement>(endElementId);
+    
+    if (startElement === null || endElement === null) {
+        return false;
+    }
+
+    let sTime: any = moment(startElement.value, pickerDateTimeFormatMoment);
+    let eTime: any = moment(endElement?.value, pickerDateTimeFormatMoment);
+    const notificationDiv = document.querySelector<HTMLDivElement>('#notification');
+    const submitButton = document.querySelector<HTMLButtonElement>('#submit-button');
     if (sTime < eTime && sTime.isValid() && eTime.isValid()) {
-        $('#notification').text('');
-        $('#submitBtn').prop('disabled', false);
 
-    } else {
-        $('#submitBtn').prop('disabled', true);
-        $('#notification').text(warningStartIsAfterEndString);
-    };
+        if (notificationDiv !== null) {
+            notificationDiv.textContent = '';
+        }
+
+        if (submitButton !== null) {
+            submitButton.disabled = false;
+        }
+
+        return true;
+
+    }
+
+    if (notificationDiv !== null) {
+        notificationDiv.textContent = warningStartIsAfterEndString;
+    }
+
+    if (submitButton !== null) {
+        submitButton.disabled = true;
+    }
+
+    return false;
 };
-
-export function getTimeLineStartDate(longDateTimeFormatMoment: string): string {
-    let timelineStartTimeString: any = moment($('#timeline-start-date-datetimepicker').val(), longDateTimeFormatMoment);
-    return timelineStartTimeString;
-}
-
-export function getFormattedDateString(date: Date, timeFormat: string): string {
+/** Formats a date object as a string using the specified Moment formatting string.
+ * @param date The date object to format.
+ * @returns The formatted date string.
+ */
+export function getFormattedDateString(date: Date, timeFormat: string = ''): string {
+    if (timeFormat === '') {
+        timeFormat = getLongDateTimeFormatMoment();
+    }
     let timeString: string = moment(date).format(timeFormat);
     return timeString;
 }

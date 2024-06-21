@@ -1,33 +1,33 @@
-﻿import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v2.js';
-import { getCurrentProgenyId } from '../data-tools-v2.js';
+﻿import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v6.js';
+import { getCurrentProgenyId } from '../data-tools-v6.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+
 let yearAgoItemsList: TimelineItem[] = []
 const yearAgoParameters: TimelineParameters = new TimelineParameters();
 let yearAgoProgenyId: number;
 let moreYearAgoItemsButton: HTMLButtonElement | null;
 
-function runWaitMeMoreYearAgoItemsButton(): void {
-    const moreItemsButton: any = $('#loadingYearAgoItemsDiv');
-    moreItemsButton.waitMe({
-        effect: 'bounce',
-        text: '',
-        bg: 'rgba(177, 77, 227, 0.0)',
-        color: '#9011a1',
-        maxSize: '',
-        waitTime: -1,
-        source: '',
-        textPos: 'vertical',
-        fontSize: '',
-        onClose: function () { }
-    });
+/**
+ * Starts the spinner for loading the timeline items.
+ */
+function startLoadingYearAgoItemsSpinner(): void {
+    startLoadingItemsSpinner('loading-year-ago-items-div');
 }
 
-function stopWaitMeMoreYearAgoItemsButton(): void {
-    const moreItemsButton: any = $('#loadingYearAgoItemsDiv');
-    moreItemsButton.waitMe("hide");
+/**
+ * Stops the spinner for loading the timeline items.
+ */
+function stopLoadingYearAgoItemsSpinner(): void {
+    stopLoadingItemsSpinner('loading-year-ago-items-div');
 }
 
+/**
+ * Retrieves the list of timeline items, based on the parameters provided and the number of items already retrieved, then updates the page.
+ * Hides the moreYearAgoItemsButton while loading.
+ * @param parameters The parameters to use for retrieving the timeline items.
+ */
 async function getYearAgoList(parameters: TimelineParameters) {
-    runWaitMeMoreYearAgoItemsButton();
+    startLoadingYearAgoItemsSpinner();
     if (moreYearAgoItemsButton !== null) {
         moreYearAgoItemsButton.classList.add('d-none');
     }
@@ -44,7 +44,7 @@ async function getYearAgoList(parameters: TimelineParameters) {
         if (getYearAgoListResult != null) {
             const newYearAgoItemsList = (await getYearAgoListResult.json()) as TimelineList;
             if (newYearAgoItemsList.timelineItems.length > 0) {
-                const yearAgoPostsParentDiv = document.querySelector<HTMLDivElement>('#yearAgoPostsParentDiv');
+                const yearAgoPostsParentDiv = document.querySelector<HTMLDivElement>('#year-ago-posts-parent-div');
                 if (yearAgoPostsParentDiv !== null) {
                     yearAgoPostsParentDiv.classList.remove('d-none');
                 }
@@ -61,13 +61,17 @@ async function getYearAgoList(parameters: TimelineParameters) {
         console.log('Error loading TimelineList. Error: ' + error);
     });
 
-    stopWaitMeMoreYearAgoItemsButton();
+    stopLoadingYearAgoItemsSpinner();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
+/**
+ * Fetches the HTML for a given timeline item and renders it at the end of year-ago-items-div.
+ * @param timelineItem The timelineItem object to add to the div.
+ */
 async function renderYearAgoItem(timelineItem: TimelineItem) {
     const timeLineItemViewModel: TimeLineItemViewModel = new TimeLineItemViewModel();
     timeLineItemViewModel.typeId = timelineItem.itemType;
@@ -84,7 +88,7 @@ async function renderYearAgoItem(timelineItem: TimelineItem) {
 
     if (getTimelineElementResponse.ok && getTimelineElementResponse.text !== null) {
         const yearAgoElementHtml = await getTimelineElementResponse.text();
-        const yearAgoItemsDiv = document.querySelector<HTMLDivElement>('#yearAgoItemsDiv');
+        const yearAgoItemsDiv = document.querySelector<HTMLDivElement>('#year-ago-items-div');
         if (yearAgoItemsDiv != null) {
             yearAgoItemsDiv.insertAdjacentHTML('beforeend', yearAgoElementHtml);
         }
@@ -95,18 +99,32 @@ async function renderYearAgoItem(timelineItem: TimelineItem) {
     });
 }
 
-$(async function () {
-    yearAgoProgenyId = getCurrentProgenyId();
-    yearAgoParameters.count = 5;
-    yearAgoParameters.skip = 0;
-    yearAgoParameters.progenyId = yearAgoProgenyId;
-
-    moreYearAgoItemsButton = document.querySelector<HTMLButtonElement>('#moreYearAgoPostsButton');
+/**
+ * Sets the event listeners for the moreYearAgoItemsButton.
+ */
+function setYearAgoEventListeners(): void {
+    moreYearAgoItemsButton = document.querySelector<HTMLButtonElement>('#more-year-ago-posts-button');
     if (moreYearAgoItemsButton !== null) {
         moreYearAgoItemsButton.addEventListener('click', async () => {
             getYearAgoList(yearAgoParameters);
         });
     }
+}
+
+/**
+ * Initialization when the page is loaded.
+ */
+document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    yearAgoProgenyId = getCurrentProgenyId();
+    yearAgoParameters.count = 5;
+    yearAgoParameters.skip = 0;
+    yearAgoParameters.progenyId = yearAgoProgenyId;
+
+    setYearAgoEventListeners();
 
     await getYearAgoList(yearAgoParameters);
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 });

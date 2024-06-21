@@ -23,12 +23,12 @@
     @if (!string.IsNullOrEmpty(Model.TagFilter))
     {
         <br />
-        <div style="float: right;">Tag filter: <span class="btn tag-item">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Reset Filter</a></div>
+        <div style="float: right;">Tag filter: <span class="btn tag-item">@Model.TagFilter</span> <a class="btn btn-info btn-sm leave-page" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> Reset Filter</a></div>
     }
     @if (Model.IsCurrentUserProgenyAdmin)
     {
         <div class="btn-group" style="float: right;">
-            <a asp-controller="Locations" asp-action="AddLocation" class="btn btn-success btn-round leavePage">
+            <a asp-controller="Locations" asp-action="AddLocation" class="btn btn-success btn-round leave-page">
                 <i class="fas fa-plus"></i> Add Location
             </a>
         </div>
@@ -41,7 +41,7 @@
     else
     {
         <div class="btn-group" style="float: right;">
-            <a asp-controller="Locations" asp-action="Index" class="btn btn-info leavePage">
+            <a asp-controller="Locations" asp-action="Index" class="btn btn-info leave-page">
                 <i class="fas fa-map-marked-alt"></i> @await LocaleManager.GetTranslation("Back to locations", PageNames.Locations, Model.LanguageId)
             </a>
         </div>
@@ -49,7 +49,7 @@
         <div class="row" style="clear: both; margin-top: 25px;">
             @if (allowHereMaps)
             {
-                <div style="width: 100%; height: 560px; max-height: 60vh; margin-left: 20px; margin-right: 20px;" id="mapContainer"></div>                
+                <div style="width: 100%; height: 560px; max-height: 60vh; margin-left: 20px; margin-right: 20px;" id="photo-locations-map-container-div"></div>
             }
             else
             {
@@ -86,7 +86,7 @@
                         string[] tagsList = Model.Tags.Split(',');
                         foreach (string tagString in tagsList)
                         {
-                            <a asp-action="PhotoLocations" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leavePage">@tagString</a>
+                            <a asp-action="PhotoLocations" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="badge badge-pill badge-rose leave-page">@tagString</a>
                         }
                     }
                 }
@@ -224,7 +224,7 @@
             ppi: pixelRatio === 1 ? undefined : 320
         });
 
-        let map = new H.Map(document.getElementById('mapContainer'),
+        let map = new H.Map(document.getElementById('photo-locations-map-container-div'),
             maptypes.vector.normal.map,
             {
                 zoom: 3,

@@ -44,25 +44,25 @@
     }
 }
 
-<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
-<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
-<div id="zebraDateTimeFormatDiv" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
-<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="language-id-div" class="d-none" data-language-id="@Model.LanguageId"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="progeny-id-div" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
 <div class="col-12 col-xl-11 col-xxl-10 col-w1900-9 col-w2500-8">
 <h2>@ViewData["Title"] - @Model.PictureNumber @await LocaleManager.GetTranslation("of", PageNames.Pictures, Model.LanguageId) @Model.PictureCount</h2>
-<div id="photoDiv">
+<div id="photo-div">
     @if (!string.IsNullOrEmpty(Model.TagFilter))
     {
         <div>@await LocaleManager.GetTranslation("Tag filter:", PageNames.Pictures, Model.LanguageId) @Model.TagFilter</div>
     }
     <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px;">
         <div style="float: left">
-            <a id="previousPhotoLink" class="leavePage" asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.PrevPicture" asp-route-childId="@Model.CurrentProgeny.Id"
+                    <a id="previous-photo-link" class="leave-page" asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.PrevPicture" asp-route-childId="@Model.CurrentProgeny.Id"
                asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @photoString</a>
         </div>
         <div style="float: right">
-            <a id="nextPhotoLink" class="leavePage" asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.NextPicture" asp-route-childId="@Model.CurrentProgeny.Id"
+                    <a id="next-photo-link" class="leave-page" asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.NextPicture" asp-route-childId="@Model.CurrentProgeny.Id"
                asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText @photoString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
         </div>
     </div>
@@ -77,7 +77,7 @@
                 List<string> tagsList = Model.Tags.Split(',').ToList();
                 foreach (string tagString in tagsList)
                 {
-                    <a asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
+                            <a asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
                 }
             }
         }
@@ -107,7 +107,7 @@
             <div>@await LocaleManager.GetTranslation("Latitude:", PageNames.Pictures, Model.LanguageId) @Model.Picture.Latitude @await LocaleManager.GetTranslation("Longitude:", PageNames.Pictures, Model.LanguageId) @Model.Picture.Longtitude @await LocaleManager.GetTranslation("Altitude:", PageNames.Pictures, Model.LanguageId) @Model.Picture.Altitude</div>
             @if (allowHereMaps)
             {
-                <div style="width: 100%; height: 300px" id="mapContainer"></div>
+                        <div style="width: 100%; height: 300px" id="pictures-page-map-container-div"></div>
                 <script>
                     let pixelRatio = window.devicePixelRatio || 1;
                     let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: 36, h: 36 } });
@@ -121,7 +121,7 @@
                         ppi: pixelRatio === 1 ? undefined : 320
                     });
 
-                    let map = new H.Map(document.getElementById('mapContainer'),
+                            let map = new H.Map(document.getElementById('pictures-page-map-container-div'),
                         maptypes.vector.normal.map,
                         {
                             zoom: 14,
@@ -242,7 +242,7 @@
 
                                         <div class="form-group">
                                             <div>
-                                                <button class="btn btn-danger btn-sm leavePage" type="submit">@await LocaleManager.GetTranslation("Delete comment", PageNames.Pictures, Model.LanguageId)</button>
+                                                    <button class="btn btn-danger btn-sm leave-page" type="submit">@await LocaleManager.GetTranslation("Delete comment", PageNames.Pictures, Model.LanguageId)</button>
                                             </div>
                                         </div>
                                         <input Name="CommentThreadNumber" class="form-control" value="@Model.CommentThreadNumber" type="hidden" />
@@ -265,7 +265,7 @@
             <label Name="CommentText" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("New comment:", PageNames.Pictures, Model.LanguageId)</label>
             <div class="col-12 col-lg-9 col-xl-8 col-xxl-7 col-w1900-6 col-w2500-5">
                 <textarea Name="CommentText" class="form-control" rows="4"></textarea>
-                <button class="btn btn-success float-right leavePage" style="margin-right: 15px;" type="submit">@await LocaleManager.GetTranslation("Add comment", PageNames.Pictures, Model.LanguageId)</button>
+                        <button class="btn btn-success float-right leave-page" style="margin-right: 15px;" type="submit">@await LocaleManager.GetTranslation("Add comment", PageNames.Pictures, Model.LanguageId)</button>
             </div>
         </div>
         <input asp-for="CommentThreadNumber" class="form-control" value="@Model.Picture.CommentThreadNumber" type="hidden" />
@@ -279,15 +279,15 @@
 {
     <div class="col-sm-3" style="margin-top: 35px;"></div>
     <div class="col-md-8">
-        <button id="toggleEditBtn" class="btn btn-info">Edit Photo</button>
+                <button id="toggle-edit-button" class="btn btn-info">Edit Photo</button>
     </div>
-    <div id="editSection" style="display: none; padding: 15px;">
+    <div id="edit-section" style="display: none; padding: 15px;">
         <div>@await LocaleManager.GetTranslation("Edit user access, location, or date and time for this photo", PageNames.Pictures, Model.LanguageId)</div><br />
                 <form asp-controller="Pictures" asp-action="EditPicture" role="form" method="post">
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="tagList" type="text" asp-for="Picture.Tags" value="@Model.Picture.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Pictures, Model.LanguageId)" class="form-control" />
+                    <input id="tag-list" type="text" asp-for="Picture.Tags" value="@Model.Picture.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
                 </div>
             </div>
             <div class="form-group">
@@ -299,14 +299,14 @@
             <div class="form-group">
                 <label asp-for="Picture.PictureTime" class="col-auto control-label">@await LocaleManager.GetTranslation("Photo date and time", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-12">
-                    <input id="datetimepicker1" type="text" class="form-control-noline pl-3" asp-for="Picture.PictureTime"
+                    <input id="picture-date-time-picker" type="text" class="form-control-noline pl-3" asp-for="Picture.PictureTime"
                            value="@Model.Picture.PictureTime?.ToString(longDateTimeFormat)"/>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="locationInput" type="text" asp-for="Picture.Location" value="@Model.Picture.Location" class="form-control" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)"/>
+                            <input id="location-input" type="text" asp-for="Picture.Location" value="@Model.Picture.Location" class="form-control" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" />
                 </div>
             </div>
             <div class="form-group">
@@ -333,8 +333,8 @@
                     <label class="col-auto control-label">@await LocaleManager.GetTranslation("Copy location latitude and longitude from existing location", PageNames.Pictures, Model.LanguageId)</label>
                     <div class="col-auto">
                         <div class="row row-cols-auto ml-0 mr-0">
-                            <select id="copyLocation" class="selectpicker form-control-noline col pl-0" data-style="btn-kinaunaselect" asp-items="@Model.LocationsList"></select>
-                            <button id="copyLocationButton" type="button" class="btn btn-primary col-auto mt-0 mb-0 ml-2">@await LocaleManager.GetTranslation("Copy", PageNames.Pictures, Model.LanguageId)</button>
+                                    <select id="copy-location" class="selectpicker form-control-noline col pl-0" data-style="btn-kinaunaselect" asp-items="@Model.LocationsList"></select>
+                                    <button id="copy-location-button" type="button" class="btn btn-primary col-auto mt-0 mb-0 ml-2">@await LocaleManager.GetTranslation("Copy", PageNames.Pictures, Model.LanguageId)</button>
                         </div>
                     </div>
                 </div>
@@ -349,8 +349,8 @@
                 <div class="form-group">
                     <div class="col-auto control-label"></div>
                     <div class="col-auto">
-                        <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                        <a class="btn btn-danger leavePage" asp-controller="@ViewContext.RouteData.Values["controller"]" asp-action="@ViewContext.RouteData.Values["action"]!" asp-route-id="@ViewContext.RouteData.Values["id"]" asp-route-childId="@Model.Picture.ProgenyId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                                <button class="btn btn-success leave-page" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                                <a class="btn btn-danger leave-page" asp-controller="@ViewContext.RouteData.Values["controller"]" asp-action="@ViewContext.RouteData.Values["action"]!" asp-route-id="@ViewContext.RouteData.Values["id"]" asp-route-childId="@Model.Picture.ProgenyId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                     </div>
                 </div>
             </div>
@@ -359,7 +359,7 @@
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Remove this picture:", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <button class="btn btn-danger leavePage" type="submit">@await LocaleManager.GetTranslation("Delete picture", PageNames.Pictures, Model.LanguageId)</button>
+                            <button class="btn btn-danger leave-page" type="submit">@await LocaleManager.GetTranslation("Delete picture", PageNames.Pictures, Model.LanguageId)</button>
                 </div>
             </div>
             <input name="pictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden" />
@@ -390,13 +390,13 @@
     </div>
     
 }
-        <div class="space-20"></div>
+<div class="space-20"></div>
 <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px;">
     <div style="float: left">
-        <a class="leavePage" asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.PrevPicture" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @photoString</a>
+                <a class="leave-page" asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.PrevPicture" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @photoString</a>
     </div>
     <div style="float: right">
-        <a class="leavePage" asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.NextPicture" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText @photoString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+                <a class="leave-page" asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.NextPicture" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText @photoString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
     </div>
 </div>
 </div>

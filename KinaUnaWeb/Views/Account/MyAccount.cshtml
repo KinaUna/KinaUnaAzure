@@ -61,7 +61,7 @@
                     {
                         <input asp-for="UserEmail" class="form-control" />
                         <div class="col-auto">
-                            <button id="sendVerificationEmail" asp-action="ChangeEmail" asp-route-OldEmail="@Model.UserEmail" asp-route-NewEmail="" class="btn btn-link">@await LocaleManager.GetTranslation("Change/confirm email", PageNames.Account, Model.LanguageId)</button>
+                            <button id="send-verification-email" asp-action="ChangeEmail" asp-route-OldEmail="@Model.UserEmail" asp-route-NewEmail="" class="btn btn-link">@await LocaleManager.GetTranslation("Change/confirm email", PageNames.Account, Model.LanguageId)</button>
                         </div>
                     }
                 </div>
@@ -98,24 +98,27 @@
             <div class="space-20"></div>
             <div class="form-group">
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Save", PageNames.Account, Model.LanguageId)</button>
+                    <button type="submit" class="btn btn-success leave-page">@await LocaleManager.GetTranslation("Save", PageNames.Account, Model.LanguageId)</button>
                 </div>
             </div>
         </form>
         <div class="space-20"></div>
         <div class="row">
             <div class="col-auto">
-                <form id="loginForm" action="@Model.ChangeLink" method="get" target="loginFrame" style="float: right;">
-                    <button id="changePasswordButton" type="submit" class="btn btn-info" data-toggle="modal" data-target="#loginModal" style="float: right;"><span class="fas fa-sign-in-alt"></span>@await LocaleManager.GetTranslation("Change Password", PageNames.Account, Model.LanguageId) </button>
+                <a id="enable-push-button" class="btn btn-info leave-page" style="display: none;" asp-action="EnablePush">@await LocaleManager.GetTranslation("Enable Push Notifications", PageNames.Account, Model.LanguageId)</a>
+                <a id="disable-push-button" class="btn btn-warning leave-page" style="display: none;" asp-action="DisablePush">@await LocaleManager.GetTranslation("Disable Push Notifications", PageNames.Account, Model.LanguageId)</a>
+            </div>
+            <div class="col-auto">
+                <form id="login-form" action="@Model.ChangeLink" method="get" target="loginFrame">
+                    <button id="change-password-button" type="submit" class="btn btn-info" data-toggle="modal" data-target="#loginModal" style="float: right;"><span class="fas fa-sign-in-alt"></span>@await LocaleManager.GetTranslation("Change Password", PageNames.Account, Model.LanguageId) </button>
                 </form>
-                <a id="enablePushButton" class="btn btn-info leavePage" style="display: none;" asp-action="EnablePush">@await LocaleManager.GetTranslation("Enable Push Notifications", PageNames.Account, Model.LanguageId)</a>
-                <a id="disablePushButton" class="btn btn-warning leavePage" style="display: none;" asp-action="DisablePush">@await LocaleManager.GetTranslation("Disable Push Notifications", PageNames.Account, Model.LanguageId)</a>
             </div>
         </div>
+        <div class="space-20"></div>
         <div class="row">
-            <div class="col-auto">
-                <form id="deleteAccountForm" asp-action="DeleteAccount" method="get">
-                    <button id="deleteAccountButton" type="submit" class="btn btn-secondary float-left"><span class="fas fa-sign-in-alt"></span>@await LocaleManager.GetTranslation("Delete account", PageNames.Account, Model.LanguageId)</button>
+            <div class="col-12">
+                <form id="delete-account-form" asp-action="DeleteAccount" method="get">
+                    <button id="deleteAccountButton" type="submit" class="btn btn-secondary"><span class="fas fa-sign-in-alt"></span>@await LocaleManager.GetTranslation("Delete account", PageNames.Account, Model.LanguageId)</button>
                 </form>
             </div>
         </div>

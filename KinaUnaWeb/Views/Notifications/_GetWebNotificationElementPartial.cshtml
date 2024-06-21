@@ -5,26 +5,24 @@
 @{
     string deleteString = await LocaleManager.GetTranslation("Delete", PageNames.Notifications, Model.LanguageId);
     string topDivClass = "notification-item";
-    string idClass = "notifId" + Model.WebNotification.Id;
-    string isReadClass = "notificationUnread";
+    string isReadClass = "notification-unread";
     string markAsRead = await LocaleManager.GetTranslation("Mark as read", PageNames.Notifications, Model.LanguageId);
-    string deleteId = "notificationDeleteId" + Model.Id;
-    string topBtnClass = "btn btn-link notification-button leavePage";
+    string topBtnClass = "btn btn-link notification-button leave-page";
     string markAsReadIcon = "drafts";
     string timeStamp = Model.WebNotification.DateTime.Ticks.ToString();
     if (Model.WebNotification.IsRead)
     {
-        topDivClass = topDivClass + " bg-dark"; 
-        isReadClass = "notificationRead"; 
+        topDivClass += " bg-dark"; 
+        isReadClass = "notification-read";
         markAsRead = await LocaleManager.GetTranslation("Mark as unread", PageNames.Notifications, Model.LanguageId); 
-        topBtnClass = "btn btn-link bg-dark notification-button leavePage"; 
+        topBtnClass = "btn btn-link bg-dark notification-button leave-page";
         markAsReadIcon = "markunread";
     }
 
 }
 
 <div class="@topDivClass" data-notificationTime="@timeStamp">
-    <div onClick="notificationItemClick(this, event)" class="@topBtnClass @isReadClass text-left notification-frame" data-notificationid="@Model.WebNotification.Id" data-notificationLink="@Model.WebNotification.Link">
+    <div class="@topBtnClass @isReadClass text-left notification-frame" data-notificationid="@Model.WebNotification.Id" data-notificationLink="@Model.WebNotification.Link">
         <div class="notification-card">
             <div class="media text-left">
                 <div class="float-left">
@@ -39,10 +37,10 @@
                     <h6 class="text-white notification-title">@Model.WebNotification.Title</h6>
                     <p class="text-light notification-message">@Model.WebNotification.Message</p>
                     <div>
-                        <span class="btn btn-info btn-link btn-sm @isReadClass @idClass" onClick="markRead(this, event)" data-notificationid="@Model.WebNotification.Id">
+                        <span class="btn btn-info btn-link btn-sm mark-notification-read-button @isReadClass" data-notificationid="@Model.WebNotification.Id">
                             <i class="material-icons">@markAsReadIcon</i> @markAsRead
                         </span>
-                        <span id="@deleteId" class="btn btn-danger btn-link btn-sm" onClick="removeNotification(this, event)" data-notificationid="@Model.WebNotification.Id">
+                        <span class="btn btn-danger btn-link btn-sm delete-notification-button" data-notificationid="@Model.WebNotification.Id">
                             <i class="material-icons">delete_forever</i> @deleteString
                         </span>
                     </div>

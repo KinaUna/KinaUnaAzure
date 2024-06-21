@@ -15,11 +15,11 @@
         </div>
         <div class="space-20"></div>
         <div class="col-auto">
-            <a class="leavePage" asp-controller="Videos" asp-action="AddVideo">@await LocaleManager.GetTranslation("Return to upload video", PageNames.Videos, Model.LanguageId)</a>
+            <a class="leave-page" asp-controller="Videos" asp-action="AddVideo">@await LocaleManager.GetTranslation("Return to upload video", PageNames.Videos, Model.LanguageId)</a>
         </div>
         <div class="space-20"></div>
         <div class="col-auto">
-            <a class="leavePage" asp-controller="Videos" asp-action="Index" asp-route-childId="@Model.Video.ProgenyId">@await LocaleManager.GetTranslation("Return to video gallery", PageNames.Videos, Model.LanguageId)</a>
+            <a class="leave-page" asp-controller="Videos" asp-action="Index" asp-route-childId="@Model.Video.ProgenyId">@await LocaleManager.GetTranslation("Return to video gallery", PageNames.Videos, Model.LanguageId)</a>
         </div>
     </div>
 </div>

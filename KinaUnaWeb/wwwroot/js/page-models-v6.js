@@ -25,6 +25,51 @@ export class NotesPageResponse {
         this.notesList = [];
     }
 }
+export class Picture {
+    constructor() {
+        this.pictureId = 0;
+        this.progenyId = 0;
+        this.pictureNumber = 0;
+    }
+}
+export class PictureViewModel {
+    constructor() {
+        this.pictureId = 0;
+        this.progenyId = 0;
+        this.pictureNumber = 0;
+        this.sortBy = 1;
+        this.tagFilter = '';
+    }
+}
+export class PicturesPageParameters {
+    constructor() {
+        this.progenyId = 0;
+        this.languageId = 0;
+        this.currentPageNumber = 0;
+        this.itemsPerPage = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.sort = 1;
+        this.tagFilter = '';
+        this.showSettings = false;
+        this.year = 0;
+        this.month = 0;
+        this.day = 0;
+        this.firstItemYear = 1900;
+        this.sortTags = 0;
+    }
+}
+export class PicturesList {
+    constructor() {
+        this.pictureItems = [];
+        this.allItemsCount = 0;
+        this.remainingItemsCount = 0;
+        this.firstItemYear = 0;
+        this.totalPages = 0;
+        this.currentPageNumber = 0;
+        this.tagsList = [];
+    }
+}
 export class KinaUnaTextParameters {
     constructor() {
         this.id = 0;
@@ -126,6 +171,7 @@ export class WebNotficationsParameters {
     constructor() {
         this.skip = 0;
         this.count = 10;
+        this.unreadOnly = false;
     }
 }
 export class WebNotificationsList {
@@ -135,4 +181,4 @@ export class WebNotificationsList {
         this.remainingItemsCount = 0;
     }
 }
-//# sourceMappingURL=page-models-v2.js.map
+//# sourceMappingURL=page-models-v6.js.map

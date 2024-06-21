@@ -17,14 +17,14 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Add contact", PageNames.Contacts, Model.LanguageId);
     string addContactForString = await LocaleManager.GetTranslation("Add contact for:", PageNames.Contacts, Model.LanguageId);
-    string longDateTimeFormat = "dd-MMMM-yyyy";
-    string zebraDateTimeFormat = "d-F-Y";
+    const string longDateTimeFormat = "dd-MMMM-yyyy";
+    const string zebraDateTimeFormat = "d-F-Y";
 }
-<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
-<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="language-id-div" class="d-none" data-language-id="@Model.LanguageId"></div>
 <div id="longDateTimeFormatDiv" class="d-none" data-long-date-time-format="@longDateTimeFormat"></div>
-<div id="zebraDateTimeFormatDiv" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
-<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="progeny-id-div" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="add-item-container">
         <h2 class="col-12">@ViewData["Title"]</h2>
@@ -36,7 +36,7 @@
                 <div class="form-group">
                     <label class="control-label col-auto">@addContactForString</label>
                     <div class="col-auto">
-                        <select id="progenyIdSelect" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="ContactItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                        <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="ContactItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
                 </div>
             }
@@ -168,7 +168,7 @@
             <div class="form-group">
                 <label asp-for="ContactItem.Context" class="col-auto control-label">@await LocaleManager.GetTranslation("Context", PageNames.Contacts, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="contextInput" asp-for="ContactItem.Context" class="form-control" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Contacts, Model.LanguageId)"/>
+                    <input id="context-input" asp-for="ContactItem.Context" class="form-control" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Contacts, Model.LanguageId)" />
                 </div>
             </div>
             <div class="form-group">
@@ -180,7 +180,7 @@
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Contacts, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="tagList" type="text" asp-for="ContactItem.Tags" value="@Model.ContactItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
+                    <input id="tag-list" type="text" asp-for="ContactItem.Tags" value="@Model.ContactItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
@@ -191,7 +191,7 @@
                         {
                             Model.ContactItem.DateAdded = DateTime.UtcNow;
                         }
-                        <input id="datetimepicker1"  type="text" class="form-control" data-zdp_readonly_element="false" asp-for="ContactItem.DateAdded"
+                        <input id="contact-date-time-picker"  type="text" class="form-control" data-zdp_readonly_element="false" asp-for="ContactItem.DateAdded"
                                value="@Model.ContactItem.DateAdded.Value.ToString(longDateTimeFormat)"/>
                     </div>
                 </div>
@@ -212,8 +212,8 @@
                 <div class="form-group">
                     <div class="col-auto control-label"></div>
                     <div class="col-auto">
-                        <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                        <a class="btn btn-danger leavePage" asp-controller="Contacts" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                        <button class="btn btn-success leave-page" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                        <a class="btn btn-danger leave-page" asp-controller="Contacts" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                     </div>
 
                 </div>

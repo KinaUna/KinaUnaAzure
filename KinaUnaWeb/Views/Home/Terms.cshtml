@@ -21,10 +21,10 @@
         <div class="space-20"></div>
         @if (Model.CurrentUser.IsKinaUnaAdmin && Model.KinaUnaText != null)
         {
-            <div id="aboutPageTextIdDiv" class="d-none" data-about-page-text-id='@Model.KinaUnaText.Id'></div>
-            <div id="aboutPageReturnUrlDiv" class="d-none" data-about-page-return-url='@returnUrl'></div>
+            <div id="about-page-text-id-div" class="d-none" data-about-page-text-id='@Model.KinaUnaText.Id'></div>
+            <div id="about-page-return-url-div" class="d-none" data-about-page-return-url='@returnUrl'></div>
             <div class="space-20"></div>
-            <div class="col-auto"><a class="btn btn-outline-info" id="editAboutTextButton" data-toggle="modal" data-target="#editAboutTextModalDiv">Edit</a></div>
+            <div class="col-auto"><a class="btn btn-outline-info" id="edit-about-text-button" data-toggle="modal" data-target="#edit-about-text-modal-div">Edit</a></div>
             <div class="space-20"></div>
             <script>
                 function onImageUploadSuccess(args) {
@@ -56,7 +56,7 @@
         }
     </div>
 </div>
-<div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="editAboutTextModalDiv">
+<div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="edit-about-text-modal-div">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">

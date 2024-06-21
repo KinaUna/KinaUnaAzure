@@ -44,7 +44,7 @@ namespace KinaUna.IDP.Migrations.PersistedGrantDb
             migrationBuilder.CreateIndex(
                 name: "IX_PersistedGrants_SubjectId_SessionId_Type",
                 table: "PersistedGrants",
-                columns: new[] { "SubjectId", "SessionId", "Type" });
+                columns: ["SubjectId", "SessionId", "Type"]);
 
             migrationBuilder.CreateIndex(
                 name: "IX_DeviceCodes_Expiration",

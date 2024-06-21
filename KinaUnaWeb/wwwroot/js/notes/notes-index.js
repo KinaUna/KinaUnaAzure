@@ -1,20 +1,20 @@
-import * as pageModels from '../page-models-v2.js';
+import * as pageModels from '../page-models-v6.js';
 const notesPageSettingsStorageKey = 'notes_page_parameters';
 let notesPageParameters = new pageModels.NotesPageParameters();
 let notesPageParametersHistory = [];
 const notesIndexPageParametersDiv = document.querySelector('#notes-index-page-parameters');
-const notesListDiv = document.querySelector('#notesListDiv');
-const nextNotesItemsPageButton = document.querySelector('#nextNoteItemsPageButton');
-const previousNotesItemsPageButton = document.querySelector('#previousNoteItemsPageButton');
-const headerNextNotesItemsPageButton = document.querySelector('#headerNextNoteItemsPageButton');
-const headerPreviousNotesItemsPageButton = document.querySelector('#headerPreviousNoteItemsPageButton');
-const pageNumberSpan = document.querySelector('#pageNumberSpan');
-const headerPageNumberSpan = document.querySelector('#headerPageNumberSpan');
-const pageTotalSpan = document.querySelector('#pageTotalSpan');
-const headerPageTotalSpan = document.querySelector('#headerPageTotalSpan');
+const notesListDiv = document.querySelector('#notes-list-div');
+const nextNotesItemsPageButton = document.querySelector('#next-note-items-page-button');
+const previousNotesItemsPageButton = document.querySelector('#previous-note-items-page-button');
+const headerNextNotesItemsPageButton = document.querySelector('#header-next-note-items-page-button');
+const headerPreviousNotesItemsPageButton = document.querySelector('#header-previous-note-items-page-button');
+const pageNumberSpan = document.querySelector('#page-number-span');
+const headerPageNumberSpan = document.querySelector('#header-page-number-span');
+const pageTotalSpan = document.querySelector('#page-total-span');
+const headerPageTotalSpan = document.querySelector('#header-page-total-span');
 const notesPageSettingsButton = document.querySelector('#notes-index-page-settings-button');
-const notesPageSettingsDiv = document.querySelector('#pageSettingsDiv');
-const notesPageMainDiv = document.querySelector('#kinaunaMainDiv');
+const notesPageSettingsDiv = document.querySelector('#page-settings-div');
+const notesPageMainDiv = document.querySelector('#kinauna-main-div');
 const itemsPerPageInput = document.querySelector('#notes-items-per-page-input');
 const sortAscendingSettingsButton = document.querySelector('#sort-notes-ascending-button');
 const sortDescendingSettingsButton = document.querySelector('#sort-notes-descending-button');
@@ -203,7 +203,7 @@ function sortNotesPageDescending() {
     sortAscendingSettingsButton?.classList.remove('active');
     notesPageParameters.sort = 1;
 }
-$(function () {
+document.addEventListener('DOMContentLoaded', function () {
     const notesPageSettingsContentDiv = document.querySelector('#page-settings-content-div');
     if (notesPageSettingsContentDiv !== null) {
         notesPageSettingsDiv?.appendChild(notesPageSettingsContentDiv);
@@ -238,7 +238,7 @@ $(function () {
     const decreaseNotesItemsPerPageButton = document.querySelector('#decrease-notes-items-per-page-button');
     const increaseNotesItemsPerPageButton = document.querySelector('#increase-notes-items-per-page-button');
     const notesSaveSettingsButton = document.querySelector('#notes-page-save-settings-button');
-    const closeNotesPageSettingsButton = document.querySelector('#closeNotesPageSettingsButton');
+    const closeNotesPageSettingsButton = document.querySelector('#close-notes-page-settings-button');
     if (decreaseNotesItemsPerPageButton !== null && increaseNotesItemsPerPageButton !== null &&
         notesSaveSettingsButton !== null && closeNotesPageSettingsButton !== null && sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
         decreaseNotesItemsPerPageButton.addEventListener('click', decreaseNotesItemsPerPage);

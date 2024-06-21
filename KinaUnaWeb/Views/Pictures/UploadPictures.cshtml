@@ -25,8 +25,8 @@
             </div>
         }
         <div class="space-20"></div>
-        <div><a class="leavePage" asp-controller="Pictures" asp-action="AddPicture">@await LocaleManager.GetTranslation("Return to photo upload", PageNames.Pictures, Model.LanguageId)</a></div>
+        <div><a class="leave-page" asp-controller="Pictures" asp-action="AddPicture">@await LocaleManager.GetTranslation("Return to photo upload", PageNames.Pictures, Model.LanguageId)</a></div>
         <div class="space-20"></div>
-        <div><a class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-childId="@Model.Picture.ProgenyId">@await LocaleManager.GetTranslation("Go to photo gallery", PageNames.Pictures, Model.LanguageId)</a></div>
+        <div><a class="leave-page" asp-controller="Pictures" asp-action="Index" asp-route-childId="@Model.Picture.ProgenyId">@await LocaleManager.GetTranslation("Go to photo gallery", PageNames.Pictures, Model.LanguageId)</a></div>
     </div>
 </div>

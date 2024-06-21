@@ -1,6 +1,6 @@
 ﻿@using System.Web;
 @model Note
-<a class="leavePage" asp-controller="Notes" asp-action="Index">
+<a class="leave-page" asp-controller="Notes" asp-action="Index">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-notes">
             <div class="row">
@@ -24,7 +24,7 @@
                             <div class="text-right">
                                 @foreach (string categoryString in categoriesList)
                                 {
-                                    <span class="btn category-item tag-item-sm leavePage">@categoryString</span>
+                                    <span class="btn category-item tag-item-sm leave-page">@categoryString</span>
                                 }
                             </div>
                         }

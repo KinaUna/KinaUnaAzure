@@ -4,8 +4,8 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Edit Measurement", PageNames.Measurements, Model.LanguageId);
-    string longDateTimeFormat = "dd-MMMM-yyyy";
-    string zebraDateTimeFormat = "d-F-Y";
+    const string longDateTimeFormat = "dd-MMMM-yyyy";
+    const string zebraDateTimeFormat = "d-F-Y";
 }
 @section Scripts{
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/css/bootstrap/zebra_datepicker.min.css">
@@ -17,10 +17,10 @@
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
 
-<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
-<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
-<div id="zebraDateTimeFormatDiv" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
-<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="language-id-div" class="d-none" data-language-id="@Model.LanguageId"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="progeny-id-div" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="add-item-container">
@@ -49,7 +49,7 @@
                 <label asp-for="MeasurementItem.Date" class="col-auto control-label">@await LocaleManager.GetTranslation("Date", PageNames.Measurements, Model.LanguageId)</label>
                 <div class="col-auto">
                     <div class="input-group date">
-                        <input id="datetimepicker1"  type="text"
+                        <input id="measurement-date-time-picker"  type="text"
                                class="form-control" data-zdp_readonly_element="false" asp-for="MeasurementItem.Date" value="@Model.MeasurementItem.Date.ToString(longDateTimeFormat)" />
                     </div>
                 </div>
@@ -68,8 +68,8 @@
             <div class="form-group">
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">
-                    <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                    <a class="btn btn-danger leavePage" asp-controller="Measurements" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    <button class="btn btn-success leave-page" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <a class="btn btn-danger leave-page" asp-controller="Measurements" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                 </div>
             </div>
         </form>

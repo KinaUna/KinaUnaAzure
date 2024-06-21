@@ -1,7 +1,10 @@
-import { AutoSuggestList } from './page-models-v2.js';
+import { AutoSuggestList } from './page-models-v6.js';
 let currentMomentLocale = 'en';
+/** Gets the Id of the current Progeny from the progeny-id-div's data-progeny-id attribute's value.
+  * @returns The Progeny's Id number.
+  */
 export function getCurrentProgenyId() {
-    const progenyIdDiv = document.querySelector('#progenyIdDiv');
+    const progenyIdDiv = document.querySelector('#progeny-id-div');
     if (progenyIdDiv !== null) {
         const progenyIdDivData = progenyIdDiv.dataset.progenyId;
         if (progenyIdDivData) {
@@ -10,8 +13,11 @@ export function getCurrentProgenyId() {
     }
     return 0;
 }
+/** Gets the Id for the current language used from the language-id-div's data-current-locale attribute's value.
+  * @returns The Progeny's Id number.
+  */
 export function getCurrentLanguageId() {
-    const languageIdDiv = document.querySelector('#languageIdDiv');
+    const languageIdDiv = document.querySelector('#language-id-div');
     if (languageIdDiv !== null) {
         const languageIdData = languageIdDiv.dataset.languageId;
         if (languageIdData) {
@@ -20,8 +26,10 @@ export function getCurrentLanguageId() {
     }
     return 1;
 }
+/** Gets the locale to use for Moment functions from the current-moment-locale-div's data-current-locale attribute's value, then applies it to Moment.
+  */
 export function setMomentLocale() {
-    const currentMomentLocaleDiv = document.querySelector('#currentMomentLocaleDiv');
+    const currentMomentLocaleDiv = document.querySelector('#current-moment-locale-div');
     if (currentMomentLocaleDiv !== null) {
         const currentLocaleData = currentMomentLocaleDiv.dataset.currentLocale;
         if (currentLocaleData) {
@@ -30,8 +38,11 @@ export function setMomentLocale() {
     }
     moment.locale(currentMomentLocale);
 }
+/** Gets the format to use with date-time-pickers from the zebra-date-time-format-div's data-zebra-date-time-format attribute's value.
+  * @returns The date-time format string.
+  */
 export function getZebraDateTimeFormat() {
-    const zebraDateTimeFormatDiv = document.querySelector('#zebraDateTimeFormatDiv');
+    const zebraDateTimeFormatDiv = document.querySelector('#zebra-date-time-format-div');
     if (zebraDateTimeFormatDiv !== null) {
         const zebraDateTimeFormatData = zebraDateTimeFormatDiv.dataset.zebraDateTimeFormat;
         if (zebraDateTimeFormatData) {
@@ -40,8 +51,11 @@ export function getZebraDateTimeFormat() {
     }
     return 'd-F-Y';
 }
+/** Gets the format to used to display long date-time string from the long-date-time-format-moment-div's data-long-date-time-format-moment attribute's value.
+  * @returns The date-time format string.
+  */
 export function getLongDateTimeFormatMoment() {
-    const longDateTimeFormatMomentDiv = document.querySelector('#longDateTimeFormatMomentDiv');
+    const longDateTimeFormatMomentDiv = document.querySelector('#long-date-time-format-moment-div');
     if (longDateTimeFormatMomentDiv !== null) {
         const longDateTimeFormatMomentData = longDateTimeFormatMomentDiv.dataset.longDateTimeFormatMoment;
         if (longDateTimeFormatMomentData) {
@@ -50,6 +64,10 @@ export function getLongDateTimeFormatMoment() {
     }
     return 'DD-MMMM-YYYY HH:mm';
 }
+/** Fetches the full auto-suggest list of tags for a given progenyId.
+ * @param progenyId The Id of the Progeny to get tags for.
+ * @returns The full list of tags for the Progeny.
+ */
 export async function getTagsList(progenyId) {
     let tagsList = new AutoSuggestList(progenyId);
     const getTagsListParameters = new AutoSuggestList(progenyId);
@@ -69,7 +87,11 @@ export async function getTagsList(progenyId) {
         resolve(tagsList);
     });
 }
-export async function setTagsAutoSuggestList(progenyId, elementId = 'tagList') {
+/** Updates the autosuggest list for tags for a given progenyId, and cofigures the Amsify-Suggestags properties.
+ * @param progenyId The Id of the Progeny to set tags for.
+ * @param elementId The Id of the element to set the autosuggest list for.
+ */
+export async function setTagsAutoSuggestList(progenyId, elementId = 'tag-list') {
     let tagListElement = document.getElementById(elementId);
     if (tagListElement !== null) {
         const tagsList = await getTagsList(progenyId);
@@ -100,6 +122,10 @@ export async function setTagsAutoSuggestList(progenyId, elementId = 'tagList') {
         resolve();
     });
 }
+/** Fetches the full auto-suggest list of contexts for a given progenyId.
+ * @param progenyId The Id of the Progeny to get contexts for.
+ * @returns The full list of contexts for the Progeny.
+ */
 export async function getContextsList(progenyId) {
     let contextsList = new AutoSuggestList(progenyId);
     const getContextsListParameters = new AutoSuggestList(progenyId);
@@ -119,7 +145,11 @@ export async function getContextsList(progenyId) {
         resolve(contextsList);
     });
 }
-export async function setContextAutoSuggestList(progenyId, elementId = 'contextInput') {
+/** Updates the autosuggest list for contexts for a given progenyId, and cofigures the Amsify-Suggestags properties.
+ * @param progenyId The Id of the Progeny to set contexts for.
+ * @param elementId The Id of the element to set the autosuggest list for.
+ */
+export async function setContextAutoSuggestList(progenyId, elementId = 'context-input') {
     let contextInputElement = document.getElementById(elementId);
     if (contextInputElement !== null) {
         const contextsList = await getContextsList(progenyId);
@@ -150,6 +180,10 @@ export async function setContextAutoSuggestList(progenyId, elementId = 'contextI
         resolve();
     });
 }
+/** Fetches the full auto-suggest list of locations for a given progenyId.
+ * @param progenyId The Id of the Progeny to get locations for.
+ * @returns The full list of locations for the Progeny.
+ */
 export async function getLocationsList(progenyId) {
     let locationsList = new AutoSuggestList(progenyId);
     const getLocationsListParameters = new AutoSuggestList(progenyId);
@@ -169,7 +203,11 @@ export async function getLocationsList(progenyId) {
         resolve(locationsList);
     });
 }
-export async function setLocationAutoSuggestList(progenyId, elementId = 'locationInput') {
+/** Updates the autosuggest list for locations for a given progenyId, and cofigures the Amsify-Suggestags properties.
+ * @param progenyId The Id of the Progeny to set locations for.
+ * @param elementId The Id of the element to set the autosuggest list for.
+ */
+export async function setLocationAutoSuggestList(progenyId, elementId = 'location-input') {
     let locationInputElement = document.getElementById(elementId);
     if (locationInputElement !== null) {
         const locationsList = await getLocationsList(progenyId);
@@ -201,6 +239,10 @@ export async function setLocationAutoSuggestList(progenyId, elementId = 'locatio
         resolve();
     });
 }
+/** Fetches the full auto-suggest list of categories for a given progenyId.
+ * @param progenyId The Id of the Progeny to get categories for.
+ * @returns The full list of categories for the Progeny.
+ */
 export async function getCategoriesList(progenyId) {
     let categoriesList = new AutoSuggestList(progenyId);
     const getCategoriesListParameters = new AutoSuggestList(progenyId);
@@ -220,7 +262,11 @@ export async function getCategoriesList(progenyId) {
         resolve(categoriesList);
     });
 }
-export async function setCategoriesAutoSuggestList(progenyId, elementId = 'categoryInput') {
+/** Updates the autosuggest list for categories for a given progenyId, and cofigures the Amsify-Suggestags properties.
+ * @param progenyId The Id of the Progeny to set categories for.
+ * @param elementId The Id of the element to set the autosuggest list for.
+ */
+export async function setCategoriesAutoSuggestList(progenyId, elementId = 'category-input') {
     let categoryInputElement = document.getElementById(elementId);
     if (categoryInputElement !== null) {
         const categoriesList = await getCategoriesList(progenyId);
@@ -251,6 +297,9 @@ export async function setCategoriesAutoSuggestList(progenyId, elementId = 'categ
         resolve();
     });
 }
+/** Hides all items with the specified class by adding the d-none class.
+ *  @param classToHide The class of elements to hide.
+ */
 export function hideItemsWithClass(classToHide) {
     const queryString = '.' + classToHide;
     const items = document.querySelectorAll(queryString);
@@ -258,6 +307,9 @@ export function hideItemsWithClass(classToHide) {
         item.classList.add('d-none');
     });
 }
+/** Shows all items with the specified class by removing the d-none class.
+ *  @param classToShow The class of elements to show.
+ */
 export function showItemsWithClass(classToShow) {
     const queryString = '.' + classToShow;
     const items = document.querySelectorAll(queryString);
@@ -265,6 +317,10 @@ export function showItemsWithClass(classToShow) {
         item.classList.remove('d-none');
     });
 }
+/** Toggles show/hide all elements with the class of the button element name.
+ * If the button has the active class after toggling it, all elements are shown, else they are hidden.
+ * @param button The toggle button
+ */
 export function updateFilterButtonDisplay(button) {
     const iconElement = button.querySelector('.checkbox-icon');
     if (!button.classList.contains('active') && iconElement !== null) {
@@ -286,26 +342,50 @@ export function updateFilterButtonDisplay(button) {
         }
     }
 }
-export function checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString) {
-    let sTime = moment($('#datetimepicker1').val(), longDateTimeFormatMoment);
-    let eTime = moment($('#datetimepicker2').val(), longDateTimeFormatMoment);
+/** Compares the date and time of two date-time-pickers, shows a warning if the second time comes before the first.
+ * @param startElementId The id of the start picker element.
+ * @param endElementId The id of the end picker element.
+ * @param pickerDateTimeFormatMoment The format string of the value used by the date-time-pickers.
+ * @param warningStartIsAfterEndString The string to display if the end value is before the start value.
+ * @returns True if the start time is before the end time, false if not.
+ */
+export function checkStartBeforeEndTime(startElementId, endElementId, pickerDateTimeFormatMoment, warningStartIsAfterEndString) {
+    const startElement = document.querySelector(startElementId);
+    const endElement = document.querySelector(endElementId);
+    if (startElement === null || endElement === null) {
+        return false;
+    }
+    let sTime = moment(startElement.value, pickerDateTimeFormatMoment);
+    let eTime = moment(endElement?.value, pickerDateTimeFormatMoment);
+    const notificationDiv = document.querySelector('#notification');
+    const submitButton = document.querySelector('#submit-button');
     if (sTime < eTime && sTime.isValid() && eTime.isValid()) {
-        $('#notification').text('');
-        $('#submitBtn').prop('disabled', false);
+        if (notificationDiv !== null) {
+            notificationDiv.textContent = '';
+        }
+        if (submitButton !== null) {
+            submitButton.disabled = false;
+        }
+        return true;
     }
-    else {
-        $('#submitBtn').prop('disabled', true);
-        $('#notification').text(warningStartIsAfterEndString);
+    if (notificationDiv !== null) {
+        notificationDiv.textContent = warningStartIsAfterEndString;
     }
-    ;
+    if (submitButton !== null) {
+        submitButton.disabled = true;
+    }
+    return false;
 }
 ;
-export function getTimeLineStartDate(longDateTimeFormatMoment) {
-    let timelineStartTimeString = moment($('#timeline-start-date-datetimepicker').val(), longDateTimeFormatMoment);
-    return timelineStartTimeString;
-}
-export function getFormattedDateString(date, timeFormat) {
+/** Formats a date object as a string using the specified Moment formatting string.
+ * @param date The date object to format.
+ * @returns The formatted date string.
+ */
+export function getFormattedDateString(date, timeFormat = '') {
+    if (timeFormat === '') {
+        timeFormat = getLongDateTimeFormatMoment();
+    }
     let timeString = moment(date).format(timeFormat);
     return timeString;
 }
-//# sourceMappingURL=data-tools-v2.js.map
+//# sourceMappingURL=data-tools-v6.js.map

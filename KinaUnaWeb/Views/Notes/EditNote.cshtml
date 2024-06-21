@@ -22,10 +22,10 @@
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
 
-<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
-<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
-<div id="zebraDateTimeFormatDiv" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
-<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="language-id-div" class="d-none" data-language-id="@Model.LanguageId"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="progeny-id-div" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="add-item-container">
         <h2 class="col-12">@ViewData["Title"]</h2>
@@ -49,7 +49,7 @@
                             "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
                             "SourceCode", "FullScreen", "|", "Undo", "Redo" };
                     }
-                    <ejs-richtexteditor id="contentRTE" ejs-for="NoteItem.Content" imageUploadSuccess="onImageUploadSuccess" height="300px" enableResize="true">
+                    <ejs-richtexteditor id="content-rich-text-editor" ejs-for="NoteItem.Content" imageUploadSuccess="onImageUploadSuccess" height="300px" enableResize="true">
                         <e-richtexteditor-toolbarsettings items="@toolbarItems"></e-richtexteditor-toolbarsettings>
                         <e-richtexteditor-insertimagesettings saveUrl="/AddItem/SaveRtfFile" path=""></e-richtexteditor-insertimagesettings>
                         <e-content-template>
@@ -71,14 +71,14 @@
             <div class="form-group">
                 <label asp-for="NoteItem.Category" class="col-auto control-label">@await LocaleManager.GetTranslation("Category", PageNames.Notes, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="categoryInput" asp-for="NoteItem.Category" class="form-control" value="@Model.NoteItem.Category" placeholder="@await LocaleManager.GetTranslation("Add category...", PageNames.Notes, Model.LanguageId)"/>
+                    <input id="category-input" asp-for="NoteItem.Category" class="form-control" value="@Model.NoteItem.Category" placeholder="@await LocaleManager.GetTranslation("Add category...", PageNames.Notes, Model.LanguageId)" />
                 </div>
             </div>
             <div class="form-group">
                 <label asp-for="NoteItem.CreatedDate" class="col-auto control-label">@await LocaleManager.GetTranslation("Date and time", PageNames.Notes, Model.LanguageId)</label>
                 <div class="col-auto">
                     <div class="input-group date">
-                        <input id="datetimepicker1" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="NoteItem.CreatedDate" value="@Model.NoteItem.CreatedDate.ToString(longDateTimeFormat)" />
+                        <input id="note-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="NoteItem.CreatedDate" value="@Model.NoteItem.CreatedDate.ToString(longDateTimeFormat)" />
                     </div>
                 </div>
             </div>
@@ -95,8 +95,8 @@
             <div class="form-group">
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">
-                    <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                    <a class="btn btn-danger leavePage" asp-controller="Notes" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    <button class="btn btn-success leave-page" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <a class="btn btn-danger leave-page" asp-controller="Notes" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                 </div>
             </div>
         </form>

@@ -18,8 +18,8 @@
     <script src="https://cdn.datatables.net/plug-ins/1.13.4/sorting/datetime-moment.js"></script>
 }
 
-<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
-<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="language-id-div" class="d-none" data-language-id="@Model.LanguageId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     @if (Model.SkillsList == null || !Model.SkillsList.Any())
     {
@@ -32,7 +32,7 @@
             @if (Model.IsCurrentUserProgenyAdmin)
             {
                 <div class="btn-group" style="float: right;">
-                    <a asp-controller="Skills" asp-action="AddSkill" class="btn btn-success btn-round leavePage">
+                    <a asp-controller="Skills" asp-action="AddSkill" class="btn btn-success btn-round leave-page">
                         <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add skill", PageNames.Skills, Model.LanguageId)
                     </a>
                 </div>
@@ -40,7 +40,7 @@
             <h2>@ViewData["Title"]</h2>
         </div>
         <div class="table-responsive">
-            <table id="skillzList" class="table table-bordered table-striped" style="border-spacing: 0;">
+            <table id="skillz-list" class="table table-bordered table-striped" style="border-spacing: 0;">
                 <thead>
                     <tr>
                         <th style="font-weight: bold">@await LocaleManager.GetTranslation("Name", PageNames.Skills, Model.LanguageId)</th>
@@ -72,10 +72,10 @@
                             {
                                 <td style="min-width: 135px;">
                                     <div>
-                                        <a asp-controller="Skills" asp-action="EditSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-info btn-round btn-sm leavePage">
+                                        <a asp-controller="Skills" asp-action="EditSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-info btn-round btn-sm leave-page">
                                             <i class="fas fa-pencil-alt"></i>
                                         </a>
-                                        <a asp-controller="Skills" asp-action="DeleteSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-danger btn-round btn-sm leavePage">
+                                        <a asp-controller="Skills" asp-action="DeleteSkill" asp-route-itemId="@skillViewModel.SkillItem.SkillId" class="btn btn-danger btn-round btn-sm leave-page">
                                             <i class="fas fa-trash-alt"></i>
                                         </a>
                                     </div>

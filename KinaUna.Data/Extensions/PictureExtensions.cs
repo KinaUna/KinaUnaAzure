@@ -18,26 +18,17 @@ namespace KinaUna.Data.Extensions
             if (picture == null) return;
 
             picture.Altitude ??= "";
-
             picture.Tags ??= "";
-
             picture.Author ??= "";
-
             picture.Latitude ??= "";
-
             picture.Location ??= "";
-
             picture.Longtitude ??= "";
-
-            picture.Owners ??= "";
-
-            picture.PictureLink1200 ??= "";
-
-            picture.PictureLink ??= "";
-
-            picture.PictureLink600 ??= "";
-
+            picture.Owners ??= ""; 
+            picture.PictureLink1200 ??= ""; 
+            picture.PictureLink ??= ""; 
+            picture.PictureLink600 ??= ""; 
             picture.TimeZone ??= "";
+            picture.PictureTime ??= DateTime.MinValue;
         }
 
         public static void CopyPropertiesForUserUpdate(this Picture currentPicture, Picture otherPicture)

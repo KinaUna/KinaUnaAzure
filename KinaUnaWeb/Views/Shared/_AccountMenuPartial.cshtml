@@ -27,7 +27,7 @@
         {
             <div class="dropdown-item">
                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Family" asp-action="Index" method="get">
-                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">people</i> @await LocaleManager.GetTranslation("My Family", PageNames.Layout, Model.LanguageId)</button>
+                    <button type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">people</i> @await LocaleManager.GetTranslation("My Family", PageNames.Layout, Model.LanguageId)</button>
                 </form>
             </div>
         }
@@ -35,7 +35,7 @@
         {
             <div class="dropdown-item">
                 <form class="form-inline-fullwidth" asp-area="" asp-controller="PushDevices" asp-action="Index" method="get">
-                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">notification_important</i> Push Notifications</button>
+                    <button type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">notification_important</i> Push Notifications</button>
                 </form>
             </div>
         }
@@ -43,18 +43,18 @@
         {
             <div class="dropdown-item">
                 <form class="form-inline-fullwidth" asp-area="" asp-controller="Admin" asp-action="Index" method="get">
-                    <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">security</i> Admin</button>
+                    <button type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">security</i> Admin</button>
                 </form>
             </div>
         }
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="MyAccount" method="get">
-                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">tune</i> @await LocaleManager.GetTranslation("My Account", PageNames.Layout, Model.LanguageId)</button>
+                <button type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">tune</i> @await LocaleManager.GetTranslation("My Account", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
         <div class="dropdown-item">
             <form id="logOutForm" class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Logout" method="post" target="loginFrame">
-                <button id="logOutButton" type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">power_settings_new</i> @await LocaleManager.GetTranslation("Log Out", PageNames.Layout, Model.LanguageId)</button>
+                <button id="logOutButton" type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">power_settings_new</i> @await LocaleManager.GetTranslation("Log Out", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
     </div>

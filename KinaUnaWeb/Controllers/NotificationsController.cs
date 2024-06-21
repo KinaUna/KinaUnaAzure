@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
@@ -23,6 +24,12 @@ namespace KinaUnaWeb.Controllers
         IViewModelSetupService viewModelSetupService)
         : Controller
     {
+        readonly JsonSerializerOptions _serializeOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = true
+        };
+
         public async Task<IActionResult> Index(int Id = 0, int count = 10)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
@@ -61,6 +68,11 @@ namespace KinaUnaWeb.Controllers
             webNotificationsList.RemainingItemsCount = webNotificationsList.AllNotificationsCount - parameters.Skip - webNotificationsList.NotificationsList.Count;
 
             if (webNotificationsList.NotificationsList.Count == 0) return Json(webNotificationsList);
+
+            if (parameters.unreadOnly)
+            {
+                webNotificationsList.NotificationsList = webNotificationsList.NotificationsList.Where(n => !n.IsRead).ToList();
+            }
 
             foreach (WebNotification notif in webNotificationsList.NotificationsList)
             {
@@ -115,16 +127,16 @@ namespace KinaUnaWeb.Controllers
             string userId = User.GetUserId() ?? "NoUser";
             WebNotification updateNotification = await webNotificationsService.GetNotificationById(Id);
 
-            if (updateNotification == null) return Ok();
+            if (updateNotification == null) return NotFound();
 
-            if (userId != updateNotification.To) return Ok();
+            if (userId != updateNotification.To) return NotFound();
 
             updateNotification.IsRead = false;
             updateNotification = await webNotificationsService.UpdateNotification(updateNotification);
 
-            await hubContext.Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(updateNotification));
+            await hubContext.Clients.User(userId).SendAsync("ReceiveMessage", System.Text.Json.JsonSerializer.Serialize(updateNotification, _serializeOptions));
 
-            return Ok();
+            return Ok("Notification set as unread. Id: " + Id);
         }
 
         public async Task<IActionResult> SetRead(int Id)
@@ -132,17 +144,17 @@ namespace KinaUnaWeb.Controllers
             string userId = User.GetUserId() ?? "NoUser";
             WebNotification updateNotification = await webNotificationsService.GetNotificationById(Id);
 
-            if (updateNotification == null) return Ok();
+            if (updateNotification == null) return NotFound();
 
-            if (userId != updateNotification.To) return Ok();
+            if (userId != updateNotification.To) return NotFound();
 
             updateNotification.IsRead = true;
                     
             updateNotification = await webNotificationsService.UpdateNotification(updateNotification);
 
-            await hubContext.Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(updateNotification));
+            await hubContext.Clients.User(userId).SendAsync("ReceiveMessage", System.Text.Json.JsonSerializer.Serialize(updateNotification, _serializeOptions));
 
-            return Ok();
+            return Ok("Notification set as read. Id: " + Id);
         }
 
         public async Task<IActionResult> SetAllRead()
@@ -167,9 +179,9 @@ namespace KinaUnaWeb.Controllers
             }
 
             //_ = Task.Run(() => Task.FromResult(BatchSetWebNotificationsToRead(unreadWebNotifications))); // Todo: Replace with a more robust solution.
-            await hubContext.Clients.User(userId).SendAsync("MarkAllReadMessage", JsonConvert.SerializeObject(userId));
+            await hubContext.Clients.User(userId).SendAsync("MarkAllReadMessage", System.Text.Json.JsonSerializer.Serialize(userId, _serializeOptions));
 
-            return Ok();
+            return Ok("All notification set as read");
         }
 
 
@@ -178,14 +190,14 @@ namespace KinaUnaWeb.Controllers
             string userId = User.GetUserId() ?? "NoUser";
             WebNotification updateNotification = await webNotificationsService.GetNotificationById(Id);
 
-            if (updateNotification == null) return Ok();
+            if (updateNotification == null) return NotFound();
 
-            if (userId != updateNotification.To) return Ok();
+            if (userId != updateNotification.To) return NotFound();
 
             await webNotificationsService.RemoveNotification(updateNotification);
-            await hubContext.Clients.User(userId).SendAsync("DeleteMessage", JsonConvert.SerializeObject(updateNotification));
+            await hubContext.Clients.User(userId).SendAsync("DeleteMessage", System.Text.Json.JsonSerializer.Serialize(updateNotification, _serializeOptions));
 
-            return Ok();
+            return Ok("Notification removed. Id: " + Id);
         }
     }
 }

@@ -33,7 +33,7 @@
                 @if (Model.IsCurrentUserProgenyAdmin)
                 {
                     <div style="float: right;">
-                        <a asp-controller="Friends" asp-action="AddFriend" class="btn btn-info btn-round leavePage">
+                        <a asp-controller="Friends" asp-action="AddFriend" class="btn btn-info btn-round leave-page">
                             <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add friend", PageNames.Friends, Model.LanguageId)
                         </a>
                     </div>
@@ -72,7 +72,7 @@
                     <div class="space-20"></div>
                     <div class="text-dark" style="float: right;">
                         @await LocaleManager.GetTranslation("Tag filter:", PageNames.Friends, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
-                        <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
+                        <a class="btn btn-info btn-sm leave-page" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
                             <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Friends, Model.LanguageId)
                         </a>
                     </div>
@@ -83,7 +83,7 @@
                     @foreach (FriendViewModel friendViewModel in Model.FriendViewModelsList)
                     {
                         string chkClass = "friendClass" + friendViewModel.FriendItem.Type.ToString();
-                        <a class="@chkClass leavePage" style="margin-bottom: 15px;" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@friendViewModel.FriendItem.FriendId">
+                        <a class="@chkClass leave-page" style="margin-bottom: 15px;" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@friendViewModel.FriendItem.FriendId">
                             <div class="card text-white bg-primary" style="padding: 3px; float: left; clear: right; text-align: center; height: 600px; width: 255px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
                                 <div class="card-header card-header-rose card-title h4" style="height: 100px;">@friendViewModel.FriendItem.Name</div>
                                 <div style="height: 305px;">
@@ -123,7 +123,7 @@
                             <div class="col-12">
                                 @foreach (string tagString in tagsList)
                                 {
-                                <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
+                                <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
                                 }
                             </div>
                         </div>

@@ -20,13 +20,12 @@
     ViewData["Title"] = await LocaleManager.GetTranslation("Add photo", PageNames.Pictures, Model.LanguageId);
     string addPhotoForString = await LocaleManager.GetTranslation("Add photo for:", PageNames.Pictures, Model.LanguageId);
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
-    //string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
 }
-<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
-<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
-<div id="zebraDateTimeFormatDiv" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
-<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="language-id-div" class="d-none" data-language-id="@Model.LanguageId"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="progeny-id-div" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="add-item-container">
         <h2 class="col-12">@ViewData["Title"]</h2>
@@ -37,7 +36,7 @@
                 <div class="form-group">
                     <label class="control-label col-auto">@addPhotoForString </label>
                     <div class="col-auto">
-                        <select id="progenyIdSelect" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="Picture.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                        <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="Picture.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
                 </div>
             }
@@ -82,13 +81,13 @@
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="locationInput" type="text" asp-for="Picture.Location" value="@Model.Picture.Tags" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
+                    <input id="location-input" type="text" asp-for="Picture.Location" value="@Model.Picture.Tags" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Pictures, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="tagList" type="text" asp-for="Picture.Tags" value="@Model.Picture.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
+                    <input id="tag-list" type="text" asp-for="Picture.Tags" value="@Model.Picture.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Pictures, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
@@ -102,8 +101,8 @@
                 <div class="col-auto"></div>
                 <input asp-for="Picture.Owners" class="form-control" value="@Model.Picture.Owners" type="hidden" />
                 <div class="col-auto">
-                    <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                    <a class="btn btn-danger leavePage" asp-controller="Pictures" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    <button class="btn btn-success leave-page" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <a class="btn btn-danger leave-page" asp-controller="Pictures" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                 </div>
             </div>
         </form>

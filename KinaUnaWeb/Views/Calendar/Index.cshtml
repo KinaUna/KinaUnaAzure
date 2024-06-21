@@ -7,7 +7,7 @@
 }
 <h2>@ViewData["Title"]</h2>
 <div class="space-50"></div>
-<div id="calendarCurrentCultureDiv" class="d-none" data-current-culture="@Model.LanguageIdForCldr()"></div>
+<div id="calendar-current-culture-div" class="d-none" data-current-culture="@Model.LanguageIdForCldr()"></div>
 <div class="" style="clear: both; height: 90vh; min-height: 600px; max-height: 1180px;">
     <ejs-schedule id="schedule" height="95%" width="100%" dateFormat="dd/MMM/yyyy" views="@Model.ViewOptions">
         <e-schedule-eventsettings dataSource="@Model.EventsList">

@@ -11,6 +11,7 @@
     const string zebraDateTimeFormat = "d-F-Y";
     const string longDateTimeFormatMoment = "DD-MMMM-YYYY";
     DateTime startDateTime = new(Model.Year, Model.Month, Model.Day);
+    string pageParameters = Json.Serialize(Model.Parameters).ToString();
 }
 
 @section Scripts{
@@ -22,27 +23,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/de-ch.min.js" integrity="sha512-7VvKBnFgucrOLF0GLzWUuhtDcRKYUuOy9O5AqiqvccZFp4zAqAzkMqIlNVCDR3DJ6OZ6dsdn+MLiJ8vZx84WhQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
-<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
-<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
-<div id="itemsCountDiv" class="d-none" data-items-count="@Model.Items"></div>
-<div id="startYearDiv" class="d-none" data-startYear="@Model.Year"></div>
-<div id="startMonthDiv" class="d-none" data-startMonth="@Model.Month"></div>
-<div id="startDayDiv" class="d-none" data-startDay="@Model.Day"></div>
-<div id="zebraDateTimeFormatDiv" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
-<div id="longDateTimeFormatMomentDiv" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
+<div id="language-id-div" class="d-none" data-language-id="@Model.LanguageId"></div>
+<div id="progeny-id-div" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
+<div id="timeline-page-parameters-div" class="d-none" data-timeline-page-parameters="@pageParameters"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
 <div class="ml-md-auto mr-md-auto col" style="max-width: 600px;">
-    <div id="timeline-settings-notification-div" class="float-right small text-white-50"></div>    
-    <div class="h2">
+    <div id="settings-notification-div" class="float-right small text-muted"></div>
+    <div page-title-div class="h2">
         @ViewData["Title"]
     </div>
-<br style="clear: both;"/>
-    <div id="latestPostsParentDiv" class="d-none">
-        <div id="timelineItemsDiv">
+    <div class="space-20"></div>
+    <div id="latest-posts-parent-div" class="d-none">
+        <div id="timeline-items-div">
 
         </div>
         <div style="height: 150px;">
-            <button id="moreTimelineItemsButton" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
-            <div id="loadingTimeLineItemsDiv" class="w-100">
+            <button id="more-timeline-items-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more", PageNames.Timeline, Model.LanguageId)</button>
+            <div id="loading-timeline-items-div" class="w-100">
                 <div class="space-50"></div>
             </div>
         </div>
@@ -52,7 +50,7 @@
     <div id="page-settings-content-div" class="bg-dark page-settings-content">
         <div class="row">
             <div class="col-auto ml-auto">
-                <button id="closePageSettingsButton" class="ml-auto btn btn-link btn-link-yellow p-2">
+                <button id="close-page-settings-button" class="ml-auto btn btn-link btn-link-yellow p-2">
                     <i class="material-icons icon-top-4">close</i>
                 </button>
             </div>
@@ -72,7 +70,7 @@
                     <div class="row">
                         <div class="col">
                             <div class="input-group date">
-                                <input id="timeline-start-date-datetimepicker" type="text" class="form-control" data-zdp_readonly_element="false" value="@startDateTime.ToString(longDateTimeFormat)"/>
+                                <input id="settings-start-date-datetimepicker" type="text" class="form-control" data-zdp_readonly_element="false" value="@startDateTime.ToString(longDateTimeFormat)" />
                             </div>
                         </div>
                     </div>
@@ -86,10 +84,10 @@
                 <div class="col-auto ml-4">
                     <div class="row align-items-center">
                         <div class="col">
-                            <button id="sort-timeline-descending-button" class="btn btn-outline-info active"><i class="material-icons icon-top-4">history</i> @newestFirstString</button>
+                            <button id="setting-sort-descending-button" class="btn btn-outline-info active"><i class="material-icons icon-top-4">history</i> @newestFirstString</button>
                         </div>
                         <div class="col">
-                            <button id="sort-timeline-ascending-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">update</i> @oldestFirstString</button>
+                            <button id="setting-sort-ascending-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">update</i> @oldestFirstString</button>
                         </div>
                     </div>
                 </div>
@@ -101,7 +99,7 @@
                 </div>
                 <div class="col ml-4">
                     <div class="row" style="font-size: small; margin-top: 5px;">
-                        <select id="nextItemsCount" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
+                        <select id="items-per-page-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
                             <option value="5">5</option>
                             <option value="10" selected="selected">10</option>
                             <option value="15">15</option>
@@ -128,10 +126,4 @@
         </button>
     </div>
 </div>
-<script type="text/javascript">
-    let sortBy = @Model.SortBy;
-    let startYear = @Model.Year;
-    let startMonth = @Model.Month;
-    let startDay = @Model.Day;
-</script>
 <script src="/js/timeline/timeline-index.js" type="module" asp-append-version="true"></script>

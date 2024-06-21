@@ -12,7 +12,7 @@
         <div class="card-header card-header-warning title">@await LocaleManager.GetTranslation("My children", PageNames.Family, Model.LanguageId)</div>
         <div class="card-text">
             <div class="btn-group">
-                <a asp-controller="Progeny" asp-action="AddProgeny" class="btn btn-success btn-rounded leavePage">
+                <a asp-controller="Progeny" asp-action="AddProgeny" class="btn btn-success btn-rounded leave-page">
                     <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add child", PageNames.Family, Model.LanguageId)
                 </a>
             </div>
@@ -58,10 +58,10 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <a asp-controller="Progeny" asp-action="EditProgeny" asp-route-progenyId="@accMvm.Id.ToString()" class="btn btn-info leavePage">
+                                    <a asp-controller="Progeny" asp-action="EditProgeny" asp-route-progenyId="@accMvm.Id.ToString()" class="btn btn-info leave-page">
                                         <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                                     </a>
-                                    <a asp-controller="Progeny" asp-action="DeleteProgeny" asp-route-progenyId="@accMvm.Id.ToString()" class="btn btn-danger leavePage">
+                                    <a asp-controller="Progeny" asp-action="DeleteProgeny" asp-route-progenyId="@accMvm.Id.ToString()" class="btn btn-danger leave-page">
                                         <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
                                     </a>
 
@@ -86,7 +86,7 @@
                     if (!progIds.Contains(accMvm.Id.ToString()))
                     {
                         <div class="btn-group">
-                            <a asp-controller="AccessManagement" asp-action="AddAccess" asp-route-progenyId="@accMvm.Id.ToString()" class="btn btn-success btn-rounded leavePage">
+                            <a asp-controller="AccessManagement" asp-action="AddAccess" asp-route-progenyId="@accMvm.Id.ToString()" class="btn btn-success btn-rounded leave-page">
                                 <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add user for", PageNames.Family, Model.LanguageId) @accMvm.Name
                             </a>
                         </div>
@@ -120,10 +120,10 @@
                             <td>@item.UserId</td>
                             <td>@Model.Family.AccessLevelList.AccessLevelListEn[item.AccessLevel].Text</td>
                             <td>
-                                <a asp-controller="AccessManagement" asp-action="EditAccess" asp-route-accessId="@item.AccessId" class="btn btn-info leavePage">
+                                <a asp-controller="AccessManagement" asp-action="EditAccess" asp-route-accessId="@item.AccessId" class="btn btn-info leave-page">
                                     <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                                 </a>
-                                <a asp-controller="AccessManagement" asp-action="DeleteAccess" asp-route-accessId="@item.AccessId" class="btn btn-danger leavePage">
+                                <a asp-controller="AccessManagement" asp-action="DeleteAccess" asp-route-accessId="@item.AccessId" class="btn btn-danger leave-page">
                                     <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
                                 </a>
 

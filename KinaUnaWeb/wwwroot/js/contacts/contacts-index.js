@@ -1,5 +1,8 @@
-import { updateFilterButtonDisplay } from '../data-tools-v2.js';
-$(function () {
+import { updateFilterButtonDisplay } from '../data-tools-v6.js';
+/**
+ * Sets up the event listners for filtering buttons on the page, to select/deselect options and show/hide the associated contact items.
+ */
+function setupFilterButtons() {
     const filterButtons = document.querySelectorAll('.button-checkbox');
     filterButtons.forEach((filterButtonParentSpan) => {
         let filterButton = filterButtonParentSpan.querySelector('button');
@@ -12,5 +15,11 @@ $(function () {
             updateFilterButtonDisplay(filterButton);
         }
     });
+}
+/**
+ * Initializes the page elements when it is loaded.
+ */
+document.addEventListener('DOMContentLoaded', function () {
+    setupFilterButtons();
 });
 //# sourceMappingURL=contacts-index.js.map

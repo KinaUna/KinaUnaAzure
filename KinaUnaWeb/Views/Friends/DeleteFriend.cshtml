@@ -27,8 +27,8 @@
             <div class="space-20"></div>
             <input asp-for="FriendItem.FriendId" class="form-control" value="@Model.FriendItem.FriendId" type="hidden" />
             <div class ="col-auto">
-                <Button type="submit" class="btn btn-success leavePage">@await LocaleManager.GetTranslation("Yes, delete friend", PageNames.Friends, Model.LanguageId)</Button>
-                <a class="btn btn-danger leavePage" asp-controller="Friends" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                <Button type="submit" class="btn btn-success leave-page">@await LocaleManager.GetTranslation("Yes, delete friend", PageNames.Friends, Model.LanguageId)</Button>
+                <a class="btn btn-danger leave-page" asp-controller="Friends" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
             </div>
         </form>
     </div>

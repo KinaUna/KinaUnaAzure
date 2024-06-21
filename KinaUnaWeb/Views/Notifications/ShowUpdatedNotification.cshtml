@@ -3,18 +3,15 @@
 @model KinaUnaWeb.Models.ItemViewModels.WebNotificationViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string idClass = "notifId" + Model.WebNotification.Id;
-    string isReadClass = "notificationUnread";
+    string isReadClass = "notification-unread";
     string markAsRead = await LocaleManager.GetTranslation("Mark as read", PageNames.Notifications, Model.LanguageId);
-    string readId = "notificationReadId" + Model.WebNotification.Id;
-    string deleteId = "notificationDeleteId" + Model.WebNotification.Id;
-    string topBtnClass = "btn btn-link notification-button leavePage";
+    string topBtnClass = "btn btn-link notification-button leave-page";
     string markAsReadIcon = "drafts";
     if (Model.WebNotification.IsRead)
     {
-        isReadClass = "notificationRead";
+        isReadClass = "notification-read";
         markAsRead = await LocaleManager.GetTranslation("Mark as unread", PageNames.Notifications, Model.LanguageId);
-        topBtnClass = topBtnClass + " bg-dark";
+        topBtnClass += " bg-dark";
         markAsReadIcon = "markunread";
     }
 }
@@ -33,10 +30,10 @@
                 <div class="notification-title text-white">@Model.WebNotification.Title</div>
                 <p class="text-light notification-message">@Model.WebNotification.Message</p>
                     <div class="media-footer">
-                    <span id="@readId" class="btn btn-info btn-link btn-sm @isReadClass @idClass" onClick="markRead(this, event)" data-notificationid="@Model.WebNotification.Id">
+                    <span class="btn btn-info btn-link btn-sm @isReadClass" onClick="markRead(this, event)" data-notificationid="@Model.WebNotification.Id">
                         <i class="material-icons">@markAsReadIcon</i> @markAsRead
                     </span>
-                    <span id="@deleteId" class="btn btn-danger btn-link btn-sm" onClick="removeNotification(this, event)" data-notificationid="@Model.WebNotification.Id">
+                    <span class="btn btn-danger btn-link btn-sm" onClick="removeNotification(this, event)" data-notificationid="@Model.WebNotification.Id">
                         <i class="material-icons">delete_forever</i> @await LocaleManager.GetTranslation("Delete", PageNames.Notifications, Model.LanguageId)
                     </span>
                     </div>

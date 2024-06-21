@@ -19,7 +19,7 @@
                 @if (Model.IsCurrentUserProgenyAdmin)
                 {
                     <div class="btn-group" style="float: right;">
-                        <a asp-controller="Contacts" asp-action="AddContact" class="btn btn-info btn-round leavePage">
+                        <a asp-controller="Contacts" asp-action="AddContact" class="btn btn-info btn-round leave-page">
                             <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add contact", PageNames.Contacts, Model.LanguageId)
                         </a>
                     </div>
@@ -29,13 +29,13 @@
                 <div>
                     <span>Show:</span>
                     <span class="button-checkbox">
-                        <button type="button" class="btn btn-primary" name="contactClassTrue">
+                        <button type="button" class="btn btn-primary" name="contact-class-true">
                             <span class="checkbox-icon"></span>
                             @await LocaleManager.GetTranslation("Active contacts", PageNames.Contacts, Model.LanguageId)
                         </button>
                     </span>
                     <span class="button-checkbox">
-                        <button type="button" class="btn btn-primary" name="contactClassFalse">
+                        <button type="button" class="btn btn-primary" name="contact-class-false">
                             <span class="checkbox-icon"></span>
                             @await LocaleManager.GetTranslation("Inactive contacts", PageNames.Contacts, Model.LanguageId)
                         </button>
@@ -56,20 +56,20 @@
                 <div>
                     @foreach (ContactViewModel contactViewModel in Model.ContactsList)
                     {
-                        string chkClass = "contactClass" + contactViewModel.ContactItem.Active;
+                        string chkClass = "contact-class-" + contactViewModel.ContactItem.Active.ToString().ToLower();
                         <div class="@chkClass" style="margin-bottom: 15px;">
                             <div class="card text-white bg-contact" style="float: left; clear: right; text-align: center; height: 600px; width: 255px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
-                                <a class="leavePage" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactItem.ContactId">
-                                    <div class="card-header bg-contact-header kinauna_yellow_text">@contactViewModel.ContactItem.DisplayName</div>
+                                <a class="leave-page" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactItem.ContactId">
+                                    <div class="card-header bg-contact-header kinauna-yellow-text">@contactViewModel.ContactItem.DisplayName</div>
                                 </a>
                                 <div class="card-body">
                                     <div class="card-text">
-                                        <a class="leavePage" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactItem.ContactId">
+                                        <a class="leave-page" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactItem.ContactId">
                                             <div style="height: 253px;">
                                                 <img class="img-thumbnail mx-auto d-block lazyload" style="max-height: 250px; max-width: 100%; background: black; margin-bottom: 10px;" data-src="@contactViewModel.ContactItem.PictureLink" alt="@contactViewModel.ContactItem.DisplayName"/>
                                             </div>
                                             <div class="space-20"></div>
-                                            <div class="kinauna_yellow_text" align="left">
+                                            <div class="kinauna-yellow-text" align="left">
                                                 @contactViewModel.ContactItem.FirstName @contactViewModel.ContactItem.MiddleName @contactViewModel.ContactItem.LastName
                                             </div>
                                             <div class="text-white" align="left">@await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.Email1 @contactViewModel.ContactItem.Email2</div>
@@ -102,7 +102,7 @@
                     string[] tagsList = Model.Tags.Split(',');
                     foreach (string tagString in tagsList)
                     {
-                        <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
+                        <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
                     }
                 }
             }

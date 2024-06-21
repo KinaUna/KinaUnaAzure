@@ -1,5 +1,5 @@
 ﻿@model KinaUnaWeb.Models.ItemViewModels.PictureViewModel
-<a class="leavePage2" asp-controller="Pictures" asp-action="Picture" asp-route-Id="@Model.PictureId">
+<a class="leave-page2" asp-controller="Pictures" asp-action="Picture" asp-route-Id="@Model.PictureId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-photo">
             <div class="row">
@@ -29,7 +29,7 @@
                             <div>
                                 @foreach (string tagString in tagsList)
                                 {
-                                    <span class="btn tag-item tag-item-sm leavePage">@tagString</span>
+                                    <span class="btn tag-item tag-item-sm leave-page">@tagString</span>
                                 }
                             </div>
 

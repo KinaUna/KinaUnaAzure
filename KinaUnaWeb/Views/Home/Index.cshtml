@@ -5,7 +5,7 @@
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Home", PageNames.Home, Model.LanguageId);
 }
-<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
+<div id="progeny-id-div" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="row m-0">
     <div class="col-12">
         <div class="row">
@@ -27,7 +27,7 @@
                             @await LocaleManager.GetTranslation("You don't have access to data for", PageNames.Home, Model.LanguageId) @ViewBag.OriginalProgeny.NickName<br />
 
                             @await LocaleManager.GetTranslation("To request access click here:", PageNames.Home, Model.LanguageId)
-                            <a asp-controller="Home" asp-action="RequestAccess" asp-route-childId="@ViewBag.OriginalProgeny.Id" class="btn btn-success btn-round leavePage">
+                            <a asp-controller="Home" asp-action="RequestAccess" asp-route-childId="@ViewBag.OriginalProgeny.Id" class="btn btn-success btn-round leave-page">
                                 <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Request access", PageNames.Home, Model.LanguageId)
                             </a><br />
                             @await LocaleManager.GetTranslation("Displaying data for KinaUna.com instead.", PageNames.Home, Model.LanguageId)<br />

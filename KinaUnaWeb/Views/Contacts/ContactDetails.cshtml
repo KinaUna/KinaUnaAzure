@@ -43,7 +43,7 @@
                             List<string> tagsList = Model.Tags.Split(',').ToList();
                             foreach (string tagString in tagsList)
                             {
-                                <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
+                                <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
                             }
                         }
                     }
@@ -51,10 +51,10 @@
                 @if (Model.IsCurrentUserProgenyAdmin)
                 {
                     <div class="float-right mt-4">
-                        <a asp-controller="Contacts" asp-action="EditContact" asp-route-itemId="@Model.ContactItem.ContactId" class="btn btn-info leavePage">
+                        <a asp-controller="Contacts" asp-action="EditContact" asp-route-itemId="@Model.ContactItem.ContactId" class="btn btn-info leave-page">
                             <i class="fas fa-pencil-alt"></i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
                         </a>
-                        <a asp-controller="Contacts" asp-action="DeleteContact" asp-route-itemId="@Model.ContactItem.ContactId" class="btn btn-danger leavePage">
+                        <a asp-controller="Contacts" asp-action="DeleteContact" asp-route-itemId="@Model.ContactItem.ContactId" class="btn btn-danger leave-page">
                             <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
                         </a>
                     </div>

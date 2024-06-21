@@ -4,25 +4,25 @@
 @inject ILocaleManager LocaleManager
 <li class="nav-item dropdown mb-2 mb-lg-0 mr-auto mr-lg-2">
     <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-        <i class="material-icons icon_medium ml-2 mr-1">favorite</i><span class="d-sm-inline d-md-inline d-lg-inline"> @await LocaleManager.GetTranslation("Menu", PageNames.Layout, Model.LanguageId) </span>
+        <i class="material-icons kinauna-icon-medium ml-2 mr-1">favorite</i><span class="d-sm-inline d-md-inline d-lg-inline"> @await LocaleManager.GetTranslation("Menu", PageNames.Layout, Model.LanguageId) </span>
     </a>
     <div class="dropdown-menu">
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="TimeLine" asp-action="Index" method="get">
                 <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
-                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">update</i> @await LocaleManager.GetTranslation("Timeline", PageNames.Layout, Model.LanguageId)</button>
+                <button type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">update</i> @await LocaleManager.GetTranslation("Timeline", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="Pictures" asp-action="Index" method="get">
-                <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
+                <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leave-page">
                     <i class="material-icons">photo_library</i><span> @await LocaleManager.GetTranslation("Photos", PageNames.Layout, Model.LanguageId)</span>
                 </button>
             </form>
         </div>
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="Videos" asp-action="Index" method="get">
-                <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leavePage">
+                <button style="align-items: flex-start" type="submit" class="btn btn-link text-white text-left btn-block leave-page">
                     <i class="material-icons">videocam</i><span> @await LocaleManager.GetTranslation("Videos", PageNames.Layout, Model.LanguageId)</span>
                 </button>
             </form>
@@ -30,61 +30,61 @@
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="Calendar" asp-action="Index" method="get">
                 <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
-                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">event_note</i> @await LocaleManager.GetTranslation("Calendar", PageNames.Layout, Model.LanguageId)</button>
+                <button type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">event_note</i> @await LocaleManager.GetTranslation("Calendar", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="Notes" asp-action="Index" method="get">
                 <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
-                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">note</i> @await LocaleManager.GetTranslation("Notes", PageNames.Layout, Model.LanguageId)</button>
+                <button type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">note</i> @await LocaleManager.GetTranslation("Notes", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="Sleep" asp-action="Index" method="get">
                 <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
-                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">hotel</i> @await LocaleManager.GetTranslation("Sleep", PageNames.Layout, Model.LanguageId)</button>
+                <button type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">hotel</i> @await LocaleManager.GetTranslation("Sleep", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="Friends" asp-action="Index" method="get">
                 <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
-                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">face</i> @await LocaleManager.GetTranslation("Friends", PageNames.Layout, Model.LanguageId)</button>
+                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leave-page"><i class="material-icons">face</i> @await LocaleManager.GetTranslation("Friends", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="Contacts" asp-action="Index" method="get">
                 <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
-                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">contact_phone</i> @await LocaleManager.GetTranslation("Contacts", PageNames.Layout, Model.LanguageId)</button>
+                <button type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">contact_phone</i> @await LocaleManager.GetTranslation("Contacts", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="Locations" asp-action="Index" method="get">
                 <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
-                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">person_pin</i> @await LocaleManager.GetTranslation("Locations", PageNames.Layout, Model.LanguageId)</button>
+                <button type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">person_pin</i> @await LocaleManager.GetTranslation("Locations", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="Measurements" asp-action="Index" method="get">
                 <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
-                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">straighten</i> @await LocaleManager.GetTranslation("Measurements", PageNames.Layout, Model.LanguageId)</button>
+                <button type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">straighten</i> @await LocaleManager.GetTranslation("Measurements", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="Skills" asp-action="Index" method="get">
                 <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
-                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">school</i> @await LocaleManager.GetTranslation("Skillz", PageNames.Layout, Model.LanguageId)</button>
+                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leave-page"><i class="material-icons">school</i> @await LocaleManager.GetTranslation("Skillz", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="Vocabulary" asp-action="Index" method="get">
                 <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
-                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leavePage"><i class="material-icons">forum</i> @await LocaleManager.GetTranslation("Vocabulary", PageNames.Layout, Model.LanguageId)</button>
+                <button type="submit" class="btn btn-link btn-block text-white text-left btn-block leave-page"><i class="material-icons">forum</i> @await LocaleManager.GetTranslation("Vocabulary", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
         <div class="dropdown-item">
             <form class="form-inline-fullwidth" asp-area="" asp-controller="Vaccinations" asp-action="Index" method="get">
                 <input type="number" name="childId" value="@Model.UserInfo.ViewChild" hidden="hidden" />
-                <button type="submit" class="btn btn-link text-white text-left btn-block leavePage"><i class="material-icons">local_pharmacy</i> @await LocaleManager.GetTranslation("Vaccinations", PageNames.Layout, Model.LanguageId)</button>
+                <button type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">local_pharmacy</i> @await LocaleManager.GetTranslation("Vaccinations", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
     </div>

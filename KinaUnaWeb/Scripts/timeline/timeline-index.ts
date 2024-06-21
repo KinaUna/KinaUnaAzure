@@ -1,92 +1,54 @@
-﻿import * as LocaleHelper from '../localization-v2.js';
-import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v2.js';
-import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getTimeLineStartDate, getFormattedDateString } from '../data-tools-v2.js';
-import * as SettingsHelper from '../settings-tools.js';
+﻿import * as LocaleHelper from '../localization-v6.js';
+import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v6.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v6.js';
+import * as SettingsHelper from '../settings-tools-v6.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 
 const timelinePageSettingsStorageKey = 'timeline_page_parameters';
-
-declare let sortBy: number;
-declare let startYear: number;
-declare let startMonth: number;
-declare let startDay: number;
-
 let timelineItemsList: TimelineItem[] = []
-const timeLineParameters: TimelineParameters = new TimelineParameters();
-let latestPostsProgenyId: number;
+let timeLineParameters: TimelineParameters = new TimelineParameters();
+let timeLineProgenyId: number;
+let languageId = 1;
 let moreTimelineItemsButton: HTMLButtonElement | null;
-let numberOfItemsDiv: HTMLDivElement | null;
 let firstRun: boolean = true;
 
-const sortAscendingSettingsButton = document.querySelector<HTMLButtonElement>('#sort-timeline-ascending-button');
-const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#sort-timeline-descending-button');
-const timelineStartDateTimePicker: any = $('#timeline-start-date-datetimepicker');
-const timelineSettingsNotificationDiv = document.querySelector<HTMLDivElement>('#timeline-settings-notification-div');
+const sortAscendingSettingsButton = document.querySelector<HTMLButtonElement>('#setting-sort-ascending-button');
+const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#setting-sort-descending-button');
+const timelineStartDateTimePicker: any = $('#settings-start-date-datetimepicker');
+const timelineSettingsNotificationDiv = document.querySelector<HTMLDivElement>('#settings-notification-div');
 const startLabelDiv = document.querySelector<HTMLDivElement>('#start-label-div');
 
-function runWaitMeMoreTimelineItemsButton(): void {
-    const moreItemsButton: any = $('#loadingTimeLineItemsDiv');
-    moreItemsButton.waitMe({
-        effect: 'bounce',
-        text: '',
-        bg: 'rgba(177, 77, 227, 0.0)',
-        color: '#9011a1',
-        maxSize: '',
-        waitTime: -1,
-        source: '',
-        textPos: 'vertical',
-        fontSize: '',
-        onClose: function () { }
-    });
+let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
+let zebraDateTimeFormat: string;
+let startDateTimeFormatMoment: string;
+
+/** Shows the loading spinner in the loading-timeline-items-div.
+ */
+function startLoadingSpinner(): void {
+    startLoadingItemsSpinner('loading-timeline-items-div');
 }
 
-function stopWaitMeMoreTimelineItemsButton(): void {
-    const moreItemsButton: any = $('#loadingTimeLineItemsDiv');
-    moreItemsButton.waitMe("hide");
+/** Hides the loading spinner in the loading-timeline-items-div.
+ */
+function stopLoadingSpinner(): void {
+    stopLoadingItemsSpinner('loading-timeline-items-div');
 }
 
-async function getTimelineList(parameters: TimelineParameters) {
-    runWaitMeMoreTimelineItemsButton();
+/**
+ * Retrieves the list of timeline items, based on the parameters provided and the number of items already retrieved, then updates the page.
+ * Hides the moreTimelineItemsButton while loading.
+ * @param parameters  The parameters to use for retrieving the timeline items.
+ * @param updateHistory If updateHistory is true the browser history is updated to reflect the current page. If false it is assumed the page was loaded from history or reload, and is already in the history stack.
+ */
+async function getTimelineList(parameters: TimelineParameters, updateHistory: Boolean = true): Promise<void> {
+    startLoadingSpinner();
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.classList.add('d-none');
     }
     
     parameters.skip = timelineItemsList.length;
-    
-    if (firstRun) {
-        const itemsCountDiv = document.querySelector<HTMLDivElement>('#itemsCountDiv');
-        if (itemsCountDiv !== null) {
-            const itemsCountDivData: string | undefined = itemsCountDiv.dataset.itemsCount;
-            if (itemsCountDivData) {
-                parameters.count = parseInt(itemsCountDivData);
-            }
-            
-        }
-        const startYearDiv = document.querySelector<HTMLDivElement>('#startYearDiv');
-        if (startYearDiv !== null) {
-            const startYearDivData: string | undefined = startYearDiv.dataset.startYear;
-            if (startYearDivData) {
-                parameters.year = parseInt(startYearDivData);
-            }
-        }
-        
-        const startMonthDiv = document.querySelector<HTMLDivElement>('#startMonthDiv');
-        if (startMonthDiv !== null) {
-            const startMonthDivData: string | undefined = startMonthDiv.dataset.startMonth;
-            if (startMonthDivData) {
-                parameters.month = parseInt(startMonthDivData);
-            }
-        }
-
-        const startDayDiv = document.querySelector<HTMLDivElement>('#startDayDiv');
-        if (startDayDiv !== null) {
-            const startDayDivData: string | undefined = startDayDiv.dataset.startDay;
-            if (startDayDivData) {
-                parameters.day = parseInt(startDayDivData);
-            }
-        }
-    }
-    
-    firstRun = false;
+    timeLineParameters.skip = parameters.skip;
+    setBrowserUrl(parameters, true);
     await fetch('/Timeline/GetTimelineList', {
         method: 'POST',
         headers: {
@@ -97,36 +59,143 @@ async function getTimelineList(parameters: TimelineParameters) {
     }).then(async function (getTimelineListResult) {
         if (getTimelineListResult != null) {
             updateSettingsNotificationDiv();
-            const newTimeLineItemsList = (await getTimelineListResult.json()) as TimelineList;
-            if (newTimeLineItemsList.timelineItems.length > 0) {
-                timeLineParameters.firstItemYear = newTimeLineItemsList.firstItemYear;
-                const latestPostsParentDiv = document.querySelector<HTMLDivElement>('#latestPostsParentDiv');
-                if (latestPostsParentDiv !== null) {
-                    latestPostsParentDiv.classList.remove('d-none');
-                }
-                for await (const timelineItemToAdd of newTimeLineItemsList.timelineItems) {
-                    timelineItemsList.push(timelineItemToAdd);
-                    await renderTimelineItem(timelineItemToAdd);
-                    window.history.replaceState("state", "title", "TimeLine?sortBy=" + parameters.sortBy + "&items=" + timelineItemsList.length + "&year=" + parameters.year + "&month=" + parameters.month + "&day=" + parameters.day);
-                };
-                if (newTimeLineItemsList.remainingItemsCount > 0 && moreTimelineItemsButton !== null) {
-                    moreTimelineItemsButton.classList.remove('d-none');
-                }
+            const newTimelineItemsList = (await getTimelineListResult.json()) as TimelineList;
+            if (newTimelineItemsList.timelineItems.length > 0) {
 
-                window.history.replaceState("state", "title", "TimeLine?sortBy=" + parameters.sortBy + "&items=" + timelineItemsList.length + "&year=" + parameters.year + "&month=" + parameters.month + "&day=" + parameters.day);
+                await processTimelineList(newTimelineItemsList);
+
+                if (updateHistory) {
+                    setBrowserUrl(parameters, true);
+                }
             }
         }
     }).catch(function (error) {
         console.log('Error loading TimelineList. Error: ' + error);
     });
-
-    stopWaitMeMoreTimelineItemsButton();
+    firstRun = false;
+    stopLoadingSpinner();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
+/**
+ * Updates the timeLineParameters with values from newTimelineItemsList, then adds the TimelineItems in the list of timelineItems to the page.
+ * If there are no more remaining items the load more button is hidden.
+ * @param newTimelineItemsList The TimelineList object with a list of items to add and data about remaining items.
+ */
+async function processTimelineList(newTimelineItemsList: TimelineList): Promise<void> {
+    if (firstRun && timeLineParameters.firstItemYear !== newTimelineItemsList.firstItemYear) {
+        timeLineParameters.firstItemYear = newTimelineItemsList.firstItemYear;
+
+        if (timeLineParameters.sortBy === 0) {
+            timeLineParameters.year = newTimelineItemsList.firstItemYear;
+            timeLineParameters.month = 1;
+            timeLineParameters.day = 1;
+            updateStartDatePicker(new Date(timeLineParameters.year, timeLineParameters.month - 1, timeLineParameters.day));
+            return new Promise<void>(function (resolve, reject) {
+                resolve();
+            });
+        }
+    }
+
+    const latestPostsParentDiv = document.querySelector<HTMLDivElement>('#latest-posts-parent-div');
+    if (latestPostsParentDiv !== null) {
+        latestPostsParentDiv.classList.remove('d-none');
+    }
+    for await (const timelineItemToAdd of newTimelineItemsList.timelineItems) {
+        timelineItemsList.push(timelineItemToAdd);
+        await renderTimelineItem(timelineItemToAdd);
+    };
+    if (newTimelineItemsList.remainingItemsCount > 0 && moreTimelineItemsButton !== null) {
+        moreTimelineItemsButton.classList.remove('d-none');
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+/** Fetches the HTML for a given timeline item and renders it at the end of timeline-items-div.
+* @param timelineItem The timelineItem object to add to the page.
+*/
+async function renderTimelineItem(timelineItem: TimelineItem): Promise<void> {
+    const timeLineItemViewModel: TimeLineItemViewModel = new TimeLineItemViewModel();
+    timeLineItemViewModel.typeId = timelineItem.itemType;
+    timeLineItemViewModel.itemId = parseInt(timelineItem.itemId);
+
+    const getTimelineElementResponse = await fetch('/Timeline/GetTimelineItemElement', {
+        method: 'POST',
+        body: JSON.stringify(timeLineItemViewModel),
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    });
+
+    if (getTimelineElementResponse.ok && getTimelineElementResponse.text !== null) {
+        const timelineElementHtml = await getTimelineElementResponse.text();
+        const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
+        if (timelineDiv != null) {
+            timelineDiv.insertAdjacentHTML('beforeend', timelineElementHtml);
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+/** Sets the url in the browser address bar to reflect the current page.
+ * @param parameters The PicturesPageParameters currently in use.
+ * @param replaceState If true, the current url will replace the url in the active one in history, if false the url will be added to the history.
+ */
+function setBrowserUrl(parameters: TimelineParameters, replaceState: boolean): void {
+    const url = new URL(window.location.href);
+    url.searchParams.set('childId', parameters.progenyId.toString());
+    url.searchParams.set('sortBy', parameters.sortBy.toString());
+    url.searchParams.set('items', parameters.count.toString());
+    url.searchParams.set('skip', timelineItemsList.length.toString());
+    url.searchParams.set('year', parameters.year.toString());
+    url.searchParams.set('month', parameters.month.toString());
+    url.searchParams.set('day', parameters.day.toString());
+    if (replaceState) {
+        window.history.replaceState({}, '', url);
+    }
+    else {
+        window.history.pushState({}, '', url);
+    }
+}
+
+/** Retrieves the parameters from the url in browser address bar.
+ * Then loads the timeline list with the parameters retrived.
+ */
+async function loadPageFromHistory(): Promise<void> {
+    const url = new URL(window.location.href);
+
+    if (timeLineParameters !== null) {
+        timeLineParameters.progenyId = url.searchParams.get('childId') ? parseInt(url.searchParams.get('childId') as string) : 0;
+        timeLineParameters.sortBy = url.searchParams.get('sortBy') ? parseInt(url.searchParams.get('sortBy') as string) : 1;
+        let initialCount: number = url.searchParams.get('items') ? parseInt(url.searchParams.get('items') as string) : 10;
+        let skipValue: number = url.searchParams.get('skip') ? parseInt(url.searchParams.get('skip') as string) : 0;
+        timeLineParameters.count = skipValue;
+        timeLineParameters.skip = 0;
+        timeLineParameters.year = url.searchParams.get('year') ? parseInt(url.searchParams.get('year') as string) : 0;
+        timeLineParameters.month = url.searchParams.get('month') ? parseInt(url.searchParams.get('month') as string) : 0;
+        timeLineParameters.day = url.searchParams.get('day') ? parseInt(url.searchParams.get('day') as string) : 0;
+        
+        firstRun = false;
+        await getTimelineList(timeLineParameters, false);
+        timeLineParameters.count = initialCount;
+    }
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+/** Updates the div that shows the current sort order and start date.
+*/
 function updateSettingsNotificationDiv(): void {
     let timelineSettingsNotificationText: string | undefined;
     if (timeLineParameters.sortBy === 0) {
@@ -143,55 +212,54 @@ function updateSettingsNotificationDiv(): void {
     }
 }
 
-async function renderTimelineItem(timelineItem: TimelineItem) {
-    const timeLineItemViewModel: TimeLineItemViewModel = new TimeLineItemViewModel();
-    timeLineItemViewModel.typeId = timelineItem.itemType;
-    timeLineItemViewModel.itemId = parseInt(timelineItem.itemId);
 
-    const getTimelineElementResponse = await fetch('/Timeline/GetTimelineItemElement', {
-        method: 'POST',
-        body: JSON.stringify(timeLineItemViewModel),
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-    });
 
-    if (getTimelineElementResponse.ok && getTimelineElementResponse.text !== null) {
-        const timelineElementHtml = await getTimelineElementResponse.text();
-        const timelineDiv = document.querySelector<HTMLDivElement>('#timelineItemsDiv');
-        if (timelineDiv != null) {
-            timelineDiv.insertAdjacentHTML('beforeend', timelineElementHtml);
-        }
-    }
-
-    return new Promise<void>(function (resolve, reject) {
-        resolve();
-    });
-}
-
+/** Clears the list of timeline elements in the timeline-items-div and scrolls to above the timeline-items-div.
+*/
 function clearTimeLineElements(): void {
+    const pageTitleDiv = document.querySelector<HTMLDivElement>('#page-title-div');
+    if (pageTitleDiv !== null) {
+        pageTitleDiv.scrollIntoView();
+    }
     timelineItemsList = [];
     firstRun = false;
-    const timelineItemsDiv = document.querySelector<HTMLDivElement>('#timelineItemsDiv');
+    const timelineItemsDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
     if (timelineItemsDiv !== null) {
         timelineItemsDiv.innerHTML = '';
     }
 }
 
-async function setStartDate(longDateTimeFormatMoment: string) {
-    let sTime: any = getTimeLineStartDate(longDateTimeFormatMoment);
+/** Gets the formatted date value from the start date picker and sets the start date in the parameters.
+* @param dateTimeFormatMoment The Moment format of the date, which is used by the date picker.
+*/
+async function setStartDate(dateTimeFormatMoment: string): Promise<void> {
+    let settingsStartValue: any = SettingsHelper.getPageSettingsStartDate(dateTimeFormatMoment);
     
-    timeLineParameters.year = sTime.year();
-    timeLineParameters.month = sTime.month() + 1;
-    timeLineParameters.day = sTime.date();
+    timeLineParameters.year = settingsStartValue.year();
+    timeLineParameters.month = settingsStartValue.month() + 1;
+    timeLineParameters.day = settingsStartValue.date();
     
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
-async function sortTimelineAscending() {
+/**
+ * Sets the value of the startDateTimePicker to the given date in the format defined by startDateTimeFormatMoment.
+ * @param date The date to assign to the DateTimePicker.
+ */
+function updateStartDatePicker(date: Date): void {
+    if (timelineStartDateTimePicker !== null) {
+        const dateString = getFormattedDateString(date, startDateTimeFormatMoment);
+        timelineStartDateTimePicker.val(dateString);
+    }
+}
+
+/**
+ * Updates parameters sort value, sets the sort buttons to show the ascending button as active, and the descending button as inactive.
+ * Updates the Start date if it hasn't been set so the list starts at the earliest date.
+ */
+async function sortTimelineAscending(): Promise<void> {
     sortAscendingSettingsButton?.classList.add('active');
     sortDescendingSettingsButton?.classList.remove('active');
     timeLineParameters.sortBy = 0;
@@ -200,12 +268,9 @@ async function sortTimelineAscending() {
         timeLineParameters.year = timeLineParameters.firstItemYear;
         timeLineParameters.month = 1;
         timeLineParameters.day = 1;
-                
-        if (timelineStartDateTimePicker !== null) {
-            const earliestDate = new Date(timeLineParameters.firstItemYear, 0, 1);
-            const earlistDateString = getFormattedDateString(earliestDate, longDateTimeFormatMoment);
-            timelineStartDateTimePicker.val(earlistDateString);
-        }
+
+        const earliestDate = new Date(timeLineParameters.firstItemYear, 0, 1);
+        updateStartDatePicker(earliestDate);
     }
     
     return new Promise<void>(function (resolve, reject) {
@@ -213,7 +278,11 @@ async function sortTimelineAscending() {
     });
 }
 
-async function sortTimelineDescending() {
+/**
+ * Updates parameters sort value, sets the sort buttons to show the descending button as active, and the ascending button as inactive.
+ * Updates the Start date if it hasn't been set, so the list starts at today's date.
+ */
+async function sortTimelineDescending(): Promise<void> {
     sortDescendingSettingsButton?.classList.add('active');
     sortAscendingSettingsButton?.classList.remove('active');
     timeLineParameters.sortBy = 1;
@@ -222,11 +291,8 @@ async function sortTimelineDescending() {
         timeLineParameters.year = currentDate.getFullYear();
         timeLineParameters.month = currentDate.getMonth() + 1;
         timeLineParameters.day = currentDate.getDate();
-        
-        if (timelineStartDateTimePicker !== null) {
-            const currentDateString = getFormattedDateString(currentDate, longDateTimeFormatMoment);
-            timelineStartDateTimePicker.val(currentDateString);
-        }
+                
+        updateStartDatePicker(currentDate);
     }
     
     return new Promise<void>(function (resolve, reject) {
@@ -234,8 +300,11 @@ async function sortTimelineDescending() {
     });
 }
 
-async function saveTimelinePageSettings() {
-    const numberOfItemsToGetSelect = document.querySelector<HTMLSelectElement>('#nextItemsCount');
+/**
+ * Saves the current page parameters to local storage and reloads the timeline items list.
+ */
+async function saveTimelinePageSettings(): Promise<void> {
+    const numberOfItemsToGetSelect = document.querySelector<HTMLSelectElement>('#items-per-page-select');
     if (numberOfItemsToGetSelect !== null) {
         timeLineParameters.count = parseInt(numberOfItemsToGetSelect.value);
     }
@@ -244,29 +313,37 @@ async function saveTimelinePageSettings() {
     }
 
     SettingsHelper.savePageSettings<TimelineParameters>(timelinePageSettingsStorageKey, timeLineParameters);
+    SettingsHelper.toggleShowPageSettings();
     clearTimeLineElements();
     await getTimelineList(timeLineParameters);
+    if (timelineItemsList.length === 0) {
+        await getTimelineList(timeLineParameters);
+    }
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
-async function loadTimelinePageSettings() {
+/**
+ * Retrieves timelineParameters saved in local storage.
+ */
+async function loadTimelinePageSettings(): Promise<void> {
     const pageSettingsFromStorage = SettingsHelper.getPageSettings<TimelineParameters>(timelinePageSettingsStorageKey);
     if (pageSettingsFromStorage) {
-        timeLineParameters.firstItemYear = pageSettingsFromStorage.firstItemYear;
+        if (pageSettingsFromStorage.progenyId === timeLineProgenyId) {
+            timeLineParameters.firstItemYear = pageSettingsFromStorage.firstItemYear;
+        }        
         timeLineParameters.sortBy = pageSettingsFromStorage.sortBy;
         if (timeLineParameters.sortBy === 0) {
             sortTimelineAscending();
-            
         }
         else {
             sortTimelineDescending();
         }
 
         timeLineParameters.count = pageSettingsFromStorage.count;
-        const selectItemsPerPageElement = document.querySelector<HTMLSelectElement>('#nextItemsCount');
+        const selectItemsPerPageElement = document.querySelector<HTMLSelectElement>('#items-per-page-select');
         if (selectItemsPerPageElement !== null) {
             selectItemsPerPageElement.value = timeLineParameters.count.toString();
             ($(".selectpicker") as any).selectpicker('refresh');
@@ -278,33 +355,40 @@ async function loadTimelinePageSettings() {
     });
 }
 
-let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
-let languageId = 1;
-let zebraDateTimeFormat: string;
-let longDateTimeFormatMoment: string;
+/** Reads the initial page parameters from json serialized data in the timeline-page-parameters-div element's data-timeline-page-parameters attribute.
+ * If the page is navigated to without specific parameters, itemsPerPage, sort, and sortTags parameters are loaded from local storage.
+ */ 
+function getParametersFromPageProperties(): void {
+    const timelineParametersDiv = document.querySelector<HTMLDivElement>('#timeline-page-parameters-div');
+    if (timelineParametersDiv !== null) {
+        const pageParameters: string | undefined = timelineParametersDiv.dataset.timelinePageParameters;
+        if (pageParameters) {
+            const parameters = JSON.parse(pageParameters);
+            if (parameters !== null) {
+                timeLineParameters.progenyId = parameters.progenyId;
+                timeLineParameters.sortBy = parameters.sortBy;
+                timeLineParameters.year = parameters.year;
+                timeLineParameters.month = parameters.month;
+                timeLineParameters.day = parameters.day;
+                timeLineParameters.firstItemYear = parameters.firstItemYear;
+            }
+        }
+    }
+}
 
-$(async function () {
-    latestPostsProgenyId = getCurrentProgenyId();
-    timeLineParameters.count = 10;
-    timeLineParameters.skip = 0;
-    timeLineParameters.progenyId = latestPostsProgenyId;
-    timeLineParameters.sortBy = sortBy;
-    timeLineParameters.year = startYear;
-    timeLineParameters.month = startMonth;
-    timeLineParameters.day = startDay;
-    
-    languageId = getCurrentLanguageId();
+/**
+ * Configures the elements in the settings panel.
+ */
+async function initialSettingsPanelSetup(): Promise<void> {
     setMomentLocale();
     zebraDateTimeFormat = getZebraDateTimeFormat();
-    
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
+    startDateTimeFormatMoment = getLongDateTimeFormatMoment();
 
-    longDateTimeFormatMoment = getLongDateTimeFormatMoment();
-    
     timelineStartDateTimePicker.Zebra_DatePicker({
         format: zebraDateTimeFormat,
         open_icon_only: true,
-        onSelect: function (a: any, b: any, c: any) { setStartDate(longDateTimeFormatMoment); },
+        onSelect: function (a: any, b: any, c: any) { setStartDate(startDateTimeFormatMoment); },
         days: zebraDatePickerTranslations.daysArray,
         months: zebraDatePickerTranslations.monthsArray,
         lang_clear_date: zebraDatePickerTranslations.clearString,
@@ -312,28 +396,72 @@ $(async function () {
         select_other_months: true
     });
 
-    SettingsHelper.initPageSettings();
-    
-    moreTimelineItemsButton = document.querySelector<HTMLButtonElement>('#moreTimelineItemsButton');
-    if (moreTimelineItemsButton !== null) {
-        moreTimelineItemsButton.addEventListener('click', async () => {
-            getTimelineList(timeLineParameters);
-        });
-    }
-
     const timelineSaveSettingsButton = document.querySelector<HTMLButtonElement>('#timeline-page-save-settings-button');
     if (timelineSaveSettingsButton !== null) {
         timelineSaveSettingsButton.addEventListener('click', saveTimelinePageSettings);
     }
-    
-    numberOfItemsDiv = document.querySelector<HTMLDivElement>('#numberOfItemsDiv');
 
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
         sortAscendingSettingsButton.addEventListener('click', sortTimelineAscending);
         sortDescendingSettingsButton.addEventListener('click', sortTimelineDescending);
     }
 
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+/** Adds event listeners for users reloading, navigating back or forward in the browser history. */
+function addBrowserNavigationEventListeners(): void {
+    window.onpopstate = function (event) {
+        loadPageFromHistory();
+    };
+
+    window.onpageshow = function (event) {
+        if (event.persisted) {
+            loadPageFromHistory();
+        }
+    };
+}
+
+/** Select pickers don't always update when their values change, this ensures they show the correct items. */
+function refreshSelectPickers(): void {
+    const selectItemsPerPageElement = document.querySelector<HTMLSelectElement>('#items-per-page-select');
+    if (selectItemsPerPageElement !== null) {
+        ($(".selectpicker") as any).selectpicker('refresh');
+    }
+}
+
+
+/** Initialization and setup when page is loaded */
+document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    languageId = getCurrentLanguageId();
+    timeLineProgenyId = getCurrentProgenyId();
+
+    initialSettingsPanelSetup();
+
+    SettingsHelper.initPageSettings();
+
+
+    moreTimelineItemsButton = document.querySelector<HTMLButtonElement>('#more-timeline-items-button');
+    if (moreTimelineItemsButton !== null) {
+        moreTimelineItemsButton.addEventListener('click', async () => {
+            getTimelineList(timeLineParameters);
+        });
+    }
+
+    addBrowserNavigationEventListeners();
+
+    getParametersFromPageProperties();
     await loadTimelinePageSettings();
+    refreshSelectPickers();
 
     await getTimelineList(timeLineParameters);
+    if (firstRun) { // getTimelineList updated the parameters and exited early to reload with the new values.
+        await getTimelineList(timeLineParameters);
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 });

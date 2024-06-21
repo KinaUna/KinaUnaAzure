@@ -1,19 +1,20 @@
-﻿import * as LocaleHelper from '../localization-v2.js';
-import { setTagsAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v2.js';
+﻿import * as LocaleHelper from '../localization-v6.js';
+import { setTagsAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat: string;
 let currentProgenyId: number;
 
-$(async function (): Promise<void> {
-    languageId = getCurrentLanguageId();
+/**
+ * Configures the date time picker for the location date input field.
+ */
+async function setupDateTimePicker(): Promise<void> {
     setMomentLocale();
     zebraDateTimeFormat = getZebraDateTimeFormat();
-    currentProgenyId = getCurrentProgenyId();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
 
-    const dateTimePicker1: any = $('#datetimepicker1');
+    const dateTimePicker1: any = $('#location-date-time-picker');
     dateTimePicker1.Zebra_DatePicker({
         format: zebraDateTimeFormat,
         open_icon_only: true,
@@ -24,10 +25,16 @@ $(async function (): Promise<void> {
         select_other_months: true
     });
 
-    await setTagsAutoSuggestList(currentProgenyId);
-    //await setContextAutoSuggestList(currentProgenyId);
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
 
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#progenyIdSelect');
+/**
+ * Sets up the Progeny select list and adds an event listener to update the context and tags auto suggest lists when the selected Progeny changes.
+ */
+function setupProgenySelectList(): void {
+    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
@@ -35,4 +42,23 @@ $(async function (): Promise<void> {
             //await setContextAutoSuggestList(currentProgenyId);
         });
     }
+}
+
+/**
+ * Initializes the page elements when it is loaded.
+ */
+document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    languageId = getCurrentLanguageId();
+    currentProgenyId = getCurrentProgenyId();
+
+    await setupDateTimePicker();
+
+    await setTagsAutoSuggestList(currentProgenyId);
+    //await setContextAutoSuggestList(currentProgenyId);
+
+    setupProgenySelectList();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 });

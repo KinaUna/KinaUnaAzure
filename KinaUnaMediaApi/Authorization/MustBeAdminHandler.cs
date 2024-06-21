@@ -10,8 +10,7 @@ namespace KinaUnaMediaApi.Authorization
         protected override Task HandleRequirementAsync(
             AuthorizationHandlerContext context, MustBeAdminRequirement requirement)
         {
-            AuthorizationFilterContext filterContext = context.Resource as AuthorizationFilterContext;
-            if (filterContext == null)
+            if (context.Resource is not AuthorizationFilterContext)
             {
                 context.Fail();
                 return Task.CompletedTask;

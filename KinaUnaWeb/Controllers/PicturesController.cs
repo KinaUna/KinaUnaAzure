@@ -12,6 +12,8 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using System.Linq;
+using KinaUnaWeb.Models.TypeScriptModels.Pictures;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.Extensions.Configuration;
 
@@ -30,27 +32,30 @@ namespace KinaUnaWeb.Controllers
         private readonly string _hereMapsApiKey = configuration.GetValue<string>("HereMapsKey");
 
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int id = 1, int pageSize = 16, int childId = 0, int sortBy = 1, string tagFilter = "")
+        public async Task<IActionResult> Index(int id = 1, int pageSize = 10, int childId = 0, int sortBy = 2, string tagFilter = "", int year = 0, int month = 0, int day = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             PicturesListViewModel model = new(baseModel)
             {
                 PageSize = pageSize,
                 SortBy = sortBy,
-                TagFilter = tagFilter
+                TagFilter = tagFilter,
+                Year = year,
+                Month = month,
+                Day = day,
+                PicturePageParameters = new()
+                {
+                    ProgenyId = baseModel.CurrentProgenyId,
+                    CurrentPageNumber = id,
+                    ItemsPerPage = pageSize,
+                    Sort = sortBy,
+                    TagFilter = tagFilter,
+                    Year = year,
+                    Month = month,
+                    Day = day
+                }
             };
-
-            // PicturePageViewModel is used by KinaUna Xamarin and ProgenyApi, so it should not be changed in this project, instead using a different view model and copying the properties.
-            PicturePageViewModel pageViewModel = await mediaHttpClient.GetPicturePage(pageSize, id, model.CurrentProgenyId, model.CurrentAccessLevel, sortBy, tagFilter, model.CurrentUser.Timezone);
-            model.SetPropertiesFromPageViewModel(pageViewModel);
-
-            //model.SortBy = sortBy;
-            //model.PageSize = pageSize;
-            foreach (Picture picture in model.PicturesList)
-            {
-                picture.PictureLink600 = picture.GetPictureUrl(600);
-            }
-
+            
             return View(model);
         }
 
@@ -361,6 +366,135 @@ namespace KinaUnaWeb.Controllers
             await mediaHttpClient.DeletePictureComment(commentId);
 
             return RedirectToRoute(new { controller = "Pictures", action = "Picture", id = pictureId, childId = progenyId });
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> GetPictureList([FromBody] PicturesPageParameters parameters)
+        {
+            if (parameters.CurrentPageNumber < 1)
+            {
+                parameters.CurrentPageNumber = 1;
+            }
+
+            if (parameters.ItemsPerPage < 1)
+            {
+                parameters.ItemsPerPage = 10;
+            }
+
+            if (parameters.Sort > 1)
+            {
+                parameters.Sort = 1;
+            }
+
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), parameters.ProgenyId);
+
+            PicturesList picturesList = new()
+            {
+                PictureItems = await mediaHttpClient.GetProgenyPictureList(baseModel.CurrentProgenyId, baseModel.CurrentAccessLevel)
+            };
+
+            picturesList.PictureItems = picturesList.PictureItems.OrderBy(p => p.PictureTime).ToList();
+
+            if (!string.IsNullOrEmpty(parameters.TagFilter))
+            {
+                picturesList.PictureItems = [.. picturesList.PictureItems.Where(p => p.Tags != null && p.Tags.Contains(parameters.TagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.PictureTime)];
+            }
+
+            int pictureCounter = 1;
+            
+
+            List<string> tagsList = [];
+            foreach (Picture picture in picturesList.PictureItems)
+            {
+                picture.PictureNumber = pictureCounter;
+                
+                pictureCounter++;
+                if (string.IsNullOrEmpty(picture.Tags)) continue;
+
+                List<string> picturePageViewModelTagsList = [.. picture.Tags.Split(',')];
+                foreach (string tagString in picturePageViewModelTagsList)
+                {
+                    string trimmedTag = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
+                    if (!string.IsNullOrEmpty(trimmedTag) && !tagsList.Contains(trimmedTag))
+                    {
+                        tagsList.Add(trimmedTag);
+                    }
+                }
+            }
+            picturesList.TagsList = tagsList;
+
+            DateTime currentDateTime = DateTime.UtcNow;
+            DateTime firstItemTime = picturesList.PictureItems.Where(p => p.PictureTime.HasValue).Min(t => t.PictureTime)?? currentDateTime;
+            
+            if (parameters.Year == 0)
+            {
+                if (parameters.Sort == 1)
+                {
+                    parameters.Year = currentDateTime.Year;
+                    parameters.Month = currentDateTime.Month;
+                    parameters.Day = currentDateTime.Day;
+                }
+                else
+                {
+                    parameters.Year = firstItemTime.Year;
+                    parameters.Month = 1;
+                    parameters.Day = 1;
+                }
+            }
+
+            DateTime startDate = new(parameters.Year, parameters.Month, parameters.Day, 23, 59, 59);
+            startDate = TimeZoneInfo.ConvertTimeToUtc(startDate, TimeZoneInfo.FindSystemTimeZoneById(baseModel.CurrentUser.Timezone));
+            if (parameters.Sort == 1)
+            {
+
+                picturesList.PictureItems = picturesList.PictureItems.Where(t => t.PictureTime <= startDate).OrderByDescending(p => p.PictureTime).ToList();
+            }
+            else
+            {
+                startDate = new DateTime(parameters.Year, parameters.Month, parameters.Day, 0, 0, 0);
+                startDate = TimeZoneInfo.ConvertTimeToUtc(startDate, TimeZoneInfo.FindSystemTimeZoneById(baseModel.CurrentUser.Timezone));
+                picturesList.PictureItems = picturesList.PictureItems.Where(t => t.PictureTime >= startDate).OrderBy(p => p.PictureTime).ToList();
+            }
+
+            firstItemTime = TimeZoneInfo.ConvertTimeFromUtc(firstItemTime, TimeZoneInfo.FindSystemTimeZoneById(baseModel.CurrentUser.Timezone));
+            picturesList.FirstItemYear = firstItemTime.Year;
+
+            int skip = (parameters.CurrentPageNumber - 1) * parameters.ItemsPerPage;
+            picturesList.AllItemsCount = picturesList.PictureItems.Count;
+            picturesList.RemainingItemsCount = picturesList.PictureItems.Count - skip - parameters.ItemsPerPage;
+            picturesList.PictureItems = picturesList.PictureItems.Skip(skip).Take(parameters.ItemsPerPage).ToList();
+            picturesList.TotalPages = (int)Math.Ceiling((double)picturesList.AllItemsCount / parameters.ItemsPerPage);
+            picturesList.CurrentPageNumber = parameters.CurrentPageNumber;
+            
+            foreach (Picture pic in picturesList.PictureItems)
+            {
+                if (pic.PictureTime.HasValue)
+                {
+                    pic.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(pic.PictureTime.Value,
+                        TimeZoneInfo.FindSystemTimeZoneById(baseModel.CurrentUser.Timezone));
+                }
+            }
+            return Json(picturesList);
+
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<ActionResult> GetPictureElement([FromBody] PictureViewModel pictureViewModel)
+        {
+            Picture picture = await mediaHttpClient.GetPicture(pictureViewModel.PictureId, Constants.DefaultTimezone);
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
+            PictureViewModel pictureViewModelData = await mediaHttpClient.GetPictureElement(pictureViewModel.PictureId);
+            PictureItemViewModel model = new(baseModel);
+           
+            model.SetPropertiesFromPictureViewModel(pictureViewModelData);
+            model.Picture.PictureLink = model.Picture.GetPictureUrl(600);
+            model.PictureNumber = pictureViewModel.PictureNumber;
+            model.Picture.PictureNumber = pictureViewModel.PictureNumber;
+            return PartialView("_GetPictureElementPartial", model);
         }
     }
 }

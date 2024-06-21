@@ -137,14 +137,14 @@
 </script>
 
 <div class="btn-group" style="float: right;">
-    <a asp-controller="Sleep" asp-action="Index" asp-route-childId="@Model.CurrentProgenyId" class="btn btn-primary leavePage">
+    <a asp-controller="Sleep" asp-action="Index" asp-route-childId="@Model.CurrentProgenyId" class="btn btn-primary leave-page">
         <i class="fas fa-list"></i> @await LocaleManager.GetTranslation("Go to sleep list", PageNames.Sleep, Model.LanguageId)
     </a>
 </div>
 @if (Model.IsCurrentUserProgenyAdmin)
 {
     <div class="btn-group" style="float: right;">
-        <a asp-controller="Sleep" asp-action="AddSleep" class="btn btn-success btn-round leavePage">
+        <a asp-controller="Sleep" asp-action="AddSleep" class="btn btn-success btn-round leave-page">
             <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add sleep", PageNames.Sleep, Model.LanguageId)
         </a>
     </div>

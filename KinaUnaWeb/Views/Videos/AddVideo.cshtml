@@ -22,10 +22,10 @@
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
 }
-<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
-<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
-<div id="zebraDateTimeFormatDiv" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
-<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="language-id-div" class="d-none" data-language-id="@Model.LanguageId"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="progeny-id-div" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="add-item-container">
         <h2 class="col-12">@ViewData["Title"]</h2>
@@ -36,7 +36,7 @@
                 <div class="form-group">
                     <label class="col-auto control-label">@addVideoForString </label>
                     <div class="col-auto">
-                        <select id="progenyIdSelect" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="Video.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                        <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="Video.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
                 </div>
             }
@@ -91,7 +91,7 @@
                 <label asp-for="Video.VideoTime" class="col-auto control-label">@await LocaleManager.GetTranslation("Date and time", PageNames.Videos, Model.LanguageId)</label>
                 <div class="col-auto">
                     <div class="input-group date">
-                        <input id="datetimepicker1" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="Video.VideoTime"
+                        <input id="video-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="Video.VideoTime"
                                value="@TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(@Model.CurrentUser.Timezone)).ToString(longDateTimeFormat)"/>
                     </div>
                 </div>
@@ -99,7 +99,7 @@
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Videos, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="locationInput" type="text" asp-for="Video.Location" value="@Model.Video.Tags" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Videos, Model.LanguageId)" class="form-control"/>
+                    <input id="location-input" type="text" asp-for="Video.Location" value="@Model.Video.Tags" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Videos, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
@@ -127,10 +127,10 @@
                     <div class="col-12">
                         <div class="row">
                             <div class="col-lg-8 col-md-9 col-sm-8">
-                                <select id="copyLocation" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" asp-items="@Model.LocationsList"></select>
+                                <select id="copy-location" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" asp-items="@Model.LocationsList"></select>
                             </div>
                             <div class="col-lg-4 col-md-3 col-sm-3">
-                                <button id="copyLocationButton" type="button" class="btn btn-primary">@await LocaleManager.GetTranslation("Copy", PageNames.Videos, Model.LanguageId)</button>
+                                <button id="copy-location-button" type="button" class="btn btn-primary">@await LocaleManager.GetTranslation("Copy", PageNames.Videos, Model.LanguageId)</button>
                             </div>
                         </div>
                     </div>
@@ -139,7 +139,7 @@
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Videos, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="tagList" type="text" asp-for="Video.Tags" value="@Model.Video.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Videos, Model.LanguageId)" class="form-control"/>
+                    <input id="tag-list" type="text" asp-for="Video.Tags" value="@Model.Video.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Videos, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
@@ -153,15 +153,15 @@
                 <div class="col-auto"></div>
                 <input asp-for="Video.Owners" class="form-control" value="@Model.Video.Owners" type="hidden" />
                 <div class="col-auto">
-                    <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                    <a class="btn btn-danger leavePage" asp-controller="Videos" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    <button class="btn btn-success leave-page" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <a class="btn btn-danger leave-page" asp-controller="Videos" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                 </div>
             </div>
         </form>
     </div>
 </div>
 <script type="text/javascript">
-            var copyLocationList = [];        
+    var copyLocationList = [];        
     @{
         string myLoc = "";
         string addLoc = "";

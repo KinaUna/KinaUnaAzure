@@ -1,7 +1,21 @@
-import { setMomentLocale } from '../data-tools-v2.js';
+import { setMomentLocale } from '../data-tools-v6.js';
 
-$(async function (): Promise<void> {
+/**
+ * Sets up the DataTable for the Skills list.
+ */
+function setupDataTable(): void {
     setMomentLocale();
     (<any>$.fn.dataTable).moment('DD-MMMM-YYYY');
-    $('#skillzList').DataTable({ 'scrollX': false, 'order': [[3, 'desc']] });
+    $('#skillz-list').DataTable({ 'scrollX': false, 'order': [[3, 'desc']] });
+}
+
+/**
+ * Initializes the page elements when it is loaded.
+ */
+document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    setupDataTable();
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 });

@@ -4,16 +4,16 @@
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
-<div id="latestPostsParentDiv" class="d-none">
+<div id="latest-posts-parent-div" class="d-none">
     <div>
         @await LocaleManager.GetTranslation("Latest posts:", PageNames.Home, languageId)
     </div>
-    <div id="timelineItemsDiv">
+    <div id="timeline-items-div">
 
     </div>
     <div style="height: 150px;">
-        <button id="moreTimelineItemsButton" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more posts", PageNames.Timeline, languageId)</button>
-        <div id="loadingTimeLineItemsDiv" class="w-100">
+        <button id="more-latest-posts-items-button" class="btn btn-link btn-link-edit d-none" style="margin-top: 20px;">@await LocaleManager.GetTranslation("Show more posts", PageNames.Timeline, languageId)</button>
+        <div id="loading-latest-posts-items-div" class="w-100">
             <div class="space-50"></div>
         </div>
     </div>

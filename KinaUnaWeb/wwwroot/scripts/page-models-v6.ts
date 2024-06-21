@@ -1,4 +1,4 @@
-﻿interface BaseItemParameters {
+interface BaseItemParameters {
     languageId: number;
 }
 interface BasePageParameters {
@@ -41,6 +41,46 @@ export class NotesPageResponse implements BaseItemsPageResponseModel {
     totalPages: number = 0;
     totalItems: number = 0;
     notesList: number[] = [];
+}
+
+export class Picture {
+    pictureId: number = 0;
+    progenyId: number = 0;
+    pictureNumber: number = 0;
+}
+
+export class PictureViewModel {
+    pictureId: number = 0;
+    progenyId: number = 0;
+    pictureNumber: number = 0;
+    sortBy: number = 1;
+    tagFilter: string = '';
+}
+export class PicturesPageParameters implements BasePageParameters {
+    progenyId: number = 0;
+    languageId: number = 0;
+    currentPageNumber: number = 0;
+    itemsPerPage: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    sort: number = 1;
+    tagFilter: string = '';
+    showSettings: boolean = false;
+    year: number = 0;
+    month: number = 0;
+    day: number = 0;
+    firstItemYear: number = 1900;
+    sortTags: number = 0;
+}
+
+export class PicturesList {
+    pictureItems: Picture[] = [];
+    allItemsCount: number = 0;
+    remainingItemsCount: number = 0;
+    firstItemYear: number = 0;
+    totalPages: number = 0;
+    currentPageNumber: number = 0;
+    tagsList: string[] = [];
 }
 
 export class KinaUnaTextParameters {
@@ -135,6 +175,7 @@ export class WebNotificationViewModel {
 export class WebNotficationsParameters {
     skip: number = 0;
     count: number = 10;
+    unreadOnly: boolean = false;
 }
 
 export class WebNotificationsList {

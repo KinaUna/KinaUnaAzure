@@ -9,45 +9,45 @@
     string previousPageString = await LocaleManager.GetTranslation("Previous page", PageNames.Notes, Model.LanguageId);
     string nextPageString = await LocaleManager.GetTranslation("Next page", PageNames.Notes, Model.LanguageId);
 }
-<div id="notes-index-page-parameters" class="d-none" data-notes-index-page-parameters='@pageParameters'></div>
+<div id="notes-index-page-parameters" class="d-none" data-notes-index-page-parameters="@pageParameters"></div>
 <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10 col-w1900-8 col-w2500-7">
     <h2>@ViewData["Title"]</h2>
     <div class="row align-items-center">
         <div class="col text-left">
-            <button class="btn btn-success d-none mr-auto" id="headerPreviousNoteItemsPageButton">
+            <button class="btn btn-success d-none mr-auto" id="header-previous-note-items-page-button">
                 <i class="material-icons icon-top-4">chevron_left</i>
                 <span class="d-none d-md-inline"> @previousPageString</span>
             </button>
         </div>
         <div class="col">
             <div class="text-center font-weight-bold">
-                <span class="d-none d-md-inline">@pageString </span><span id="headerPageNumberSpan"></span><span> / </span><span id="headerPageTotalSpan"></span>
+                <span class="d-none d-md-inline">@pageString </span><span id="header-page-number-span"></span><span> / </span><span id="header-page-total-span"></span>
             </div>
         </div>
         <div class="col text-right">
-            <button class="btn btn-success d-none" id="headerNextNoteItemsPageButton">
+            <button class="btn btn-success d-none" id="header-next-note-items-page-button">
                 <span class="d-none d-md-inline">@nextPageString </span>
                 <i class="material-icons icon-top-4">chevron_right</i>
             </button>
         </div>
     </div>
     <div class="space-20"></div>
-    <div id="notesListDiv" class="row">
+    <div id="notes-list-div" class="row">
     </div>
     <div class="row align-items-center">
         <div class="col text-left">
-            <button class="btn btn-success d-none mr-auto" id="previousNoteItemsPageButton">
+            <button class="btn btn-success d-none mr-auto" id="previous-note-items-page-button">
                 <i class="material-icons icon-top-4">chevron_left</i>
                 <span class="d-none d-md-inline"> @previousPageString</span>
             </button>
         </div>
         <div class="col">
             <div class="text-center font-weight-bold">
-                <span class="d-none d-md-inline">@pageString </span><span id="pageNumberSpan"></span><span> / </span><span id="pageTotalSpan"></span>
+                <span class="d-none d-md-inline">@pageString </span><span id="page-number-span"></span><span> / </span><span id="page-total-span"></span>
             </div>
         </div>
         <div class="col text-right">
-            <button class="btn btn-success d-none" id="nextNoteItemsPageButton">
+            <button class="btn btn-success d-none" id="next-note-items-page-button">
                 <span class="d-none d-md-inline">@nextPageString </span>
                 <i class="material-icons icon-top-4">chevron_right</i>
             </button>
@@ -58,7 +58,7 @@
     <div id="page-settings-content-div" class="bg-dark page-settings-content">
         <div class="row">
             <div class="col-auto ml-auto">
-                <button id="closeNotesPageSettingsButton" class="ml-auto btn btn-link btn-link-yellow p-2">
+                <button id="close-notes-page-settings-button" class="ml-auto btn btn-link btn-link-yellow p-2">
                     <i class="material-icons icon-top-4">close</i>
                 </button>
             </div>

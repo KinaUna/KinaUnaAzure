@@ -19,7 +19,7 @@
                 <div class="space-20"></div>
                 @await LocaleManager.GetTranslation("Click the button below to proceed.", PageNames.Account, Model.LanguageId)
                 <div class="space-20"></div>
-                <form id="loginForm" action="@Model.ChangeLink" method="post" target="loginFrame" style="float: right;">
+                <form id="login-form" action="@Model.ChangeLink" method="post" target="loginFrame" style="float: right;">
                     <button id="verifyEmailButton" type="submit" class="btn btn-success" data-toggle="modal" data-target="#loginModal"><span class="fas fa-sign-in-alt"></span>@await LocaleManager.GetTranslation("Change my email", PageNames.Account, Model.LanguageId)</button>
                 </form>
             </div>

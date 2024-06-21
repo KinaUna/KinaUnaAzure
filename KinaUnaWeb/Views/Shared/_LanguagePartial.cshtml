@@ -10,9 +10,9 @@
 }
 <ul class="navbar-nav ml-auto float-right">
     <li class="nav-item dropdown" style="z-index: 1022;">
-        <a class="nav-link dropdown-toggle kinauna_yellow_text" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <span class="material-icons icon_medium kinauna_yellow_text">language</span>
-            <span class="font-weight-bold kinauna_yellow_text" style="font-size: 15px; margin-left: 10px;">@currentLanguage</span>
+        <a class="nav-link dropdown-toggle kinauna-yellow-text" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="material-icons kinauna-icon-medium kinauna-yellow-text">language</span>
+            <span class="font-weight-bold kinauna-yellow-text" style="font-size: 15px; margin-left: 10px;">@currentLanguage</span>
         </a>
         <div class="dropdown-menu dropdown-menu-right" style="background: #662d91;" aria-labelledby="navbarDropdown">
             @foreach (KinaUnaLanguage language in Model.LanguageList)
@@ -29,8 +29,8 @@
                     imageOpacity = "1";
                     selectedText = "bold";
                 }
-                <a class="dropdown-item leavePage pt-2 pb-2" asp-controller="Home" asp-action="SetLanguageId" asp-route-languageId="@language.Id" asp-route-returnUrl="@returnUrl">
-                    <span class="kinauna_footer_text" style="font-weight: @selectedText; opacity: @imageOpacity; font-size: 16px; margin-left: 10px;">@language.Name</span>
+                <a class="dropdown-item leave-page pt-2 pb-2" asp-controller="Home" asp-action="SetLanguageId" asp-route-languageId="@language.Id" asp-route-returnUrl="@returnUrl">
+                    <span class="kinauna-footer-text" style="font-weight: @selectedText; opacity: @imageOpacity; font-size: 16px; margin-left: 10px;">@language.Name</span>
                 </a>
             }
         </div>

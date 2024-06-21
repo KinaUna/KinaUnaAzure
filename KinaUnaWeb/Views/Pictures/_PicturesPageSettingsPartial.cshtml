@@ -7,13 +7,13 @@
     string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Pictures, Model.LanguageId);
     string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Pictures, Model.LanguageId);
     string sortOldest = "btn btn-primary";
-    string sortNewest = "btn btn-info leavePage";
-    string picPerPageStyle4 = "leavePage btn btn-info";
-    string picPerPageStyle8 = "leavePage btn btn-info";
-    string picPerPageStyle16 = "leavePage btn btn-info";
-    string picPerPageStyle32 = "leavePage btn btn-info";
-    string picPerPageStyle64 = "leavePage btn btn-info";
-    string picPerPageSelected = "leavePage btn btn-primary";
+    string sortNewest = "btn btn-info leave-page";
+    string picPerPageStyle4 = "leave-page btn btn-info";
+    string picPerPageStyle8 = "leave-page btn btn-info";
+    string picPerPageStyle16 = "leave-page btn btn-info";
+    string picPerPageStyle32 = "leave-page btn btn-info";
+    string picPerPageStyle64 = "leave-page btn btn-info";
+    string picPerPageSelected = "leave-page btn btn-primary";
     if (Model.PageSize == 4)
     {
         picPerPageStyle4 = picPerPageSelected;
@@ -39,12 +39,12 @@
     <div class="btn btn-info btn-link-yellow" onclick="pictureSettingsIconClicked()">
         <span><i class="material-icons">display_settings</i></span>
     </div>
-    <div id="pictureSettingsDiv" class="kinauna-menu collapse-kinauna-menu kinauna_purple_bg text-white">
+    <div id="pictureSettingsDiv" class="kinauna-menu collapse-kinauna-menu kinauna-purple-bg text-white">
         <div class="m-3 m-sm-3 m-md-4 m-lg-5">
             <div class="row">
                 @if (Model.SortBy == 1)
                 {
-                    sortOldest = "btn btn-info leavePage";
+                    sortOldest = "btn btn-info leave-page";
                     sortNewest = "btn btn-primary";
                     <div class="col-sm-12 col-md-auto" style="align-self: center;">
                         @sortString

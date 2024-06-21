@@ -20,12 +20,12 @@
     <script src="https://cdn.jsdelivr.net/npm/zebra_datepicker/dist/zebra_datepicker.min.js"></script>
 }
 
-<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
-<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="language-id-div" class="d-none" data-language-id="@Model.LanguageId"></div>
 <div id="longDateTimeFormatDiv" class="d-none" data-long-date-time-format="@longDateTimeFormat"></div>
-<div id="longDateTimeFormatMomentDiv" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
-<div id="zebraDateTimeFormatDiv" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
-<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
+<div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="progeny-id-div" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="add-item-container">
         <h2 class="col-12">@ViewData["Title"]</h2>
@@ -39,7 +39,7 @@
                             @{
                                 string sleepStartValue = Model.SleepItem.SleepStart.ToString(longDateTimeFormat);
                             }
-                            <input id="datetimepicker1" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepStart" value="@sleepStartValue"/>
+                            <input id="sleep-start-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepStart" value="@sleepStartValue"/>
                         </div>
                     </div>
                 </div>
@@ -50,7 +50,7 @@
                             @{
                                 string sleepEndValue = Model.SleepItem.SleepEnd.ToString(longDateTimeFormat);
                             }
-                            <input id="datetimepicker2" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepEnd" value="@sleepEndValue"/>
+                            <input id="sleep-end-date-time-picker" type="text" class="form-control" data-zdp_readonly_element="false" asp-for="SleepItem.SleepEnd" value="@sleepEndValue"/>
                         </div>
                     </div>
                 </div>
@@ -80,14 +80,14 @@
             <div class="form-group">
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">
-                    <button id="submitBtn" class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                    <a class="btn btn-danger leavePage" asp-controller="Sleep" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    <button id="submit-button" class="btn btn-success leave-page" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <a class="btn btn-danger leave-page" asp-controller="Sleep" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                 </div>
             </div>
             <div class="form-group">
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">
-                    <div id="notification" style="color: orangered"></div>
+                    <div id="save-item-notification" style="color: orangered"></div>
                 </div>
             </div>
         </form>

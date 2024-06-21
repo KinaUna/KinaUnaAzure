@@ -8,12 +8,12 @@
         <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
             <ul>
                 <li>
-                    <a class="leavePage" asp-area="" asp-controller="Home" asp-action="About">
+                    <a class="leave-page" asp-area="" asp-controller="Home" asp-action="About">
                         <i class="material-icons">info</i><span class="d-sm-inline d-md-inline d-lg-inline"> @await LocaleManager.GetTranslation("About", PageNames.Layout, Model)</span>
                     </a>
                 </li>
-                <li> <a class="leavePage" asp-controller="Home" asp-action="Privacy">@await LocaleManager.GetTranslation("Cookies & Privacy Policy", PageNames.Layout, Model)</a></li>
-                <li><a class="leavePage" asp-controller="Home" asp-action="Terms">@await LocaleManager.GetTranslation("Terms & Conditions", PageNames.Layout, Model)</a></li>
+                <li> <a class="leave-page" asp-controller="Home" asp-action="Privacy">@await LocaleManager.GetTranslation("Cookies & Privacy Policy", PageNames.Layout, Model)</a></li>
+                <li><a class="leave-page" asp-controller="Home" asp-action="Terms">@await LocaleManager.GetTranslation("Terms & Conditions", PageNames.Layout, Model)</a></li>
                 <li><a href="https://web.kinauna.com/Support" target="_blank">@await LocaleManager.GetTranslation("Support", PageNames.Layout, Model)</a></li>
             </ul>
         </div>

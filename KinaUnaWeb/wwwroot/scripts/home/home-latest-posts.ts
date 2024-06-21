@@ -1,33 +1,34 @@
-import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v2.js';
-import { getCurrentProgenyId } from '../data-tools-v2.js';
+import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v6.js';
+import { getCurrentProgenyId } from '../data-tools-v6.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+
 let timelineItemsList: TimelineItem[] = []
 const timeLineParameters: TimelineParameters = new TimelineParameters();
 let latestPostsProgenyId: number;
 let moreTimelineItemsButton: HTMLButtonElement | null;
 
-function runWaitMeMoreTimelineItemsButton(): void {
-    const moreItemsButton: any = $('#loadingTimeLineItemsDiv');
-    moreItemsButton.waitMe({
-        effect: 'bounce',
-        text: '',
-        bg: 'rgba(177, 77, 227, 0.0)',
-        color: '#9011a1',
-        maxSize: '',
-        waitTime: -1,
-        source: '',
-        textPos: 'vertical',
-        fontSize: '',
-        onClose: function () { }
-    });
+/**
+ * Starts the spinner for loading the timeline items.
+ */
+function startLoadingTimelineItemsSpinner(): void {
+    startLoadingItemsSpinner('loading-latest-posts-items-div');
 }
 
-function stopWaitMeMoreTimelineItemsButton(): void {
-    const moreItemsButton: any = $('#loadingTimeLineItemsDiv');
-    moreItemsButton.waitMe("hide");
+/**
+ * Stops the spinner for loading the timeline items.
+ */
+function stopLoadingTimelineItemsSpinner(): void {
+    stopLoadingItemsSpinner('loading-latest-posts-items-div');
 }
 
-async function getTimelineList(parameters: TimelineParameters) {
-    runWaitMeMoreTimelineItemsButton();
+/**
+ * Retrieves the list of timeline items, based on the parameters provided and the number of items already retrieved, then updates the page.
+ * Hides the moreTimelineItemsButton while loading.
+ * @param parameters The parameters to use for retrieving the timeline items.
+ */
+async function getTimelineList(parameters: TimelineParameters): Promise<void> {
+    startLoadingTimelineItemsSpinner();
+
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.classList.add('d-none');
     }
@@ -44,7 +45,7 @@ async function getTimelineList(parameters: TimelineParameters) {
         if (getTimelineListResult != null) {
             const newTimeLineItemsList = (await getTimelineListResult.json()) as TimelineList;
             if (newTimeLineItemsList.timelineItems.length > 0) {
-                const latestPostsParentDiv = document.querySelector<HTMLDivElement>('#latestPostsParentDiv');
+                const latestPostsParentDiv = document.querySelector<HTMLDivElement>('#latest-posts-parent-div');
                 if (latestPostsParentDiv !== null) {
                     latestPostsParentDiv.classList.remove('d-none');
                 }
@@ -61,14 +62,18 @@ async function getTimelineList(parameters: TimelineParameters) {
         console.log('Error loading TimelineList. Error: ' + error);
     });
 
-    stopWaitMeMoreTimelineItemsButton();
+    stopLoadingTimelineItemsSpinner();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
-async function renderTimelineItem(timelineItem: TimelineItem) {
+/**
+ * Fetches the HTML for a given timeline item and renders it at the end of timeline-items-div.
+ * @param timelineItem The timelineItem object to add to the div.
+ */
+async function renderTimelineItem(timelineItem: TimelineItem): Promise<void> {
     const timeLineItemViewModel: TimeLineItemViewModel = new TimeLineItemViewModel();
     timeLineItemViewModel.typeId = timelineItem.itemType;
     timeLineItemViewModel.itemId = parseInt(timelineItem.itemId);
@@ -84,7 +89,7 @@ async function renderTimelineItem(timelineItem: TimelineItem) {
 
     if (getTimelineElementResponse.ok && getTimelineElementResponse.text !== null) {
         const timelineElementHtml = await getTimelineElementResponse.text();
-        const timelineDiv = document.querySelector<HTMLDivElement>('#timelineItemsDiv');
+        const timelineDiv = document.querySelector<HTMLDivElement>('#timeline-items-div');
         if (timelineDiv != null) {
             timelineDiv.insertAdjacentHTML('beforeend', timelineElementHtml);
         }
@@ -95,13 +100,16 @@ async function renderTimelineItem(timelineItem: TimelineItem) {
     });
 }
 
-$(async function () {
+/**
+ * Initializes page settings and sets up event listeners when page is first loaded.
+ */
+document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     latestPostsProgenyId = getCurrentProgenyId();
     timeLineParameters.count = 5;
     timeLineParameters.skip = 0;
     timeLineParameters.progenyId = latestPostsProgenyId;
 
-    moreTimelineItemsButton = document.querySelector<HTMLButtonElement>('#moreTimelineItemsButton');
+    moreTimelineItemsButton = document.querySelector<HTMLButtonElement>('#more-latest-posts-items-button');
     if (moreTimelineItemsButton !== null) {
         moreTimelineItemsButton.addEventListener('click', async () => {
             getTimelineList(timeLineParameters);
@@ -109,4 +117,8 @@ $(async function () {
     }
 
     await getTimelineList(timeLineParameters);
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 });

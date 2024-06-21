@@ -7,7 +7,7 @@
     ViewData["Title"] = "Manage Texts";
     string returnUrl = string.IsNullOrEmpty(Context.Request.Path) ? "~/" : Context.Request.GetEncodedUrl();
 }
-<div id="manageTextsPageReturnUrlDiv" class="d-none" data-manage-texts-page-return-url="@returnUrl"></div>
+<div id="manage-texts-page-return-url-div" class="d-none" data-manage-texts-page-return-url="@returnUrl"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="space-20"></div>
     <div class="add-item-container">
@@ -27,7 +27,7 @@
                             <div class="col-12">
                                 <div>
                                     <button class="btn btn-primary" data-manage-texts-edit-text-id="@kinaUnaText.TextId" data-manage-texts-edit-language-id="@kinaUnaText.LanguageId"
-                                            data-toggle="modal" data-target="#manageTextsPageEditTextModalDiv">
+                                            data-toggle="modal" data-target="#manage-texts-page-edit-text-modal-div">
                                         Edit @kinaUnaText.Title
                                     </button>
                                 </div>
@@ -39,23 +39,23 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="manageTextsPageEditTextModalDiv">
+    <div class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" id="manage-texts-page-edit-text-modal-div">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"></h5>
-                    <button id="manageTextsPageEditTextModalCloseButton" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button id="manage-texts-page-edit-text-modal-close-button" type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="manageTextsEditForm" asp-action="EditTextTranslation" method="post" role="form">
+                    <form id="manage-texts-edit-form" asp-action="EditTextTranslation" method="post" role="form">
                         <div class="row">
                             <div class="col-12">
                                 <div class="float-right">
                                     <div class="mb-2">@await LocaleManager.GetTranslation("Translation", PageNames.TextEditor, Model.LanguageId)</div>
                                     <div class="float-right" style="min-width: 300px;">
-                                        <ejs-dropdownlist id="editTextTranslationLanguageList" dataSource="Model.LanguagesList" index="@Model.Language" change="manageTextsLanguageChanged"
+                                        <ejs-dropdownlist id="edit-text-translation-language-list" dataSource="Model.LanguagesList" index="@Model.Language" change="manageTextsLanguageChanged"
                                                           itemTemplate="@Html.Raw("<div><div class=\"e-avatar e-avatar-small e-avatar-circle\"><img class=\"image\" src=\"${IconLink}\" alt=\"Flag\"/></div><span class=\"ename\"> ${Name} </span></div>")"
                                                           valueTemplate="@Html.Raw("<div style=\"width:100%;height:100%;\"><div class=\"e-avatar e-avatar-small e-avatar-circle\"><img class=\"value\" src=\"${IconLink}\" height=\"26px\" width=\"26px\" alt=\"Flag\"/></div><span class=\"name\"> ${Name} </span></div>")">
                                             <e-dropdownlist-fields text="Name" value="Id"></e-dropdownlist-fields>
@@ -68,13 +68,13 @@
                         <div class="row">
                             <div class="col-3">Title:</div>
                             <div class="col-6">
-                                <input id="editTextTranslationTitleInput" type="text" name="Title" />
+                                <input id="edit-text-translation-title-input" type="text" name="Title" />
                             </div>
                         </div>
                         <div class="space-20"></div>
                         <div class="row">
                             <div class="col-3">Page:</div>
-                            <div class="col-6" id="editTextTranslationPageDiv"></div>
+                            <div class="col-6" id="edit-text-translation-page-div"></div>
                         </div>
                         <div class="space-20"></div>
                         <div class="row">
@@ -87,7 +87,7 @@
                                         "Outdent", "Indent", "|", "CreateLink", "Image", "CreateTable", "|", "ClearFormat", "SourceCode", "FullScreen", "|", "Undo", "Redo"
                                     };
                                 }
-                                <ejs-richtexteditor id="editTextTranslationRichTextEditor" imageUploadSuccess="onImageUploadSuccess" ejs-for="Text" height="400" enableResize="true">
+                                <ejs-richtexteditor id="edit-text-translation-rich-text-editor" imageUploadSuccess="onImageUploadSuccess" ejs-for="Text" height="400" enableResize="true">
                                     <e-richtexteditor-toolbarsettings items="@toolbarItems" type="MultiRow" enableFloating="true"></e-richtexteditor-toolbarsettings>
                                     <e-richtexteditor-insertimagesettings saveUrl="/Admin/SaveRtfFile" path=""></e-richtexteditor-insertimagesettings>
                                     <e-content-template>
@@ -97,15 +97,15 @@
                             </div>
                         </div>
                         <div class="space-50"></div>
-                        <div class="horizontal_bar_thin w-100"></div>
+                        <div class="horizontal-bar-thin w-100"></div>
                         <div class="space-50"></div>
                         <div class="row">
                             <div class="col-12">
-                                <input id="editTextTranslationPageInput" hidden="hidden" name="Page" value="" />
-                                <input id="editTextTranslationIdInput" hidden="hidden" name="Id" value="0" />
-                                <input id="editTextTranslationTextIdInput" hidden="hidden" name="TextId" value="0" />
-                                <input id="editTextTranslationLanguageIdInput" hidden="hidden" name="LanguageId" value="0" />
-                                <button id="editTextTranslationPageSaveButton" type="submit" class="btn btn-primary float-right">Save</button>
+                                <input id="edit-text-translation-page-input" hidden="hidden" name="Page" value="" />
+                                <input id="edit-text-translation-id-input" hidden="hidden" name="Id" value="0" />
+                                <input id="edit-text-translation-text-id-input" hidden="hidden" name="TextId" value="0" />
+                                <input id="edit-text-translation-language-id-input" hidden="hidden" name="LanguageId" value="0" />
+                                <button id="edit-text-translation-page-save-button" type="submit" class="btn btn-primary float-right">Save</button>
                                 <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                             </div>
                         </div>

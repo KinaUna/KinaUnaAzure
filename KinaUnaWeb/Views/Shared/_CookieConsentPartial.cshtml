@@ -17,7 +17,7 @@
     bool youTubeChecked = Context.Request.YouTubeCookieSet();
 }
 
-<div id="cookieConsent" class="alert alert-info alert-dismissible fade show ml-4" style="background-color: #e3d7c3; border-radius: 5px;" role="alert">
+<div id="kinauna-cookie-consent" class="alert alert-info alert-dismissible fade show ml-4" style="background-color: #e3d7c3; border-radius: 5px;" role="alert">
     <div class="row">
         <div class="col-auto">
             <h4>Cookie Consent</h4>
@@ -32,31 +32,31 @@
     <div class="space-20"></div>
     <div class="row">
         <div class="col">
-            <label for="allowEssentialSwitch">@await LocaleManager.GetTranslation("Allow KinaUna essential cookies", PageNames.Layout, Model)</label>
+            <label for="allow-essential-switch">@await LocaleManager.GetTranslation("Allow KinaUna essential cookies", PageNames.Layout, Model)</label>
         </div>
         <div class="col-auto">
-            <ejs-switch id="allowEssentialSwitch" checked="true" disabled="true"></ejs-switch>
+            <ejs-switch id="allow-essential-switch" checked="true" disabled="true"></ejs-switch>
         </div>
     </div>
     <div class="row">
         <div class="col">
-            <label for="allowMapsSwitch">@await LocaleManager.GetTranslation("Allow Here Maps cookies and content", PageNames.Layout, Model)</label>
+            <label for="allow-maps-switch">@await LocaleManager.GetTranslation("Allow Here Maps cookies and content", PageNames.Layout, Model)</label>
         </div>
         <div class="col-auto">
-            <ejs-switch id="allowMapsSwitch" checked="hereMapsChecked"></ejs-switch>
+            <ejs-switch id="allow-maps-switch" checked="hereMapsChecked"></ejs-switch>
         </div>
     </div>
     <div class="row">
         <div class="col">
-            <label for="allowYouTubeSwitch">@await LocaleManager.GetTranslation("Allow YouTube cookies and content", PageNames.Layout, Model)</label>
+            <label for="allow-youtube-switch">@await LocaleManager.GetTranslation("Allow YouTube cookies and content", PageNames.Layout, Model)</label>
         </div>
         <div class="col-auto">
-            <ejs-switch id="allowYouTubeSwitch" checked="youTubeChecked"></ejs-switch>
+            <ejs-switch id="allow-youtube-switch" checked="youTubeChecked"></ejs-switch>
         </div>
     </div>
     <div class="row">
         <div class="col-auto ml-auto">
-            <button id="saveGdprButton" class="btn btn-success" type="button" data-dismiss="alert">@await LocaleManager.GetTranslation("Save", PageNames.Layout, Model)</button>
+            <button id="save-gdpr-button" class="btn btn-success" type="button" data-dismiss="alert">@await LocaleManager.GetTranslation("Save", PageNames.Layout, Model)</button>
         </div>
     </div>
     <div class="space-20"></div>

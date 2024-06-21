@@ -176,5 +176,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="tagFilter">string: Only include Videos tagged with this string. If null or empty include all Pictures.</param>
         /// <returns></returns>
         Task<VideoViewModel> GetVideoViewModel(int id, int userAccessLevel, int sortBy, string timeZone, string tagFilter = "");
+
+        Task<List<Picture>> GetProgenyPictureList(int progenyId, int accessLevel);
+        Task<PictureViewModel> GetPictureElement(int pictureId);
     }
 }

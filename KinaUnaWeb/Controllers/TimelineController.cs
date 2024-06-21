@@ -17,23 +17,39 @@ namespace KinaUnaWeb.Controllers
         : Controller
     {
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, int items = 10, int year=0, int month=0, int day=0)
+        public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, int items = 10, int skip = 0, int year=0, int month=0, int day=0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             TimeLineViewModel model = new(baseModel)
             {
                 SortBy = sortBy,
                 Items = items,
+                Skip = skip,
                 Year = year,
                 Month = month,
                 Day = day
             };
 
-            if (year != 0) return View(model);
+            if (year != 0)
+            {
+                model.SetParametersFromProperties();
+                return View(model);
+            }
+            
+            if (sortBy == 1)
+            {
+                model.Year = DateTime.Now.Year;
+                model.Month = DateTime.Now.Month;
+                model.Day = DateTime.Now.Day;
+            }
+            else
+            {
+                model.Year = 1900;
+                model.Month = 1;
+                model.Day = 1;
+            }
 
-            model.Year = DateTime.Now.Year;
-            model.Month = DateTime.Now.Month;
-            model.Day = DateTime.Now.Day;
+            model.SetParametersFromProperties();
 
             return View(model);
         }
@@ -42,9 +58,11 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetTimelineList([FromBody] TimelineParameters parameters)
         {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), parameters.ProgenyId);
+
             TimelineList timelineList = new()
             {
-                TimelineItems = await timelineHttpClient.GetTimeline(parameters.ProgenyId, 0, parameters.SortBy)
+                TimelineItems = await timelineHttpClient.GetTimeline(baseModel.CurrentProgenyId, baseModel.CurrentAccessLevel, parameters.SortBy)
             };
 
             timelineList.FirstItemYear = timelineList.TimelineItems.Min(t => t.ProgenyTime).Year;

@@ -7,7 +7,7 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
     string durTime = "";
 }
-<a class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-Id="@Model.VideoId">
+<a class="leave-page" asp-controller="Videos" asp-action="Video" asp-route-Id="@Model.VideoId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-video">
             <div class="row">
@@ -67,7 +67,7 @@
                             <div>
                                 @foreach (string tagString in tagsList)
                                 {
-                                    <span class="btn tag-item leavePage">@tagString</span>
+                                    <span class="btn tag-item leave-page">@tagString</span>
                                 }
                             </div>
 

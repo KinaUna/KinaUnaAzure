@@ -9,7 +9,8 @@
     string go5PagesForwardString = await LocaleManager.GetTranslation("Go 5 pages forward", PageNames.Pictures, Model.LanguageId);
     string go5PagesBackString = await LocaleManager.GetTranslation("Go 5 pages back", PageNames.Pictures, Model.LanguageId);
     string viewPrevText = await LocaleManager.GetTranslation("Older", PageNames.Pictures, Model.LanguageId);
-    string viewNextText = "Newer";
+    string viewNextText = await LocaleManager.GetTranslation("Newer", PageNames.Pictures, Model.LanguageId);
+    
     if (Model.PageNumber == 1)
     {
         viewPrevText = newestText;
@@ -37,7 +38,7 @@
     <div class="space-20"></div>
     <div class="row">
         <div class="col-auto">
-            <a id="previousPhotoLink" class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@Model.PreviousPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
+            <a id="previous-photo-link" class="leave-page" asp-controller="Pictures" asp-action="Index" asp-route-id="@Model.PreviousPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
            asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @photosString</a>
             @if (Model.TotalPages > 5)
             {
@@ -48,10 +49,10 @@
         <div class="col-auto ml-auto">
             @if (Model.TotalPages > 5)
             {
-                <a class="leavePage" style="margin-right: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@Model.Forward5Pages" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
+                <a class="leave-page" style="margin-right: 25px;" asp-controller="Pictures" asp-action="Index" asp-route-id="@Model.Forward5Pages" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
            asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@go5PagesForwardString <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
             }
-            <a id="nextPhotoLink" class="leavePage" asp-controller="Pictures" asp-action="Index" asp-route-id="@Model.NextPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
+            <a id="next-photo-link" class="leave-page" asp-controller="Pictures" asp-action="Index" asp-route-id="@Model.NextPage" asp-route-pageSize="@Model.PageSize" asp-route-childId="@Model.CurrentProgeny.Id"
            asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText @photosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
         </div>
     </div>

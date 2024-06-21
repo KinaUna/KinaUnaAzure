@@ -8,7 +8,7 @@
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Locations", PageNames.Locations, Model.LanguageId);
     bool allowHereMaps = Context.Request.HereMapsCookieSet();
     string sortOldest = "btn btn-primary btn-sm";
-    string sortNewest = "btn btn-info btn-sm leavePage";
+    string sortNewest = "btn btn-info btn-sm leave-page";
     string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Locations, Model.LanguageId);
     string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Locations, Model.LanguageId);
     string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Locations, Model.LanguageId);
@@ -27,7 +27,7 @@
     @if (Model.IsCurrentUserProgenyAdmin)
     {
         <div class="btn-group" style="float: right;">
-            <a asp-controller="Locations" asp-action="AddLocation" class="btn btn-success btn-round leavePage">
+            <a asp-controller="Locations" asp-action="AddLocation" class="btn btn-success btn-round leave-page">
                 <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add location", PageNames.Locations, Model.LanguageId)
             </a>
         </div>
@@ -40,14 +40,14 @@
     else
     {
         <div class="btn-group" style="float: right;">
-            <a asp-controller="Locations" asp-action="PhotoLocations" class="btn btn-info leavePage">
+            <a asp-controller="Locations" asp-action="PhotoLocations" class="btn btn-info leave-page">
                 <i class="fas fa-map-marked-alt"></i> @await LocaleManager.GetTranslation("Photo locations", PageNames.Locations, Model.LanguageId)
             </a>
         </div>
         <h2>@ViewData["Title"]</h2>
         @if (Model.SortBy == 1)
         {
-            sortOldest = "btn btn-info btn-sm leavePage";
+            sortOldest = "btn btn-info btn-sm leave-page";
             sortNewest = "btn btn-primary btn-sm";
             <div>
                 @sortString <span class="@sortNewest"><i class="fas fa-check-circle"></i> @newestFirstString</span>
@@ -64,13 +64,13 @@
         @if (!string.IsNullOrEmpty(Model.TagFilter))
         {
             <div class="space-20"></div>
-            <div style="float: right;">@await LocaleManager.GetTranslation("Tag filter:", PageNames.Locations, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leavePage" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Locations, Model.LanguageId)</a></div>
+            <div style="float: right;">@await LocaleManager.GetTranslation("Tag filter:", PageNames.Locations, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span> <a class="btn btn-info btn-sm leave-page" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"><i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Locations, Model.LanguageId)</a></div>
         }
         <div class="row" style="clear: both; margin-top: 25px;">
             <div class="col-12 col-lg-10 col-xl-9 col-w2500-7">
                 @if (allowHereMaps)
                 {
-                    <div style="width: 100%; height: 480px; max-height: 60vh;" id="mapContainer"></div>
+                    <div style="width: 100%; height: 480px; max-height: 60vh;" id="locations-page-map-container-div"></div>
                 }
                 else
                 {
@@ -98,10 +98,10 @@
                             {
                                 <div style="float: right;">
 
-                                    <a asp-controller="Locations" asp-action="EditLocation" asp-route-itemId="@locationModel.LocationId" class="btn btn-info btn-sm leavePage">
+                                    <a asp-controller="Locations" asp-action="EditLocation" asp-route-itemId="@locationModel.LocationId" class="btn btn-info btn-sm leave-page">
                                         <i class="fas fa-pencil-alt"></i>
                                     </a>
-                                    <a asp-controller="Locations" asp-action="DeleteLocation" asp-route-itemId="@locationModel.LocationId" class="btn btn-danger btn-sm leavePage">
+                                    <a asp-controller="Locations" asp-action="DeleteLocation" asp-route-itemId="@locationModel.LocationId" class="btn btn-danger btn-sm leave-page">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </div>
@@ -154,7 +154,7 @@
                                         List<string> tagsList = locationModel.Tags.Split(',').ToList();
                                         foreach (string tagString in tagsList)
                                         {
-                                            <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
+                                            <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
                                         }
                                     }
                                 }
@@ -173,7 +173,7 @@
                                 string[] tagsList = Model.Tags.Split(',');
                                 foreach (string tagString in tagsList)
                                 {
-                                    <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
+                                    <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
                                 }
                             }
                         }
@@ -220,7 +220,7 @@
             ppi: pixelRatio === 1 ? undefined : 320
         });
 
-        let map = new H.Map(document.getElementById('mapContainer'),
+        let map = new H.Map(document.getElementById('locations-page-map-container-div'),
             defaultLayers.vector.normal.map,
             {
                 zoom: 3,

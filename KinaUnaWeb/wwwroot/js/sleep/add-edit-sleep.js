@@ -1,63 +1,105 @@
-import * as LocaleHelper from '../localization-v2.js';
-import { setContextAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, checkTimes, getZebraDateTimeFormat, getLongDateTimeFormatMoment } from '../data-tools-v2.js';
+import * as LocaleHelper from '../localization-v6.js';
+import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, checkStartBeforeEndTime, getZebraDateTimeFormat, getLongDateTimeFormatMoment } from '../data-tools-v6.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let longDateTimeFormatMoment;
 let zebraDateTimeFormat;
 let warningStartIsAfterEndString = 'Warning: Start time is after End time.';
 let currentProgenyId;
-$(async function () {
-    currentProgenyId = getCurrentProgenyId();
-    languageId = getCurrentLanguageId();
+let startDateTimePickerId = '#sleep-start-date-time-picker';
+let endDateTimePickerId = '#sleep-end-date-time-picker';
+/**
+ * Validates that the start date is before the end date.
+ * If the start date is after the end date, the submit button is disabled and a warning is shown.
+ */
+function validateDatePickerStartEnd() {
+    const saveItemNotificationDiv = document.querySelector('#save-item-notification');
+    const submitEventButton = document.querySelector('#submit-button');
+    if (checkStartBeforeEndTime(startDateTimePickerId, endDateTimePickerId, longDateTimeFormatMoment, warningStartIsAfterEndString)) {
+        if (saveItemNotificationDiv !== null) {
+            saveItemNotificationDiv.textContent = '';
+        }
+        if (submitEventButton !== null) {
+            submitEventButton.disabled = false;
+        }
+    }
+    else {
+        if (saveItemNotificationDiv !== null) {
+            saveItemNotificationDiv.textContent = warningStartIsAfterEndString;
+        }
+        if (submitEventButton !== null) {
+            submitEventButton.disabled = true;
+        }
+    }
+}
+/**
+ * Sets up the date time picker for the Start and End input fields.
+ * Also sets up event listeners for the input fields to validate that the start date is before the end date.
+ * @returns
+ */
+async function setupDateTimePickers() {
     setMomentLocale();
     longDateTimeFormatMoment = getLongDateTimeFormatMoment();
     zebraDateTimeFormat = getZebraDateTimeFormat();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
     warningStartIsAfterEndString = await LocaleHelper.getTranslation('Warning: Start time is after End time.', 'Sleep', languageId);
-    await setContextAutoSuggestList(currentProgenyId);
-    await setLocationAutoSuggestList(currentProgenyId);
-    const dateTimePicker1 = $('#datetimepicker1');
-    dateTimePicker1.Zebra_DatePicker({
+    const sleepStartDateTimePicker = $(startDateTimePickerId);
+    sleepStartDateTimePicker.Zebra_DatePicker({
         format: zebraDateTimeFormat,
         open_icon_only: true,
-        onSelect: function (a, b, c) { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); },
+        onSelect: function (a, b, c) { validateDatePickerStartEnd(); },
         days: zebraDatePickerTranslations.daysArray,
         months: zebraDatePickerTranslations.monthsArray,
         lang_clear_date: zebraDatePickerTranslations.clearString,
         show_select_today: zebraDatePickerTranslations.todayString,
         select_other_months: true
     });
-    const dateTimePicker2 = $('#datetimepicker2');
-    dateTimePicker2.Zebra_DatePicker({
+    const sleepEndDateTimePicker = $(endDateTimePickerId);
+    sleepEndDateTimePicker.Zebra_DatePicker({
         format: zebraDateTimeFormat,
         open_icon_only: true,
-        onSelect: function (a, b, c) { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); },
+        onSelect: function (a, b, c) { validateDatePickerStartEnd(); },
         days: zebraDatePickerTranslations.daysArray,
         months: zebraDatePickerTranslations.monthsArray,
         lang_clear_date: zebraDatePickerTranslations.clearString,
         show_select_today: zebraDatePickerTranslations.todayString,
         select_other_months: true
     });
-    checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString);
-    const zebra1 = document.querySelector('#datetimepicker1');
-    if (zebra1 !== null) {
-        zebra1.addEventListener('change', () => { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); });
-        zebra1.addEventListener('blur', () => { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); });
-        zebra1.addEventListener('focus', () => { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); });
+    validateDatePickerStartEnd();
+    const startZebraPicker = document.querySelector(startDateTimePickerId);
+    if (startZebraPicker !== null) {
+        startZebraPicker.addEventListener('change', () => { validateDatePickerStartEnd(); });
+        startZebraPicker.addEventListener('blur', () => { validateDatePickerStartEnd(); });
+        startZebraPicker.addEventListener('focus', () => { validateDatePickerStartEnd(); });
     }
-    const zebra2 = document.querySelector('#datetimepicker2');
-    if (zebra2 !== null) {
-        zebra2.addEventListener('change', () => { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); });
-        zebra2.addEventListener('blur', () => { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); });
-        zebra2.addEventListener('focus', () => { checkTimes(longDateTimeFormatMoment, warningStartIsAfterEndString); });
+    const endZebraPicker = document.querySelector(endDateTimePickerId);
+    if (endZebraPicker !== null) {
+        endZebraPicker.addEventListener('change', () => { validateDatePickerStartEnd(); });
+        endZebraPicker.addEventListener('blur', () => { validateDatePickerStartEnd(); });
+        endZebraPicker.addEventListener('focus', () => { validateDatePickerStartEnd(); });
     }
-    const progenyIdSelect = document.querySelector('#progenyIdSelect');
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
+/**
+ * Sets up the Progeny select list.
+ */
+function setupProgenySelectList() {
+    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
-            await setContextAutoSuggestList(currentProgenyId);
-            await setLocationAutoSuggestList(currentProgenyId);
         });
     }
+}
+document.addEventListener('DOMContentLoaded', async function () {
+    currentProgenyId = getCurrentProgenyId();
+    languageId = getCurrentLanguageId();
+    await setupDateTimePickers();
+    setupProgenySelectList();
+    return new Promise(function (resolve) {
+        resolve();
+    });
 });
 //# sourceMappingURL=add-edit-sleep.js.map

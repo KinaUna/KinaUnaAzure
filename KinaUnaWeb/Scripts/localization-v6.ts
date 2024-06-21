@@ -1,5 +1,10 @@
-﻿import { TextTranslation } from './page-models-v2.js';
+﻿import { TextTranslation } from './page-models-v6.js';
 
+/**
+ * Fetches and loads the cldr-data files for the specified culture for Syncfusion components, used for translations and formatting of data related to dates and numbers.
+ * @param currentCulture The locale code for the culture to get.
+ * @param syncfusion the base object provided by Syncfusion (The ej object injected by the Syncfusion script).
+ */
 export async function loadCldrCultureFiles(currentCulture: string, syncfusion: any): Promise<void> {
     let files =['ca-gregorian.json', 'numberingSystems.json', 'numbers.json', 'timeZoneNames.json', 'ca-islamic.json'];
     let loader = syncfusion.base.loadCldr;
@@ -34,8 +39,17 @@ export async function loadCldrCultureFiles(currentCulture: string, syncfusion: a
 
         loader(val);
     }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 }
 
+/**
+ * Fetches the translations used by the Zebra date-time-picker.
+ * @param languageId The id for the language to get translations for.
+ * @returns The ZebraDatePickerTranslation object containing the translated values.
+ */
 export async function getZebraDatePickerTranslations(languageId: number): Promise<ZebraDatePickerTranslations> {
     let translations = new ZebraDatePickerTranslations();
     if (languageId > 1) {
@@ -57,6 +71,9 @@ export async function getZebraDatePickerTranslations(languageId: number): Promis
     });
 }
 
+/**
+ * Default translations for the Zebra date-time-picker.
+ */
 export class ZebraDatePickerTranslations {
     daysArray: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     monthsArray: string[] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -64,6 +81,13 @@ export class ZebraDatePickerTranslations {
     clearString: string = 'Clear';
 }
 
+/**
+ * Fecthes a translation for a specific word (or sentence) on a specific page in a specific language.
+ * @param word The original word to translate.
+ * @param page The page on which the word is.
+ * @param languageId The id for the language to translate to.
+ * @returns The translated word (or sentence).
+ */
 export async function getTranslation(word: string, page: string, languageId: number): Promise<string> {
     let translationItem: TextTranslation = new TextTranslation();
     translationItem.word = word;

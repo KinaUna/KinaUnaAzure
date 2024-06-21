@@ -1,5 +1,5 @@
 "use strict";
-let measurementsHeightChartContainer = document.querySelector("#chartContainer");
+let measurementsHeightChartContainer = document.querySelector("#chart-container");
 if (measurementsHeightChartContainer != null) {
     let myChart = new Chart(measurementsHeightChartContainer, {
         type: 'line',
@@ -37,7 +37,7 @@ if (measurementsHeightChartContainer != null) {
         }
     });
 }
-let measurementsWeightChartContainer = document.querySelector("#chartContainer2");
+let measurementsWeightChartContainer = document.querySelector("#chart-container2");
 if (measurementsWeightChartContainer !== null) {
     var myChart2 = new Chart(measurementsWeightChartContainer, {
         type: 'line',

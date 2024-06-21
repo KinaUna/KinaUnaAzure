@@ -1,0 +1,59 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@inject ILocaleManager LocaleManager
+@model KinaUnaWeb.Models.ItemViewModels.PictureItemViewModel
+@{
+    string locationString = await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId);
+
+    bool isProgenyAdmin = Model.CurrentProgeny.IsInAdminList(Model.CurrentUser.UserEmail);
+    
+    string bgColor = "#181274";
+    if (isProgenyAdmin && Model.Picture.AccessLevel == 0)
+    {
+        bgColor = "#870000";
+    }
+
+    if (isProgenyAdmin && Model.Picture.AccessLevel == 1)
+    {
+        bgColor = "#247f00";
+    }
+
+    if (isProgenyAdmin && Model.Picture.AccessLevel == 2)
+    {
+        bgColor = "#72007f";
+    }
+
+    if (isProgenyAdmin && Model.Picture.AccessLevel == 3)
+    {
+        bgColor = "#007987";
+    }
+
+    string pictureTimeText = "";
+    if (Model.Picture.PictureTime != null)
+    {
+        pictureTimeText = Model.Picture.PictureTime.Value.ToString("dd-MMM-yyyy HH:mm");
+    }
+
+    string altText = Model.CurrentProgeny.NickName;
+    if (!string.IsNullOrEmpty(Model.Picture.Location))
+    {
+        altText += " [" + locationString + ": " + Model.Picture.Location + "]";
+    }
+}
+
+<a class="col-sm-12 col-md-6 col-lg-auto align-self-center p-1 m-0 leave-page" asp-area="" asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.Picture.PictureId" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@Model.TagFilter">
+    <div class="photo-gallery-frame">
+        <img data-src="@Model.Picture.PictureLink" class="photo-gallery-picture lazyload" alt="@altText"/>
+        <div class="photo-picture-number-frame" style="background-color: @bgColor;">
+            <span class="photo-picture-number-text">@Model.PictureNumber</span>
+        </div>
+        <div class="photo-picture-time-frame">
+            <span class="photo-picture-time-text">@pictureTimeText</span>
+        </div>
+        <div class="photo-comments-frame">
+            <span class="photo-comments-text"><i class="far fa-comment-alt"></i> @Model.Picture.Comments.Count</span>
+        </div>
+    </div>
+</a>

@@ -6,7 +6,7 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
     Model.DateAdded ??= DateTime.MinValue;
 }
-<a class="leavePage" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@Model.ContactId">
+<a class="leave-page" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@Model.ContactId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-contact">
             <div class="row">
@@ -35,7 +35,7 @@
                             <div>
                                 @foreach (string tagString in tagsList)
                                 {
-                                    <span class="btn tag-item leavePage">@tagString</span>
+                                    <span class="btn tag-item leave-page">@tagString</span>
                                 }
                             </div>
 

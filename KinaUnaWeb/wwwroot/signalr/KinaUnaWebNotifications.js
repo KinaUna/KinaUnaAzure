@@ -1,89 +1,90 @@
 ﻿let connection = null;
 let notificationsCount = 0;
-let notificationsMenuDiv = document.getElementById('notificationsMenu');
-let notificationsList = document.getElementById('notificationsList');
-let recentNotificationsList = document.getElementById('webNotificationsDiv');
-let notifationsCounter = document.getElementById('notificationsCounter');
-let notificationsIcon = document.getElementById('notificationBellIcon');
-let menuToggler = document.getElementById('navMainMenuButton');
-let togglerCounter = document.getElementById('togglerNotificationsCounter');
-let navMain = document.getElementById('navMain');
+let notificationsMenuDiv = document.getElementById('notifications-menu');
+let notificationsList = document.getElementById('notifications-list-div');
+let recentNotificationsList = document.getElementById('notifications-page-recent-web-notifications-div');
+let notifationsCounter = document.getElementById('menu-notifications-counter');
+let notificationsIcon = document.getElementById('menu-notification-bell-icon');
+let menuToggler = document.getElementById('nav-main-menu-button');
+let togglerCounter = document.getElementById('toggler-notifications-counter');
+let navMain = document.getElementById('nav-main');
 
-function notificationItemClick(btn, event) {
+async function notificationItemClick(btn, event) {
     let notifId = btn.getAttribute('data-notificationid');
-    if (btn.classList.contains('notificationUnread')) {
-        $.ajax({
-            type: 'GET',
-            url: '/Notifications/SetRead?Id=' + notifId,
-            async: true,
-            success: function() {
-                if ($('.navbar-toggler').css('display') !== 'none' && document.getElementById('bodyClick')) {
-                    $('.navbar-toggler').trigger("click");
-                }
-                navMain.style.opacity = 0.8;
-                // runWaitMeLeave();
+    if (btn.classList.contains('notification-unread')) {
+        await fetch('/Notifications/SetRead?Id=' + notifId, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
             },
-            error: function(jqXhr, textStatus, errorThrown) {
-                console.log(textStatus, errorThrown);
-            }
+        }).catch(function (error) {
+            console.log('Error setting notification as read: ' + error);
         });
-    } else {
-        if ($('.navbar-toggler').css('display') !== 'none' && document.getElementById('bodyClick')) {
-            $('.navbar-toggler').trigger("click");
-        }
-        navMain.style.opacity = 0.8;
-        //runWaitMeLeave();
     }
+
     let notificationLink = btn.getAttribute('data-notificationLink');
     window.location.href = notificationLink;
-}
 
-function markRead(btn, event) {
+    return new Promise (function (resolve, reject) {
+        resolve();
+    });
+}
+/**
+ * Marks a notification as read or unread, by sending a request to the server to update the notification.
+ * The server will then send a message to all clients to update the notification via signalR
+ * @param {any} btn The element clicked when setting it read/unread.
+ * @param {any} event The click event.
+ * @returns
+ */
+async function markRead(btn, event) {
     event.stopImmediatePropagation();
-    console.log("markRead.Event.Target: " + event.target);
-    console.log("markRead.Event.Type: " + event.type);
-    console.log("markRead.Event.CurrentTarget: " + event.currentTarget);
+    
     let notifId = btn.getAttribute('data-notificationid');
-    if (btn.classList.contains('notificationUnread')) {
-        $.ajax({
-            type: 'GET',
-            url: '/Notifications/SetRead?Id=' + notifId,
-            async: true,
-            success: function () {
-                console.log("SetRead: Done.");
+    if (btn.classList.contains('notification-unread')) {
+        await fetch('/Notifications/SetRead?Id=' + notifId, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
             },
-            error: function (jqXhr, textStatus, errorThrown) {
-                console.log(textStatus, errorThrown);
-            }
+        }).catch(function (error) {
+            console.log('Error setting notification as read: ' + error);
         });
+
     } else {
-        $.ajax({
-            type: 'GET',
-            url: '/Notifications/SetUnread?Id=' + notifId,
-            async: true,
-            success: function () {
-                console.log("SetUnread: Done.");
+        await fetch('/Notifications/SetUnread?Id=' + notifId, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
             },
-            error: function (jqXhr, textStatus, errorThrown) {
-                console.log(textStatus, errorThrown);
-            }
+        }).catch(function (error) {
+            console.log('Error setting notification as unread: ' + error);
         });
     }
+
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 }
 
-function removeNotification(btn, event) {
+async function removeNotification(btn, event) {
     event.stopPropagation();
     let notifId = btn.getAttribute('data-notificationid');
-    $.ajax({
-        type: 'GET',
-        url: '/Notifications/Remove?Id=' + notifId,
-        async: true,
-        success: function () {
-            console.log("Remove: Done.");
+
+    await fetch('/Notifications/Remove?Id=' + notifId, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
         },
-        error: function (jqXhr, textStatus, errorThrown) {
-            console.log(textStatus, errorThrown);
-        }
+    }).catch(function (error) {
+        console.log('Error removing notification: ' + error);
+    });
+    
+    return new Promise(function (resolve, reject) {
+        resolve();
     });
 }
 
@@ -105,7 +106,7 @@ function countNotifications() {
         notifationsCounter.classList.add('badge-secondary');
         togglerCounter.style.display = 'none';
     } else {
-        notificationsIcon.classList.add('notificationIconAnimation');
+        notificationsIcon.classList.add('notification-icon-animation');
         notifationsCounter.classList.remove('badge-secondary');
         notifationsCounter.classList.add('badge-danger');
         togglerCounter.style.display = 'block';
@@ -180,21 +181,20 @@ connection.on('ReceiveMessage',
             signalRdisconnected = false;
         }
         let parsedMessage = JSON.parse(message);
-        
-        $.ajax({
-            type: 'GET',
-            url: '/Notifications/ShowNotification',
-            data: parsedMessage,
-            datatype: 'html',
-            async: true,
-            success: function (data) {
-                removeNotificationDiv(parsedMessage);
-                addNotificationDiv(data);
+        await fetch('/Notifications/ShowNotification' + notifId, {
+            method: 'GET',
+            body: parsedMessage,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
             },
-                error: function (jqXhr, textStatus, errorThrown) {
-                    console.log(textStatus, errorThrown);
-                }
-            });
+        }).then(function (showNotificationResponse) {
+            removeNotificationDiv(parsedMessage);
+            addNotificationDiv(showNotificationResponse);
+        }).catch(function (error) {
+            console.log('Error removing notification: ' + error);
+        });
+
     }
 );
 
@@ -286,11 +286,13 @@ let getNotifications = function () {
 
 connection.start().catch(err => console.error(err.toString()));
 
-$(function () {
-    $('#notificationsButton').on('click', function () {
-        let notificationsIcon = document.getElementById('notificationBellIcon');
-        notificationsIcon.classList.remove('notificationIconAnimation');
-        menuToggler.classList.remove('notificationIconAnimation');
+document.addEventListener('DOMContentLoaded', function () {
+    let notificationsButton = document.getElementById('notificationsButton');
+    notificationsButton.addEventListener('click', function () {
+        let notificationsIcon = document.getElementById('menu-notification-bell-icon');
+        notificationsIcon.classList.remove('notification-icon-animation');
+        menuToggler.classList.remove('notification-icon-animation');
     });
+    
     checkNotifications = setInterval(getNotifications(), 300000);
 });

@@ -196,7 +196,7 @@ namespace KinaUna.IDP
                 .AddClientStoreCache<IdentityServer4.EntityFramework.Stores.ClientStore>()
                 .AddResourceStoreCache<IdentityServer4.EntityFramework.Stores.ResourceStore>()
                 .AddCorsPolicyCache<IdentityServer4.EntityFramework.Services.CorsPolicyService>()
-                .AddProfileServiceCache<ProfileService>()
+                //.AddProfileServiceCache<ProfileService>()
                 .Services.AddTransient<IProfileService, ProfileService>();
 
             services.AddLocalApiAuthentication();

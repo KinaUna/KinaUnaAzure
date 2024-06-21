@@ -1,4 +1,6 @@
-﻿import { WebNotification, WebNotificationViewModel, WebNotficationsParameters, WebNotificationsList } from '../page-models-v2.js';
+﻿import { WebNotification, WebNotificationViewModel, WebNotficationsParameters, WebNotificationsList } from '../page-models-v6.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+import { updateNoficationElementEvents } from './notification-actions.js';
 
 let webNotificationsList: WebNotification[] = [];
 const webNotificationsParameters: WebNotficationsParameters = new WebNotficationsParameters();
@@ -7,29 +9,27 @@ let numberOfWebNotificationsDiv : HTMLDivElement | null;
 let markAllAsReadButton: HTMLButtonElement | null;
 let webNotificationsDiv: HTMLDivElement | null;
 
-function runWaitMeMoreNotificationsButton(): void {
-    const moreItemsButton: any = $('#loadingWebNotificationsDiv');
-    moreItemsButton.waitMe({
-        effect: 'bounce',
-        text: '',
-        bg: 'rgba(177, 77, 227, 0.0)',
-        color: '#9011a1',
-        maxSize: '',
-        waitTime: -1,
-        source: '',
-        textPos: 'vertical',
-        fontSize: '',
-        onClose: function () { }
-    });
+/**
+ * Starts the spinner for loading the timeline items.
+ */
+function startLoadingNotificationsSpinner(): void {
+    startLoadingItemsSpinner('loading-web-notifications-div');
 }
 
-function stopWaitMeMoreNotifcationsButton(): void {
-    const moreItemsButton: any = $('#loadingWebNotificationsDiv');
-    moreItemsButton.waitMe("hide");
+/**
+ * Stops the spinner for loading the timeline items.
+ */
+function stopLoadingNotificationsSpinner(): void {
+    stopLoadingItemsSpinner('loading-web-notifications-div');
 }
 
-async function getWebNotificationsList(parameters: WebNotficationsParameters) {
-    runWaitMeMoreNotificationsButton();
+/**
+ * Fetches the list of web notifications, based on the parameters provided and the number of items already retrieved, then updates the page.
+ * @param parameters The parameters to use for retrieving the web notifications.
+
+ */
+async function getWebNotificationsList(parameters: WebNotficationsParameters): Promise<void> {
+    startLoadingNotificationsSpinner();
     if (moreNotificationsButton !== null) {
         moreNotificationsButton.classList.add('d-none');
     }
@@ -47,7 +47,7 @@ async function getWebNotificationsList(parameters: WebNotficationsParameters) {
         if (getNotificationsListResult != null) {
             const newNotificationsList = (await getNotificationsListResult.json()) as WebNotificationsList;
             if (newNotificationsList.notificationsList.length > 0) {
-                const webNotificationsParentDiv = document.querySelector<HTMLDivElement>('#webNotificationsParentDiv');
+                const webNotificationsParentDiv = document.querySelector<HTMLDivElement>('#notifications-page-web-notifications-parent-div');
                 if (webNotificationsParentDiv !== null) {
                     webNotificationsParentDiv.classList.remove('d-none');
                 }
@@ -69,30 +69,39 @@ async function getWebNotificationsList(parameters: WebNotficationsParameters) {
         console.log('Error loading NotificationsList. Error: ' + error);
     });
 
-    stopWaitMeMoreNotifcationsButton();
+    stopLoadingNotificationsSpinner();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
-function sortAllWebNotifications() {
+/**
+ * Sorts the web notification in webNotificationsDiv by the data-notificationTime attribute.
+ */
+function sortAllWebNotifications(): void {
     
     if (webNotificationsDiv !== null) {
         Array.prototype.slice.call(webNotificationsDiv.children)
             .map(function (x) { if (webNotificationsDiv !== null) return webNotificationsDiv.removeChild(x); })
             .sort(function (x, y) { return y.getAttribute('data-notificationTime') - x.getAttribute('data-notificationTime'); })
             .forEach(function (x) { if (webNotificationsDiv !== null) webNotificationsDiv.appendChild(x); });
+
+        const notificationButtonsList = webNotificationsDiv.getElementsByClassName('notification-button');
+        updateNoficationElementEvents(notificationButtonsList);
     }
-    
 }
 
-async function markAllNotificationsAsRead() {
+/**
+ * Updates all unread web notifications to read for this user in the database.
+ * This will also trigger a signalR message to update all notification on the page, including in the menu.
+ */
+async function markAllNotificationsAsRead(): Promise<void> {
     const markAllNotificationsAsReadResponse = await fetch('/Notifications/SetAllRead');
     if (markAllNotificationsAsReadResponse.ok) {
         
         if (webNotificationsDiv !== null) {
-            const unreadNotificationsOnPage = webNotificationsDiv.querySelectorAll<HTMLDivElement>('.notificationUnread');
+            const unreadNotificationsOnPage = webNotificationsDiv.querySelectorAll<HTMLDivElement>('.notification-unread');
             unreadNotificationsOnPage.forEach((unreadNotification: HTMLDivElement) => {
                 let webNotificationToUpdate: WebNotification = new WebNotification();
                 let notificationIdAttribute = unreadNotification.getAttribute('data-notificationId');
@@ -112,7 +121,11 @@ async function markAllNotificationsAsRead() {
     }
 }
 
-async function renderWebNotification(notificationItem: WebNotification) {
+/**
+ * Fetches the HTML for the given WebNotification and adds to the webNotificationsDiv.
+ * @param notificationItem The WebNotification item to add.
+ */
+async function renderWebNotification(notificationItem: WebNotification): Promise<void> {
     const webNotificationViewModel: WebNotificationViewModel = new WebNotificationViewModel();
     webNotificationViewModel.id = notificationItem.id;
 
@@ -140,7 +153,11 @@ async function renderWebNotification(notificationItem: WebNotification) {
     });
 }
 
-function removeNotificationDiv(id: number) {
+/**
+ * Removes the HTML element, in the webNotificationsDiv, containing the WebNotification with the given id.
+ * @param id The id of the WebNotification to remove.
+ */
+function removeNotificationDiv(id: number): void {
     
     if (webNotificationsDiv !== null) {
         const notificationsInRecents = webNotificationsDiv.querySelectorAll('.notification-item');
@@ -164,32 +181,51 @@ function removeNotificationDiv(id: number) {
     }
 }
 
-$(async function () {
+/**
+ * Add event listener for the Load More button.
+ */
+function addLoadMoreButtonEventListener(): void {
+    moreNotificationsButton = document.querySelector<HTMLButtonElement>('#load-more-web-notifications-button');
+    if (moreNotificationsButton !== null) {
+        moreNotificationsButton.addEventListener('click', async () => {
+            getWebNotificationsList(webNotificationsParameters);
+        });
+    }
+}
+
+function addMarkAllAsReadButtonEventListener(): void {
+    markAllAsReadButton = document.querySelector<HTMLButtonElement>('#mark-all-notifications-as-read-button');
+    if (markAllAsReadButton !== null) {
+        markAllAsReadButton.addEventListener('click', async () => {
+            markAllNotificationsAsRead();
+        });
+    }
+}
+/**
+ * Initializes the elements on the page when it is first loaded.
+ */
+document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     webNotificationsParameters.count = 10;
     webNotificationsParameters.skip = 0;
 
-    webNotificationsDiv = document.querySelector<HTMLDivElement>('#webNotificationsDiv');
+    webNotificationsDiv = document.querySelector<HTMLDivElement>('#notifications-page-recent-web-notifications-div');
 
-    numberOfWebNotificationsDiv = document.querySelector<HTMLDivElement>('#numberOfWebNotificationsDiv');
+    numberOfWebNotificationsDiv = document.querySelector<HTMLDivElement>('#number-of-web-notifications-div');
+
     if (numberOfWebNotificationsDiv !== null) {
         const itemsCountDivData: string | undefined = numberOfWebNotificationsDiv.dataset.itemsCount;
         if (itemsCountDivData) {
             webNotificationsParameters.count = parseInt(itemsCountDivData);
         }
     }
-    moreNotificationsButton = document.querySelector<HTMLButtonElement>('#moreWebNotificationsButton');
-    if (moreNotificationsButton !== null) {
-        moreNotificationsButton.addEventListener('click', async () => {
-            getWebNotificationsList(webNotificationsParameters);
-        });
-    }
 
-    markAllAsReadButton = document.querySelector<HTMLButtonElement>('#markAllAsReadButton');
-    if (markAllAsReadButton !== null) {
-        markAllAsReadButton.addEventListener('click', async () => {
-            markAllNotificationsAsRead();
-        });
-    }
+    addLoadMoreButtonEventListener();
+
+    addMarkAllAsReadButtonEventListener();
 
     await getWebNotificationsList(webNotificationsParameters);
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
 });

@@ -100,6 +100,21 @@ namespace KinaUnaWeb.Services.HttpClients
             return resultPictureList;
         }
 
+        public async Task<List<Picture>> GetProgenyPictureList(int progenyId, int accessLevel)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string pictureApiPath = "/api/Pictures/ProgenyPicturesList/" + progenyId + "/" + accessLevel;
+            HttpResponseMessage picturesResponse = await _httpClient.GetAsync(pictureApiPath);
+            if (!picturesResponse.IsSuccessStatusCode) return [];
+
+            string picturesListAsString = await picturesResponse.Content.ReadAsStringAsync();
+            List<Picture> resultPictureList = JsonConvert.DeserializeObject<List<Picture>>(picturesListAsString);
+            
+            return resultPictureList;
+        }
+
         public async Task<List<Picture>> GetAllPictures()
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -246,6 +261,21 @@ namespace KinaUnaWeb.Services.HttpClients
                     TimeZoneInfo.FindSystemTimeZoneById(timeZone));
             }
 
+            return pictureViewModel;
+        }
+
+        public async Task<PictureViewModel> GetPictureElement(int id)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string pageApiPath = "/api/Pictures/PictureElement/" + id;
+            HttpResponseMessage picturesResponse = await _httpClient.GetAsync(pageApiPath);
+            if (!picturesResponse.IsSuccessStatusCode) return new PictureViewModel();
+
+            string picturesViewModelAsString = await picturesResponse.Content.ReadAsStringAsync();
+            PictureViewModel pictureViewModel = JsonConvert.DeserializeObject<PictureViewModel>(picturesViewModelAsString);
+            
             return pictureViewModel;
         }
 

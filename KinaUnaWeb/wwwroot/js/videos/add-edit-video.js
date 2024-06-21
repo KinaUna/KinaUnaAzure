@@ -1,20 +1,21 @@
-import * as LocaleHelper from '../localization-v2.js';
-import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v2.js';
+import * as LocaleHelper from '../localization-v6.js';
+import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
 let zebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat;
 let currentProgenyId;
-let toggleEditBtn;
+let toggleEditButton;
 let copyLocationButton;
-$(async function () {
-    languageId = getCurrentLanguageId();
+/**
+ * Configures the date time picker for the video date input field.
+ */
+async function setupDateTimePicker() {
     setMomentLocale();
     zebraDateTimeFormat = getZebraDateTimeFormat();
-    currentProgenyId = getCurrentProgenyId();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
-    if (document.getElementById('datetimepicker1') !== null) {
-        const dateTimePicker1 = $('#datetimepicker1');
-        dateTimePicker1.Zebra_DatePicker({
+    if (document.getElementById('video-date-time-picker') !== null) {
+        const dateTimePicker = $('#video-date-time-picker');
+        dateTimePicker.Zebra_DatePicker({
             format: zebraDateTimeFormat,
             open_icon_only: true,
             days: zebraDatePickerTranslations.daysArray,
@@ -24,9 +25,15 @@ $(async function () {
             select_other_months: true
         });
     }
-    await setTagsAutoSuggestList(currentProgenyId);
-    await setLocationAutoSuggestList(currentProgenyId);
-    const progenyIdSelect = document.querySelector('#progenyIdSelect');
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
+}
+/**
+ * Sets up the Progeny select list and adds an event listener to update the tags and locations auto suggest lists when the selected Progeny changes.
+ */
+function setupProgenySelectList() {
+    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
@@ -34,20 +41,51 @@ $(async function () {
             await setLocationAutoSuggestList(currentProgenyId);
         });
     }
-    toggleEditBtn = document.querySelector('#toggleEditBtn');
-    if (toggleEditBtn !== null) {
-        $("#toggleEditBtn").on('click', function () {
-            $("#editSection").toggle(500);
-        });
-    }
-    copyLocationButton = document.querySelector('#copyLocationButton');
+}
+/**
+ * Sets up the Copy Location button and adds an event listener to copy the selected location to the latitude and longitude fields.
+ */
+function setupCopyLocationButton() {
+    copyLocationButton = document.querySelector('#copy-location-button');
     if (copyLocationButton !== null) {
-        $('#copyLocationButton').on('click', function () {
-            let locId = Number($('#copyLocation').val());
-            let selectedLoc = copyLocationList.find((obj) => { return obj.id === locId; });
-            $('#latitude').val(selectedLoc.lat);
-            $('#longitude').val(selectedLoc.lng);
+        copyLocationButton.addEventListener('click', function () {
+            const latitudeInput = document.getElementById('latitude');
+            const longitudeInput = document.getElementById('longitude');
+            const locationSelect = document.getElementById('copy-location');
+            if (latitudeInput !== null && longitudeInput !== null && locationSelect !== null) {
+                let locId = parseInt(locationSelect.value);
+                let selectedLocation = copyLocationList.find((obj) => { return obj.id === locId; });
+                latitudeInput.setAttribute('value', selectedLocation.lat);
+                longitudeInput.setAttribute('value', selectedLocation.lng);
+            }
         });
     }
+}
+/**
+ * Sets up the Edit button and adds an event listener to toggle show/hide edit section.
+ */
+function setupEditButton() {
+    toggleEditButton = document.querySelector('#toggle-edit-button');
+    if (toggleEditButton !== null) {
+        $("#toggle-edit-button").on('click', function () {
+            $("#edit-section").toggle(500);
+        });
+    }
+}
+/**
+ * Initializes the page elements when it is loaded.
+ */
+document.addEventListener('DOMContentLoaded', async function () {
+    languageId = getCurrentLanguageId();
+    currentProgenyId = getCurrentProgenyId();
+    await setupDateTimePicker();
+    setupProgenySelectList();
+    await setTagsAutoSuggestList(currentProgenyId);
+    await setLocationAutoSuggestList(currentProgenyId);
+    setupCopyLocationButton();
+    setupEditButton();
+    return new Promise(function (resolve, reject) {
+        resolve();
+    });
 });
 //# sourceMappingURL=add-edit-video.js.map

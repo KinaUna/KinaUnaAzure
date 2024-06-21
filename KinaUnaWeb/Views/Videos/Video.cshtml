@@ -41,25 +41,25 @@
     }
 }
 
-<div id="currentMomentLocaleDiv" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
-<div id="languageIdDiv" class="d-none" data-current-locale="@Model.LanguageId"></div>
-<div id="zebraDateTimeFormatDiv" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
-<div id="progenyIdDiv" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
+<div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
+<div id="language-id-div" class="d-none" data-language-id="@Model.LanguageId"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="progeny-id-div" class="d-none" data-progeny-id="@Model.CurrentProgenyId"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <h2>@ViewData["Title"] - @Model.Video.VideoNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.VideoCount</h2>
-    <div id="photoDiv">
+    <div id="video-div">
         @if (!string.IsNullOrEmpty(Model.TagFilter))
         {
             <div>@await LocaleManager.GetTranslation("Tag filter:", PageNames.Videos, Model.LanguageId) @Model.TagFilter</div>
         }
         <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px;">
             <div style="float: left">
-                <a id="previousPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.PrevVideo" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
+                <a id="previous-video-link" class="leave-page" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.PrevVideo" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
                    asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @videosString</a>
             </div>
 
             <div style="float: right">
-                <a id="nextPhotoLink" class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.NextVideo" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
+                <a id="next-video-link" class="leave-page" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.NextVideo" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
                    asp-route-tagFilter="@Model.TagFilter">@viewNextText @videosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
             </div>
         </div>
@@ -85,7 +85,7 @@
                     List<string> tagsList = Model.Tags.Split(',').ToList();
                     foreach (string tagString in tagsList)
                     {
-                        <a asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
+                        <a asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
                     }
                 }
             }
@@ -129,7 +129,7 @@
                 <p>@await LocaleManager.GetTranslation("Latitude:", PageNames.Videos, Model.LanguageId) @Model.Video.Latitude @await LocaleManager.GetTranslation("Longitude:", PageNames.Videos, Model.LanguageId) @Model.Video.Longtitude @await LocaleManager.GetTranslation("Altitude:", PageNames.Videos, Model.LanguageId): @Model.Video.Altitude</p>
                 @if (allowHereMaps)
                 {
-                    <div style="width: 100%; height: 300px" id="mapContainer"></div>
+                    <div style="width: 100%; height: 300px" id="videos-page-map-container-div"></div>
                     <script>
                         let pixelRatio = window.devicePixelRatio || 1;
                         let defaultIcon = new H.map.Icon("/images/purplemarker.svg", { size: { w: 36, h: 36 } });
@@ -143,7 +143,7 @@
                             ppi: pixelRatio === 1 ? undefined : 320
                         });
 
-                        let map = new H.Map(document.getElementById('mapContainer'),
+                        let map = new H.Map(document.getElementById('videos-page-map-container-div'),
                             maptypes.vector.normal.map,
                             {
                                 zoom: 14,
@@ -250,7 +250,7 @@
                                         <form class="form-inline float-right" asp-controller="Videos" asp-action="DeleteVideoComment" role="form" method="post">
                                             <div class="form-group">
                                                 <div>
-                                                    <button class="btn btn-danger btn-sm leavePage" type="submit">@await LocaleManager.GetTranslation("Delete comment", PageNames.Videos, Model.LanguageId)</button>
+                                                    <button class="btn btn-danger btn-sm leave-page" type="submit">@await LocaleManager.GetTranslation("Delete comment", PageNames.Videos, Model.LanguageId)</button>
                                                 </div>
                                             </div>
                                             <input Name="CommentThreadNumber" class="form-control" value="@Model.CommentThreadNumber" type="hidden" />
@@ -276,7 +276,7 @@
                     <textarea Name="CommentText" class="form-control" rows="4"></textarea>
                 </div>
                 <div class="col-md-10">
-                    <button class="btn btn-success float-right leavePage" style="margin-right: 15px;" type="submit">@await LocaleManager.GetTranslation("Add comment", PageNames.Videos, Model.LanguageId)</button>
+                    <button class="btn btn-success float-right leave-page" style="margin-right: 15px;" type="submit">@await LocaleManager.GetTranslation("Add comment", PageNames.Videos, Model.LanguageId)</button>
                 </div>
             </div>
             <input asp-for="CommentThreadNumber" class="form-control" value="@Model.CommentThreadNumber" type="hidden" />
@@ -290,15 +290,15 @@
     {
         <div class="col-sm-3" style="margin-top: 35px;"></div>
         <div class="col-md-8">
-            <button id="toggleEditBtn" class="btn btn-info">@await LocaleManager.GetTranslation("Edit video", PageNames.Videos, Model.LanguageId)</button>
+            <button id="toggle-edit-button" class="btn btn-info">@await LocaleManager.GetTranslation("Edit video", PageNames.Videos, Model.LanguageId)</button>
         </div>
-        <div id="editSection" style="display: none; padding: 15px;">
+        <div id="edit-section" style="display: none; padding: 15px;">
             <div>@await LocaleManager.GetTranslation("Edit user access, location, or date and time for this video", PageNames.Videos, Model.LanguageId)</div><br />
             <form asp-controller="Videos" asp-action="EditVideo" role="form">
                 <div class="form-group">
                     <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Videos, Model.LanguageId)</label>
                     <div class="col-lg-10 col-md-10 col-sm-10">
-                        <input id="tagList" type="text" asp-for="Video.Tags" value="@Model.Video.Tags" placeholder="Add tag..." class="form-control" />
+                        <input id="tag-list" type="text" asp-for="Video.Tags" value="@Model.Video.Tags" placeholder="Add tag..." class="form-control" />
                     </div>
                 </div>
                 <div class="form-group">
@@ -341,7 +341,7 @@
                     <label asp-for="Video.VideoTime" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Video date and time", PageNames.Videos, Model.LanguageId)</label>
                     <div class="col-lg-4">
                         <div class="input-group date">
-                            <input style="width: 300px;" id="datetimepicker1" data-format="dd-MMM-yyyy HH:mm:ss" type="text"
+                            <input id="video-date-time-picker" style="width: 300px;" data-format="dd-MMM-yyyy HH:mm:ss" type="text"
                                    class="form-control" data-zdp_readonly_element="false" asp-for="Video.VideoTime"
                                    value="@Model.Video.VideoTime?.ToString(longDateTimeFormat)" />
                         </div>
@@ -350,7 +350,7 @@
                 <div class="form-group">
                     <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Location", PageNames.Videos, Model.LanguageId)</label>
                     <div class="col-lg-10 col-md-10 col-sm-10">
-                        <input id="locationInput" type="text" asp-for="Video.Location" value="@Model.Video.Location" class="form-control"  />
+                        <input id="location-input" type="text" asp-for="Video.Location" value="@Model.Video.Location" class="form-control" />
                     </div>
                 </div>
                 <div class="form-group">
@@ -378,10 +378,10 @@
                         <div class="col-12">
                             <div class="row">
                                 <div class="col-lg-8 col-md-9 col-sm-8">
-                                    <select id="copyLocation" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" asp-items="@Model.LocationsList"></select>
+                                    <select id="copy-location" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" asp-items="@Model.LocationsList"></select>
                                 </div>
                                 <div class="col-lg-4 col-md-3 col-sm-3">
-                                    <button id="copyLocationButton" type="button" class="btn btn-primary">@await LocaleManager.GetTranslation("Copy", PageNames.Videos, Model.LanguageId)</button>
+                                    <button id="copy-location-button" type="button" class="btn btn-primary">@await LocaleManager.GetTranslation("Copy", PageNames.Videos, Model.LanguageId)</button>
                                 </div>
                             </div>
                         </div>
@@ -396,8 +396,8 @@
                     <div class="form-group">
                         <div class="col-lg-3 col-sm-3 control-label"></div>
                         <div class="col-lg-9">
-                            <button class="btn btn-success leavePage" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                            <a class="btn btn-danger leavePage" asp-controller="@ViewContext.RouteData.Values["controller"]" asp-action="@ViewContext.RouteData.Values["action"]!" asp-route-id="@ViewContext.RouteData.Values["id"]" asp-route-childId="@Model.CurrentProgenyId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                            <button class="btn btn-success leave-page" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                            <a class="btn btn-danger leave-page" asp-controller="@ViewContext.RouteData.Values["controller"]" asp-action="@ViewContext.RouteData.Values["action"]!" asp-route-id="@ViewContext.RouteData.Values["id"]" asp-route-childId="@Model.CurrentProgenyId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                         </div>
                     </div>
                 </div>
@@ -406,7 +406,7 @@
                 <div class="form-group">
                     <label class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Remove this video:", PageNames.Videos, Model.LanguageId)</label>
                     <div class="col-lg-9">
-                        <button class="btn btn-danger leavePage" type="submit">@await LocaleManager.GetTranslation("Delete video", PageNames.Videos, Model.LanguageId)</button>
+                        <button class="btn btn-danger leave-page" type="submit">@await LocaleManager.GetTranslation("Delete video", PageNames.Videos, Model.LanguageId)</button>
                     </div>
                 </div>
                 <input name="videoId" class="form-control" value="@Model.Video.VideoId" type="hidden" />
@@ -431,10 +431,10 @@
 <div class="space-20"></div>
 <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px;">
         <div style="float: left">
-            <a class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.PrevVideo" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @videosString</a>
+            <a class="leave-page" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.PrevVideo" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @videosString</a>
         </div>
         <div style="float: right">
-            <a class="leavePage" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.NextVideo" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText @videosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+            <a class="leave-page" asp-controller="Videos" asp-action="Video" asp-route-id="@Model.NextVideo" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">@viewNextText @videosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
         </div>
     </div>
 </div>

@@ -38,7 +38,7 @@
 </div>
 <div class="space-70"></div>
 <div>
-    <a asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.ImageId" asp-route-childId="@Model.CurrentProgeny.Id" class="leavePage" aria-label="View Image">
+    <a asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.ImageId" asp-route-childId="@Model.CurrentProgeny.Id" class="leave-page" aria-label="View Image">
         <img src="@Model.ImageLink600" style="width: 100%; max-width: 100%" />
     </a>
 </div>
@@ -49,7 +49,7 @@
             List<string> tagsList = Model.Tags.Split(',').ToList();
             foreach (string tagString in tagsList)
             {
-                <a asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-tagFilter="@tagString" class="btn tag-item leavePage">@tagString</a>
+                <a asp-controller="Pictures" asp-action="Index" asp-route-id="1" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
             }
         }
     </div>
