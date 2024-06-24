@@ -54,13 +54,17 @@ function startFullPageLoadingSpinner2(): void {
 /**
  * Shows a spinner with 3 bouncing dots in the given element.
  * @param spinnerElementId The id of the element where the spinner should be shown.
+ * @param bgOpacity The opacity of the background.
+ * @param bgRed The red value of the background color.
+ * @param bgGreen The green value of the background color.
+ * @param bgBlue The blue value of the background color.
  */
-export function startLoadingItemsSpinner(spinnerElementId: string): void {
+export function startLoadingItemsSpinner(spinnerElementId: string, bgOpacity: number = 0.0, bgRed: number = 177, bgGreen: number = 77, bgBlue: number = 227): void {
     const loadingItemsDiv: any = $('#' + spinnerElementId);
     loadingItemsDiv.waitMe({
         effect: 'bounce',
         text: '',
-        bg: 'rgba(177, 77, 227, 0.0)',
+        bg: 'rgba(' + bgRed + ', ' + bgGreen + ', ' + bgBlue + ', ' + bgOpacity + ')',
         color: '#9011a1',
         maxSize: '',
         waitTime: -1,

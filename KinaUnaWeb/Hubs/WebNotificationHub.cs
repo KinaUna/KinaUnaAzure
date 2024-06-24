@@ -10,7 +10,6 @@ using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Hubs
 {
@@ -59,7 +58,7 @@ namespace KinaUnaWeb.Hubs
                         webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(webNotification.DateTime,
                             TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                         webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Custom format.
-                        string sendResult = System.Text.Json.JsonSerializer.Serialize(webNotification, _serializeOptions);
+                        string sendResult = JsonSerializer.Serialize(webNotification, _serializeOptions);
                         await Clients.Caller.SendAsync("ReceiveMessage", sendResult);
                     }
                 }
@@ -117,7 +116,7 @@ namespace KinaUnaWeb.Hubs
                 {
                     webNotification.Link = "/Notifications?Id=" + webNotification.Id;
                 }
-                await Clients.Caller.SendAsync("ReceiveMessage", System.Text.Json.JsonSerializer.Serialize(webNotification, _serializeOptions));
+                await Clients.Caller.SendAsync("ReceiveMessage", JsonSerializer.Serialize(webNotification, _serializeOptions));
             }
 
         }
@@ -142,7 +141,7 @@ namespace KinaUnaWeb.Hubs
 
                         updateNotification = await notificationsService.UpdateNotification(updateNotification);
 
-                        await Clients.User(userId).SendAsync("ReceiveMessage", System.Text.Json.JsonSerializer.Serialize(updateNotification, _serializeOptions));
+                        await Clients.User(userId).SendAsync("ReceiveMessage", JsonSerializer.Serialize(updateNotification, _serializeOptions));
                     }
                 }
             }
@@ -168,7 +167,7 @@ namespace KinaUnaWeb.Hubs
 
                         updateNotification = await notificationsService.UpdateNotification(updateNotification);
 
-                        await Clients.User(userId).SendAsync("ReceiveMessage", System.Text.Json.JsonSerializer.Serialize(updateNotification, _serializeOptions));
+                        await Clients.User(userId).SendAsync("ReceiveMessage", JsonSerializer.Serialize(updateNotification, _serializeOptions));
                     }
                 }
             }
@@ -188,7 +187,7 @@ namespace KinaUnaWeb.Hubs
                     {
                         await notificationsService.RemoveNotification(deleteNotification);
 
-                        await Clients.User(userId).SendAsync("DeleteMessage", System.Text.Json.JsonSerializer.Serialize(deleteNotification, _serializeOptions));
+                        await Clients.User(userId).SendAsync("DeleteMessage", JsonSerializer.Serialize(deleteNotification, _serializeOptions));
                     }
                 }
             }
@@ -204,7 +203,7 @@ namespace KinaUnaWeb.Hubs
             {
                 if (notification.To == "OnlineUsers")
                 {
-                    await Clients.All.SendAsync("ReceiveMessage", System.Text.Json.JsonSerializer.Serialize(notification, _serializeOptions));
+                    await Clients.All.SendAsync("ReceiveMessage", JsonSerializer.Serialize(notification, _serializeOptions));
                 }
                 else
                 {
@@ -227,7 +226,7 @@ namespace KinaUnaWeb.Hubs
                     {
                         webNotification.Link = "/Notifications?Id=" + webNotification.Id;
                     }
-                    await Clients.Caller.SendAsync("ReceiveMessage", System.Text.Json.JsonSerializer.Serialize(webNotification, _serializeOptions));
+                    await Clients.Caller.SendAsync("ReceiveMessage", JsonSerializer.Serialize(webNotification, _serializeOptions));
                 }
             }
         }

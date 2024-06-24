@@ -213,6 +213,11 @@ namespace KinaUnaProgenyApi.Services
                     TimeZoneInfo.FindSystemTimeZoneById(picture.TimeZone));
             }
 
+            if (picture.PictureTime == null || picture.PictureTime.Value.Year < 2)
+            {
+                picture.PictureTime = DateTime.UtcNow;
+            }
+
             if (picture.Longtitude == "" || picture.Latitude == "") return picture;
 
             if (string.IsNullOrEmpty(picture.Location))
