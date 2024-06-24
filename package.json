@@ -1,13 +1,10 @@
 {
   "dependencies": {
-    "@microsoft/signalr": "^8.0.0",
-    "@types/node": "^20.14.6",
-    "@types/signalr": "^2.4.3",
     "braces": "^3.0.3",
-    "cldr-data": "^36.0.0",
     "grunt": "^1.6.1"
   },
   "devDependencies": {
-    "@types/jquery": "^3.5.30"
+    "@types/jquery": "^3.5.30",
+    "cldr-data": "^36.0.2"
   }
 }

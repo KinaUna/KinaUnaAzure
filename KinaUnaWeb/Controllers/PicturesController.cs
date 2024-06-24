@@ -250,6 +250,61 @@ namespace KinaUnaWeb.Controllers
             return View(result);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SavePicture(UploadPictureViewModel model)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.Picture.ProgenyId);
+            model.SetBaseProperties(baseModel);
+
+            if (!model.IsCurrentUserProgenyAdmin)
+            {
+                return RedirectToRoute(new
+                {
+                    controller = "Home",
+                    action = "Index"
+                });
+            }
+
+            List<Picture> pictureList = [];
+            
+            if (model.Files.Count != 0)
+            {
+                foreach (IFormFile formFile in model.Files)
+                {
+                    Picture picture = new()
+                    {
+                        ProgenyId = model.Picture.ProgenyId,
+                        AccessLevel = model.Picture.AccessLevel,
+                        Author = model.CurrentUser.UserId,
+                        Owners = model.CurrentUser.UserEmail,
+                        TimeZone = model.CurrentUser.Timezone,
+                        Location = model.Picture.Location,
+                        Tags = model.Picture.Tags
+                    };
+
+                    await using (Stream stream = formFile.OpenReadStream())
+                    {
+                        string fileFormat = Path.GetExtension(formFile.FileName);
+                        picture.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Pictures, fileFormat);
+                        
+                    }
+
+                    Picture newPicture = await mediaHttpClient.AddPicture(picture);
+
+                    pictureList.Add(newPicture);
+                }
+            }
+
+            Picture savedPicture = pictureList.FirstOrDefault();
+            if (savedPicture == null) return Json(null);
+
+            savedPicture.PictureLink600 = savedPicture.GetPictureUrl(600);
+
+            return Json(savedPicture);
+
+        }
+
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -93,6 +93,7 @@
     box-shadow: 0 4px 20px 0 #000000, 0 7px 12px -5px #9c27b0;
     box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 12px -5px rgba(156, 39, 176, 0.46);
     white-space: nowrap;
+    top: -3px;
 }
 
 .dropdown-item:focus, .dropdown-item:hover {
@@ -2717,7 +2718,7 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 .timeline-card-body {
     flex: 1 1 auto;
     min-height: 1px;
-    padding: 1.25rem;
+    padding: 0.75rem;
 }
 
 .timeline-icon {
@@ -2790,6 +2791,17 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
         justify-content: center;
         overflow: hidden;
     }
+}
+
+.photo-upload-picture {
+    max-width: 258px;
+    max-height: 258px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    transition: all .2s ease-in-out;
 }
 
 .photo-gallery-picture {
@@ -2994,6 +3006,7 @@ button.Zebra_DatePicker_Icon {
 @media (max-width: 576px) {
     .kinauna-main {
         margin-right: 0px;
+        margin-left: 44px;
     }
 }
 

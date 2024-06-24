@@ -14,7 +14,6 @@ using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -134,7 +133,7 @@ namespace KinaUnaWeb.Controllers
             updateNotification.IsRead = false;
             updateNotification = await webNotificationsService.UpdateNotification(updateNotification);
 
-            await hubContext.Clients.User(userId).SendAsync("ReceiveMessage", System.Text.Json.JsonSerializer.Serialize(updateNotification, _serializeOptions));
+            await hubContext.Clients.User(userId).SendAsync("ReceiveMessage", JsonSerializer.Serialize(updateNotification, _serializeOptions));
 
             return Ok("Notification set as unread. Id: " + Id);
         }
@@ -152,7 +151,7 @@ namespace KinaUnaWeb.Controllers
                     
             updateNotification = await webNotificationsService.UpdateNotification(updateNotification);
 
-            await hubContext.Clients.User(userId).SendAsync("ReceiveMessage", System.Text.Json.JsonSerializer.Serialize(updateNotification, _serializeOptions));
+            await hubContext.Clients.User(userId).SendAsync("ReceiveMessage", JsonSerializer.Serialize(updateNotification, _serializeOptions));
 
             return Ok("Notification set as read. Id: " + Id);
         }
@@ -179,7 +178,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             //_ = Task.Run(() => Task.FromResult(BatchSetWebNotificationsToRead(unreadWebNotifications))); // Todo: Replace with a more robust solution.
-            await hubContext.Clients.User(userId).SendAsync("MarkAllReadMessage", System.Text.Json.JsonSerializer.Serialize(userId, _serializeOptions));
+            await hubContext.Clients.User(userId).SendAsync("MarkAllReadMessage", JsonSerializer.Serialize(userId, _serializeOptions));
 
             return Ok("All notification set as read");
         }
@@ -195,7 +194,7 @@ namespace KinaUnaWeb.Controllers
             if (userId != updateNotification.To) return NotFound();
 
             await webNotificationsService.RemoveNotification(updateNotification);
-            await hubContext.Clients.User(userId).SendAsync("DeleteMessage", System.Text.Json.JsonSerializer.Serialize(updateNotification, _serializeOptions));
+            await hubContext.Clients.User(userId).SendAsync("DeleteMessage", JsonSerializer.Serialize(updateNotification, _serializeOptions));
 
             return Ok("Notification removed. Id: " + Id);
         }
