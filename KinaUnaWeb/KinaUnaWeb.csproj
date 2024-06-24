@@ -68,37 +68,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\" />
     <Folder Include="Models\PushMessageViewModels\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="wwwroot\lib\material-kit-205\css\material-kit.css.map" />
-    <None Include="wwwroot\lib\material-kit-205\js\core\bootstrap-material-design.min.js" />
-    <None Include="wwwroot\lib\material-kit-205\js\core\jquery.min.js" />
-    <None Include="wwwroot\lib\material-kit-205\js\core\popper.min.js" />
-    <None Include="wwwroot\lib\material-kit-205\js\material-kit.js" />
-    <None Include="wwwroot\lib\material-kit-205\js\material-kit.js.map" />
-    <None Include="wwwroot\lib\material-kit-205\js\material-kit.min.js" />
-    <None Include="wwwroot\lib\material-kit-205\js\plugins\bootstrap-datetimepicker.js" />
-    <None Include="wwwroot\lib\material-kit-205\js\plugins\jquery.sharrre.js" />
-    <None Include="wwwroot\lib\material-kit-205\js\plugins\moment.min.js" />
-    <None Include="wwwroot\lib\material-kit-205\js\plugins\nouislider.min.js" />
-    <None Include="wwwroot\lib\quilljs\.editorconfig" />
-    <None Include="wwwroot\lib\quilljs\.eslintrc" />
-    <None Include="wwwroot\lib\quilljs\.gitignore" />
-    <None Include="wwwroot\lib\quilljs\CHANGELOG.md" />
-    <None Include="wwwroot\lib\quilljs\demo\script.js" />
-    <None Include="wwwroot\lib\quilljs\image-resize.min.js" />
-    <None Include="wwwroot\lib\quilljs\LICENSE" />
-    <None Include="wwwroot\lib\quilljs\README.md" />
-    <None Include="wwwroot\lib\quilljs\src\DefaultOptions.js" />
-    <None Include="wwwroot\lib\quilljs\src\ImageResize.js" />
-    <None Include="wwwroot\lib\quilljs\src\modules\BaseModule.js" />
-    <None Include="wwwroot\lib\quilljs\src\modules\DisplaySize.js" />
-    <None Include="wwwroot\lib\quilljs\src\modules\Resize.js" />
-    <None Include="wwwroot\lib\quilljs\src\modules\Toolbar.js" />
-    <None Include="wwwroot\lib\quilljs\webpack.config.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -199,27 +169,6 @@
     <Content Update="wwwroot\lib\jquery.amsify.suggestags.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\lib\material-kit-205\css\material-kit.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\lib\material-kit-205\css\material-kit.css.map">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\lib\material-kit-205\css\material-kit.min.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\lib\material-kit-205\js\core\bootstrap-material-design.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\lib\material-kit-205\js\material-kit.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\lib\material-kit-205\js\material-kit.js.map">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\lib\material-kit-205\js\material-kit.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Update="wwwroot\lib\typeahead\typeahead.bundle.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -239,9 +188,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\robots.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\signalr\KinaUnaWebNotifications.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\signalr\msgpack5.js">
