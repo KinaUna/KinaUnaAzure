@@ -33,8 +33,6 @@ function onEventClick(args) {
     let scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
     let event = scheduleObj.getEventDetails(args.element);
     selectedEventId = event.EventId;
-    console.log('Event clicked: ' + selectedEventId);
-    scheduleObj.openQuickInfoPopup(args.event);
 }
 /**
  * The event handler for clicking an empty cell in the Syncfusion Schedule component.
