@@ -259,3 +259,4 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/KinaUna.IDP/AuthKey_ZJR58H9FP4.p8
