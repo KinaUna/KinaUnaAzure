@@ -6,6 +6,38 @@ declare var isCurrentUserProgenyAdmin: boolean;
 let selectedEventId: number = 0;
 let currentCulture = 'en';
 
+async function DisplayEventItem(eventId: number, event: any): Promise<void> {
+    let url = '/Calendar/GetEventItem?eventId=' + eventId;
+    await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+    }).then(async function (response) {
+        if (response.ok) {
+            const eventElementHtml = await response.text();
+            const eventDetailsPopupDiv = document.querySelector<HTMLDivElement>('#event-details-div');
+            if (eventDetailsPopupDiv) {
+                eventDetailsPopupDiv.innerHTML = eventElementHtml;
+                eventDetailsPopupDiv.classList.remove('d-none');
+                let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
+                if (closeButtonsList) {
+                    closeButtonsList.forEach((button) => {
+                        button.addEventListener('click', function () {
+                            eventDetailsPopupDiv.classList.add('d-none');
+                        });
+                    });
+                }
+            }
+        } else {
+            console.error('Error getting event item. Status: ' + response.status + ', Message: ' + response.statusText);
+        }
+    }).catch(function (error) {
+        console.error('Error getting event item. Error: ' + error);
+    });
+}
+
 /**
  * Event handler for the edit and delete buttons in the Syncfusion Schedule component.
  * Syncfusion documentation https://ej2.syncfusion.com/documentation/api/schedule/#popupopen
@@ -40,6 +72,8 @@ function onEventClick(args: any) {
     let scheduleObj = document.querySelector<any>('.e-schedule').ej2_instances[0];
     let event = scheduleObj.getEventDetails(args.element);
     selectedEventId = event.EventId;
+
+    DisplayEventItem(selectedEventId, args.event);
 }
 
 /**

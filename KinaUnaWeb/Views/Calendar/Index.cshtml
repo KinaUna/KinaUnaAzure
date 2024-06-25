@@ -21,9 +21,10 @@
             </e-eventsettings-fields>
         </e-schedule-eventsettings>
     </ejs-schedule>
-    <script>
-            var syncfusionReference = ej;
-            var isCurrentUserProgenyAdmin = @Model.IsCurrentUserProgenyAdmin.ToString().ToLower();
-        </script>
-    <script src="/js/calendar/calendar-index.js" type="module" asp-append-version="true"></script>
+<div id="event-details-div" class="item-details-popup d-none"></div>
 </div>
+<script>
+    var syncfusionReference = ej;
+    var isCurrentUserProgenyAdmin = @Model.IsCurrentUserProgenyAdmin.ToString().ToLower();
+</script>
+<script src="/js/calendar/calendar-index.js" type="module" asp-append-version="true"></script>

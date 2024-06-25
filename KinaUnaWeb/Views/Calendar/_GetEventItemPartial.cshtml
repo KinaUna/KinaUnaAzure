@@ -27,82 +27,81 @@
         endDateString = string.Empty;
     }
 }
-<a class="leave-page" asp-controller="Calendar" asp-action="ViewEvent" asp-route-eventId="@Model.EventId">
-    <div class="bg-primary timeline-card">
-        <div class="timeline-card-body bg-calendar">
-            <div class="row">
-                <div class="col-auto">
-                    <span class="timeline-icon"><i class="material-icons">event_note</i></span>
-                </div>
-                <div class="col">
-                    <div class="row text-white">
-                        @if (Model.AllDay)
+<div class="ml-auto mr-auto mt-auto mb-auto" style="max-width: 800px;">
+    <div class="timeline-card-body bg-calendar">
+        <div class="row">
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons">event_note</i></span>
+            </div>
+            <div class="col">
+                <div class="row text-white">
+                    <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+                    @if (Model.AllDay)
+                    {
+                        if (string.IsNullOrEmpty(endDateString))
                         {
-
-                            if (string.IsNullOrEmpty(endDateString))
-                            {
-                                <div class="col-auto font-weight-bold">@startDateString</div>
-                            }
-                            else
-                            {
-                                <div class="col-auto"><span class="font-weight-bold">@startDateString</span> - <span class="font-weight-bold">@endDateString</span></div>
-                            }
+                            <div class="col-auto font-weight-bold">@startDateString</div>
                         }
                         else
                         {
-                            if (Model.StartTime.Value.Date == Model.EndTime.Value.Date)
-                            {
-                                <div class="col-auto font-weight-bold">@startDateString</div>
-                                <div class="col-auto font-weight-normal">@startTimeString - @endTimeString</div>
-                            }
-                            else
-                            {
-                                <div class="col-auto">
-                                    <div class="row">
-                                        <div class="col font-weight-bold">@startDateString</div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col font-weight-normal text-right">@startTimeString</div>
-                                    </div>
+                            <div class="col-auto"><span class="font-weight-bold">@startDateString</span> - <span class="font-weight-bold">@endDateString</span></div>
+                        }
+                    }
+                    else
+                    {
+                        if (Model.StartTime.Value.Date == Model.EndTime.Value.Date)
+                        {
+                            <div class="col-auto font-weight-bold">@startDateString</div>
+                            <div class="col-auto font-weight-normal">@startTimeString - @endTimeString</div>
+                        }
+                        else
+                        {
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col font-weight-bold">@startDateString</div>
                                 </div>
-                                <div class="col-auto">
-                                    <div class="row">
-                                        <div class="col font-weight-bold ">@endDateString</div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col font-weight-normal ">@endTimeString</div>
-                                    </div>
+                                <div class="row">
+                                    <div class="col font-weight-normal text-right">@startTimeString</div>
                                 </div>
-                            }
-                        }
-                    </div>
-                    <div class="timeline-title row">
-                        <div class="col-12">
-                            @Model.Title
-                        </div>
-                    </div>
-                    <div class="timeline-text row text-white-50">
-                        @if (!string.IsNullOrEmpty(Model.Location))
-                        {
-                            <div class="col-12">@Model.Location</div>
-                        }
-                        @if (!string.IsNullOrEmpty(Model.Notes))
-                        {
-                            <div class="col-12">@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, languageId) @Model.Notes</div>
-                        }
-                        @if (!string.IsNullOrEmpty(Model.Context))
-                        {
-                            List<string> contextsList = Model.Context.Split(',').ToList();
-                            <div class="col-12 mt-2 text-right">
-                                @foreach (string contextString in contextsList)
-                                {
-                                    <span class="btn context-item tag-item-sm leave-page">@contextString</span>
-                                }
+                            </div>
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col font-weight-bold ">@endDateString</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col font-weight-normal ">@endTimeString</div>
+                                </div>
                             </div>
                         }
+                    }
+                </div>
+                <div class="timeline-title row">
+                    <div class="col-12">
+                        @Model.Title
+
                     </div>
+                </div>
+                <div class="timeline-text row text-white-50">
+                    @if (!string.IsNullOrEmpty(Model.Location))
+                    {
+                        <div class="col-12">@Model.Location</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, languageId) @Model.Notes</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Context))
+                    {
+                        List<string> contextsList = Model.Context.Split(',').ToList();
+                        <div class="col-12 mt-2 text-right">
+                            @foreach (string contextString in contextsList)
+                            {
+                                <span class="btn context-item tag-item-sm">@contextString</span>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     </div>
-</a>
+</div>

@@ -3380,3 +3380,21 @@ noUi-handle:after, .noUi-handle:before {
         color: #97a4af !important;
     }
 }
+
+.item-details-popup {
+    position: fixed;
+    top: 10vh;
+    left: 50px;
+    right: 0px;
+    z-index: 1050;
+}
+
+.item-details-close-button {
+    position: absolute;
+    top: -1rem;
+    right: 1rem;
+    z-index: 1051;
+    padding: 1rem 1rem;
+    margin: -1rem -1rem -1rem auto;
+    font-size: 1.5rem;
+}
