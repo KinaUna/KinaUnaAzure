@@ -5,24 +5,28 @@
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Calendar", PageNames.Calendar, Model.LanguageId);
 }
-<h2>@ViewData["Title"]</h2>
-<div class="space-50"></div>
-<div id="calendar-current-culture-div" class="d-none" data-current-culture="@Model.LanguageIdForCldr()"></div>
-<div class="" style="clear: both; height: 90vh; min-height: 600px; max-height: 1180px;">
-    <ejs-schedule id="schedule" height="95%" width="100%" dateFormat="dd/MMM/yyyy" views="@Model.ViewOptions">
-        <e-schedule-eventsettings dataSource="@Model.EventsList">
-            <e-eventsettings-fields id="EventId">
-                <e-field-subject name="Title"></e-field-subject>
-                <e-field-location name="Location"></e-field-location>
-                <e-field-description name="Notes"></e-field-description>
-                <e-field-isallday name="AllDay"></e-field-isallday>
-                <e-field-starttime name="Start"></e-field-starttime>
-                <e-field-endtime name="End"></e-field-endtime>
-            </e-eventsettings-fields>
-        </e-schedule-eventsettings>
-    </ejs-schedule>
-<div id="event-details-div" class="item-details-popup d-none"></div>
+<div class="row">
+    <div class="col-12">
+        <h2>@ViewData["Title"]</h2>
+        <div class="space-50"></div>
+        <div id="calendar-current-culture-div" class="d-none" data-current-culture="@Model.LanguageIdForCldr()"></div>
+        <div class="" style="clear: both; height: 90vh; min-height: 600px; max-height: 1180px;">
+            <ejs-schedule id="schedule" height="95%" width="100%" dateFormat="dd/MMM/yyyy" views="@Model.ViewOptions">
+                <e-schedule-eventsettings dataSource="@Model.EventsList">
+                    <e-eventsettings-fields id="EventId">
+                        <e-field-subject name="Title"></e-field-subject>
+                        <e-field-location name="Location"></e-field-location>
+                        <e-field-description name="Notes"></e-field-description>
+                        <e-field-isallday name="AllDay"></e-field-isallday>
+                        <e-field-starttime name="Start"></e-field-starttime>
+                        <e-field-endtime name="End"></e-field-endtime>
+                    </e-eventsettings-fields>
+                </e-schedule-eventsettings>
+            </ejs-schedule>
+        </div>
+    </div>
 </div>
+
 <script>
     var syncfusionReference = ej;
     var isCurrentUserProgenyAdmin = @Model.IsCurrentUserProgenyAdmin.ToString().ToLower();

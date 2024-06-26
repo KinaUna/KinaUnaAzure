@@ -3006,7 +3006,7 @@ button.Zebra_DatePicker_Icon {
 @media (max-width: 576px) {
     .kinauna-main {
         margin-right: 0px;
-        margin-left: 44px;
+        margin-left: 66px;
     }
 }
 
@@ -3381,12 +3381,62 @@ noUi-handle:after, .noUi-handle:before {
     }
 }
 
+.text-white-75 {
+    color: rgba(255, 255, 255, .75) !important;
+}
+
+.calendar-event-popup-label {
+    color: #ffbb92;
+}
+
+.item-details-content-wrapper {
+    max-width: 800px;
+    max-height: 100vh;
+}
+
 .item-details-popup {
     position: fixed;
-    top: 10vh;
-    left: 50px;
+    top: 0;
+    left: 0px;
     right: 0px;
     z-index: 1050;
+    max-height: 100vh;
+}
+
+@media (min-width: 576px) {
+    .item-details-popup {
+        top: 160px
+    }
+}
+
+@media (max-height: 900px) {
+    .item-details-popup {
+        top: 0;
+    }
+}
+
+.item-details-notes {
+    max-height: 75vh;
+    overflow-y: auto;
+}
+
+.item-details-content {
+    max-height: 100vh;
+    overflow-y: auto;
+}
+
+@media (min-width: 576px) {
+    .item-details-content {
+        max-height: 75vh;
+        overflow-y: auto;
+    }
+}
+
+@media (max-height: 900px) {
+    .item-details-content {
+        max-height: 100vh;
+        overflow-y: auto;
+    }
 }
 
 .item-details-close-button {

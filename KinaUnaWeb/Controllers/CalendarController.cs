@@ -62,7 +62,9 @@ namespace KinaUnaWeb.Controllers
                 return Unauthorized();
             }
 
-            return PartialView("_GetEventItemPartial", eventItem);
+            model.SetCalendarItem(eventItem);
+
+            return PartialView("_GetEventItemPartial", model);
         }
 
         [HttpGet]

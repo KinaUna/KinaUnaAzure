@@ -1,4 +1,5 @@
-﻿@using KinaUnaWeb.Services
+﻿@using System.Text.RegularExpressions
+@using KinaUnaWeb.Services
 @using KinaUna.Data
 @model CalendarItem
 @inject ILocaleManager LocaleManager
@@ -81,14 +82,27 @@
                             @Model.Title
                         </div>
                     </div>
-                    <div class="timeline-text row text-white-50">
+                    <div class="timeline-text row text-white-75">
                         @if (!string.IsNullOrEmpty(Model.Location))
                         {
-                            <div class="col-12">@Model.Location</div>
+                            <div class="col-12 calendar-event-popup-label">
+                                <div class="space-10"></div>
+                                <i class="material-icons" style="font-size: 18px;">location_on</i> @Model.Location
+                            </div>
                         }
                         @if (!string.IsNullOrEmpty(Model.Notes))
                         {
-                            <div class="col-12">@await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, languageId) @Model.Notes</div>
+                            <div class="col-12" style="max-height: 200px; overflow: hidden;">
+                                <div class="space-10"></div>
+                                <div class="calendar-event-popup-label">
+                                    <i class="material-icons" style="font-size: 18px;">note</i> @await LocaleManager.GetTranslation("Notes:", PageNames.Calendar, languageId)
+                                </div>
+                                <div class="space-10"></div>
+                                @{
+                                    string notesWithBrTags = Regex.Replace(Model.Notes, @"\r\n?|\n", "<br />");
+                                }
+                                <div>@Html.Raw(notesWithBrTags)</div>
+                            </div>
                         }
                         @if (!string.IsNullOrEmpty(Model.Context))
                         {

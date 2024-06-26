@@ -17,7 +17,7 @@ async function DisplayEventItem(eventId: number, event: any): Promise<void> {
     }).then(async function (response) {
         if (response.ok) {
             const eventElementHtml = await response.text();
-            const eventDetailsPopupDiv = document.querySelector<HTMLDivElement>('#event-details-div');
+            const eventDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
             if (eventDetailsPopupDiv) {
                 eventDetailsPopupDiv.innerHTML = eventElementHtml;
                 eventDetailsPopupDiv.classList.remove('d-none');
@@ -44,21 +44,6 @@ async function DisplayEventItem(eventId: number, event: any): Promise<void> {
  * @param args The PopupOpenEventArgs provided by the Synfusion scheduler
  */
 function onPopupOpen(args: any) {
-    if (args.type === 'Editor' && isCurrentUserProgenyAdmin) {
-        args.cancel = true;
-        if (selectedEventId > 0) {
-            window.location.href = '/Calendar/EditEvent?itemId=' + selectedEventId;
-            return;
-        }
-    }
-    if (args.type === 'DeleteAlert' && isCurrentUserProgenyAdmin) {
-        args.cancel = true;
-        if (selectedEventId > 0) {
-            window.location.href = '/Calendar/DeleteEvent?itemId=' + selectedEventId;
-            return;
-        }
-    }
-
     args.cancel = true;
 }
 

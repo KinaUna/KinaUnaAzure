@@ -90,6 +90,24 @@ function checkLeavePage(clickover: HTMLElement): boolean {
 
     return leavingPage;
 }
+
+function collapsePopupsAndModals(clickover: HTMLElement): void {
+    const itemDetailsPopup = clickover.closest('.item-details-content');
+    
+    if (itemDetailsPopup === null) {
+        const itemDetailsPopups = document.querySelectorAll('.item-details-popup');
+        
+        itemDetailsPopups.forEach(function (popup) {
+            (popup as HTMLElement).classList.add('d-none');
+        });
+    }
+}
+
+/**
+ * Sets event listeners for clicking anywhere in the document.
+ * For collapsing the menu if clicking outside the menu, or leaving the page.
+ * Also collapses pop-ups and modals if clicking outside the pop-up or modal.
+ */
 function setDocumentClickEventListeners(): void {
     document.addEventListener('click', function (event) {
         const clickover = event.target as HTMLElement;
@@ -97,7 +115,8 @@ function setDocumentClickEventListeners(): void {
         if (clickover !== null) {
             let leavingPage = checkLeavePage(clickover);
             closeMenuIfClickedOutsideOrLeaving(clickover, leavingPage);
-        }
+            collapsePopupsAndModals(clickover);
+            }
     });
 
     setFullPageSpinnerEventListeners();

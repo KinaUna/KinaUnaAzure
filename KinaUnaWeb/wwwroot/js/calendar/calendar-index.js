@@ -12,7 +12,7 @@ async function DisplayEventItem(eventId, event) {
     }).then(async function (response) {
         if (response.ok) {
             const eventElementHtml = await response.text();
-            const eventDetailsPopupDiv = document.querySelector('#event-details-div');
+            const eventDetailsPopupDiv = document.querySelector('#item-details-div');
             if (eventDetailsPopupDiv) {
                 eventDetailsPopupDiv.innerHTML = eventElementHtml;
                 eventDetailsPopupDiv.classList.remove('d-none');
@@ -22,18 +22,6 @@ async function DisplayEventItem(eventId, event) {
                         button.addEventListener('click', function () {
                             eventDetailsPopupDiv.classList.add('d-none');
                         });
-                    });
-                }
-                let editButton = document.querySelector('#edit-event-button');
-                let deleteButton = document.querySelector('#delete-event-button');
-                if (editButton) {
-                    editButton.addEventListener('click', function () {
-                        window.location.href = '/Calendar/EditEvent?itemId=' + eventId;
-                    });
-                }
-                if (deleteButton) {
-                    deleteButton.addEventListener('click', function () {
-                        window.location.href = '/Calendar/DeleteEvent?itemId=' + eventId;
                     });
                 }
             }
@@ -51,20 +39,6 @@ async function DisplayEventItem(eventId, event) {
  * @param args The PopupOpenEventArgs provided by the Synfusion scheduler
  */
 function onPopupOpen(args) {
-    if (args.type === 'Editor' && isCurrentUserProgenyAdmin) {
-        args.cancel = true;
-        if (selectedEventId > 0) {
-            window.location.href = '/Calendar/EditEvent?itemId=' + selectedEventId;
-            return;
-        }
-    }
-    if (args.type === 'DeleteAlert' && isCurrentUserProgenyAdmin) {
-        args.cancel = true;
-        if (selectedEventId > 0) {
-            window.location.href = '/Calendar/DeleteEvent?itemId=' + selectedEventId;
-            return;
-        }
-    }
     args.cancel = true;
 }
 /**
