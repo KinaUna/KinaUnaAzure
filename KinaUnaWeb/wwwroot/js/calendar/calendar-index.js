@@ -1,7 +1,9 @@
 import * as LocaleHelper from '../localization-v6.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 let selectedEventId = 0;
 let currentCulture = 'en';
 async function DisplayEventItem(eventId, event) {
+    startLoadingItemsSpinner('schedule');
     let url = '/Calendar/GetEventItem?eventId=' + eventId;
     await fetch(url, {
         method: 'GET',
@@ -32,6 +34,7 @@ async function DisplayEventItem(eventId, event) {
     }).catch(function (error) {
         console.error('Error getting event item. Error: ' + error);
     });
+    stopLoadingItemsSpinner('schedule');
 }
 /**
  * Event handler for the edit and delete buttons in the Syncfusion Schedule component.

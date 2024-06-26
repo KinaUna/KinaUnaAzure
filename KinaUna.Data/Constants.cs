@@ -36,6 +36,8 @@
         public const string Contacts = "Contacts";
         public const string Calendar = "Calendar";
         public const string CalendarTools = "CalendarTools";
+        public const string Scheduler = "Scheduler";
+        public const string SchedulerRecurrence = "SchedulerRecurrence";
         public const string Friends = "Friends";
         public const string Locations = "Locations";
         public const string Measurements = "Measurements";
