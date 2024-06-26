@@ -1,4 +1,5 @@
 import * as LocaleHelper from '../localization-v6.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 
 declare var syncfusionReference: any;
 declare var isCurrentUserProgenyAdmin: boolean;
@@ -7,6 +8,8 @@ let selectedEventId: number = 0;
 let currentCulture = 'en';
 
 async function DisplayEventItem(eventId: number, event: any): Promise<void> {
+    startLoadingItemsSpinner('schedule');
+
     let url = '/Calendar/GetEventItem?eventId=' + eventId;
     await fetch(url, {
         method: 'GET',
@@ -36,6 +39,7 @@ async function DisplayEventItem(eventId: number, event: any): Promise<void> {
     }).catch(function (error) {
         console.error('Error getting event item. Error: ' + error);
     });
+    stopLoadingItemsSpinner('schedule');
 }
 
 /**

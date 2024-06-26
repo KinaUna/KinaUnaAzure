@@ -219,5 +219,10 @@ namespace KinaUnaWeb.Controllers
             return Json(timelineList);
 
         }
+
+        public IActionResult SchedulerTranslations(int languageId)
+        {
+            return PartialView("_SchedulerTranslationsPartial", languageId);
+        }
     }
 }

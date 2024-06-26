@@ -1,0 +1,145 @@
+﻿@using KinaUna.Data
+@using KinaUnaWeb.Services
+@model int
+@inject ILocaleManager LocaleManager
+@{
+    string loadCultureString = "en-DK";
+    if (Model == 2)
+    {
+        loadCultureString = "de";
+    }
+
+    if (Model == 3)
+    {
+        loadCultureString = "da";
+    }
+
+    if (Model == 4)
+    {
+        loadCultureString = "tr";
+    }
+
+    if (Model == 5)
+    {
+        loadCultureString = "sr";
+    }
+}
+<script>
+    L10n = ej.base.L10n;
+    L10n.load({
+        "@loadCultureString": {
+            "schedule": {
+                "day": "@await LocaleManager.GetTranslation("Day", PageNames.Scheduler, Model)",
+                "week": "@await LocaleManager.GetTranslation("Week", PageNames.Scheduler, Model)",
+                "workWeek": "@await LocaleManager.GetTranslation("Work week", PageNames.Scheduler, Model)",
+                "month": "@await LocaleManager.GetTranslation("Month", PageNames.Scheduler, Model)",
+                "agenda": "@await LocaleManager.GetTranslation("Agenda", PageNames.Scheduler, Model)",
+                "weekAgenda": "@await LocaleManager.GetTranslation("Week agenda", PageNames.Scheduler, Model)",
+                "workWeekAgenda": "@await LocaleManager.GetTranslation("Work week agenda", PageNames.Scheduler, Model)",
+                "monthAgenda": "@await LocaleManager.GetTranslation("Month agenda", PageNames.Scheduler, Model)",
+                "today": "@await LocaleManager.GetTranslation("Today", PageNames.Scheduler, Model)",
+                "noEvents": "@await LocaleManager.GetTranslation("No events", PageNames.Scheduler, Model)",
+                "emptyContainer": "Empty container",
+                "allDay": "@await LocaleManager.GetTranslation("All day", PageNames.Scheduler, Model)",
+                "start": "@await LocaleManager.GetTranslation("Start", PageNames.Scheduler, Model)",
+                "end": "@await LocaleManager.GetTranslation("End", PageNames.Scheduler, Model)",
+                "more": "@await LocaleManager.GetTranslation("More", PageNames.Scheduler, Model)",
+                "close": "@await LocaleManager.GetTranslation("Close", PageNames.Scheduler, Model)",
+                "cancel": "@await LocaleManager.GetTranslation("Cancel", PageNames.Scheduler, Model)",
+                "noTitle": "(@await LocaleManager.GetTranslation("No title", PageNames.Scheduler, Model))",
+                "delete": "@await LocaleManager.GetTranslation("Delete", PageNames.Scheduler, Model)",
+                "deleteEvent": "@await LocaleManager.GetTranslation("Delete event", PageNames.Scheduler, Model)",
+                "deleteMultipleEvent": "@await LocaleManager.GetTranslation("Delete multiple events", PageNames.Scheduler, Model)",
+                "selectedItems": "@await LocaleManager.GetTranslation("Selected items", PageNames.Scheduler, Model)",
+                "deleteSeries": "@await LocaleManager.GetTranslation("Delete series", PageNames.Scheduler, Model)",
+                "edit": "@await LocaleManager.GetTranslation("Edit", PageNames.Scheduler, Model)",
+                "editSeries": "@await LocaleManager.GetTranslation("Edit series", PageNames.Scheduler, Model)",
+                "editEvent": "@await LocaleManager.GetTranslation("Edit event", PageNames.Scheduler, Model)",
+                "createEvent": "@await LocaleManager.GetTranslation("Create event", PageNames.Scheduler, Model)",
+                "subject": "@await LocaleManager.GetTranslation("Subject", PageNames.Scheduler, Model)",
+                "addTitle": "@await LocaleManager.GetTranslation("Add title", PageNames.Scheduler, Model)",
+                "moreDetails": "@await LocaleManager.GetTranslation("More details", PageNames.Scheduler, Model)",
+                "save": "@await LocaleManager.GetTranslation("Save", PageNames.Scheduler, Model)",
+                "editContent": "@await LocaleManager.GetTranslation("Edit content", PageNames.Scheduler, Model)",
+                "deleteRecurrenceContent": "@await LocaleManager.GetTranslation("Delete recurrence content", PageNames.Scheduler, Model)",
+                "deleteContent": "@await LocaleManager.GetTranslation("Delete content", PageNames.Scheduler, Model)",
+                "deleteMultipleContent": "@await LocaleManager.GetTranslation("Delete multiple content", PageNames.Scheduler, Model)",
+                "newEvent": "@await LocaleManager.GetTranslation("New event", PageNames.Scheduler, Model)",
+                "title": "@await LocaleManager.GetTranslation("Title", PageNames.Scheduler, Model)",
+                "location": "@await LocaleManager.GetTranslation("Location", PageNames.Scheduler, Model)",
+                "description": "@await LocaleManager.GetTranslation("Description", PageNames.Scheduler, Model)",
+                "timezone": "@await LocaleManager.GetTranslation("Time zone", PageNames.Scheduler, Model)",
+                "startTimezone": "@await LocaleManager.GetTranslation("Start time zone", PageNames.Scheduler, Model)",
+                "endTimezone": "@await LocaleManager.GetTranslation("End time zone", PageNames.Scheduler, Model)",
+                "repeat": "@await LocaleManager.GetTranslation("Repeat", PageNames.Scheduler, Model)",
+                "saveButton": "@await LocaleManager.GetTranslation("Save button", PageNames.Scheduler, Model)",
+                "cancelButton": "@await LocaleManager.GetTranslation("Cancel button", PageNames.Scheduler, Model)",
+                "deleteButton": "@await LocaleManager.GetTranslation("Delete button", PageNames.Scheduler, Model)",
+                "recurrence": "@await LocaleManager.GetTranslation("Recurrence", PageNames.Scheduler, Model)",
+                "wrongPattern": "@await LocaleManager.GetTranslation("Wrong pattern", PageNames.Scheduler, Model)",
+                "seriesChangeAlert": "@await LocaleManager.GetTranslation("Series change alert", PageNames.Scheduler, Model)",
+                "createError": "@await LocaleManager.GetTranslation("Create error", PageNames.Scheduler, Model)",
+                "recurrenceDateValidation": "@await LocaleManager.GetTranslation("Recurrence date validation", PageNames.Scheduler, Model)",
+                "sameDayAlert": "@await LocaleManager.GetTranslation("Same day alert", PageNames.Scheduler, Model)",
+                "editRecurrence": "@await LocaleManager.GetTranslation("Edit recurrence", PageNames.Scheduler, Model)",
+                "repeats": "@await LocaleManager.GetTranslation("Repeats", PageNames.Scheduler, Model)",
+                "alert": "@await LocaleManager.GetTranslation("Alert", PageNames.Scheduler, Model)",
+                "startEndError": "@await LocaleManager.GetTranslation("Start end error", PageNames.Scheduler, Model)",
+                "invalidDateError": "@await LocaleManager.GetTranslation("Invalid date error", PageNames.Scheduler, Model)",
+                "ok": "@await LocaleManager.GetTranslation("Ok", PageNames.Scheduler, Model)",
+                "occurrence": "@await LocaleManager.GetTranslation("Occurrence", PageNames.Scheduler, Model)",
+                "series": "@await LocaleManager.GetTranslation("Series", PageNames.Scheduler, Model)",
+                "previous": "@await LocaleManager.GetTranslation("Previous", PageNames.Scheduler, Model)",
+                "next": "@await LocaleManager.GetTranslation("Next", PageNames.Scheduler, Model)",
+                "timelineDay": "@await LocaleManager.GetTranslation("Time line day", PageNames.Scheduler, Model)",
+                "timelineWeek": "@await LocaleManager.GetTranslation("Time line week", PageNames.Scheduler, Model)",
+                "timelineWorkWeek": "@await LocaleManager.GetTranslation("Time line work week", PageNames.Scheduler, Model)",
+                "timelineMonth": "@await LocaleManager.GetTranslation("Time line month", PageNames.Scheduler, Model)",
+                "expandAllDaySection": "@await LocaleManager.GetTranslation("Expand all day section", PageNames.Scheduler, Model)",
+                "collapseAllDaySection": "@await LocaleManager.GetTranslation("Collapse all day section", PageNames.Scheduler, Model)"
+            },
+            "recurrenceeditor": {
+                "none": "@await LocaleManager.GetTranslation("None", PageNames.SchedulerRecurrence, Model)",
+                "daily": "@await LocaleManager.GetTranslation("Daily", PageNames.SchedulerRecurrence, Model)",
+                "weekly": "@await LocaleManager.GetTranslation("Weekly", PageNames.SchedulerRecurrence, Model)",
+                "monthly": "@await LocaleManager.GetTranslation("Monthly", PageNames.SchedulerRecurrence, Model)",
+                "month": "@await LocaleManager.GetTranslation("Month", PageNames.SchedulerRecurrence, Model)",
+                "yearly": "@await LocaleManager.GetTranslation("Yearly", PageNames.SchedulerRecurrence, Model)",
+                "never": "@await LocaleManager.GetTranslation("Never", PageNames.SchedulerRecurrence, Model)",
+                "until": "@await LocaleManager.GetTranslation("Until", PageNames.SchedulerRecurrence, Model)",
+                "count": "@await LocaleManager.GetTranslation("Count", PageNames.SchedulerRecurrence, Model)",
+                "first": "@await LocaleManager.GetTranslation("First", PageNames.SchedulerRecurrence, Model)",
+                "second": "@await LocaleManager.GetTranslation("Second", PageNames.SchedulerRecurrence, Model)",
+                "third": "@await LocaleManager.GetTranslation("Third", PageNames.SchedulerRecurrence, Model)",
+                "fourth": "@await LocaleManager.GetTranslation("Fourth", PageNames.SchedulerRecurrence, Model)",
+                "last": "@await LocaleManager.GetTranslation("Last", PageNames.SchedulerRecurrence, Model)",
+                "repeat": "@await LocaleManager.GetTranslation("Repeat", PageNames.SchedulerRecurrence, Model)",
+                "repeatEvery": "@await LocaleManager.GetTranslation("Repeat every", PageNames.SchedulerRecurrence, Model)",
+                "on": "@await LocaleManager.GetTranslation("On", PageNames.SchedulerRecurrence, Model)",
+                "end": "@await LocaleManager.GetTranslation("End", PageNames.SchedulerRecurrence, Model)",
+                "onDay": "@await LocaleManager.GetTranslation("On day", PageNames.SchedulerRecurrence, Model)",
+                "days": "@await LocaleManager.GetTranslation("days", PageNames.SchedulerRecurrence, Model)",
+                "weeks": "@await LocaleManager.GetTranslation("Weeks", PageNames.SchedulerRecurrence, Model)",
+                "months": "@await LocaleManager.GetTranslation("Months", PageNames.SchedulerRecurrence, Model)",
+                "years": "@await LocaleManager.GetTranslation("Years", PageNames.SchedulerRecurrence, Model))",
+                "every": "@await LocaleManager.GetTranslation("Every", PageNames.SchedulerRecurrence, Model)",
+                "summaryTimes": "@await LocaleManager.GetTranslation("Summary times", PageNames.SchedulerRecurrence, Model)",
+                "summaryOn": "@await LocaleManager.GetTranslation("Summary on", PageNames.SchedulerRecurrence, Model)",
+                "summaryUntil": "@await LocaleManager.GetTranslation("Summary until", PageNames.SchedulerRecurrence, Model)",
+                "summaryRepeat": "@await LocaleManager.GetTranslation("Summary repeat", PageNames.SchedulerRecurrence, Model)",
+                "summaryDay": "@await LocaleManager.GetTranslation("Summary day", PageNames.SchedulerRecurrence, Model)",
+                "summaryWeek": "@await LocaleManager.GetTranslation("Summary week", PageNames.SchedulerRecurrence, Model)",
+                "summaryMonth": "@await LocaleManager.GetTranslation("Summary month", PageNames.SchedulerRecurrence, Model)",
+                "summaryYear": "@await LocaleManager.GetTranslation("Summary year", PageNames.SchedulerRecurrence, Model)",
+                "monthWeek": "@await LocaleManager.GetTranslation("Month week", PageNames.SchedulerRecurrence, Model)",
+                "monthPosition": "@await LocaleManager.GetTranslation("Month position", PageNames.SchedulerRecurrence, Model)",
+                "monthExpander": "@await LocaleManager.GetTranslation("Month expander", PageNames.SchedulerRecurrence, Model)",
+                "yearExpander": "@await LocaleManager.GetTranslation("Year expander", PageNames.SchedulerRecurrence, Model)",
+                "repeatInterval": "@await LocaleManager.GetTranslation("Repeat interval", PageNames.SchedulerRecurrence, Model)"
+            },
+            "calendar": {
+                "today": "@await LocaleManager.GetTranslation("Today", PageNames.Scheduler, Model)"
+            }
+        }
+    });
+</script>
