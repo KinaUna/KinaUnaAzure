@@ -48,6 +48,25 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
+        public async Task<IActionResult> GetEventItem(int eventId)
+        {
+            CalendarItem eventItem = await calendarsHttpClient.GetCalendarItem(eventId);
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), eventItem.ProgenyId);
+            CalendarItemViewModel model = new(baseModel);
+
+            if (eventItem.AccessLevel < model.CurrentAccessLevel)
+            {
+                // Todo: Show access denied instead of redirecting.
+                return Unauthorized();
+            }
+
+            model.SetCalendarItem(eventItem);
+
+            return PartialView("_GetEventItemPartial", model);
+        }
+
         [HttpGet]
         public async Task<IActionResult> AddEvent()
         {

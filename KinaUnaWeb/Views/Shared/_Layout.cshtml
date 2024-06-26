@@ -197,6 +197,7 @@
     </div>
 }
 @await Html.PartialAsync("_LayoutModalPartial")
+    <div id="item-details-div" class="item-details-popup d-none"></div>
 <script src="~/js/app.js" type="module" asp-append-version="true"></script>
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
