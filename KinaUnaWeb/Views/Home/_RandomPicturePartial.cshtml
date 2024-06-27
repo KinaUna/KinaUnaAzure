@@ -38,9 +38,9 @@
 </div>
 <div class="space-70"></div>
 <div>
-    <a asp-controller="Pictures" asp-action="Picture" asp-route-id="@Model.ImageId" asp-route-childId="@Model.CurrentProgeny.Id" class="leave-page" aria-label="View Image">
+    <button id="random-picture-link" class="item-btn" data-random-picture-id="@Model.ImageId" aria-label="View Image">
         <img src="@Model.ImageLink600" style="width: 100%; max-width: 100%" />
-    </a>
+    </button>
 </div>
 @if (!string.IsNullOrEmpty(Model.Tags))
 {

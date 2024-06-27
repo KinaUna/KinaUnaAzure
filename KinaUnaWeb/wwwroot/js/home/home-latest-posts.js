@@ -1,6 +1,7 @@
 import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v6.js';
 import { getCurrentProgenyId } from '../data-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+import { addTimelineItemEventListener } from '../item-details/items-display.js';
 let timelineItemsList = [];
 const timeLineParameters = new TimelineParameters();
 let latestPostsProgenyId;
@@ -63,6 +64,7 @@ async function getTimelineList(parameters) {
 }
 /**
  * Fetches the HTML for a given timeline item and renders it at the end of timeline-items-div.
+ * Adds an event listener to the item, to display a popup with more details when clicked.
  * @param timelineItem The timelineItem object to add to the div.
  */
 async function renderTimelineItem(timelineItem) {
@@ -82,6 +84,7 @@ async function renderTimelineItem(timelineItem) {
         const timelineDiv = document.querySelector('#timeline-items-div');
         if (timelineDiv != null) {
             timelineDiv.insertAdjacentHTML('beforeend', timelineElementHtml);
+            addTimelineItemEventListener(timelineItem);
         }
     }
     return new Promise(function (resolve, reject) {

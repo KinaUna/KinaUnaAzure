@@ -22,6 +22,7 @@ async function DisplayEventItem(eventId, event) {
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
                         button.addEventListener('click', function () {
+                            eventDetailsPopupDiv.innerHTML = '';
                             eventDetailsPopupDiv.classList.add('d-none');
                         });
                     });

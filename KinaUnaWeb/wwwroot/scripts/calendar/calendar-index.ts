@@ -28,6 +28,7 @@ async function DisplayEventItem(eventId: number, event: any): Promise<void> {
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
                         button.addEventListener('click', function () {
+                            eventDetailsPopupDiv.innerHTML = '';
                             eventDetailsPopupDiv.classList.add('d-none');
                         });
                     });

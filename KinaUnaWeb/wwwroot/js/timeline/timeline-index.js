@@ -3,6 +3,7 @@ import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v6.js'
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v6.js';
 import * as SettingsHelper from '../settings-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+import { addTimelineItemEventListener } from '../item-details/items-display.js';
 const timelinePageSettingsStorageKey = 'timeline_page_parameters';
 let timelineItemsList = [];
 let timeLineParameters = new TimelineParameters();
@@ -123,6 +124,7 @@ async function renderTimelineItem(timelineItem) {
         const timelineDiv = document.querySelector('#timeline-items-div');
         if (timelineDiv != null) {
             timelineDiv.insertAdjacentHTML('beforeend', timelineElementHtml);
+            addTimelineItemEventListener(timelineItem);
         }
     }
     return new Promise(function (resolve, reject) {

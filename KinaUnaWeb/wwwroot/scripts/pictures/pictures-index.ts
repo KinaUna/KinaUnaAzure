@@ -1,8 +1,9 @@
 import * as LocaleHelper from '../localization-v6.js';
-import { Picture, PictureViewModel, PicturesList, PicturesPageParameters } from '../page-models-v6.js';
+import { Picture, PictureViewModel, PicturesList, PicturesPageParameters, TimelineItem } from '../page-models-v6.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v6.js';
 import * as SettingsHelper from '../settings-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+import { addTimelineItemEventListener } from '../item-details/items-display.js';
 
 let picturesPageParameters: PicturesPageParameters | null = new PicturesPageParameters();
 const picturesPageSettingsStorageKey = 'pictures_page_parameters';
@@ -376,6 +377,10 @@ async function renderPictureItem(pictureItem: Picture): Promise<void> {
             const pictureElementHtml = await getPictureElementResponse.text();
             if (photoListDiv != null) {
                 photoListDiv.insertAdjacentHTML('beforeend', pictureElementHtml);
+                const timelineItem = new TimelineItem();
+                timelineItem.itemId = pictureItem.pictureId.toString();
+                timelineItem.itemType = 1;
+                addTimelineItemEventListener(timelineItem);
             }
         }
     }

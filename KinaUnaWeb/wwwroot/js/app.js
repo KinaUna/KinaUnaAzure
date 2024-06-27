@@ -81,8 +81,13 @@ function collapsePopupsAndModals(clickover) {
     if (itemDetailsPopup === null) {
         const itemDetailsPopups = document.querySelectorAll('.item-details-popup');
         itemDetailsPopups.forEach(function (popup) {
+            popup.innerHTML = '';
             popup.classList.add('d-none');
         });
+        let mainDiv = document.querySelector('#body-content');
+        if (mainDiv) {
+            mainDiv.classList.remove('d-none');
+        }
     }
 }
 /**

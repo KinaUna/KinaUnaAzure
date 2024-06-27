@@ -98,8 +98,14 @@ function collapsePopupsAndModals(clickover: HTMLElement): void {
         const itemDetailsPopups = document.querySelectorAll('.item-details-popup');
         
         itemDetailsPopups.forEach(function (popup) {
+            (popup as HTMLElement).innerHTML = '';
             (popup as HTMLElement).classList.add('d-none');
         });
+
+        let mainDiv = document.querySelector<HTMLDivElement>('#body-content');
+        if (mainDiv) {
+            mainDiv.classList.remove('d-none');
+        }
     }
 }
 

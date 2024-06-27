@@ -18,6 +18,25 @@
     }
 }
 
+.bg-body {
+    margin: 0;
+    font-family: Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    text-align: left;
+    background-color: white;
+    background: white;
+}
+
+@media (prefers-color-scheme: dark) {
+    .bg-body {
+        color: white;
+        background-color: #262426;
+        background: #262426;
+    }
+}
 
 /* Wrapping element */
 
@@ -3394,6 +3413,27 @@ noUi-handle:after, .noUi-handle:before {
     max-height: 100vh;
 }
 
+.full-screen{
+    max-width: unset;
+    max-height: unset;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.full-screen-bg {
+    max-width: unset;
+    max-height: unset;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
 .item-details-popup {
     position: fixed;
     top: 0;
@@ -3439,6 +3479,12 @@ noUi-handle:after, .noUi-handle:before {
     }
 }
 
+.item-details-content-full-screen {
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 2rem;
+}
+
 .item-details-close-button {
     position: absolute;
     top: -1rem;
@@ -3448,3 +3494,50 @@ noUi-handle:after, .noUi-handle:before {
     margin: -1rem -1rem -1rem auto;
     font-size: 1.5rem;
 }
+
+.item-details-close-button-full-screen {
+    position: absolute;
+    top: 1rem;
+    right: 3rem;
+    z-index: 1051;
+    padding: 1rem 1rem;
+    margin: -1rem -1rem -1rem auto;
+    font-size: 2.5rem;
+}
+
+.item-btn {
+    text-align: left;
+    width: 100%;
+    position: relative;
+    padding:0;
+    margin: 0;
+    text-decoration: none;
+    text-transform: none;
+    cursor: pointer;
+    background-color: transparent;
+    border: 0;
+    border-radius: .2rem;
+    outline: 0;
+}
+
+.item-btn:focus {
+    outline: 0;
+}
+
+.item-btn-gallery {
+    text-align: left;
+    position: relative;
+    padding: 0;
+    margin: 0;
+    text-decoration: none;
+    text-transform: none;
+    cursor: pointer;
+    background-color: transparent;
+    border: 0;
+    border-radius: .2rem;
+    outline: 0;
+}
+
+    .item-btn-gallery:focus {
+        outline: 0;
+    }

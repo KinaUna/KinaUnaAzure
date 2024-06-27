@@ -1,5 +1,5 @@
 ﻿@model KinaUnaWeb.Models.ItemViewModels.PictureViewModel
-<a class="leave-page2" asp-controller="Pictures" asp-action="Picture" asp-route-Id="@Model.PictureId">
+<button id="picture-item-@Model.PictureId" class="item-btn picture-item" data-picture-id="@Model.PictureId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-photo">
             <div class="row">
@@ -39,4 +39,4 @@
             </div>
         </div>
     </div>
-</a>
+</button>

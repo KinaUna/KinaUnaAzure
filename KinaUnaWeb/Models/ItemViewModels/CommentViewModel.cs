@@ -15,7 +15,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int SortBy { get; set; }
 
         public int ItemId { get; set; }
-        
+        public bool PartialView { get; set; }
+
         public CommentViewModel()
         {
             
