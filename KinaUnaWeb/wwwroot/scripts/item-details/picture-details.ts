@@ -192,19 +192,21 @@ async function displayPictureDetails(pictureId: string, isPopupVisible: boolean 
             if (itemDetailsPopupDiv) {
                 itemDetailsPopupDiv.classList.remove('d-none');
                 itemDetailsPopupDiv.innerHTML = itemElementHtml;
-                let mainDiv = document.querySelector<HTMLDivElement>('#body-content');
-                if (mainDiv) {
-                    mainDiv.classList.add('d-none');
+                
+                let bodyElement = document.querySelector<HTMLBodyElement>('body');
+                if (bodyElement) {
+                    bodyElement.style.overflow = 'hidden';
                 }
+
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
                         button.addEventListener('click', function () {
                             itemDetailsPopupDiv.innerHTML = '';
                             itemDetailsPopupDiv.classList.add('d-none');
-                            let mainDiv = document.querySelector<HTMLDivElement>('#body-content');
-                            if (mainDiv) {
-                                mainDiv.classList.remove('d-none');
+                            let bodyElement = document.querySelector<HTMLBodyElement>('body');
+                            if (bodyElement) {
+                                bodyElement.style.removeProperty('overflow');
                             }
                         });
                     });

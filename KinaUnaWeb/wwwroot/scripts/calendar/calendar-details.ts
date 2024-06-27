@@ -28,6 +28,10 @@ async function DisplayEventItem(eventId: string): Promise<void> {
                 fullScreenOverlay.classList.add('full-screen-bg');
                 fullScreenOverlay.innerHTML = eventElementHtml;
                 eventDetailsPopupDiv.appendChild(fullScreenOverlay);
+                let bodyElement = document.querySelector<HTMLBodyElement>('body');
+                if (bodyElement) {
+                    bodyElement.style.overflow = 'hidden';
+                }
                 eventDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
@@ -35,6 +39,10 @@ async function DisplayEventItem(eventId: string): Promise<void> {
                         button.addEventListener('click', function () {
                             eventDetailsPopupDiv.innerHTML = '';
                             eventDetailsPopupDiv.classList.add('d-none');
+                            let bodyElement = document.querySelector<HTMLBodyElement>('body');
+                            if (bodyElement) {
+                                bodyElement.style.removeProperty('overflow');
+                            }
                         });
                     });
                 }

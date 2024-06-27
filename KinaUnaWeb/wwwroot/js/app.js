@@ -84,9 +84,9 @@ function collapsePopupsAndModals(clickover) {
             popup.innerHTML = '';
             popup.classList.add('d-none');
         });
-        let mainDiv = document.querySelector('#body-content');
-        if (mainDiv) {
-            mainDiv.classList.remove('d-none');
+        let bodyElement = document.querySelector('body');
+        if (bodyElement) {
+            bodyElement.style.removeProperty('overflow');
         }
     }
 }

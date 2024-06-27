@@ -102,9 +102,9 @@ function collapsePopupsAndModals(clickover: HTMLElement): void {
             (popup as HTMLElement).classList.add('d-none');
         });
 
-        let mainDiv = document.querySelector<HTMLDivElement>('#body-content');
-        if (mainDiv) {
-            mainDiv.classList.remove('d-none');
+        let bodyElement = document.querySelector<HTMLBodyElement>('body');
+        if (bodyElement) {
+            bodyElement.style.removeProperty('overflow');
         }
     }
 }

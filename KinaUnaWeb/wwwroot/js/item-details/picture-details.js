@@ -163,9 +163,9 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
             if (itemDetailsPopupDiv) {
                 itemDetailsPopupDiv.classList.remove('d-none');
                 itemDetailsPopupDiv.innerHTML = itemElementHtml;
-                let mainDiv = document.querySelector('#body-content');
-                if (mainDiv) {
-                    mainDiv.classList.add('d-none');
+                let bodyElement = document.querySelector('body');
+                if (bodyElement) {
+                    bodyElement.style.overflow = 'hidden';
                 }
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
@@ -173,9 +173,9 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
                         button.addEventListener('click', function () {
                             itemDetailsPopupDiv.innerHTML = '';
                             itemDetailsPopupDiv.classList.add('d-none');
-                            let mainDiv = document.querySelector('#body-content');
-                            if (mainDiv) {
-                                mainDiv.classList.remove('d-none');
+                            let bodyElement = document.querySelector('body');
+                            if (bodyElement) {
+                                bodyElement.style.removeProperty('overflow');
                             }
                         });
                     });
