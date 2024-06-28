@@ -241,7 +241,7 @@ function addCloseButtonEventListener(): void {
 }
 
 function addShowMapButtonEventListener(): void {
-    let showMapButton = document.querySelector<HTMLButtonElement>('#show-map-button');
+    let showMapButton = document.querySelector<HTMLButtonElement>('#show-here-maps-button');
     if (showMapButton) {
         const mapContainerDiv = document.getElementById('pictures-page-map-container-div');
         showMapButton.addEventListener('click', function () {
@@ -249,6 +249,7 @@ function addShowMapButtonEventListener(): void {
                 return;
             }
             if (mapContainerDiv.classList.contains('d-none')) {
+                mapContainerDiv.innerHTML = '';
                 mapContainerDiv.classList.remove('d-none');
                 setupHereMaps(getCurrentLanguageId());
             }
@@ -279,9 +280,7 @@ async function displayPictureDetails(pictureId: string, isPopupVisible: boolean 
             tagFilter = picturePageParameters.tagFilter;
         }
     }
-
-    console.log('TagFilter: ' + tagFilter);
-
+    
     let url = '/Pictures/Picture?id=' + pictureId + "&tagFilter=" + tagFilter + "&partialView=true";
     await fetch(url, {
         method: 'GET',

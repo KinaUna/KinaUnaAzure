@@ -24,8 +24,14 @@
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
     bool allowHereMaps = Context.Request.HereMapsCookieSet();
-    string hereMapsLatitude = Model.Picture.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')[..6];
-    string hereMapsLongitude = Model.Picture.Longtitude.ToString(new CultureInfo("en-US")).Replace(',', '.')[..6];
+    string hereMapsLatitude = "";
+    string hereMapsLongitude = "";
+    if (!string.IsNullOrEmpty(Model.Picture.Latitude) && !string.IsNullOrEmpty(Model.Picture.Longtitude))
+    { 
+        hereMapsLatitude = Model.Picture.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')[..6];
+        hereMapsLongitude = Model.Picture.Longtitude.ToString(new CultureInfo("en-US")).Replace(',', '.')[..6];
+    }
+    
 }
 <div id="current-picture-id-div" data-current-picture-id="@Model.Picture.PictureId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
@@ -57,7 +63,7 @@
             {
                 <div class="space-20"></div>
                 <div class="text-center">@await LocaleManager.GetTranslation("Location:", PageNames.Pictures, Model.LanguageId) @Model.Picture.Location</div>
-                @if (!string.IsNullOrEmpty(Model.Picture.Latitude))
+                @if (!string.IsNullOrEmpty(hereMapsLatitude))
                 {
                     @if (allowHereMaps)
                     {

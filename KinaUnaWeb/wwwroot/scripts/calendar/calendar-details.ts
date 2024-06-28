@@ -11,6 +11,10 @@ export function addCalendarEventListeners(itemId: string): void {
     }
 }
 
+export function popupEventItem(eventId: string): void {
+    DisplayEventItem(eventId);
+
+}
 async function DisplayEventItem(eventId: string): Promise<void> {
     startLoadingItemsSpinner('body-content');
     let url = '/Calendar/GetEventItem?eventId=' + eventId;

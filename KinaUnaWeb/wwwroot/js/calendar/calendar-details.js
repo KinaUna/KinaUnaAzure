@@ -10,6 +10,9 @@ export function addCalendarEventListeners(itemId) {
         });
     }
 }
+export function popupEventItem(eventId) {
+    DisplayEventItem(eventId);
+}
 async function DisplayEventItem(eventId) {
     startLoadingItemsSpinner('body-content');
     let url = '/Calendar/GetEventItem?eventId=' + eventId;

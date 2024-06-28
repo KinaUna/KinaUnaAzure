@@ -1,4 +1,6 @@
-﻿
+﻿import { popupEventItem } from "../calendar/calendar-details.js";
+import { popupPictureDetails } from "../item-details/picture-details.js";
+
 /**
  * Used to handle the click event on a notification.
  * Updates the notification as read if it is unread.
@@ -21,6 +23,29 @@ async function notificationItemClick(btn: HTMLElement): Promise<void> {
 
     let notificationLink = btn.getAttribute('data-notificationLink');
     if (notificationLink !== null) {
+        if (notificationLink.startsWith('/Pictures/Picture/')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Pictures/Picture/', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('?');
+            let pictureId = notificationLinkSplit[0];
+            if (pictureId !== null) {
+                popupPictureDetails(pictureId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+
+        if (notificationLink.startsWith('/Calendar/ViewEvent')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Calendar/ViewEvent?eventId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let eventId = notificationLinkSplit[0];
+            if (eventId !== null) {
+                popupEventItem(eventId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
         window.location.href = notificationLink;
     }
 
@@ -100,6 +125,7 @@ export function updateNoficationElementEvents(notificationButtonsList: HTMLColle
             }
 
             button.addEventListener('click', async function (event: MouseEvent) {
+                event.stopImmediatePropagation();
                 notificationItemClick(button);
             });
 
