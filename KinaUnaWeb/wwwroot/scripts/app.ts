@@ -91,6 +91,10 @@ function checkLeavePage(clickover: HTMLElement): boolean {
     return leavingPage;
 }
 
+/**
+ * Hide all popups and modals if clicking outside the pop-up or modal.
+ * @param {HTMLElement} clickover The element that was clicked.
+ */
 function collapsePopupsAndModals(clickover: HTMLElement): void {
     const itemDetailsPopup = clickover.closest('.item-details-content');
     

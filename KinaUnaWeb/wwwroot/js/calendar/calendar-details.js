@@ -1,3 +1,4 @@
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 export function addCalendarEventListeners(itemId) {
     const eventElementsWithDataId = document.querySelectorAll('[data-calendar-event-id="' + itemId + '"]');
@@ -27,10 +28,7 @@ async function DisplayEventItem(eventId) {
                 fullScreenOverlay.classList.add('full-screen-bg');
                 fullScreenOverlay.innerHTML = eventElementHtml;
                 eventDetailsPopupDiv.appendChild(fullScreenOverlay);
-                let bodyElement = document.querySelector('body');
-                if (bodyElement) {
-                    bodyElement.style.overflow = 'hidden';
-                }
+                hideBodyScrollbars();
                 eventDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
@@ -38,10 +36,7 @@ async function DisplayEventItem(eventId) {
                         button.addEventListener('click', function () {
                             eventDetailsPopupDiv.innerHTML = '';
                             eventDetailsPopupDiv.classList.add('d-none');
-                            let bodyElement = document.querySelector('body');
-                            if (bodyElement) {
-                                bodyElement.style.removeProperty('overflow');
-                            }
+                            showBodyScrollbars();
                         });
                     });
                 }

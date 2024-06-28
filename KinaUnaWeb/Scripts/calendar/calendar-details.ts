@@ -1,4 +1,5 @@
-﻿import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+﻿import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 export function addCalendarEventListeners(itemId: string): void {
     const eventElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-calendar-event-id="' + itemId + '"]');
     if (eventElementsWithDataId) {
@@ -28,10 +29,7 @@ async function DisplayEventItem(eventId: string): Promise<void> {
                 fullScreenOverlay.classList.add('full-screen-bg');
                 fullScreenOverlay.innerHTML = eventElementHtml;
                 eventDetailsPopupDiv.appendChild(fullScreenOverlay);
-                let bodyElement = document.querySelector<HTMLBodyElement>('body');
-                if (bodyElement) {
-                    bodyElement.style.overflow = 'hidden';
-                }
+                hideBodyScrollbars();
                 eventDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
@@ -39,10 +37,7 @@ async function DisplayEventItem(eventId: string): Promise<void> {
                         button.addEventListener('click', function () {
                             eventDetailsPopupDiv.innerHTML = '';
                             eventDetailsPopupDiv.classList.add('d-none');
-                            let bodyElement = document.querySelector<HTMLBodyElement>('body');
-                            if (bodyElement) {
-                                bodyElement.style.removeProperty('overflow');
-                            }
+                            showBodyScrollbars();
                         });
                     });
                 }

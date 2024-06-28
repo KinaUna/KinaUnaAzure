@@ -7,7 +7,11 @@ declare var isCurrentUserProgenyAdmin: boolean;
 let selectedEventId: number = 0;
 let currentCulture = 'en';
 
-async function DisplayEventItem(eventId: number, event: any): Promise<void> {
+/**
+ * Retrieves the details of a calendar event and displays them in a popup.
+ * @param {number} eventId The id of the event to display.
+ */
+async function DisplayEventItem(eventId: number): Promise<void> {
     startLoadingItemsSpinner('schedule');
 
     let url = '/Calendar/GetEventItem?eventId=' + eventId;
@@ -63,7 +67,7 @@ function onEventClick(args: any) {
     let event = scheduleObj.getEventDetails(args.element);
     selectedEventId = event.EventId;
 
-    DisplayEventItem(selectedEventId, args.event);
+    DisplayEventItem(selectedEventId);
 }
 
 /**

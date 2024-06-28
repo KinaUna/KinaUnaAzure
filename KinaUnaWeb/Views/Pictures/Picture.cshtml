@@ -311,13 +311,21 @@
                     <label class="col-auto control-label">@await LocaleManager.GetTranslation("Copy location latitude and longitude from existing location", PageNames.Pictures, Model.LanguageId)</label>
                     <div class="col-auto">
                         <div class="row row-cols-auto ml-0 mr-0">
-                                    <select id="copy-location" class="selectpicker form-control-noline col pl-0" data-style="btn-kinaunaselect" asp-items="@Model.LocationsList"></select>
-                                    <button id="copy-location-button" type="button" class="btn btn-primary col-auto mt-0 mb-0 ml-2">@await LocaleManager.GetTranslation("Copy", PageNames.Pictures, Model.LanguageId)</button>
+                            <select id="copy-location" class="selectpicker form-control-noline col pl-0" data-style="btn-kinaunaselect">
+                                @foreach (Location loc in Model.ProgenyLocations)
+                                {
+                                    <option value="@loc.LocationId" data-location-name="@loc.Name"
+                                            data-latitude="@loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')"
+                                            data-longitude="@loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.')">@loc.Name</option>
+                                }
+                                )
+                            </select>
+                            <button id="copy-location-button" type="button" class="btn btn-primary col-auto mt-0 mb-0 ml-2">@await LocaleManager.GetTranslation("Copy", PageNames.Pictures, Model.LanguageId)</button>
                         </div>
                     </div>
                 </div>
             }
-            <br />
+            <div class="space-20"></div>
             <input asp-for="Picture.PictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden" />
             <input asp-for="Picture.ProgenyId" class="form-control" value="@Model.Picture.ProgenyId" type="hidden" />
             <input asp-for="TagFilter" class="form-control" value="@Model.TagFilter" type="hidden" />
@@ -343,20 +351,6 @@
             <input name="pictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden" />
         </form>
     </div>
-    <script type="text/javascript">
-        var copyLocationList = [];
-        @{
-            string myLoc = "";
-            string addLoc = "";
-            foreach (Location loc in Model.ProgenyLocations)
-            {
-                myLoc = myLoc + "let loc" + loc.LocationId + " = {id: " + loc.LocationId + ", name: \'" + loc.Name + "\', lat: " + loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng: " + loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "};";
-                addLoc = addLoc + "copyLocationList.push(loc" + loc.LocationId + ");";
-            }
-        }        
-        @Html.Raw(myLoc)
-        @Html.Raw(addLoc)    
-    </script>
     <script src="/js/pictures/add-edit-picture.js" type="module" asp-append-version="true"></script>
 }
 @if (User.Identity != null && User.Identity.IsAuthenticated)

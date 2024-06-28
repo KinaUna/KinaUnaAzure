@@ -24,6 +24,8 @@ let sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#s
 let settingsStartDateTimePicker: any = $('#settings-start-date-datetimepicker');
 let startLabelDiv = document.querySelector<HTMLDivElement>('#start-label-div');
 
+
+
 /** Reads the initial page parameters from json serialized data in the pictures-page-parameters div elements data-pictures-page-parameters attribute.
  * If the page is navigated to without specific parameters, itemsPerPage, sort, and sortTags parameters are loaded from local storage.
  * @returns The PicturesPageParameters object with the initial page parameters.

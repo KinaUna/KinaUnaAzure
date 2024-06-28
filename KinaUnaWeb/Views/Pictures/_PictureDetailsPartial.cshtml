@@ -29,7 +29,7 @@
     
     <div id="item-details-content" class="item-details-content item-details-content-full-screen">
         
-        <h2>@title @Model.PictureNumber @await LocaleManager.GetTranslation("of", PageNames.Pictures, Model.LanguageId) @Model.PictureCount</h2>
+        <h3>@title @Model.PictureNumber @await LocaleManager.GetTranslation("of", PageNames.Pictures, Model.LanguageId) @Model.PictureCount</h3>
         <button type="button" class="btn btn-link item-details-close-button item-details-close-button-full-screen"><span>×</span></button>
         <div id="photo-div">
             @if (!string.IsNullOrEmpty(Model.TagFilter))
@@ -38,20 +38,26 @@
             }
             <div class="fixed-bottom" style="max-width: 100%; margin:15px; padding: 25px;">
                 <div class="" style="float: left">
-                    <button id="previous-picture-link" class="btn btn-primary rounded-pill text-white" data-previous-picture-id="@Model.PrevPicture"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @photoString</button>
+                    <button id="previous-picture-link" class="btn btn-primary rounded-pill text-white" data-previous-picture-id="@Model.PrevPicture"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText <span class="d-none d-md-inline">@photoString</span></button>
                 </div>
                 <div class="" style="float: right">
-                    <button id="next-picture-link" class="btn btn-primary rounded-pill text-white" data-next-picture-id="@Model.NextPicture">@viewNextText @photoString <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
+                    <button id="next-picture-link" class="btn btn-primary rounded-pill text-white" data-next-picture-id="@Model.NextPicture">@viewNextText <span class="d-none d-md-inline">@photoString</span> <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
                 </div>
             </div>
             <div class="space-20"></div>
             <div align="center" style="max-width: 100%">
                 <img src="@Model.Picture.PictureLink" style="max-height: 90vh; max-width: -webkit-fill-available"/>
             </div>
+            @if (!string.IsNullOrEmpty(@Model.Picture.Location))
+            {
+                <div class="space-20"></div>
+                <div class="text-center">@await LocaleManager.GetTranslation("Location:", PageNames.Pictures, Model.LanguageId) @Model.Picture.Location</div>
+            }
             <div>
                 @{
                     if (!string.IsNullOrEmpty(Model.Tags))
                     {
+                        <div class="space-20"></div>
                         List<string> tagsList = Model.Tags.Split(',').ToList();
                         foreach (string tagString in tagsList)
                         {
@@ -74,6 +80,7 @@
                 </div>
                 <div class="space-20"></div>
             }
+
             @if (Model.CommentsList.Count > 0)
             {
                 <div class="w-100">
@@ -139,8 +146,8 @@
                         <div class="space-20"></div>
                         <label Name="CommentText" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("New comment:", PageNames.Pictures, Model.LanguageId)</label>
                         <div class="col-12">
-                            <textarea Name="CommentText" class="form-control" rows="4"></textarea>
-                            <button class="btn btn-success float-right leave-page" style="margin-right: 15px;" type="submit">@await LocaleManager.GetTranslation("Add comment", PageNames.Pictures, Model.LanguageId)</button>
+                            <textarea id="new-picture-comment-text-area" Name="CommentText" class="form-control" rows="4"></textarea>
+                            <button id="submit-new-picture-comment-button" class="btn btn-success float-right leave-page" disabled="disabled" style="margin-right: 15px;" type="submit">@await LocaleManager.GetTranslation("Add comment", PageNames.Pictures, Model.LanguageId)</button>
                         </div>
                     </div>
                     <input asp-for="CommentThreadNumber" class="form-control" value="@Model.Picture.CommentThreadNumber" type="hidden"/>
@@ -209,13 +216,20 @@
                                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Copy location latitude and longitude from existing location", PageNames.Pictures, Model.LanguageId)</label>
                                 <div class="col-auto">
                                     <div class="row row-cols-auto ml-0 mr-0">
-                                        <select id="copy-location" class="selectpicker form-control-noline col pl-0" data-style="btn-kinaunaselect" asp-items="@Model.LocationsList"></select>
+                                        <select id="copy-location" class="selectpicker form-control-noline col pl-0" data-style="btn-kinaunaselect">
+                                            @foreach (Location loc in Model.ProgenyLocations)
+                                            {
+                                                <option value="@loc.LocationId" data-location-name="@loc.Name" 
+                                                        data-latitude="@loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')"
+                                                        data-longitude="@loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.')">@loc.Name</option>
+                                            })
+                                        </select>
                                         <button id="copy-location-button" type="button" class="btn btn-primary col-auto mt-0 mb-0 ml-2">@await LocaleManager.GetTranslation("Copy", PageNames.Pictures, Model.LanguageId)</button>
                                     </div>
                                 </div>
                             </div>
                         }
-                        <br />
+                        <div class="space-20"></div>
                         <input asp-for="Picture.PictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden" />
                         <input asp-for="Picture.ProgenyId" class="form-control" value="@Model.Picture.ProgenyId" type="hidden" />
                         <input asp-for="TagFilter" class="form-control" value="@Model.TagFilter" type="hidden" />
@@ -243,23 +257,7 @@
                         <input name="partialView" class="form-control" value="@Model.PartialView" type="hidden"/>
                     </form>
                 </div>
-                <script type="text/javascript">
-                    var copyLocationList = [];
-                    @{
-                        string myLoc = "";
-                        string addLoc = "";
-                        foreach (Location loc in Model.ProgenyLocations)
-                        {
-
-                            myLoc = myLoc + "let loc" + loc.LocationId + " = {id: " + loc.LocationId + ", name: \'" + loc.Name + "\', lat: " + loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + ", lng: " + loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.') + "};";
-                            addLoc = addLoc + "copyLocationList.push(loc" + loc.LocationId + ");";
-                            <div class="d-none" data-copy-location-item=""></div>
-                        }
-                    }
-                    @Html.Raw(myLoc)
-                    @Html.Raw(addLoc)
-                </script>
-                <script src="/js/pictures/add-edit-picture.js" type="module" asp-append-version="true"></script>
+                @* <script src="/js/pictures/add-edit-picture.js" type="module" asp-append-version="true"></script> *@
             }
             <div class="space-20"></div>
             <div class="text-center">

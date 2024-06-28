@@ -1,6 +1,14 @@
 import * as LocaleHelper from '../localization-v6.js';
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+import { hideBodyScrollbars, showBodyScrollbars } from './items-display.js';
+import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
+import { PicturesPageParameters } from '../page-models-v6.js';
+/**
+ * Adds click event listeners to all elements with data-picture-id with the pictureId value on the page.
+ * When clicked, the picture details popup is displayed.
+ * @param {string} pictureId The ID of the picture to display.
+ */
 export function addPictureItemEventListeners(pictureId) {
     const pictureElementsWithDataId = document.querySelectorAll('[data-picture-id="' + pictureId + '"]');
     if (pictureElementsWithDataId) {
@@ -14,6 +22,10 @@ export function addPictureItemEventListeners(pictureId) {
 export function popupPictureDetails(pictureId) {
     displayPictureDetails(pictureId);
 }
+/**
+ * Overrides the comment submit form to send the comment data to the server and then refresh the picture details popup.
+ * Enables/disables the submit button when the comment textarea changes.
+ */
 async function addCommentEventListeners() {
     const submitForm = document.getElementById('new-picture-comment-form');
     if (submitForm !== null) {
@@ -22,10 +34,26 @@ async function addCommentEventListeners() {
             submitComment();
         });
     }
+    const newCommentTextArea = document.getElementById('new-picture-comment-text-area');
+    if (newCommentTextArea !== null) {
+        newCommentTextArea.addEventListener('input', function () {
+            const submitCommentButton = document.getElementById('submit-new-picture-comment-button');
+            if (submitCommentButton) {
+                if (newCommentTextArea.value.length > 0) {
+                    submitCommentButton.disabled = false;
+                    return;
+                }
+                submitCommentButton.disabled = true;
+            }
+        });
+    }
     return new Promise(function (resolve, reject) {
         resolve();
     });
 }
+/**
+ * Gets the form data from the comment form and sends it to the server to add a new comment to the picture.
+ */
 async function submitComment() {
     startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
     const submitForm = document.getElementById('new-picture-comment-form');
@@ -56,29 +84,36 @@ async function submitComment() {
         resolve();
     });
 }
+/**
+ * If the user has access, adds event listeners to the edit button and related elements in the item details popup.
+ */
 async function addEditEventListeners() {
     const toggleEditButton = document.querySelector('#toggle-edit-button');
     if (toggleEditButton !== null) {
         $("#toggle-edit-button").on('click', function () {
             $("#edit-section").toggle(500);
         });
+        await setTagsAutoSuggestList(getCurrentProgenyId());
+        await setLocationAutoSuggestList(getCurrentProgenyId());
+        setupDateTimePicker();
+        addCopyLocationButtonEventListener();
+        const submitForm = document.getElementById('edit-picture-form');
+        if (submitForm !== null) {
+            submitForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+                submitPictureEdit();
+            });
+        }
+        $(".selectpicker").selectpicker("refresh");
     }
-    const submitForm = document.getElementById('edit-picture-form');
-    if (submitForm !== null) {
-        submitForm.addEventListener('submit', async function (event) {
-            event.preventDefault();
-            submitPictureEdit();
-        });
-    }
-    await setTagsAutoSuggestList(getCurrentProgenyId());
-    await setLocationAutoSuggestList(getCurrentProgenyId());
-    setupDateTimePicker();
-    addCopyLocationButtonEventListener();
-    $(".selectpicker").selectpicker("refresh");
     return new Promise(function (resolve, reject) {
         resolve();
     });
 }
+/**
+ * Gets the data from the edit picture form and sends it to the server to update the picture data.
+ * Then refreshes the picture details popup.
+ */
 async function submitPictureEdit() {
     startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
     const submitForm = document.getElementById('edit-picture-form');
@@ -109,6 +144,9 @@ async function submitPictureEdit() {
         resolve();
     });
 }
+/**
+ * Configures the date time picker for the picture edit form.
+ */
 async function setupDateTimePicker() {
     setMomentLocale();
     const zebraDateTimeFormat = getZebraDateTimeFormat();
@@ -129,27 +167,69 @@ async function setupDateTimePicker() {
         resolve();
     });
 }
-function addCopyLocationButtonEventListener() {
-    const copyLocationButton = document.querySelector('#copy-location-button');
-    if (copyLocationButton !== null) {
-        copyLocationButton.addEventListener('click', function () {
-            const latitudeInput = document.getElementById('latitude');
-            const longitudeInput = document.getElementById('longitude');
-            const locationSelect = document.getElementById('copy-location');
-            if (latitudeInput !== null && longitudeInput !== null && locationSelect !== null) {
-                let locId = parseInt(locationSelect.value);
-                // let selectedLocation = copyLocationList.find((obj: { id: number; name: string; lat: number, lng: number }) => { return obj.id === locId });
-                //latitudeInput.setAttribute('value', selectedLocation.lat);
-                //longitudeInput.setAttribute('value', selectedLocation.lng);
+/**
+ * Adds event listeners to the previous and next links in the item details popup.
+ */
+function addNavigationEventListeners() {
+    let previousLink = document.querySelector('#previous-picture-link');
+    if (previousLink) {
+        previousLink.addEventListener('click', function () {
+            let previousPictureId = previousLink.getAttribute('data-previous-picture-id');
+            if (previousPictureId) {
+                startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
+                displayPictureDetails(previousPictureId, true);
+            }
+        });
+    }
+    let nextLink = document.querySelector('#next-picture-link');
+    if (nextLink) {
+        nextLink.addEventListener('click', function () {
+            let nextPictureId = nextLink.getAttribute('data-next-picture-id');
+            if (nextPictureId) {
+                startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
+                displayPictureDetails(nextPictureId, true);
             }
         });
     }
 }
+/**
+ * Adds an event listener to the close button in the item details popup.
+ * When clicked, the popup is hidden and the body scrollbars are shown.
+ */
+function addCloseButtonEventListener() {
+    let closeButtonsList = document.querySelectorAll('.item-details-close-button');
+    if (closeButtonsList) {
+        closeButtonsList.forEach((button) => {
+            button.addEventListener('click', function () {
+                const itemDetailsPopupDiv = document.querySelector('#item-details-div');
+                if (itemDetailsPopupDiv) {
+                    itemDetailsPopupDiv.innerHTML = '';
+                    itemDetailsPopupDiv.classList.add('d-none');
+                    showBodyScrollbars();
+                }
+            });
+        });
+    }
+}
+/**
+ * Fetches the HTML for picture details and displays it in a popup.
+ * Then adds the event listeners for the elements displayed.
+ * @param {string} pictureId The ID of the picture to display.
+ * @param isPopupVisible If the popup is already visible. If true, the body-content spinner will not be shown.
+ */
 async function displayPictureDetails(pictureId, isPopupVisible = false) {
     if (!isPopupVisible) {
         startLoadingItemsSpinner('body-content');
     }
-    let url = '/Pictures/Picture?id=' + pictureId + "&partialView=true";
+    let tagFilter = '';
+    const picturePageParameters = getPicturePageParametersFromPageData();
+    if (picturePageParameters) {
+        if (picturePageParameters.tagFilter) {
+            tagFilter = picturePageParameters.tagFilter;
+        }
+    }
+    console.log('TagFilter: ' + tagFilter);
+    let url = '/Pictures/Picture?id=' + pictureId + "&tagFilter=" + tagFilter + "&partialView=true";
     await fetch(url, {
         method: 'GET',
         headers: {
@@ -163,43 +243,9 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
             if (itemDetailsPopupDiv) {
                 itemDetailsPopupDiv.classList.remove('d-none');
                 itemDetailsPopupDiv.innerHTML = itemElementHtml;
-                let bodyElement = document.querySelector('body');
-                if (bodyElement) {
-                    bodyElement.style.overflow = 'hidden';
-                }
-                let closeButtonsList = document.querySelectorAll('.item-details-close-button');
-                if (closeButtonsList) {
-                    closeButtonsList.forEach((button) => {
-                        button.addEventListener('click', function () {
-                            itemDetailsPopupDiv.innerHTML = '';
-                            itemDetailsPopupDiv.classList.add('d-none');
-                            let bodyElement = document.querySelector('body');
-                            if (bodyElement) {
-                                bodyElement.style.removeProperty('overflow');
-                            }
-                        });
-                    });
-                }
-                let previousLink = document.querySelector('#previous-picture-link');
-                if (previousLink) {
-                    previousLink.addEventListener('click', function () {
-                        let previousPictureId = previousLink.getAttribute('data-previous-picture-id');
-                        if (previousPictureId) {
-                            startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
-                            displayPictureDetails(previousPictureId, true);
-                        }
-                    });
-                }
-                let nextLink = document.querySelector('#next-picture-link');
-                if (nextLink) {
-                    nextLink.addEventListener('click', function () {
-                        let nextPictureId = nextLink.getAttribute('data-next-picture-id');
-                        if (nextPictureId) {
-                            startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
-                            displayPictureDetails(nextPictureId, true);
-                        }
-                    });
-                }
+                hideBodyScrollbars();
+                addCloseButtonEventListener();
+                addNavigationEventListeners();
                 addEditEventListeners();
                 addCommentEventListeners();
             }
@@ -213,5 +259,17 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
     if (!isPopupVisible) {
         stopLoadingItemsSpinner('body-content');
     }
+}
+function getPicturePageParametersFromPageData() {
+    const picturesPageParametersDiv = document.querySelector('#pictures-page-parameters');
+    let picturesPageParametersResult = new PicturesPageParameters();
+    if (picturesPageParametersDiv !== null) {
+        const pageParametersString = picturesPageParametersDiv.dataset.picturesPageParameters;
+        if (!pageParametersString) {
+            return null;
+        }
+        picturesPageParametersResult = JSON.parse(pageParametersString);
+    }
+    return picturesPageParametersResult;
 }
 //# sourceMappingURL=picture-details.js.map

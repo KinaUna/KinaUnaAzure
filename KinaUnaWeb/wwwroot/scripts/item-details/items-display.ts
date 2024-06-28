@@ -2,6 +2,10 @@ import { addPictureItemEventListeners } from '../item-details/picture-details.js
 import { addCalendarEventListeners } from '../calendar/calendar-details.js';
 import { TimelineItem } from '../page-models-v6.js'
 
+/**
+ * Adds event listeners for a given timeline item.
+ * @param {TimelineItem} item The timeline item to add event listeners for.
+ */
 export function addTimelineItemEventListener(item: TimelineItem): void {
     if (item.itemType === 1) {
         addPictureItemEventListeners(item.itemId);
@@ -49,5 +53,25 @@ export function addTimelineItemEventListener(item: TimelineItem): void {
 
     if (item.itemType === 12) {
         // Add location listeners.
+    }
+}
+
+/**
+ * Hides scrollbars on the body element, to prevent scrolling while a popup is displayed.
+ */
+export function hideBodyScrollbars(): void {
+    let bodyElement = document.querySelector<HTMLBodyElement>('body');
+    if (bodyElement) {
+        bodyElement.style.overflow = 'hidden';
+    }
+}
+
+/**
+ * Shows scrollbars on the body element, to allow scrolling when a popup is closed.
+ */
+export function showBodyScrollbars(): void {
+    let bodyElement = document.querySelector<HTMLBodyElement>('body');
+    if (bodyElement) {
+        bodyElement.style.removeProperty('overflow');
     }
 }

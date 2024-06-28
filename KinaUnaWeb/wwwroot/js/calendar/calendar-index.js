@@ -2,7 +2,11 @@ import * as LocaleHelper from '../localization-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 let selectedEventId = 0;
 let currentCulture = 'en';
-async function DisplayEventItem(eventId, event) {
+/**
+ * Retrieves the details of a calendar event and displays them in a popup.
+ * @param {number} eventId The id of the event to display.
+ */
+async function DisplayEventItem(eventId) {
     startLoadingItemsSpinner('schedule');
     let url = '/Calendar/GetEventItem?eventId=' + eventId;
     await fetch(url, {
@@ -55,7 +59,7 @@ function onEventClick(args) {
     let scheduleObj = document.querySelector('.e-schedule').ej2_instances[0];
     let event = scheduleObj.getEventDetails(args.element);
     selectedEventId = event.EventId;
-    DisplayEventItem(selectedEventId, args.event);
+    DisplayEventItem(selectedEventId);
 }
 /**
  * The event handler for clicking an empty cell in the Syncfusion Schedule component.
