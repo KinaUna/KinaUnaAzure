@@ -2,7 +2,7 @@ import * as LocaleHelper from '../localization-v6.js';
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 import { hideBodyScrollbars, showBodyScrollbars } from './items-display.js';
-import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
+import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
 import { PicturesPageParameters } from '../page-models-v6.js';
 /**
  * Adds click event listeners to all elements with data-picture-id with the pictureId value on the page.
@@ -211,6 +211,25 @@ function addCloseButtonEventListener() {
         });
     }
 }
+function addShowMapButtonEventListener() {
+    let showMapButton = document.querySelector('#show-here-maps-button');
+    if (showMapButton) {
+        const mapContainerDiv = document.getElementById('pictures-page-map-container-div');
+        showMapButton.addEventListener('click', function () {
+            if (mapContainerDiv === null) {
+                return;
+            }
+            if (mapContainerDiv.classList.contains('d-none')) {
+                mapContainerDiv.innerHTML = '';
+                mapContainerDiv.classList.remove('d-none');
+                setupHereMaps(getCurrentLanguageId());
+            }
+            else {
+                mapContainerDiv.classList.add('d-none');
+            }
+        });
+    }
+}
 /**
  * Fetches the HTML for picture details and displays it in a popup.
  * Then adds the event listeners for the elements displayed.
@@ -228,7 +247,6 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
             tagFilter = picturePageParameters.tagFilter;
         }
     }
-    console.log('TagFilter: ' + tagFilter);
     let url = '/Pictures/Picture?id=' + pictureId + "&tagFilter=" + tagFilter + "&partialView=true";
     await fetch(url, {
         method: 'GET',
@@ -248,6 +266,7 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
                 addNavigationEventListeners();
                 addEditEventListeners();
                 addCommentEventListeners();
+                addShowMapButtonEventListener();
             }
         }
         else {

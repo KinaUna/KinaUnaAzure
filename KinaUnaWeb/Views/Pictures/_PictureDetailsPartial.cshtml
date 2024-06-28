@@ -1,6 +1,8 @@
 ﻿@using System.Globalization
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
 @using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model KinaUnaWeb.Models.ItemViewModels.PictureItemViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -21,6 +23,9 @@
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
+    bool allowHereMaps = Context.Request.HereMapsCookieSet();
+    string hereMapsLatitude = Model.Picture.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')[..6];
+    string hereMapsLongitude = Model.Picture.Longtitude.ToString(new CultureInfo("en-US")).Replace(',', '.')[..6];
 }
 <div id="current-picture-id-div" data-current-picture-id="@Model.Picture.PictureId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
@@ -52,6 +57,23 @@
             {
                 <div class="space-20"></div>
                 <div class="text-center">@await LocaleManager.GetTranslation("Location:", PageNames.Pictures, Model.LanguageId) @Model.Picture.Location</div>
+                @if (!string.IsNullOrEmpty(Model.Picture.Latitude))
+                {
+                    @if (allowHereMaps)
+                    {
+                        <button id="show-here-maps-button" class="btn btn-primary float-right"><span class="material-icons">map</span></button>
+                        <div class="space-20"></div>
+                    }
+
+                    <div class="text-center">@await LocaleManager.GetTranslation("Latitude:", PageNames.Pictures, Model.LanguageId) @Model.Picture.Latitude @await LocaleManager.GetTranslation("Longitude:", PageNames.Pictures, Model.LanguageId) @Model.Picture.Longtitude @await LocaleManager.GetTranslation("Altitude:", PageNames.Pictures, Model.LanguageId) @Model.Picture.Altitude</div>
+                    @if (allowHereMaps)
+                    {
+                        <div id="pictures-page-map-container-div" class="d-none" style="width: 100%; height: 300px"></div>
+                        <div id="here-maps-latitude-div" class="d-none" data-here-maps-latitude="@hereMapsLatitude"></div>
+                        <div id="here-maps-longitude-div" class="d-none" data-here-maps-longitude="@hereMapsLongitude"></div>
+                        <div id="here-maps-api-key-div" class="d-none" data-here-maps-api-key="@Model.HereMapsApiKey"></div>
+                    }
+                }
             }
             <div>
                 @{

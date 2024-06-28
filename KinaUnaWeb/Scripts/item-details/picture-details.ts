@@ -2,7 +2,7 @@
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 import { hideBodyScrollbars, showBodyScrollbars } from './items-display.js';
-import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
+import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
 import { PicturesPageParameters } from '../page-models-v6.js';
 
 /**
@@ -240,6 +240,28 @@ function addCloseButtonEventListener(): void {
     }
 }
 
+function addShowMapButtonEventListener(): void {
+    let showMapButton = document.querySelector<HTMLButtonElement>('#show-here-maps-button');
+    if (showMapButton) {
+        const mapContainerDiv = document.getElementById('pictures-page-map-container-div');
+        showMapButton.addEventListener('click', function () {
+            if (mapContainerDiv === null) {
+                return;
+            }
+            if (mapContainerDiv.classList.contains('d-none')) {
+                mapContainerDiv.innerHTML = '';
+                mapContainerDiv.classList.remove('d-none');
+                setupHereMaps(getCurrentLanguageId());
+            }
+            else {
+                mapContainerDiv.classList.add('d-none');
+            }
+            
+        });
+    }
+
+}
+
 /**
  * Fetches the HTML for picture details and displays it in a popup.
  * Then adds the event listeners for the elements displayed.
@@ -258,9 +280,7 @@ async function displayPictureDetails(pictureId: string, isPopupVisible: boolean 
             tagFilter = picturePageParameters.tagFilter;
         }
     }
-
-    console.log('TagFilter: ' + tagFilter);
-
+    
     let url = '/Pictures/Picture?id=' + pictureId + "&tagFilter=" + tagFilter + "&partialView=true";
     await fetch(url, {
         method: 'GET',
@@ -280,6 +300,7 @@ async function displayPictureDetails(pictureId: string, isPopupVisible: boolean 
                 addNavigationEventListeners();
                 addEditEventListeners();
                 addCommentEventListeners();
+                addShowMapButtonEventListener();
             }
         } else {
             console.error('Error getting picture item. Status: ' + response.status + ', Message: ' + response.statusText);
