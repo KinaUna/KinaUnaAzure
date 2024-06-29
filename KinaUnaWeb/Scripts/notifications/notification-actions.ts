@@ -1,5 +1,6 @@
 ﻿import { popupEventItem } from "../calendar/calendar-details.js";
 import { popupPictureDetails } from "../item-details/picture-details.js";
+import { popupVideoDetails } from "../item-details/video-details.js";
 
 /**
  * Used to handle the click event on a notification.
@@ -35,6 +36,18 @@ async function notificationItemClick(btn: HTMLElement): Promise<void> {
             }
         }
 
+        if (notificationLink.startsWith('/Videos/Video/')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Videos/Video/', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('?');
+            let videoId = notificationLinkSplit[0];
+            if (videoId !== null) {
+                popupVideoDetails(videoId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+
         if (notificationLink.startsWith('/Calendar/ViewEvent')) {
             let notificationLinkWithoutPath = notificationLink.replace('/Calendar/ViewEvent?eventId=', '');
             let notificationLinkSplit = notificationLinkWithoutPath.split('&');
@@ -46,6 +59,8 @@ async function notificationItemClick(btn: HTMLElement): Promise<void> {
                 });
             }
         }
+
+
         window.location.href = notificationLink;
     }
 

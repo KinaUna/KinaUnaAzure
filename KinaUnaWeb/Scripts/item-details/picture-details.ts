@@ -243,7 +243,7 @@ function addCloseButtonEventListener(): void {
 function addShowMapButtonEventListener(): void {
     let showMapButton = document.querySelector<HTMLButtonElement>('#show-here-maps-button');
     if (showMapButton) {
-        const mapContainerDiv = document.getElementById('pictures-page-map-container-div');
+        const mapContainerDiv = document.getElementById('here-map-container-div');
         showMapButton.addEventListener('click', function () {
             if (mapContainerDiv === null) {
                 return;
@@ -256,10 +256,8 @@ function addShowMapButtonEventListener(): void {
             else {
                 mapContainerDiv.classList.add('d-none');
             }
-            
         });
     }
-
 }
 
 /**

@@ -74,7 +74,7 @@
                     <div class="text-center">@await LocaleManager.GetTranslation("Latitude:", PageNames.Pictures, Model.LanguageId) @Model.Picture.Latitude @await LocaleManager.GetTranslation("Longitude:", PageNames.Pictures, Model.LanguageId) @Model.Picture.Longtitude @await LocaleManager.GetTranslation("Altitude:", PageNames.Pictures, Model.LanguageId) @Model.Picture.Altitude</div>
                     @if (allowHereMaps)
                     {
-                        <div id="pictures-page-map-container-div" class="d-none" style="width: 100%; height: 300px"></div>
+                        <div id="here-map-container-div" class="d-none" style="width: 100%; height: 300px"></div>
                         <div id="here-maps-latitude-div" class="d-none" data-here-maps-latitude="@hereMapsLatitude"></div>
                         <div id="here-maps-longitude-div" class="d-none" data-here-maps-longitude="@hereMapsLongitude"></div>
                         <div id="here-maps-api-key-div" class="d-none" data-here-maps-api-key="@Model.HereMapsApiKey"></div>
@@ -190,7 +190,7 @@
             {
                 <div class="col-sm-3" style="margin-top: 35px;"></div>
                 <div class="col-md-8">
-                    <button id="toggle-edit-button" class="btn btn-info">Edit Photo</button>
+                    <button id="toggle-edit-button" class="btn btn-info">@await LocaleManager.GetTranslation("Edit Photo", PageNames.Pictures, Model.LanguageId)</button>
                 </div>
                 <div id="edit-section" style="display: none; padding: 15px;">
                     <div>@await LocaleManager.GetTranslation("Edit user access, location, or date and time for this photo", PageNames.Pictures, Model.LanguageId)</div><br />
@@ -250,7 +250,7 @@
                                                 <option value="@loc.LocationId" data-location-name="@loc.Name" 
                                                         data-latitude="@loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')"
                                                         data-longitude="@loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.')">@loc.Name</option>
-                                            })
+                                            }
                                         </select>
                                         <button id="copy-location-button" type="button" class="btn btn-primary col-auto mt-0 mb-0 ml-2">@await LocaleManager.GetTranslation("Copy", PageNames.Pictures, Model.LanguageId)</button>
                                     </div>

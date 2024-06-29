@@ -1,36 +1,36 @@
-import * as LocaleHelper from '../localization-v6.js';
+﻿import * as LocaleHelper from '../localization-v6.js';
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 import { hideBodyScrollbars, showBodyScrollbars } from './items-display.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
-import { PicturesPageParameters } from '../page-models-v6.js';
+import { PicturesPageParameters, VideosPageParameters } from '../page-models-v6.js';
 
 /**
- * Adds click event listeners to all elements with data-picture-id with the pictureId value on the page.
- * When clicked, the picture details popup is displayed.
- * @param {string} pictureId The ID of the picture to display.
+ * Adds click event listeners to all elements with data-video-id with the videoId value on the page.
+ * When clicked, the video details popup is displayed.
+ * @param {string} videoId The ID of the video to display.
  */
-export function addPictureItemEventListeners(pictureId: string): void {
-    const pictureElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-picture-id="' + pictureId + '"]');
-    if (pictureElementsWithDataId) {
-        pictureElementsWithDataId.forEach((element) => {
+export function addVideoItemEventListeners(videoId: string): void {
+    const videoElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-video-id="' + videoId + '"]');
+    if (videoElementsWithDataId) {
+        videoElementsWithDataId.forEach((element) => {
             element.addEventListener('click', function () {
-                displayPictureDetails(pictureId);
+                displayVideoDetails(videoId);
             });
         });
     }
 }
 
-export function popupPictureDetails(pictureId: string): void {
-    displayPictureDetails(pictureId);
+export function popupVideoDetails(videoId: string): void {
+    displayVideoDetails(videoId);
 }
 
 /**
- * Overrides the comment submit form to send the comment data to the server and then refresh the picture details popup.
+ * Overrides the comment submit form to send the comment data to the server and then refresh the video details popup.
  * Enables/disables the submit button when the comment textarea changes.
  */
 async function addCommentEventListeners(): Promise<void> {
-    const submitForm = document.getElementById('new-picture-comment-form') as HTMLFormElement;
+    const submitForm = document.getElementById('new-video-comment-form') as HTMLFormElement;
     if (submitForm !== null) {
         submitForm.addEventListener('submit', async function (event) {
             event.preventDefault();
@@ -39,10 +39,10 @@ async function addCommentEventListeners(): Promise<void> {
         });
     }
 
-    const newCommentTextArea = document.getElementById('new-picture-comment-text-area') as HTMLTextAreaElement;
+    const newCommentTextArea = document.getElementById('new-video-comment-text-area') as HTMLTextAreaElement;
     if (newCommentTextArea !== null) {
         newCommentTextArea.addEventListener('input', function () {
-            const submitCommentButton = document.getElementById('submit-new-picture-comment-button') as HTMLButtonElement;
+            const submitCommentButton = document.getElementById('submit-new-video-comment-button') as HTMLButtonElement;
             if (submitCommentButton) {
                 if (newCommentTextArea.value.length > 0) {
                     submitCommentButton.disabled = false;
@@ -60,16 +60,16 @@ async function addCommentEventListeners(): Promise<void> {
 }
 
 /**
- * Gets the form data from the comment form and sends it to the server to add a new comment to the picture.
+ * Gets the form data from the comment form and sends it to the server to add a new comment to the video.
  */
 async function submitComment(): Promise<void> {
     startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
 
-    const submitForm = document.getElementById('new-picture-comment-form') as HTMLFormElement;
+    const submitForm = document.getElementById('new-video-comment-form') as HTMLFormElement;
     if (submitForm !== null) {
         const formData = new FormData(submitForm);
-        
-        const response = await fetch('/Pictures/AddPictureComment', {
+
+        const response = await fetch('/Videos/AddVideoComment', {
             method: 'POST',
             body: formData,
             headers: {
@@ -81,11 +81,11 @@ async function submitComment(): Promise<void> {
         });
 
         if (response) {
-            const currentPictureIdDiv = document.querySelector<HTMLDivElement>('#current-picture-id-div');
-            if (currentPictureIdDiv) {
-                const currentPictureId = currentPictureIdDiv.getAttribute('data-current-picture-id');
-                if (currentPictureId) {
-                    displayPictureDetails(currentPictureId, true);
+            const currentVideoIdDiv = document.querySelector<HTMLDivElement>('#current-video-id-div');
+            if (currentVideoIdDiv) {
+                const currentVideoId = currentVideoIdDiv.getAttribute('data-current-video-id');
+                if (currentVideoId) {
+                    displayVideoDetails(currentVideoId, true);
                 }
             }
         }
@@ -111,35 +111,35 @@ async function addEditEventListeners(): Promise<void> {
         await setLocationAutoSuggestList(getCurrentProgenyId());
         setupDateTimePicker();
         addCopyLocationButtonEventListener();
-        const submitForm = document.getElementById('edit-picture-form') as HTMLFormElement;
+        const submitForm = document.getElementById('edit-video-form') as HTMLFormElement;
         if (submitForm !== null) {
             submitForm.addEventListener('submit', async function (event) {
                 event.preventDefault();
 
-                submitPictureEdit();
+                submitVideoEdit();
             });
         }
 
         ($(".selectpicker") as any).selectpicker("refresh");
     }
-    
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
 /**
- * Gets the data from the edit picture form and sends it to the server to update the picture data.
- * Then refreshes the picture details popup.
+ * Gets the data from the edit video form and sends it to the server to update the video data.
+ * Then refreshes the video details popup.
  */
-async function submitPictureEdit(): Promise<void> {
+async function submitVideoEdit(): Promise<void> {
     startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
 
-    const submitForm = document.getElementById('edit-picture-form') as HTMLFormElement;
+    const submitForm = document.getElementById('edit-video-form') as HTMLFormElement;
     if (submitForm !== null) {
         const formData = new FormData(submitForm);
-        
-        const response = await fetch('/Pictures/EditPicture', {
+
+        const response = await fetch('/Videos/EditVideo', {
             method: 'POST',
             body: formData,
             headers: {
@@ -147,15 +147,15 @@ async function submitPictureEdit(): Promise<void> {
                 'enctype': 'multipart/form-data'
             }
         }).catch(function (error) {
-            console.log('Error editing Picture. Error: ' + error);
+            console.log('Error editing Video. Error: ' + error);
         });
 
         if (response) {
-            const currentPictureIdDiv = document.querySelector<HTMLDivElement>('#current-picture-id-div');
-            if (currentPictureIdDiv) {
-                const currentPictureId = currentPictureIdDiv.getAttribute('data-current-picture-id');
-                if (currentPictureId) {
-                    displayPictureDetails(currentPictureId, true);
+            const currentVideoIdDiv = document.querySelector<HTMLDivElement>('#current-video-id-div');
+            if (currentVideoIdDiv) {
+                const currentVideoId = currentVideoIdDiv.getAttribute('data-current-video-id');
+                if (currentVideoId) {
+                    displayVideoDetails(currentVideoId, true);
                 }
             }
         }
@@ -168,15 +168,15 @@ async function submitPictureEdit(): Promise<void> {
 }
 
 /**
- * Configures the date time picker for the picture edit form.
+ * Configures the date time picker for the video edit form.
  */
 async function setupDateTimePicker(): Promise<void> {
     setMomentLocale();
     const zebraDateTimeFormat = getZebraDateTimeFormat();
     const zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(getCurrentLanguageId());
 
-    if (document.getElementById('picture-date-time-picker') !== null) {
-        const dateTimePicker: any = $('#picture-date-time-picker');
+    if (document.getElementById('video-date-time-picker') !== null) {
+        const dateTimePicker: any = $('#video-date-time-picker');
         dateTimePicker.Zebra_DatePicker({
             format: zebraDateTimeFormat,
             open_icon_only: true,
@@ -198,23 +198,23 @@ async function setupDateTimePicker(): Promise<void> {
  * Adds event listeners to the previous and next links in the item details popup.
  */
 function addNavigationEventListeners(): void {
-    let previousLink = document.querySelector<HTMLAnchorElement>('#previous-picture-link');
+    let previousLink = document.querySelector<HTMLAnchorElement>('#previous-video-link');
     if (previousLink) {
         previousLink.addEventListener('click', function () {
-            let previousPictureId = previousLink.getAttribute('data-previous-picture-id');
-            if (previousPictureId) {
+            let previousVideoId = previousLink.getAttribute('data-previous-video-id');
+            if (previousVideoId) {
                 startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
-                displayPictureDetails(previousPictureId, true);
+                displayVideoDetails(previousVideoId, true);
             }
         });
     }
-    let nextLink = document.querySelector<HTMLAnchorElement>('#next-picture-link');
+    let nextLink = document.querySelector<HTMLAnchorElement>('#next-video-link');
     if (nextLink) {
         nextLink.addEventListener('click', function () {
-            let nextPictureId = nextLink.getAttribute('data-next-picture-id');
-            if (nextPictureId) {
+            let nextVideoId = nextLink.getAttribute('data-next-video-id');
+            if (nextVideoId) {
                 startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
-                displayPictureDetails(nextPictureId, true);
+                displayVideoDetails(nextVideoId, true);
             }
         });
     }
@@ -261,25 +261,25 @@ function addShowMapButtonEventListener(): void {
 }
 
 /**
- * Fetches the HTML for picture details and displays it in a popup.
+ * Fetches the HTML for video details and displays it in a popup.
  * Then adds the event listeners for the elements displayed.
- * @param {string} pictureId The ID of the picture to display.
+ * @param {string} videoId The ID of the video to display.
  * @param isPopupVisible If the popup is already visible. If true, the body-content spinner will not be shown.
  */
-async function displayPictureDetails(pictureId: string, isPopupVisible: boolean = false) {
+async function displayVideoDetails(videoId: string, isPopupVisible: boolean = false) {
     if (!isPopupVisible) {
         startLoadingItemsSpinner('body-content');
     }
 
     let tagFilter = '';
-    const picturePageParameters = getPicturePageParametersFromPageData();
-    if (picturePageParameters) {
-        if (picturePageParameters.tagFilter) {
-            tagFilter = picturePageParameters.tagFilter;
+    const videoPageParameters = getVideoPageParametersFromPageData();
+    if (videoPageParameters) {
+        if (videoPageParameters.tagFilter) {
+            tagFilter = videoPageParameters.tagFilter;
         }
     }
-    
-    let url = '/Pictures/Picture?id=' + pictureId + "&tagFilter=" + tagFilter + "&partialView=true";
+
+    let url = '/Videos/Video?id=' + videoId + "&tagFilter=" + tagFilter + "&partialView=true";
     await fetch(url, {
         method: 'GET',
         headers: {
@@ -301,10 +301,10 @@ async function displayPictureDetails(pictureId: string, isPopupVisible: boolean 
                 addShowMapButtonEventListener();
             }
         } else {
-            console.error('Error getting picture item. Status: ' + response.status + ', Message: ' + response.statusText);
+            console.error('Error getting video item. Status: ' + response.status + ', Message: ' + response.statusText);
         }
     }).catch(function (error) {
-        console.error('Error getting picture item. Error: ' + error);
+        console.error('Error getting video item. Error: ' + error);
     });
 
     if (!isPopupVisible) {
@@ -313,16 +313,16 @@ async function displayPictureDetails(pictureId: string, isPopupVisible: boolean 
 
 }
 
-function getPicturePageParametersFromPageData(): PicturesPageParameters | null {
-    const picturesPageParametersDiv = document.querySelector<HTMLDivElement>('#pictures-page-parameters');
-    let picturesPageParametersResult: PicturesPageParameters | null = new PicturesPageParameters();
-    if (picturesPageParametersDiv !== null) {
-        const pageParametersString: string | undefined = picturesPageParametersDiv.dataset.picturesPageParameters;
+function getVideoPageParametersFromPageData(): VideosPageParameters | null {
+    const videosPageParametersDiv = document.querySelector<HTMLDivElement>('#videos-page-parameters');
+    let videosPageParametersResult: VideosPageParameters | null = new VideosPageParameters();
+    if (videosPageParametersDiv !== null) {
+        const pageParametersString: string | undefined = videosPageParametersDiv.dataset.videosPageParameters;
         if (!pageParametersString) {
             return null;
         }
 
-        picturesPageParametersResult = JSON.parse(pageParametersString);
+        videosPageParametersResult = JSON.parse(pageParametersString);
     }
-    return picturesPageParametersResult;
+    return videosPageParametersResult;
 }

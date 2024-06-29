@@ -393,6 +393,21 @@ namespace KinaUnaWeb.Services.HttpClients
             return resultVideoList;
         }
 
+        public async Task<List<Video>> GetProgenyVideoList(int progenyId, int accessLevel)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string videoApiPath = "/api/Videos/ProgenyVideosList/" + progenyId + "/" + accessLevel;
+            HttpResponseMessage videosResponse = await _httpClient.GetAsync(videoApiPath);
+            if (!videosResponse.IsSuccessStatusCode) return [];
+
+            string videosAsListAsString = await videosResponse.Content.ReadAsStringAsync();
+            List<Video> resultVideoList = JsonConvert.DeserializeObject<List<Video>>(videosAsListAsString);
+
+            return resultVideoList;
+        }
+
         public async Task<List<Video>> GetAllVideos()
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -465,6 +480,21 @@ namespace KinaUnaWeb.Services.HttpClients
             string deleteCommentApiPath = "/api/comments/" + commentId;
             HttpResponseMessage newCommentResponse = await _httpClient.DeleteAsync(deleteCommentApiPath).ConfigureAwait(false);
             return newCommentResponse.IsSuccessStatusCode;
+        }
+
+        public async Task<VideoViewModel> GetVideoElement(int id)
+        {
+            string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
+            _httpClient.SetBearerToken(accessToken);
+
+            string pageApiPath = "/api/Videos/VideoElement/" + id;
+            HttpResponseMessage videosResponse = await _httpClient.GetAsync(pageApiPath);
+            if (!videosResponse.IsSuccessStatusCode) return new VideoViewModel();
+
+            string videosViewModelAsString = await videosResponse.Content.ReadAsStringAsync();
+            VideoViewModel videoViewModel = JsonConvert.DeserializeObject<VideoViewModel>(videosViewModelAsString);
+
+            return videoViewModel;
         }
     }
 }

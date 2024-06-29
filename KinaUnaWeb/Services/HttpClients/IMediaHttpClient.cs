@@ -179,5 +179,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
         Task<List<Picture>> GetProgenyPictureList(int progenyId, int accessLevel);
         Task<PictureViewModel> GetPictureElement(int pictureId);
+        Task<List<Video>> GetProgenyVideoList(int progenyId, int accessLevel);
+        Task<VideoViewModel> GetVideoElement(int videoId);
     }
 }

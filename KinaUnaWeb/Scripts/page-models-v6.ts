@@ -83,6 +83,47 @@ export class PicturesList {
     tagsList: string[] = [];
 }
 
+export class Video {
+    videoId: number = 0;
+    progenyId: number = 0;
+    videoNumber: number = 0;
+}
+
+export class VideoViewModel {
+    videoId: number = 0;
+    progenyId: number = 0;
+    videoNumber: number = 0;
+    sortBy: number = 1;
+    tagFilter: string = '';
+}
+
+export class VideosPageParameters implements BasePageParameters {
+    progenyId: number = 0;
+    languageId: number = 0;
+    currentPageNumber: number = 0;
+    itemsPerPage: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    sort: number = 1;
+    tagFilter: string = '';
+    showSettings: boolean = false;
+    year: number = 0;
+    month: number = 0;
+    day: number = 0;
+    firstItemYear: number = 1900;
+    sortTags: number = 0;
+}
+
+export class VideosList {
+    videoItems: Video[] = [];
+    allItemsCount: number = 0;
+    remainingItemsCount: number = 0;
+    firstItemYear: number = 0;
+    totalPages: number = 0;
+    currentPageNumber: number = 0;
+    tagsList: string[] = [];
+}
+
 export class KinaUnaTextParameters {
     id: number = 0;
     textId: number = 0;

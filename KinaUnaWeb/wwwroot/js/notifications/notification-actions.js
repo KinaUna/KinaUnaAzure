@@ -1,5 +1,6 @@
 import { popupEventItem } from "../calendar/calendar-details.js";
 import { popupPictureDetails } from "../item-details/picture-details.js";
+import { popupVideoDetails } from "../item-details/video-details.js";
 /**
  * Used to handle the click event on a notification.
  * Updates the notification as read if it is unread.
@@ -27,6 +28,17 @@ async function notificationItemClick(btn) {
             let pictureId = notificationLinkSplit[0];
             if (pictureId !== null) {
                 popupPictureDetails(pictureId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+        if (notificationLink.startsWith('/Videos/Video/')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Videos/Video/', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('?');
+            let videoId = notificationLinkSplit[0];
+            if (videoId !== null) {
+                popupVideoDetails(videoId);
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });

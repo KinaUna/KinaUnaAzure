@@ -1,258 +1,272 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model KinaUnaWeb.Models.ItemViewModels.VideoListViewModel
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Videos", PageNames.Videos, Model.LanguageId);
     bool allowYouTube = Context.Request.YouTubeCookieSet();
-}
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
-    @if (Model.IsCurrentUserProgenyAdmin)
+    string pageParameters = Json.Serialize(Model.VideosPageParameters).ToString();
+    string videosString = await LocaleManager.GetTranslation("videos", PageNames.Videos, Model.LanguageId);
+    string pageString = await LocaleManager.GetTranslation("Page", PageNames.Pictures, Model.LanguageId);
+    string ofString = await LocaleManager.GetTranslation("of", PageNames.Pictures, Model.LanguageId);
+    string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Videos, Model.LanguageId);
+    string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Videos, Model.LanguageId);
+    string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Videos, Model.LanguageId);
+    string olderText = await LocaleManager.GetTranslation("Older", PageNames.Pictures, Model.LanguageId);
+    string newerText = await LocaleManager.GetTranslation("Newer", PageNames.Pictures, Model.LanguageId);
+    const string longDateTimeFormat = "dd-MMMM-yyyy";
+    const string zebraDateTimeFormat = "d-F-Y";
+    const string longDateTimeFormatMoment = "DD-MMMM-YYYY";
+    DateTime startDateTime = DateTime.Today;
+    if (Model.Year != 0 && Model.Month != 0 && Model.Day != 0)
     {
-        <div style="float: right;">
-            <div class="btn-group">
-                <a asp-controller="Videos" asp-action="AddVideo" class="btn btn-success btn-round leave-page">
-                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add video", PageNames.Videos, Model.LanguageId)
-                </a>
+        startDateTime = new(Model.Year, Model.Month, Model.Day);
+    }
+
+    
+}
+
+<div id="current-page-title-div" class="d-none" data-current-page-title="@ViewData["Title"]"></div>
+<div id="videos-page-parameters" class="d-none" data-videos-page-parameters="@pageParameters"></div>
+<div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
+<div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
+<div id="newer-text-div" class="d-none" data-newer-text="@newerText"></div>
+<div id="older-text-div" class="d-none" data-older-text="@olderText"></div>
+<div class="row m-0">
+    <div class="col-12">
+        <div id="page-title-div" class="row">
+            <div class="col-auto">
+                <h2>@Model.CurrentProgeny.NickName @await LocaleManager.GetTranslation("Video gallery", PageNames.Videos, Model.LanguageId) - @await LocaleManager.GetTranslation("Page", PageNames.Videos, Model.LanguageId) @Model.PageNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.TotalPages</h2>
+            </div>
+            <div class="col-sm-12 col-md p-1 pl-5">
+                <div id="settings-notification-div" class="ml-auto small text-muted"></div>
+            </div>
+            @if (!allowYouTube)
+            {
+                <div class="col-12 col-md-10 col-lg-9 col-xl-8 col-xxl-7 col-w1900-6 col-w2500-5">
+                    <div class="space-20"></div>
+                    <div>@await LocaleManager.GetTranslation("Cookie consent for YouTube has not been granted. To allow YouTube content enable cookies for YouTube.", PageNames.Locations, Model.LanguageId)</div>
+                    <div class="space-20"></div>
+                    @if (Context.Request.ConsentCookieSet())
+                    {
+                        @await Html.PartialAsync("_CookieConsentPartial", Model.LanguageId)
+                    }
+                </div>
+            }
+            <div class="col-12">
+                <h4>@pageString <span id="page-number-span">0</span> @ofString <span id="page-total-span">0</span></h4>
             </div>
         </div>
-    }
-    <h2>@Model.CurrentProgeny.NickName @await LocaleManager.GetTranslation("Video gallery", PageNames.Videos, Model.LanguageId) - @await LocaleManager.GetTranslation("Page", PageNames.Videos, Model.LanguageId) @Model.PageNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.TotalPages</h2>
-<br style="clear: both;" />
-@if (!allowYouTube)
-{
-    <div class="col-12 col-md-10 col-lg-9 col-xl-8 col-xxl-7 col-w1900-6 col-w2500-5">
         <div class="space-20"></div>
-        <div>@await LocaleManager.GetTranslation("Cookie consent for YouTube has not been granted. To allow YouTube content enable cookies for YouTube.", PageNames.Locations, Model.LanguageId)</div>
-        <div class="space-20"></div>
-        @if (Context.Request.ConsentCookieSet())
-        {
-            @await Html.PartialAsync("_CookieConsentPartial", Model.LanguageId)
-        }
-    </div>
-}
-    <div id="photoListDiv">
-        @{
-            string videosString = await LocaleManager.GetTranslation("videos", PageNames.Videos, Model.LanguageId);
-            string olderString = await LocaleManager.GetTranslation("Older", PageNames.Videos, Model.LanguageId);
-            string newerString = await LocaleManager.GetTranslation("Newer", PageNames.Videos, Model.LanguageId);
-            string newestString = await LocaleManager.GetTranslation("Newest", PageNames.Videos, Model.LanguageId);
-            string firstString = await LocaleManager.GetTranslation("First", PageNames.Videos, Model.LanguageId);
-            string newestFirstString = await LocaleManager.GetTranslation("Newest first", PageNames.Videos, Model.LanguageId);
-            string oldestFirstString = await LocaleManager.GetTranslation("Oldest first", PageNames.Videos, Model.LanguageId);
-            string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Videos, Model.LanguageId);
-            string go5PagesBackString = await LocaleManager.GetTranslation("Go 5 pages back", PageNames.Videos, Model.LanguageId);
-            string go5PagesForwardString = await LocaleManager.GetTranslation("Go 5 pages forward", PageNames.Videos, Model.LanguageId);
-            string viewPrevText = olderString;
-            string viewNextText = newerString;
-            if (Model.PageNumber == 1)
-            {
-                viewPrevText = newestString;
-            }
-            if (Model.PageNumber == Model.TotalPages)
-            {
-                viewNextText = firstString;
-            }
-            if (Model.SortBy == 1)
-            {
-                viewPrevText = newerString;
-                viewNextText = olderString;
-                if (Model.PageNumber == 1)
-                {
-                    viewPrevText = firstString;
-                }
-                if (Model.PageNumber == Model.TotalPages)
-                {
-                    viewNextText = newestString;
-                }
-            }
-            string sortOldest = "btn btn-primary btn-sm";
-            string sortNewest = "btn btn-info btn-sm leave-page";
-           
-        }
-        @if (Model.SortBy == 1)
-        {
-            sortOldest = "btn btn-info btn-sm leave-page";
-            sortNewest = "btn btn-primary btn-sm";
-            <div>
-                @sortString <span class="@sortNewest"><i class="fas fa-check-circle"></i> @newestFirstString</span>
-                <a class="@sortOldest" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.PageNumberIfSortChanges" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="0" asp-route-tagFilter="@Model.TagFilter">@oldestFirstString</a>
-            </div>
-        }
-        else
-        {
-            <div>
-                @sortString <span class="@sortOldest" disabled><i class="fas fa-check-circle"></i> @oldestFirstString</span>
-                <a class="@sortNewest" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.PageNumberIfSortChanges" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="1" asp-route-tagFilter="@Model.TagFilter">@newestFirstString</a>
-            </div>
-        }
-        @if (!string.IsNullOrEmpty(Model.TagFilter))
-        {
-            <div class="space-20"></div>
-            <div style="float: right;">
-                @await LocaleManager.GetTranslation("Tag filter:", PageNames.Videos, Model.LanguageId) <span class="btn tag-item">@Model.TagFilter</span>
-                <a class="btn btn-info btn-sm leave-page" asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy">
-                    <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Videos, Model.LanguageId)
-                </a>
-            </div>
-        }
-        <div class="space-20"></div>
-        @if (Model.TotalPages > 1)
-        {
-            <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
-                <div style="float:left">
-                    <a id="previous-video-page-link" class="leave-page" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.PreviousPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
-                   asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @videosString</a>
-                    @if (Model.TotalPages > 5)
-                    {
-                        <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.Back5Pages" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
-                   asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> @go5PagesBackString</a>
-                    }
-                </div>
-                <div style="float: right">
-                    @if (Model.TotalPages > 5)
-                    {
-                        <a class="leave-page" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.Forward5Pages" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">
-                            @go5PagesForwardString <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i>
+        <div class="row">
+            <div id="active-tag-filter-div" class="col-auto d-none">
+                <div class="row">
+                    <div class="col-auto" style="align-self: center;">
+                        @await LocaleManager.GetTranslation("Tag filter:", PageNames.Pictures, Model.LanguageId)
+                    </div>
+                    <div class="col" style="align-self: center;">
+                        <span id="current-tag-filter-span" class="btn tag-item"></span>
+                        <a id="reset-tag-filter-button" class="btn btn-info btn-sm">
+                            <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Pictures, Model.LanguageId)
                         </a>
-                    }
-                    <a id="next-video-page-link" class="leave-page" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.NextPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@Model.TagFilter">
-                        @viewNextText @videosString <i class="fa fa-arrow-right" aria-hidden="true"></i>
-                    </a>
+                    </div>
+                </div>
+            </div>
+            <div id="item-page-navigation-div" class="col-12 d-none">
+                <div class="row">
+                    <div class="col-auto">
+                        <button id="previous-page-button" class="btn btn-link m-0 p-0">
+                            <i class="fas fa-arrow-left"></i> <span id="item-page-navigation-left-span">@olderText</span>
+                        </button>
+                    </div>
+                    <div class="col-auto ml-auto">
+                        <button id="next-page-button" class="btn btn-link m-0 p-0">
+                            <span id="item-page-navigation-right-span">@newerText</span> <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="space-20"></div>
+        <div class="row">
+            <div id="video-list-parent-div" class="col-12 d-none">
+                <div id="video-list-div" class="mr-auto ml-auto row row-cols-auto">
+                </div>
+                <div id="loading-items-parent-div" style="height: 150px;" class="d-none">
+                    <div id="loading-items-div" class="w-100">
+                        <div class="space-50"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="space-20"></div>
+        <div class="row">
+            <div id="item-page-navigation-div-bottom" class="col-12 d-none">
+                <div class="row">
+                    <div class="col-auto">
+                        <button id="previous-page-button-bottom" class="btn btn-link m-0 p-0">
+                            <i class="fas fa-arrow-left"></i> <span id="item-page-navigation-left-span-bottom">@olderText</span>
+                        </button>
+                    </div>
+                    <div class="col-auto ml-auto">
+                        <button id="next-page-button-bottom" class="btn btn-link m-0 p-0">
+                            <span id="item-page-navigation-right-span-bottom">@newerText</span> <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="space-20"></div>
+                <div id="tags-list-div" class="row row-cols-auto">
+                </div>
+            </div>
+        </div>
+
+        @if (Model.IsCurrentUserProgenyAdmin)
+        {
+            <div class="space-70"></div>
+            <div class="row">
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Picture access levels are displayed as the picture number background color.", PageNames.Pictures, Model.LanguageId)
+                    <br /><br />
+                    <div class="nav-pills" style="height: 20px; width: 30px; font-size: 5px; background-color: #870000; display: inline-block;">
+                        <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">1</p>
+                    </div>
+                    @await LocaleManager.GetTranslation("Admins Only", PageNames.Pictures, Model.LanguageId)
+                    <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #247f00; display: inline-block; margin-left: 20px;">
+                        <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">2</p>
+                    </div>
+                    @await LocaleManager.GetTranslation("Family", PageNames.Pictures, Model.LanguageId)
+                    <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #72007f; display: inline-block; margin-left: 20px;">
+                        <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">3</p>
+                    </div>
+                    @await LocaleManager.GetTranslation("Caretakers/Special", PageNames.Pictures, Model.LanguageId)
+                    <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #007987; display: inline-block; margin-left: 20px;">
+                        <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">4</p>
+                    </div>
+                    @await LocaleManager.GetTranslation("Friends", PageNames.Pictures, Model.LanguageId)
+                    <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #181274; display: inline-block; margin-left: 20px;">
+                        <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">5</p>
+                    </div>
+                    @await LocaleManager.GetTranslation("Registered Users or Public", PageNames.Pictures, Model.LanguageId)
+                    <br /><br />
+                    @await LocaleManager.GetTranslation("Only administrators see this, others just see a dark blue color for all pictures.", PageNames.Pictures, Model.LanguageId)
+                    <br />
                 </div>
             </div>
         }
-        <div class="space-20"></div>
-        <div align="center" style="width: 100%; clear: both;">
-            @foreach (Video item in Model.VideosList)
-            {
-                string bgColor = "#181274";
-                if (Model.IsCurrentUserProgenyAdmin && item.AccessLevel == 0)
-                {
-                    bgColor = "#870000";
-                }
-                if (Model.IsCurrentUserProgenyAdmin && item.AccessLevel == 1)
-                {
-                    bgColor = "#247f00";
-                }
-                if (Model.IsCurrentUserProgenyAdmin && item.AccessLevel == 2)
-                {
-                    bgColor = "#72007f";
-                }
-                if (Model.IsCurrentUserProgenyAdmin && item.AccessLevel == 3)
-                {
-                    bgColor = "#007987";
-                }
-                string pTime = "";
-                if (item.VideoTime != null)
-                {
-                    pTime = item.VideoTime.Value.ToString("dd-MMM-yyyy HH:mm");
-                }
-                string durTime = "";
-                if (item.DurationHours != "0")
-                {
-                    durTime = item.DurationHours + ":";
-                }
-                durTime = durTime + item.DurationMinutes + ":" + item.DurationSeconds;
-                <a class="leave-page" asp-area="" asp-controller="Videos" asp-action="Video" asp-route-id="@item.VideoId" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@Model.TagFilter">
-                    <div align="center" class="img-rounded" style="margin: 2px; padding: 1px; float: left; width: 260px; height: 260px; background-color: #000000; text-align: center; line-height: 271px; display: inline-block; position: relative;">
-                        @if (allowYouTube)
-                        {
-                            <img data-src="@item.ThumbLink" class="img-rounded lazyload" style="max-width: 97%; max-height: 97%; vertical-align: middle; display: inline-block; margin: auto; padding: auto;"/>
-                        }
-                        else
-                        {
-                            <div style="max-width: 97%; max-height: 97%; vertical-align: middle; display: inline-block; margin: auto; padding: auto;"></div>
-                        }
-
-                        <div class="nav-pills" style="position: absolute; height: 35px; width: 60px; top: 5px; left: 5px; font-size: 5px; background-color: @bgColor; display: inline-block;">
-                            <p style="width: 0; height: 0; font-size: 16px; position: absolute; color: #EEEEFF; text-align:center; transform: translate(0, -118px);">@item.VideoNumber</p>
-                        </div>
-                        @if (item.DurationHours + item.DurationMinutes + item.DurationSeconds != "000" && item.DurationHours + item.DurationMinutes + item.DurationSeconds != String.Empty)
-                        {
-                            <div class="nav-pills" style="position: absolute; height: 20px; width: 120px; top: 5px; right: 0; font-size: 5px; background-color: black; display: inline-block;">
-                                <p style="width: 0; height: 0; font-size: 16px; position: absolute; color: #EEEEFF; text-align:right; transform: translate(60px, -124px);">@durTime</p>
+        <div class="space-50"></div>
+    </div>
+</div>
+<div class="d-none">
+    <div id="page-settings-content-div" class="bg-dark page-settings-content">
+        <div class="row">
+            <div class="col-auto ml-auto">
+                <button id="close-page-settings-button" class="ml-auto btn btn-link btn-link-yellow p-2">
+                    <i class="material-icons icon-top-4">close</i>
+                </button>
+            </div>
+        </div>
+        <div class="p-4">
+            <div class="row">
+                <div class="col h5">
+                    Page settings
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div id="start-label-div" class="col-12">
+                    @await LocaleManager.GetTranslation("Start", PageNames.Calendar, Model.LanguageId):
+                </div>
+                <div class="col-auto ml-4">
+                    <div class="row">
+                        <div class="col">
+                            <div class="input-group date">
+                                <input id="settings-start-date-datetimepicker" type="text" class="form-control" data-zdp_readonly_element="false" value="@startDateTime.ToString(longDateTimeFormat)" />
                             </div>
-                        }
-                        <div class="nav-pills" style="position: absolute; height: 20px; width: 120px; bottom: 2px; left: 5px; font-size: 5px; background-color: dimgray; display: inline-block;">
-                            <p style="width: 110px; height: 20px; font-size: 11px; position: absolute; color: #EEEEFF; text-align:center; transform: translate(-10px, -124px);">@pTime</p>
-                        </div>
-                        <div class="img-rounded" style="position: absolute; height: 25px; width: 50px; bottom: 2px; right: 2px; font-size: 5px; background-color: forestgreen; display: inline-block;">
-                            <p style="width: 40px; height: 20px; font-size: 12px; position: absolute; color: lightgoldenrodyellow; text-align:center; transform: translate(6px, -124px);"><i class="far fa-comment-alt"></i> @item.Comments.Count</p>
                         </div>
                     </div>
-                </a>
-            }
-        </div>
-        @if (Model.TotalPages > 1)
-        {
-            <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
-                <div style="float:left">
-                    <a class="leave-page" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.PreviousPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
-                   asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText @videosString</a>
-                    @if (Model.TotalPages > 5)
-                    {
-                        <a style="margin-left: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.Back5Pages" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
-                   asp-route-tagFilter="@Model.TagFilter"><i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> @go5PagesBackString</a>
-                    }
-                </div>
-                <div style="float: right">
-                    @if (Model.TotalPages > 5)
-                    {
-                        <a class="leave-page" style="margin-right: 25px;" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.Forward5Pages" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
-                   asp-route-tagFilter="@Model.TagFilter">@go5PagesForwardString <i class="fa fa-arrow-right" aria-hidden="true"></i><i class="fa fa-arrow-right" aria-hidden="true"></i></a>
-                    }
-                    <a class="leave-page" asp-controller="Videos" asp-action="Index" asp-route-id="@Model.NextPage" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy"
-                   asp-route-tagFilter="@Model.TagFilter">@viewNextText @videosString <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
                 </div>
             </div>
-        }
-        <div class="space-20"></div>
-        <div style="max-width: 100%; padding-top: 10px; padding-bottom: 20px; clear: both;">
-            @{
-                if (!string.IsNullOrEmpty(Model.TagsList))
-                {
-                    string[] tagsList = Model.TagsList.Split(',');
-                    foreach (string tagString in tagsList)
-                    {
-                        <a asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
-                    }
-                }
-            }
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @sortString
+                </div>
+                <div class="col-auto ml-4">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <button id="settings-sort-descending-button" class="btn btn-outline-info active"><i class="material-icons icon-top-4">history</i> @newestFirstString</button>
+                        </div>
+                        <div class="col">
+                            <button id="settings-sort-ascending-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">update</i> @oldestFirstString</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Videos per page:", PageNames.Videos, Model.LanguageId)
+                </div>
+                <div class="col ml-4">
+                    <div class="row" style="font-size: small; margin-top: 5px;">
+                        <div class="col">
+                            <select id="items-per-page-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
+                                <option value="5">5</option>
+                                <option value="10" selected="selected">10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                                <option value="30">30</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Sort tags:", PageNames.Pictures, Model.LanguageId)
+                </div>
+                <div class="col ml-4">
+                    <div class="row" style="font-size: small; margin-top: 5px;">
+                        <div class="col">
+                            <select id="sort-tags-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
+                                <option value="0" selected="selected">@await LocaleManager.GetTranslation("Use video sort order", PageNames.Videos, Model.LanguageId)</option>
+                                <option value="1">@await LocaleManager.GetTranslation("Alphabetically", PageNames.Pictures, Model.LanguageId)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Set as default page settings", PageNames.Pictures, Model.LanguageId)
+                </div>
+                <div class="col ml-4">
+                    <div class="row">
+                        <div class="col" style="max-width: 5em;">
+                            <input id="settings-save-default-checkbox" type="checkbox" class="form-control" style="width: 2em; height: 2em; accent-color: #302e36;" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    <button id="page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> @await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                </div>
+
+            </div>
         </div>
     </div>
-    @if (Model.IsCurrentUserProgenyAdmin)
-    {
-        <div class="space-50"></div>
-        <div>
-            @await LocaleManager.GetTranslation("Video access levels are displayed as the video number background color.", PageNames.Videos, Model.LanguageId)
-            <br /><br />
-            <div class="nav-pills" style="height: 20px; width: 30px; font-size: 5px; background-color: #870000; display: inline-block;">
-                <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">1</p>
-            </div>
-            @await LocaleManager.GetTranslation("Admins Only", PageNames.Videos, Model.LanguageId)
-            <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #247f00; display: inline-block; margin-left: 20px;">
-                <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">2</p>
-            </div>
-            @await LocaleManager.GetTranslation("Family", PageNames.Videos, Model.LanguageId)
-            <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #72007f; display: inline-block; margin-left: 20px;">
-                <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">3</p>
-            </div>
-            @await LocaleManager.GetTranslation("Caretakers/Special", PageNames.Videos, Model.LanguageId)
-            <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #007987; display: inline-block; margin-left: 20px;">
-                <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">4</p>
-            </div>
-            @await LocaleManager.GetTranslation("Friends", PageNames.Videos, Model.LanguageId)
-            <div class="nav-pills" style="height: 20px; width: 30px; top: 5px; left: 5px; font-size: 5px; background-color: #181274; display: inline-block; margin-left: 20px;">
-                <p style="width: 20px; height: 15px; font-size: 16px; position: absolute; color: #EEEEFF; text-align: center; transform: translate(-6px, 1px);">5</p>
-            </div>
-            @await LocaleManager.GetTranslation("Registered Users or Public", PageNames.Videos, Model.LanguageId)
-            <br /><br />
-            @await LocaleManager.GetTranslation("Only administrators see this, others just see a dark blue color for all videos.", PageNames.Videos, Model.LanguageId)
-            <div class="space-20"></div>
-        </div>
-    }
-    <div style="clear: left; max-width: 100%; padding-top: 10px; padding-bottom: 20px;"></div>
-<div class="space-20"></div>
+    <div id="show-page-settings-button-div" style="position: absolute; top: 60px; right: 0;">
+        <button id="page-settings-button" class="btn btn-link btn-link-yellow bg-dark p-3 m-2" style="border-radius: 33%">
+            <span><i class="material-icons icon-top-4">settings</i></span>
+        </button>
+    </div>
 </div>
+<script src="/js/videos/videos-index.js" type="module" asp-append-version="true"></script>

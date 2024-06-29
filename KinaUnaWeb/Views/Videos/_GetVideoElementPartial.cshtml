@@ -1,0 +1,72 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@inject ILocaleManager LocaleManager
+@model KinaUnaWeb.Models.ItemViewModels.VideoItemViewModel
+@{
+    string locationString = await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId);
+
+    bool isProgenyAdmin = Model.CurrentProgeny.IsInAdminList(Model.CurrentUser.UserEmail);
+
+    string bgColor = "#181274";
+    if (isProgenyAdmin && Model.Video.AccessLevel == 0)
+    {
+        bgColor = "#870000";
+    }
+
+    if (isProgenyAdmin && Model.Video.AccessLevel == 1)
+    {
+        bgColor = "#247f00";
+    }
+
+    if (isProgenyAdmin && Model.Video.AccessLevel == 2)
+    {
+        bgColor = "#72007f";
+    }
+
+    if (isProgenyAdmin && Model.Video.AccessLevel == 3)
+    {
+        bgColor = "#007987";
+    }
+
+    string videoTimeText = "";
+    if (Model.Video.VideoTime != null)
+    {
+        videoTimeText = Model.Video.VideoTime.Value.ToString("dd-MMM-yyyy HH:mm");
+    }
+
+    string altText = Model.CurrentProgeny.NickName;
+    if (!string.IsNullOrEmpty(Model.Video.Location))
+    {
+        altText += " [" + locationString + ": " + Model.Video.Location + "]";
+    }
+
+    string durTime = "";
+    if (Model.Video.DurationHours != "0")
+    {
+        durTime = Model.Video.DurationHours + ":";
+    }
+
+    durTime = durTime + Model.Video.DurationMinutes + ":" + Model.Video.DurationSeconds;
+}
+
+<button id="video-item-@Model.Video.VideoId" data-video-id="@Model.Video.VideoId" class="item-btn-gallery video-item col-sm-12 col-md-6 col-lg-auto align-self-center p-1 m-1" style="background-color: black;">
+    <div class="photo-gallery-frame">
+        <img data-src="@Model.Video.ThumbLink" class="photo-gallery-picture lazyload" alt="@altText" />
+        <div class="photo-picture-number-frame" style="background-color: @bgColor;">
+            <span class="photo-picture-number-text">@Model.VideoNumber</span>
+        </div>
+        @if (Model.Video.DurationHours + Model.Video.DurationMinutes + Model.Video.DurationSeconds != "000" && Model.Video.DurationHours + Model.Video.DurationMinutes + Model.Video.DurationSeconds != String.Empty)
+        {
+            <div class="video-duration-frame">
+                <span class="video-duration-frame-text">@durTime</span>
+            </div>
+        }
+        <div class="photo-picture-time-frame">
+            <span class="photo-picture-time-text">@videoTimeText</span>
+        </div>
+        <div class="photo-comments-frame">
+            <span class="photo-comments-text"><i class="far fa-comment-alt"></i> @Model.Video.Comments.Count</span>
+        </div>
+        </div>
+</button>

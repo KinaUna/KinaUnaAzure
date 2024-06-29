@@ -23,7 +23,7 @@ export function addCopyLocationButtonEventListener(): void {
 }
 
 export function setupHereMaps(languageId: number) {
-    const mapContainerDiv = document.getElementById('pictures-page-map-container-div');
+    const mapContainerDiv = document.getElementById('here-map-container-div');
     const latitudeDiv = document.getElementById('here-maps-latitude-div');
     const longitudeDiv = document.getElementById('here-maps-longitude-div');
     const hereMapsApiKeyDiv = document.getElementById('here-maps-api-key-div');

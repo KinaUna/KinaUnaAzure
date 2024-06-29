@@ -3541,3 +3541,20 @@ noUi-handle:after, .noUi-handle:before {
     .item-btn-gallery:focus {
         outline: 0;
     }
+
+.video-duration-frame {
+    position: absolute;
+    padding: 3px 10px;
+    top: 2px;
+    right: 2px;
+    display: flex;
+    justify-content: center;
+    border-radius: 3px;
+    border: 0;
+}
+
+.video-duration-frame-text {
+    font-size: 16px;
+    color: #EEEEFF;
+    text-align: right;
+}

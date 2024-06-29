@@ -214,7 +214,7 @@ function addCloseButtonEventListener() {
 function addShowMapButtonEventListener() {
     let showMapButton = document.querySelector('#show-here-maps-button');
     if (showMapButton) {
-        const mapContainerDiv = document.getElementById('pictures-page-map-container-div');
+        const mapContainerDiv = document.getElementById('here-map-container-div');
         showMapButton.addEventListener('click', function () {
             if (mapContainerDiv === null) {
                 return;

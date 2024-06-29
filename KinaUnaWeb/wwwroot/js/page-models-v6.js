@@ -70,6 +70,51 @@ export class PicturesList {
         this.tagsList = [];
     }
 }
+export class Video {
+    constructor() {
+        this.videoId = 0;
+        this.progenyId = 0;
+        this.videoNumber = 0;
+    }
+}
+export class VideoViewModel {
+    constructor() {
+        this.videoId = 0;
+        this.progenyId = 0;
+        this.videoNumber = 0;
+        this.sortBy = 1;
+        this.tagFilter = '';
+    }
+}
+export class VideosPageParameters {
+    constructor() {
+        this.progenyId = 0;
+        this.languageId = 0;
+        this.currentPageNumber = 0;
+        this.itemsPerPage = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.sort = 1;
+        this.tagFilter = '';
+        this.showSettings = false;
+        this.year = 0;
+        this.month = 0;
+        this.day = 0;
+        this.firstItemYear = 1900;
+        this.sortTags = 0;
+    }
+}
+export class VideosList {
+    constructor() {
+        this.videoItems = [];
+        this.allItemsCount = 0;
+        this.remainingItemsCount = 0;
+        this.firstItemYear = 0;
+        this.totalPages = 0;
+        this.currentPageNumber = 0;
+        this.tagsList = [];
+    }
+}
 export class KinaUnaTextParameters {
     constructor() {
         this.id = 0;
