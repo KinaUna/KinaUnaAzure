@@ -1,5 +1,5 @@
-import { popupEventItem } from "../calendar/calendar-details";
-import { popupPictureDetails } from "../item-details/picture-details";
+import { popupEventItem } from "../calendar/calendar-details.js";
+import { popupPictureDetails } from "../item-details/picture-details.js";
 
 /**
  * Used to handle the click event on a notification.
@@ -125,6 +125,7 @@ export function updateNoficationElementEvents(notificationButtonsList: HTMLColle
             }
 
             button.addEventListener('click', async function (event: MouseEvent) {
+                event.stopImmediatePropagation();
                 notificationItemClick(button);
             });
 

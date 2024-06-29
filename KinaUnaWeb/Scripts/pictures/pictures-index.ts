@@ -51,7 +51,15 @@ function getPageParametersFromPageData(): PicturesPageParameters | null {
                         pageSettingsFromStorage.year = picturesPageParametersFromPageData.year;
                         pageSettingsFromStorage.month = picturesPageParametersFromPageData.month;
                         pageSettingsFromStorage.day = picturesPageParametersFromPageData.day;
-
+                        if (pageSettingsFromStorage.itemsPerPage === null) {
+                            pageSettingsFromStorage.itemsPerPage = 10;
+                        }
+                        if (pageSettingsFromStorage.sort === null) {
+                            pageSettingsFromStorage.sort = 1;
+                        }
+                        if (pageSettingsFromStorage.sortTags === null) {
+                            pageSettingsFromStorage.sortTags = 0;
+                        }
                         picturesPageParametersResult = pageSettingsFromStorage;
                     }
                 }
@@ -197,7 +205,7 @@ async function processPicturesList(newItemsList: PicturesList, parameters: Pictu
         await renderPictureItem(itemToAdd);
     };
 
-    updateTagsListDiv(newItemsList.tagsList);
+    updateTagsListDiv(newItemsList.tagsList, parameters.sortTags);
 
     return new Promise<PicturesPageParameters>(function (resolve, reject) {
         resolve(parameters);
@@ -282,16 +290,15 @@ function updateSettingsNotificationDiv(sort: number): void {
 /** Renders a list of tag buttons in the tags-list-div, each with a link to filter the page.
 * @param tagsList The list of strings for each tag.
 */
-function updateTagsListDiv(tagsList: string[]): void {
+function updateTagsListDiv(tagsList: string[], sortOrder: number): void {
     const tagsListDiv = document.querySelector<HTMLDivElement>('#tags-list-div');
     if (tagsListDiv !== null) {
         tagsListDiv.innerHTML = '';
-        const sortTagsSelect = document.querySelector<HTMLSelectElement>('#sort-tags-select');
-        if (sortTagsSelect !== null) {
-            if (sortTagsSelect.selectedIndex === 1) {
-                tagsList.sort((a, b) => a.localeCompare(b));
-            }
+        
+        if (sortOrder === 1) {
+            tagsList.sort((a, b) => a.localeCompare(b));
         }
+
         tagsList.forEach(function (tag: string) {
             tagsListDiv.innerHTML += '<a class="btn tag-item" data-tag-link="' + tag + '">' + tag + '</a>';
         });
@@ -699,7 +706,7 @@ async function initialSettingsPanelSetup(): Promise<void> {
     const selectItemsPerPageElement = document.querySelector<HTMLSelectElement>('#items-per-page-select');
     if (selectItemsPerPageElement !== null) {
         ($(".selectpicker") as any).selectpicker('refresh');
-    }
+    } 
 
     const pageSaveSettingsButton = document.querySelector<HTMLButtonElement>('#page-save-settings-button');
     if (pageSaveSettingsButton !== null) {
