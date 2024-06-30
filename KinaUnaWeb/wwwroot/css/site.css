@@ -3500,9 +3500,11 @@ noUi-handle:after, .noUi-handle:before {
     top: 1rem;
     right: 3rem;
     z-index: 1051;
-    padding: 1rem 1rem;
+    padding: 0.25rem 1.25rem;
     margin: -1rem -1rem -1rem auto;
     font-size: 2.5rem;
+    border: 1px solid dimgray;
+    border-radius: 50%;
 }
 
 .item-btn {
@@ -3557,4 +3559,26 @@ noUi-handle:after, .noUi-handle:before {
     font-size: 16px;
     color: #EEEEFF;
     text-align: right;
+}
+
+.item-details-title-picture {
+    max-height: 2.5rem;
+    margin-right: 10px;
+}
+
+.picture-details-image {
+    max-height: 90vh;
+    max-width: -webkit-fill-available;
+}
+
+.picture-details-image-full-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1280;
+    overflow: auto;
+    max-inline-size: fit-content;
+    background: black;
 }

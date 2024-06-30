@@ -14,7 +14,6 @@ using KinaUna.Data.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Videos;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.Extensions.Configuration;
-using KinaUnaWeb.Models.TypeScriptModels.Pictures;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -121,7 +120,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.SetAccessLevelList();
-
+            model.Video.Progeny.PictureLink = model.Video.Progeny.GetProfilePictureUrl();
             if (partialView)
             {
                 return PartialView("_VideoDetailsPartial", model);

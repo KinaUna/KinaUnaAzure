@@ -63,7 +63,8 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.SetCalendarItem(eventItem);
-
+            model.CalendarItem.Progeny = model.CurrentProgeny;
+            model.CalendarItem.Progeny.PictureLink = model.CalendarItem.Progeny.GetProfilePictureUrl();
             return PartialView("_GetEventItemPartial", model);
         }
 

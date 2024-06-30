@@ -4,6 +4,10 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation
 import { hideBodyScrollbars, showBodyScrollbars } from './items-display.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
 import { PicturesPageParameters } from '../page-models-v6.js';
+let pictureDetailsTouchStartX = 0;
+let pictureDetailsTouchStartY = 0;
+let pictureDetailsTouchEndX = 0;
+let pictureDetailsTouchEndY = 0;
 /**
  * Adds click event listeners to all elements with data-picture-id with the pictureId value on the page.
  * When clicked, the picture details popup is displayed.
@@ -189,6 +193,50 @@ function addNavigationEventListeners() {
                 startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
                 displayPictureDetails(nextPictureId, true);
             }
+        });
+    }
+    // Swipe navigation
+    const photoDetailsDiv = document.querySelector('#photo-details-div');
+    if (photoDetailsDiv) {
+        photoDetailsDiv.addEventListener('touchstart', event => {
+            pictureDetailsTouchStartX = event.touches[0].clientX;
+            pictureDetailsTouchStartY = event.touches[0].clientY;
+        });
+        photoDetailsDiv.addEventListener('touchend', event => {
+            pictureDetailsTouchEndX = event.changedTouches[0].clientX;
+            pictureDetailsTouchEndY = event.changedTouches[0].clientY;
+            if (Math.abs(pictureDetailsTouchEndY - pictureDetailsTouchStartY) > 100) {
+                return;
+            }
+            if (Math.abs(pictureDetailsTouchEndX - pictureDetailsTouchStartX) < 50) {
+                return;
+            }
+            if (pictureDetailsTouchEndX < pictureDetailsTouchStartX) {
+                let nextPictureId = nextLink?.getAttribute('data-next-picture-id');
+                if (nextPictureId) {
+                    startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
+                    displayPictureDetails(nextPictureId, true);
+                }
+            }
+            if (pictureDetailsTouchEndX > pictureDetailsTouchStartX) {
+                let previousPictureId = previousLink?.getAttribute('data-previous-picture-id');
+                if (previousPictureId) {
+                    startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
+                    displayPictureDetails(previousPictureId, true);
+                }
+            }
+        });
+    }
+    // Zoom
+    const imageElements = document.querySelectorAll('.picture-details-image');
+    if (imageElements) {
+        imageElements.forEach((imageElement) => {
+            imageElement.addEventListener('click', function (event) {
+                const targetImage = event.target;
+                if (targetImage) {
+                    targetImage.parentElement?.classList.toggle('picture-details-image-full-screen');
+                }
+            });
         });
     }
 }

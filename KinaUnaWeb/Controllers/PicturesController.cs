@@ -121,7 +121,7 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.SetAccessLevelList();
-
+            model.Picture.Progeny.PictureLink = model.Picture.Progeny.GetProfilePictureUrl();
             if (partialView)
             {
                 return PartialView("_PictureDetailsPartial", model);

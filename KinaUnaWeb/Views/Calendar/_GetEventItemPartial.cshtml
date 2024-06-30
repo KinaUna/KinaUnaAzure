@@ -6,6 +6,7 @@
 @inject ILocaleManager LocaleManager
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
+    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Events", PageNames.Calendar, Model.LanguageId);
     Model.CalendarItem.StartTime ??= DateTime.MinValue;
     Model.CalendarItem.EndTime ??= DateTime.MinValue;
     string startDateString = Model.CalendarItem.StartTime.Value.ToString("dd MMM yyyy");
@@ -32,12 +33,23 @@
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-calendar item-details-content">
         <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.CalendarItem.Progeny.PictureLink" class="item-details-title-picture"/>
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0 h5">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
             <div class="col-auto">
-                <span class="timeline-icon"><i class="material-icons">event_note</i></span>
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">event_note</i></span>
             </div>
             <div class="col">
                 <div class="row text-white">
-                    <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+
                     @if (Model.CalendarItem.AllDay)
                     {
                         if (string.IsNullOrEmpty(endDateString))
@@ -79,6 +91,7 @@
                 </div>
                 <div class="timeline-title row">
                     <div class="col-12">
+                        <div class="space-20"></div>
                         @Model.CalendarItem.Title
                     </div>
                 </div>

@@ -12,12 +12,12 @@
     string daysOldString = await LocaleManager.GetTranslation("days old.", PageNames.Pictures, Model.LanguageId);
     string olderString = await LocaleManager.GetTranslation("Older", PageNames.Pictures, Model.LanguageId);
     string newerString = await LocaleManager.GetTranslation("Newer", PageNames.Pictures, Model.LanguageId);
-    string viewPrevText = @olderString;
-    string viewNextText = @newerString;
+    string viewPrevText = olderString;
+    string viewNextText = newerString;
     if (Model.SortBy == 1)
     {
-        viewPrevText = @newerString;
-        viewNextText = @olderString;
+        viewPrevText = newerString;
+        viewNextText = olderString;
     }
 
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
@@ -39,10 +39,12 @@
 <div class="item-details-content-wrapper m-0 full-screen bg-body">
     
     <div id="item-details-content" class="item-details-content item-details-content-full-screen">
-        
-        <h3>@title @Model.PictureNumber @await LocaleManager.GetTranslation("of", PageNames.Pictures, Model.LanguageId) @Model.PictureCount</h3>
+        <div>
+            <img src="@Model.Picture.Progeny.PictureLink" class="item-details-title-picture"/>
+            <span class="h3 mr-3 align-bottom">@title @Model.PictureNumber @await LocaleManager.GetTranslation("of", PageNames.Pictures, Model.LanguageId) @Model.PictureCount</span>
+        </div>
         <button type="button" class="btn btn-link item-details-close-button item-details-close-button-full-screen"><span>×</span></button>
-        <div id="photo-div">
+        <div id="photo-details-div">
             @if (!string.IsNullOrEmpty(Model.TagFilter))
             {
                 <div>@await LocaleManager.GetTranslation("Tag filter:", PageNames.Pictures, Model.LanguageId) @Model.TagFilter</div>
@@ -57,7 +59,7 @@
             </div>
             <div class="space-20"></div>
             <div align="center" style="max-width: 100%">
-                <img src="@Model.Picture.PictureLink" style="max-height: 90vh; max-width: -webkit-fill-available"/>
+                <img src="@Model.Picture.PictureLink" class="picture-details-image" />
             </div>
             @if (!string.IsNullOrEmpty(@Model.Picture.Location))
             {

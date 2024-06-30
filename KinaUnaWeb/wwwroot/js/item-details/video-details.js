@@ -4,6 +4,10 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation
 import { hideBodyScrollbars, showBodyScrollbars } from './items-display.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
 import { VideosPageParameters } from '../page-models-v6.js';
+let videoDetailsTouchStartX = 0;
+let videoDetailsTouchStartY = 0;
+let videoDetailsTouchEndX = 0;
+let videoDetailsTouchEndY = 0;
 /**
  * Adds click event listeners to all elements with data-video-id with the videoId value on the page.
  * When clicked, the video details popup is displayed.
@@ -188,6 +192,38 @@ function addNavigationEventListeners() {
             if (nextVideoId) {
                 startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
                 displayVideoDetails(nextVideoId, true);
+            }
+        });
+    }
+    // Swipe navigation
+    const videoDetailsDiv = document.querySelector('#video-details-div');
+    if (videoDetailsDiv) {
+        videoDetailsDiv.addEventListener('touchstart', event => {
+            videoDetailsTouchStartX = event.touches[0].clientX;
+            videoDetailsTouchStartY = event.touches[0].clientY;
+        });
+        videoDetailsDiv.addEventListener('touchend', event => {
+            videoDetailsTouchEndX = event.changedTouches[0].clientX;
+            videoDetailsTouchEndY = event.changedTouches[0].clientY;
+            if (Math.abs(videoDetailsTouchEndY - videoDetailsTouchStartY) > 100) {
+                return;
+            }
+            if (Math.abs(videoDetailsTouchEndX - videoDetailsTouchStartX) < 50) {
+                return;
+            }
+            if (videoDetailsTouchEndX < videoDetailsTouchStartX) {
+                let nextVideoId = nextLink?.getAttribute('data-next-video-id');
+                if (nextVideoId) {
+                    startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
+                    displayVideoDetails(nextVideoId, true);
+                }
+            }
+            if (videoDetailsTouchEndX > videoDetailsTouchStartX) {
+                let previousVideoId = previousLink?.getAttribute('data-previous-video-id');
+                if (previousVideoId) {
+                    startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
+                    displayVideoDetails(previousVideoId, true);
+                }
             }
         });
     }

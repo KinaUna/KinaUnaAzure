@@ -7,12 +7,14 @@
 @{
     string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Video", PageNames.Videos, Model.LanguageId);
     string videoString = await LocaleManager.GetTranslation("video", PageNames.Videos, Model.LanguageId);
-    string viewPrevText = "Older";
-    string viewNextText = "Newer";
+    string olderString = await LocaleManager.GetTranslation("Older", PageNames.Pictures, Model.LanguageId);
+    string newerString = await LocaleManager.GetTranslation("Newer", PageNames.Pictures, Model.LanguageId);
+    string viewPrevText = olderString;
+    string viewNextText = newerString;
     if (Model.SortBy == 1)
     {
-        viewPrevText = "Newer";
-        viewNextText = "Older";
+        viewPrevText = newerString;
+        viewNextText = olderString;
     }
     bool allowHereMaps = Context.Request.HereMapsCookieSet();
     bool allowYouTube = Context.Request.YouTubeCookieSet();
@@ -32,306 +34,311 @@
 <div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div class="item-details-content-wrapper m-0 full-screen bg-body">
 <div id="item-details-content" class="item-details-content item-details-content-full-screen">
-    <h3>@title @Model.Video.VideoNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.VideoCount</h3>
-    <button type="button" class="btn btn-link item-details-close-button item-details-close-button-full-screen"><span>×</span></button>
-        <div id="video-div">
-            @if (!string.IsNullOrEmpty(Model.TagFilter))
-            {
-                <div>@await LocaleManager.GetTranslation("Tag filter:", PageNames.Videos, Model.LanguageId) @Model.TagFilter</div>
-            }
-            <div class="fixed-bottom" style="max-width: 100%; margin:15px; padding: 25px;">
-                <div class="" style="float: left">
-                    <button id="previous-video-link" class="btn btn-primary rounded-pill text-white" data-previous-video-id="@Model.PrevVideo"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText <span class="d-none d-md-inline">@videoString</span></button>
-                </div>
-                <div class="" style="float: right">
-                    <button id="next-video-link" class="btn btn-primary rounded-pill text-white" data-next-video-id="@Model.NextVideo">@viewNextText <span class="d-none d-md-inline">@videoString</span> <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
-                </div>
-            </div>
+<div>
+    <img src="@Model.Video.Progeny.PictureLink" class="item-details-title-picture"/>
+            <span class="h3 mr-3 align-bottom">@title @Model.Video.VideoNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.VideoCount</span>
+</div>
+
+<button type="button" class="btn btn-link item-details-close-button item-details-close-button-full-screen"><span>×</span></button>
+        <div id="video-details-div">
+@if (!string.IsNullOrEmpty(Model.TagFilter))
+{
+    <div>@await LocaleManager.GetTranslation("Tag filter:", PageNames.Videos, Model.LanguageId) @Model.TagFilter</div>
+}
+<div class="fixed-bottom" style="max-width: 100%; margin:15px; padding: 25px;">
+    <div class="" style="float: left">
+        <button id="previous-video-link" class="btn btn-primary rounded-pill text-white" data-previous-video-id="@Model.PrevVideo"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText <span class="d-none d-md-inline">@videoString</span></button>
+    </div>
+    <div class="" style="float: right">
+        <button id="next-video-link" class="btn btn-primary rounded-pill text-white" data-next-video-id="@Model.NextVideo">@viewNextText <span class="d-none d-md-inline">@videoString</span> <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
+    </div>
+</div>
+<div class="space-20"></div>
+<div align="center" style="max-width: 100%">
+    @if (allowYouTube)
+    {
+        if (Model.Video.VideoType == 1)
+        {
+            <iframe src="@Model.Video.VideoLink" style="width: 90%; height: 80vh; border: none;" scrolling="no" allowfullscreen></iframe>
+        }
+
+        if (Model.Video.VideoType == 2)
+        {
+            <iframe src="@Model.Video.VideoLink?rel=0" style="width: 90%; height: 80vh; border: none;" allow="encrypted-media" allowfullscreen></iframe>
+
+        }
+    }
+</div>
+@if (!string.IsNullOrEmpty(@Model.Video.Location))
+{
+    <div class="space-20"></div>
+    <div class="text-center">@await LocaleManager.GetTranslation("Location:", PageNames.Pictures, Model.LanguageId) @Model.Video.Location</div>
+    @if (!string.IsNullOrEmpty(hereMapsLatitude))
+    {
+        @if (allowHereMaps)
+        {
+            <button id="show-here-maps-button" class="btn btn-primary float-right"><span class="material-icons">map</span></button>
             <div class="space-20"></div>
-            <div align="center" style="max-width: 100%">
-                @if (allowYouTube)
-                {
-                    if (Model.Video.VideoType == 1)
-                    {
-                        <iframe src="@Model.Video.VideoLink" style="width: 90%; height: 80vh; border: none;" scrolling="no" allowfullscreen></iframe>
-                    }
+        }
 
-                    if (Model.Video.VideoType == 2)
-                    {
-                        <iframe src="@Model.Video.VideoLink?rel=0" style="width: 90%; height: 80vh; border: none;" allow="encrypted-media" allowfullscreen></iframe>
-
-                    }
-                }
-            </div>
-            @if (!string.IsNullOrEmpty(@Model.Video.Location))
+        <div class="text-center">@await LocaleManager.GetTranslation("Latitude:", PageNames.Pictures, Model.LanguageId) @Model.Video.Latitude @await LocaleManager.GetTranslation("Longitude:", PageNames.Pictures, Model.LanguageId) @Model.Video.Longtitude @await LocaleManager.GetTranslation("Altitude:", PageNames.Pictures, Model.LanguageId) @Model.Video.Altitude</div>
+        @if (allowHereMaps)
+        {
+            <div id="here-map-container-div" class="d-none" style="width: 100%; height: 300px"></div>
+            <div id="here-maps-latitude-div" class="d-none" data-here-maps-latitude="@hereMapsLatitude"></div>
+            <div id="here-maps-longitude-div" class="d-none" data-here-maps-longitude="@hereMapsLongitude"></div>
+            <div id="here-maps-api-key-div" class="d-none" data-here-maps-api-key="@Model.HereMapsApiKey"></div>
+        }
+    }
+}
+<div>
+    @{
+        if (!string.IsNullOrEmpty(Model.Tags))
+        {
+            List<string> tagsList = Model.Tags.Split(',').ToList();
+            foreach (string tagString in tagsList)
             {
-                <div class="space-20"></div>
-                <div class="text-center">@await LocaleManager.GetTranslation("Location:", PageNames.Pictures, Model.LanguageId) @Model.Video.Location</div>
-                @if (!string.IsNullOrEmpty(hereMapsLatitude))
-                {
-                    @if (allowHereMaps)
-                    {
-                        <button id="show-here-maps-button" class="btn btn-primary float-right"><span class="material-icons">map</span></button>
-                        <div class="space-20"></div>
-                    }
-
-                    <div class="text-center">@await LocaleManager.GetTranslation("Latitude:", PageNames.Pictures, Model.LanguageId) @Model.Video.Latitude @await LocaleManager.GetTranslation("Longitude:", PageNames.Pictures, Model.LanguageId) @Model.Video.Longtitude @await LocaleManager.GetTranslation("Altitude:", PageNames.Pictures, Model.LanguageId) @Model.Video.Altitude</div>
-                    @if (allowHereMaps)
-                    {
-                        <div id="here-map-container-div" class="d-none" style="width: 100%; height: 300px"></div>
-                        <div id="here-maps-latitude-div" class="d-none" data-here-maps-latitude="@hereMapsLatitude"></div>
-                        <div id="here-maps-longitude-div" class="d-none" data-here-maps-longitude="@hereMapsLongitude"></div>
-                        <div id="here-maps-api-key-div" class="d-none" data-here-maps-api-key="@Model.HereMapsApiKey"></div>
-                    }
-                }
+                <a asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
             }
-            <div>
-                @{
-                    if (!string.IsNullOrEmpty(Model.Tags))
-                    {
-                        List<string> tagsList = Model.Tags.Split(',').ToList();
-                        foreach (string tagString in tagsList)
-                        {
-                            <a asp-action="Index" asp-route-id="1" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-sortBy="@Model.SortBy" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
-                        }
-                    }
-                }
-            </div>
-            @if (!allowYouTube || !allowHereMaps)
-            {
-                <div class="col-12 col-md-10 col-lg-9 col-xl-8 col-xxl-7 col-w1900-6 col-w2500-5">
-                    <div class="space-20"></div>
-                    <div>@await LocaleManager.GetTranslation("Cookie consent for Here maps or YouTube has not been granted. To use maps enable cookies for Here Maps. To allow YouTube content enable cookies for YouTube.", PageNames.Locations, Model.LanguageId)</div>
-                    <div class="space-20"></div>
-                    @if (Context.Request.ConsentCookieSet())
-                    {
-                        @await Html.PartialAsync("_CookieConsentPartial", Model.LanguageId)
-                    }
-                </div>
-            }
-            <div class="space-20"></div>
-            @if (Model.VidTimeValid)
-            {
-                string wasString = await LocaleManager.GetTranslation("was", PageNames.Videos, Model.LanguageId);
-                string daysOldString = await LocaleManager.GetTranslation("days old.", PageNames.Videos, Model.LanguageId);
-                <div style="font-size: 16px; line-height: 90%;">
-                    <p>@await LocaleManager.GetTranslation("Video recorded:", PageNames.Videos, Model.LanguageId) @Model.VidTime</p>
-                    <p>@Model.CurrentProgeny.NickName @wasString @Model.VidYears @await LocaleManager.GetTranslation("years old.", PageNames.Videos, Model.LanguageId)</p>
-                    <p>@Model.CurrentProgeny.NickName @wasString @Model.VidMonths @await LocaleManager.GetTranslation("months old.", PageNames.Videos, Model.LanguageId)</p>
-                    <p>@Model.CurrentProgeny.NickName @wasString @Model.VidWeeks[0] @await LocaleManager.GetTranslation("weeks and", PageNames.Videos, Model.LanguageId) @Model.VidWeeks[1] @daysOldString</p>
-                    <p>@Model.CurrentProgeny.NickName @wasString @Model.VidDays @daysOldString</p>
-                    <p>@Model.CurrentProgeny.NickName @wasString @Model.VidHours @await LocaleManager.GetTranslation("hours old.", PageNames.Videos, Model.LanguageId)</p>
-                    <p>@Model.CurrentProgeny.NickName @wasString @Model.VidMinutes @await LocaleManager.GetTranslation("minutes old.", PageNames.Videos, Model.LanguageId)</p>
-                </div>
-                <div class="space-20"></div>
-            }
-            @if (Model.CommentsList.Count > 0)
-            {
-                <div class="w-100">
-                    <div>
-                        <h5>@await LocaleManager.GetTranslation("Comments", PageNames.Pictures, Model.LanguageId) (@Model.CommentsCount):</h5>
-                    </div>
-                    <div class="row">
-                        @foreach (Comment cmnt in Model.CommentsList)
-                        {
-                            <div class="col-auto">
-                                <div class="space-20"></div>
-                                <div class="bg-light text-dark">
-                                    <div class="row">
-
-                                        <div class="col-auto">
-                                            <div style="height: 46px; width: 46px;">
-                                                <img height="40" width="40" class="rounded img-fluid" src="@cmnt.AuthorImage" />
-                                            </div>
-                                        </div>
-                                        <div class="col pr-5 pl-0">
-                                            <div class="row" style="margin-top: 0; margin-bottom: 1rem; padding-top: 0;">
-                                                <div class="col">
-                                                    <span>@cmnt.DisplayName</span><span class="small text-muted" style="text-wrap: nowrap;"> · @cmnt.Created.ToString("dd-MMM-yyyy HH:mm")</span>
-                                                </div>
-                                            </div>
-                                            <div class="space-20"></div>
-                                            <div class="row">
-                                                <div class="col lead">
-                                                    @cmnt.CommentText
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="space-20"></div>
-                                    @if (cmnt.Author == Model.CurrentUser.UserId)
-                                    {
-                                        <div class="media-footer">
-                                            <form class="form-inline float-right" asp-controller="Videos" asp-action="DeleteVideoComment" role="form" method="post">
-
-                                                <div class="form-group">
-                                                    <div>
-                                                        <button class="btn btn-danger btn-sm leave-page" type="submit">@await LocaleManager.GetTranslation("Delete comment", PageNames.Pictures, Model.LanguageId)</button>
-                                                    </div>
-                                                </div>
-                                                <input Name="CommentThreadNumber" class="form-control" value="@Model.CommentThreadNumber" type="hidden"/>
-                                                <input Name="CommentId" class="form-control" value="@cmnt.CommentId" type="hidden"/>
-                                                <input Name="VideoId" class="form-control" value="@Model.Video.VideoId" type="hidden"/>
-                                                <input Name="ProgenyId" class="form-control" value="@Model.CurrentProgenyId" type="hidden"/>
-                                            </form>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-            @if (User.Identity != null && User.Identity.IsAuthenticated)
-            {
-                <form id="new-video-comment-form" role="form" method="post">
-                    <div class="form-group">
-                        <div class="space-20"></div>
-                        <label Name="CommentText" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("New comment:", PageNames.Pictures, Model.LanguageId)</label>
-                        <div class="col-12">
-                            <textarea id="new-video-comment-text-area" Name="CommentText" class="form-control" rows="4"></textarea>
-                            <button id="submit-new-video-comment-button" class="btn btn-success float-right leave-page" disabled="disabled" style="margin-right: 15px;" type="submit">@await LocaleManager.GetTranslation("Add comment", PageNames.Pictures, Model.LanguageId)</button>
-                        </div>
-                    </div>
-                    <input asp-for="CommentThreadNumber" class="form-control" value="@Model.Video.CommentThreadNumber" type="hidden" />
-                    <input asp-for="SortBy" class="form-control" value="@Model.SortBy" type="hidden" />
-                    <input name="ItemId" class="form-control" value="@Model.Video.VideoId" type="hidden" />
-                    <input asp-for="CurrentProgenyId" class="form-control" value="@Model.Video.ProgenyId" type="hidden" />
-                    <input asp-for="PartialView" class="form-control" value="@Model.PartialView" type="hidden" />
-                </form>
-            }
-            <div class="space-20"></div>
-            @if (Model.IsCurrentUserProgenyAdmin)
-            {
-                <div class="col-sm-3" style="margin-top: 35px;"></div>
-                <div class="col-md-8">
-                    <button id="toggle-edit-button" class="btn btn-info">@await LocaleManager.GetTranslation("Edit video", PageNames.Videos, Model.LanguageId)</button>
-                </div>
-                <div id="edit-section" style="display: none; padding: 15px;">
-                    <div>@await LocaleManager.GetTranslation("Edit user access, location, or date and time for this video", PageNames.Videos, Model.LanguageId)</div><br />
-                    <form id="edit-video-form" role="form" method="post">
-                        <div class="form-group">
-                            <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Pictures, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="tag-list" type="text" asp-for="Video.Tags" value="@Model.Video.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Pictures, Model.LanguageId)" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Duration", PageNames.Videos, Model.LanguageId)</label>
-                            <div class="col-md-10">
-                                @{
-                                    int hours = 0;
-                                    int minutes = 0;
-                                    int seconds = 0;
-                                    if (Model.Video.DurationHours + Model.Video.DurationMinutes + Model.Video.DurationSeconds != string.Empty)
-                                    {
-                                        int.TryParse(Model.Video.DurationHours, out hours);
-                                        int.TryParse(Model.Video.DurationMinutes, out minutes);
-                                        int.TryParse(Model.Video.DurationSeconds, out seconds);
-                                    }
-                                }
-                                <div class="form-row">
-                                    <div class="col">
-                                        <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("H:", PageNames.Videos, Model.LanguageId)</label>
-                                        <input type="number" id="DurationHours" asp-for="Video.DurationHours" min="0" max="100" value="@hours" class="form-control"/>
-                                    </div>
-                                    <div class="col">
-                                        <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("m:", PageNames.Videos, Model.LanguageId)</label>
-                                        <input type="number" id="DurationMinutes" asp-for="Video.DurationMinutes" min="0" max="59" value="@minutes" class="form-control"/>
-                                    </div>
-                                    <div class="col">
-                                        <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("s:", PageNames.Videos, Model.LanguageId)</label>
-                                        <input type="number" id="DurationSeconds" asp-for="Video.DurationSeconds" min="0" max="59" value="@seconds" class="form-control"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="Video.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="Video.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="Video.VideoTime" class="col-auto control-label">@await LocaleManager.GetTranslation("Video date and time", PageNames.Videos, Model.LanguageId)</label>
-                            <div class="col-12">
-                                <input id="video-date-time-picker" type="text" class="form-control-noline pl-3" asp-for="Video.VideoTime"
-                                       value="@Model.Video.VideoTime?.ToString(longDateTimeFormat)" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="location-input" type="text" asp-for="Video.Location" value="@Model.Video.Location" class="form-control" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-auto control-label">@await LocaleManager.GetTranslation("Latitude", PageNames.Pictures, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="latitude" type="text" asp-for="Video.Latitude" value="@Model.Video.Latitude" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-auto control-label">@await LocaleManager.GetTranslation("Longitude", PageNames.Pictures, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="longitude" type="text" asp-for="Video.Longtitude" value="@Model.Video.Longtitude" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-auto control-label">@await LocaleManager.GetTranslation("Altitude", PageNames.Pictures, Model.LanguageId)</label>
-                            <div class="col-auto">
-                                <input id="altitude" type="text" asp-for="Video.Altitude" value="@Model.Video.Altitude" class="form-control" />
-                            </div>
-                        </div>
-                        @if (Model.LocationsList.Any())
-                        {
-                            <div class="form-group">
-                                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Copy location latitude and longitude from existing location", PageNames.Pictures, Model.LanguageId)</label>
-                                <div class="col-auto">
-                                    <div class="row row-cols-auto ml-0 mr-0">
-                                        <select id="copy-location" class="selectpicker form-control-noline col pl-0" data-style="btn-kinaunaselect">
-                                            @foreach (Location loc in Model.ProgenyLocations)
-                                            {
-                                                <option value="@loc.LocationId" data-location-name="@loc.Name"
-                                                        data-latitude="@loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')"
-                                                        data-longitude="@loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.')">@loc.Name</option>
-                                            })
-                                        </select>
-                                        <button id="copy-location-button" type="button" class="btn btn-primary col-auto mt-0 mb-0 ml-2">@await LocaleManager.GetTranslation("Copy", PageNames.Pictures, Model.LanguageId)</button>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                        <div class="space-20"></div>
-                        <input asp-for="Video.VideoId" class="form-control" value="@Model.Video.VideoId" type="hidden"/>
-                        <input asp-for="Video.ProgenyId" class="form-control" value="@Model.CurrentProgenyId" type="hidden"/>
-                        <input asp-for="TagFilter" class="form-control" value="@ViewBag.TagFilter" type="hidden"/>
-                        <input asp-for="Video.Author" class="form-control" value="@Model.Video.Author" type="hidden"/>
-                        <input asp-for="PartialView" class="form-control" value="@Model.PartialView" type="hidden" />
-                        <div>
-                            <div class="form-group">
-                                <div class="col-auto control-label"></div>
-                                <div class="col-auto">
-                                    <button id="save-edit-video-button" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                                    <a class="btn btn-danger leave-page" asp-controller="@ViewContext.RouteData.Values["controller"]" asp-action="@ViewContext.RouteData.Values["action"]!" asp-route-id="@ViewContext.RouteData.Values["id"]" asp-route-childId="@Model.Video.ProgenyId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                    <form asp-controller="Videos" asp-action="DeleteVideo" role="form" method="get">
-                        <div class="form-group">
-                            <label class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Remove this video:", PageNames.Videos, Model.LanguageId)</label>
-                            <div class="col-lg-9">
-                                <button class="btn btn-danger leave-page" type="submit">@await LocaleManager.GetTranslation("Delete video", PageNames.Videos, Model.LanguageId)</button>
-                            </div>
-                        </div>
-                        <input name="videoId" class="form-control" value="@Model.Video.VideoId" type="hidden"/>
-                        <input name="partialView" class="form-control" value="@Model.PartialView" type="hidden"/>
-                    </form>
-                </div>
-            }
-            <div class="space-100"></div>
+        }
+    }
+</div>
+@if (!allowYouTube || !allowHereMaps)
+{
+    <div class="col-12 col-md-10 col-lg-9 col-xl-8 col-xxl-7 col-w1900-6 col-w2500-5">
+        <div class="space-20"></div>
+        <div>@await LocaleManager.GetTranslation("Cookie consent for Here maps or YouTube has not been granted. To use maps enable cookies for Here Maps. To allow YouTube content enable cookies for YouTube.", PageNames.Locations, Model.LanguageId)</div>
+        <div class="space-20"></div>
+        @if (Context.Request.ConsentCookieSet())
+        {
+            @await Html.PartialAsync("_CookieConsentPartial", Model.LanguageId)
+        }
+    </div>
+}
+<div class="space-20"></div>
+@if (Model.VidTimeValid)
+{
+    string wasString = await LocaleManager.GetTranslation("was", PageNames.Videos, Model.LanguageId);
+    string daysOldString = await LocaleManager.GetTranslation("days old.", PageNames.Videos, Model.LanguageId);
+    <div style="font-size: 16px; line-height: 90%;">
+        <p>@await LocaleManager.GetTranslation("Video recorded:", PageNames.Videos, Model.LanguageId) @Model.VidTime</p>
+        <p>@Model.CurrentProgeny.NickName @wasString @Model.VidYears @await LocaleManager.GetTranslation("years old.", PageNames.Videos, Model.LanguageId)</p>
+        <p>@Model.CurrentProgeny.NickName @wasString @Model.VidMonths @await LocaleManager.GetTranslation("months old.", PageNames.Videos, Model.LanguageId)</p>
+        <p>@Model.CurrentProgeny.NickName @wasString @Model.VidWeeks[0] @await LocaleManager.GetTranslation("weeks and", PageNames.Videos, Model.LanguageId) @Model.VidWeeks[1] @daysOldString</p>
+        <p>@Model.CurrentProgeny.NickName @wasString @Model.VidDays @daysOldString</p>
+        <p>@Model.CurrentProgeny.NickName @wasString @Model.VidHours @await LocaleManager.GetTranslation("hours old.", PageNames.Videos, Model.LanguageId)</p>
+        <p>@Model.CurrentProgeny.NickName @wasString @Model.VidMinutes @await LocaleManager.GetTranslation("minutes old.", PageNames.Videos, Model.LanguageId)</p>
+    </div>
+    <div class="space-20"></div>
+}
+@if (Model.CommentsList.Count > 0)
+{
+    <div class="w-100">
+        <div>
+            <h5>@await LocaleManager.GetTranslation("Comments", PageNames.Pictures, Model.LanguageId) (@Model.CommentsCount):</h5>
         </div>
+        <div class="row">
+            @foreach (Comment cmnt in Model.CommentsList)
+            {
+                <div class="col-auto">
+                    <div class="space-20"></div>
+                    <div class="bg-light text-dark">
+                        <div class="row">
+
+                            <div class="col-auto">
+                                <div style="height: 46px; width: 46px;">
+                                    <img height="40" width="40" class="rounded img-fluid" src="@cmnt.AuthorImage"/>
+                                </div>
+                            </div>
+                            <div class="col pr-5 pl-0">
+                                <div class="row" style="margin-top: 0; margin-bottom: 1rem; padding-top: 0;">
+                                    <div class="col">
+                                        <span>@cmnt.DisplayName</span><span class="small text-muted" style="text-wrap: nowrap;"> · @cmnt.Created.ToString("dd-MMM-yyyy HH:mm")</span>
+                                    </div>
+                                </div>
+                                <div class="space-20"></div>
+                                <div class="row">
+                                    <div class="col lead">
+                                        @cmnt.CommentText
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-20"></div>
+                        @if (cmnt.Author == Model.CurrentUser.UserId)
+                        {
+                            <div class="media-footer">
+                                <form class="form-inline float-right" asp-controller="Videos" asp-action="DeleteVideoComment" role="form" method="post">
+
+                                    <div class="form-group">
+                                        <div>
+                                            <button class="btn btn-danger btn-sm leave-page" type="submit">@await LocaleManager.GetTranslation("Delete comment", PageNames.Pictures, Model.LanguageId)</button>
+                                        </div>
+                                    </div>
+                                    <input Name="CommentThreadNumber" class="form-control" value="@Model.CommentThreadNumber" type="hidden"/>
+                                    <input Name="CommentId" class="form-control" value="@cmnt.CommentId" type="hidden"/>
+                                    <input Name="VideoId" class="form-control" value="@Model.Video.VideoId" type="hidden"/>
+                                    <input Name="ProgenyId" class="form-control" value="@Model.CurrentProgenyId" type="hidden"/>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    <form id="new-video-comment-form" role="form" method="post">
+        <div class="form-group">
+            <div class="space-20"></div>
+            <label Name="CommentText" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("New comment:", PageNames.Pictures, Model.LanguageId)</label>
+            <div class="col-12">
+                <textarea id="new-video-comment-text-area" Name="CommentText" class="form-control" rows="4"></textarea>
+                <button id="submit-new-video-comment-button" class="btn btn-success float-right leave-page" disabled="disabled" style="margin-right: 15px;" type="submit">@await LocaleManager.GetTranslation("Add comment", PageNames.Pictures, Model.LanguageId)</button>
+            </div>
+        </div>
+        <input asp-for="CommentThreadNumber" class="form-control" value="@Model.Video.CommentThreadNumber" type="hidden"/>
+        <input asp-for="SortBy" class="form-control" value="@Model.SortBy" type="hidden"/>
+        <input name="ItemId" class="form-control" value="@Model.Video.VideoId" type="hidden"/>
+        <input asp-for="CurrentProgenyId" class="form-control" value="@Model.Video.ProgenyId" type="hidden"/>
+        <input asp-for="PartialView" class="form-control" value="@Model.PartialView" type="hidden"/>
+    </form>
+}
+<div class="space-20"></div>
+@if (Model.IsCurrentUserProgenyAdmin)
+{
+    <div class="col-sm-3" style="margin-top: 35px;"></div>
+    <div class="col-md-8">
+        <button id="toggle-edit-button" class="btn btn-info">@await LocaleManager.GetTranslation("Edit video", PageNames.Videos, Model.LanguageId)</button>
+    </div>
+    <div id="edit-section" style="display: none; padding: 15px;">
+        <div>@await LocaleManager.GetTranslation("Edit user access, location, or date and time for this video", PageNames.Videos, Model.LanguageId)</div><br/>
+        <form id="edit-video-form" role="form" method="post">
+            <div class="form-group">
+                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Pictures, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="tag-list" type="text" asp-for="Video.Tags" value="@Model.Video.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("Duration", PageNames.Videos, Model.LanguageId)</label>
+                <div class="col-md-10">
+                    @{
+                        int hours = 0;
+                        int minutes = 0;
+                        int seconds = 0;
+                        if (Model.Video.DurationHours + Model.Video.DurationMinutes + Model.Video.DurationSeconds != string.Empty)
+                        {
+                            int.TryParse(Model.Video.DurationHours, out hours);
+                            int.TryParse(Model.Video.DurationMinutes, out minutes);
+                            int.TryParse(Model.Video.DurationSeconds, out seconds);
+                        }
+                    }
+                    <div class="form-row">
+                        <div class="col">
+                            <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("H:", PageNames.Videos, Model.LanguageId)</label>
+                            <input type="number" id="DurationHours" asp-for="Video.DurationHours" min="0" max="100" value="@hours" class="form-control"/>
+                        </div>
+                        <div class="col">
+                            <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("m:", PageNames.Videos, Model.LanguageId)</label>
+                            <input type="number" id="DurationMinutes" asp-for="Video.DurationMinutes" min="0" max="59" value="@minutes" class="form-control"/>
+                        </div>
+                        <div class="col">
+                            <label class="col-lg-3 col-sm-2 control-label">@await LocaleManager.GetTranslation("s:", PageNames.Videos, Model.LanguageId)</label>
+                            <input type="number" id="DurationSeconds" asp-for="Video.DurationSeconds" min="0" max="59" value="@seconds" class="form-control"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Video.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="Video.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Video.VideoTime" class="col-auto control-label">@await LocaleManager.GetTranslation("Video date and time", PageNames.Videos, Model.LanguageId)</label>
+                <div class="col-12">
+                    <input id="video-date-time-picker" type="text" class="form-control-noline pl-3" asp-for="Video.VideoTime"
+                           value="@Model.Video.VideoTime?.ToString(longDateTimeFormat)"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Location", PageNames.Pictures, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="location-input" type="text" asp-for="Video.Location" value="@Model.Video.Location" class="form-control" placeholder="@await LocaleManager.GetTranslation("Add location name entry...", PageNames.Pictures, Model.LanguageId)"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Latitude", PageNames.Pictures, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="latitude" type="text" asp-for="Video.Latitude" value="@Model.Video.Latitude" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Longitude", PageNames.Pictures, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="longitude" type="text" asp-for="Video.Longtitude" value="@Model.Video.Longtitude" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-auto control-label">@await LocaleManager.GetTranslation("Altitude", PageNames.Pictures, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="altitude" type="text" asp-for="Video.Altitude" value="@Model.Video.Altitude" class="form-control"/>
+                </div>
+            </div>
+            @if (Model.LocationsList.Any())
+            {
+                <div class="form-group">
+                    <label class="col-auto control-label">@await LocaleManager.GetTranslation("Copy location latitude and longitude from existing location", PageNames.Pictures, Model.LanguageId)</label>
+                    <div class="col-auto">
+                        <div class="row row-cols-auto ml-0 mr-0">
+                            <select id="copy-location" class="selectpicker form-control-noline col pl-0" data-style="btn-kinaunaselect">
+                                @foreach (Location loc in Model.ProgenyLocations)
+                                {
+                                    <option value="@loc.LocationId" data-location-name="@loc.Name"
+                                            data-latitude="@loc.Latitude.ToString(new CultureInfo("en-US")).Replace(',', '.')"
+                                            data-longitude="@loc.Longitude.ToString(new CultureInfo("en-US")).Replace(',', '.')">@loc.Name</option>
+                                }
+                                )
+                            </select>
+                            <button id="copy-location-button" type="button" class="btn btn-primary col-auto mt-0 mb-0 ml-2">@await LocaleManager.GetTranslation("Copy", PageNames.Pictures, Model.LanguageId)</button>
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="space-20"></div>
+            <input asp-for="Video.VideoId" class="form-control" value="@Model.Video.VideoId" type="hidden"/>
+            <input asp-for="Video.ProgenyId" class="form-control" value="@Model.CurrentProgenyId" type="hidden"/>
+            <input asp-for="TagFilter" class="form-control" value="@ViewBag.TagFilter" type="hidden"/>
+            <input asp-for="Video.Author" class="form-control" value="@Model.Video.Author" type="hidden"/>
+            <input asp-for="PartialView" class="form-control" value="@Model.PartialView" type="hidden"/>
+            <div>
+                <div class="form-group">
+                    <div class="col-auto control-label"></div>
+                    <div class="col-auto">
+                        <button id="save-edit-video-button" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                        <a class="btn btn-danger leave-page" asp-controller="@ViewContext.RouteData.Values["controller"]" asp-action="@ViewContext.RouteData.Values["action"]!" asp-route-id="@ViewContext.RouteData.Values["id"]" asp-route-childId="@Model.Video.ProgenyId">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <form asp-controller="Videos" asp-action="DeleteVideo" role="form" method="get">
+            <div class="form-group">
+                <label class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Remove this video:", PageNames.Videos, Model.LanguageId)</label>
+                <div class="col-lg-9">
+                    <button class="btn btn-danger leave-page" type="submit">@await LocaleManager.GetTranslation("Delete video", PageNames.Videos, Model.LanguageId)</button>
+                </div>
+            </div>
+            <input name="videoId" class="form-control" value="@Model.Video.VideoId" type="hidden"/>
+            <input name="partialView" class="form-control" value="@Model.PartialView" type="hidden"/>
+        </form>
+    </div>
+}
+<div class="space-100"></div>
+</div>
 </div>
 </div>
