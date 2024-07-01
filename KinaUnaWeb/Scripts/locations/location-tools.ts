@@ -22,6 +22,10 @@ export function addCopyLocationButtonEventListener(): void {
     }
 }
 
+/**
+ * Setup the Here Maps API for the location page.
+ * @param {number} languageId The id of the current language.
+ */
 export function setupHereMaps(languageId: number) {
     const mapContainerDiv = document.getElementById('here-map-container-div');
     const latitudeDiv = document.getElementById('here-maps-latitude-div');
@@ -64,15 +68,13 @@ export function setupHereMaps(languageId: number) {
         });
     let uiLang = 'en-US';
     if (languageId === 2) {
-        uiLang = 'de-DE';
+        uiLang = 'de-DE'; // No other languages used by KinaUna are supported by Here Maps.
     }
+
     let ui = H.ui.UI.createDefault(map, maptypes);
     let behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
 
 
     let marker = new H.map.Marker({ lat: latitudeValue, lng: longitudeValue }, {icon: defaultIcon });
     map.addObject(marker);
-    
-
-    
 }

@@ -173,6 +173,7 @@ async function setupDateTimePicker() {
 }
 /**
  * Adds event listeners to the previous and next links in the item details popup.
+ * Adds swipe navigation for the video details popup.
  */
 function addNavigationEventListeners() {
     let previousLink = document.querySelector('#previous-video-link');
@@ -247,6 +248,10 @@ function addCloseButtonEventListener() {
         });
     }
 }
+/**
+ * Adds an event listener to the show map button in the item details popup.
+ * When clicked, the map container is shown or hidden.
+  */
 function addShowMapButtonEventListener() {
     let showMapButton = document.querySelector('#show-here-maps-button');
     if (showMapButton) {
@@ -270,7 +275,7 @@ function addShowMapButtonEventListener() {
  * Fetches the HTML for video details and displays it in a popup.
  * Then adds the event listeners for the elements displayed.
  * @param {string} videoId The ID of the video to display.
- * @param isPopupVisible If the popup is already visible. If true, the body-content spinner will not be shown.
+ * @param {boolean} isPopupVisible If the popup is already visible. If true, the body-content spinner will not be shown.
  */
 async function displayVideoDetails(videoId, isPopupVisible = false) {
     if (!isPopupVisible) {
@@ -315,6 +320,11 @@ async function displayVideoDetails(videoId, isPopupVisible = false) {
         stopLoadingItemsSpinner('body-content');
     }
 }
+/**
+ * Gets the video page parameters from the page data.
+ * Used to determine if a tag filter is set for the video page.
+ * @returns {VideosPageParameters} The video page parameters.
+ */
 function getVideoPageParametersFromPageData() {
     const videosPageParametersDiv = document.querySelector('#videos-page-parameters');
     let videosPageParametersResult = new VideosPageParameters();

@@ -3,7 +3,7 @@ import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 import { hideBodyScrollbars, showBodyScrollbars } from './items-display.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
-import { PicturesPageParameters, VideosPageParameters } from '../page-models-v6.js';
+import { VideosPageParameters } from '../page-models-v6.js';
 
 let videoDetailsTouchStartX: number = 0;
 let videoDetailsTouchStartY: number = 0;
@@ -201,6 +201,7 @@ async function setupDateTimePicker(): Promise<void> {
 
 /**
  * Adds event listeners to the previous and next links in the item details popup.
+ * Adds swipe navigation for the video details popup.
  */
 function addNavigationEventListeners(): void {
     let previousLink = document.querySelector<HTMLAnchorElement>('#previous-video-link');
@@ -280,6 +281,10 @@ function addCloseButtonEventListener(): void {
     }
 }
 
+/**
+ * Adds an event listener to the show map button in the item details popup.
+ * When clicked, the map container is shown or hidden.
+  */
 function addShowMapButtonEventListener(): void {
     let showMapButton = document.querySelector<HTMLButtonElement>('#show-here-maps-button');
     if (showMapButton) {
@@ -304,7 +309,7 @@ function addShowMapButtonEventListener(): void {
  * Fetches the HTML for video details and displays it in a popup.
  * Then adds the event listeners for the elements displayed.
  * @param {string} videoId The ID of the video to display.
- * @param isPopupVisible If the popup is already visible. If true, the body-content spinner will not be shown.
+ * @param {boolean} isPopupVisible If the popup is already visible. If true, the body-content spinner will not be shown.
  */
 async function displayVideoDetails(videoId: string, isPopupVisible: boolean = false) {
     if (!isPopupVisible) {
@@ -353,6 +358,11 @@ async function displayVideoDetails(videoId: string, isPopupVisible: boolean = fa
 
 }
 
+/**
+ * Gets the video page parameters from the page data.
+ * Used to determine if a tag filter is set for the video page.
+ * @returns {VideosPageParameters} The video page parameters.
+ */
 function getVideoPageParametersFromPageData(): VideosPageParameters | null {
     const videosPageParametersDiv = document.querySelector<HTMLDivElement>('#videos-page-parameters');
     let videosPageParametersResult: VideosPageParameters | null = new VideosPageParameters();

@@ -9,6 +9,7 @@ let pictureDetailsTouchStartX: number = 0;
 let pictureDetailsTouchStartY: number = 0;
 let pictureDetailsTouchEndX: number = 0;
 let pictureDetailsTouchEndY: number = 0;
+
 /**
  * Adds click event listeners to all elements with data-picture-id with the pictureId value on the page.
  * When clicked, the picture details popup is displayed.
@@ -25,6 +26,10 @@ export function addPictureItemEventListeners(pictureId: string): void {
     }
 }
 
+/**
+ * Enable other scripts to call the displayPictureDetails function.
+ * @param {string} pictureId The id of the picture to display.
+ */
 export function popupPictureDetails(pictureId: string): void {
     displayPictureDetails(pictureId);
 }
@@ -200,6 +205,7 @@ async function setupDateTimePicker(): Promise<void> {
 
 /**
  * Adds event listeners to the previous and next links in the item details popup.
+ * Adds event listners for swipe navigation and full screen image display.
  */
 function addNavigationEventListeners(): void {
     let previousLink = document.querySelector<HTMLAnchorElement>('#previous-picture-link');
@@ -257,8 +263,9 @@ function addNavigationEventListeners(): void {
             }
         });
     }
+    // Todo: Add pinch/scroll zoom
 
-    // Zoom
+    // Full screen image display
     const imageElements = document.querySelectorAll<HTMLImageElement>('.picture-details-image');
     if (imageElements) {
         imageElements.forEach((imageElement) => {
@@ -292,6 +299,10 @@ function addCloseButtonEventListener(): void {
     }
 }
 
+/**
+ * Adds an event listener to the show map button in the item details popup.
+ * When clicked, the map container is shown or hidden.
+ */
 function addShowMapButtonEventListener(): void {
     let showMapButton = document.querySelector<HTMLButtonElement>('#show-here-maps-button');
     if (showMapButton) {
@@ -316,7 +327,7 @@ function addShowMapButtonEventListener(): void {
  * Fetches the HTML for picture details and displays it in a popup.
  * Then adds the event listeners for the elements displayed.
  * @param {string} pictureId The ID of the picture to display.
- * @param isPopupVisible If the popup is already visible. If true, the body-content spinner will not be shown.
+ * @param {boolean} isPopupVisible If the popup is already visible. If true, the body-content spinner will not be shown.
  */
 async function displayPictureDetails(pictureId: string, isPopupVisible: boolean = false) {
     if (!isPopupVisible) {
@@ -365,6 +376,11 @@ async function displayPictureDetails(pictureId: string, isPopupVisible: boolean 
 
 }
 
+/**
+ * Gets the picture page parameters from the page data div.
+ * Used to determine if a tag filter is set for the pictures page.
+ * @returns {PicturesPageParameters} The picture page parameters.
+ */
 function getPicturePageParametersFromPageData(): PicturesPageParameters | null {
     const picturesPageParametersDiv = document.querySelector<HTMLDivElement>('#pictures-page-parameters');
     let picturesPageParametersResult: PicturesPageParameters | null = new PicturesPageParameters();

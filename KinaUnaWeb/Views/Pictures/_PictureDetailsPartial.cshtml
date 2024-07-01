@@ -51,10 +51,10 @@
             }
             <div class="fixed-bottom" style="max-width: 100%; margin:15px; padding: 25px;">
                 <div class="" style="float: left">
-                    <button id="previous-picture-link" class="btn btn-primary rounded-pill text-white" data-previous-picture-id="@Model.PrevPicture"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText <span class="d-none d-md-inline">@photoString</span></button>
+                    <button id="previous-picture-link" class="btn btn-primary rounded-pill text-white" data-previous-picture-id="@Model.PrevPicture"><i class="fa fa-arrow-left" aria-hidden="true"></i> <span class="d-none d-md-inline">@viewPrevText</span> <span class="d-none d-lg-inline">@photoString</span></button>
                 </div>
                 <div class="" style="float: right">
-                    <button id="next-picture-link" class="btn btn-primary rounded-pill text-white" data-next-picture-id="@Model.NextPicture">@viewNextText <span class="d-none d-md-inline">@photoString</span> <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
+                    <button id="next-picture-link" class="btn btn-primary rounded-pill text-white" data-next-picture-id="@Model.NextPicture"><span class="d-none d-md-inline">@viewNextText</span> <span class="d-none d-lg-inline">@photoString</span> <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
                 </div>
             </div>
             <div class="space-20"></div>

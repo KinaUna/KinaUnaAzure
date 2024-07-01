@@ -23,6 +23,10 @@ export function addPictureItemEventListeners(pictureId) {
         });
     }
 }
+/**
+ * Enable other scripts to call the displayPictureDetails function.
+ * @param {string} pictureId The id of the picture to display.
+ */
 export function popupPictureDetails(pictureId) {
     displayPictureDetails(pictureId);
 }
@@ -173,6 +177,7 @@ async function setupDateTimePicker() {
 }
 /**
  * Adds event listeners to the previous and next links in the item details popup.
+ * Adds event listners for swipe navigation and full screen image display.
  */
 function addNavigationEventListeners() {
     let previousLink = document.querySelector('#previous-picture-link');
@@ -227,7 +232,8 @@ function addNavigationEventListeners() {
             }
         });
     }
-    // Zoom
+    // Todo: Add pinch/scroll zoom
+    // Full screen image display
     const imageElements = document.querySelectorAll('.picture-details-image');
     if (imageElements) {
         imageElements.forEach((imageElement) => {
@@ -259,6 +265,10 @@ function addCloseButtonEventListener() {
         });
     }
 }
+/**
+ * Adds an event listener to the show map button in the item details popup.
+ * When clicked, the map container is shown or hidden.
+ */
 function addShowMapButtonEventListener() {
     let showMapButton = document.querySelector('#show-here-maps-button');
     if (showMapButton) {
@@ -282,7 +292,7 @@ function addShowMapButtonEventListener() {
  * Fetches the HTML for picture details and displays it in a popup.
  * Then adds the event listeners for the elements displayed.
  * @param {string} pictureId The ID of the picture to display.
- * @param isPopupVisible If the popup is already visible. If true, the body-content spinner will not be shown.
+ * @param {boolean} isPopupVisible If the popup is already visible. If true, the body-content spinner will not be shown.
  */
 async function displayPictureDetails(pictureId, isPopupVisible = false) {
     if (!isPopupVisible) {
@@ -327,6 +337,11 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
         stopLoadingItemsSpinner('body-content');
     }
 }
+/**
+ * Gets the picture page parameters from the page data div.
+ * Used to determine if a tag filter is set for the pictures page.
+ * @returns {PicturesPageParameters} The picture page parameters.
+ */
 function getPicturePageParametersFromPageData() {
     const picturesPageParametersDiv = document.querySelector('#pictures-page-parameters');
     let picturesPageParametersResult = new PicturesPageParameters();
