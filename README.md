@@ -5,7 +5,8 @@ KinaUna is an app for managing family data, and the KinaUnaAzure solution contai
 
 
 The APIs and IdentityServer are also intended to be used by mobile apps.
-A mobile app exists, I am working on making it open source too, but I'm not entirely sure if it is ready for that yet.
+A mobile app exists, I might work on making it open source too, but I'm not entirely sure if it is ready for that yet. 
+For now it is too much work for me to keep it updated and dealing with the frequently changing requirements, so currently it is not being updated and shouldn't be used anymore.
 
 
 KinaUna was initially a simple ASP.Net MVC solution for learning about ASP.Net, MVC, JavaScript, and Visual Studio, but it quickly turned into an app I and my family used regularly.
