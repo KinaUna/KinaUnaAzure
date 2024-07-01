@@ -1,3 +1,4 @@
+import { addTimelineItemEventListener } from '../item-details/items-display.js';
 import * as pageModels from '../page-models-v6.js';
 const notesPageSettingsStorageKey = 'notes_page_parameters';
 let notesPageParameters = new pageModels.NotesPageParameters();
@@ -51,6 +52,10 @@ async function getNotes() {
                 }
                 for await (const noteItemId of notesPageResponse.notesList) {
                     await getNoteElement(noteItemId);
+                    const timelineItem = new pageModels.TimelineItem();
+                    timelineItem.itemId = noteItemId.toString();
+                    timelineItem.itemType = 9;
+                    addTimelineItemEventListener(timelineItem);
                 }
                 ;
             }

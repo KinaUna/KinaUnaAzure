@@ -15,9 +15,7 @@
                 </div>
                 <div class="col">
                     <div class="timeline-title">
-                        <strong>
-                            @Model.Name
-                        </strong>
+                        @Model.Name
                     </div>
                     <div class="timeline-text text-white-50">
                         <div class="text-white">@await LocaleManager.GetTranslation("Latitude:", PageNames.Locations, languageId) @Model.Latitude, @await LocaleManager.GetTranslation("Longitude:", PageNames.Locations, languageId) @Model.Longitude</div>

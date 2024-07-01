@@ -1,6 +1,7 @@
 import { addPictureItemEventListeners } from '../item-details/picture-details.js';
 import { addCalendarEventListeners } from '../calendar/calendar-details.js';
 import { addVideoItemEventListeners } from './video-details.js';
+import { addNoteEventListeners } from '../notes/note-details.js';
 /**
  * Adds event listeners for a given timeline item.
  * @param {TimelineItem} item The timeline item to add event listeners for.
@@ -32,7 +33,7 @@ export function addTimelineItemEventListener(item) {
         // Add sleep listeners.
     }
     if (item.itemType === 9) {
-        // Add note listeners.
+        addNoteEventListeners(item.itemId);
     }
     if (item.itemType === 10) {
         // Add contact listeners.

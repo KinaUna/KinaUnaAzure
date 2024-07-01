@@ -14,9 +14,7 @@
                 </div>
                 <div class="col">
                     <div class="timeline-title">
-                        <strong>
-                            @Model.VaccinationName
-                        </strong>
+                        @Model.VaccinationName
                     </div>
                     <div class="timeline-text text-white">@await LocaleManager.GetTranslation("Date:", PageNames.Vaccinations, languageId) @Model.VaccinationDate.ToString("dd-MMM-yyyy")</div>
                 </div>

@@ -1,6 +1,7 @@
 import { popupEventItem } from "../calendar/calendar-details.js";
 import { popupPictureDetails } from "../item-details/picture-details.js";
 import { popupVideoDetails } from "../item-details/video-details.js";
+import { popupNoteItem } from "../notes/note-details.js";
 /**
  * Used to handle the click event on a notification.
  * Updates the notification as read if it is unread.
@@ -50,6 +51,17 @@ async function notificationItemClick(btn) {
             let eventId = notificationLinkSplit[0];
             if (eventId !== null) {
                 popupEventItem(eventId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+        if (notificationLink.startsWith('/Notes/ViewNote')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Notes/ViewNote?noteId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let noteId = notificationLinkSplit[0];
+            if (noteId !== null) {
+                popupNoteItem(noteId);
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });

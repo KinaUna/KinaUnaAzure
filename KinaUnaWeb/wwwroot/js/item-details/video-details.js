@@ -1,6 +1,6 @@
 import * as LocaleHelper from '../localization-v6.js';
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v6.js';
 import { hideBodyScrollbars, showBodyScrollbars } from './items-display.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
 import { VideosPageParameters } from '../page-models-v6.js';
@@ -59,7 +59,7 @@ async function addCommentEventListeners() {
  * Gets the form data from the comment form and sends it to the server to add a new comment to the video.
  */
 async function submitComment() {
-    startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
+    startLoadingItemsSpinner('item-details-content-wrapper', 0.25, 128, 128, 128);
     const submitForm = document.getElementById('new-video-comment-form');
     if (submitForm !== null) {
         const formData = new FormData(submitForm);
@@ -83,7 +83,7 @@ async function submitComment() {
             }
         }
     }
-    stopLoadingItemsSpinner('item-details-content');
+    stopLoadingItemsSpinner('item-details-content-wrapper');
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -119,7 +119,7 @@ async function addEditEventListeners() {
  * Then refreshes the video details popup.
  */
 async function submitVideoEdit() {
-    startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
+    startLoadingItemsSpinner('item-details-content-wrapper', 0.25, 128, 128, 128);
     const submitForm = document.getElementById('edit-video-form');
     if (submitForm !== null) {
         const formData = new FormData(submitForm);
@@ -143,7 +143,7 @@ async function submitVideoEdit() {
             }
         }
     }
-    stopLoadingItemsSpinner('item-details-content');
+    stopLoadingItemsSpinner('item-details-content-wrapper');
     return new Promise(function (resolve, reject) {
         resolve();
     });
@@ -181,7 +181,6 @@ function addNavigationEventListeners() {
         previousLink.addEventListener('click', function () {
             let previousVideoId = previousLink.getAttribute('data-previous-video-id');
             if (previousVideoId) {
-                startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
                 displayVideoDetails(previousVideoId, true);
             }
         });
@@ -191,7 +190,6 @@ function addNavigationEventListeners() {
         nextLink.addEventListener('click', function () {
             let nextVideoId = nextLink.getAttribute('data-next-video-id');
             if (nextVideoId) {
-                startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
                 displayVideoDetails(nextVideoId, true);
             }
         });
@@ -215,14 +213,12 @@ function addNavigationEventListeners() {
             if (videoDetailsTouchEndX < videoDetailsTouchStartX) {
                 let nextVideoId = nextLink?.getAttribute('data-next-video-id');
                 if (nextVideoId) {
-                    startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
                     displayVideoDetails(nextVideoId, true);
                 }
             }
             if (videoDetailsTouchEndX > videoDetailsTouchStartX) {
                 let previousVideoId = previousLink?.getAttribute('data-previous-video-id');
                 if (previousVideoId) {
-                    startLoadingItemsSpinner('item-details-content', 0.5, 1, 1, 1);
                     displayVideoDetails(previousVideoId, true);
                 }
             }
@@ -279,7 +275,10 @@ function addShowMapButtonEventListener() {
  */
 async function displayVideoDetails(videoId, isPopupVisible = false) {
     if (!isPopupVisible) {
-        startLoadingItemsSpinner('body-content');
+        startFullPageSpinner();
+    }
+    else {
+        startLoadingItemsSpinner('item-details-content-wrapper', 0.25, 128, 128, 128);
     }
     let tagFilter = '';
     const videoPageParameters = getVideoPageParametersFromPageData();
@@ -317,7 +316,10 @@ async function displayVideoDetails(videoId, isPopupVisible = false) {
         console.error('Error getting video item. Error: ' + error);
     });
     if (!isPopupVisible) {
-        stopLoadingItemsSpinner('body-content');
+        stopFullPageSpinner();
+    }
+    else {
+        stopLoadingItemsSpinner('item-details-content-wrapper');
     }
 }
 /**

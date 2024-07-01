@@ -2748,7 +2748,6 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 
 .timeline-title {
     font-size: larger;
-    font-weight: 700;
     text-decoration: none;
     margin-bottom: 4px;
     color: #ffd892 !important;
@@ -2759,7 +2758,7 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 }
 
 .timeline-noteitem-text {
-    font-size: 14px;
+    font-size: 1.25rem;
     overflow-x: hidden;
     margin-bottom: 8px;
     padding: 5px;
@@ -3467,7 +3466,7 @@ noUi-handle:after, .noUi-handle:before {
 
 @media (min-width: 576px) {
     .item-details-content {
-        max-height: 75vh;
+        max-height: 95vh;
         overflow-y: auto;
     }
 }
@@ -3581,4 +3580,25 @@ noUi-handle:after, .noUi-handle:before {
     overflow: auto;
     max-inline-size: fit-content;
     background: black;
+}
+
+.item-details-edit-button {
+    padding: 12px 15px;
+    text-decoration: none;
+    text-transform: none;
+    cursor: pointer;
+    background-color: #0000ff33 !important;
+    border: 0;
+    border-radius: 3rem;
+    outline: 0;
+}
+.item-details-delete-button {
+    padding: 12px 15px;
+    text-decoration: none;
+    text-transform: none;
+    cursor: pointer;
+    background-color: #ff000033 !important;
+    border: 0;
+    border-radius: 3rem;
+    outline: 0;
 }

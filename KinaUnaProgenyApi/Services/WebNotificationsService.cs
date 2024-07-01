@@ -199,7 +199,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Notes?childId=" + noteItem.ProgenyId,
+                    Link = "/Notes/ViewNote?noteId=" + noteItem.NoteId,
                     Type = "Notification"
                 };
 

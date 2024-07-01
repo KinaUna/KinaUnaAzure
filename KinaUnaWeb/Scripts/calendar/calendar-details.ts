@@ -1,5 +1,5 @@
 ﻿import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display.js';
-import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v6.js';
 
 /**
  * Adds event listeners to all elements with the data-calendar-event-id attribute.
@@ -26,7 +26,7 @@ export function popupEventItem(eventId: string): void {
 
 }
 async function DisplayEventItem(eventId: string): Promise<void> {
-    startLoadingItemsSpinner('body-content');
+    startFullPageSpinner();
     let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true";
     await fetch(url, {
         method: 'GET',
@@ -63,5 +63,5 @@ async function DisplayEventItem(eventId: string): Promise<void> {
     }).catch(function (error) {
         console.error('Error getting event item. Error: ' + error);
     });
-    stopLoadingItemsSpinner('body-content');
+    stopFullPageSpinner();
 }

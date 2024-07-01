@@ -36,7 +36,7 @@
 <div id="current-picture-id-div" data-current-picture-id="@Model.Picture.PictureId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
-<div class="item-details-content-wrapper m-0 full-screen bg-body">
+<div id="item-details-content-wrapper" class="item-details-content-wrapper m-0 full-screen bg-body">
     
     <div id="item-details-content" class="item-details-content item-details-content-full-screen">
         <div>
@@ -49,7 +49,7 @@
             {
                 <div>@await LocaleManager.GetTranslation("Tag filter:", PageNames.Pictures, Model.LanguageId) @Model.TagFilter</div>
             }
-            <div class="fixed-bottom" style="max-width: 100%; margin:15px; padding: 25px;">
+            <div id="picture-navigation-div" class="fixed-bottom" style="max-width: 100%; margin:15px; padding: 25px;">
                 <div class="" style="float: left">
                     <button id="previous-picture-link" class="btn btn-primary rounded-pill text-white" data-previous-picture-id="@Model.PrevPicture"><i class="fa fa-arrow-left" aria-hidden="true"></i> <span class="d-none d-md-inline">@viewPrevText</span> <span class="d-none d-lg-inline">@photoString</span></button>
                 </div>
@@ -191,9 +191,6 @@
             @if (Model.IsCurrentUserProgenyAdmin)
             {
                 <div class="col-sm-3" style="margin-top: 35px;"></div>
-                <div class="col-md-8">
-                    <button id="toggle-edit-button" class="btn btn-info">@await LocaleManager.GetTranslation("Edit Photo", PageNames.Pictures, Model.LanguageId)</button>
-                </div>
                 <div id="edit-section" style="display: none; padding: 15px;">
                     <div>@await LocaleManager.GetTranslation("Edit user access, location, or date and time for this photo", PageNames.Pictures, Model.LanguageId)</div><br />
                     <form id="edit-picture-form" role="form" method="post">
@@ -296,6 +293,13 @@
                 }
                 <a asp-action="OriginalPicture" asp-route-id="@Model.Picture.PictureId" class="btn btn-link text-white" download="@downloadName">@await LocaleManager.GetTranslation("Download original picture", PageNames.Pictures, Model.LanguageId)</a>
             </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="col-12">
+                    <button id="toggle-edit-button" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></button>
+                </div>
+
+            }
             <div class="space-100"></div>
         </div>
         

@@ -32,27 +32,26 @@
 <div id="current-video-id-div" data-current-video-id="@Model.Video.VideoId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
-<div class="item-details-content-wrapper m-0 full-screen bg-body">
-<div id="item-details-content" class="item-details-content item-details-content-full-screen">
-<div>
-    <img src="@Model.Video.Progeny.PictureLink" class="item-details-title-picture"/>
+<div id="item-details-content-wrapper" class="item-details-content-wrapper m-0 full-screen bg-body">
+    <div id="item-details-content" class="item-details-content item-details-content-full-screen">
+        <div>
+            <img src="@Model.Video.Progeny.PictureLink" class="item-details-title-picture"/>
             <span class="h3 mr-3 align-bottom">@title @Model.Video.VideoNumber @await LocaleManager.GetTranslation("of", PageNames.Videos, Model.LanguageId) @Model.VideoCount</span>
-</div>
-
-<button type="button" class="btn btn-link item-details-close-button item-details-close-button-full-screen"><span>×</span></button>
-        <div id="video-details-div">
-@if (!string.IsNullOrEmpty(Model.TagFilter))
-{
-    <div>@await LocaleManager.GetTranslation("Tag filter:", PageNames.Videos, Model.LanguageId) @Model.TagFilter</div>
-}
-<div class="fixed-bottom" style="max-width: 100%; margin:15px; padding: 25px;">
-    <div class="" style="float: left">
-        <button id="previous-video-link" class="btn btn-primary rounded-pill text-white" data-previous-video-id="@Model.PrevVideo"><i class="fa fa-arrow-left" aria-hidden="true"></i> @viewPrevText <span class="d-none d-md-inline">@videoString</span></button>
     </div>
-    <div class="" style="float: right">
-        <button id="next-video-link" class="btn btn-primary rounded-pill text-white" data-next-video-id="@Model.NextVideo">@viewNextText <span class="d-none d-md-inline">@videoString</span> <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
+    <button type="button" class="btn btn-link item-details-close-button item-details-close-button-full-screen"><span>×</span></button>
+    <div id="video-details-div">
+    @if (!string.IsNullOrEmpty(Model.TagFilter))
+    {
+        <div>@await LocaleManager.GetTranslation("Tag filter:", PageNames.Videos, Model.LanguageId) @Model.TagFilter</div>
+    }
+    <div class="fixed-bottom" style="max-width: 100%; margin:15px; padding: 25px;">
+        <div class="" style="float: left">
+                    <button id="previous-video-link" class="btn btn-primary rounded-pill text-white" data-previous-video-id="@Model.PrevVideo"><i class="fa fa-arrow-left" aria-hidden="true"></i> <span class="d-none d-md-inline">@viewPrevText</span> <span class="d-none d-lg-inline">@videoString</span></button>
+        </div>
+        <div class="" style="float: right">
+                    <button id="next-video-link" class="btn btn-primary rounded-pill text-white" data-next-video-id="@Model.NextVideo"><span class="d-none d-md-inline">@viewNextText</span> <span class="d-none d-lg-inline">@videoString</span> <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
+        </div>
     </div>
-</div>
 <div class="space-20"></div>
 <div align="center" style="max-width: 100%">
     @if (allowYouTube)
@@ -211,9 +210,6 @@
 @if (Model.IsCurrentUserProgenyAdmin)
 {
     <div class="col-sm-3" style="margin-top: 35px;"></div>
-    <div class="col-md-8">
-        <button id="toggle-edit-button" class="btn btn-info">@await LocaleManager.GetTranslation("Edit video", PageNames.Videos, Model.LanguageId)</button>
-    </div>
     <div id="edit-section" style="display: none; padding: 15px;">
         <div>@await LocaleManager.GetTranslation("Edit user access, location, or date and time for this video", PageNames.Videos, Model.LanguageId)</div><br/>
         <form id="edit-video-form" role="form" method="post">
@@ -337,6 +333,13 @@
             <input name="partialView" class="form-control" value="@Model.PartialView" type="hidden"/>
         </form>
     </div>
+}
+@if (Model.IsCurrentUserProgenyAdmin)
+{
+    <div class="col-12">
+        <button id="toggle-edit-button" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></button>
+    </div>
+
 }
 <div class="space-100"></div>
 </div>

@@ -14,7 +14,7 @@ let currentCulture = 'en';
 async function DisplayEventItem(eventId: number): Promise<void> {
     startLoadingItemsSpinner('schedule');
 
-    let url = '/Calendar/GetEventItem?eventId=' + eventId;
+    let url = '/Calendar/ViewEvent?eventId=' + eventId + "&partialView=true";
     await fetch(url, {
         method: 'GET',
         headers: {
@@ -50,7 +50,7 @@ async function DisplayEventItem(eventId: number): Promise<void> {
 /**
  * Event handler for the edit and delete buttons in the Syncfusion Schedule component.
  * Syncfusion documentation https://ej2.syncfusion.com/documentation/api/schedule/#popupopen
- * @param args The PopupOpenEventArgs provided by the Synfusion scheduler
+ * @param {any} args The PopupOpenEventArgs provided by the Synfusion scheduler
  */
 function onPopupOpen(args: any) {
     args.cancel = true;
@@ -60,7 +60,7 @@ function onPopupOpen(args: any) {
  * The event handler for clicking an event in the Syncfusion Schedule component.
  * Sets the selectedEventId to the id of the clicked event.
  * Syncfusion documentation https://ej2.syncfusion.com/documentation/api/schedule/#eventclick
- * @param args The EventClickArgs provided by the Synfusion scheduler
+ * @param {any} args The EventClickArgs provided by the Synfusion scheduler
  */
 function onEventClick(args: any) {
     let scheduleObj = document.querySelector<any>('.e-schedule').ej2_instances[0];
@@ -74,7 +74,7 @@ function onEventClick(args: any) {
  * The event handler for clicking an empty cell in the Syncfusion Schedule component.
  * Currently cancels the default behaviour and does nothing.
  * Syncfusion documentation https://ej2.syncfusion.com/documentation/api/schedule/#cellclick
- * @param args  The CellClicEventkArgs provided by the Syncfusion Schedule component.
+ * @param {any} args  The CellClicEventkArgs provided by the Syncfusion Schedule component.
  */
 function onCellClick(args:any): void {
     args.cancel = true;
@@ -85,7 +85,7 @@ function onCellClick(args:any): void {
  * Event handler for double-clicking a cell in the Syncfusion Schedule component.
  * Currently cancels the default behaviour and does nothing.
  * Syncfusion documentation https://ej2.syncfusion.com/documentation/api/schedule/#celldoubleclick
- * @param args The CellClicEventkArgs provided by Schedule component.
+ * @param {any} args The CellClicEventkArgs provided by Schedule component.
  */
 function onCellDoubleClick(args: any): void {
     args.cancel = true;
