@@ -1,121 +1,94 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
-@using KinaUnaWeb.Models.ItemViewModels
 @model KinaUnaWeb.Models.ItemViewModels.FriendsListViewModel
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Friends", PageNames.Friends, Model.LanguageId);
-}
-@{
+
     string personalFriend = await LocaleManager.GetTranslation("Personal friend", PageNames.Friends, Model.LanguageId);
     string toyFriend = await LocaleManager.GetTranslation("Toy/animal friend", PageNames.Friends, Model.LanguageId);
     string parentFriend = await LocaleManager.GetTranslation("Parent", PageNames.Friends, Model.LanguageId);
     string familyFriend = await LocaleManager.GetTranslation("Family", PageNames.Friends, Model.LanguageId);
     string caretakerFriend = await LocaleManager.GetTranslation("Caretaker", PageNames.Friends, Model.LanguageId);
+    string pageString = await LocaleManager.GetTranslation("Page", PageNames.Pictures, Model.LanguageId);
+    string ofString = await LocaleManager.GetTranslation("of", PageNames.Pictures, Model.LanguageId);
+    string ascendingString = await LocaleManager.GetTranslation("Ascending", PageNames.Friends, Model.LanguageId);
+    string descendingString = await LocaleManager.GetTranslation("Descending", PageNames.Friends, Model.LanguageId);
+    string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Timeline, Model.LanguageId);
+    
     List<string> typeList = new List<string>();
     typeList.Add(personalFriend);
     typeList.Add(toyFriend);
     typeList.Add(parentFriend);
     typeList.Add(familyFriend);
     typeList.Add(caretakerFriend);
-}
 
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
-    <div class="row">
-        <div class="col-12">
-            @if (Model.FriendViewModelsList == null || !Model.FriendViewModelsList.Any())
-            {
-                <h2>@ViewData["Title"]</h2>
-                <div>@await LocaleManager.GetTranslation("Nothing to see here yet", PageNames.Friends, Model.LanguageId)</div>
-            }
-            else
-            {
-                @if (Model.IsCurrentUserProgenyAdmin)
+    string pageParameters = Json.Serialize(Model.FriendsPageParameters).ToString();
+}
+<div id="friends-page-parameters" class="d-none" data-friends-page-parameters="@pageParameters"></div>
+<div class="row">
+    <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
+        <div class="row">
+            <div class="col-12">
+                @if (Model.FriendViewModelsList == null || !Model.FriendViewModelsList.Any())
                 {
-                    <div style="float: right;">
-                        <a asp-controller="Friends" asp-action="AddFriend" class="btn btn-info btn-round leave-page">
-                            <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add friend", PageNames.Friends, Model.LanguageId)
-                        </a>
-                    </div>
+                    <h2>@ViewData["Title"]</h2>
+                    <div>@await LocaleManager.GetTranslation("Nothing to see here yet", PageNames.Friends, Model.LanguageId)</div>
                 }
-                <h2>@ViewData["Title"]</h2>
-                <div>
-                    <span>Show:</span>
-                    <span class="button-checkbox">
-                        <button type="button" class="btn btn-primary" name="friendClass0">
-                            <span class="checkbox-icon"></span> @personalFriend
-                        </button>
-                    </span>
-                    <span class="button-checkbox">
-                        <button type="button" class="btn btn-primary" name="friendClass1">
-                            <span class="checkbox-icon"></span> @toyFriend
-                        </button>
-                    </span>
-                    <span class="button-checkbox">
-                        <button type="button" class="btn btn-primary" name="friendClass2">
-                            <span class="checkbox-icon"></span> @parentFriend
-                        </button>
-                    </span>
-                    <span class="button-checkbox">
-                        <button type="button" class="btn btn-primary" name="friendClass3">
-                            <span class="checkbox-icon"></span> @familyFriend
-                        </button>
-                    </span>
-                    <span class="button-checkbox">
+                else
+                {
+                    <h2>@ViewData["Title"]</h2>
+                    <div>
+                        <span>Show:</span>
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-primary" name="friendClass0">
+                                <span class="checkbox-icon"></span> @personalFriend
+                            </button>
+                        </span>
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-primary" name="friendClass1">
+                                <span class="checkbox-icon"></span> @toyFriend
+                            </button>
+                        </span>
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-primary" name="friendClass2">
+                                <span class="checkbox-icon"></span> @parentFriend
+                            </button>
+                        </span>
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-primary" name="friendClass3">
+                                <span class="checkbox-icon"></span> @familyFriend
+                            </button>
+                        </span>
+                        <span class="button-checkbox">
                             <button type="button" class="btn btn-primary" name="friendClass4">
-                            <span class="checkbox-icon"></span> @caretakerFriend
-                        </button>
-                    </span>
-                </div>
-                @if (!string.IsNullOrEmpty(Model.TagFilter))
-                {
-                    <div class="space-20"></div>
-                    <div class="text-dark" style="float: right;">
-                        @await LocaleManager.GetTranslation("Tag filter:", PageNames.Friends, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
-                        <a class="btn btn-info btn-sm leave-page" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
-                            <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Friends, Model.LanguageId)
-                        </a>
+                                <span class="checkbox-icon"></span> @caretakerFriend
+                            </button>
+                        </span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.TagFilter))
+                    {
+                        <div class="space-20"></div>
+                        <div class="text-dark" style="float: right;">
+                            @await LocaleManager.GetTranslation("Tag filter:", PageNames.Friends, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
+                            <a class="btn btn-info btn-sm leave-page" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
+                                <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Friends, Model.LanguageId)
+                            </a>
+                        </div>
+                        <div class="space-20"></div>
+                    }
+                    <div class="space-70"></div>
+                    <div id="friend-list-parent-div" class="row">
+                        <div id="friend-list-div" class="mr-auto ml-auto row row-cols-auto">
+                        </div>
+                        <div id="loading-items-parent-div" style="height: 150px;">
+                            <div id="loading-items-div" class="w-100">
+                                <div class="space-50"></div>
+                            </div>
+                        </div>
                     </div>
                     <div class="space-20"></div>
-                }
-                <div class="space-70"></div>
-                <div>
-                    @foreach (FriendViewModel friendViewModel in Model.FriendViewModelsList)
-                    {
-                        string chkClass = "friendClass" + friendViewModel.FriendItem.Type.ToString();
-                        <a class="@chkClass leave-page" style="margin-bottom: 15px;" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@friendViewModel.FriendItem.FriendId">
-                            <div class="card text-white bg-primary" style="padding: 3px; float: left; clear: right; text-align: center; height: 600px; width: 255px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
-                                <div class="card-header card-header-rose card-title h4" style="height: 100px;">@friendViewModel.FriendItem.Name</div>
-                                <div style="height: 305px;">
-                                    <img class="img-thumbnail mx-auto d-block lazyload" style="max-height: 300px; max-width: 100%; background: black; margin-bottom: 10px;" data-src="@friendViewModel.FriendItem.PictureLink" alt="@friendViewModel.FriendItem.Name"/>
-                                </div>
-                                <div class="card-body">
-                                    <div align="left">
-                                        <strong>@await LocaleManager.GetTranslation("Friends since:", PageNames.Friends, Model.LanguageId) </strong>
-                                        <span align="left">
-                                            @if (friendViewModel.FriendItem.FriendSince != null)
-                                            {
-                                                @friendViewModel.FriendItem.FriendSince.Value.ToString("dd-MMM-yyyy")
-                                            }
-                                            else
-                                            {
-                                                <span>@await LocaleManager.GetTranslation("N/A", PageNames.Friends, Model.LanguageId)</span>
-                                            }
-                                        </span>
-                                    </div>
-                                    <div align="left">
-                                        <strong>@await LocaleManager.GetTranslation("Type:", PageNames.Friends, Model.LanguageId)</strong> @typeList[friendViewModel.FriendItem.Type]
-                                    </div>
-                                    <div align="left">
-                                        <strong>@await LocaleManager.GetTranslation("Context:", PageNames.Friends, Model.LanguageId)</strong> @friendViewModel.FriendItem.Context
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    }
-                </div>
-                <div class="space-20"></div>
-                
+
                     @if (!string.IsNullOrEmpty(Model.Tags))
                     {
                         string[] tagsList = Model.Tags.Split(',');
@@ -123,15 +96,102 @@
                             <div class="col-12">
                                 @foreach (string tagString in tagsList)
                                 {
-                                <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
+                                    <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
                                 }
                             </div>
                         </div>
                     }
-            }
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="space-20"></div>
+<div class="d-none">
+    <div id="page-settings-content-div" class="bg-dark page-settings-content">
+        <div class="row">
+            <div class="col-auto ml-auto">
+                <button id="close-page-settings-button" class="ml-auto btn btn-link btn-link-yellow p-2">
+                    <i class="material-icons icon-top-4">close</i>
+                </button>
+            </div>
+        </div>
+        <div class="p-4">
+            <div class="row">
+                <div class="col h5">
+                    @await LocaleManager.GetTranslation("Page settings", PageNames.Layout, Model.LanguageId)
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @sortString
+                </div>
+                <div class="col-auto ml-4">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <button id="settings-sort-ascending-button" class="btn btn-outline-info active"><i class="material-icons icon-top-4">update</i> @ascendingString</button>
+                        </div>
+                        <div class="col">
+                            <button id="settings-sort-descending-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">history</i> @descendingString</button>
+                        </div>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <button id="settings-sort-by-friends-since-button" class="btn btn-outline-info active">
+                                <i class="material-icons icon-top-4">schedule</i> @await LocaleManager.GetTranslation("Friends since", PageNames.Friends, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button id="settings-sort-by-name-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">sort_by_alpha</i> @await LocaleManager.GetTranslation("Name", PageNames.Friends, Model.LanguageId)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Sort tags:", PageNames.Pictures, Model.LanguageId)
+                </div>
+                <div class="col ml-4">
+                    <div class="row" style="font-size: small; margin-top: 5px;">
+                        <div class="col">
+                            <select id="sort-tags-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
+                                <option value="0" selected="selected">@await LocaleManager.GetTranslation("Use friends sort order", PageNames.Pictures, Model.LanguageId)</option>
+                                <option value="1">@await LocaleManager.GetTranslation("Alphabetically", PageNames.Pictures, Model.LanguageId)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Set as default page settings", PageNames.Pictures, Model.LanguageId)
+                </div>
+                <div class="col ml-4">
+                    <div class="row">
+                        <div class="col" style="max-width: 5em;">
+                            <input id="settings-save-default-checkbox" type="checkbox" class="form-control" style="width: 2em; height: 2em; accent-color: #302e36;" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    <button id="page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> @await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                </div>
+
+            </div>
         </div>
     </div>
-    
+    <div id="show-page-settings-button-div" style="position: absolute; top: 60px; right: 0;">
+        <button id="page-settings-button" class="btn btn-link btn-link-yellow bg-dark p-3 m-2" style="border-radius: 33%">
+            <span><i class="material-icons icon-top-4">settings</i></span>
+        </button>
+    </div>
 </div>
-<div class="space-20"></div>
 <script src="/js/friends/friends-index.js" type="module" asp-append-version="true"></script>

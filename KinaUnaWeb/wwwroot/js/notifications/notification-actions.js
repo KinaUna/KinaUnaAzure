@@ -1,4 +1,5 @@
 import { popupEventItem } from "../calendar/calendar-details.js";
+import { popupFriendItem } from "../friends/friend-details.js";
 import { popupPictureDetails } from "../item-details/picture-details.js";
 import { popupVideoDetails } from "../item-details/video-details.js";
 import { popupNoteItem } from "../notes/note-details.js";
@@ -74,6 +75,17 @@ async function notificationItemClick(btn) {
             let sleepId = notificationLinkSplit[0];
             if (sleepId !== null) {
                 popupSleepItem(sleepId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+        if (notificationLink.startsWith('/Friends/ViewFriend')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Friends/ViewFriend?friendId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let friendId = notificationLinkSplit[0];
+            if (friendId !== null) {
+                popupFriendItem(friendId);
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });

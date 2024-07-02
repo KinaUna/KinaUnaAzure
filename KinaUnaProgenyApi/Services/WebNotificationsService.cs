@@ -102,7 +102,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Friends?childId=" + friendItem.ProgenyId,
+                    Link = "/Friends/ViewFriend?friendId=" + friendItem.FriendId,
                     Type = "Notification"
                 };
 

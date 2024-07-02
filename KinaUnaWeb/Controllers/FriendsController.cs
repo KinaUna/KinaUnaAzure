@@ -11,7 +11,9 @@ using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.IO;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.TypeScriptModels.Friends;
 using KinaUnaWeb.Services.HttpClients;
+using static Azure.Core.HttpHeader;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -52,6 +54,14 @@ namespace KinaUnaWeb.Controllers
                 model.FriendViewModelsList.Add(friendViewModel);
             }
 
+            model.FriendsPageParameters = new()
+            {
+                LanguageId = model.LanguageId,
+                TagFilter = tagFilter,
+                TotalItems = friendsList.Count,
+                ProgenyId = model.CurrentProgenyId
+            };
+
             model.SetTags(tagsList);
             model.TagFilter = tagFilter;
 
@@ -60,7 +70,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> FriendDetails(int friendId, string tagFilter)
+        public async Task<IActionResult> ViewFriend(int friendId, string tagFilter = "", bool partialView = false)
         {
             Friend friend = await friendsHttpClient.GetFriend(friendId);
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
@@ -95,7 +105,86 @@ namespace KinaUnaWeb.Controllers
             model.SetTagList(tagsList);
             model.TagFilter = tagFilter;
             
+            model.FriendItem.Progeny = model.CurrentProgeny;
+            model.FriendItem.Progeny.PictureLink = model.FriendItem.Progeny.GetProfilePictureUrl();
+
+            if (partialView)
+            {
+                return PartialView("_FriendDetailsPartial", model);
+            }
             return View(model);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> FriendElement([FromBody] FriendItemParameters parameters)
+        {
+            if (parameters.LanguageId == 0)
+            {
+                parameters.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+
+            FriendViewModel friendItemResponse = new()
+            {
+                LanguageId = parameters.LanguageId
+            };
+
+            if (parameters.FriendId == 0)
+            {
+                friendItemResponse.FriendItem = new Friend { FriendId = 0 };
+            }
+            else
+            {
+                friendItemResponse.FriendItem = await friendsHttpClient.GetFriend(parameters.FriendId);
+                friendItemResponse.FriendItem.PictureLink = friendItemResponse.FriendItem.GetProfilePictureUrl();
+                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), friendItemResponse.FriendItem.ProgenyId);
+                friendItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
+            }
+
+
+            return PartialView("_FriendElementPartial", friendItemResponse);
+
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> FriendsList([FromBody] FriendsPageParameters parameters)
+        {
+            if (parameters.LanguageId == 0)
+            {
+                parameters.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+
+            if (parameters.CurrentPageNumber < 1)
+            {
+                parameters.CurrentPageNumber = 1;
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
+            List<Friend> friendsList = await friendsHttpClient.GetFriendsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+
+            if (parameters.SortBy == 0)
+            {
+                friendsList = [.. friendsList.OrderBy(f => f.FriendSince)];
+            }
+            else
+            {
+                friendsList = [.. friendsList.OrderBy(f => f.Name)];
+            }
+
+            if (parameters.Sort == 1)
+            {
+                friendsList.Reverse();
+            }
+
+            List<int> friendsIdList = friendsList.Select(f => f.FriendId).ToList();
+
+            return Json(new FriendsPageResponse()
+            {
+                FriendsList = friendsIdList,
+                PageNumber = parameters.CurrentPageNumber,
+                TotalItems = friendsList.Count
+            });
         }
 
         [AllowAnonymous]

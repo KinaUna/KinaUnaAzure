@@ -1,3 +1,31 @@
+export class FriendItemParameters {
+    constructor() {
+        this.friendId = 0;
+        this.languageId = 0;
+    }
+}
+export class FriendsPageParameters {
+    constructor() {
+        this.progenyId = 0;
+        this.languageId = 0;
+        this.currentPageNumber = 0;
+        this.itemsPerPage = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.sort = 0;
+        this.sortBy = 0;
+        this.tagFilter = '';
+        this.showSettings = false;
+    }
+}
+export class FriendsPageResponse {
+    constructor() {
+        this.pageNumber = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.friendsList = [];
+    }
+}
 export class NoteItemParameters {
     constructor() {
         this.noteId = 0;

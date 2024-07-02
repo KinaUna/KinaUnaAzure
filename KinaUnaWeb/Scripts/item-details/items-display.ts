@@ -4,6 +4,7 @@ import { TimelineItem } from '../page-models-v6.js'
 import { addVideoItemEventListeners } from './video-details.js';
 import { addNoteEventListeners } from '../notes/note-details.js';
 import { addSleepEventListeners } from '../sleep/sleep-details.js';
+import { addFriendItemListeners } from '../friends/friend-details.js';
 /**
  * Adds event listeners for a given timeline item.
  * @param {TimelineItem} item The timeline item to add event listeners for.
@@ -31,7 +32,7 @@ export function addTimelineItemEventListener(item: TimelineItem): void {
     }
 
     if (item.itemType === 6) {
-        // Add friend listeners.
+        addFriendItemListeners(item.itemId);
     }
 
     if (item.itemType === 7) {

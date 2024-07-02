@@ -104,7 +104,6 @@ function stopLoadingSpinner(): void {
     }
 }
 
-//
 /** Retrieves the list of pictures, based on the parameters provided, then updates the page.
  * 
  * @param parameters The PicturesPageParameters object with the parameters to use for the query.

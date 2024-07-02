@@ -1,0 +1,47 @@
+﻿@using KinaUna.Data
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string chkClass = "friendClass" + Model.FriendItem.Type.ToString();
+    string personalFriend = await LocaleManager.GetTranslation("Personal friend", PageNames.Friends, Model.LanguageId);
+    string toyFriend = await LocaleManager.GetTranslation("Toy/animal friend", PageNames.Friends, Model.LanguageId);
+    string parentFriend = await LocaleManager.GetTranslation("Parent", PageNames.Friends, Model.LanguageId);
+    string familyFriend = await LocaleManager.GetTranslation("Family", PageNames.Friends, Model.LanguageId);
+    string caretakerFriend = await LocaleManager.GetTranslation("Caretaker", PageNames.Friends, Model.LanguageId);
+    List<string> typeList = new List<string>();
+    typeList.Add(personalFriend);
+    typeList.Add(toyFriend);
+    typeList.Add(parentFriend);
+    typeList.Add(familyFriend);
+    typeList.Add(caretakerFriend);
+}
+<button class="item-btn friend-item col-sm-12 col-md-4 col-lg-3 col-xl-2 @chkClass" style="margin: 5px;" data-friend-id="@Model.FriendItem.FriendId">
+    <div class="card text-white bg-primary" style="padding: 3px; float: left; clear: right; text-align: center; height: 600px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
+        <div class="card-header card-header-rose card-title h4" style="height: 100px;">@Model.FriendItem.Name</div>
+        <div style="height: 305px;">
+            <img class="img-thumbnail mx-auto d-block lazyload" style="max-height: 300px; max-width: 100%; background: black; margin-bottom: 10px;" data-src="@Model.FriendItem.PictureLink" alt="@Model.FriendItem.Name"/>
+        </div>
+        <div class="card-body">
+            <div align="left">
+                <strong>@await LocaleManager.GetTranslation("Friends since:", PageNames.Friends, Model.LanguageId) </strong>
+                <span align="left">
+                    @if (Model.FriendItem.FriendSince != null)
+                    {
+                        @Model.FriendItem.FriendSince.Value.ToString("dd-MMM-yyyy")
+                    }
+                    else
+                    {
+                        <span>@await LocaleManager.GetTranslation("N/A", PageNames.Friends, Model.LanguageId)</span>
+                    }
+                </span>
+            </div>
+            <div align="left">
+                <strong>@await LocaleManager.GetTranslation("Type:", PageNames.Friends, Model.LanguageId)</strong> @typeList[Model.FriendItem.Type]
+            </div>
+            <div align="left">
+                <strong>@await LocaleManager.GetTranslation("Context:", PageNames.Friends, Model.LanguageId)</strong> @Model.FriendItem.Context
+            </div>
+        </div>
+    </div>
+</button>
