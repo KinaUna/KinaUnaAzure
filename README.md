@@ -69,3 +69,13 @@ Generally I have tried to use DI to avoid tight coupling with these depencies, s
     - Send messages to users
     - Analytics tools (currently done with Application Insights)
 
+### Solution architecture
+The code is organized into 4 core projects, 2 test projects, and 1 experimental project:
+- KinaUna.Data: Shared data, models, constants for the other projects.
+- KinaUna.IDP: The identity, authorization, authentication service.
+- KinaUnaProgenyApi: The API for the web app and mobile app. (This used to be split in two, with a separate MediaApi, but to reduce costs they were merged)
+- KinaUnaProgenyApi.Tests: For xUnit unit tests.
+- KinaUnaWeb: The web application.
+- KinaUnaWeb.Tests: For xUnit unit tests.
+- KinaUnaWebBlazor: For experimenting with Blazor.
+
