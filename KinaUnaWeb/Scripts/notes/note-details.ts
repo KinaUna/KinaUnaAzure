@@ -25,6 +25,11 @@ export function popupNoteItem(noteId: string): void {
     DisplayNoteItem(noteId);
 
 }
+
+/**
+ * Displays a note item in a popup.
+ * @param {string} noteId The id of the note to display.
+ */
 async function DisplayNoteItem(noteId: string): Promise<void> {
     startFullPageSpinner();
     let url = '/Notes/ViewNote?noteId=' + noteId + "&partialView=true";

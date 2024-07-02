@@ -6,7 +6,6 @@
 @inject ILocaleManager LocaleManager
 @{
     string title = Model.NoteItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Notes", PageNames.Notes, Model.LanguageId);
-    int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-notes item-details-content">

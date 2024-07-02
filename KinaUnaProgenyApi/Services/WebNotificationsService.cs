@@ -389,7 +389,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Sleep?childId=" + sleepItem.ProgenyId,
+                    Link = "/Sleep/ViewSleep?itemId=" + sleepItem.SleepId,
                     Type = "Notification"
                 };
 

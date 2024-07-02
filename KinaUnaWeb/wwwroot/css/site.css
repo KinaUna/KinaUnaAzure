@@ -1470,7 +1470,7 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 .bg-sleep {
     color: #fff;
     background: #519966;
-    background: linear-gradient(60deg, #46a03c, #36902c);
+    background: linear-gradient(60deg, #30902c, #30802c);
 }
 
 .bg-vaccination {
@@ -3597,7 +3597,7 @@ noUi-handle:after, .noUi-handle:before {
     text-decoration: none;
     text-transform: none;
     cursor: pointer;
-    background-color: #ff000033 !important;
+    background-color: #ff000066 !important;
     border: 0;
     border-radius: 3rem;
     outline: 0;

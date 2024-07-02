@@ -14,7 +14,7 @@
         endDateString = string.Empty;
     }
 }
-<a class="leave-page" asp-controller="Sleep" asp-action="Index">
+<button class="item-btn sleep-item" data-sleep-id="@Model.SleepId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-sleep">
             <div class="row">
@@ -53,4 +53,4 @@
             </div>
         </div>
     </div>
-</a>
+</button>
