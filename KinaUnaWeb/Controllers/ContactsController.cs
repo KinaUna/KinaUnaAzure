@@ -164,9 +164,17 @@ namespace KinaUnaWeb.Controllers
             {
                 contactsList = [.. contactsList.OrderBy(f => f.DateAdded)];
             }
-            else
+            if (parameters.SortBy == 1)
+            {
+                contactsList = [.. contactsList.OrderBy(f => f.DisplayName)];
+            }
+            if (parameters.SortBy == 2)
             {
                 contactsList = [.. contactsList.OrderBy(f => f.FirstName)];
+            }
+            if (parameters.SortBy == 3)
+            {
+                contactsList = [.. contactsList.OrderBy(f => f.LastName)];
             }
 
             if (parameters.Sort == 1)

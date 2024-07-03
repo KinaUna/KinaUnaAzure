@@ -4,6 +4,11 @@
 @inject ILocaleManager LocaleManager
 @{
     string chkClass = "contact-class-" + Model.ContactItem.Active.ToString().ToLower();
+    string websiteLink = Model.ContactItem.Website;
+    if (!string.IsNullOrEmpty(Model.ContactItem.Website) && !Model.ContactItem.Website.StartsWith("https://"))
+    {
+        websiteLink = "https://" + Model.ContactItem.Website;
+    }
 }
 <button class="item-btn @chkClass col-sm-12 col-md-5 col-lg-4 col-xl-3"  data-contact-id="@Model.ContactItem.ContactId">
     <div class="card text-white bg-contact text-break" style="height: -webkit-fill-available">
@@ -25,7 +30,7 @@
                     @await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)
                     @if (!string.IsNullOrEmpty(Model.ContactItem.Website))
                     {
-                        <a class="btn-link-yellow" href="@Model.ContactItem.Website">@Model.ContactItem.Website</a>
+                        <a class="btn-link-yellow" href="@websiteLink">@Model.ContactItem.Website</a>
                     }
                 </div>
             </div>

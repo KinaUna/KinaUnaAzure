@@ -4,6 +4,11 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Contact:", PageNames.Contacts, Model.LanguageId) + Model.ContactItem.DisplayName;
+    string websiteLink = Model.ContactItem.Website;
+    if (!string.IsNullOrEmpty(Model.ContactItem.Website) && !Model.ContactItem.Website.StartsWith("https://"))
+    {
+        websiteLink = "https://" + Model.ContactItem.Website;
+    }
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <h2>@ViewData["Title"]</h2>
@@ -33,7 +38,7 @@
                 <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Phone:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.PhoneNumber</div>
                 <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.MobileNumber</div>
                 <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.Email1 @Model.ContactItem.Email2</div>
-                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)</strong> <a href="@Model.ContactItem.Website">@Model.ContactItem.Website</a></div>
+                <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)</strong> <a href="@websiteLink">@Model.ContactItem.Website</a></div>
                 <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.Context</div>
                 <div align="left" style="margin: 15px;"><strong>@await LocaleManager.GetTranslation("Notes:", PageNames.Contacts, Model.LanguageId)</strong> @Model.ContactItem.Notes</div>
                 <div class="mt-2">

@@ -5,6 +5,11 @@
 @inject ILocaleManager LocaleManager
 @{
     string title = Model.ContactItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
+    string websiteLink = Model.ContactItem.Website;
+    if (!string.IsNullOrEmpty(Model.ContactItem.Website) && !Model.ContactItem.Website.StartsWith("https://"))
+    {
+        websiteLink = "https://" + Model.ContactItem.Website;
+    }
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
     <div class="timeline-card-body bg-contact item-details-content">
@@ -123,7 +128,7 @@
                         {
                             <div class="space-20"></div>
                             <div class="col-12">
-                                <strong>@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)</strong> <a href="@Model.ContactItem.Website">@Model.ContactItem.Website</a>
+                                <strong>@await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)</strong> <a href="@websiteLink">@Model.ContactItem.Website</a>
                             </div>
                         }
                         @if (!string.IsNullOrEmpty(Model.ContactItem.Notes))
