@@ -72,7 +72,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Contacts/ContactDetails?contactId=" + contactItem.ContactId + "&childId=" + contactItem.ProgenyId,
+                    Link = "/Contacts/ViewContact?contactId=" + contactItem.ContactId + "&childId=" + contactItem.ProgenyId,
                     Type = "Notification"
                 };
 

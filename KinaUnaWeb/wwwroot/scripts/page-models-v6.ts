@@ -19,6 +19,31 @@ interface BaseItemsPageResponseModel {
     totalItems: number;
 }
 
+export class ContactItemParameters implements BaseItemParameters {
+    contactId: number = 0;
+    languageId: number = 0;
+}
+
+export class ContactsPageParameters implements BasePageParameters {
+    progenyId: number = 0;
+    languageId: number = 0;
+    currentPageNumber: number = 0;
+    itemsPerPage: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    sort: number = 0;
+    sortBy: number = 0;
+    tagFilter: string = '';
+    showSettings: boolean = false;
+}
+
+export class ContactsPageResponse implements BaseItemsPageResponseModel {
+    pageNumber: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    contactsList: number[] = [];
+}
+
 export class FriendItemParameters implements BaseItemParameters {
     friendId: number = 0;
     languageId: number = 0;

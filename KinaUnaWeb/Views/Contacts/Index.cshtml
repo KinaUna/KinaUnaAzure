@@ -1,112 +1,169 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
-@using KinaUnaWeb.Models.ItemViewModels
 @model KinaUnaWeb.Models.ItemViewModels.ContactListViewModel
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
+    string pageParameters = Json.Serialize(Model.ContactsPageParameters).ToString();
+    string ascendingString = await LocaleManager.GetTranslation("Ascending", PageNames.Contacts, Model.LanguageId);
+    string descendingString = await LocaleManager.GetTranslation("Descending", PageNames.Contacts, Model.LanguageId);
+    string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Timeline, Model.LanguageId);
 }
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
-    <div class="row">
-        <div class="col-12">
-            @if (Model.ContactsList == null || !Model.ContactsList.Any())
-            {
-                <h3 class="title">@ViewData["Title"]</h3>
-                <div>Nothing to see here yet.</div>
-            }
-            else
-            {
-                @if (Model.IsCurrentUserProgenyAdmin)
+<div id="contacts-page-parameters" class="d-none" data-contacts-page-parameters="@pageParameters"></div>
+<div class="row m-0">
+    <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
+        <div class="row">
+            <div class="col-12">
+                @if (Model.ContactsList == null || !Model.ContactsList.Any())
                 {
-                    <div class="btn-group" style="float: right;">
-                        <a asp-controller="Contacts" asp-action="AddContact" class="btn btn-info btn-round leave-page">
-                            <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add contact", PageNames.Contacts, Model.LanguageId)
-                        </a>
-                    </div>
+                    <h3 class="title">@ViewData["Title"]</h3>
+                    <div>Nothing to see here yet.</div>
                 }
-                <h2>@ViewData["Title"]</h2>
-                <div class="space-20"></div>
-                <div>
-                    <span>Show:</span>
-                    <span class="button-checkbox">
-                        <button type="button" class="btn btn-primary" name="contact-class-true">
-                            <span class="checkbox-icon"></span>
-                            @await LocaleManager.GetTranslation("Active contacts", PageNames.Contacts, Model.LanguageId)
-                        </button>
-                    </span>
-                    <span class="button-checkbox">
-                        <button type="button" class="btn btn-primary" name="contact-class-false">
-                            <span class="checkbox-icon"></span>
-                            @await LocaleManager.GetTranslation("Inactive contacts", PageNames.Contacts, Model.LanguageId)
-                        </button>
-                    </span>
+                else
+                {
+                    <h2>@ViewData["Title"]</h2>
+                    <div class="space-20"></div>
+                    <div>
+                        <span>Show:</span>
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-primary" name="contact-class-true">
+                                <span class="checkbox-icon"></span>
+                                @await LocaleManager.GetTranslation("Active contacts", PageNames.Contacts, Model.LanguageId)
+                            </button>
+                        </span>
+                        <span class="button-checkbox">
+                            <button type="button" class="btn btn-primary" name="contact-class-false">
+                                <span class="checkbox-icon"></span>
+                                @await LocaleManager.GetTranslation("Inactive contacts", PageNames.Contacts, Model.LanguageId)
+                            </button>
+                        </span>
 
-                </div>
-                @if (!string.IsNullOrEmpty(Model.TagFilter))
-                {
-                    <div class="space-20"></div>
-                    <div class="text-dark" style="float: right;">
-                        @await LocaleManager.GetTranslation("Tag filter:", PageNames.Contacts, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
-                        <a class="btn btn-info btn-sm" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
-                            <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Contacts, Model.LanguageId)
-                        </a>
                     </div>
-                    <div class="space-20"></div>
-                }
-                <div>
-                    @foreach (ContactViewModel contactViewModel in Model.ContactsList)
+                    @if (!string.IsNullOrEmpty(Model.TagFilter))
                     {
-                        string chkClass = "contact-class-" + contactViewModel.ContactItem.Active.ToString().ToLower();
-                        <div class="@chkClass" style="margin-bottom: 15px;">
-                            <div class="card text-white bg-contact" style="float: left; clear: right; text-align: center; height: 600px; width: 255px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
-                                <a class="leave-page" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactItem.ContactId">
-                                    <div class="card-header bg-contact-header kinauna-yellow-text">@contactViewModel.ContactItem.DisplayName</div>
-                                </a>
-                                <div class="card-body">
-                                    <div class="card-text">
-                                        <a class="leave-page" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@contactViewModel.ContactItem.ContactId">
-                                            <div style="height: 253px;">
-                                                <img class="img-thumbnail mx-auto d-block lazyload" style="max-height: 250px; max-width: 100%; background: black; margin-bottom: 10px;" data-src="@contactViewModel.ContactItem.PictureLink" alt="@contactViewModel.ContactItem.DisplayName"/>
-                                            </div>
-                                            <div class="space-20"></div>
-                                            <div class="kinauna-yellow-text" align="left">
-                                                @contactViewModel.ContactItem.FirstName @contactViewModel.ContactItem.MiddleName @contactViewModel.ContactItem.LastName
-                                            </div>
-                                            <div class="text-white" align="left">@await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.Email1 @contactViewModel.ContactItem.Email2</div>
-                                            <div class="text-white" align="left">@await LocaleManager.GetTranslation("Phone:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.PhoneNumber</div>
-                                            <div class="text-white" align="left">@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.MobileNumber</div>
-                                            <div class="text-white" align="left">@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, Model.LanguageId) @contactViewModel.ContactItem.Context</div>
-                                        </a>
-                                        <div align="left">
-                                            @await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)
-                                            @if (!string.IsNullOrEmpty(contactViewModel.ContactItem.Website))
-                                            {
-                                                <a class="btn-link-yellow" href="@contactViewModel.ContactItem.Website">@contactViewModel.ContactItem.Website</a>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="space-20"></div>
+                        <div class="text-dark" style="float: right;">
+                            @await LocaleManager.GetTranslation("Tag filter:", PageNames.Contacts, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
+                            <a class="btn btn-info btn-sm" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
+                                <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Contacts, Model.LanguageId)
+                            </a>
+                        </div>
+                        <div class="space-20"></div>
+                    }
+                    <div class="space-70"></div>
+                    <div id="contact-list-parent-div" class="row">
+                        <div id="contact-list-div" class="mr-auto ml-auto row row-cols-auto">
+                        </div>
+                        <div id="loading-items-parent-div" style="height: 150px;">
+                            <div id="loading-items-div" class="w-100">
+                                <div class="space-50"></div>
                             </div>
                         </div>
-                    }
-                </div>
-                <div class="space-20"></div>
-            }
+                    </div>
+                    <div class="space-20"></div>
+                }
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-12">
-            @{
-                if (!string.IsNullOrEmpty(Model.Tags))
-                {
-                    string[] tagsList = Model.Tags.Split(',');
-                    foreach (string tagString in tagsList)
+        <div class="row">
+            <div class="col-12">
+                @{
+                    if (!string.IsNullOrEmpty(Model.Tags))
                     {
-                        <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
+                        string[] tagsList = Model.Tags.Split(',');
+                        foreach (string tagString in tagsList)
+                        {
+                            <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
+                        }
                     }
                 }
-            }
+            </div>
         </div>
+    </div>
+</div>
+<div class="space-20"></div>
+<div class="d-none">
+    <div id="page-settings-content-div" class="bg-dark page-settings-content">
+        <div class="row">
+            <div class="col-auto ml-auto">
+                <button id="close-page-settings-button" class="ml-auto btn btn-link btn-link-yellow p-2">
+                    <i class="material-icons icon-top-4">close</i>
+                </button>
+            </div>
+        </div>
+        <div class="p-4">
+            <div class="row">
+                <div class="col h5">
+                    @await LocaleManager.GetTranslation("Page settings", PageNames.Layout, Model.LanguageId)
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @sortString
+                </div>
+                <div class="col-auto ml-4">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <button id="settings-sort-ascending-button" class="btn btn-outline-info active"><i class="material-icons icon-top-4">update</i> @ascendingString</button>
+                        </div>
+                        <div class="col">
+                            <button id="settings-sort-descending-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">history</i> @descendingString</button>
+                        </div>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <button id="settings-sort-by-contact-added-button" class="btn btn-outline-info active">
+                                <i class="material-icons icon-top-4">schedule</i> @await LocaleManager.GetTranslation("Date added", PageNames.Contacts, Model.LanguageId)
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button id="settings-sort-by-name-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">sort_by_alpha</i> @await LocaleManager.GetTranslation("Name", PageNames.Contacts, Model.LanguageId)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Sort tags:", PageNames.Pictures, Model.LanguageId)
+                </div>
+                <div class="col ml-4">
+                    <div class="row" style="font-size: small; margin-top: 5px;">
+                        <div class="col">
+                            <select id="sort-tags-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
+                                <option value="0" selected="selected">@await LocaleManager.GetTranslation("Use contacts sort order", PageNames.Contacts, Model.LanguageId)</option>
+                                <option value="1">@await LocaleManager.GetTranslation("Alphabetically", PageNames.Pictures, Model.LanguageId)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Set as default page settings", PageNames.Pictures, Model.LanguageId)
+                </div>
+                <div class="col ml-4">
+                    <div class="row">
+                        <div class="col" style="max-width: 5em;">
+                            <input id="settings-save-default-checkbox" type="checkbox" class="form-control" style="width: 2em; height: 2em; accent-color: #302e36;" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-20"></div>
+            <div class="row">
+                <div class="col-12">
+                    <button id="contacts-page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> @await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div id="show-page-settings-button-div" style="position: absolute; top: 60px; right: 0;">
+        <button id="page-settings-button" class="btn btn-link btn-link-yellow bg-dark p-3 m-2" style="border-radius: 33%">
+            <span><i class="material-icons icon-top-4">settings</i></span>
+        </button>
     </div>
 </div>
 <script src="/js/contacts/contacts-index.js" type="module" asp-append-version="true"></script>

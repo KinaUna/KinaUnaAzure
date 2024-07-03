@@ -5,6 +5,7 @@ import { addVideoItemEventListeners } from './video-details.js';
 import { addNoteEventListeners } from '../notes/note-details.js';
 import { addSleepEventListeners } from '../sleep/sleep-details.js';
 import { addFriendItemListeners } from '../friends/friend-details.js';
+import { addContactItemListeners } from '../contacts/contact-details.js';
 /**
  * Adds event listeners for a given timeline item.
  * @param {TimelineItem} item The timeline item to add event listeners for.
@@ -15,7 +16,6 @@ export function addTimelineItemEventListener(item: TimelineItem): void {
     }
 
     if (item.itemType === 2) {
-        // Add video event listeners.
         addVideoItemEventListeners(item.itemId);
     }
 
@@ -48,7 +48,7 @@ export function addTimelineItemEventListener(item: TimelineItem): void {
     }
 
     if (item.itemType === 10) {
-        // Add contact listeners.
+        addContactItemListeners(item.itemId);
     }
 
     if (item.itemType === 11) {

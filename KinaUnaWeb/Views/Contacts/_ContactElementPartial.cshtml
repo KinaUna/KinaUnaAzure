@@ -1,0 +1,34 @@
+﻿@using KinaUna.Data
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.ItemViewModels.ContactViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string chkClass = "contact-class-" + Model.ContactItem.Active.ToString().ToLower();
+}
+<button class="item-btn @chkClass col-sm-12 col-md-5 col-lg-4 col-xl-3"  data-contact-id="@Model.ContactItem.ContactId">
+    <div class="card text-white bg-contact text-break" style="height: -webkit-fill-available">
+        <div class="card-header bg-contact-header h5 kinauna-yellow-text">@Model.ContactItem.DisplayName</div>
+        <div class="card-body">
+            <div class="card-text">
+                <div style="height: 253px;">
+                    <img class="img-thumbnail mx-auto d-block lazyload" style="max-height: 250px; max-width: 100%; background: black; margin-bottom: 10px;" data-src="@Model.ContactItem.PictureLink" alt="@Model.ContactItem.DisplayName"/>
+                </div>
+                <div class="space-20"></div>
+                <div class="kinauna-yellow-text" align="left">
+                    @Model.ContactItem.FirstName @Model.ContactItem.MiddleName @Model.ContactItem.LastName
+                </div>
+                <div class="text-white" align="left">@await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId) @Model.ContactItem.Email1 @Model.ContactItem.Email2</div>
+                <div class="text-white" align="left">@await LocaleManager.GetTranslation("Phone:", PageNames.Contacts, Model.LanguageId) @Model.ContactItem.PhoneNumber</div>
+                <div class="text-white" align="left">@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId) @Model.ContactItem.MobileNumber</div>
+                <div class="text-white" align="left">@await LocaleManager.GetTranslation("Context:", PageNames.Contacts, Model.LanguageId) @Model.ContactItem.Context</div>
+                <div align="left">
+                    @await LocaleManager.GetTranslation("Website:", PageNames.Contacts, Model.LanguageId)
+                    @if (!string.IsNullOrEmpty(Model.ContactItem.Website))
+                    {
+                        <a class="btn-link-yellow" href="@Model.ContactItem.Website">@Model.ContactItem.Website</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</button>

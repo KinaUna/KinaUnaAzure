@@ -10,6 +10,7 @@ using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.TypeScriptModels.Contacts;
 using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
@@ -63,13 +64,21 @@ namespace KinaUnaWeb.Controllers
             }
             
             model.TagFilter = tagFilter;
-            
+
+            model.ContactsPageParameters = new()
+            {
+                LanguageId = model.LanguageId,
+                TagFilter = tagFilter,
+                TotalItems = contactList.Count,
+                ProgenyId = model.CurrentProgenyId
+            };
+
             return View(model);
 
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> ContactDetails(int contactId, string tagFilter)
+        public async Task<IActionResult> ViewContact(int contactId, string tagFilter, bool partialView = false)
         {
             Contact contact = await contactsHttpClient.GetContact(contactId);
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), contact.ProgenyId);
@@ -89,27 +98,90 @@ namespace KinaUnaWeb.Controllers
 
             model.ContactItem.PictureLink = model.ContactItem.GetProfilePictureUrl();
 
-            List<string> tagsList = [];
-            List<Contact> contactsList1 = await contactsHttpClient.GetContactsList(model.CurrentProgenyId, model.CurrentAccessLevel); 
-            foreach (Contact cont in contactsList1)
-            {
-                if (string.IsNullOrEmpty(cont.Tags)) continue;
+            model.TagFilter = tagFilter;
+            model.ContactItem.PictureLink = model.ContactItem.GetProfilePictureUrl();
+            model.ContactItem.Progeny = model.CurrentProgeny;
+            model.ContactItem.Progeny.PictureLink = model.ContactItem.Progeny.GetProfilePictureUrl();
 
-                List<string> contactTagsList = [.. cont.Tags.Split(',')];
-                foreach (string tagString in contactTagsList)
-                {
-                    string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
-                    if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Contains(trimmedTagString))
-                    {
-                        tagsList.Add(trimmedTagString);
-                    }
-                }
+            if (partialView)
+            {
+                return PartialView("_ContactDetailsPartial", model);
             }
 
-            model.SetTagList(tagsList);
-            model.TagFilter = tagFilter;
-            
             return View(model);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> ContactElement([FromBody] ContactItemParameters parameters)
+        {
+            if (parameters.LanguageId == 0)
+            {
+                parameters.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+
+            ContactViewModel contactItemResponse = new()
+            {
+                LanguageId = parameters.LanguageId
+            };
+
+            if (parameters.ContactId == 0)
+            {
+                contactItemResponse.ContactItem = new Contact { ContactId = 0 };
+            }
+            else
+            {
+                contactItemResponse.ContactItem = await contactsHttpClient.GetContact(parameters.ContactId);
+                contactItemResponse.ContactItem.PictureLink = contactItemResponse.ContactItem.GetProfilePictureUrl();
+                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), contactItemResponse.ContactItem.ProgenyId);
+                contactItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
+            }
+
+
+            return PartialView("_ContactElementPartial", contactItemResponse);
+
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> ContactsList([FromBody] ContactsPageParameters parameters)
+        {
+            if (parameters.LanguageId == 0)
+            {
+                parameters.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+
+            if (parameters.CurrentPageNumber < 1)
+            {
+                parameters.CurrentPageNumber = 1;
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
+            List<Contact> contactsList = await contactsHttpClient.GetContactsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+
+            // Todo: Sort by last name.
+            if (parameters.SortBy == 0)
+            {
+                contactsList = [.. contactsList.OrderBy(f => f.DateAdded)];
+            }
+            else
+            {
+                contactsList = [.. contactsList.OrderBy(f => f.FirstName)];
+            }
+
+            if (parameters.Sort == 1)
+            {
+                contactsList.Reverse();
+            }
+
+            List<int> contactsIdList = contactsList.Select(c => c.ContactId).ToList();
+
+            return Json(new ContactsPageResponse()
+            {
+                ContactsList = contactsIdList,
+                PageNumber = parameters.CurrentPageNumber,
+                TotalItems = contactsList.Count
+            });
         }
 
         [AllowAnonymous]

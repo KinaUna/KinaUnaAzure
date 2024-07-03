@@ -1259,7 +1259,6 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 
 .card-title, .footer-big h4, .footer-big h5, .footer-brand, .info-title, .media .media-heading, .title {
     font-weight: 700;
-    font-family: Roboto Slab, Times New Roman, serif;
 }
 
     .card-title, .card-title a, .footer-big h4, .footer-big h4 a, .footer-big h5, .footer-big h5 a, .footer-brand, .footer-brand a, .info-title, .info-title a, .media .media-heading, .media .media-heading a, .title, .title a {
@@ -1420,7 +1419,6 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 }
 
 .bg-contact-header {
-    color: #fff;
     background: #3c0808;
     background: linear-gradient(60deg, #2e1000, #3c0808);
 }
@@ -1506,7 +1504,7 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 .img-thumbnail {
     padding: 0;
     background-color: #fff;
-    border: 1px solid #dee2e6;
+    border: 1px solid #434343;
     border-radius: 0.25rem;
     max-width: 100%;
     height: auto;
@@ -3510,7 +3508,7 @@ noUi-handle:after, .noUi-handle:before {
     text-align: left;
     width: 100%;
     position: relative;
-    padding:0;
+    padding: 5px;
     margin: 0;
     text-decoration: none;
     text-transform: none;

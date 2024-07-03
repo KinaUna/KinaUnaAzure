@@ -1,4 +1,5 @@
 import { popupEventItem } from "../calendar/calendar-details.js";
+import { popupContactItem } from "../contacts/contact-details.js";
 import { popupFriendItem } from "../friends/friend-details.js";
 import { popupPictureDetails } from "../item-details/picture-details.js";
 import { popupVideoDetails } from "../item-details/video-details.js";
@@ -86,6 +87,17 @@ async function notificationItemClick(btn) {
             let friendId = notificationLinkSplit[0];
             if (friendId !== null) {
                 popupFriendItem(friendId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+        if (notificationLink.startsWith('/Contacts/ViewContact')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Contacts/ViewContact?contactId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let contactId = notificationLinkSplit[0];
+            if (contactId !== null) {
+                popupContactItem(contactId);
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });

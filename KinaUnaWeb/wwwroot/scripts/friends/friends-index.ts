@@ -6,8 +6,8 @@ import * as SettingsHelper from '../settings-tools-v6.js';
 
 const friendsPageSettingsStorageKey = 'friends_page_parameters';
 let friendsPageParameters = new pageModels.FriendsPageParameters();
-const sortAscendingSettingsButton = document.querySelector<HTMLButtonElement>('#setting-sort-ascending-button');
-const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#setting-sort-descending-button');
+const sortAscendingSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-ascending-button');
+const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-descending-button');
 const sortByFriendsSinceSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-friends-since-button');
 const sortByNameSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-name-button');
 /** Updates the friendsPageParameters object with the selected filter options.
@@ -133,9 +133,9 @@ function setupFilterButtons(): void {
  * Configures the elements in the settings panel.
  */
 async function initialSettingsPanelSetup(): Promise<void> {
-    const timelineSaveSettingsButton = document.querySelector<HTMLButtonElement>('#timeline-page-save-settings-button');
-    if (timelineSaveSettingsButton !== null) {
-        timelineSaveSettingsButton.addEventListener('click', saveFriendsPageSettings);
+    const friendsPageSaveSettingsButton = document.querySelector<HTMLButtonElement>('#friends-page-save-settings-button');
+    if (friendsPageSaveSettingsButton !== null) {
+        friendsPageSaveSettingsButton.addEventListener('click', saveFriendsPageSettings);
     }
 
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
@@ -147,19 +147,14 @@ async function initialSettingsPanelSetup(): Promise<void> {
         sortByFriendsSinceSettingsButton.addEventListener('click', sortByFriendsSince);
         sortByNameSettingsButton.addEventListener('click', sortByName);
     }
-
-    const friendsSaveSettingsButton = document.querySelector<HTMLButtonElement>('#page-save-settings-button');
-    if (friendsSaveSettingsButton !== null) {
-        friendsSaveSettingsButton.addEventListener('click', saveFriendsPageSettings);
-    }
-
+    
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
 /**
- * Saves the current page parameters to local storage and reloads the timeline items list.
+ * Saves the current page parameters to local storage and reloads the friends items list.
  */
 async function saveFriendsPageSettings(): Promise<void> {
     const saveAsDefaultCheckbox = document.querySelector<HTMLInputElement>('#settings-save-default-checkbox');
@@ -177,7 +172,7 @@ async function saveFriendsPageSettings(): Promise<void> {
 }
 
 /**
- * Retrieves timelineParameters saved in local storage.
+ * Retrieves FriendsPageParameters saved in local storage.
  */
 async function loadFriendsPageSettings(): Promise<void> {
     const pageSettingsFromStorage = SettingsHelper.getPageSettings<pageModels.FriendsPageParameters>(friendsPageSettingsStorageKey);

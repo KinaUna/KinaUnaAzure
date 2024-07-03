@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using KinaUna.Data.Models;
-using KinaUnaWeb.Models.TypeScriptModels.Pictures;
 using KinaUnaWeb.Models.TypeScriptModels.Videos;
 
 namespace KinaUnaWeb.Models.ItemViewModels

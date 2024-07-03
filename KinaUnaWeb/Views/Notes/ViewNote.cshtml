@@ -5,7 +5,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.NoteViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.NoteItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Notes", PageNames.Notes, Model.LanguageId);
+    ViewData["Title"] = Model.NoteItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Notes", PageNames.Notes, Model.LanguageId);
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">

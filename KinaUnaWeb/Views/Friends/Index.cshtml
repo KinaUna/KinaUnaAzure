@@ -10,23 +10,13 @@
     string parentFriend = await LocaleManager.GetTranslation("Parent", PageNames.Friends, Model.LanguageId);
     string familyFriend = await LocaleManager.GetTranslation("Family", PageNames.Friends, Model.LanguageId);
     string caretakerFriend = await LocaleManager.GetTranslation("Caretaker", PageNames.Friends, Model.LanguageId);
-    string pageString = await LocaleManager.GetTranslation("Page", PageNames.Pictures, Model.LanguageId);
-    string ofString = await LocaleManager.GetTranslation("of", PageNames.Pictures, Model.LanguageId);
     string ascendingString = await LocaleManager.GetTranslation("Ascending", PageNames.Friends, Model.LanguageId);
     string descendingString = await LocaleManager.GetTranslation("Descending", PageNames.Friends, Model.LanguageId);
     string sortString = await LocaleManager.GetTranslation("Sort:", PageNames.Timeline, Model.LanguageId);
-    
-    List<string> typeList = new List<string>();
-    typeList.Add(personalFriend);
-    typeList.Add(toyFriend);
-    typeList.Add(parentFriend);
-    typeList.Add(familyFriend);
-    typeList.Add(caretakerFriend);
-
     string pageParameters = Json.Serialize(Model.FriendsPageParameters).ToString();
 }
 <div id="friends-page-parameters" class="d-none" data-friends-page-parameters="@pageParameters"></div>
-<div class="row">
+<div class="row m-0">
     <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
         <div class="row">
             <div class="col-12">
@@ -159,7 +149,7 @@
                     <div class="row" style="font-size: small; margin-top: 5px;">
                         <div class="col">
                             <select id="sort-tags-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect">
-                                <option value="0" selected="selected">@await LocaleManager.GetTranslation("Use friends sort order", PageNames.Pictures, Model.LanguageId)</option>
+                                <option value="0" selected="selected">@await LocaleManager.GetTranslation("Use friends sort order", PageNames.Friends, Model.LanguageId)</option>
                                 <option value="1">@await LocaleManager.GetTranslation("Alphabetically", PageNames.Pictures, Model.LanguageId)</option>
                             </select>
                         </div>
@@ -182,7 +172,7 @@
             <div class="space-20"></div>
             <div class="row">
                 <div class="col-12">
-                    <button id="page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> @await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
+                    <button id="friends-page-save-settings-button" class="btn btn-success float-right"><i class="material-icons icon-top-4">save</i> @await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
                 </div>
 
             </div>

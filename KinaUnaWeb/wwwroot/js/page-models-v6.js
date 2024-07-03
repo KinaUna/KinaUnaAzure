@@ -1,3 +1,31 @@
+export class ContactItemParameters {
+    constructor() {
+        this.contactId = 0;
+        this.languageId = 0;
+    }
+}
+export class ContactsPageParameters {
+    constructor() {
+        this.progenyId = 0;
+        this.languageId = 0;
+        this.currentPageNumber = 0;
+        this.itemsPerPage = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.sort = 0;
+        this.sortBy = 0;
+        this.tagFilter = '';
+        this.showSettings = false;
+    }
+}
+export class ContactsPageResponse {
+    constructor() {
+        this.pageNumber = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.contactsList = [];
+    }
+}
 export class FriendItemParameters {
     constructor() {
         this.friendId = 0;

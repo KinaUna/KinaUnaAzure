@@ -21,7 +21,7 @@ export function addFriendItemListeners(itemId: string): void {
  * Enable other scripts to call the DisplayFriendItem function.
  * @param {string} friendId The id of the friend item to display.
  */
-export function popupNoteItem(friendId: string): void {
+export function popupFriendItem(friendId: string): void {
     DisplayFriendItem(friendId);
 
 }

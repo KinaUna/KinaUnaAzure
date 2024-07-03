@@ -13,7 +13,6 @@ using System.IO;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.TypeScriptModels.Friends;
 using KinaUnaWeb.Services.HttpClients;
-using static Azure.Core.HttpHeader;
 
 namespace KinaUnaWeb.Controllers
 {

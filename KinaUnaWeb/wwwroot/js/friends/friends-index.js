@@ -5,8 +5,8 @@ import * as pageModels from '../page-models-v6.js';
 import * as SettingsHelper from '../settings-tools-v6.js';
 const friendsPageSettingsStorageKey = 'friends_page_parameters';
 let friendsPageParameters = new pageModels.FriendsPageParameters();
-const sortAscendingSettingsButton = document.querySelector('#setting-sort-ascending-button');
-const sortDescendingSettingsButton = document.querySelector('#setting-sort-descending-button');
+const sortAscendingSettingsButton = document.querySelector('#settings-sort-ascending-button');
+const sortDescendingSettingsButton = document.querySelector('#settings-sort-descending-button');
 const sortByFriendsSinceSettingsButton = document.querySelector('#settings-sort-by-friends-since-button');
 const sortByNameSettingsButton = document.querySelector('#settings-sort-by-name-button');
 /** Updates the friendsPageParameters object with the selected filter options.
@@ -117,9 +117,9 @@ function setupFilterButtons() {
  * Configures the elements in the settings panel.
  */
 async function initialSettingsPanelSetup() {
-    const timelineSaveSettingsButton = document.querySelector('#timeline-page-save-settings-button');
-    if (timelineSaveSettingsButton !== null) {
-        timelineSaveSettingsButton.addEventListener('click', saveFriendsPageSettings);
+    const friendsPageSaveSettingsButton = document.querySelector('#friends-page-save-settings-button');
+    if (friendsPageSaveSettingsButton !== null) {
+        friendsPageSaveSettingsButton.addEventListener('click', saveFriendsPageSettings);
     }
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
         sortAscendingSettingsButton.addEventListener('click', sortFriendsAscending);
@@ -129,16 +129,12 @@ async function initialSettingsPanelSetup() {
         sortByFriendsSinceSettingsButton.addEventListener('click', sortByFriendsSince);
         sortByNameSettingsButton.addEventListener('click', sortByName);
     }
-    const friendsSaveSettingsButton = document.querySelector('#page-save-settings-button');
-    if (friendsSaveSettingsButton !== null) {
-        friendsSaveSettingsButton.addEventListener('click', saveFriendsPageSettings);
-    }
     return new Promise(function (resolve, reject) {
         resolve();
     });
 }
 /**
- * Saves the current page parameters to local storage and reloads the timeline items list.
+ * Saves the current page parameters to local storage and reloads the friends items list.
  */
 async function saveFriendsPageSettings() {
     const saveAsDefaultCheckbox = document.querySelector('#settings-save-default-checkbox');
@@ -152,7 +148,7 @@ async function saveFriendsPageSettings() {
     });
 }
 /**
- * Retrieves timelineParameters saved in local storage.
+ * Retrieves FriendsPageParameters saved in local storage.
  */
 async function loadFriendsPageSettings() {
     const pageSettingsFromStorage = SettingsHelper.getPageSettings(friendsPageSettingsStorageKey);

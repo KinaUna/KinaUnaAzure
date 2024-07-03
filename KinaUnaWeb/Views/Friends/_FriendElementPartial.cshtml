@@ -16,13 +16,13 @@
     typeList.Add(familyFriend);
     typeList.Add(caretakerFriend);
 }
-<button class="item-btn friend-item col-sm-12 col-md-4 col-lg-3 col-xl-2 @chkClass" style="margin: 5px;" data-friend-id="@Model.FriendItem.FriendId">
-    <div class="card text-white bg-primary" style="padding: 3px; float: left; clear: right; text-align: center; height: 600px; margin-bottom: 15px; margin-left: 5px; margin-right: 5px;">
-        <div class="card-header card-header-rose card-title h4" style="height: 100px;">@Model.FriendItem.Name</div>
-        <div style="height: 305px;">
-            <img class="img-thumbnail mx-auto d-block lazyload" style="max-height: 300px; max-width: 100%; background: black; margin-bottom: 10px;" data-src="@Model.FriendItem.PictureLink" alt="@Model.FriendItem.Name"/>
+<button class="item-btn friend-item col-sm-12 col-md-5 col-lg-4 col-xl-3 @chkClass" data-friend-id="@Model.FriendItem.FriendId">
+    <div class="card text-white bg-primary text-break" style="height: -webkit-fill-available">
+        <div class="card-header card-header-rose h5">@Model.FriendItem.Name</div>
+        <div style="max-height: 400px; overflow-y: hidden;">
+            <img class="img-thumbnail mx-auto d-block lazyload" style="max-height: 250px; max-width: 100%; background: black; margin-bottom: 10px;" data-src="@Model.FriendItem.PictureLink" alt="@Model.FriendItem.Name" />
         </div>
-        <div class="card-body">
+        <div class="card-body" style="align-content: end;">
             <div align="left">
                 <strong>@await LocaleManager.GetTranslation("Friends since:", PageNames.Friends, Model.LanguageId) </strong>
                 <span align="left">
