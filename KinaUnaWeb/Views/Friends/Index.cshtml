@@ -69,32 +69,26 @@
                     }
                     <div class="space-70"></div>
                     <div id="friend-list-parent-div" class="row">
-                        <div id="friend-list-div" class="mr-auto ml-auto row row-cols-auto">
+                        <div id="friend-list-div" class="mr-auto ml-auto row row-cols-auto" style="display: contents;">
                         </div>
-                        <div id="loading-items-parent-div" style="height: 150px;">
+                        <div id="loading-items-parent-div" class="col-12" style="height: 150px;">
                             <div id="loading-items-div" class="w-100">
                                 <div class="space-50"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="space-20"></div>
-
-                    @if (!string.IsNullOrEmpty(Model.Tags))
-                    {
-                        string[] tagsList = Model.Tags.Split(',');
-                        <div class="row">
-                            <div class="col-12">
-                                @foreach (string tagString in tagsList)
-                                {
-                                    <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
-                                }
-                            </div>
-                        </div>
-                    }
+                    
                 }
             </div>
         </div>
-
+        <div class="space-20"></div>
+        <div class="row">
+            <div class="col-12">
+                <div class="space-20"></div>
+                <div id="tags-list-div" class="row row-cols-auto" style="display: contents;">
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

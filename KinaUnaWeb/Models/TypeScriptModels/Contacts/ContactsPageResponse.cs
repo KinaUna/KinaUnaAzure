@@ -8,5 +8,6 @@ namespace KinaUnaWeb.Models.TypeScriptModels.Contacts
         public int TotalPages { get; set; }
         public int TotalItems { get; set; }
         public List<int> ContactsList { get; set; } = [];
+        public List<string> TagsList { get; set; } = [];
     }
 }

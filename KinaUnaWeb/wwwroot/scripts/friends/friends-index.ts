@@ -65,6 +65,9 @@ async function getFriendsList(): Promise<void> {
             for await (const friendId of friendsPageResponse.friendsList) {
                 await getFriendElement(friendId);
             }
+
+            updateTagsListDiv(friendsPageResponse.tagsList, friendsPageParameters.sortTags);
+            updateActiveTagFilterDiv();
         }
 
     }).catch(function (error) {
@@ -127,6 +130,11 @@ function setupFilterButtons(): void {
             updateFilterButtonDisplay(filterButton);
         }
     });
+
+    const resetTagFilterButton = document.querySelector<HTMLButtonElement>('#reset-tag-filter-button');
+    if (resetTagFilterButton !== null) {
+        resetTagFilterButton.addEventListener('click', resetActiveTagFilter);
+    }
 }
 
 /**
@@ -157,6 +165,10 @@ async function initialSettingsPanelSetup(): Promise<void> {
  * Saves the current page parameters to local storage and reloads the friends items list.
  */
 async function saveFriendsPageSettings(): Promise<void> {
+    const sortTagsSelect = document.querySelector<HTMLSelectElement>('#sort-tags-select');
+    if (sortTagsSelect !== null) {
+        friendsPageParameters.sortTags = sortTagsSelect.selectedIndex;
+    }
     const saveAsDefaultCheckbox = document.querySelector<HTMLInputElement>('#settings-save-default-checkbox');
     if (saveAsDefaultCheckbox !== null && saveAsDefaultCheckbox.checked) {
         SettingsHelper.savePageSettings<pageModels.FriendsPageParameters>(friendsPageSettingsStorageKey, friendsPageParameters);
@@ -259,6 +271,85 @@ async function sortByName(): Promise<void> {
     });
 }
 
+/** Renders a list of tag buttons in the tags-list-div, each with a link to filter the page.
+* @param tagsList The list of strings for each tag.
+*/
+function updateTagsListDiv(tagsList: string[], sortOrder: number): void {
+    const tagsListDiv = document.querySelector<HTMLDivElement>('#tags-list-div');
+    if (tagsListDiv !== null) {
+        tagsListDiv.innerHTML = '';
+
+        if (sortOrder === 1) {
+            tagsList.sort((a, b) => a.localeCompare(b));
+        }
+
+        tagsList.forEach(function (tag: string) {
+            tagsListDiv.innerHTML += '<a class="btn tag-item" data-tag-link="' + tag + '">' + tag + '</a>';
+        });
+
+        const tagButtons = document.querySelectorAll('[data-tag-link]');
+        tagButtons.forEach((tagButton) => {
+            tagButton.addEventListener('click', tagButtonClick);
+        });
+    }
+}
+
+/** If a tag filter is active, show the tag in the active tag filter div and provide a button to clear it.
+*/
+function updateActiveTagFilterDiv(): void {
+    const activeTagFilterDiv = document.querySelector<HTMLDivElement>('#active-tag-filter-div');
+    const activeTagFilterSpan = document.querySelector<HTMLSpanElement>('#current-tag-filter-span');
+    if (activeTagFilterDiv !== null && activeTagFilterSpan !== null && friendsPageParameters !== null) {
+        if (friendsPageParameters.tagFilter !== '') {
+            activeTagFilterDiv.classList.remove('d-none');
+            activeTagFilterSpan.innerHTML = friendsPageParameters.tagFilter;
+        }
+        else {
+            activeTagFilterDiv.classList.add('d-none');
+            activeTagFilterSpan.innerHTML = '';
+        }
+    }
+}
+
+/** Clears the active tag filter and reloads the default full list of friends.
+*/
+async function resetActiveTagFilter(): Promise<void> {
+    if (friendsPageParameters !== null) {
+        friendsPageParameters.tagFilter = '';
+        await getFriendsList();
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+/** Event handler for tag buttons, sets the tag filter and reloads the list of friends.
+*/
+async function tagButtonClick(event: Event): Promise<void> {
+    const target = event.target as HTMLElement;
+    if (target !== null && friendsPageParameters !== null) {
+        const tagLink = target.dataset.tagLink;
+        if (tagLink !== undefined) {
+            friendsPageParameters.tagFilter = tagLink;
+            await getFriendsList();
+        }
+    }
+
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+
+/** Select pickers don't always update when their values change, this ensures they show the correct items. */
+function refreshSelectPickers(): void {
+    const sortTagsSelect = document.querySelector<HTMLSelectElement>('#sort-tags-select');
+    if (sortTagsSelect !== null && friendsPageParameters !== null) {
+        sortTagsSelect.value = friendsPageParameters.sortTags.toString();
+        ($(".selectpicker") as any).selectpicker('refresh');
+    }
+}
+
 /**
  * Initializes the page elements when it is loaded.
  */
@@ -268,6 +359,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     SettingsHelper.initPageSettings();
     setupFilterButtons();
     getFriendsPageParameters();
+    refreshSelectPickers();
     await loadFriendsPageSettings();
     
 

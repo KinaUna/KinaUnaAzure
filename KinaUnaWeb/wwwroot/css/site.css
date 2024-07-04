@@ -3517,6 +3517,7 @@ noUi-handle:after, .noUi-handle:before {
     border: 0;
     border-radius: .2rem;
     outline: 0;
+    min-width: 175px;
 }
 
 .item-btn:focus {

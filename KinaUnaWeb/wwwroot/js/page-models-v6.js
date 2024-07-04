@@ -16,6 +16,7 @@ export class ContactsPageParameters {
         this.sortBy = 0;
         this.tagFilter = '';
         this.showSettings = false;
+        this.sortTags = 0;
     }
 }
 export class ContactsPageResponse {
@@ -24,6 +25,7 @@ export class ContactsPageResponse {
         this.totalPages = 0;
         this.totalItems = 0;
         this.contactsList = [];
+        this.tagsList = [];
     }
 }
 export class FriendItemParameters {
@@ -44,6 +46,7 @@ export class FriendsPageParameters {
         this.sortBy = 0;
         this.tagFilter = '';
         this.showSettings = false;
+        this.sortTags = 0;
     }
 }
 export class FriendsPageResponse {
@@ -52,6 +55,7 @@ export class FriendsPageResponse {
         this.totalPages = 0;
         this.totalItems = 0;
         this.friendsList = [];
+        this.tagsList = [];
     }
 }
 export class NoteItemParameters {

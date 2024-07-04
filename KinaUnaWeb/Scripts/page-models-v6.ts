@@ -35,6 +35,7 @@ export class ContactsPageParameters implements BasePageParameters {
     sortBy: number = 0;
     tagFilter: string = '';
     showSettings: boolean = false;
+    sortTags: number = 0;
 }
 
 export class ContactsPageResponse implements BaseItemsPageResponseModel {
@@ -42,6 +43,7 @@ export class ContactsPageResponse implements BaseItemsPageResponseModel {
     totalPages: number = 0;
     totalItems: number = 0;
     contactsList: number[] = [];
+    tagsList: string[] = [];
 }
 
 export class FriendItemParameters implements BaseItemParameters {
@@ -60,6 +62,7 @@ export class FriendsPageParameters implements BasePageParameters {
     sortBy: number = 0;
     tagFilter: string = '';
     showSettings: boolean = false;
+    sortTags: number = 0;
 }
 
 export class FriendsPageResponse implements BaseItemsPageResponseModel {
@@ -67,6 +70,7 @@ export class FriendsPageResponse implements BaseItemsPageResponseModel {
     totalPages: number = 0;
     totalItems: number = 0;
     friendsList: number[] = [];
+    tagsList: string[] = [];
 }
 
 export class NoteItemParameters implements BaseItemParameters {

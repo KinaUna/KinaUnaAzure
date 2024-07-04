@@ -3,5 +3,6 @@
     public class FriendsPageParameters : BasePageParameters
     {
         public int SortBy { get; set; }
+        public int SortTags { get; set; }
     }
 }

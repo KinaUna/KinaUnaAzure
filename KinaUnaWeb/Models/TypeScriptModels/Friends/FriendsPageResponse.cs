@@ -8,5 +8,6 @@ namespace KinaUnaWeb.Models.TypeScriptModels.Friends
         public int TotalPages { get; set; }
         public int TotalItems { get; set; }
         public List<int> FriendsList { get; set; } = [];
+        public List<string> TagsList { get; set; }
     }
 }

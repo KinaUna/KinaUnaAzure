@@ -115,6 +115,8 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> ContactElement([FromBody] ContactItemParameters parameters)
         {
+            parameters ??= new ContactItemParameters();
+
             if (parameters.LanguageId == 0)
             {
                 parameters.LanguageId = Request.GetLanguageIdFromCookie();
@@ -146,6 +148,8 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> ContactsList([FromBody] ContactsPageParameters parameters)
         {
+            parameters ??= new ContactsPageParameters();
+
             if (parameters.LanguageId == 0)
             {
                 parameters.LanguageId = Request.GetLanguageIdFromCookie();
@@ -159,7 +163,33 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
             List<Contact> contactsList = await contactsHttpClient.GetContactsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
 
-            // Todo: Sort by last name.
+            List<string> tagsList = [];
+
+            if (contactsList.Count != 0)
+            {
+                foreach (Contact contact in contactsList)
+                {
+                    if (!string.IsNullOrEmpty(contact.Tags))
+                    {
+                        List<string> contactTagsList = [.. contact.Tags.Split(',')];
+                        foreach (string tagString in contactTagsList)
+                        {
+                            string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
+                            if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Contains(trimmedTagString))
+                            {
+                                tagsList.Add(trimmedTagString);
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            if (parameters.SortTags == 1)
+            {
+                tagsList = [.. tagsList.OrderBy(t => t)];
+            }
+
             if (parameters.SortBy == 0)
             {
                 contactsList = [.. contactsList.OrderBy(f => f.DateAdded)];
@@ -188,7 +218,8 @@ namespace KinaUnaWeb.Controllers
             {
                 ContactsList = contactsIdList,
                 PageNumber = parameters.CurrentPageNumber,
-                TotalItems = contactsList.Count
+                TotalItems = contactsList.Count,
+                TagsList = tagsList
             });
         }
 

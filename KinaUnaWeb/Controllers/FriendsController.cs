@@ -118,6 +118,8 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> FriendElement([FromBody] FriendItemParameters parameters)
         {
+            parameters ??= new FriendItemParameters();
+
             if (parameters.LanguageId == 0)
             {
                 parameters.LanguageId = Request.GetLanguageIdFromCookie();
@@ -149,6 +151,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> FriendsList([FromBody] FriendsPageParameters parameters)
         {
+            parameters ??= new FriendsPageParameters();
             if (parameters.LanguageId == 0)
             {
                 parameters.LanguageId = Request.GetLanguageIdFromCookie();
@@ -161,6 +164,27 @@ namespace KinaUnaWeb.Controllers
 
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
             List<Friend> friendsList = await friendsHttpClient.GetFriendsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+
+            List<string> tagsList = [];
+            
+            foreach (Friend friendItem in friendsList)
+            {
+                if (string.IsNullOrEmpty(friendItem.Tags)) continue;
+
+                List<string> friendItemTags = [.. friendItem.Tags.Split(',')];
+                foreach (string tagstring in friendItemTags)
+                {
+                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                    {
+                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                    }
+                }
+            }
+
+            if (parameters.SortTags == 1)
+            {
+                tagsList = [.. tagsList.OrderBy(t => t)];
+            }
 
             if (parameters.SortBy == 0)
             {
@@ -182,7 +206,8 @@ namespace KinaUnaWeb.Controllers
             {
                 FriendsList = friendsIdList,
                 PageNumber = parameters.CurrentPageNumber,
-                TotalItems = friendsList.Count
+                TotalItems = friendsList.Count,
+                TagsList = tagsList
             });
         }
 

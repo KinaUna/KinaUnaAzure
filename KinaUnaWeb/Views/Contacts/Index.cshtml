@@ -39,22 +39,24 @@
                         </span>
 
                     </div>
-                    @if (!string.IsNullOrEmpty(Model.TagFilter))
-                    {
-                        <div class="space-20"></div>
-                        <div class="text-dark" style="float: right;">
-                            @await LocaleManager.GetTranslation("Tag filter:", PageNames.Contacts, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
-                            <a class="btn btn-info btn-sm" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
-                                <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Contacts, Model.LanguageId)
-                            </a>
+                    <div id="active-tag-filter-div" class="col-auto d-none">
+                        <div class="row">
+                            <div class="col-auto" style="align-self: center;">
+                                @await LocaleManager.GetTranslation("Tag filter:", PageNames.Contacts, Model.LanguageId)
+                            </div>
+                            <div class="col" style="align-self: center;">
+                                <span id="current-tag-filter-span" class="btn tag-item"></span>
+                                <a id="reset-tag-filter-button" class="btn btn-info btn-sm">
+                                    <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Contacts, Model.LanguageId)
+                                </a>
+                            </div>
                         </div>
-                        <div class="space-20"></div>
-                    }
+                    </div>
                     <div class="space-70"></div>
                     <div id="contact-list-parent-div" class="row">
-                        <div id="contact-list-div" class="mr-auto ml-auto row row-cols-auto">
+                        <div id="contact-list-div" class="mr-auto ml-auto row row-cols-auto" style="display: contents;">
                         </div>
-                        <div id="loading-items-parent-div" style="height: 150px;">
+                        <div id="loading-items-parent-div" class="col-12" style="height: 150px;">
                             <div id="loading-items-div" class="w-100">
                                 <div class="space-50"></div>
                             </div>
@@ -66,16 +68,9 @@
         </div>
         <div class="row">
             <div class="col-12">
-                @{
-                    if (!string.IsNullOrEmpty(Model.Tags))
-                    {
-                        string[] tagsList = Model.Tags.Split(',');
-                        foreach (string tagString in tagsList)
-                        {
-                            <a asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
-                        }
-                    }
-                }
+                <div class="space-20"></div>
+                <div id="tags-list-div" class="row row-cols-auto" style="display: contents;">
+                </div>
             </div>
         </div>
     </div>
@@ -110,15 +105,24 @@
                             <button id="settings-sort-descending-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">history</i> @descendingString</button>
                         </div>
                     </div>
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <button id="settings-sort-by-contact-added-button" class="btn btn-outline-info active">
-                                <i class="material-icons icon-top-4">schedule</i> @await LocaleManager.GetTranslation("Date added", PageNames.Contacts, Model.LanguageId)
-                            </button>
-                        </div>
-                        <div class="col">
-                            <button id="settings-sort-by-name-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">sort_by_alpha</i> @await LocaleManager.GetTranslation("Name", PageNames.Contacts, Model.LanguageId)</button>
-                        </div>
+                </div>
+                <div class="col-12">
+                    @await LocaleManager.GetTranslation("Sort by:", PageNames.Contacts, Model.LanguageId);
+                </div>
+                <div class="row align-items-center">
+                    <div class="col">
+                        <button id="settings-sort-by-contact-added-button" class="btn btn-outline-info active">
+                            <i class="material-icons icon-top-4">schedule</i> @await LocaleManager.GetTranslation("Date added", PageNames.Contacts, Model.LanguageId)
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button id="settings-sort-by-display-name-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">sort_by_alpha</i> @await LocaleManager.GetTranslation("Display name", PageNames.Contacts, Model.LanguageId)</button>
+                    </div>
+                    <div class="col">
+                        <button id="settings-sort-by-first-name-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">sort_by_alpha</i> @await LocaleManager.GetTranslation("First name", PageNames.Contacts, Model.LanguageId)</button>
+                    </div>
+                    <div class="col">
+                        <button id="settings-sort-by-last-name-button" class="btn btn-outline-info"><i class="material-icons icon-top-4">sort_by_alpha</i> @await LocaleManager.GetTranslation("Last name", PageNames.Contacts, Model.LanguageId)</button>
                     </div>
                 </div>
             </div>
