@@ -1,10 +1,11 @@
 import { popupEventItem } from "../calendar/calendar-details.js";
 import { popupContactItem } from "../contacts/contact-details.js";
 import { popupFriendItem } from "../friends/friend-details.js";
-import { popupPictureDetails } from "../item-details/picture-details.js";
-import { popupVideoDetails } from "../item-details/video-details.js";
+import { popupPictureDetails } from "../pictures/picture-details.js";
+import { popupVideoDetails } from "../videos/video-details.js";
 import { popupNoteItem } from "../notes/note-details.js";
 import { popupSleepItem } from "../sleep/sleep-details.js";
+import { popupLocationItem } from "../locations/location-details.js";
 /**
  * Used to handle the click event on a notification.
  * Updates the notification as read if it is unread.
@@ -105,6 +106,18 @@ async function notificationItemClick(btn: HTMLElement): Promise<void> {
             let contactId = notificationLinkSplit[0];
             if (contactId !== null) {
                 popupContactItem(contactId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+
+        if (notificationLink.startsWith('/Locations/ViewLocation')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Locations/ViewLocation?locationId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let locationId = notificationLinkSplit[0];
+            if (locationId !== null) {
+                popupLocationItem(locationId);
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });

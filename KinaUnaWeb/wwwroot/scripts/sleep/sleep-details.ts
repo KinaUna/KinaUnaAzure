@@ -11,7 +11,7 @@ export function addSleepEventListeners(itemId: string): void {
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
             element.addEventListener('click', function () {
-                DisplaySleepItem(itemId);
+                displaySleepItem(itemId);
             });
         });
     }
@@ -22,14 +22,14 @@ export function addSleepEventListeners(itemId: string): void {
  * @param {string} sleepId The id of the sleep item to display.
  */
 export function popupSleepItem(sleepId: string): void {
-    DisplaySleepItem(sleepId);
+    displaySleepItem(sleepId);
 }
 
 /**
  * Displays a sleep item in a popup.
  * @param {string} sleepId The id of the sleep item to display.
  */
-async function DisplaySleepItem(sleepId: string): Promise<void> {
+async function displaySleepItem(sleepId: string): Promise<void> {
     startFullPageSpinner();
     let url = '/Sleep/ViewSleep?sleepId=' + sleepId + "&partialView=true";
     await fetch(url, {

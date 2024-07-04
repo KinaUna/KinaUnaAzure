@@ -10,7 +10,8 @@ const sortAscendingSettingsButton = document.querySelector<HTMLButtonElement>('#
 const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-descending-button');
 const sortByFriendsSinceSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-friends-since-button');
 const sortByNameSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-name-button');
-/** Updates the friendsPageParameters object with the selected filter options.
+
+/** Gets the FriendsPageParameters from the page's data attribute.
  */
 function getFriendsPageParameters(): void {
     const pageParametersDiv = document.querySelector<HTMLDivElement>('#friends-page-parameters');
@@ -113,7 +114,7 @@ async function getFriendElement(id: number): Promise<void> {
 }
 
 /**
- * Sets up the event listners for filtering buttons on the page, to select/deselect options and show/hide the associated contact items.
+ * Sets up the event listners for filtering buttons on the page, to select/deselect options and show/hide the associated friend items.
  */
 function setupFilterButtons(): void {
     const filterButtons = document.querySelectorAll('.button-checkbox');
@@ -206,10 +207,10 @@ async function loadFriendsPageSettings(): Promise<void> {
             sortFriendsDescending();
         }
 
-        friendsPageParameters.itemsPerPage = pageSettingsFromStorage.itemsPerPage;
-        const selectItemsPerPageElement = document.querySelector<HTMLSelectElement>('#items-per-page-select');
-        if (selectItemsPerPageElement !== null) {
-            selectItemsPerPageElement.value = friendsPageParameters.itemsPerPage.toString();
+        friendsPageParameters.sortTags = pageSettingsFromStorage.sortTags;
+        const sortTagsElement = document.querySelector<HTMLSelectElement>('#sort-tags-select');
+        if (sortTagsElement !== null) {
+            sortTagsElement.value = friendsPageParameters.sortTags.toString();
             ($(".selectpicker") as any).selectpicker('refresh');
         }
     }
@@ -324,6 +325,16 @@ async function resetActiveTagFilter(): Promise<void> {
     });
 }
 
+/**
+ * Adds an event listener to the reset tag filter button.
+ */
+function addResetActiveTagFilterEventListener(): void {
+    const resetTagFilterButton = document.querySelector<HTMLButtonElement>('#reset-tag-filter-button');
+    if (resetTagFilterButton !== null) {
+        resetTagFilterButton.addEventListener('click', resetActiveTagFilter);
+    }
+}
+
 /** Event handler for tag buttons, sets the tag filter and reloads the list of friends.
 */
 async function tagButtonClick(event: Event): Promise<void> {
@@ -360,9 +371,9 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     setupFilterButtons();
     getFriendsPageParameters();
     refreshSelectPickers();
+    addResetActiveTagFilterEventListener();
     await loadFriendsPageSettings();
     
-
     await getFriendsList();
 
     return new Promise<void>(function (resolve, reject) {

@@ -2,7 +2,7 @@ import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-di
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v6.js';
 /**
  * Adds event listeners to all elements with the data-contact-id attribute.
- * When clicked, the DisplayContactItem function is called.
+ * When clicked, the displayContactItem function is called.
  * @param {string} itemId The id of the Contact to add event listeners for.
  */
 export function addContactItemListeners(itemId) {
@@ -10,23 +10,23 @@ export function addContactItemListeners(itemId) {
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
             element.addEventListener('click', function () {
-                DisplayContactItem(itemId);
+                displayContactItem(itemId);
             });
         });
     }
 }
 /**
- * Enable other scripts to call the DisplayContactItem function.
+ * Enable other scripts to call the displayContactItem function.
  * @param {string} contactId The id of the contact item to display.
  */
 export function popupContactItem(contactId) {
-    DisplayContactItem(contactId);
+    displayContactItem(contactId);
 }
 /**
  * Displays a contact item in a popup.
  * @param {string} contactId The id of the contact item to display.
  */
-async function DisplayContactItem(contactId) {
+async function displayContactItem(contactId) {
     startFullPageSpinner();
     let url = '/Contacts/ViewContact?contactId=' + contactId + "&partialView=true";
     await fetch(url, {

@@ -64,6 +64,36 @@ export class NoteItemParameters {
         this.languageId = 0;
     }
 }
+export class LocationItemParameters {
+    constructor() {
+        this.locationId = 0;
+        this.languageId = 0;
+    }
+}
+export class LocationsPageParameters {
+    constructor() {
+        this.progenyId = 0;
+        this.languageId = 0;
+        this.currentPageNumber = 0;
+        this.itemsPerPage = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.sort = 0;
+        this.sortBy = 0;
+        this.tagFilter = '';
+        this.showSettings = false;
+        this.sortTags = 0;
+    }
+}
+export class LocationsPageResponse {
+    constructor() {
+        this.pageNumber = 0;
+        this.totalPages = 0;
+        this.totalItems = 0;
+        this.locationsList = [];
+        this.tagsList = [];
+    }
+}
 export class NotesPageParameters {
     constructor() {
         this.progenyId = 0;

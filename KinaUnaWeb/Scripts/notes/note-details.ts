@@ -11,7 +11,7 @@ export function addNoteEventListeners(itemId: string): void {
     if (noteElementsWithDataId) {
         noteElementsWithDataId.forEach((element) => {
             element.addEventListener('click', function () {
-                DisplayNoteItem(itemId);
+                displayNoteItem(itemId);
             });
         });
     }
@@ -22,7 +22,7 @@ export function addNoteEventListeners(itemId: string): void {
  * @param {string} noteId The id of the note to display.
  */
 export function popupNoteItem(noteId: string): void {
-    DisplayNoteItem(noteId);
+    displayNoteItem(noteId);
 
 }
 
@@ -30,7 +30,7 @@ export function popupNoteItem(noteId: string): void {
  * Displays a note item in a popup.
  * @param {string} noteId The id of the note to display.
  */
-async function DisplayNoteItem(noteId: string): Promise<void> {
+async function displayNoteItem(noteId: string): Promise<void> {
     startFullPageSpinner();
     let url = '/Notes/ViewNote?noteId=' + noteId + "&partialView=true";
     await fetch(url, {

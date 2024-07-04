@@ -1,10 +1,11 @@
-import { addPictureItemEventListeners } from '../item-details/picture-details.js';
+import { addPictureItemEventListeners } from '../pictures/picture-details.js';
 import { addCalendarEventListeners } from '../calendar/calendar-details.js';
-import { addVideoItemEventListeners } from './video-details.js';
+import { addVideoItemEventListeners } from '../videos/video-details.js';
 import { addNoteEventListeners } from '../notes/note-details.js';
 import { addSleepEventListeners } from '../sleep/sleep-details.js';
 import { addFriendItemListeners } from '../friends/friend-details.js';
 import { addContactItemListeners } from '../contacts/contact-details.js';
+import { addLocationItemListeners } from '../locations/location-details.js';
 /**
  * Adds event listeners for a given timeline item.
  * @param {TimelineItem} item The timeline item to add event listeners for.
@@ -44,7 +45,7 @@ export function addTimelineItemEventListener(item) {
         // Add vaccination listeners.
     }
     if (item.itemType === 12) {
-        // Add location listeners.
+        addLocationItemListeners(item.itemId);
     }
 }
 /**

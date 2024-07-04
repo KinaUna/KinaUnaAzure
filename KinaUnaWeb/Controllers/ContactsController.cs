@@ -19,49 +19,12 @@ namespace KinaUnaWeb.Controllers
         : Controller
     {
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, string tagFilter = "")
+        public async Task<IActionResult> Index(int childId = 0, string tagFilter = "", int sort = 0, int sortBy = 0, int sortTags = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             ContactListViewModel model = new(baseModel);
             
-            List<string> tagsList = [];
-
             List<Contact> contactList = await contactsHttpClient.GetContactsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
-            
-            if (contactList.Count != 0)
-            {
-                foreach (Contact contact in contactList)
-                {
-                    if (contact.AddressIdNumber.HasValue)
-                    {
-                        contact.Address = await locationsHttpClient.GetAddress(contact.AddressIdNumber.Value);
-                    }
-
-                    ContactViewModel contactViewModel = new(contact, model.IsCurrentUserProgenyAdmin, model.CurrentUser);
-                    
-                    if (!string.IsNullOrEmpty(contactViewModel.Tags))
-                    {
-                        List<string> contactTagsList = [.. contactViewModel.Tags.Split(',')];
-                        foreach (string tagString in contactTagsList)
-                        {
-                            string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
-                            if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Contains(trimmedTagString))
-                            { 
-                                tagsList.Add(trimmedTagString);
-                            }
-                        }
-                    }
-
-                    contactViewModel.ContactItem.PictureLink = contactViewModel.ContactItem.GetProfilePictureUrl();
-
-                    model.ContactsList.Add(contactViewModel);
-
-                }
-                
-                model.ContactsList = [.. model.ContactsList.OrderBy(m => m.ContactItem.DisplayName)];
-
-                model.SetTags(tagsList);
-            }
             
             model.TagFilter = tagFilter;
 
@@ -70,7 +33,10 @@ namespace KinaUnaWeb.Controllers
                 LanguageId = model.LanguageId,
                 TagFilter = tagFilter,
                 TotalItems = contactList.Count,
-                ProgenyId = model.CurrentProgenyId
+                ProgenyId = model.CurrentProgenyId,
+                Sort = sort,
+                SortBy = sortBy,
+                SortTags = sortTags
             };
 
             return View(model);
@@ -192,19 +158,19 @@ namespace KinaUnaWeb.Controllers
 
             if (parameters.SortBy == 0)
             {
-                contactsList = [.. contactsList.OrderBy(f => f.DateAdded)];
+                contactsList = [.. contactsList.OrderBy(c => c.DateAdded)];
             }
             if (parameters.SortBy == 1)
             {
-                contactsList = [.. contactsList.OrderBy(f => f.DisplayName)];
+                contactsList = [.. contactsList.OrderBy(c => c.DisplayName)];
             }
             if (parameters.SortBy == 2)
             {
-                contactsList = [.. contactsList.OrderBy(f => f.FirstName)];
+                contactsList = [.. contactsList.OrderBy(c => c.FirstName)];
             }
             if (parameters.SortBy == 3)
             {
-                contactsList = [.. contactsList.OrderBy(f => f.LastName)];
+                contactsList = [.. contactsList.OrderBy(c => c.LastName)];
             }
 
             if (parameters.Sort == 1)

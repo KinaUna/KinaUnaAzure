@@ -139,7 +139,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Locations?childId=" + locationItem.ProgenyId,
+                    Link = "/Locations/ViewLocation?locationId=" + locationItem.LocationId,
                     Type = "Notification"
                 };
 

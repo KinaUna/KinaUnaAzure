@@ -11,7 +11,7 @@ const sortByContactAddedSettingsButton = document.querySelector('#settings-sort-
 const sortByDisplayNameSettingsButton = document.querySelector('#settings-sort-by-display-name-button');
 const sortByFirstNameSettingsButton = document.querySelector('#settings-sort-by-first-name-button');
 const sortByLastNameSettingsButton = document.querySelector('#settings-sort-by-last-name-button');
-/** Updates the contactsPageParameters object with the selected filter options.
+/** Gets the ContactsPageParameters from the page's data-contacts-page-parameters attribute.
  */
 function getContactsPageParameters() {
     const pageParametersDiv = document.querySelector('#contacts-page-parameters');
@@ -193,10 +193,10 @@ async function loadContactsPageSettings() {
         else {
             sortContactsDescending();
         }
-        contactsPageParameters.itemsPerPage = pageSettingsFromStorage.itemsPerPage;
-        const selectItemsPerPageElement = document.querySelector('#items-per-page-select');
-        if (selectItemsPerPageElement !== null) {
-            selectItemsPerPageElement.value = contactsPageParameters.itemsPerPage.toString();
+        contactsPageParameters.sortTags = pageSettingsFromStorage.sortTags;
+        const sortTagsElement = document.querySelector('#sort-tags-select');
+        if (sortTagsElement !== null) {
+            sortTagsElement.value = contactsPageParameters.sortTags.toString();
             $(".selectpicker").selectpicker('refresh');
         }
     }
@@ -324,6 +324,14 @@ async function resetActiveTagFilter() {
         resolve();
     });
 }
+/** Adds an event listener to the reset tag filter button.
+*/
+function addResetActiveTagFilterEventListener() {
+    const resetTagFilterButton = document.querySelector('#reset-tag-filter-button');
+    if (resetTagFilterButton !== null) {
+        resetTagFilterButton.addEventListener('click', resetActiveTagFilter);
+    }
+}
 /** Event handler for tag buttons, sets the tag filter and reloads the list of contacts.
 */
 async function tagButtonClick(event) {
@@ -356,6 +364,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     setupFilterButtons();
     getContactsPageParameters();
     refreshSelectPickers();
+    addResetActiveTagFilterEventListener();
     await loadContactsPageSettings();
     await getContactsList();
     return new Promise(function (resolve, reject) {

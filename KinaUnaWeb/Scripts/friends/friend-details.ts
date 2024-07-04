@@ -11,7 +11,7 @@ export function addFriendItemListeners(itemId: string): void {
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
             element.addEventListener('click', function () {
-                DisplayFriendItem(itemId);
+                displayFriendItem(itemId);
             });
         });
     }
@@ -22,7 +22,7 @@ export function addFriendItemListeners(itemId: string): void {
  * @param {string} friendId The id of the friend item to display.
  */
 export function popupFriendItem(friendId: string): void {
-    DisplayFriendItem(friendId);
+    displayFriendItem(friendId);
 
 }
 
@@ -30,7 +30,7 @@ export function popupFriendItem(friendId: string): void {
  * Displays a friend item in a popup.
  * @param {string} friendId The id of the friend item to display.
  */
-async function DisplayFriendItem(friendId: string): Promise<void> {
+async function displayFriendItem(friendId: string): Promise<void> {
     startFullPageSpinner();
     let url = '/Friends/ViewFriend?friendId=' + friendId + "&partialView=true";
     await fetch(url, {

@@ -1,51 +1,47 @@
 import * as LocaleHelper from '../localization-v6.js';
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v6.js';
-import { hideBodyScrollbars, showBodyScrollbars } from './items-display.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
-import { PicturesPageParameters } from '../page-models-v6.js';
-let pictureDetailsTouchStartX = 0;
-let pictureDetailsTouchStartY = 0;
-let pictureDetailsTouchEndX = 0;
-let pictureDetailsTouchEndY = 0;
+import { VideosPageParameters } from '../page-models-v6.js';
+let videoDetailsTouchStartX = 0;
+let videoDetailsTouchStartY = 0;
+let videoDetailsTouchEndX = 0;
+let videoDetailsTouchEndY = 0;
 /**
- * Adds click event listeners to all elements with data-picture-id with the pictureId value on the page.
- * When clicked, the picture details popup is displayed.
- * @param {string} pictureId The ID of the picture to display.
+ * Adds click event listeners to all elements with data-video-id with the videoId value on the page.
+ * When clicked, the video details popup is displayed.
+ * @param {string} videoId The ID of the video to display.
  */
-export function addPictureItemEventListeners(pictureId) {
-    const pictureElementsWithDataId = document.querySelectorAll('[data-picture-id="' + pictureId + '"]');
-    if (pictureElementsWithDataId) {
-        pictureElementsWithDataId.forEach((element) => {
+export function addVideoItemEventListeners(videoId) {
+    const videoElementsWithDataId = document.querySelectorAll('[data-video-id="' + videoId + '"]');
+    if (videoElementsWithDataId) {
+        videoElementsWithDataId.forEach((element) => {
             element.addEventListener('click', function () {
-                displayPictureDetails(pictureId);
+                displayVideoDetails(videoId);
             });
         });
     }
 }
-/**
- * Enable other scripts to call the displayPictureDetails function.
- * @param {string} pictureId The id of the picture to display.
- */
-export function popupPictureDetails(pictureId) {
-    displayPictureDetails(pictureId);
+export function popupVideoDetails(videoId) {
+    displayVideoDetails(videoId);
 }
 /**
- * Overrides the comment submit form to send the comment data to the server and then refresh the picture details popup.
+ * Overrides the comment submit form to send the comment data to the server and then refresh the video details popup.
  * Enables/disables the submit button when the comment textarea changes.
  */
 async function addCommentEventListeners() {
-    const submitForm = document.getElementById('new-picture-comment-form');
+    const submitForm = document.getElementById('new-video-comment-form');
     if (submitForm !== null) {
         submitForm.addEventListener('submit', async function (event) {
             event.preventDefault();
             submitComment();
         });
     }
-    const newCommentTextArea = document.getElementById('new-picture-comment-text-area');
+    const newCommentTextArea = document.getElementById('new-video-comment-text-area');
     if (newCommentTextArea !== null) {
         newCommentTextArea.addEventListener('input', function () {
-            const submitCommentButton = document.getElementById('submit-new-picture-comment-button');
+            const submitCommentButton = document.getElementById('submit-new-video-comment-button');
             if (submitCommentButton) {
                 if (newCommentTextArea.value.length > 0) {
                     submitCommentButton.disabled = false;
@@ -60,14 +56,14 @@ async function addCommentEventListeners() {
     });
 }
 /**
- * Gets the form data from the comment form and sends it to the server to add a new comment to the picture.
+ * Gets the form data from the comment form and sends it to the server to add a new comment to the video.
  */
 async function submitComment() {
     startLoadingItemsSpinner('item-details-content-wrapper', 0.25, 128, 128, 128);
-    const submitForm = document.getElementById('new-picture-comment-form');
+    const submitForm = document.getElementById('new-video-comment-form');
     if (submitForm !== null) {
         const formData = new FormData(submitForm);
-        const response = await fetch('/Pictures/AddPictureComment', {
+        const response = await fetch('/Videos/AddVideoComment', {
             method: 'POST',
             body: formData,
             headers: {
@@ -78,11 +74,11 @@ async function submitComment() {
             console.log('Error adding comment. Error: ' + error);
         });
         if (response) {
-            const currentPictureIdDiv = document.querySelector('#current-picture-id-div');
-            if (currentPictureIdDiv) {
-                const currentPictureId = currentPictureIdDiv.getAttribute('data-current-picture-id');
-                if (currentPictureId) {
-                    displayPictureDetails(currentPictureId, true);
+            const currentVideoIdDiv = document.querySelector('#current-video-id-div');
+            if (currentVideoIdDiv) {
+                const currentVideoId = currentVideoIdDiv.getAttribute('data-current-video-id');
+                if (currentVideoId) {
+                    displayVideoDetails(currentVideoId, true);
                 }
             }
         }
@@ -105,11 +101,11 @@ async function addEditEventListeners() {
         await setLocationAutoSuggestList(getCurrentProgenyId());
         setupDateTimePicker();
         addCopyLocationButtonEventListener();
-        const submitForm = document.getElementById('edit-picture-form');
+        const submitForm = document.getElementById('edit-video-form');
         if (submitForm !== null) {
             submitForm.addEventListener('submit', async function (event) {
                 event.preventDefault();
-                submitPictureEdit();
+                submitVideoEdit();
             });
         }
         $(".selectpicker").selectpicker("refresh");
@@ -119,15 +115,15 @@ async function addEditEventListeners() {
     });
 }
 /**
- * Gets the data from the edit picture form and sends it to the server to update the picture data.
- * Then refreshes the picture details popup.
+ * Gets the data from the edit video form and sends it to the server to update the video data.
+ * Then refreshes the video details popup.
  */
-async function submitPictureEdit() {
+async function submitVideoEdit() {
     startLoadingItemsSpinner('item-details-content-wrapper', 0.25, 128, 128, 128);
-    const submitForm = document.getElementById('edit-picture-form');
+    const submitForm = document.getElementById('edit-video-form');
     if (submitForm !== null) {
         const formData = new FormData(submitForm);
-        const response = await fetch('/Pictures/EditPicture', {
+        const response = await fetch('/Videos/EditVideo', {
             method: 'POST',
             body: formData,
             headers: {
@@ -135,14 +131,14 @@ async function submitPictureEdit() {
                 'enctype': 'multipart/form-data'
             }
         }).catch(function (error) {
-            console.log('Error editing Picture. Error: ' + error);
+            console.log('Error editing Video. Error: ' + error);
         });
         if (response) {
-            const currentPictureIdDiv = document.querySelector('#current-picture-id-div');
-            if (currentPictureIdDiv) {
-                const currentPictureId = currentPictureIdDiv.getAttribute('data-current-picture-id');
-                if (currentPictureId) {
-                    displayPictureDetails(currentPictureId, true);
+            const currentVideoIdDiv = document.querySelector('#current-video-id-div');
+            if (currentVideoIdDiv) {
+                const currentVideoId = currentVideoIdDiv.getAttribute('data-current-video-id');
+                if (currentVideoId) {
+                    displayVideoDetails(currentVideoId, true);
                 }
             }
         }
@@ -153,14 +149,14 @@ async function submitPictureEdit() {
     });
 }
 /**
- * Configures the date time picker for the picture edit form.
+ * Configures the date time picker for the video edit form.
  */
 async function setupDateTimePicker() {
     setMomentLocale();
     const zebraDateTimeFormat = getZebraDateTimeFormat();
     const zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(getCurrentLanguageId());
-    if (document.getElementById('picture-date-time-picker') !== null) {
-        const dateTimePicker = $('#picture-date-time-picker');
+    if (document.getElementById('video-date-time-picker') !== null) {
+        const dateTimePicker = $('#video-date-time-picker');
         dateTimePicker.Zebra_DatePicker({
             format: zebraDateTimeFormat,
             open_icon_only: true,
@@ -177,68 +173,55 @@ async function setupDateTimePicker() {
 }
 /**
  * Adds event listeners to the previous and next links in the item details popup.
- * Adds event listners for swipe navigation and full screen image display.
+ * Adds swipe navigation for the video details popup.
  */
 function addNavigationEventListeners() {
-    let previousLink = document.querySelector('#previous-picture-link');
+    let previousLink = document.querySelector('#previous-video-link');
     if (previousLink) {
         previousLink.addEventListener('click', function () {
-            let previousPictureId = previousLink.getAttribute('data-previous-picture-id');
-            if (previousPictureId) {
-                displayPictureDetails(previousPictureId, true);
+            let previousVideoId = previousLink.getAttribute('data-previous-video-id');
+            if (previousVideoId) {
+                displayVideoDetails(previousVideoId, true);
             }
         });
     }
-    let nextLink = document.querySelector('#next-picture-link');
+    let nextLink = document.querySelector('#next-video-link');
     if (nextLink) {
         nextLink.addEventListener('click', function () {
-            let nextPictureId = nextLink.getAttribute('data-next-picture-id');
-            if (nextPictureId) {
-                displayPictureDetails(nextPictureId, true);
+            let nextVideoId = nextLink.getAttribute('data-next-video-id');
+            if (nextVideoId) {
+                displayVideoDetails(nextVideoId, true);
             }
         });
     }
     // Swipe navigation
-    const photoDetailsDiv = document.querySelector('#photo-details-div');
-    if (photoDetailsDiv) {
-        photoDetailsDiv.addEventListener('touchstart', event => {
-            pictureDetailsTouchStartX = event.touches[0].clientX;
-            pictureDetailsTouchStartY = event.touches[0].clientY;
+    const videoDetailsDiv = document.querySelector('#video-details-div');
+    if (videoDetailsDiv) {
+        videoDetailsDiv.addEventListener('touchstart', event => {
+            videoDetailsTouchStartX = event.touches[0].clientX;
+            videoDetailsTouchStartY = event.touches[0].clientY;
         });
-        photoDetailsDiv.addEventListener('touchend', event => {
-            pictureDetailsTouchEndX = event.changedTouches[0].clientX;
-            pictureDetailsTouchEndY = event.changedTouches[0].clientY;
-            if (Math.abs(pictureDetailsTouchEndY - pictureDetailsTouchStartY) > 100) {
+        videoDetailsDiv.addEventListener('touchend', event => {
+            videoDetailsTouchEndX = event.changedTouches[0].clientX;
+            videoDetailsTouchEndY = event.changedTouches[0].clientY;
+            if (Math.abs(videoDetailsTouchEndY - videoDetailsTouchStartY) > 100) {
                 return;
             }
-            if (Math.abs(pictureDetailsTouchEndX - pictureDetailsTouchStartX) < 50) {
+            if (Math.abs(videoDetailsTouchEndX - videoDetailsTouchStartX) < 50) {
                 return;
             }
-            if (pictureDetailsTouchEndX < pictureDetailsTouchStartX) {
-                let nextPictureId = nextLink?.getAttribute('data-next-picture-id');
-                if (nextPictureId) {
-                    displayPictureDetails(nextPictureId, true);
+            if (videoDetailsTouchEndX < videoDetailsTouchStartX) {
+                let nextVideoId = nextLink?.getAttribute('data-next-video-id');
+                if (nextVideoId) {
+                    displayVideoDetails(nextVideoId, true);
                 }
             }
-            if (pictureDetailsTouchEndX > pictureDetailsTouchStartX) {
-                let previousPictureId = previousLink?.getAttribute('data-previous-picture-id');
-                if (previousPictureId) {
-                    displayPictureDetails(previousPictureId, true);
+            if (videoDetailsTouchEndX > videoDetailsTouchStartX) {
+                let previousVideoId = previousLink?.getAttribute('data-previous-video-id');
+                if (previousVideoId) {
+                    displayVideoDetails(previousVideoId, true);
                 }
             }
-        });
-    }
-    // Todo: Add pinch/scroll zoom
-    // Full screen image display
-    const imageElements = document.querySelectorAll('.picture-details-image');
-    if (imageElements) {
-        imageElements.forEach((imageElement) => {
-            imageElement.addEventListener('click', function (event) {
-                const targetImage = event.target;
-                if (targetImage) {
-                    targetImage.parentElement?.classList.toggle('picture-details-image-full-screen');
-                }
-            });
         });
     }
 }
@@ -264,7 +247,7 @@ function addCloseButtonEventListener() {
 /**
  * Adds an event listener to the show map button in the item details popup.
  * When clicked, the map container is shown or hidden.
- */
+  */
 function addShowMapButtonEventListener() {
     let showMapButton = document.querySelector('#show-here-maps-button');
     if (showMapButton) {
@@ -285,12 +268,12 @@ function addShowMapButtonEventListener() {
     }
 }
 /**
- * Fetches the HTML for picture details and displays it in a popup.
+ * Fetches the HTML for video details and displays it in a popup.
  * Then adds the event listeners for the elements displayed.
- * @param {string} pictureId The ID of the picture to display.
+ * @param {string} videoId The ID of the video to display.
  * @param {boolean} isPopupVisible If the popup is already visible. If true, the body-content spinner will not be shown.
  */
-async function displayPictureDetails(pictureId, isPopupVisible = false) {
+async function displayVideoDetails(videoId, isPopupVisible = false) {
     if (!isPopupVisible) {
         startFullPageSpinner();
     }
@@ -298,13 +281,13 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
         startLoadingItemsSpinner('item-details-content-wrapper', 0.25, 128, 128, 128);
     }
     let tagFilter = '';
-    const picturePageParameters = getPicturePageParametersFromPageData();
-    if (picturePageParameters) {
-        if (picturePageParameters.tagFilter) {
-            tagFilter = picturePageParameters.tagFilter;
+    const videoPageParameters = getVideoPageParametersFromPageData();
+    if (videoPageParameters) {
+        if (videoPageParameters.tagFilter) {
+            tagFilter = videoPageParameters.tagFilter;
         }
     }
-    let url = '/Pictures/Picture?id=' + pictureId + "&tagFilter=" + tagFilter + "&partialView=true";
+    let url = '/Videos/Video?id=' + videoId + "&tagFilter=" + tagFilter + "&partialView=true";
     await fetch(url, {
         method: 'GET',
         headers: {
@@ -327,10 +310,10 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
             }
         }
         else {
-            console.error('Error getting picture item. Status: ' + response.status + ', Message: ' + response.statusText);
+            console.error('Error getting video item. Status: ' + response.status + ', Message: ' + response.statusText);
         }
     }).catch(function (error) {
-        console.error('Error getting picture item. Error: ' + error);
+        console.error('Error getting video item. Error: ' + error);
     });
     if (!isPopupVisible) {
         stopFullPageSpinner();
@@ -340,20 +323,20 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
     }
 }
 /**
- * Gets the picture page parameters from the page data div.
- * Used to determine if a tag filter is set for the pictures page.
- * @returns {PicturesPageParameters} The picture page parameters.
+ * Gets the video page parameters from the page data.
+ * Used to determine if a tag filter is set for the video page.
+ * @returns {VideosPageParameters} The video page parameters.
  */
-function getPicturePageParametersFromPageData() {
-    const picturesPageParametersDiv = document.querySelector('#pictures-page-parameters');
-    let picturesPageParametersResult = new PicturesPageParameters();
-    if (picturesPageParametersDiv !== null) {
-        const pageParametersString = picturesPageParametersDiv.dataset.picturesPageParameters;
+function getVideoPageParametersFromPageData() {
+    const videosPageParametersDiv = document.querySelector('#videos-page-parameters');
+    let videosPageParametersResult = new VideosPageParameters();
+    if (videosPageParametersDiv !== null) {
+        const pageParametersString = videosPageParametersDiv.dataset.videosPageParameters;
         if (!pageParametersString) {
             return null;
         }
-        picturesPageParametersResult = JSON.parse(pageParametersString);
+        videosPageParametersResult = JSON.parse(pageParametersString);
     }
-    return picturesPageParametersResult;
+    return videosPageParametersResult;
 }
-//# sourceMappingURL=picture-details.js.map
+//# sourceMappingURL=video-details.js.map

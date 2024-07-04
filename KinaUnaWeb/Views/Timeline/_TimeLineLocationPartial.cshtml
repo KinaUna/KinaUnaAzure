@@ -6,7 +6,7 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
     Model.Date ??= DateTime.MinValue;
 }
-<a class="leave-page" asp-controller="Locations" asp-action="Index">
+<button class="item-btn contact-item" data-location-id="@Model.LocationId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-location">
             <div class="row">
@@ -20,42 +20,6 @@
                     <div class="timeline-text text-white-50">
                         <div class="text-white">@await LocaleManager.GetTranslation("Latitude:", PageNames.Locations, languageId) @Model.Latitude, @await LocaleManager.GetTranslation("Longitude:", PageNames.Locations, languageId) @Model.Longitude</div>
                         <div>@await LocaleManager.GetTranslation("Date:", PageNames.Locations, languageId) @Model.Date.Value.ToString("dd-MMM-yyyy")</div>
-                        @if (!string.IsNullOrEmpty(Model.StreetName))
-                        {
-                            <div>@await LocaleManager.GetTranslation("Street:", PageNames.Locations, languageId) @Model.StreetName</div>
-                        }
-                        @if (!string.IsNullOrEmpty(Model.HouseNumber))
-                        {
-                            <div>@await LocaleManager.GetTranslation("House number:", PageNames.Locations, languageId) @Model.HouseNumber</div>
-                        }
-                        @if (!string.IsNullOrEmpty(Model.District))
-                        {
-                            <div>@await LocaleManager.GetTranslation("District:", PageNames.Locations, languageId) @Model.District</div>
-                        }
-                        @if (!string.IsNullOrEmpty(Model.City))
-                        {
-                            <div>@await LocaleManager.GetTranslation("City:", PageNames.Locations, languageId) @Model.City</div>
-                        }
-                        @if (!string.IsNullOrEmpty(Model.PostalCode))
-                        {
-                            <div>@await LocaleManager.GetTranslation("Postal code:", PageNames.Locations, languageId) @Model.PostalCode</div>
-                        }
-                        @if (!string.IsNullOrEmpty(Model.County))
-                        {
-                            <div>@await LocaleManager.GetTranslation("County:", PageNames.Locations, languageId) @Model.County</div>
-                        }
-                        @if (!string.IsNullOrEmpty(Model.State))
-                        {
-                            <div>@await LocaleManager.GetTranslation("State:", PageNames.Locations, languageId) @Model.State</div>
-                        }
-                        @if (!string.IsNullOrEmpty(Model.Country))
-                        {
-                            <div>@await LocaleManager.GetTranslation("Country:", PageNames.Locations, languageId) @Model.Country</div>
-                        }
-                        @if (!string.IsNullOrEmpty(Model.Notes))
-                        {
-                            <div>@await LocaleManager.GetTranslation("Notes:", PageNames.Locations, languageId) @Model.Notes</div>
-                        }
                         @if (!string.IsNullOrEmpty(Model.Tags))
                         {
                             List<string> tagsList = Model.Tags.Split(',').ToList();
@@ -65,11 +29,10 @@
                                     <span class="btn tag-item leave-page">@tagString</span>
                                 }
                             </div>
-
                         }
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</a>
+</button>

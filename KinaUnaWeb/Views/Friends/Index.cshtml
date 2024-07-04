@@ -20,65 +20,56 @@
     <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
         <div class="row">
             <div class="col-12">
-                @if (Model.FriendViewModelsList == null || !Model.FriendViewModelsList.Any())
+                <h2>@ViewData["Title"]</h2>
+                <div>
+                    <span>Show:</span>
+                    <span class="button-checkbox">
+                        <button type="button" class="btn btn-primary" name="friendClass0">
+                            <span class="checkbox-icon"></span> @personalFriend
+                        </button>
+                    </span>
+                    <span class="button-checkbox">
+                        <button type="button" class="btn btn-primary" name="friendClass1">
+                            <span class="checkbox-icon"></span> @toyFriend
+                        </button>
+                    </span>
+                    <span class="button-checkbox">
+                        <button type="button" class="btn btn-primary" name="friendClass2">
+                            <span class="checkbox-icon"></span> @parentFriend
+                        </button>
+                    </span>
+                    <span class="button-checkbox">
+                        <button type="button" class="btn btn-primary" name="friendClass3">
+                            <span class="checkbox-icon"></span> @familyFriend
+                        </button>
+                    </span>
+                    <span class="button-checkbox">
+                        <button type="button" class="btn btn-primary" name="friendClass4">
+                            <span class="checkbox-icon"></span> @caretakerFriend
+                        </button>
+                    </span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.TagFilter))
                 {
-                    <h2>@ViewData["Title"]</h2>
-                    <div>@await LocaleManager.GetTranslation("Nothing to see here yet", PageNames.Friends, Model.LanguageId)</div>
-                }
-                else
-                {
-                    <h2>@ViewData["Title"]</h2>
-                    <div>
-                        <span>Show:</span>
-                        <span class="button-checkbox">
-                            <button type="button" class="btn btn-primary" name="friendClass0">
-                                <span class="checkbox-icon"></span> @personalFriend
-                            </button>
-                        </span>
-                        <span class="button-checkbox">
-                            <button type="button" class="btn btn-primary" name="friendClass1">
-                                <span class="checkbox-icon"></span> @toyFriend
-                            </button>
-                        </span>
-                        <span class="button-checkbox">
-                            <button type="button" class="btn btn-primary" name="friendClass2">
-                                <span class="checkbox-icon"></span> @parentFriend
-                            </button>
-                        </span>
-                        <span class="button-checkbox">
-                            <button type="button" class="btn btn-primary" name="friendClass3">
-                                <span class="checkbox-icon"></span> @familyFriend
-                            </button>
-                        </span>
-                        <span class="button-checkbox">
-                            <button type="button" class="btn btn-primary" name="friendClass4">
-                                <span class="checkbox-icon"></span> @caretakerFriend
-                            </button>
-                        </span>
+                    <div class="space-20"></div>
+                    <div class="text-dark" style="float: right;">
+                        @await LocaleManager.GetTranslation("Tag filter:", PageNames.Friends, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
+                        <button id="reset-tag-filter-button" class="btn btn-info btn-sm">
+                            <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Friends, Model.LanguageId)
+                        </button>
                     </div>
-                    @if (!string.IsNullOrEmpty(Model.TagFilter))
-                    {
-                        <div class="space-20"></div>
-                        <div class="text-dark" style="float: right;">
-                            @await LocaleManager.GetTranslation("Tag filter:", PageNames.Friends, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
-                            <a class="btn btn-info btn-sm leave-page" asp-action="Index" asp-route-childId="@Model.CurrentProgeny.Id">
-                                <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Friends, Model.LanguageId)
-                            </a>
-                        </div>
-                        <div class="space-20"></div>
-                    }
-                    <div class="space-70"></div>
-                    <div id="friend-list-parent-div" class="row">
-                        <div id="friend-list-div" class="mr-auto ml-auto row row-cols-auto" style="display: contents;">
-                        </div>
-                        <div id="loading-items-parent-div" class="col-12" style="height: 150px;">
-                            <div id="loading-items-div" class="w-100">
-                                <div class="space-50"></div>
-                            </div>
+                    <div class="space-20"></div>
+                }
+                <div class="space-70"></div>
+                <div id="friend-list-parent-div" class="row">
+                    <div id="friend-list-div" class="mr-auto ml-auto row row-cols-auto" style="display: contents;">
+                    </div>
+                    <div id="loading-items-parent-div" class="col-12" style="height: 150px;">
+                        <div id="loading-items-div" class="w-100">
+                            <div class="space-50"></div>
                         </div>
                     </div>
-                    
-                }
+                </div>
             </div>
         </div>
         <div class="space-20"></div>

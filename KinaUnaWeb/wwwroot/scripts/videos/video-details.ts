@@ -1,7 +1,7 @@
-﻿import * as LocaleHelper from '../localization-v6.js';
+import * as LocaleHelper from '../localization-v6.js';
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner, startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v6.js';
-import { hideBodyScrollbars, showBodyScrollbars } from './items-display.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display.js';
 import { addCopyLocationButtonEventListener, setupHereMaps } from '../locations/location-tools.js';
 import { VideosPageParameters } from '../page-models-v6.js';
 

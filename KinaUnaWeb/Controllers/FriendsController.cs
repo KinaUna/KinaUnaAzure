@@ -19,50 +19,24 @@ namespace KinaUnaWeb.Controllers
     public class FriendsController(ImageStore imageStore, IFriendsHttpClient friendsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, string tagFilter = "")
+        public async Task<IActionResult> Index(int childId = 0, string tagFilter = "", int sort = 0, int sortBy = 0, int sortTags = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             FriendsListViewModel model = new(baseModel);
             List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
 
-            if (friendsList.Count == 0) return View(model);
-
-            friendsList = [.. friendsList.OrderBy(f => f.FriendSince)];
-                
-            List<string> tagsList = [];
-                
-            foreach (Friend friend in friendsList)
-            {
-                FriendViewModel friendViewModel = new();
-                friendViewModel.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
-
-                friendViewModel.FriendItem.PictureLink = friendViewModel.FriendItem.GetProfilePictureUrl();
-
-                if (!string.IsNullOrEmpty(friendViewModel.Tags))
-                {
-                    List<string> friendTagsList = [.. friendViewModel.Tags.Split(',')];
-                    foreach (string tagString in friendTagsList)
-                    {
-                        if (!tagsList.Contains(tagString.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                        {
-                            tagsList.Add(tagString.TrimStart(' ', ',').TrimEnd(' ', ','));
-                        }
-                    }
-                }
-
-                model.FriendViewModelsList.Add(friendViewModel);
-            }
+            model.TagFilter = tagFilter;
 
             model.FriendsPageParameters = new()
             {
                 LanguageId = model.LanguageId,
                 TagFilter = tagFilter,
                 TotalItems = friendsList.Count,
-                ProgenyId = model.CurrentProgenyId
+                ProgenyId = model.CurrentProgenyId,
+                Sort = sort,
+                SortBy = sortBy,
+                SortTags = sortTags
             };
-
-            model.SetTags(tagsList);
-            model.TagFilter = tagFilter;
 
             return View(model);
 

@@ -1,4 +1,6 @@
-﻿/**
+﻿import { popupLocationItem } from "./location-details.js";
+
+/**
  * Adds an event listener to the copy location button to copy the selected location to the latitude and longitude fields.
  */
 export function addCopyLocationButtonEventListener(): void {
@@ -77,4 +79,18 @@ export function setupHereMaps(languageId: number) {
 
     let marker = new H.map.Marker({ lat: latitudeValue, lng: longitudeValue }, {icon: defaultIcon });
     map.addObject(marker);
+}
+
+export function setUpMapClickToShowLocationListener(map: H.Map) {
+    map.addEventListener('tap',
+        function (evt: any) {
+            if (evt.target instanceof H.map.Marker) {
+                popupLocationItem(evt.target.getData());
+            }
+            if (evt.currentPointer != null) {
+                let coord = map.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
+                map.setCenter(coord, true);
+            }
+            
+        });
 }

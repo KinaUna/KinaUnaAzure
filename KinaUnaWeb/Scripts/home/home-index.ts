@@ -1,4 +1,4 @@
-﻿import { popupPictureDetails } from '../item-details/picture-details.js';
+﻿import { popupPictureDetails } from '../pictures/picture-details.js';
 
 function addRandomPictureEventListener(): void {
     let randomPictureElement = document.querySelector<HTMLDivElement>('#random-picture-link');

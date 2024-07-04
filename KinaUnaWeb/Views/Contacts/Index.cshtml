@@ -3,7 +3,7 @@
 @model KinaUnaWeb.Models.ItemViewModels.ContactListViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
     string pageParameters = Json.Serialize(Model.ContactsPageParameters).ToString();
     string ascendingString = await LocaleManager.GetTranslation("Ascending", PageNames.Contacts, Model.LanguageId);
     string descendingString = await LocaleManager.GetTranslation("Descending", PageNames.Contacts, Model.LanguageId);
@@ -14,56 +14,48 @@
     <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
         <div class="row">
             <div class="col-12">
-                @if (Model.ContactsList == null || !Model.ContactsList.Any())
-                {
-                    <h3 class="title">@ViewData["Title"]</h3>
-                    <div>Nothing to see here yet.</div>
-                }
-                else
-                {
-                    <h2>@ViewData["Title"]</h2>
-                    <div class="space-20"></div>
-                    <div>
-                        <span>Show:</span>
-                        <span class="button-checkbox">
-                            <button type="button" class="btn btn-primary" name="contact-class-true">
-                                <span class="checkbox-icon"></span>
-                                @await LocaleManager.GetTranslation("Active contacts", PageNames.Contacts, Model.LanguageId)
-                            </button>
-                        </span>
-                        <span class="button-checkbox">
-                            <button type="button" class="btn btn-primary" name="contact-class-false">
-                                <span class="checkbox-icon"></span>
-                                @await LocaleManager.GetTranslation("Inactive contacts", PageNames.Contacts, Model.LanguageId)
-                            </button>
-                        </span>
+                <h2>@ViewData["Title"]</h2>
+                <div class="space-20"></div>
+                <div>
+                    <span>Show:</span>
+                    <span class="button-checkbox">
+                        <button type="button" class="btn btn-primary" name="contact-class-true">
+                            <span class="checkbox-icon"></span>
+                            @await LocaleManager.GetTranslation("Active contacts", PageNames.Contacts, Model.LanguageId)
+                        </button>
+                    </span>
+                    <span class="button-checkbox">
+                        <button type="button" class="btn btn-primary" name="contact-class-false">
+                            <span class="checkbox-icon"></span>
+                            @await LocaleManager.GetTranslation("Inactive contacts", PageNames.Contacts, Model.LanguageId)
+                        </button>
+                    </span>
 
-                    </div>
-                    <div id="active-tag-filter-div" class="col-auto d-none">
-                        <div class="row">
-                            <div class="col-auto" style="align-self: center;">
-                                @await LocaleManager.GetTranslation("Tag filter:", PageNames.Contacts, Model.LanguageId)
-                            </div>
-                            <div class="col" style="align-self: center;">
-                                <span id="current-tag-filter-span" class="btn tag-item"></span>
-                                <a id="reset-tag-filter-button" class="btn btn-info btn-sm">
-                                    <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Contacts, Model.LanguageId)
-                                </a>
-                            </div>
+                </div>
+                <div id="active-tag-filter-div" class="col-auto d-none">
+                    <div class="row">
+                        <div class="col-auto" style="align-self: center;">
+                            @await LocaleManager.GetTranslation("Tag filter:", PageNames.Contacts, Model.LanguageId)
+                        </div>
+                        <div class="col" style="align-self: center;">
+                            <span id="current-tag-filter-span" class="btn tag-item"></span>
+                            <button id="reset-tag-filter-button" class="btn btn-info btn-sm">
+                                <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Contacts, Model.LanguageId)
+                            </button>
                         </div>
                     </div>
-                    <div class="space-70"></div>
-                    <div id="contact-list-parent-div" class="row">
-                        <div id="contact-list-div" class="mr-auto ml-auto row row-cols-auto" style="display: contents;">
-                        </div>
-                        <div id="loading-items-parent-div" class="col-12" style="height: 150px;">
-                            <div id="loading-items-div" class="w-100">
-                                <div class="space-50"></div>
-                            </div>
+                </div>
+                <div class="space-70"></div>
+                <div id="contact-list-parent-div" class="row">
+                    <div id="contact-list-div" class="mr-auto ml-auto row row-cols-auto" style="display: contents;">
+                    </div>
+                    <div id="loading-items-parent-div" class="col-12" style="height: 150px;">
+                        <div id="loading-items-div" class="w-100">
+                            <div class="space-50"></div>
                         </div>
                     </div>
-                    <div class="space-20"></div>
-                }
+                </div>
+                <div class="space-20"></div>
             </div>
         </div>
         <div class="row">

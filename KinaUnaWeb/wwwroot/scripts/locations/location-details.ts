@@ -1,35 +1,35 @@
-﻿import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display.js';
+import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v6.js';
 
 /**
- * Adds event listeners to all elements with the data-contact-id attribute.
- * When clicked, the displayContactItem function is called.
- * @param {string} itemId The id of the Contact to add event listeners for.
+ * Adds event listeners to all elements with the data-location-id attribute.
+ * When clicked, the DisplayLocationItem function is called.
+ * @param {string} itemId The id of the Location to add event listeners for.
  */
-export function addContactItemListeners(itemId: string): void {
-    const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-contact-id="' + itemId + '"]');
+export function addLocationItemListeners(itemId: string): void {
+    const elementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-location-id="' + itemId + '"]');
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
             element.addEventListener('click', function () {
-                displayContactItem(itemId);
+                displayLocationItem(itemId);
             });
         });
     }
 }
 
 /**
- * Enable other scripts to call the displayContactItem function.
- * @param {string} contactId The id of the contact item to display.
+ * Enable other scripts to call the DisplayLocationItem function.
+ * @param {string} locationId The id of the location item to display.
  */
-export function popupContactItem(contactId: string): void {
-    displayContactItem(contactId);
+export function popupLocationItem(locationId: string): void {
+    displayLocationItem(locationId);
 }
 
 /**
- * Displays a contact item in a popup.
- * @param {string} contactId The id of the contact item to display.
+ * Displays a location item in a popup.
+ * @param {string} locationId The id of the location item to display.
  */
-async function displayContactItem(contactId: string): Promise<void> {
+async function displayLocationItem(contactId: string): Promise<void> {
     startFullPageSpinner();
     let url = '/Contacts/ViewContact?contactId=' + contactId + "&partialView=true";
     await fetch(url, {

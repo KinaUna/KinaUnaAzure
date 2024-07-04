@@ -10,7 +10,7 @@ export function addFriendItemListeners(itemId) {
     if (elementsWithDataId) {
         elementsWithDataId.forEach((element) => {
             element.addEventListener('click', function () {
-                DisplayFriendItem(itemId);
+                displayFriendItem(itemId);
             });
         });
     }
@@ -20,13 +20,13 @@ export function addFriendItemListeners(itemId) {
  * @param {string} friendId The id of the friend item to display.
  */
 export function popupFriendItem(friendId) {
-    DisplayFriendItem(friendId);
+    displayFriendItem(friendId);
 }
 /**
  * Displays a friend item in a popup.
  * @param {string} friendId The id of the friend item to display.
  */
-async function DisplayFriendItem(friendId) {
+async function displayFriendItem(friendId) {
     startFullPageSpinner();
     let url = '/Friends/ViewFriend?friendId=' + friendId + "&partialView=true";
     await fetch(url, {

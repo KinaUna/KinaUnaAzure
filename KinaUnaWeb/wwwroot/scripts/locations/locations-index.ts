@@ -4,21 +4,21 @@ import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation
 import * as pageModels from '../page-models-v6.js';
 import * as SettingsHelper from '../settings-tools-v6.js';
 
-const friendsPageSettingsStorageKey = 'friends_page_parameters';
-let friendsPageParameters = new pageModels.FriendsPageParameters();
+const locationsPageSettingsStorageKey = 'locations_page_parameters';
+let locationsPageParameters = new pageModels.LocationsPageParameters();
 const sortAscendingSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-ascending-button');
 const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-descending-button');
-const sortByFriendsSinceSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-friends-since-button');
+const sortByDateSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-date-button');
 const sortByNameSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-name-button');
 
-/** Gets the FriendsPageParameters from the page's data attribute.
+/** Gets the page parameters from the data-locations-page attribute.
  */
-function getFriendsPageParameters(): void {
-    const pageParametersDiv = document.querySelector<HTMLDivElement>('#friends-page-parameters');
+function getLocationsPageParameters(): void {
+    const pageParametersDiv = document.querySelector<HTMLDivElement>('#locations-page-parameters');
     if (pageParametersDiv !== null) {
-        const friendsPageParametersJson = pageParametersDiv.getAttribute('data-friends-page-parameters');
-        if (friendsPageParametersJson !== null) {
-            friendsPageParameters = JSON.parse(friendsPageParametersJson) as pageModels.FriendsPageParameters;
+        const locationsPageParametersJson = pageParametersDiv.getAttribute('data-locations-page-parameters');
+        if (locationsPageParametersJson !== null) {
+            locationsPageParameters = JSON.parse(locationsPageParametersJson) as pageModels.LocationsPageParameters;
         }
     }
 }
@@ -43,36 +43,36 @@ function stopLoadingSpinner(): void {
     }
 }
 
-/** Retrieves the list of friends, then updates the page.
+/** Retrieves the list of locations, then updates the page.
  */
-async function getFriendsList(): Promise<void> {
+async function getLocationsList(): Promise<void> {
     runLoadingSpinner();
-    
-    await fetch('/Friends/FriendsList', {
+
+    await fetch('/Locations/LocationsList', {
         method: 'POST',
-        body: JSON.stringify(friendsPageParameters),
+        body: JSON.stringify(locationsPageParameters),
         headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json'
         }
-    }).then(async function (getFriendsResult) {
-        const friendsPageResponse = await getFriendsResult.json() as pageModels.FriendsPageResponse;
-        if (friendsPageResponse && friendsPageResponse.friendsList.length > 0) {
-            const friendListDiv = document.querySelector<HTMLDivElement>('#friend-list-div');
-            if (friendListDiv !== null) {
-                friendListDiv.innerHTML = '';
+    }).then(async function (getLocationsResult) {
+        const locationsPageResponse = await getLocationsResult.json() as pageModels.LocationsPageResponse;
+        if (locationsPageResponse && locationsPageResponse.locationsList.length > 0) {
+            const locationListDiv = document.querySelector<HTMLDivElement>('#location-list-div');
+            if (locationListDiv !== null) {
+                locationListDiv.innerHTML = '';
             }
 
-            for await (const friendId of friendsPageResponse.friendsList) {
-                await getFriendElement(friendId);
+            for await (const locationId of locationsPageResponse.locationsList) {
+                await getLocationElement(locationId);
             }
 
-            updateTagsListDiv(friendsPageResponse.tagsList, friendsPageParameters.sortTags);
+            updateTagsListDiv(locationsPageResponse.tagsList, locationsPageParameters.sortTags);
             updateActiveTagFilterDiv();
         }
 
     }).catch(function (error) {
-        console.log('Error loading friends list. Error: ' + error);
+        console.log('Error loading locations list. Error: ' + error);
     });
 
     stopLoadingSpinner();
@@ -82,102 +82,78 @@ async function getFriendsList(): Promise<void> {
     });
 }
 
-async function getFriendElement(id: number): Promise<void> {
-    const getFriendElementParameters = new pageModels.FriendItemParameters();
-    getFriendElementParameters.friendId = id;
-    getFriendElementParameters.languageId = friendsPageParameters.languageId;
+async function getLocationElement(id: number): Promise<void> {
+    const getLocationElementParameters = new pageModels.LocationItemParameters();
+    getLocationElementParameters.locationId = id;
+    getLocationElementParameters.languageId = locationsPageParameters.languageId;
 
-    await fetch('/Friends/FriendElement', {
+    await fetch('/Locations/LocationElement', {
         method: 'POST',
-        body: JSON.stringify(getFriendElementParameters),
+        body: JSON.stringify(getLocationElementParameters),
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-    }).then(async function (getFriendElementResult) {
-        const friendHtml = await getFriendElementResult.text();
-        const friendListDiv = document.querySelector<HTMLDivElement>('#friend-list-div');
-        if (friendListDiv != null) {
-            friendListDiv.insertAdjacentHTML('beforeend', friendHtml);
+    }).then(async function (getLocationElementResult) {
+        const locationHtml = await getLocationElementResult.text();
+        const locationListDiv = document.querySelector<HTMLDivElement>('#location-list-div');
+        if (locationListDiv != null) {
+            locationListDiv.insertAdjacentHTML('beforeend', locationHtml);
             const timelineItem = new pageModels.TimelineItem();
             timelineItem.itemId = id.toString();
-            timelineItem.itemType = 6;
+            timelineItem.itemType = 12;
             addTimelineItemEventListener(timelineItem);
         }
     }).catch(function (error) {
-        console.log('Error loading friends element. Error: ' + error);
+        console.log('Error loading location element. Error: ' + error);
     });
-    
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
-/**
- * Sets up the event listners for filtering buttons on the page, to select/deselect options and show/hide the associated friend items.
- */
-function setupFilterButtons(): void {
-    const filterButtons = document.querySelectorAll('.button-checkbox');
-    filterButtons.forEach((filterButtonParentSpan) => {
-
-        let filterButton = filterButtonParentSpan.querySelector('button');
-        if (filterButton !== null) {
-            filterButton.addEventListener('click', function (this: HTMLButtonElement) {
-                updateFilterButtonDisplay(this);
-            });
-        }
-
-        if (filterButton !== null) {
-            updateFilterButtonDisplay(filterButton);
-        }
-    });
-
-    const resetTagFilterButton = document.querySelector<HTMLButtonElement>('#reset-tag-filter-button');
-    if (resetTagFilterButton !== null) {
-        resetTagFilterButton.addEventListener('click', resetActiveTagFilter);
-    }
-}
 
 /**
  * Configures the elements in the settings panel.
  */
 async function initialSettingsPanelSetup(): Promise<void> {
-    const friendsPageSaveSettingsButton = document.querySelector<HTMLButtonElement>('#friends-page-save-settings-button');
-    if (friendsPageSaveSettingsButton !== null) {
-        friendsPageSaveSettingsButton.addEventListener('click', saveFriendsPageSettings);
+    const locationsPageSaveSettingsButton = document.querySelector<HTMLButtonElement>('#locations-page-save-settings-button');
+    if (locationsPageSaveSettingsButton !== null) {
+        locationsPageSaveSettingsButton.addEventListener('click', saveLocationsPageSettings);
     }
 
     if (sortAscendingSettingsButton !== null && sortDescendingSettingsButton !== null) {
-        sortAscendingSettingsButton.addEventListener('click', sortFriendsAscending);
-        sortDescendingSettingsButton.addEventListener('click', sortFriendsDescending);
+        sortAscendingSettingsButton.addEventListener('click', sortLocationsAscending);
+        sortDescendingSettingsButton.addEventListener('click', sortLocationsDescending);
     }
 
-    if (sortByFriendsSinceSettingsButton !== null && sortByNameSettingsButton !== null) {
-        sortByFriendsSinceSettingsButton.addEventListener('click', sortByFriendsSince);
+    if (sortByDateSettingsButton !== null && sortByNameSettingsButton !== null) {
+        sortByDateSettingsButton.addEventListener('click', sortByDate);
         sortByNameSettingsButton.addEventListener('click', sortByName);
     }
-    
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
 }
 
 /**
- * Saves the current page parameters to local storage and reloads the friends items list.
+ * Saves the current page parameters to local storage and reloads the location items list.
  */
-async function saveFriendsPageSettings(): Promise<void> {
+async function saveLocationsPageSettings(): Promise<void> {
     const sortTagsSelect = document.querySelector<HTMLSelectElement>('#sort-tags-select');
     if (sortTagsSelect !== null) {
-        friendsPageParameters.sortTags = sortTagsSelect.selectedIndex;
+        locationsPageParameters.sortTags = sortTagsSelect.selectedIndex;
     }
     const saveAsDefaultCheckbox = document.querySelector<HTMLInputElement>('#settings-save-default-checkbox');
     if (saveAsDefaultCheckbox !== null && saveAsDefaultCheckbox.checked) {
-        SettingsHelper.savePageSettings<pageModels.FriendsPageParameters>(friendsPageSettingsStorageKey, friendsPageParameters);
+        SettingsHelper.savePageSettings<pageModels.LocationsPageParameters>(locationsPageSettingsStorageKey, locationsPageParameters);
     }
-    
+
     SettingsHelper.toggleShowPageSettings();
-    await getFriendsList();
-    
+    await getLocationsList();
+
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -185,32 +161,32 @@ async function saveFriendsPageSettings(): Promise<void> {
 }
 
 /**
- * Retrieves FriendsPageParameters saved in local storage.
+ * Retrieves LocationsPageParameters saved in local storage.
  */
-async function loadFriendsPageSettings(): Promise<void> {
-    const pageSettingsFromStorage = SettingsHelper.getPageSettings<pageModels.FriendsPageParameters>(friendsPageSettingsStorageKey);
+async function loadLocationsPageSettings(): Promise<void> {
+    const pageSettingsFromStorage = SettingsHelper.getPageSettings<pageModels.LocationsPageParameters>(locationsPageSettingsStorageKey);
     if (pageSettingsFromStorage) {
-        
-        friendsPageParameters.sortBy = pageSettingsFromStorage.sortBy;
-        if (friendsPageParameters.sortBy === 0) {
-            sortFriendsAscending();
+
+        locationsPageParameters.sortBy = pageSettingsFromStorage.sortBy;
+        if (locationsPageParameters.sortBy === 0) {
+            sortLocationsAscending();
         }
         else {
             sortByName();
         }
 
-        friendsPageParameters.sort = pageSettingsFromStorage.sort;
-        if (friendsPageParameters.sort === 0) {
-            sortFriendsAscending();
+        locationsPageParameters.sort = pageSettingsFromStorage.sort;
+        if (locationsPageParameters.sort === 0) {
+            sortLocationsAscending();
         }
         else {
-            sortFriendsDescending();
+            sortLocationsDescending();
         }
 
-        friendsPageParameters.sortTags = pageSettingsFromStorage.sortTags;
+        locationsPageParameters.sortTags = pageSettingsFromStorage.sortTags;
         const sortTagsElement = document.querySelector<HTMLSelectElement>('#sort-tags-select');
         if (sortTagsElement !== null) {
-            sortTagsElement.value = friendsPageParameters.sortTags.toString();
+            sortTagsElement.value = locationsPageParameters.sortTags.toString();
             ($(".selectpicker") as any).selectpicker('refresh');
         }
     }
@@ -223,11 +199,11 @@ async function loadFriendsPageSettings(): Promise<void> {
 /**
  * Updates parameters sort value, sets the sort buttons to show the ascending button as active, and the descending button as inactive.
  */
-async function sortFriendsAscending(): Promise<void> {
+async function sortLocationsAscending(): Promise<void> {
     sortAscendingSettingsButton?.classList.add('active');
     sortDescendingSettingsButton?.classList.remove('active');
-    friendsPageParameters.sort = 0;
-    
+    locationsPageParameters.sort = 0;
+
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });
@@ -236,10 +212,10 @@ async function sortFriendsAscending(): Promise<void> {
 /**
  * Updates parameters sort value, sets the sort buttons to show the ascending button as active, and the descending button as inactive.
  */
-async function sortFriendsDescending(): Promise<void> {
+async function sortLocationsDescending(): Promise<void> {
     sortAscendingSettingsButton?.classList.remove('active');
     sortDescendingSettingsButton?.classList.add('active');
-    friendsPageParameters.sort = 1;
+    locationsPageParameters.sort = 1;
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -247,12 +223,12 @@ async function sortFriendsDescending(): Promise<void> {
 }
 
 /**
- * Updates parameters sort value, sets the sort buttons to show the ascending button as active, and the descending button as inactive.
+ * Updates parameters sort value, sets the sort buttons to show the Date button as active, and the Name button as inactive.
  */
-async function sortByFriendsSince(): Promise<void> {
-    sortByFriendsSinceSettingsButton?.classList.add('active');
+async function sortByDate(): Promise<void> {
+    sortByDateSettingsButton?.classList.add('active');
     sortByNameSettingsButton?.classList.remove('active');
-    friendsPageParameters.sortBy = 0;
+    locationsPageParameters.sortBy = 0;
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -260,12 +236,12 @@ async function sortByFriendsSince(): Promise<void> {
 }
 
 /**
- * Updates parameters sort value, sets the sort buttons to show the ascending button as active, and the descending button as inactive.
+ * Updates parameters sort value, sets the sort buttons to show the Name button as active, and the Date button as inactive.
  */
 async function sortByName(): Promise<void> {
-    sortByFriendsSinceSettingsButton?.classList.remove('active');
+    sortByDateSettingsButton?.classList.remove('active');
     sortByNameSettingsButton?.classList.add('active');
-    friendsPageParameters.sortBy = 1;
+    locationsPageParameters.sortBy = 1;
 
     return new Promise<void>(function (resolve, reject) {
         resolve();
@@ -300,10 +276,10 @@ function updateTagsListDiv(tagsList: string[], sortOrder: number): void {
 function updateActiveTagFilterDiv(): void {
     const activeTagFilterDiv = document.querySelector<HTMLDivElement>('#active-tag-filter-div');
     const activeTagFilterSpan = document.querySelector<HTMLSpanElement>('#current-tag-filter-span');
-    if (activeTagFilterDiv !== null && activeTagFilterSpan !== null && friendsPageParameters !== null) {
-        if (friendsPageParameters.tagFilter !== '') {
+    if (activeTagFilterDiv !== null && activeTagFilterSpan !== null && locationsPageParameters !== null) {
+        if (locationsPageParameters.tagFilter !== '') {
             activeTagFilterDiv.classList.remove('d-none');
-            activeTagFilterSpan.innerHTML = friendsPageParameters.tagFilter;
+            activeTagFilterSpan.innerHTML = locationsPageParameters.tagFilter;
         }
         else {
             activeTagFilterDiv.classList.add('d-none');
@@ -312,12 +288,12 @@ function updateActiveTagFilterDiv(): void {
     }
 }
 
-/** Clears the active tag filter and reloads the default full list of friends.
+/** Clears the active tag filter and reloads the default full list of locations.
 */
 async function resetActiveTagFilter(): Promise<void> {
-    if (friendsPageParameters !== null) {
-        friendsPageParameters.tagFilter = '';
-        await getFriendsList();
+    if (locationsPageParameters !== null) {
+        locationsPageParameters.tagFilter = '';
+        await getLocationsList();
     }
 
     return new Promise<void>(function (resolve, reject) {
@@ -325,8 +301,7 @@ async function resetActiveTagFilter(): Promise<void> {
     });
 }
 
-/**
- * Adds an event listener to the reset tag filter button.
+/** Adds an event listener to the reset tag filter button.
  */
 function addResetActiveTagFilterEventListener(): void {
     const resetTagFilterButton = document.querySelector<HTMLButtonElement>('#reset-tag-filter-button');
@@ -335,15 +310,15 @@ function addResetActiveTagFilterEventListener(): void {
     }
 }
 
-/** Event handler for tag buttons, sets the tag filter and reloads the list of friends.
+/** Event handler for tag buttons, sets the tag filter and reloads the list of locations.
 */
 async function tagButtonClick(event: Event): Promise<void> {
     const target = event.target as HTMLElement;
-    if (target !== null && friendsPageParameters !== null) {
+    if (target !== null && locationsPageParameters !== null) {
         const tagLink = target.dataset.tagLink;
         if (tagLink !== undefined) {
-            friendsPageParameters.tagFilter = tagLink;
-            await getFriendsList();
+            locationsPageParameters.tagFilter = tagLink;
+            await getLocationsList();
         }
     }
 
@@ -355,8 +330,8 @@ async function tagButtonClick(event: Event): Promise<void> {
 /** Select pickers don't always update when their values change, this ensures they show the correct items. */
 function refreshSelectPickers(): void {
     const sortTagsSelect = document.querySelector<HTMLSelectElement>('#sort-tags-select');
-    if (sortTagsSelect !== null && friendsPageParameters !== null) {
-        sortTagsSelect.value = friendsPageParameters.sortTags.toString();
+    if (sortTagsSelect !== null && locationsPageParameters !== null) {
+        sortTagsSelect.value = locationsPageParameters.sortTags.toString();
         ($(".selectpicker") as any).selectpicker('refresh');
     }
 }
@@ -368,13 +343,12 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     initialSettingsPanelSetup();
 
     SettingsHelper.initPageSettings();
-    setupFilterButtons();
-    getFriendsPageParameters();
+    getLocationsPageParameters();
     refreshSelectPickers();
     addResetActiveTagFilterEventListener();
-    await loadFriendsPageSettings();
-    
-    await getFriendsList();
+    await loadLocationsPageSettings();
+
+    await getLocationsList();
 
     return new Promise<void>(function (resolve, reject) {
         resolve();

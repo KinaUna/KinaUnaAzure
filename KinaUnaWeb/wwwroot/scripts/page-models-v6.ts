@@ -78,6 +78,33 @@ export class NoteItemParameters implements BaseItemParameters {
     languageId: number = 0;
 }
 
+export class LocationItemParameters implements BaseItemParameters {
+    locationId: number = 0;
+    languageId: number = 0;
+}
+
+export class LocationsPageParameters implements BasePageParameters {
+    progenyId: number = 0;
+    languageId: number = 0;
+    currentPageNumber: number = 0;
+    itemsPerPage: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    sort: number = 0;
+    sortBy: number = 0;
+    tagFilter: string = '';
+    showSettings: boolean = false;
+    sortTags: number = 0;
+}
+
+export class LocationsPageResponse implements BaseItemsPageResponseModel {
+    pageNumber: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    locationsList: number[] = [];
+    tagsList: string[] = [];
+}
+
 export class NotesPageParameters implements BasePageParameters {
     progenyId: number = 0;
     languageId: number = 0;
