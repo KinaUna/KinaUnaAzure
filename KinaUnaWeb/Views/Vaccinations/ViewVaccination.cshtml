@@ -1,0 +1,47 @@
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.VaccinationViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Vocabulary", PageNames.Vocabulary, Model.LanguageId);
+}
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="row">
+        <div class="col ml-xl-auto mr-xl-auto col-lg-10 col-xl-9 col-xxl-8 col-xxxl-7">
+            <h2>@ViewData["Title"]</h2>
+            <div class="card text-white bg-vocabulary mr-auto">
+                <div class="card-header card-header-vocabulary card-title h4">
+                    <div class="col-12 h4">
+                        <div class="text-white">@Model.VaccinationItem.VaccinationDate.ToString("dd-MMM-yyyy")</div>
+                        <div class="space-10"></div>
+                        <div>@Model.VaccinationItem.VaccinationName</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div align="left">
+                        @if (!string.IsNullOrEmpty(Model.VaccinationItem.VaccinationDescription))
+                        {
+                            <div class="col-12">@await LocaleManager.GetTranslation("Sounds like", PageNames.Vocabulary, Model.LanguageId): @Model.VaccinationItem.VaccinationDescription</div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.VaccinationItem.VaccinationDescription))
+                        {
+                            <div class="col-12">@await LocaleManager.GetTranslation("Description", PageNames.Vocabulary, Model.LanguageId): @Model.VaccinationItem.VaccinationDescription</div>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.VaccinationItem.Notes))
+                        {
+                            <div class="col-12">@await LocaleManager.GetTranslation("Language", PageNames.Vocabulary, Model.LanguageId): @Model.VaccinationItem.Notes</div>
+                        }
+                    </div>
+                    @if (Model.IsCurrentUserProgenyAdmin)
+                    {
+                        <div class="col-12">
+                            <a asp-controller="Vaccinations" asp-action="EditVaccination" asp-route-itemId="@Model.VaccinationItem.VaccinationId" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
+                            <a asp-controller="Vaccinations" asp-action="DeleteVaccination" asp-route-itemId="@Model.VaccinationItem.VaccinationId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                        </div>
+
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

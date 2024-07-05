@@ -10,6 +10,7 @@ import { addLocationItemListeners } from '../locations/location-details.js';
 import { addMeasurementItemListeners } from '../measurements/measurement-details.js';
 import { addSkillItemListeners } from '../skills/skill-details.js';
 import { addVocabularyItemListeners } from '../vocabulary/vocabulary-details.js';
+import { addVaccinationItemListeners } from '../vaccinations/vaccination-details.js';
 /**
  * Adds event listeners for a given timeline item.
  * @param {TimelineItem} item The timeline item to add event listeners for.
@@ -56,7 +57,7 @@ export function addTimelineItemEventListener(item: TimelineItem): void {
     }
 
     if (item.itemType === 11) {
-        // Add vaccination listeners.
+        addVaccinationItemListeners(item.itemId);
     }
 
     if (item.itemType === 12) {

@@ -1473,8 +1473,8 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
 
 .bg-vaccination {
     color: #fff;
-    background: #c800c8;
-    background: linear-gradient(60deg, #c800c8, #b540b5);
+    background: #1d886e;
+    background: linear-gradient(60deg, #009075, #428667);
 }
 
 .bg-video {

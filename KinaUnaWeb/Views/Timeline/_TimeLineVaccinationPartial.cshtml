@@ -5,7 +5,7 @@
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
-<a class="leave-page" asp-controller="Vaccinations" asp-action="Index">
+<button class="item-btn vocabulary-item" data-vaccination-id="@Model.VaccinationId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-vaccination">
             <div class="row">
@@ -21,4 +21,4 @@
             </div>
         </div>
     </div>
-</a>
+</button>
