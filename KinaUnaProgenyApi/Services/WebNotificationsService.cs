@@ -455,7 +455,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = userInfo.ProfilePicture,
                     Title = title,
-                    Link = "/Vocabulary/ViewWord?vocabularyId=" + vocabularyItem.WordId,
+                    Link = "/Vocabulary/ViewVocabularyItem?vocabularyId=" + vocabularyItem.WordId,
                     Type = "Notification"
                 };
 

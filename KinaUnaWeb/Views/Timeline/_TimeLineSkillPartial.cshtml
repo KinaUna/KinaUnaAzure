@@ -1,9 +1,4 @@
-﻿@using KinaUnaWeb.Services
-@model Skill
-@inject ILocaleManager LocaleManager
-@{
-    int languageId = LocaleManager.GetLanguageId(Context.Request);
-}
+﻿@model Skill
 <button class="item-btn skill-item" data-skill-id="@Model.SkillId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-skill">

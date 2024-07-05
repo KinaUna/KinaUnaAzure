@@ -3,14 +3,14 @@
 @model KinaUnaWeb.Models.ItemViewModels.SkillViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Skill:", PageNames.Skills, Model.LanguageId);
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Skill", PageNames.Skills, Model.LanguageId);
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     <div class="row">
         <div class="col ml-xl-auto mr-xl-auto col-lg-10 col-xl-9 col-xxl-8 col-xxxl-7">
             <h2>@ViewData["Title"]</h2>
-            <div class="card text-white bg-primary mr-auto">
-                <div class="card-header card-header-rose card-title h4">
+            <div class="card text-white bg-skill mr-auto">
+                <div class="card-header card-header-skill card-title h4">
                     @if (Model.SkillItem.SkillFirstObservation.HasValue)
                     {
                         <div>@await LocaleManager.GetTranslation("Date:", PageNames.Skills, Model.LanguageId) @Model.SkillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy")</div>
@@ -23,6 +23,16 @@
                             <div class="col-12">@await LocaleManager.GetTranslation("Description:", PageNames.Skills, Model.LanguageId) @Model.SkillItem.Description</div>
                         }
                     </div>
+                    @if (!string.IsNullOrEmpty(Model.SkillItem.Category))
+                    {
+                        List<string> categoriesList = Model.SkillItem.Category.Split(',').ToList();
+                        <div class="col-12 mt-2 text-right">
+                            @foreach (string categoryString in categoriesList)
+                            {
+                                <span class="btn category-item tag-item-sm">@categoryString</span>
+                            }
+                        </div>
+                    }
                     @if (Model.IsCurrentUserProgenyAdmin)
                     {
                         <div class="col-12">

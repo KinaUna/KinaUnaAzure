@@ -29,6 +29,30 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
+        public async Task<IActionResult> ViewVocabularyItem(int vocabularyId, bool partialView = false)
+        {
+            VocabularyItem vocabularyItem = await wordsHttpClient.GetWord(vocabularyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId);
+            VocabularyItemViewModel model = new(baseModel);
+
+            if (vocabularyItem.AccessLevel < model.CurrentAccessLevel)
+            {
+                return RedirectToAction("Index");
+            }
+
+            model.SetPropertiesFromVocabularyItem(vocabularyItem);
+            model.VocabularyItem.Progeny = model.CurrentProgeny;
+            model.VocabularyItem.Progeny.PictureLink = model.VocabularyItem.Progeny.GetProfilePictureUrl();
+
+            if (partialView)
+            {
+                return PartialView("_VocabularyItemDetailsPartial", model);
+            }
+
+            return View(model);
+        }
+
         [HttpGet]
         public async Task<IActionResult> AddVocabulary()
         {
