@@ -16,7 +16,7 @@
                     <div class="timeline-title">
                         @Model.Date.ToString("dd-MMM-yyyy")
                     </div>
-                    <div class="timeline-text text-white-50">
+                    <div class="timeline-text text-white-75">
                         @if (Model.Height > 0.01)
                         {
                             <div>@await LocaleManager.GetTranslation("Height:", PageNames.Measurements, languageId) @Model.Height</div>

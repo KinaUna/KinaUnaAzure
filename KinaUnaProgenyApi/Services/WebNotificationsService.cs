@@ -169,7 +169,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Measurements?childId=" + measurementItem.ProgenyId,
+                    Link = "/Measurements/ViewMeasurement?measurementId=" + measurementItem.MeasurementId,
                     Type = "Notification"
                 };
 
@@ -315,7 +315,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Skills?childId=" + skillItem.ProgenyId,
+                    Link = "/Skills/ViewSkill?skillId=" + skillItem.SkillId,
                     Type = "Notification"
                 };
 
@@ -418,7 +418,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Vaccinations?childId=" + vaccinationItem.ProgenyId,
+                    Link = "/Vaccinations/ViewVaccination?vaccinationId=" + vaccinationItem.VaccinationId,
                     Type = "Notification"
                 };
 
@@ -455,7 +455,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = userInfo.ProfilePicture,
                     Title = title,
-                    Link = "/Vocabulary?childId=" + vocabularyItem.ProgenyId,
+                    Link = "/Vocabulary/ViewWord?vocabularyId=" + vocabularyItem.WordId,
                     Type = "Notification"
                 };
 

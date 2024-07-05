@@ -1,11 +1,10 @@
 ﻿@using KinaUnaWeb.Services
-@using KinaUna.Data
 @model Skill
 @inject ILocaleManager LocaleManager
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
-<a class="leave-page" asp-controller="Skills" asp-action="Index">
+<button class="item-btn skill-item" data-skill-id="@Model.SkillId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-skill">
             <div class="row">
@@ -14,16 +13,18 @@
                 </div>
                 <div class="col">
                     <div class="timeline-title">
-                        @Model.Name
-                    </div>
-                    <div class="timeline-text text-white-50">
                         @if (Model.SkillFirstObservation.HasValue)
                         {
-                            <div>@await LocaleManager.GetTranslation("Date:", PageNames.Skills, languageId) @Model.SkillFirstObservation.Value.ToString("dd-MMM-yyyy")</div>
+                            <div>@Model.SkillFirstObservation.Value.ToString("dd-MMM-yyyy")</div>
                         }
+                    </div>
+                    <div class="timeline-text text-white">
+                        <div>
+                            @Model.Name
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</a>
+</button>

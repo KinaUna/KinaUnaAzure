@@ -7,6 +7,7 @@ import { addFriendItemListeners } from '../friends/friend-details.js';
 import { addContactItemListeners } from '../contacts/contact-details.js';
 import { addLocationItemListeners } from '../locations/location-details.js';
 import { addMeasurementItemListeners } from '../measurements/measurement-details.js';
+import { addSkillItemListeners } from '../skills/skill-details.js';
 /**
  * Adds event listeners for a given timeline item.
  * @param {TimelineItem} item The timeline item to add event listeners for.
@@ -25,7 +26,7 @@ export function addTimelineItemEventListener(item) {
         // Add vocabulary event listeners.
     }
     if (item.itemType === 5) {
-        // Add skill listeners.
+        addSkillItemListeners(item.itemId);
     }
     if (item.itemType === 6) {
         addFriendItemListeners(item.itemId);

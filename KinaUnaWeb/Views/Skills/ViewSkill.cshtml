@@ -1,0 +1,38 @@
+﻿@using KinaUnaWeb.Services
+@using KinaUna.Data
+@model KinaUnaWeb.Models.ItemViewModels.SkillViewModel
+@inject ILocaleManager LocaleManager
+@{
+    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Skill:", PageNames.Skills, Model.LanguageId);
+}
+<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+    <div class="row">
+        <div class="col ml-xl-auto mr-xl-auto col-lg-10 col-xl-9 col-xxl-8 col-xxxl-7">
+            <h2>@ViewData["Title"]</h2>
+            <div class="card text-white bg-primary mr-auto">
+                <div class="card-header card-header-rose card-title h4">
+                    @if (Model.SkillItem.SkillFirstObservation.HasValue)
+                    {
+                        <div>@await LocaleManager.GetTranslation("Date:", PageNames.Skills, Model.LanguageId) @Model.SkillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy")</div>
+                    }
+                </div>
+                <div class="card-body">
+                    <div align="left">
+                        @if (!string.IsNullOrEmpty(Model.SkillItem.Description))
+                        {
+                            <div class="col-12">@await LocaleManager.GetTranslation("Description:", PageNames.Skills, Model.LanguageId) @Model.SkillItem.Description</div>
+                        }
+                    </div>
+                    @if (Model.IsCurrentUserProgenyAdmin)
+                    {
+                        <div class="col-12">
+                            <a asp-controller="Skills" asp-action="EditSkill" asp-route-itemId="@Model.SkillItem.SkillId" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
+                            <a asp-controller="Skills" asp-action="DeleteSkill" asp-route-itemId="@Model.SkillItem.SkillId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                        </div>
+
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

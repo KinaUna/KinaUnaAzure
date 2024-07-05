@@ -8,6 +8,16 @@
     string heightString = await LocaleManager.GetTranslation("Height", PageNames.Measurements, Model.LanguageId);
     string weightString = await LocaleManager.GetTranslation("Weight", PageNames.Measurements, Model.LanguageId);
 }
+
+@section Scripts
+{
+    <link href="/lib/nouislider/nouislider.min.css" rel="stylesheet"/>
+    <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css" rel="stylesheet"/>
+    <script src="~/lib/nouislider/nouislider.min.js" asp-append-version="true"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/1.13.4/sorting/datetime-moment.js"></script>
+}
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
     @if (Model.MeasurementsList == null || !Model.MeasurementsList.Any())
     {
@@ -18,14 +28,6 @@
     }
     else
     {
-        if (Model.IsCurrentUserProgenyAdmin)
-        {
-            <div class="btn-group" style="float: right;">
-                <a asp-controller="Measurements" asp-action="AddMeasurement" class="btn btn-success btn-round leave-page">
-                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add measurement", PageNames.Measurements, Model.LanguageId)
-                </a>
-            </div>
-        }
         <h2>@ViewData["Title"]</h2>
         <div class="table-responsive">
             <table class="table table-bordered table-striped" style="margin-top: 15px;">

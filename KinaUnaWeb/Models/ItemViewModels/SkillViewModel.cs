@@ -69,6 +69,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             Skill skillItem = new()
             {
+                SkillId = SkillItem.SkillId,
                 ProgenyId = SkillItem.ProgenyId,
                 Category = SkillItem.Category,
                 Description = SkillItem.Description,
