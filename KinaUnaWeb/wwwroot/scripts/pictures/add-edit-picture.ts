@@ -2,6 +2,7 @@ import * as LocaleHelper from '../localization-v6.js';
 import { setTagsAutoSuggestList, setLocationAutoSuggestList, getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 import { Picture, PictureViewModel } from '../page-models-v6.js';
+import { addCopyLocationButtonEventListener } from '../locations/location-tools.js';
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
 let languageId = 1;
 let zebraDateTimeFormat: string;
@@ -62,28 +63,7 @@ function addEditButtonEventListener(): void {
     if (toggleEditButton !== null) {
         $("#toggle-edit-button").on('click', function () {
             $("#edit-section").toggle(500);
-        });
-    }
-}
-
-/**
- * Adds an event listener to the copy location button to copy the selected location to the latitude and longitude fields.
- */
-function addCopyLocationButtonEventListener(): void {
-    copyLocationButton = document.querySelector<HTMLButtonElement>('#copy-location-button');
-    if (copyLocationButton !== null) {
-        copyLocationButton.addEventListener('click', function () {
-            const latitudeInput = document.getElementById('latitude') as HTMLInputElement;
-            const longitudeInput = document.getElementById('longitude') as HTMLInputElement;
-            const locationSelect = document.getElementById('copy-location') as HTMLSelectElement;
-
-            if (latitudeInput !== null && longitudeInput !== null && locationSelect !== null) {
-                let locId = parseInt(locationSelect.value);
-                let selectedLocation = copyLocationList.find((obj: { id: number; name: string; lat: number, lng: number }) => { return obj.id === locId });
-
-                latitudeInput.setAttribute('value', selectedLocation.lat);
-                longitudeInput.setAttribute('value', selectedLocation.lng);
-            }
+            ($(".selectpicker") as any).selectpicker("refresh");
         });
     }
 }
@@ -623,24 +603,36 @@ async function displayNotSupportedFile(file: File): Promise<void> {
     });
 
 }
+
 /**
- * Initializes the page elements when it is loaded.
+ * Setup of elements and event listeners.
  */
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+async function setupAddEditPicture(): Promise<void> {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
 
     await setupDateTimePicker();
+    
     setupProgenySelectList();
     await setTagsAutoSuggestList(currentProgenyId);
     await setLocationAutoSuggestList(currentProgenyId);
-    
+
     addEditButtonEventListener();
     addCopyLocationButtonEventListener();
     addFileInputEventListener();
     addDropEventListener();
     addOverrideSubmitEvent();
 
+    return new Promise<void>(function (resolve, reject) {
+        resolve();
+    });
+}
+/**
+ * Initializes the page elements when it is loaded.
+ */
+document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+    await setupAddEditPicture();
+    
     return new Promise<void>(function (resolve, reject) {
         resolve();
     });

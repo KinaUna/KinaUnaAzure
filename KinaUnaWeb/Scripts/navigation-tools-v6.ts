@@ -65,7 +65,7 @@ export function startLoadingItemsSpinner(spinnerElementId: string, bgOpacity: nu
         effect: 'bounce',
         text: '',
         bg: 'rgba(' + bgRed + ', ' + bgGreen + ', ' + bgBlue + ', ' + bgOpacity + ')',
-        color: '#9011a1',
+        color: '#a022b1',
         maxSize: '',
         waitTime: -1,
         source: '',

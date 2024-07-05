@@ -1,6 +1,7 @@
 import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v6.js';
 import { getCurrentProgenyId } from '../data-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+import { addTimelineItemEventListener } from '../item-details/items-display.js';
 let upcomingEventsList = [];
 const upcomingEventsParameters = new TimelineParameters();
 let upcomingEventsProgenyId;
@@ -82,6 +83,7 @@ async function renderUpcomingEvent(timelineItem) {
         const timelineDiv = document.querySelector('#upcoming-events-div');
         if (timelineDiv != null) {
             timelineDiv.insertAdjacentHTML('beforeend', timelineElementHtml);
+            addTimelineItemEventListener(timelineItem);
         }
     }
     return new Promise(function (resolve, reject) {

@@ -1,6 +1,7 @@
 import { TimelineParameters, TimeLineItemViewModel } from '../page-models-v6.js';
 import { getCurrentProgenyId } from '../data-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+import { addTimelineItemEventListener } from '../item-details/items-display.js';
 let yearAgoItemsList = [];
 const yearAgoParameters = new TimelineParameters();
 let yearAgoProgenyId;
@@ -82,6 +83,7 @@ async function renderYearAgoItem(timelineItem) {
         const yearAgoItemsDiv = document.querySelector('#year-ago-items-div');
         if (yearAgoItemsDiv != null) {
             yearAgoItemsDiv.insertAdjacentHTML('beforeend', yearAgoElementHtml);
+            addTimelineItemEventListener(timelineItem);
         }
     }
     return new Promise(function (resolve, reject) {

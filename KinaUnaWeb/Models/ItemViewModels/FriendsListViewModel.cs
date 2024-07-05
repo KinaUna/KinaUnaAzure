@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using KinaUnaWeb.Models.TypeScriptModels.Friends;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -6,6 +7,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
     {
         public List<FriendViewModel> FriendViewModelsList { get; init; }
         public string TagFilter { get; set; }
+        public FriendsPageParameters FriendsPageParameters { get; set; }
 
         public FriendsListViewModel()
         {

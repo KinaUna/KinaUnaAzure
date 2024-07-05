@@ -12,6 +12,7 @@ using KinaUna.Data.Models;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.Extensions.Configuration;
+using KinaUnaWeb.Models.TypeScriptModels.Locations;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -26,48 +27,159 @@ namespace KinaUnaWeb.Controllers
         private readonly string _hereMapsApiKey = configuration.GetValue<string>("HereMapsKey");
 
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, int sortBy = 1, string tagFilter = "")
+        public async Task<IActionResult> Index(int childId = 0, int sortBy = 0, string tagFilter = "", int sort = 0, int sortTags = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             LocationViewModel model = new(baseModel)
             {
                 HereMapsApiKey = _hereMapsApiKey
             };
-            List<string> tagsList = [];
 
-            List<Location> locationsList = await locationsHttpClient.GetLocationsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
-            
-            if (locationsList.Count != 0)
-            {
-                model.LocationsList = [];
-                foreach (Location loc in locationsList)
-                {
-                    if (loc.AccessLevel != (int)AccessLevel.Public && loc.AccessLevel < model.CurrentAccessLevel) continue;
-
-                    model.LocationsList.Add(loc);
-                    if (string.IsNullOrEmpty(loc.Tags)) continue;
-
-                    List<string> locTags = [.. loc.Tags.Split(',')];
-                    foreach (string tagstring in locTags)
-                    {
-                        if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                        {
-                            tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                        }
-                    }
-                }
-
-                model.SetTags(tagsList);
-
-                if (sortBy == 1)
-                {
-                    model.LocationsList.Reverse();
-                }
-            }
+            model.LocationsList = await locationsHttpClient.GetLocationsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
             
             model.SortBy = sortBy;
             model.TagFilter = tagFilter;
+            model.Sort = sort;
+            model.SortTags = sortTags;
+
+            model.LocationsPageParameters = new LocationsPageParameters
+            {
+                LanguageId = model.LanguageId,
+                ProgenyId = model.CurrentProgenyId,
+                SortBy = sortBy,
+                TagFilter = tagFilter,
+                Sort = sort,
+                SortTags = sortTags
+            };
+
             return View(model);
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> ViewLocation(int locationId, string tagFilter, bool partialView = false)
+        {
+            Location location = await locationsHttpClient.GetLocation(locationId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
+            LocationViewModel model = new(baseModel);
+
+            if (location.AccessLevel < model.CurrentAccessLevel)
+            {
+                RedirectToAction("Index");
+            }
+            
+            model.SetPropertiesFromLocation(location, model.CurrentUser.Timezone); 
+            model.TagFilter = tagFilter;
+            model.LocationItem.Progeny = model.CurrentProgeny;
+            model.LocationItem.Progeny.PictureLink = model.LocationItem.Progeny.GetProfilePictureUrl();
+
+            if (partialView)
+            {
+                return PartialView("_LocationDetailsPartial", model);
+            }
+
+            return View(model);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> LocationElement([FromBody] LocationItemParameters parameters)
+        {
+            parameters ??= new LocationItemParameters();
+
+            if (parameters.LanguageId == 0)
+            {
+                parameters.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+
+            LocationViewModel locationItemResponse = new()
+            {
+                LanguageId = parameters.LanguageId
+            };
+
+            if (parameters.LocationId == 0)
+            {
+                locationItemResponse.LocationItem = new Location { LocationId = 0 };
+            }
+            else
+            {
+                locationItemResponse.LocationItem = await locationsHttpClient.GetLocation(parameters.LocationId);
+                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), locationItemResponse.LocationItem.ProgenyId);
+                locationItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
+            }
+
+
+            return PartialView("_LocationElementPartial", locationItemResponse);
+
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> LocationsList([FromBody] LocationsPageParameters parameters)
+        {
+            parameters ??= new LocationsPageParameters();
+
+            if (parameters.LanguageId == 0)
+            {
+                parameters.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+
+            if (parameters.CurrentPageNumber < 1)
+            {
+                parameters.CurrentPageNumber = 1;
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
+            List<Location> locationsList = await locationsHttpClient.GetLocationsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+
+            List<string> tagsList = [];
+
+            if (locationsList.Count != 0)
+            {
+                foreach (Location location in locationsList)
+                {
+                    if (!string.IsNullOrEmpty(location.Tags))
+                    {
+                        List<string> locationTagsList = [.. location.Tags.Split(',')];
+                        foreach (string tagString in locationTagsList)
+                        {
+                            string trimmedTagString = tagString.TrimStart(' ', ',').TrimEnd(' ', ',');
+                            if (!string.IsNullOrEmpty(trimmedTagString) && !tagsList.Contains(trimmedTagString))
+                            {
+                                tagsList.Add(trimmedTagString);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (parameters.SortTags == 1)
+            {
+                tagsList = [.. tagsList.OrderBy(t => t)];
+            }
+
+            if (parameters.SortBy == 0)
+            {
+                locationsList = [.. locationsList.OrderBy(l => l.Date)];
+            }
+            if (parameters.SortBy == 1)
+            {
+                locationsList = [.. locationsList.OrderBy(f => f.Name)];
+            }
+            
+            if (parameters.Sort == 1)
+            {
+                locationsList.Reverse();
+            }
+
+            List<int> locationsIdList = locationsList.Select(l => l.LocationId).ToList();
+
+            return Json(new LocationsPageResponse()
+            {
+                LocationsList = locationsIdList,
+                PageNumber = parameters.CurrentPageNumber,
+                TotalItems = locationsList.Count,
+                TagsList = tagsList
+            });
         }
 
         [AllowAnonymous]

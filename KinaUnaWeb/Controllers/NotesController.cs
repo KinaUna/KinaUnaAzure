@@ -40,6 +40,26 @@ namespace KinaUnaWeb.Controllers
         }
 
         [AllowAnonymous]
+        public async Task<IActionResult> ViewNote(int noteId, bool partialView = false)
+        {
+            Note note = await notesHttpClient.GetNote(noteId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
+            NoteViewModel model = new(baseModel);
+
+            model.NoteItem = note;
+            model.NoteItem.Progeny = model.CurrentProgeny;
+            model.NoteItem.Progeny.PictureLink = model.NoteItem.Progeny.GetProfilePictureUrl();
+            UserInfo noteUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.NoteItem.Owner);
+            model.NoteItem.Owner = noteUserInfo.FullName();
+            if (partialView)
+            {
+                return PartialView("_NoteDetailsPartial", model);
+            }
+
+            return View(model);
+        }
+
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> NotesList([FromBody] NotesPageParameters parameters)
         {

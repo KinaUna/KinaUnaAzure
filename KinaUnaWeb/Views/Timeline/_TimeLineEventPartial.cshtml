@@ -28,7 +28,7 @@
         endDateString = string.Empty;
     }
 }
-<a class="leave-page" asp-controller="Calendar" asp-action="ViewEvent" asp-route-eventId="@Model.EventId">
+<button class="item-btn calendar-event-item" data-calendar-event-id="@Model.EventId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-calendar">
             <div class="row">
@@ -36,31 +36,31 @@
                     <span class="timeline-icon"><i class="material-icons">event_note</i></span>
                 </div>
                 <div class="col">
-                    <div class="row text-white">
+                    <div class="row timeline-title text-white">
                         @if (Model.AllDay)
                         {
 
                             if (string.IsNullOrEmpty(endDateString))
                             {
-                                <div class="col-auto font-weight-bold">@startDateString</div>
+                                <div class="col-auto">@startDateString</div>
                             }
                             else
                             {
-                                <div class="col-auto"><span class="font-weight-bold">@startDateString</span> - <span class="font-weight-bold">@endDateString</span></div>
+                                <div class="col-auto"><span>@startDateString</span> - <span>@endDateString</span></div>
                             }
                         }
                         else
                         {
                             if (Model.StartTime.Value.Date == Model.EndTime.Value.Date)
                             {
-                                <div class="col-auto font-weight-bold">@startDateString</div>
+                                <div class="col-auto">@startDateString</div>
                                 <div class="col-auto font-weight-normal">@startTimeString - @endTimeString</div>
                             }
                             else
                             {
                                 <div class="col-auto">
                                     <div class="row">
-                                        <div class="col font-weight-bold">@startDateString</div>
+                                        <div class="col">@startDateString</div>
                                     </div>
                                     <div class="row">
                                         <div class="col font-weight-normal text-right">@startTimeString</div>
@@ -68,7 +68,7 @@
                                 </div>
                                 <div class="col-auto">
                                     <div class="row">
-                                        <div class="col font-weight-bold ">@endDateString</div>
+                                        <div class="col">@endDateString</div>
                                     </div>
                                     <div class="row">
                                         <div class="col font-weight-normal ">@endTimeString</div>
@@ -110,7 +110,7 @@
                             <div class="col-12 mt-2 text-right">
                                 @foreach (string contextString in contextsList)
                                 {
-                                    <span class="btn context-item tag-item-sm leave-page">@contextString</span>
+                                    <span class="btn context-item tag-item-sm">@contextString</span>
                                 }
                             </div>
                         }
@@ -119,4 +119,4 @@
             </div>
         </div>
     </div>
-</a>
+</button>

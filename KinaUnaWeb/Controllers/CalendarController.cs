@@ -30,7 +30,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> ViewEvent(int eventId)
+        public async Task<IActionResult> ViewEvent(int eventId, bool partialView = false)
         {
             CalendarItem eventItem = await calendarsHttpClient.GetCalendarItem(eventId);
             
@@ -44,27 +44,15 @@ namespace KinaUnaWeb.Controllers
             }
             
             model.SetCalendarItem(eventItem);
-            
-            return View(model);
-        }
+            model.CalendarItem.Progeny = model.CurrentProgeny;
+            model.CalendarItem.Progeny.PictureLink = model.CalendarItem.Progeny.GetProfilePictureUrl();
 
-        [AllowAnonymous]
-        public async Task<IActionResult> GetEventItem(int eventId)
-        {
-            CalendarItem eventItem = await calendarsHttpClient.GetCalendarItem(eventId);
-
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), eventItem.ProgenyId);
-            CalendarItemViewModel model = new(baseModel);
-
-            if (eventItem.AccessLevel < model.CurrentAccessLevel)
+            if (partialView)
             {
-                // Todo: Show access denied instead of redirecting.
-                return Unauthorized();
+                return PartialView("_CalendarItemDetailsPartial", model);
             }
 
-            model.SetCalendarItem(eventItem);
-
-            return PartialView("_GetEventItemPartial", model);
+            return View(model);
         }
 
         [HttpGet]

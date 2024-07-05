@@ -29,5 +29,14 @@ namespace KinaUna.Data.Extensions
             currentSleepItem.SleepEnd = otherSleepItem.SleepEnd;
             currentSleepItem.CreatedDate = DateTime.UtcNow;
         }
+
+        public static void CalculateDuration(this Sleep currentSleepItem, string timezone)
+        {
+            DateTimeOffset startOffset = new(currentSleepItem.SleepStart,
+                TimeZoneInfo.FindSystemTimeZoneById(timezone).GetUtcOffset(currentSleepItem.SleepStart));
+            DateTimeOffset endOffset = new(currentSleepItem.SleepEnd,
+                TimeZoneInfo.FindSystemTimeZoneById(timezone).GetUtcOffset(currentSleepItem.SleepEnd));
+            currentSleepItem.SleepDuration = endOffset - startOffset;
+        }
     }
 }

@@ -7,7 +7,7 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
     string durTime = "";
 }
-<a class="leave-page" asp-controller="Videos" asp-action="Video" asp-route-Id="@Model.VideoId">
+<button class="item-btn video-item" data-video-id="@Model.VideoId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-video">
             <div class="row">
@@ -16,9 +16,7 @@
                 </div>
                 <div class="col">
                     <div class="timeline-title">
-                        <strong>
-                            @Model.VideoTime?.ToString("dd-MMM-yyyy HH:mm")
-                        </strong>
+                        @Model.VideoTime?.ToString("dd-MMM-yyyy HH:mm")
                     </div>
                     <div class="timeline-text text-white-50">
                         @if (!string.IsNullOrEmpty(Model.Location))
@@ -77,4 +75,4 @@
             </div>
         </div>
     </div>
-</a>
+</button>

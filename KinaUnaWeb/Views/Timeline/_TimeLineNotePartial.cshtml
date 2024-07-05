@@ -1,6 +1,6 @@
 ﻿@using System.Web;
 @model Note
-<a class="leave-page" asp-controller="Notes" asp-action="Index">
+<button class="item-btn note-item" data-note-id="@Model.NoteId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-notes">
             <div class="row">
@@ -8,13 +8,11 @@
                     <span class="timeline-icon"><i class="material-icons">note</i></span>
                 </div>
                 <div class="col">
-                    <div class="text-white">
+                    <div class="timeline-title">
                         @Model.CreatedDate.ToString("dd-MMM-yyyy HH:mm")
                     </div>
-                    <div class="timeline-title">
-                        <strong>
-                            @Model.Title
-                        </strong>
+                    <div class="timeline-text text-white">
+                        @Model.Title
                     </div>
                     <div class="timeline-text text-white-50">
                         <div class="timeline-noteitem-text rounded text-dark bg-white">@Html.Raw(HttpUtility.HtmlDecode(Model.Content))</div>
@@ -24,7 +22,7 @@
                             <div class="text-right">
                                 @foreach (string categoryString in categoriesList)
                                 {
-                                    <span class="btn category-item tag-item-sm leave-page">@categoryString</span>
+                                    <span class="btn category-item tag-item-sm">@categoryString</span>
                                 }
                             </div>
                         }
@@ -33,4 +31,4 @@
             </div>
         </div>
     </div>
-</a>
+</button>

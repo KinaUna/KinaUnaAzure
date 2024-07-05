@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using KinaUna.Data.Models;
+using KinaUnaWeb.Models.TypeScriptModels.Locations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
@@ -16,8 +17,11 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string TagFilter { get; set; }
         public int? SortBy { get; set; }
 
-        public Location LocationItem { get; init; } = new();
+        public Location LocationItem { get; set; } = new();
         public string HereMapsApiKey { get; init; } = "";
+        public int Sort { get; set; }
+        public int SortTags { get; set; }
+        public LocationsPageParameters LocationsPageParameters { get; set; }
 
         public LocationViewModel()
         {

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using KinaUna.Data.Models;
 using System.Linq;
+using KinaUna.Data.Extensions;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -154,6 +155,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             SleepItem.SleepNotes = sleep.SleepNotes;
             SleepItem.Progeny = CurrentProgeny;
+            SleepItem.CalculateDuration(CurrentUser.Timezone);
         }
 
         public void ProcessSleepListData(List<Sleep> sleepList)

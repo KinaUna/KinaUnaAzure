@@ -28,6 +28,26 @@ namespace KinaUnaWeb.Controllers
         }
 
         [AllowAnonymous]
+        public async Task<IActionResult> ViewSleep(int sleepId, bool partialView = false)
+        {
+            Sleep sleepItem = await sleepHttpClient.GetSleepItem(sleepId);
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleepItem.ProgenyId);
+            SleepViewModel model = new(baseModel);
+            
+            model.SetPropertiesFromSleepItem(sleepItem);
+            model.SleepItem.Progeny = model.CurrentProgeny;
+            model.SleepItem.Progeny.PictureLink = model.SleepItem.Progeny.GetProfilePictureUrl();
+
+            if (partialView)
+            {
+                return PartialView("_SleepDetailsPartial", model);
+            }
+            return View(model);
+
+        }
+
+        [AllowAnonymous]
         public async Task<IActionResult> SleepCalendar(int childId = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);

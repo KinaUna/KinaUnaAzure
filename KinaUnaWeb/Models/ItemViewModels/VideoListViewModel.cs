@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using KinaUna.Data.Models;
+using KinaUnaWeb.Models.TypeScriptModels.Videos;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -16,7 +17,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int SortBy { get; init; }
         public List<Video> VideosList { get; set; }
         public string TagFilter { get; init; }
-
+        public int Year { get; set; } = 0;
+        public int Month { get; set; } = 0;
+        public int Day { get; set; } = 0;
+        public VideosPageParameters VideosPageParameters { get; set; }
 
         public VideoListViewModel()
         {

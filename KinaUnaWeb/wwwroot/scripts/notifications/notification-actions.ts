@@ -1,4 +1,12 @@
-
+import { popupEventItem } from "../calendar/calendar-details.js";
+import { popupContactItem } from "../contacts/contact-details.js";
+import { popupFriendItem } from "../friends/friend-details.js";
+import { popupPictureDetails } from "../pictures/picture-details.js";
+import { popupVideoDetails } from "../videos/video-details.js";
+import { popupNoteItem } from "../notes/note-details.js";
+import { popupSleepItem } from "../sleep/sleep-details.js";
+import { popupLocationItem } from "../locations/location-details.js";
+import { popupMeasurementItem } from "../measurements/measurement-details.js";
 /**
  * Used to handle the click event on a notification.
  * Updates the notification as read if it is unread.
@@ -21,6 +29,114 @@ async function notificationItemClick(btn: HTMLElement): Promise<void> {
 
     let notificationLink = btn.getAttribute('data-notificationLink');
     if (notificationLink !== null) {
+        if (notificationLink.startsWith('/Pictures/Picture/')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Pictures/Picture/', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('?');
+            let pictureId = notificationLinkSplit[0];
+            if (pictureId !== null) {
+                popupPictureDetails(pictureId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+
+        if (notificationLink.startsWith('/Videos/Video/')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Videos/Video/', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('?');
+            let videoId = notificationLinkSplit[0];
+            if (videoId !== null) {
+                popupVideoDetails(videoId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+
+        if (notificationLink.startsWith('/Calendar/ViewEvent')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Calendar/ViewEvent?eventId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let eventId = notificationLinkSplit[0];
+            if (eventId !== null) {
+                popupEventItem(eventId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+
+        if (notificationLink.startsWith('/Notes/ViewNote')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Notes/ViewNote?noteId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let noteId = notificationLinkSplit[0];
+            if (noteId !== null) {
+                popupNoteItem(noteId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+
+        if (notificationLink.startsWith('/Sleep/ViewSleep')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Sleep/ViewSleep?itemId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let sleepId = notificationLinkSplit[0];
+            if (sleepId !== null) {
+                popupSleepItem(sleepId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+
+        if (notificationLink.startsWith('/Friends/ViewFriend')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Friends/ViewFriend?friendId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let friendId = notificationLinkSplit[0];
+            if (friendId !== null) {
+                popupFriendItem(friendId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+
+        if (notificationLink.startsWith('/Contacts/ViewContact')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Contacts/ViewContact?contactId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let contactId = notificationLinkSplit[0];
+            if (contactId !== null) {
+                popupContactItem(contactId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+
+        if (notificationLink.startsWith('/Locations/ViewLocation')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Locations/ViewLocation?locationId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let locationId = notificationLinkSplit[0];
+            if (locationId !== null) {
+                popupLocationItem(locationId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+
+        if (notificationLink.startsWith('/Measurements/ViewMeasurement')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Measurements/ViewMeasurement?locationId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let measurementId = notificationLinkSplit[0];
+            if (measurementId !== null) {
+                popupMeasurementItem(measurementId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+
         window.location.href = notificationLink;
     }
 
@@ -100,6 +216,7 @@ export function updateNoficationElementEvents(notificationButtonsList: HTMLColle
             }
 
             button.addEventListener('click', async function (event: MouseEvent) {
+                event.stopImmediatePropagation();
                 notificationItemClick(button);
             });
 

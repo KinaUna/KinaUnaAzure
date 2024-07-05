@@ -11,6 +11,7 @@ using KinaUna.Data.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.IO;
 using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.TypeScriptModels.Friends;
 using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
@@ -18,49 +19,31 @@ namespace KinaUnaWeb.Controllers
     public class FriendsController(ImageStore imageStore, IFriendsHttpClient friendsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
     {
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, string tagFilter = "")
+        public async Task<IActionResult> Index(int childId = 0, string tagFilter = "", int sort = 0, int sortBy = 0, int sortTags = 0)
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             FriendsListViewModel model = new(baseModel);
             List<Friend> friendsList = await friendsHttpClient.GetFriendsList(model.CurrentProgenyId, model.CurrentAccessLevel, tagFilter);
 
-            if (friendsList.Count == 0) return View(model);
-
-            friendsList = [.. friendsList.OrderBy(f => f.FriendSince)];
-                
-            List<string> tagsList = [];
-                
-            foreach (Friend friend in friendsList)
-            {
-                FriendViewModel friendViewModel = new();
-                friendViewModel.SetPropertiesFromFriendItem(friend, model.IsCurrentUserProgenyAdmin);
-
-                friendViewModel.FriendItem.PictureLink = friendViewModel.FriendItem.GetProfilePictureUrl();
-
-                if (!string.IsNullOrEmpty(friendViewModel.Tags))
-                {
-                    List<string> friendTagsList = [.. friendViewModel.Tags.Split(',')];
-                    foreach (string tagString in friendTagsList)
-                    {
-                        if (!tagsList.Contains(tagString.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                        {
-                            tagsList.Add(tagString.TrimStart(' ', ',').TrimEnd(' ', ','));
-                        }
-                    }
-                }
-
-                model.FriendViewModelsList.Add(friendViewModel);
-            }
-
-            model.SetTags(tagsList);
             model.TagFilter = tagFilter;
+
+            model.FriendsPageParameters = new()
+            {
+                LanguageId = model.LanguageId,
+                TagFilter = tagFilter,
+                TotalItems = friendsList.Count,
+                ProgenyId = model.CurrentProgenyId,
+                Sort = sort,
+                SortBy = sortBy,
+                SortTags = sortTags
+            };
 
             return View(model);
 
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> FriendDetails(int friendId, string tagFilter)
+        public async Task<IActionResult> ViewFriend(int friendId, string tagFilter = "", bool partialView = false)
         {
             Friend friend = await friendsHttpClient.GetFriend(friendId);
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), friend.ProgenyId);
@@ -95,7 +78,111 @@ namespace KinaUnaWeb.Controllers
             model.SetTagList(tagsList);
             model.TagFilter = tagFilter;
             
+            model.FriendItem.Progeny = model.CurrentProgeny;
+            model.FriendItem.Progeny.PictureLink = model.FriendItem.Progeny.GetProfilePictureUrl();
+
+            if (partialView)
+            {
+                return PartialView("_FriendDetailsPartial", model);
+            }
             return View(model);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> FriendElement([FromBody] FriendItemParameters parameters)
+        {
+            parameters ??= new FriendItemParameters();
+
+            if (parameters.LanguageId == 0)
+            {
+                parameters.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+
+            FriendViewModel friendItemResponse = new()
+            {
+                LanguageId = parameters.LanguageId
+            };
+
+            if (parameters.FriendId == 0)
+            {
+                friendItemResponse.FriendItem = new Friend { FriendId = 0 };
+            }
+            else
+            {
+                friendItemResponse.FriendItem = await friendsHttpClient.GetFriend(parameters.FriendId);
+                friendItemResponse.FriendItem.PictureLink = friendItemResponse.FriendItem.GetProfilePictureUrl();
+                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), friendItemResponse.FriendItem.ProgenyId);
+                friendItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
+            }
+
+
+            return PartialView("_FriendElementPartial", friendItemResponse);
+
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> FriendsList([FromBody] FriendsPageParameters parameters)
+        {
+            parameters ??= new FriendsPageParameters();
+            if (parameters.LanguageId == 0)
+            {
+                parameters.LanguageId = Request.GetLanguageIdFromCookie();
+            }
+
+            if (parameters.CurrentPageNumber < 1)
+            {
+                parameters.CurrentPageNumber = 1;
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), parameters.ProgenyId);
+            List<Friend> friendsList = await friendsHttpClient.GetFriendsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+
+            List<string> tagsList = [];
+            
+            foreach (Friend friendItem in friendsList)
+            {
+                if (string.IsNullOrEmpty(friendItem.Tags)) continue;
+
+                List<string> friendItemTags = [.. friendItem.Tags.Split(',')];
+                foreach (string tagstring in friendItemTags)
+                {
+                    if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
+                    {
+                        tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
+                    }
+                }
+            }
+
+            if (parameters.SortTags == 1)
+            {
+                tagsList = [.. tagsList.OrderBy(t => t)];
+            }
+
+            if (parameters.SortBy == 0)
+            {
+                friendsList = [.. friendsList.OrderBy(f => f.FriendSince)];
+            }
+            else
+            {
+                friendsList = [.. friendsList.OrderBy(f => f.Name)];
+            }
+
+            if (parameters.Sort == 1)
+            {
+                friendsList.Reverse();
+            }
+
+            List<int> friendsIdList = friendsList.Select(f => f.FriendId).ToList();
+
+            return Json(new FriendsPageResponse()
+            {
+                FriendsList = friendsIdList,
+                PageNumber = parameters.CurrentPageNumber,
+                TotalItems = friendsList.Count,
+                TagsList = tagsList
+            });
         }
 
         [AllowAnonymous]

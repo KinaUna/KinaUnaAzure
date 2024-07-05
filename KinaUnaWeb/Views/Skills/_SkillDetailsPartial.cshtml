@@ -1,0 +1,67 @@
+﻿@using KinaUna.Data
+@using KinaUnaWeb.Services
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model KinaUnaWeb.Models.ItemViewModels.SkillViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string title = Model.SkillItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Skills", PageNames.Skills, Model.LanguageId);
+
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body bg-skill item-details-content">
+        <div class="row m-0">
+            <div class="col-12">
+                <img src="@Model.SkillItem.Progeny.PictureLink" class="item-details-title-picture" />
+                <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <div class="row m-0">
+            <div class="col-12">
+                <div class="space-20">
+                </div>
+            </div>
+            <div class="col-auto">
+                <span class="timeline-icon"><i class="material-icons" style="font-size: 48px;">straighten</i></span>
+            </div>
+            <div class="col">
+                <div class="timeline-title row">
+                    <div class="col-12 h4">
+                        @if (Model.SkillItem.SkillFirstObservation.HasValue)
+                        {
+                            <div class="text-white">@Model.SkillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy")</div>
+                        }
+                        <div class="space-10"></div>
+                        <div>@Model.SkillItem.Name</div>
+                    </div>
+                </div>
+                <div class="row">
+                    @if (!string.IsNullOrEmpty(Model.SkillItem.Description))
+                    {
+                        <div class="col-12">@await LocaleManager.GetTranslation("Description:", PageNames.Skills, Model.LanguageId) @Model.SkillItem.Description</div>
+                    }
+                </div>
+                @if (!string.IsNullOrEmpty(Model.SkillItem.Category))
+                {
+                    List<string> categoriesList = Model.SkillItem.Category.Split(',').ToList();
+                    <div class="col-12 mt-2 text-right">
+                        @foreach (string categoryString in categoriesList)
+                        {
+                            <span class="btn category-item tag-item-sm">@categoryString</span>
+                        }
+                    </div>
+                }
+
+            </div>
+            @if (Model.IsCurrentUserProgenyAdmin)
+            {
+                <div class="space-20"></div>
+                <div class="col-12">
+                    <a asp-controller="Skills" asp-action="EditSkill" asp-route-itemId="@Model.SkillItem.SkillId" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
+                    <a asp-controller="Skills" asp-action="DeleteSkill" asp-route-itemId="@Model.SkillItem.SkillId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>

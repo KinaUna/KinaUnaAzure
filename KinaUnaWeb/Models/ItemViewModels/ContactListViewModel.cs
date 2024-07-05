@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using KinaUnaWeb.Models.TypeScriptModels.Contacts;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -6,6 +7,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
     {
         public List<ContactViewModel> ContactsList { get; set; }
         public string TagFilter { get; set; }
+        public ContactsPageParameters ContactsPageParameters { get; set; }
 
         public ContactListViewModel()
         {

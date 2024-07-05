@@ -57,6 +57,31 @@ namespace KinaUnaProgenyApi.Models.ViewModels
             AccessLevelListDe = aclList.AccessLevelListDe;
 
         }
+
+        public void SetVideoPropertiesFromVideoItem(Video video)
+        {
+            VideoId = video.VideoId;
+            VideoTime = video.VideoTime;
+            ProgenyId = video.ProgenyId;
+            Owners = video.Owners;
+            ThumbLink = video.ThumbLink;
+            VideoLink = video.VideoLink;
+            Duration = video.Duration;
+            DurationHours = video.DurationHours;
+            DurationMinutes = video.DurationMinutes;
+            DurationSeconds = video.DurationSeconds;
+            AccessLevel = video.AccessLevel;
+            Author = video.Author;
+            AccessLevelListEn[video.AccessLevel].Selected = true;
+            AccessLevelListDa[video.AccessLevel].Selected = true;
+            AccessLevelListDe[video.AccessLevel].Selected = true;
+            Tags = video.Tags;
+            Location = video.Location;
+            Latitude = video.Latitude;
+            Longtitude = video.Longtitude;
+            Altitude = video.Altitude;
+            CommentThreadNumber = video.CommentThreadNumber;
+        }
     }
 }
 

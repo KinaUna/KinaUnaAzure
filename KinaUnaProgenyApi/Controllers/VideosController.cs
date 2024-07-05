@@ -248,6 +248,33 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        [HttpGet]
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> VideoElement(int id)
+        {
+            Video video = await videosService.GetVideo(id);
+
+            if (video == null) return NotFound();
+
+            // Check if user should be allowed access.
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail);
+
+            if ((userAccess == null && video.ProgenyId != Constants.DefaultChildId) || (userAccess != null && userAccess.AccessLevel > video.AccessLevel && video.ProgenyId != Constants.DefaultChildId))
+            {
+                return Unauthorized();
+            }
+
+            VideoViewModel model = new();
+            model.SetVideoPropertiesFromVideoItem(video);
+            model.VideoNumber = 0;
+            model.VideoCount = 0;
+            model.CommentsList = await commentsService.GetCommentsList(video.CommentThreadNumber);
+            model.TagsList = "";
+            return Ok(model);
+
+        }
+
         // GET api/videos/progeny/[id]/[accessLevel]
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
@@ -273,6 +300,31 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(videosList);
         }
 
+        [HttpGet]
+        [Route("[action]/{id:int}/{accessLevel:int}")]
+        public async Task<IActionResult> ProgenyVideosList(int id, int accessLevel)
+        {
+            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(id, userEmail);
+
+            if (userAccess == null && id != Constants.DefaultChildId)
+            {
+                return Unauthorized();
+            }
+
+            List<Video> videosList = await videosService.GetVideosList(id);
+            videosList = videosList.Where(p => p.AccessLevel >= accessLevel).ToList();
+
+            if (videosList.Count != 0)
+            {
+                return Ok(videosList);
+            }
+
+            Video tempPicture = new();
+            
+            videosList.Add(tempPicture);
+            return Ok(videosList);
+        }
 
         // GET api/videos/5
         [HttpGet("{id:int}")]

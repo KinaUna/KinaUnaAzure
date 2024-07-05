@@ -14,7 +14,7 @@
         endDateString = string.Empty;
     }
 }
-<a class="leave-page" asp-controller="Sleep" asp-action="Index">
+<button class="item-btn sleep-item" data-sleep-id="@Model.SleepId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-sleep">
             <div class="row">
@@ -32,7 +32,7 @@
                         {
                             <div class="col-auto">
                                 <div class="row">
-                                    <div class="col font-weight-bold">@startDateString</div>
+                                    <div class="col">@startDateString</div>
                                 </div>
                                 <div class="row">
                                     <div class="col font-weight-normal text-right">@startTimeString</div>
@@ -40,7 +40,7 @@
                             </div>
                             <div class="col-auto">
                                 <div class="row">
-                                    <div class="col font-weight-bold ">@endDateString</div>
+                                    <div class="col">@endDateString</div>
                                 </div>
                                 <div class="row">
                                     <div class="col font-weight-normal ">@endTimeString</div>
@@ -53,4 +53,4 @@
             </div>
         </div>
     </div>
-</a>
+</button>

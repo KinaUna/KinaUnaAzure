@@ -60,7 +60,7 @@ namespace KinaUnaWeb.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> Picture(int id, string tagFilter = "", int sortBy = 1)
+        public async Task<IActionResult> Picture(int id, string tagFilter = "", int sortBy = 1, bool partialView = false)
         {
             Picture picture = await mediaHttpClient.GetPicture(id, Constants.DefaultTimezone);
             if (picture == null)
@@ -76,7 +76,8 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), picture.ProgenyId);
             PictureItemViewModel model = new(baseModel)
             {
-                HereMapsApiKey = _hereMapsApiKey
+                HereMapsApiKey = _hereMapsApiKey,
+                PartialView = partialView
             };
             PictureViewModel pictureViewModel = await mediaHttpClient.GetPictureViewModel(id, model.CurrentAccessLevel, sortBy, model.CurrentUser.Timezone, tagFilter);
 
@@ -120,6 +121,11 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.SetAccessLevelList();
+            model.Picture.Progeny.PictureLink = model.Picture.Progeny.GetProfilePictureUrl();
+            if (partialView)
+            {
+                return PartialView("_PictureDetailsPartial", model);
+            }
 
             return View(model);
         }
@@ -333,6 +339,11 @@ namespace KinaUnaWeb.Controllers
                 pictureToUpdate.PictureTime = TimeZoneInfo.ConvertTimeToUtc(model.Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
             _ = await mediaHttpClient.UpdatePicture(pictureToUpdate);
+
+            if (model.PartialView)
+            {
+                return Json(model);
+            }
             
             return RedirectToRoute(new { controller = "Pictures", action = "Picture", id = model.Picture.PictureId, childId = model.Picture.ProgenyId, tagFilter = model.TagFilter, sortBy = model.SortBy });
         }
@@ -408,6 +419,11 @@ namespace KinaUnaWeb.Controllers
             {
                 await emailSender.SendEmailAsync(toMail, "New Comment on " + model.CurrentProgeny.NickName + "'s Picture",
                     "A comment was added to " + model.CurrentProgeny.NickName + "'s picture by " + comment.DisplayName + ":<br/><br/>" + comment.CommentText + "<br/><br/>Picture Link: <a href=\"" + imgLink + "\">" + imgLink + "</a>");
+            }
+
+            if (model.PartialView)
+            {
+                return Json(model);
             }
 
             return RedirectToRoute(new { controller = "Pictures", action = "Picture", id = model.ItemId, childId = model.CurrentProgenyId, sortBy = model.SortBy });

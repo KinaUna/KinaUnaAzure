@@ -31,8 +31,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string VidDays { get; set; }
         public string VidHours { get; set; }
         public string VidMinutes { get; set; }
-
+        public bool PartialView { get; set; }
         public string HereMapsApiKey { get; init; } = "";
+        public int VideoNumber { get; internal set; }
 
         public VideoItemViewModel()
         {
@@ -60,6 +61,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Video.AccessLevel = videoViewModel.AccessLevel;
             Video.Author = videoViewModel.Author;
             CommentThreadNumber = Video.CommentThreadNumber = videoViewModel.CommentThreadNumber;
+            CommentsList = Video.Comments = videoViewModel.CommentsList ?? [];
             Tags = Video.Tags = videoViewModel.Tags;
             TagsList = videoViewModel.TagsList;
             Video.Location = videoViewModel.Location;

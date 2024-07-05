@@ -1,8 +1,9 @@
 import * as LocaleHelper from '../localization-v6.js';
-import { PictureViewModel, PicturesPageParameters } from '../page-models-v6.js';
+import { PictureViewModel, PicturesPageParameters, TimelineItem } from '../page-models-v6.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat, getLongDateTimeFormatMoment, getFormattedDateString } from '../data-tools-v6.js';
 import * as SettingsHelper from '../settings-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+import { addTimelineItemEventListener } from '../item-details/items-display.js';
 let picturesPageParameters = new PicturesPageParameters();
 const picturesPageSettingsStorageKey = 'pictures_page_parameters';
 let languageId = 1;
@@ -43,6 +44,15 @@ function getPageParametersFromPageData() {
                         pageSettingsFromStorage.year = picturesPageParametersFromPageData.year;
                         pageSettingsFromStorage.month = picturesPageParametersFromPageData.month;
                         pageSettingsFromStorage.day = picturesPageParametersFromPageData.day;
+                        if (pageSettingsFromStorage.itemsPerPage === null) {
+                            pageSettingsFromStorage.itemsPerPage = 10;
+                        }
+                        if (pageSettingsFromStorage.sort === null) {
+                            pageSettingsFromStorage.sort = 1;
+                        }
+                        if (pageSettingsFromStorage.sortTags === null) {
+                            pageSettingsFromStorage.sortTags = 0;
+                        }
                         picturesPageParametersResult = pageSettingsFromStorage;
                     }
                 }
@@ -83,7 +93,6 @@ function stopLoadingSpinner() {
         stopLoadingItemsSpinner('loading-items-div');
     }
 }
-//
 /** Retrieves the list of pictures, based on the parameters provided, then updates the page.
  *
  * @param parameters The PicturesPageParameters object with the parameters to use for the query.
@@ -170,7 +179,7 @@ async function processPicturesList(newItemsList, parameters) {
         await renderPictureItem(itemToAdd);
     }
     ;
-    updateTagsListDiv(newItemsList.tagsList);
+    updateTagsListDiv(newItemsList.tagsList, parameters.sortTags);
     return new Promise(function (resolve, reject) {
         resolve(parameters);
     });
@@ -246,15 +255,12 @@ function updateSettingsNotificationDiv(sort) {
 /** Renders a list of tag buttons in the tags-list-div, each with a link to filter the page.
 * @param tagsList The list of strings for each tag.
 */
-function updateTagsListDiv(tagsList) {
+function updateTagsListDiv(tagsList, sortOrder) {
     const tagsListDiv = document.querySelector('#tags-list-div');
     if (tagsListDiv !== null) {
         tagsListDiv.innerHTML = '';
-        const sortTagsSelect = document.querySelector('#sort-tags-select');
-        if (sortTagsSelect !== null) {
-            if (sortTagsSelect.selectedIndex === 1) {
-                tagsList.sort((a, b) => a.localeCompare(b));
-            }
+        if (sortOrder === 1) {
+            tagsList.sort((a, b) => a.localeCompare(b));
         }
         tagsList.forEach(function (tag) {
             tagsListDiv.innerHTML += '<a class="btn tag-item" data-tag-link="' + tag + '">' + tag + '</a>';
@@ -334,6 +340,10 @@ async function renderPictureItem(pictureItem) {
             const pictureElementHtml = await getPictureElementResponse.text();
             if (photoListDiv != null) {
                 photoListDiv.insertAdjacentHTML('beforeend', pictureElementHtml);
+                const timelineItem = new TimelineItem();
+                timelineItem.itemId = pictureItem.pictureId.toString();
+                timelineItem.itemType = 1;
+                addTimelineItemEventListener(timelineItem);
             }
         }
     }

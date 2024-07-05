@@ -19,6 +19,87 @@ interface BaseItemsPageResponseModel {
     totalItems: number;
 }
 
+export class ContactItemParameters implements BaseItemParameters {
+    contactId: number = 0;
+    languageId: number = 0;
+}
+
+export class ContactsPageParameters implements BasePageParameters {
+    progenyId: number = 0;
+    languageId: number = 0;
+    currentPageNumber: number = 0;
+    itemsPerPage: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    sort: number = 0;
+    sortBy: number = 0;
+    tagFilter: string = '';
+    showSettings: boolean = false;
+    sortTags: number = 0;
+}
+
+export class ContactsPageResponse implements BaseItemsPageResponseModel {
+    pageNumber: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    contactsList: number[] = [];
+    tagsList: string[] = [];
+}
+
+export class FriendItemParameters implements BaseItemParameters {
+    friendId: number = 0;
+    languageId: number = 0;
+}
+
+export class FriendsPageParameters implements BasePageParameters {
+    progenyId: number = 0;
+    languageId: number = 0;
+    currentPageNumber: number = 0;
+    itemsPerPage: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    sort: number = 0;
+    sortBy: number = 0;
+    tagFilter: string = '';
+    showSettings: boolean = false;
+    sortTags: number = 0;
+}
+
+export class FriendsPageResponse implements BaseItemsPageResponseModel {
+    pageNumber: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    friendsList: number[] = [];
+    tagsList: string[] = [];
+}
+
+export class LocationItemParameters implements BaseItemParameters {
+    locationId: number = 0;
+    languageId: number = 0;
+}
+
+export class LocationsPageParameters implements BasePageParameters {
+    progenyId: number = 0;
+    languageId: number = 0;
+    currentPageNumber: number = 0;
+    itemsPerPage: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    sort: number = 0;
+    sortBy: number = 0;
+    tagFilter: string = '';
+    showSettings: boolean = false;
+    sortTags: number = 0;
+}
+
+export class LocationsPageResponse implements BaseItemsPageResponseModel {
+    pageNumber: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    locationsList: number[] = [];
+    tagsList: string[] = [];
+}
+
 export class NoteItemParameters implements BaseItemParameters {
     noteId: number = 0;
     languageId: number = 0;
@@ -75,6 +156,47 @@ export class PicturesPageParameters implements BasePageParameters {
 
 export class PicturesList {
     pictureItems: Picture[] = [];
+    allItemsCount: number = 0;
+    remainingItemsCount: number = 0;
+    firstItemYear: number = 0;
+    totalPages: number = 0;
+    currentPageNumber: number = 0;
+    tagsList: string[] = [];
+}
+
+export class Video {
+    videoId: number = 0;
+    progenyId: number = 0;
+    videoNumber: number = 0;
+}
+
+export class VideoViewModel {
+    videoId: number = 0;
+    progenyId: number = 0;
+    videoNumber: number = 0;
+    sortBy: number = 1;
+    tagFilter: string = '';
+}
+
+export class VideosPageParameters implements BasePageParameters {
+    progenyId: number = 0;
+    languageId: number = 0;
+    currentPageNumber: number = 0;
+    itemsPerPage: number = 0;
+    totalPages: number = 0;
+    totalItems: number = 0;
+    sort: number = 1;
+    tagFilter: string = '';
+    showSettings: boolean = false;
+    year: number = 0;
+    month: number = 0;
+    day: number = 0;
+    firstItemYear: number = 1900;
+    sortTags: number = 0;
+}
+
+export class VideosList {
+    videoItems: Video[] = [];
     allItemsCount: number = 0;
     remainingItemsCount: number = 0;
     firstItemYear: number = 0;

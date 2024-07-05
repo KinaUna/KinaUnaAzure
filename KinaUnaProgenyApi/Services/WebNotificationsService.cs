@@ -72,7 +72,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Contacts/ContactDetails?contactId=" + contactItem.ContactId + "&childId=" + contactItem.ProgenyId,
+                    Link = "/Contacts/ViewContact?contactId=" + contactItem.ContactId + "&childId=" + contactItem.ProgenyId,
                     Type = "Notification"
                 };
 
@@ -102,7 +102,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Friends?childId=" + friendItem.ProgenyId,
+                    Link = "/Friends/ViewFriend?friendId=" + friendItem.FriendId,
                     Type = "Notification"
                 };
 
@@ -139,7 +139,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Locations?childId=" + locationItem.ProgenyId,
+                    Link = "/Locations/ViewLocation?locationId=" + locationItem.LocationId,
                     Type = "Notification"
                 };
 
@@ -169,7 +169,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Measurements?childId=" + measurementItem.ProgenyId,
+                    Link = "/Measurements/ViewMeasurement?measurementId=" + measurementItem.MeasurementId,
                     Type = "Notification"
                 };
 
@@ -199,7 +199,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Notes?childId=" + noteItem.ProgenyId,
+                    Link = "/Notes/ViewNote?noteId=" + noteItem.NoteId,
                     Type = "Notification"
                 };
 
@@ -315,7 +315,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Skills?childId=" + skillItem.ProgenyId,
+                    Link = "/Skills/ViewSkill?skillId=" + skillItem.SkillId,
                     Type = "Notification"
                 };
 
@@ -389,7 +389,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Sleep?childId=" + sleepItem.ProgenyId,
+                    Link = "/Sleep/ViewSleep?itemId=" + sleepItem.SleepId,
                     Type = "Notification"
                 };
 
@@ -418,7 +418,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Vaccinations?childId=" + vaccinationItem.ProgenyId,
+                    Link = "/Vaccinations/ViewVaccination?vaccinationId=" + vaccinationItem.VaccinationId,
                     Type = "Notification"
                 };
 
@@ -455,7 +455,7 @@ namespace KinaUnaProgenyApi.Services
                     DateTime = DateTime.UtcNow,
                     Icon = userInfo.ProfilePicture,
                     Title = title,
-                    Link = "/Vocabulary?childId=" + vocabularyItem.ProgenyId,
+                    Link = "/Vocabulary/ViewVocabularyItem?vocabularyId=" + vocabularyItem.WordId,
                     Type = "Notification"
                 };
 

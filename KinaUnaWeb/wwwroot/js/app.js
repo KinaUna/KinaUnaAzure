@@ -76,13 +76,22 @@ function checkLeavePage(clickover) {
     }
     return leavingPage;
 }
+/**
+ * Hide all popups and modals if clicking outside the pop-up or modal.
+ * @param {HTMLElement} clickover The element that was clicked.
+ */
 function collapsePopupsAndModals(clickover) {
     const itemDetailsPopup = clickover.closest('.item-details-content');
     if (itemDetailsPopup === null) {
         const itemDetailsPopups = document.querySelectorAll('.item-details-popup');
         itemDetailsPopups.forEach(function (popup) {
+            popup.innerHTML = '';
             popup.classList.add('d-none');
         });
+        let bodyElement = document.querySelector('body');
+        if (bodyElement) {
+            bodyElement.style.removeProperty('overflow');
+        }
     }
 }
 /**

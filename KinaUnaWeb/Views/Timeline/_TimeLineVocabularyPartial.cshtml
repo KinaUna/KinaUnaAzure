@@ -5,7 +5,7 @@
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
 }
-<a class="leave-page" asp-controller="Vocabulary" asp-action="Index">
+<button class="item-btn vocabulary-item" data-vocabulary-id="@Model.WordId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-vocabulary">
             <div class="row">
@@ -14,9 +14,7 @@
                 </div>
                 <div class="col">
                     <div class="timeline-title">
-                        <strong>
-                            @Model.Word
-                        </strong>
+                        @Model.Word
                     </div>
                     <div class="timeline-text text-white-50">
                         @if (!string.IsNullOrEmpty(Model.Language))
@@ -33,4 +31,4 @@
             </div>
         </div>
     </div>
-</a>
+</button>

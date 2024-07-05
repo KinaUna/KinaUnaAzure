@@ -25,6 +25,30 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
+        public async Task<IActionResult> ViewVaccination(int vaccinationId, bool partialView = false)
+        {
+            Vaccination vaccination = await vaccinationsHttpClient.GetVaccination(vaccinationId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId);
+            VaccinationViewModel model = new(baseModel);
+
+            if (vaccination.AccessLevel < model.CurrentAccessLevel)
+            {
+                return RedirectToAction("Index");
+            }
+
+            model.SetPropertiesFromVaccinationItem(vaccination);
+            model.VaccinationItem.Progeny = model.CurrentProgeny;
+            model.VaccinationItem.Progeny.PictureLink = model.VaccinationItem.Progeny.GetProfilePictureUrl();
+
+            if (partialView)
+            {
+                return PartialView("_VaccinationDetailsPartial", model);
+            }
+
+            return View(model);
+        }
+
         [HttpGet]
         public async Task<IActionResult> AddVaccination()
         {

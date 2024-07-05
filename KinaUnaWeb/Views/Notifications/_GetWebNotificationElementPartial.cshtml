@@ -7,7 +7,7 @@
     string topDivClass = "notification-item";
     string isReadClass = "notification-unread";
     string markAsRead = await LocaleManager.GetTranslation("Mark as read", PageNames.Notifications, Model.LanguageId);
-    string topBtnClass = "btn btn-link notification-button leave-page";
+    string topBtnClass = "btn btn-link notification-button";
     string markAsReadIcon = "drafts";
     string timeStamp = Model.WebNotification.DateTime.Ticks.ToString();
     if (Model.WebNotification.IsRead)
@@ -15,7 +15,7 @@
         topDivClass += " bg-dark"; 
         isReadClass = "notification-read";
         markAsRead = await LocaleManager.GetTranslation("Mark as unread", PageNames.Notifications, Model.LanguageId); 
-        topBtnClass = "btn btn-link bg-dark notification-button leave-page";
+        topBtnClass = "btn btn-link bg-dark notification-button";
         markAsReadIcon = "markunread";
     }
 

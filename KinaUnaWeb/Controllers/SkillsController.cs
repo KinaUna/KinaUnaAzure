@@ -60,6 +60,30 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        [AllowAnonymous]
+        public async Task<IActionResult> ViewSkill(int skillId, bool partialView = false)
+        {
+            Skill skill = await skillsHttpClient.GetSkill(skillId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
+            SkillViewModel model = new(baseModel);
+
+            if (skill.AccessLevel < model.CurrentAccessLevel)
+            {
+                return RedirectToAction("Index");
+            }
+
+            model.SetPropertiesFromSkillItem(skill, model.IsCurrentUserProgenyAdmin);
+            model.SkillItem.Progeny = model.CurrentProgeny;
+            model.SkillItem.Progeny.PictureLink = model.SkillItem.Progeny.GetProfilePictureUrl();
+
+            if (partialView)
+            {
+                return PartialView("_SkillDetailsPartial", model);
+            }
+
+            return View(model);
+        }
+
         [HttpGet]
         public async Task<IActionResult> AddSkill()
         {
@@ -73,7 +97,7 @@ namespace KinaUnaWeb.Controllers
 
 
             model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
-            
+            model.SetProgenyList();
             model.SetAccessLevelList();
 
             return View(model);

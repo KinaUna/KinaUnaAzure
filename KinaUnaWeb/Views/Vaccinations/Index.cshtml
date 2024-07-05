@@ -13,14 +13,6 @@
     }
     else
     {
-        if (Model.IsCurrentUserProgenyAdmin)
-        {
-            <div class="btn-group" style="float: right;">
-                <a asp-controller="Vaccinations" asp-action="AddVaccination" class="btn btn-success btn-round leave-page">
-                    <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add vaccination", PageNames.Vaccinations, Model.LanguageId)
-                </a>
-            </div>
-        }
         <h2>@ViewData["Title"]</h2>
         <div class="table-responsive">
             <table class="table table-bordered table-striped">

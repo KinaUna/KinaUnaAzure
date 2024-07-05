@@ -1,6 +1,7 @@
 import { TimelineItem, TimelineParameters, TimeLineItemViewModel, TimelineList } from '../page-models-v6.js';
 import { getCurrentProgenyId } from '../data-tools-v6.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
+import { addTimelineItemEventListener } from '../item-details/items-display.js';
 
 let upcomingEventsList: TimelineItem[] = []
 const upcomingEventsParameters: TimelineParameters = new TimelineParameters();
@@ -61,7 +62,7 @@ async function getUpcomingEventsList(parameters: TimelineParameters): Promise<vo
     }).catch(function (error) {
         console.log('Error loading TimelineList. Error: ' + error);
     });
-
+    
     stopLoadingUpcomingItemsSpinner();
 
     return new Promise<void>(function (resolve, reject) {
@@ -92,6 +93,7 @@ async function renderUpcomingEvent(timelineItem: TimelineItem): Promise<void> {
         const timelineDiv = document.querySelector<HTMLDivElement>('#upcoming-events-div');
         if (timelineDiv != null) {
             timelineDiv.insertAdjacentHTML('beforeend', timelineElementHtml);
+            addTimelineItemEventListener(timelineItem);
         }
     }
 

@@ -91,6 +91,10 @@ function checkLeavePage(clickover: HTMLElement): boolean {
     return leavingPage;
 }
 
+/**
+ * Hide all popups and modals if clicking outside the pop-up or modal.
+ * @param {HTMLElement} clickover The element that was clicked.
+ */
 function collapsePopupsAndModals(clickover: HTMLElement): void {
     const itemDetailsPopup = clickover.closest('.item-details-content');
     
@@ -98,8 +102,14 @@ function collapsePopupsAndModals(clickover: HTMLElement): void {
         const itemDetailsPopups = document.querySelectorAll('.item-details-popup');
         
         itemDetailsPopups.forEach(function (popup) {
+            (popup as HTMLElement).innerHTML = '';
             (popup as HTMLElement).classList.add('d-none');
         });
+
+        let bodyElement = document.querySelector<HTMLBodyElement>('body');
+        if (bodyElement) {
+            bodyElement.style.removeProperty('overflow');
+        }
     }
 }
 

@@ -19,7 +19,7 @@
     typeList.Add(familyFriend);
     typeList.Add(caretakerFriend);
 }
-<a class="leave-page" asp-controller="Friends" asp-action="FriendDetails" asp-route-friendId="@Model.FriendId">
+<button class="item-btn friend-item" data-friend-id="@Model.FriendId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-friend">
             <div class="row">
@@ -29,9 +29,7 @@
                 <div class="col">
                     <div class="row">
                         <div class="col-12 timeline-title">
-                            <strong>
-                                @Model.Name
-                            </strong>
+                            @Model.Name
                         </div>
                         <div class="col-12 timeline-text text-white-50">
                             <div class="row">
@@ -67,7 +65,7 @@
                                     <div class=" col-12 text-right">
                                         @foreach (string tagString in tagsList)
                                         {
-                                            <span class="btn tag-item leave-page">@tagString</span>
+                                            <span class="btn tag-item">@tagString</span>
                                         }
                                     </div>
                                 }
@@ -78,4 +76,4 @@
             </div>
         </div>
     </div>
-</a>
+</button>

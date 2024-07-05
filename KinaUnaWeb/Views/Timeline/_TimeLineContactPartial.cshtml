@@ -6,7 +6,7 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
     Model.DateAdded ??= DateTime.MinValue;
 }
-<a class="leave-page" asp-controller="Contacts" asp-action="ContactDetails" asp-route-contactId="@Model.ContactId">
+<button class="item-btn contact-item" data-contact-id="@Model.ContactId">
     <div class="bg-primary timeline-card">
         <div class="timeline-card-body bg-contact">
             <div class="row">
@@ -15,9 +15,7 @@
                 </div>
                 <div class="col">
                     <div class="timeline-title">
-                        <strong>
-                            @Model.DisplayName
-                        </strong>
+                        @Model.DisplayName
                     </div>
                     <div class="timeline-text text-white-50">
                         <div style="max-width: 60vw; overflow: hidden;">
@@ -45,4 +43,4 @@
             </div>
         </div>
     </div>
-</a>
+</button>

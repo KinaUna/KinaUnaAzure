@@ -11,7 +11,7 @@ async function setupDateTimePicker() {
     setMomentLocale();
     zebraDateTimeFormat = getZebraDateTimeFormat();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
-    const dateTimePicker = $('#vaccination-start-date-time-picker');
+    const dateTimePicker = $('#vaccination-date-time-picker');
     dateTimePicker.Zebra_DatePicker({
         format: zebraDateTimeFormat,
         open_icon_only: true,
