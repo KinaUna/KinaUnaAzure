@@ -14,7 +14,7 @@ async function setupDateTimePicker(): Promise<void> {
     zebraDateTimeFormat = getZebraDateTimeFormat();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
 
-    const dateTimePicker: any = $('#vaccination-start-date-time-picker');
+    const dateTimePicker: any = $('#vaccination-date-time-picker');
     dateTimePicker.Zebra_DatePicker({
         format: zebraDateTimeFormat,
         open_icon_only: true,

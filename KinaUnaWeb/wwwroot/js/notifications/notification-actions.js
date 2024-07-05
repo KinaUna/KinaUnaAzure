@@ -6,6 +6,7 @@ import { popupVideoDetails } from "../videos/video-details.js";
 import { popupNoteItem } from "../notes/note-details.js";
 import { popupSleepItem } from "../sleep/sleep-details.js";
 import { popupLocationItem } from "../locations/location-details.js";
+import { popupMeasurementItem } from "../measurements/measurement-details.js";
 /**
  * Used to handle the click event on a notification.
  * Updates the notification as read if it is unread.
@@ -110,6 +111,17 @@ async function notificationItemClick(btn) {
             let locationId = notificationLinkSplit[0];
             if (locationId !== null) {
                 popupLocationItem(locationId);
+                return new Promise(function (resolve, reject) {
+                    resolve();
+                });
+            }
+        }
+        if (notificationLink.startsWith('/Measurements/ViewMeasurement')) {
+            let notificationLinkWithoutPath = notificationLink.replace('/Measurements/ViewMeasurement?locationId=', '');
+            let notificationLinkSplit = notificationLinkWithoutPath.split('&');
+            let measurementId = notificationLinkSplit[0];
+            if (measurementId !== null) {
+                popupMeasurementItem(measurementId);
                 return new Promise(function (resolve, reject) {
                     resolve();
                 });

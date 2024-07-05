@@ -40,6 +40,33 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
+        public async Task<IActionResult> ViewMeasurement(int measurementId, bool partialView = false)
+        {
+            Measurement measurement = await measurementsHttpClient.GetMeasurement(measurementId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
+            MeasurementViewModel model = new(baseModel);
+
+            if (measurement.AccessLevel < model.CurrentAccessLevel)
+            {
+                return RedirectToAction("Index");
+            }
+
+            model.SetPropertiesFromMeasurement(measurement, model.IsCurrentUserProgenyAdmin);
+
+
+           
+            model.MeasurementItem.Progeny = model.CurrentProgeny;
+            model.MeasurementItem.Progeny.PictureLink = model.MeasurementItem.Progeny.GetProfilePictureUrl();
+
+            if (partialView)
+            {
+                return PartialView("_MeasurementDetailsPartial", model);
+            }
+
+            return View(model);
+        }
+
         [HttpGet]
         public async Task<IActionResult> AddMeasurement()
         {

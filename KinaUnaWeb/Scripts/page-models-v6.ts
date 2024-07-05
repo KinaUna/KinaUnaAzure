@@ -73,11 +73,6 @@ export class FriendsPageResponse implements BaseItemsPageResponseModel {
     tagsList: string[] = [];
 }
 
-export class NoteItemParameters implements BaseItemParameters {
-    noteId: number = 0;
-    languageId: number = 0;
-}
-
 export class LocationItemParameters implements BaseItemParameters {
     locationId: number = 0;
     languageId: number = 0;
@@ -103,6 +98,11 @@ export class LocationsPageResponse implements BaseItemsPageResponseModel {
     totalItems: number = 0;
     locationsList: number[] = [];
     tagsList: string[] = [];
+}
+
+export class NoteItemParameters implements BaseItemParameters {
+    noteId: number = 0;
+    languageId: number = 0;
 }
 
 export class NotesPageParameters implements BasePageParameters {

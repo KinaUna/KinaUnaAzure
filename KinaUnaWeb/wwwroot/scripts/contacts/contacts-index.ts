@@ -232,7 +232,7 @@ async function loadContactsPageSettings(): Promise<void> {
 
         contactsPageParameters.sortTags = pageSettingsFromStorage.sortTags;
         const sortTagsElement = document.querySelector<HTMLSelectElement>('#sort-tags-select');
-        if (sortTagsElement !== null) {
+        if (sortTagsElement !== null && contactsPageParameters.sortTags) {
             sortTagsElement.value = contactsPageParameters.sortTags.toString();
             ($(".selectpicker") as any).selectpicker('refresh');
         }

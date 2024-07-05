@@ -1,5 +1,6 @@
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v6.js';
+declare let map: H.Map;
 
 /**
  * Adds event listeners to all elements with the data-location-id attribute.
@@ -29,9 +30,9 @@ export function popupLocationItem(locationId: string): void {
  * Displays a location item in a popup.
  * @param {string} locationId The id of the location item to display.
  */
-async function displayLocationItem(contactId: string): Promise<void> {
+async function displayLocationItem(locationId: string): Promise<void> {
     startFullPageSpinner();
-    let url = '/Contacts/ViewContact?contactId=' + contactId + "&partialView=true";
+    let url = '/Locations/ViewLocation?locationId=' + locationId + "&partialView=true";
     await fetch(url, {
         method: 'GET',
         headers: {
@@ -40,31 +41,33 @@ async function displayLocationItem(contactId: string): Promise<void> {
         },
     }).then(async function (response) {
         if (response.ok) {
-            const contactElementHtml = await response.text();
-            const contactDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
-            if (contactDetailsPopupDiv) {
+            const locationElementHtml = await response.text();
+            const locationDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+            if (locationDetailsPopupDiv) {
                 const fullScreenOverlay = document.createElement('div');
                 fullScreenOverlay.classList.add('full-screen-bg');
-                fullScreenOverlay.innerHTML = contactElementHtml;
-                contactDetailsPopupDiv.appendChild(fullScreenOverlay);
+                fullScreenOverlay.innerHTML = locationElementHtml;
+                locationDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
-                contactDetailsPopupDiv.classList.remove('d-none');
+                locationDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
                     closeButtonsList.forEach((button) => {
                         button.addEventListener('click', function () {
-                            contactDetailsPopupDiv.innerHTML = '';
-                            contactDetailsPopupDiv.classList.add('d-none');
+                            locationDetailsPopupDiv.innerHTML = '';
+                            locationDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
                         });
                     });
                 }
+
+                // Todo: If a map is loaded, center it on this location.
             }
         } else {
-            console.error('Error getting contact item. Status: ' + response.status + ', Message: ' + response.statusText);
+            console.error('Error getting location item. Status: ' + response.status + ', Message: ' + response.statusText);
         }
     }).catch(function (error) {
-        console.error('Error getting contact item. Error: ' + error);
+        console.error('Error getting location item. Error: ' + error);
     });
 
     stopFullPageSpinner();

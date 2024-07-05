@@ -1,20 +1,17 @@
 import * as LocaleHelper from '../localization-v6.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
-
-let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
+let zebraDatePickerTranslations;
 let languageId = 1;
-let zebraDateTimeFormat: string;
-let currentProgenyId: number;
-
+let zebraDateTimeFormat;
+let currentProgenyId;
 /**
  * Configures the date time picker for the vaccination date input field.
  */
-async function setupDateTimePicker(): Promise<void> {
+async function setupDateTimePicker() {
     setMomentLocale();
     zebraDateTimeFormat = getZebraDateTimeFormat();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
-
-    const dateTimePicker: any = $('#vaccination-date-time-picker');
+    const dateTimePicker = $('#measurement-date-time-picker');
     dateTimePicker.Zebra_DatePicker({
         format: zebraDateTimeFormat,
         open_icon_only: true,
@@ -24,35 +21,31 @@ async function setupDateTimePicker(): Promise<void> {
         show_select_today: zebraDatePickerTranslations.todayString,
         select_other_months: true
     });
-
-    return new Promise<void>(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         resolve();
     });
 }
-
 /**
  * Sets up the Progeny select list and adds an event listener to update the progenyId when the selected Progeny changes.
  */
-function setupProgenySelectList(): void {
-    const progenyIdSelect = document.querySelector<HTMLSelectElement>('#item-progeny-id-select');
+function setupProgenySelectList() {
+    const progenyIdSelect = document.querySelector('#item-progeny-id-select');
     if (progenyIdSelect !== null) {
         progenyIdSelect.addEventListener('change', async () => {
             currentProgenyId = parseInt(progenyIdSelect.value);
         });
     }
 }
-
 /**
  * Initializes the page elements when it is loaded.
  */
-document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
+document.addEventListener('DOMContentLoaded', async function () {
     languageId = getCurrentLanguageId();
     currentProgenyId = getCurrentProgenyId();
-
     await setupDateTimePicker();
     setupProgenySelectList();
-
-    return new Promise<void>(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         resolve();
     });
 });
+//# sourceMappingURL=add-edit-measurement.js.map

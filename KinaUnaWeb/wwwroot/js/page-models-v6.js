@@ -58,12 +58,6 @@ export class FriendsPageResponse {
         this.tagsList = [];
     }
 }
-export class NoteItemParameters {
-    constructor() {
-        this.noteId = 0;
-        this.languageId = 0;
-    }
-}
 export class LocationItemParameters {
     constructor() {
         this.locationId = 0;
@@ -92,6 +86,12 @@ export class LocationsPageResponse {
         this.totalItems = 0;
         this.locationsList = [];
         this.tagsList = [];
+    }
+}
+export class NoteItemParameters {
+    constructor() {
+        this.noteId = 0;
+        this.languageId = 0;
     }
 }
 export class NotesPageParameters {

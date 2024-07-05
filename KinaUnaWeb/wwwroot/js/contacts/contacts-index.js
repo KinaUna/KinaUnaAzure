@@ -195,7 +195,7 @@ async function loadContactsPageSettings() {
         }
         contactsPageParameters.sortTags = pageSettingsFromStorage.sortTags;
         const sortTagsElement = document.querySelector('#sort-tags-select');
-        if (sortTagsElement !== null) {
+        if (sortTagsElement !== null && contactsPageParameters.sortTags) {
             sortTagsElement.value = contactsPageParameters.sortTags.toString();
             $(".selectpicker").selectpicker('refresh');
         }

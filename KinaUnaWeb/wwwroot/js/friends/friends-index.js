@@ -179,7 +179,7 @@ async function loadFriendsPageSettings() {
         }
         friendsPageParameters.sortTags = pageSettingsFromStorage.sortTags;
         const sortTagsElement = document.querySelector('#sort-tags-select');
-        if (sortTagsElement !== null) {
+        if (sortTagsElement !== null && friendsPageParameters.sortTags) {
             sortTagsElement.value = friendsPageParameters.sortTags.toString();
             $(".selectpicker").selectpicker('refresh');
         }

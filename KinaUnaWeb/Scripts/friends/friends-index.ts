@@ -209,7 +209,7 @@ async function loadFriendsPageSettings(): Promise<void> {
 
         friendsPageParameters.sortTags = pageSettingsFromStorage.sortTags;
         const sortTagsElement = document.querySelector<HTMLSelectElement>('#sort-tags-select');
-        if (sortTagsElement !== null) {
+        if (sortTagsElement !== null && friendsPageParameters.sortTags) {
             sortTagsElement.value = friendsPageParameters.sortTags.toString();
             ($(".selectpicker") as any).selectpicker('refresh');
         }

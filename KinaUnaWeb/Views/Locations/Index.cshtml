@@ -13,75 +13,76 @@
     string pageParameters = Json.Serialize(Model.LocationsPageParameters).ToString();
 }
 <div id="locations-page-parameters" class="d-none" data-locations-page-parameters="@pageParameters"></div>
-<div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
-    <div class="btn-group" style="float: right;">
-        <a asp-controller="Locations" asp-action="PhotoLocations" class="btn btn-info leave-page">
-            <i class="fas fa-map-marked-alt"></i> @await LocaleManager.GetTranslation("Photo locations", PageNames.Locations, Model.LanguageId)
-        </a>
-    </div>
-    <h2>@ViewData["Title"]</h2>
-    
-    <div class="row" style="clear: both; margin-top: 25px;">
-        <div class="col-12">
-            @if (allowHereMaps)
-            {
-                <div style="width: 100%; height: 60vh;" id="locations-page-map-container-div"></div>
-            }
-            else
-            {
-                <div class="col-12 col-md-10 col-lg-9 col-xl-8 col-xxl-7 col-w1900-6 col-w2500-5">
-                    <div class="space-20"></div>
-                    <div>@await LocaleManager.GetTranslation("Cookie consent for Here maps has not been granted. To use maps enable cookies for Here Maps.", PageNames.Layout, Model.LanguageId)</div>
-                    <div class="space-20"></div>
-                    @if (Context.Request.ConsentCookieSet())
-                    {
-                        @await Html.PartialAsync("_CookieConsentPartial", Model.LanguageId)
-                    }
-                </div>
-            }
+<div class="row m-0">
+    <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
+        <div class="btn-group" style="float: right;">
+            <a asp-controller="Locations" asp-action="PhotoLocations" class="btn btn-info leave-page">
+                <i class="fas fa-map-marked-alt"></i> @await LocaleManager.GetTranslation("Photo locations", PageNames.Locations, Model.LanguageId)
+            </a>
         </div>
-    </div>
-    <div class="space-70"></div>
-    <div class="row m-0">
-        <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
-            <div class="row">
-                <div class="col-12">
-                    @if (!string.IsNullOrEmpty(Model.TagFilter))
-                    {
+        <h2>@ViewData["Title"]</h2>
+
+        <div class="row m-0" style="clear: both; margin-top: 25px;">
+            <div class="col-12">
+                @if (allowHereMaps)
+                {
+                    <div style="width: 100%; height: 60vh;" id="locations-page-map-container-div"></div>
+                }
+                else
+                {
+                    <div class="col-12 col-md-10 col-lg-9 col-xl-8 col-xxl-7 col-w1900-6 col-w2500-5">
                         <div class="space-20"></div>
-                        <div class="text-dark" style="float: right;">
-                            @await LocaleManager.GetTranslation("Tag filter:", PageNames.Locations, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
-                            <button id="reset-tag-filter-button" class="btn btn-info btn-sm">
-                                <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Locations, Model.LanguageId)
-                            </button>
-                        </div>
+                        <div>@await LocaleManager.GetTranslation("Cookie consent for Here maps has not been granted. To use maps enable cookies for Here Maps.", PageNames.Layout, Model.LanguageId)</div>
                         <div class="space-20"></div>
-                    }
-                    <div class="space-70"></div>
-                    <div id="location-list-parent-div" class="row">
-                        <div id="location-list-div" class="mr-auto ml-auto row" style="display: contents;">
-                        </div>
-                        <div id="loading-items-parent-div" class="col-12" style="height: 150px;">
-                            <div id="loading-items-div" class="w-100">
-                                <div class="space-50"></div>
+                        @if (Context.Request.ConsentCookieSet())
+                        {
+                            @await Html.PartialAsync("_CookieConsentPartial", Model.LanguageId)
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="space-70"></div>
+        <div class="row m-0">
+            <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
+                <div class="row">
+                    <div class="col-12">
+                        @if (!string.IsNullOrEmpty(Model.TagFilter))
+                        {
+                            <div class="space-20"></div>
+                            <div class="text-dark" style="float: right;">
+                                @await LocaleManager.GetTranslation("Tag filter:", PageNames.Locations, Model.LanguageId) <span class="badge badge-pill badge-rose">@Model.TagFilter</span>
+                                <button id="reset-tag-filter-button" class="btn btn-info btn-sm">
+                                    <i class="fas fa-minus-circle"></i> @await LocaleManager.GetTranslation("Reset filter", PageNames.Locations, Model.LanguageId)
+                                </button>
+                            </div>
+                            <div class="space-20"></div>
+                        }
+                        <div class="space-70"></div>
+                        <div id="location-list-parent-div" class="row">
+                            <div id="location-list-div" class="mr-auto ml-auto row" style="display: contents;">
+                            </div>
+                            <div id="loading-items-parent-div" class="col-12" style="height: 150px;">
+                                <div id="loading-items-div" class="w-100">
+                                    <div class="space-50"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="space-20"></div>
-            <div class="row">
-                <div class="col-12">
-                    <div class="space-20"></div>
-                    <div id="tags-list-div" class="row row-cols-auto" style="display: contents;">
+                <div class="space-20"></div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="space-20"></div>
+                        <div id="tags-list-div" class="row row-cols-auto" style="display: contents;">
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
-
 </div>
-
 <div class="space-20"></div>
 <div class="d-none">
     <div id="page-settings-content-div" class="bg-dark page-settings-content">

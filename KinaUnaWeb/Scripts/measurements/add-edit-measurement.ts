@@ -1,4 +1,4 @@
-import * as LocaleHelper from '../localization-v6.js';
+﻿import * as LocaleHelper from '../localization-v6.js';
 import { getCurrentProgenyId, getCurrentLanguageId, setMomentLocale, getZebraDateTimeFormat } from '../data-tools-v6.js';
 
 let zebraDatePickerTranslations: LocaleHelper.ZebraDatePickerTranslations;
@@ -14,7 +14,7 @@ async function setupDateTimePicker(): Promise<void> {
     zebraDateTimeFormat = getZebraDateTimeFormat();
     zebraDatePickerTranslations = await LocaleHelper.getZebraDatePickerTranslations(languageId);
 
-    const dateTimePicker: any = $('#vaccination-date-time-picker');
+    const dateTimePicker: any = $('#measurement-date-time-picker');
     dateTimePicker.Zebra_DatePicker({
         format: zebraDateTimeFormat,
         open_icon_only: true,

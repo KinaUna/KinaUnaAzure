@@ -68,6 +68,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             Measurement measurement = new()
             {
+                MeasurementId = MeasurementItem.MeasurementId,
                 ProgenyId = CurrentProgenyId,
                 CreatedDate = MeasurementItem.CreatedDate,
                 Date = MeasurementItem.Date,

@@ -104,6 +104,7 @@ async function addEditEventListeners() {
         await setTagsAutoSuggestList(getCurrentProgenyId());
         await setLocationAutoSuggestList(getCurrentProgenyId());
         setupDateTimePicker();
+        setupAccessLevelList();
         addCopyLocationButtonEventListener();
         const submitForm = document.getElementById('edit-picture-form');
         if (submitForm !== null) {
@@ -151,6 +152,8 @@ async function submitPictureEdit() {
     return new Promise(function (resolve, reject) {
         resolve();
     });
+}
+function setupAccessLevelList() {
 }
 /**
  * Configures the date time picker for the picture edit form.

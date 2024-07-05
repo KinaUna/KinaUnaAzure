@@ -1,8 +1,8 @@
-import { updateFilterButtonDisplay } from '../data-tools-v6.js';
 import { addTimelineItemEventListener } from '../item-details/items-display.js';
 import { startLoadingItemsSpinner, stopLoadingItemsSpinner } from '../navigation-tools-v6.js';
 import * as pageModels from '../page-models-v6.js';
 import * as SettingsHelper from '../settings-tools-v6.js';
+import { setUpMapClickToShowLocationListener } from './location-tools.js';
 
 const locationsPageSettingsStorageKey = 'locations_page_parameters';
 let locationsPageParameters = new pageModels.LocationsPageParameters();
@@ -10,6 +10,7 @@ const sortAscendingSettingsButton = document.querySelector<HTMLButtonElement>('#
 const sortDescendingSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-descending-button');
 const sortByDateSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-date-button');
 const sortByNameSettingsButton = document.querySelector<HTMLButtonElement>('#settings-sort-by-name-button');
+declare let map: H.Map;
 
 /** Gets the page parameters from the data-locations-page attribute.
  */
@@ -336,6 +337,9 @@ function refreshSelectPickers(): void {
     }
 }
 
+function setUpMap() {
+    setUpMapClickToShowLocationListener(map);
+}
 /**
  * Initializes the page elements when it is loaded.
  */
@@ -346,6 +350,7 @@ document.addEventListener('DOMContentLoaded', async function (): Promise<void> {
     getLocationsPageParameters();
     refreshSelectPickers();
     addResetActiveTagFilterEventListener();
+    setUpMap();
     await loadLocationsPageSettings();
 
     await getLocationsList();
