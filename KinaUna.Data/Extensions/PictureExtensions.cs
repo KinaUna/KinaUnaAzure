@@ -144,7 +144,12 @@ namespace KinaUna.Data.Extensions
 
         public static string GetPictureUrl(this Picture picture, int size)
         {
-            if (picture.PictureLink.StartsWith("http:", StringComparison.CurrentCultureIgnoreCase))
+            if (picture == null)
+            {
+                return "";
+            }
+
+            if (!string.IsNullOrEmpty(picture.PictureLink) && picture.PictureLink.StartsWith("http:", StringComparison.CurrentCultureIgnoreCase))
             {
                 return picture.PictureLink;
             }

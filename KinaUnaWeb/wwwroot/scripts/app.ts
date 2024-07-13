@@ -97,8 +97,9 @@ function checkLeavePage(clickover: HTMLElement): boolean {
  */
 function collapsePopupsAndModals(clickover: HTMLElement): void {
     const itemDetailsPopup = clickover.closest('.item-details-content');
-    
-    if (itemDetailsPopup === null) {
+    const zebraDatePicker = clickover.closest('.zebra-datepicker'); // Date pickers are outside the item-details-popup, but can be part of it.
+
+    if (itemDetailsPopup === null && zebraDatePicker !== null) {
         const itemDetailsPopups = document.querySelectorAll('.item-details-popup');
         
         itemDetailsPopups.forEach(function (popup) {

@@ -3201,6 +3201,7 @@ button.Zebra_DatePicker_Icon {
         border: 1px solid #aaa;
         box-shadow: 0 0 10px #ccc;
         color: #ccc !important;
+        z-index: 9000 !important;
     }
 
     .Zebra_DatePicker .dp_actions .dp_hover {
