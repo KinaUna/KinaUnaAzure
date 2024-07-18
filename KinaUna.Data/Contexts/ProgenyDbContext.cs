@@ -26,5 +26,7 @@ namespace KinaUna.Data.Contexts
         public DbSet<KinaUnaLanguage> Languages { get; init; }
         public DbSet<KinaUnaText> KinaUnaTexts { get; init; }
         public DbSet<KinaUnaTextNumber> KinaUnaTextNumbers { get; init; }
+        public DbSet<WebNotification> WebNotificationsDb { get; init; }
+        public DbSet<PushDevices> PushDevices { get; init; }
     }
 }
