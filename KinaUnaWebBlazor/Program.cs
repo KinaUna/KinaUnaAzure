@@ -34,8 +34,8 @@ builder.Services.AddDataProtection()
     .SetApplicationName("KinaUnaWebApp")
     .PersistKeysToAzureBlobStorage(builder.Configuration.GetValue<string>("kinaunastorageconnectionstring"), "dataprotection", "kukeys.xml");
 
-builder.Services.AddDbContext<WebDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetValue<string>("WebDefaultConnection"),
+builder.Services.AddDbContext<ProgenyDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetValue<string>("ProgenyDefaultConnection"),
         sqlServerOptionsAction: sqlOptions =>
         {
             sqlOptions.MigrationsAssembly("KinaUna.IDP");

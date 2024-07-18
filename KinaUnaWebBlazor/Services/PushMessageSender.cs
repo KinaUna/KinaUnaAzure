@@ -7,7 +7,7 @@ using WebPush;
 
 namespace KinaUnaWebBlazor.Services
 {
-    public class PushMessageSender(WebDbContext context, IConfiguration configuration) : IPushMessageSender
+    public class PushMessageSender(ProgenyDbContext context, IConfiguration configuration) : IPushMessageSender
     {
         public async Task SendMessage(string user, string title, string message, string link, string tag)
         {

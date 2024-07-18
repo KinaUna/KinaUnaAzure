@@ -7,26 +7,31 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
+#nullable disable
+
 namespace KinaUna.IDP.Migrations.ProgenyDb
 {
     [DbContext(typeof(ProgenyDbContext))]
-    [Migration("20211112075753_AddedUserInfoPhoneMigration")]
-    partial class AddedUserInfoPhoneMigration
+    [Migration("20240718120854_InitialMigration")]
+    partial class InitialMigration
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.9")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "8.0.6")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("KinaUna.Data.Models.Address", b =>
                 {
                     b.Property<int>("AddressId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AddressId"));
 
                     b.Property<string>("AddressLine1")
                         .HasColumnType("nvarchar(max)");
@@ -55,8 +60,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                 {
                     b.Property<int>("EventId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EventId"));
 
                     b.Property<int>("AccessLevel")
                         .HasColumnType("int");
@@ -103,8 +109,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                 {
                     b.Property<int>("ContactId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ContactId"));
 
                     b.Property<int>("AccessLevel")
                         .HasColumnType("int");
@@ -172,8 +179,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                 {
                     b.Property<int>("FriendId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FriendId"));
 
                     b.Property<int>("AccessLevel")
                         .HasColumnType("int");
@@ -216,12 +224,85 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.ToTable("FriendsDb");
                 });
 
+            modelBuilder.Entity("KinaUna.Data.Models.KinaUnaLanguage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Icon")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Languages");
+                });
+
+            modelBuilder.Entity("KinaUna.Data.Models.KinaUnaText", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Page")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Text")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TextId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Updated")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("KinaUnaTexts");
+                });
+
+            modelBuilder.Entity("KinaUna.Data.Models.KinaUnaTextNumber", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DefaultLanguage")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("KinaUnaTextNumbers");
+                });
+
             modelBuilder.Entity("KinaUna.Data.Models.Location", b =>
                 {
                     b.Property<int>("LocationId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LocationId"));
 
                     b.Property<int>("AccessLevel")
                         .HasColumnType("int");
@@ -286,8 +367,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                 {
                     b.Property<int>("MeasurementId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MeasurementId"));
 
                     b.Property<int>("AccessLevel")
                         .HasColumnType("int");
@@ -328,8 +410,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                 {
                     b.Property<int>("NotificationId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
 
                     b.Property<string>("IconLink")
                         .HasColumnType("nvarchar(max)");
@@ -367,8 +450,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                 {
                     b.Property<int>("NoteId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NoteId"));
 
                     b.Property<int>("AccessLevel")
                         .HasColumnType("int");
@@ -400,8 +484,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Admins")
                         .HasColumnType("nvarchar(max)");
@@ -426,12 +511,38 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.ToTable("ProgenyDb");
                 });
 
+            modelBuilder.Entity("KinaUna.Data.Models.PushDevices", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PushAuth")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PushEndpoint")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PushP256DH")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PushDevices");
+                });
+
             modelBuilder.Entity("KinaUna.Data.Models.Skill", b =>
                 {
                     b.Property<int>("SkillId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SkillId"));
 
                     b.Property<int>("AccessLevel")
                         .HasColumnType("int");
@@ -466,8 +577,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                 {
                     b.Property<int>("SleepId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SleepId"));
 
                     b.Property<int>("AccessLevel")
                         .HasColumnType("int");
@@ -498,12 +610,38 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.ToTable("SleepDb");
                 });
 
+            modelBuilder.Entity("KinaUna.Data.Models.TextTranslation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Page")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Translation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Word")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TextTranslations");
+                });
+
             modelBuilder.Entity("KinaUna.Data.Models.TimeLineItem", b =>
                 {
                     b.Property<int>("TimeLineId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TimeLineId"));
 
                     b.Property<int>("AccessLevel")
                         .HasColumnType("int");
@@ -535,8 +673,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                 {
                     b.Property<int>("AccessId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AccessId"));
 
                     b.Property<int>("AccessLevel")
                         .HasColumnType("int");
@@ -559,8 +698,15 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("DeletedTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
@@ -592,6 +738,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<string>("Timezone")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("UpdatedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("UserEmail")
                         .HasColumnType("nvarchar(max)");
 
@@ -606,15 +755,16 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserInfoDb");
+                    b.ToTable("UserInfo");
                 });
 
             modelBuilder.Entity("KinaUna.Data.Models.Vaccination", b =>
                 {
                     b.Property<int>("VaccinationId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VaccinationId"));
 
                     b.Property<int>("AccessLevel")
                         .HasColumnType("int");
@@ -646,8 +796,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                 {
                     b.Property<int>("WordId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WordId"));
 
                     b.Property<int>("AccessLevel")
                         .HasColumnType("int");
@@ -679,6 +830,46 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.HasKey("WordId");
 
                     b.ToTable("VocabularyDb");
+                });
+
+            modelBuilder.Entity("KinaUna.Data.Models.WebNotification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("From")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Icon")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Link")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("To")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WebNotificationsDb");
                 });
 #pragma warning restore 612, 618
         }

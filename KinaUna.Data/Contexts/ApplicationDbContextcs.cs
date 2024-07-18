@@ -6,8 +6,7 @@ namespace KinaUna.Data.Contexts
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
-        public DbSet<DataProtectionKey> DataProtectionKeys { get; init; }
-
+        
         //protected override void OnModelCreating(ModelBuilder builder)
         //{
         //    base.OnModelCreating(builder);

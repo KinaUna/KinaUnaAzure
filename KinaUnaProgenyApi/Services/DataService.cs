@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class DataService(ProgenyDbContext progenyDbContext, WebDbContext webDbContext, IDistributedCache cache) : IDataService
+    public class DataService(ProgenyDbContext progenyDbContext, IDistributedCache cache) : IDataService
     {
         private static DistributedCacheEntryOptions GetCacheEntryOptions()
         {
@@ -84,8 +84,8 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            await webDbContext.PushDevices.AddAsync(device);
-            await webDbContext.SaveChangesAsync();
+            await progenyDbContext.PushDevices.AddAsync(device);
+            await progenyDbContext.SaveChangesAsync();
 
             return device;
         }
@@ -98,27 +98,27 @@ namespace KinaUnaProgenyApi.Services
                 return;
             }
 
-            webDbContext.PushDevices.Remove(device);
-            await webDbContext.SaveChangesAsync();
+            progenyDbContext.PushDevices.Remove(device);
+            await progenyDbContext.SaveChangesAsync();
         }
 
         public async Task<PushDevices> GetPushDeviceById(int id)
         {
-            PushDevices device = await webDbContext.PushDevices.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
+            PushDevices device = await progenyDbContext.PushDevices.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
 
             return device;
         }
 
         public async Task<List<PushDevices>> GetAllPushDevices()
         {
-            List<PushDevices> pushDevicesList = await webDbContext.PushDevices.AsNoTracking().ToListAsync();
+            List<PushDevices> pushDevicesList = await progenyDbContext.PushDevices.AsNoTracking().ToListAsync();
 
             return pushDevicesList;
         }
 
         public async Task<PushDevices> GetPushDevice(PushDevices device)
         {
-            PushDevices result = await webDbContext.PushDevices.AsNoTracking().SingleOrDefaultAsync(p =>
+            PushDevices result = await progenyDbContext.PushDevices.AsNoTracking().SingleOrDefaultAsync(p =>
                 p.Name == device.Name && p.PushP256DH == device.PushP256DH && p.PushAuth == device.PushAuth && p.PushEndpoint == device.PushEndpoint);
 
             return result;
@@ -126,18 +126,18 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<List<PushDevices>> GetPushDevicesListByUserId(string userId)
         {
-            List<PushDevices> deviceList = await webDbContext.PushDevices.AsNoTracking().Where(m => m.Name == userId).ToListAsync();
+            List<PushDevices> deviceList = await progenyDbContext.PushDevices.AsNoTracking().Where(m => m.Name == userId).ToListAsync();
 
             return deviceList;
         }
 
         private async Task<WebNotification> SetWebNotificationInCache(int id)
         {
-            WebNotification notification = await webDbContext.WebNotificationsDb.AsNoTracking().SingleOrDefaultAsync(n => n.Id == id);
+            WebNotification notification = await progenyDbContext.WebNotificationsDb.AsNoTracking().SingleOrDefaultAsync(n => n.Id == id);
             if (notification == null) return null;
             await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotification" + notification.Id, JsonConvert.SerializeObject(notification), GetCacheEntryOptions());
 
-            List<WebNotification> notificationsList = await webDbContext.WebNotificationsDb.AsNoTracking().Where(n => n.To == notification.To).ToListAsync();
+            List<WebNotification> notificationsList = await progenyDbContext.WebNotificationsDb.AsNoTracking().Where(n => n.To == notification.To).ToListAsync();
             await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotifications" + notification.To, JsonConvert.SerializeObject(notificationsList), GetCacheEntryOptions());
 
             return notification;
@@ -159,14 +159,14 @@ namespace KinaUnaProgenyApi.Services
         {
             await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "webnotification" + id);
 
-            List<WebNotification> notificationsList = await webDbContext.WebNotificationsDb.AsNoTracking().Where(n => n.To == userId).ToListAsync();
+            List<WebNotification> notificationsList = await progenyDbContext.WebNotificationsDb.AsNoTracking().Where(n => n.To == userId).ToListAsync();
             await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotifications" + userId, JsonConvert.SerializeObject(notificationsList), GetCacheEntryOptions());
         }
 
         public async Task<WebNotification> AddWebNotification(WebNotification notification)
         {
-            await webDbContext.WebNotificationsDb.AddAsync(notification);
-            await webDbContext.SaveChangesAsync();
+            await progenyDbContext.WebNotificationsDb.AddAsync(notification);
+            await progenyDbContext.SaveChangesAsync();
 
             _ = await SetWebNotificationInCache(notification.Id);
 
@@ -175,7 +175,7 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<WebNotification> UpdateWebNotification(WebNotification notification)
         {
-            WebNotification notificationToUpdate = await webDbContext.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == notification.Id);
+            WebNotification notificationToUpdate = await progenyDbContext.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == notification.Id);
             if (notificationToUpdate == null) return null;
             
             notificationToUpdate.To = notification.To;
@@ -187,8 +187,8 @@ namespace KinaUnaProgenyApi.Services
             notificationToUpdate.Title = notification.Title;
             notificationToUpdate.Type = notification.Type;
 
-            webDbContext.WebNotificationsDb.Update(notificationToUpdate);
-            await webDbContext.SaveChangesAsync();
+            progenyDbContext.WebNotificationsDb.Update(notificationToUpdate);
+            await progenyDbContext.SaveChangesAsync();
 
             _ = await SetWebNotificationInCache(notification.Id);
 
@@ -197,11 +197,11 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task RemoveWebNotification(WebNotification notification)
         {
-            WebNotification notificationToDelete = await webDbContext.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == notification.Id);
+            WebNotification notificationToDelete = await progenyDbContext.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == notification.Id);
             if (notificationToDelete == null) return;
             
-            webDbContext.WebNotificationsDb.Remove(notificationToDelete);
-            await webDbContext.SaveChangesAsync();
+            progenyDbContext.WebNotificationsDb.Remove(notificationToDelete);
+            await progenyDbContext.SaveChangesAsync();
 
             await RemoveWebNotificationFromCache(notification.Id, notification.To);
         }
@@ -231,7 +231,7 @@ namespace KinaUnaProgenyApi.Services
 
         private async Task<List<WebNotification>> SetUsersWebNotificationsInCache(string userId)
         {
-            List<WebNotification> notificationsList = await webDbContext.WebNotificationsDb.AsNoTracking().Where(n => n.To == userId).ToListAsync();
+            List<WebNotification> notificationsList = await progenyDbContext.WebNotificationsDb.AsNoTracking().Where(n => n.To == userId).ToListAsync();
             await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotifications" + userId, JsonConvert.SerializeObject(notificationsList), GetCacheEntryOptions());
 
             return notificationsList;

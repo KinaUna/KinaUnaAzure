@@ -10,16 +10,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
 using System.Threading.Tasks;
-using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using KinaUnaWeb.Hubs;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
@@ -52,16 +49,6 @@ namespace KinaUnaWeb
                 options.MinimumSameSitePolicy = SameSiteMode.Lax;
                 options.Secure = CookieSecurePolicy.Always;
             });
-
-
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration["DataProtectionConnection"],
-                    sqlServerOptionsAction: sqlOptions =>
-                    {
-                        sqlOptions.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
-                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
-                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-                    }));
 
             string storageConnectionString = Configuration["BlobStorageConnectionString"];
             new BlobContainerClient(storageConnectionString, "dataprotection").CreateIfNotExists();
