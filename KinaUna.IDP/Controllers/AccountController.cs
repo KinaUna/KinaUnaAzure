@@ -164,7 +164,7 @@ namespace KinaUna.IDP.Controllers
                 }
                 else
                 {
-                    if (logoutContext != null && logoutContext.ClientId.Contains("maui", StringComparison.CurrentCultureIgnoreCase))
+                    if (logoutContext != null && !string.IsNullOrEmpty(logoutContext.ClientId) && logoutContext.ClientId.Contains("maui", StringComparison.CurrentCultureIgnoreCase))
                     {
                         logoutRedirectUri = "kinaunamaui://callback";
                     }
