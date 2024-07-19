@@ -488,10 +488,7 @@ namespace KinaUnaProgenyApi.Controllers
                 ProfilePicture = value?.ProfilePicture ?? ""
             };
             userInfo.UserName = value?.UserName ?? userInfo.UserEmail;
-            userInfo.IsKinaUnaUser = value?.IsKinaUnaUser ?? true;
-            userInfo.IsPivoqUser = value?.IsPivoqUser ?? false;
             userInfo.IsKinaUnaAdmin = false;
-            userInfo.IsPivoqAdmin = false;
             userInfo.Deleted = false;
             userInfo.DeletedTime = DateTime.UtcNow;
             userInfo.UpdatedTime = DateTime.UtcNow;
@@ -563,8 +560,6 @@ namespace KinaUnaProgenyApi.Controllers
             userInfo.UserName = value.UserName;
             userInfo.PhoneNumber = value.PhoneNumber;
             userInfo.ViewChild = value.ViewChild;
-            userInfo.IsKinaUnaUser = value.IsKinaUnaUser;
-            userInfo.IsPivoqUser = value.IsPivoqUser;
             userInfo.Deleted = value.Deleted;
 
             if (value.Deleted)

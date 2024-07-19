@@ -15,16 +15,7 @@ namespace KinaUnaWeb.Services
             UserInfo userInfo = new();
             try
             {
-                
                 userInfo = await userInfosHttpClient.GetUserInfo(userEmail);
-                if (userInfo != null && !userInfo.IsKinaUnaUser)
-                {
-                    if (userInfo.UserEmail != "Unknown")
-                    {
-                        userInfo.IsKinaUnaUser = true;
-                        _ = await UpdateUserInfo(userInfo);
-                    }
-                }
             }
             catch (Exception e)
             {
@@ -53,7 +44,6 @@ namespace KinaUnaWeb.Services
                     LastName = applicationUser.LastName ?? "",
                     Timezone = applicationUser.TimeZone,
                     UserName = applicationUser.UserName,
-                    IsKinaUnaUser = true
                 };
 
                 if (string.IsNullOrEmpty(newUserinfo.UserName))
@@ -84,13 +74,6 @@ namespace KinaUnaWeb.Services
             string returnString = imageStore.UriFor(pictureLink, pictureContainer);
             return returnString;
         }
-        
-        private async Task<UserInfo> UpdateUserInfo(UserInfo userInfo)
-        {
-            UserInfo updatedUserInfo = await userInfosHttpClient.UpdateUserInfo(userInfo);
-            return updatedUserInfo;
-        }
-        
         
         private async Task SetViewChild(string userEmail, int childId)
         {
