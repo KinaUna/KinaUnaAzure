@@ -17,10 +17,7 @@ namespace KinaUna.Data.Models
         public int ViewChild { get; set; }
         public string Timezone { get; set; }
         public string ProfilePicture { get; set; }
-        public bool IsKinaUnaUser { get; set; }
-        public bool IsPivoqUser { get; set; }
         public bool IsKinaUnaAdmin { get; set; }
-        public bool IsPivoqAdmin { get; set; }
         public DateTime UpdatedTime { get; set; }
         public bool Deleted { get; set; }
         public DateTime DeletedTime { get; set; }

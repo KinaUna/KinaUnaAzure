@@ -72,14 +72,6 @@ namespace KinaUnaWebBlazor.Services
             {
                 string userInfoResponseString = await _httpClient.GetStringAsync(userInfoApiPath);
                 userInfo = JsonConvert.DeserializeObject<UserInfo>(userInfoResponseString);
-                if (userInfo != null && !userInfo.IsKinaUnaUser)
-                {
-                    if (userInfo.UserEmail != "Unknown")
-                    {
-                        userInfo.IsKinaUnaUser = true;
-                        _ = await UpdateUserInfo(userInfo);
-                    }
-                }
             }
             catch (Exception e)
             {
@@ -109,8 +101,7 @@ namespace KinaUnaWebBlazor.Services
                         LastName = applicationUser.LastName ?? "",
                         // Todo: ProfilePicture
                         Timezone = applicationUser.TimeZone,
-                        UserName = applicationUser.UserName,
-                        IsKinaUnaUser = true
+                        UserName = applicationUser.UserName
                     };
 
                     if (string.IsNullOrEmpty(newUserinfo.UserName))
@@ -151,90 +142,7 @@ namespace KinaUnaWebBlazor.Services
             }
             return returnString;
         }
-
-        private async Task<UserInfo?> UpdateUserInfo(UserInfo? userinfo)
-        {
-            string accessToken = await GetNewToken();
-            _httpClient.SetBearerToken(accessToken);
-            
-            // Todo: ProfilePicture
-            string newUserinfoApiPath = "/api/UserInfo/" + userinfo?.UserId;
-            HttpResponseMessage userInfoResponse = await _httpClient.PutAsync(newUserinfoApiPath, new StringContent(JsonConvert.SerializeObject(userinfo), System.Text.Encoding.UTF8, "application/json"));
-            if (!userInfoResponse.IsSuccessStatusCode) return new UserInfo();
-
-            string userInfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-            UserInfo? updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(userInfoAsString);
-            return updatedUserinfo;
-
-        }
-
-        public async Task<Progeny?> CurrentChildAsync(int progenyId, string userId)
-        {
-            string accessToken = await GetNewToken();
-            _httpClient.SetBearerToken(accessToken);
-            
-            string progenyApiPath = "/api/Progeny/" + progenyId;
-            string progenyResponseString = await _httpClient.GetStringAsync(progenyApiPath);
-            Progeny? child = JsonConvert.DeserializeObject<Progeny>(progenyResponseString);
-            bool hasAccess = false;
-            string accessApiPath = "/api/Access/Progeny/" + progenyId;
-            string accessResponseString = await _httpClient.GetStringAsync(accessApiPath);
-            List<UserAccess>? accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessResponseString);
-
-            if (accessList != null && accessList.Count != 0)
-            {
-                foreach (UserAccess accessItem in accessList)
-                {
-                    if (accessItem.UserId.Equals(userId, StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        hasAccess = true;
-                    }
-                }
-            }
-
-            if (hasAccess) return child;
-            if (child == null) return child;
-
-            child.Name = "Test Child";
-            child.NickName = "Tester";
-            child.Id = -1;
-            child.Admins = "per.mogensen@live.com";
-            child.BirthDay = DateTime.Now;
-            child.TimeZone = TimeZoneInfo.Utc.Id;
-            child.PictureLink = "/images/images_placeholder.png";
-
-            return child;
-        }
-
-        public async Task<bool> CanUserAddItems(string userId)
-        {
-            string accessToken = await GetNewToken();
-            _httpClient.SetBearerToken(accessToken);
-            
-            string accessApiPath = "/api/Access/AccessListByUser/" + userId;
-            HttpResponseMessage accessResponse = await _httpClient.GetAsync(accessApiPath);
-            if (!accessResponse.IsSuccessStatusCode) return false;
-
-            string accessAsString = await accessResponse.Content.ReadAsStringAsync();
-            List<UserAccess>? accessList = JsonConvert.DeserializeObject<List<UserAccess>>(accessAsString);
-
-            if (accessList == null || accessList.Count == 0) return userId == "Yes";
-
-            foreach (UserAccess ua in accessList)
-            {
-                if (ua.AccessLevel == 0)
-                {
-                    return true;
-                }
-            }
-
-            if (accessList.Count != 0)
-            {
-            }
-
-            return userId == "Yes";
-        }
-
+        
         private async Task SetViewChild(string userEmail, int childId, string userId)
         {
             string accessToken = await GetNewToken();

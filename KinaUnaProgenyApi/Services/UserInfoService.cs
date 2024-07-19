@@ -169,9 +169,6 @@ namespace KinaUnaProgenyApi.Services
             userInfoToUpdate.Deleted = userInfo.Deleted;
             userInfoToUpdate.DeletedTime = userInfo.DeletedTime;
             userInfoToUpdate.IsKinaUnaAdmin = userInfo.IsKinaUnaAdmin;
-            userInfoToUpdate.IsPivoqAdmin = userInfo.IsPivoqAdmin;
-            userInfoToUpdate.IsKinaUnaUser = userInfo.IsKinaUnaUser;
-            userInfoToUpdate.IsPivoqUser = userInfo.IsPivoqUser;
             userInfoToUpdate.UpdateIsAdmin = userInfo.UpdateIsAdmin;
             userInfoToUpdate.ProgenyList = userInfo.ProgenyList;
             userInfoToUpdate.AccessList = userInfo.AccessList;
