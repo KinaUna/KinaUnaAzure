@@ -22,11 +22,58 @@ It is designed for deployment to Azure Web Apps, with SQL Server database for pe
 Generally I have tried to use DI to avoid tight coupling with these depencies, so it should be possible to use alternate solutions without too much work, but I haven't explicitly designed it for portability.
 
 
+### Services/resources used and configuration
+
+Configuration values are stored in appsettings.json, appsettings.Development.json, User Secrets, and Azure Key Vault.
+
+
+#### Azure
+
+Azure Web Apps: 3 Web App services are used, one for the Web front end, one for API, and one for the Authentication/Authorization services.
+
+Azure Storage Account: A storage account is used for uploading images and other files.
+
+Database: A SQL server with 3 databases. A database for Identity Server, a database for ProgenyApi, a database for MediaApi (although the Progeny and Media Apis have been merged the data haven't).
+
+Azure KeyVault: A key vault is used to store secrets shared between the Web Apps.
+
+Azure Notification Hub: For push messaging.
+
+Azure App Insights: Used for logging and analytics.
+
+
+#### Email
+
+An email account is need for account creation confirmation emails, password reset and such.
+
+
+#### Syncfusion
+
+A syncfusion license is needed for a few componenents, such as Rich Text Editor (Notes, admin pages text editing) and Scheduler (calendar).
+
+
+#### Here Maps 
+
+A Here Maps account is needed for showing locations on a map.
+
+
+#### Vapid Keys
+A private and a public vapid key is needed for sending web notifications.
+
+
+#### Login providers
+
+If you wish to use log in with [Apple, Google, Microsoft, etc] account you will need to obtain credential for that from each of these service providers.
+
+Todo: Configuration Templates, showing where to put the above information and how to obtain it.
+
+
 ### The fundamental requirements for me:
 - Users should be in control of all access to their data.
 - All access to data needs to verify that the current user should be allowed to access it. Static files, such as pictures should also have restricted access.
 - Privacy is very important, personal data should never be visible to anyone not explicitly authorized to access it. For example, email addresses should not appear in urls and logs.
 - Multilingual, it needs to support viewing content in multiple languages.
+
 
 ### Initial features:
 - Add/remove family member (currently it is add/remove child, but you can add any person)
@@ -68,6 +115,7 @@ Generally I have tried to use DI to avoid tight coupling with these depencies, s
     - Manage users
     - Send messages to users
     - Analytics tools (currently done with Application Insights)
+
 
 ### Solution architecture
 The code is organized into 4 core projects, 2 test projects, and 1 experimental project:
