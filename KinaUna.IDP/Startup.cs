@@ -148,7 +148,6 @@ namespace KinaUna.IDP
                         {
                             builder.WithOrigins("https://*." + Constants.AppRootDomain, "https://*.kinauna.com").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials();
                         });
-                    options.AddPolicy("PivoqCors", builder => { builder.WithOrigins("https://*.pivoq.at").SetIsOriginAllowedToAllowWildcardSubdomains().AllowAnyHeader().AllowAnyMethod().AllowCredentials(); });
                 });
             }
 
@@ -229,14 +228,7 @@ namespace KinaUna.IDP
                     microsoftOptions.ClientSecret = Configuration["MicrosoftClientSecret"] ?? throw new InvalidOperationException("MicrosoftClientSecret missing in configuration");
                     microsoftOptions.SaveTokens = true;
                 });
-
-            //    .AddFacebook("Facebook", "Facebook", options =>
-            //{
-            //    options.ClientId = Configuration["FacebookClientId"];
-            //    options.ClientSecret = Configuration["FacebookClientSecret"];
-            //    options.SaveTokens = true;
-            //})
-
+            
             services.AddApplicationInsightsTelemetry();
         }
 
