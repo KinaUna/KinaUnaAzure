@@ -18,6 +18,9 @@ It's been mostly a vehicle for learning and for my own family's use, so many pat
 Initially I added two servers, but to keep costs down I merged them back into one single api server. In principle, the api server could and should be separated into many more servers.
 This also means that I have done very little in terms of optimization.
 
+Documentation is sparse at this point, because I believe it improves learning if I have to think deeper and work harder when looking at old code, and experiencing unexpected results when updating code has taught me some valuable lessons. 
+I think the time has come to add proper documentation, so this should improve steadily going forward.
+
 It is designed for deployment to Azure Web Apps, with SQL Server database for persisting data and Azure Blobs for images. SignalR is used for realtime updates.
 Generally I have tried to use DI to avoid tight coupling with these depencies, so it should be possible to use alternate solutions without too much work, but I haven't explicitly designed it for portability.
 
