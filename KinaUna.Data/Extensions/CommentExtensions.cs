@@ -3,8 +3,16 @@ using System;
 
 namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Extension methods for the Comment class.
+    /// </summary>
     public static class CommentExtensions
     {
+        /// <summary>
+        /// Copies the properties needed for updating a Comment entity from one Comment object to another.
+        /// </summary>
+        /// <param name="currentComment"></param>
+        /// <param name="otherComment"></param>
         public static void CopyPropertiesForUpdate(this Comment currentComment, Comment otherComment)
         {
             currentComment.CommentText = otherComment.CommentText;
@@ -15,6 +23,11 @@ namespace KinaUna.Data.Extensions
             currentComment.ItemId = otherComment.ItemId;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a Comment entity from one Comment object to another.
+        /// </summary>
+        /// <param name="currentComment"></param>
+        /// <param name="otherComment"></param>
         public static void CopyPropertiesForAdd(this Comment currentComment, Comment otherComment)
         {
             currentComment.Created = DateTime.UtcNow;
