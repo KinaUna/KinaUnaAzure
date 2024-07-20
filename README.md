@@ -118,6 +118,19 @@ Todo: Configuration Templates, showing where to put the above information and ho
     - Manage users
     - Send messages to users
     - Analytics tools (currently done with Application Insights)
+- Manage home:
+    - Inventory (appliances, devices, spare parts)
+    - Schedule maintenance
+    - Plan improvments
+    - Contacts (for services)
+    - Documents
+    - ... and more
+- Manage vehicles:
+    - Schedule maintenance
+    - Data collection (milage, fuel, oil, filters, tire lifetime, brake lifetime)
+    - Contacts (for services)
+    - Documents
+    - ... and more
 
 
 ### Solution architecture
