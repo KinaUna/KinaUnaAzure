@@ -103,10 +103,10 @@ namespace KinaUna.Data.Extensions
         }
 
         /// <summary>
-        /// Gets the MIME content type for the contact's profile picture.
+        /// Gets the MIME content type for the contact's profile picture based on file extension.
         /// </summary>
         /// <param name="contact"></param>
-        /// <returns>String with the content type.</returns>
+        /// <returns>String with the content MIME type.</returns>
         public static string GetPictureFileContentType(this Contact contact )
         {
             string contentType = FileContentTypeHelpers.GetContentTypeString(contact.PictureLink);

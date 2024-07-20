@@ -1,7 +1,15 @@
 ﻿namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Helper class for handling file content types.
+    /// </summary>
     public static class FileContentTypeHelpers
     {
+        /// <summary>
+        /// Get the MIME type string for a file based on the file extension.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static string GetContentTypeString(string value)
         {
             
