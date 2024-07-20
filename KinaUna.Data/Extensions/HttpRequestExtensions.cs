@@ -6,8 +6,19 @@ using Microsoft.Extensions.Primitives;
 
 namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Extension methods for HttpRequest objects.
+    /// </summary>
     public static class HttpRequestExtensions
     {
+        /// <summary>
+        /// Gets the language id from the request.
+        /// First the method checks if language is set in a cookie.
+        /// If not, it tries to get the language from the browser settings.
+        /// If no language is found, it defaults to language id 1 = English.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>int with the id of the language</returns>
         public static int GetLanguageIdFromCookie(this HttpRequest request)
         {
             int languageId;
@@ -31,6 +42,11 @@ namespace KinaUna.Data.Extensions
             return languageId;
         }
 
+        /// <summary>
+        /// Sets the language id in the languageId cookie.
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="languageId"></param>
         public static void SetLanguageCookie(this HttpResponse response, string languageId)
         {
             if (string.IsNullOrEmpty(languageId))
@@ -51,6 +67,12 @@ namespace KinaUna.Data.Extensions
             response.Cookies.Append("languageId", languageId, option);  
         }
 
+        /// <summary>
+        /// Obtains the language id from the browser settings.
+        /// Tries to match the language to the supported languages.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>int with the id of the language</returns>
         private static int GetLanguageIdFromBrowser(this HttpRequest request)
         {
             int languageId = 1;
@@ -62,6 +84,7 @@ namespace KinaUna.Data.Extensions
                 
                 if (userLanguages.Length != 0)
                 {
+                    // Todo: Add dynamic detection of supported languages.
                     string firstLang = userLanguages.FirstOrDefault();
 
                     if (firstLang != null && firstLang.StartsWith("de"))
@@ -83,7 +106,11 @@ namespace KinaUna.Data.Extensions
             return languageId;
         }
 
-
+        /// <summary>
+        /// Determines if the user has accepted the cookie consent.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>bool: True if consent has been accepted.</returns>
         public static bool ConsentCookieSet(this HttpRequest request)
         {
             if (!request.Cookies.TryGetValue("KinaUnaConsent", out string gdprText)) return false;
@@ -91,6 +118,11 @@ namespace KinaUna.Data.Extensions
             return !string.IsNullOrEmpty(gdprText);
         }
 
+        /// <summary>
+        /// Determines if the user has accepted the cookie consent for HereMaps.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>bool: True if the HereMaps cookies have been accepted.</returns>
         public static bool HereMapsCookieSet(this HttpRequest request)
         {
             if (!request.Cookies.TryGetValue("KinaUnaConsent", out string gdprText)) return false;
@@ -98,6 +130,11 @@ namespace KinaUna.Data.Extensions
             return !(string.IsNullOrEmpty(gdprText)) && gdprText.Contains("heremaps", StringComparison.CurrentCultureIgnoreCase);
         }
 
+        /// <summary>
+        /// Determines if the user has accepted the cookie consent for YouTube.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>bool: True if the YouTube cookies have been accepted.</returns>
         public static bool YouTubeCookieSet(this HttpRequest request)
         {
             if (!request.Cookies.TryGetValue("KinaUnaConsent", out string gdprText)) return false;
@@ -105,6 +142,15 @@ namespace KinaUna.Data.Extensions
             return !string.IsNullOrEmpty(gdprText) && gdprText.Contains("youtube", StringComparison.CurrentCultureIgnoreCase);
         }
 
+        /// <summary>
+        /// Retrieves the users preferred language from the request.
+        /// First checks if the language is set in the query string.
+        /// Then checks if the language is set in a cookie.
+        /// Then it tries to get the language from the browser settings.
+        /// Defaults to English if no language is found.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>KinaUnaLanguage: The object representing the language to use</returns>
         public static KinaUnaLanguage GetKinaUnaLanguage(this HttpRequest request)
         {
             KinaUnaLanguage kinaUnaLanguage = new()
