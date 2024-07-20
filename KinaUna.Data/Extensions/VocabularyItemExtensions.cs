@@ -3,8 +3,16 @@ using System;
 
 namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Extension methods for the VocabularyItem class.
+    /// </summary>
     public static class VocabularyItemExtensions
     {
+        /// <summary>
+        /// Copies the properties needed for updating a VocabularyItem entity from one VocabularyItem object to another.
+        /// </summary>
+        /// <param name="currentVocabularyItem"></param>
+        /// <param name="otherVocabularyItem"></param>
         public static void CopyPropertiesForUpdate(this VocabularyItem currentVocabularyItem, VocabularyItem otherVocabularyItem)
         {
             currentVocabularyItem.AccessLevel = otherVocabularyItem.AccessLevel;
@@ -15,6 +23,11 @@ namespace KinaUna.Data.Extensions
             currentVocabularyItem.Word = otherVocabularyItem.Word;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a VocabularyItem entity from one VocabularyItem object to another.
+        /// </summary>
+        /// <param name="currentVocabularyItem"></param>
+        /// <param name="otherVocabularyItem"></param>
         public static void CopyPropertiesForAdd(this VocabularyItem currentVocabularyItem, VocabularyItem otherVocabularyItem)
         {
             currentVocabularyItem.AccessLevel = otherVocabularyItem.AccessLevel;

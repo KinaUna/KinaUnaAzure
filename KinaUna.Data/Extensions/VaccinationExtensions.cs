@@ -2,8 +2,16 @@
 
 namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Extension methods for the Vaccination class.
+    /// </summary>
     public static class VaccinationExtensions
     {
+        /// <summary>
+        /// Copies the properties needed for updating a Vaccination entity from one Vaccination object to another.
+        /// </summary>
+        /// <param name="currentVaccinationItem"></param>
+        /// <param name="otherVaccinationItem"></param>
         public static void CopyPropertiesForUpdate(this Vaccination currentVaccinationItem, Vaccination otherVaccinationItem)
         {
             currentVaccinationItem.AccessLevel = otherVaccinationItem.AccessLevel;
@@ -15,6 +23,11 @@ namespace KinaUna.Data.Extensions
 
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a Vaccination entity from one Vaccination object to another.
+        /// </summary>
+        /// <param name="currentVaccinationItem"></param>
+        /// <param name="otherVaccinationItem"></param>
         public static void CopyPropertiesForAdd(this Vaccination currentVaccinationItem, Vaccination otherVaccinationItem)
         {
             currentVaccinationItem.AccessLevel = otherVaccinationItem.AccessLevel;

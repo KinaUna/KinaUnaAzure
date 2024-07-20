@@ -2,8 +2,16 @@
 
 namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Extension methods for the WebNotification class.
+    /// </summary>
     public static class WebNotificationExtensions
     {
+        /// <summary>
+        /// Provides a URL for the icon image for the notification.
+        /// </summary>
+        /// <param name="webNotification"></param>
+        /// <returns>string: The URL for the icon image.</returns>
         public static string GetIconUrl(this WebNotification webNotification)
         {
             if (webNotification == null || webNotification.Icon == null)

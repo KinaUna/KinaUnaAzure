@@ -2,8 +2,16 @@
 
 namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Extension methods for the UserInfo class.
+    /// </summary>
     public static class UserInfoExtensions
     {
+        /// <summary>
+        /// Produces the user's full name from the first name, middle name and last name properties.
+        /// </summary>
+        /// <param name="userInfo"></param>
+        /// <returns>string: The full name as a single string</returns>
         public static string FullName(this UserInfo userInfo)
         {
             string fullName = "";
@@ -31,6 +39,11 @@ namespace KinaUna.Data.Extensions
             return fullName;
         }
 
+        /// <summary>
+        /// Produces the URL for the user's profile picture.
+        /// </summary>
+        /// <param name="userInfo"></param>
+        /// <returns>string: The url for the profile picture.</returns>
         public static string GetProfilePictureUrl(this UserInfo userInfo)
         {
             if (userInfo == null || userInfo.ProfilePicture == null)
@@ -48,7 +61,11 @@ namespace KinaUna.Data.Extensions
             return pictureUrl;
         }
         
-
+        /// <summary>
+        /// Obtains the MIME type for the user's profile picture. Based on the file extension.
+        /// </summary>
+        /// <param name="userInfo"></param>
+        /// <returns>string: The MIME type of the picture file.</returns>
         public static string GetPictureFileContentType(this UserInfo userInfo)
         {
             string contentType = FileContentTypeHelpers.GetContentTypeString(userInfo.ProfilePicture);

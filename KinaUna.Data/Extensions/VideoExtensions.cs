@@ -38,6 +38,12 @@ namespace KinaUna.Data.Extensions
             video.TimeZone ??= "";
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating a Video entity from one Video object to another.
+        /// </summary>
+        /// <param name="currentVideo"></param>
+        /// <param name="otherVideo"></param>
+        /// <param name="parseDuration">If set to true the duration will be obtained from the string values in DurationHours, DurationMinutes, and DurationSeconds.</param>
         public static void CopyPropertiesForUpdate(this Video currentVideo, Video otherVideo, bool parseDuration = false)
         {
             currentVideo.AccessLevel = otherVideo.AccessLevel;
