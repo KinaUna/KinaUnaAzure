@@ -6,6 +6,11 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
 {
     public static class MagickImageExtensions
     {
+        /// <summary>
+        /// Gets the file extension for the image format.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <returns>A string with the file extension, including the dot before the extension.</returns>
         public static string FileExtensionString(this MagickImage image)
         {
             string fileExtension = image.Format switch
@@ -31,6 +36,11 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
             return fileExtension;
         }
 
+        /// <summary>
+        /// Gets the image rotation from the Exif profile.
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <returns>The rotation as an integer</returns>
         public static int GetRotationInDegrees(this IExifProfile profile)
         {
             int rotation;
@@ -58,6 +68,11 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
             return rotation;
         }
 
+        /// <summary>
+        /// Gets the GPS Longitude from the Exif profile.
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <returns>A string with the longitude, using invariant culture formatting. If the value cannot be obtained an empty string is returned.</returns>
         public static string GetLongitude(this IExifProfile profile)
         {
             string longitude = "";
@@ -72,7 +87,7 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
                         double long0 = longValues[0].Numerator / (double)longValues[0].Denominator;
                         double long1 = longValues[1].Numerator / (double)longValues[1].Denominator;
                         double long2 = longValues[2].Numerator / (double)longValues[2].Denominator;
-                        longitude = (long0 + long1 / 60.0 + long2 / 3600).ToString(CultureInfo.CurrentCulture);
+                        longitude = (long0 + long1 / 60.0 + long2 / 3600).ToString(CultureInfo.InvariantCulture);
                     }
                     else
                     {
@@ -96,6 +111,11 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
             return longitude;
         }
 
+        /// <summary>
+        /// Gets the GPS Latitude from the Exif profile.
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <returns>A string with the latitude, using invariant culture formatting. If the value cannot be obtained an empty string is returned.</returns>
         public static string GetLatitude(this IExifProfile profile)
         {
             string latitude = "";
@@ -134,6 +154,11 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
             return latitude;
         }
 
+        /// <summary>
+        /// Gets the GPS Altitude from the Exif profile.
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <returns>A string with the altitude, using invariant culture formatting. If the value cannot be obtained an empty string is returned.</returns>
         public static string GetAltitude(this IExifProfile profile)
         {
             string altitude = "";
@@ -170,6 +195,11 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
             return altitude;
         }
 
+        /// <summary>
+        /// Gets time the picture was taken from the Exif profile.
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <returns>A DateTime with the time and date. If the value cannot be obtained, null is returned.</returns>
         public static DateTime? GetDateTime(this IExifProfile profile)
         {
             DateTime? dateTime = null;
@@ -186,7 +216,7 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
                         int.Parse(date.Substring(14, 2)), // minute
                         int.Parse(date.Substring(17, 2)) // second
                     );
-                    // Todo: Check if timezone can be extracted and UTC time found?
+                    // Todo: Check if timezone can be extracted and UTC time found? Currently, it is assumed the image is in user's local time.
                 }
             }
             catch (FormatException)
@@ -209,6 +239,13 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
             return dateTime;
         }
 
+        /// <summary>
+        /// Gets the width of the image from the Exif profile and image data.
+        /// If the width cannot be obtained from the Exif profile, the width of the image is returned.
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <param name="image"></param>
+        /// <returns>Int with the pixel width of the image </returns>
         public static int GetPictureWidth(this IExifProfile profile, MagickImage image)
         {
             int pictureWidth;
@@ -238,6 +275,13 @@ namespace KinaUna.Data.Extensions.ThirdPartyElements
             return pictureWidth;
         }
 
+        /// <summary>
+        /// Gets the height of the image from the Exif profile and image data.
+        /// If the height cannot be obtained from the Exif profile, the height of the image is returned.
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <param name="image"></param>
+        /// <returns>Int with the pixel height of the image </returns>
         public static int GetPictureHeight(this IExifProfile profile, MagickImage image)
         {
             int pictureHeight;
