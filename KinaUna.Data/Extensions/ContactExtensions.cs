@@ -3,8 +3,16 @@ using System;
 
 namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Extension methods for the Contact class.
+    /// </summary>
     public static class ContactExtensions
     {
+        /// <summary>
+        /// Copies the properties needed for updating a Contact entity from one Contact object to another.
+        /// </summary>
+        /// <param name="currentContact"></param>
+        /// <param name="otherContact"></param>
         public static void CopyPropertiesForUpdate(this Contact currentContact, Contact otherContact )
         {
             currentContact.ContactId = otherContact.ContactId;
@@ -43,6 +51,11 @@ namespace KinaUna.Data.Extensions
             currentContact.Address = otherContact.Address;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a Contact entity from one Contact object to another.
+        /// </summary>
+        /// <param name="currentContact"></param>
+        /// <param name="otherContact"></param>
         public static void CopyPropertiesForAdd(this Contact currentContact, Contact otherContact)
         {
             currentContact.AccessLevel = otherContact.AccessLevel;
@@ -67,6 +80,11 @@ namespace KinaUna.Data.Extensions
             currentContact.Address = otherContact.Address;
         }
 
+        /// <summary>
+        /// Produces a string with the url to the profile picture for a contact.
+        /// </summary>
+        /// <param name="contact"></param>
+        /// <returns>String with the url</returns>
         public static string GetProfilePictureUrl(this Contact contact)
         {
             if (contact == null || contact.PictureLink == null)
@@ -84,7 +102,11 @@ namespace KinaUna.Data.Extensions
             return pictureUrl;
         }
 
-
+        /// <summary>
+        /// Gets the MIME content type for the contact's profile picture.
+        /// </summary>
+        /// <param name="contact"></param>
+        /// <returns>String with the content type.</returns>
         public static string GetPictureFileContentType(this Contact contact )
         {
             string contentType = FileContentTypeHelpers.GetContentTypeString(contact.PictureLink);
