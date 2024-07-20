@@ -2,8 +2,16 @@
 
 namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Extension methods for the CalendarItem class.
+    /// </summary>
     public static class CalendarItemExtensions
     {
+        /// <summary>
+        /// Copies the properties needed for updating a CalendarItem entity from one CalendarItem object to another.
+        /// </summary>
+        /// <param name="currentCalendarItem"></param>
+        /// <param name="otherCalendarItem"></param>
         public static void CopyPropertiesForUpdate(this CalendarItem currentCalendarItem, CalendarItem otherCalendarItem )
         {
             currentCalendarItem.Author = otherCalendarItem.Author;
@@ -24,6 +32,11 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.Progeny = otherCalendarItem.Progeny;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a CalendarItem entity from one CalendarItem object to another.
+        /// </summary>
+        /// <param name="currentCalendarItem"></param>
+        /// <param name="otherCalendarItem"></param>
         public static void CopyPropertiesForAdd(this CalendarItem currentCalendarItem, CalendarItem otherCalendarItem)
         {
             currentCalendarItem.AccessLevel = otherCalendarItem.AccessLevel;
