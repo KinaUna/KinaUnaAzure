@@ -1,5 +1,9 @@
 ﻿namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Storage container names for files.
+    /// Files are saved in containers corresponding to the type of Entity they are associated with.
+    /// </summary>
     public static class BlobContainers
     {
         public const string Pictures = "pictures";

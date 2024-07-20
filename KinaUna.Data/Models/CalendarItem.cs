@@ -4,6 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for calendar event data.
+    /// </summary>
     public class CalendarItem
     {
         [Key]

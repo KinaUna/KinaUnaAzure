@@ -2,6 +2,9 @@
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for comment thread data.
+    /// </summary>
     public class CommentThread
     {
         [Key]

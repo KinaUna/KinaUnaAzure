@@ -2,6 +2,9 @@
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for language data.
+    /// </summary>
     public class KinaUnaLanguage
     {
         public int Id { get; set; }

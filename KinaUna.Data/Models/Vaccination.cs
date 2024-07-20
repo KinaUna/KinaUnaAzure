@@ -4,6 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for Vaccination data.
+    /// </summary>
     public class Vaccination
     {
         [Key]

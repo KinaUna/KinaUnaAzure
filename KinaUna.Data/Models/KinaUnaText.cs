@@ -4,6 +4,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for text data.
+    /// TextId is the same for all translations of the same text.
+    /// </summary>
     public class KinaUnaText
     {
         public int Id { get; init; }
@@ -18,6 +22,10 @@ namespace KinaUna.Data.Models
         [NotMapped]
         public string ReturnUrl { get; set; }
     }
+
+    /// <summary>
+    /// Entity Framework Entity for TextIds used by KinaUnaText entities.
+    /// </summary>
 
     public class KinaUnaTextNumber
     {

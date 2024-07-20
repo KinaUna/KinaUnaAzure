@@ -1,5 +1,9 @@
 ﻿namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for address data.
+    /// Used for Contacts.
+    /// </summary>
     public class Address
     {
         public int AddressId { get; set; }

@@ -5,6 +5,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for Video data.
+    /// </summary>
     public class Video
     {
         [Key]

@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for user data for IdentityServer.
+    /// </summary>
     public class ApplicationUser: IdentityUser
     {
         public string FirstName { get; set; }

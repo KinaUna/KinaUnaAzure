@@ -3,6 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for UserAccess data.
+    /// Defines a user's access level to a Progeny's data
+    /// </summary>
     public class UserAccess
     {
         [Key]

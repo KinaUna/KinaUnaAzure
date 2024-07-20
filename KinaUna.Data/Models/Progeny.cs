@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for Progeny data.
+    /// </summary>
     public class Progeny
     {
         [Key]

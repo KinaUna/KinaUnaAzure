@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for Note data.
+    /// </summary>
     public class Note
     {
         public int NoteId { get; set; }

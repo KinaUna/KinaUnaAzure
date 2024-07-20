@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for Measurement data.
+    /// </summary>
     public class Measurement
     {
         public int MeasurementId { get; set; }

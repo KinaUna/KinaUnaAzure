@@ -3,6 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for Contact data.
+    /// AddressIdNumber is used to link to an Address entity.
+    /// </summary>
     public class Contact
     {
         public int ContactId { get; set; }

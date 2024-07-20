@@ -6,6 +6,9 @@ using Newtonsoft.Json;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for Picture data.
+    /// </summary>
     public class Picture
     {
         [Required]
@@ -28,17 +31,21 @@ namespace KinaUna.Data.Models
         public string Altitude { get; set; }
 
         public int ProgenyId { get; set; }
-        [NotMapped]
-        [JsonIgnore]
-        public Progeny Progeny { get; set; }
+        
         public string Owners { get; set; } // Comma separated list of emails.
         public string Author { get; set; }
         public int AccessLevel { get; set; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUsers, 4= public.
         public int CommentThreadNumber { get; set; }
+
+        [NotMapped] [JsonIgnore]
+        public Progeny Progeny { get; set; }
+        
         [NotMapped]
         public List<Comment> Comments { get; set; }
+        
         [NotMapped]
         public string TimeZone { get; set; }
+        
         [NotMapped]
         public int PictureNumber { get; set; }
     }

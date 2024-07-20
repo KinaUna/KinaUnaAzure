@@ -1,5 +1,8 @@
 ﻿namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for TextTranslation.
+    /// </summary>
     public class TextTranslation
     {
         public int Id { get; set; }

@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for WebNotification data.
+    /// </summary>
     public class WebNotification
     {
         public int Id { get; set; }

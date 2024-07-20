@@ -4,6 +4,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for Comment data.
+    /// Used for comments on other entities, such as Pictures and Videos.
+    /// CommentThreadNumber is used to group comments on the same item.
+    /// </summary>
     public class Comment
     {
         public int CommentId { get; init; }

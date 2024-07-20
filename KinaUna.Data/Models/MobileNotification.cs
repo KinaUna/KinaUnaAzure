@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for MobileNotification data.
+    /// </summary>
     public class MobileNotification
     {
         [Key]

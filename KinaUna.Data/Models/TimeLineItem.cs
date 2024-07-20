@@ -3,6 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for TimelineItem data.
+    /// ItemType corresponds to KinaUnaTypes.TimeLineType.
+    /// </summary>
     public class TimeLineItem
     {
         [Key]

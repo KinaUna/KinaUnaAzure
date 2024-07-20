@@ -4,6 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for UserInfo data.
+    /// </summary>
     public class UserInfo
     {
         public int Id { get; set; }

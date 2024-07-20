@@ -4,6 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models
 {
+    /// <summary>
+    /// Entity Framework Entity for Sleep data.
+    /// </summary>
     public class Sleep
     {
         [Key]
@@ -16,6 +19,7 @@ namespace KinaUna.Data.Models
         public string SleepNotes { get; set; }
         public int AccessLevel { get; set; }
         public string Author { get; set; }
+
         [NotMapped]
         public TimeSpan SleepDuration { get; set; }
         [NotMapped]
