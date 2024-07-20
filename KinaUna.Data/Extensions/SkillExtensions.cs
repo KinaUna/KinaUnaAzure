@@ -3,8 +3,16 @@ using System;
 
 namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Extension methods for the Skill class.
+    /// </summary>
     public static class SkillExtensions
     {
+        /// <summary>
+        /// Copies the properties needed for updating a Skill entity from one Skill object to another.
+        /// </summary>
+        /// <param name="currentSkillItem"></param>
+        /// <param name="otherSkillItem"></param>
         public static void CopyPropertiesForUpdate(this Skill currentSkillItem, Skill otherSkillItem )
         {
             currentSkillItem.AccessLevel = otherSkillItem.AccessLevel;
@@ -17,6 +25,11 @@ namespace KinaUna.Data.Extensions
             currentSkillItem.SkillNumber = otherSkillItem.SkillNumber;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a Skill entity from one Skill object to another.
+        /// </summary>
+        /// <param name="currentSkillItem"></param>
+        /// <param name="otherSkillItem"></param>
         public static void CopyPropertiesForAdd(this Skill currentSkillItem, Skill otherSkillItem)
         {
             currentSkillItem.AccessLevel = otherSkillItem.AccessLevel;

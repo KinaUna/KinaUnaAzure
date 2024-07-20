@@ -3,14 +3,27 @@ using System;
 
 namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Extension methods for the TimeLineItem class.
+    /// </summary>
     public static class TimeLineItemExtensions
     {
+        /// <summary>
+        /// Copies the properties needed for updating a TimeLineItem entity from one TimeLineItem object to another.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="otherTimeLineItem"></param>
         public static void CopyPropertiesForUpdate(this TimeLineItem currentTimeLineItem, TimeLineItem otherTimeLineItem)
         {
             currentTimeLineItem.AccessLevel = otherTimeLineItem.AccessLevel;
             currentTimeLineItem.ProgenyTime = otherTimeLineItem.ProgenyTime;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a TimeLineItem entity from one TimeLineItem object to another.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="otherTimeLineItem"></param>
         public static void CopyPropertiesForAdd(this TimeLineItem currentTimeLineItem, TimeLineItem otherTimeLineItem)
         {
             currentTimeLineItem.ProgenyId = otherTimeLineItem.ProgenyId;
@@ -22,6 +35,12 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.ProgenyTime = otherTimeLineItem.ProgenyTime;
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when a calendar item has been updated.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="calendarItem"></param>
+        /// <returns>bool: True if the calendar item has valid data</returns>
         public static bool CopyCalendarItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, CalendarItem calendarItem )
         {
             if (currentTimeLineItem == null || !calendarItem.StartTime.HasValue || !calendarItem.EndTime.HasValue) return false;
@@ -32,6 +51,12 @@ namespace KinaUna.Data.Extensions
 
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a timeline item when a calendar item has been added.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="calendarItem"></param>
+        /// <param name="userEmail"></param>
         public static void CopyCalendarItemPropertiesForAdd(this TimeLineItem currentTimeLineItem, CalendarItem calendarItem, string userEmail)
         {
             currentTimeLineItem.ProgenyId = calendarItem.ProgenyId;
@@ -50,6 +75,12 @@ namespace KinaUna.Data.Extensions
             }
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when user access has been added.
+        /// This should not be used to add a timeline item to the database, but for notifications only.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="userAccessItem"></param>
         public static void CopyUserAccessItemPropertiesForAdd(this TimeLineItem currentTimeLineItem, UserAccess userAccessItem)
         {
             currentTimeLineItem.ProgenyId = userAccessItem.ProgenyId;
@@ -58,6 +89,12 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.ItemType = (int)KinaUnaTypes.TimeLineType.UserAccess;
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when user access has been updated.
+        /// This should not be used to add a timeline item to the database, but for notifications only.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="userAccessItem"></param>
         public static void CopyUserAccessItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, UserAccess userAccessItem)
         {
             currentTimeLineItem.ProgenyId = userAccessItem.ProgenyId;
@@ -67,6 +104,12 @@ namespace KinaUna.Data.Extensions
 
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when a contact item has been updated.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="contactItem"></param>
+        /// <returns>bool: True if the contact object has valid data.</returns>
         public static bool CopyContactItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Contact contactItem)
         {
             if (!contactItem.DateAdded.HasValue) return false;
@@ -78,6 +121,11 @@ namespace KinaUna.Data.Extensions
 
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a timeline item when a contact item has been added.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="contactItem"></param>
         public static void CopyContactPropertiesForAdd(this TimeLineItem currentTimeLineItem, Contact contactItem)
         {
             currentTimeLineItem.ProgenyId = contactItem.ProgenyId;
@@ -96,6 +144,12 @@ namespace KinaUna.Data.Extensions
             }
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when a friend item has been updated.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="friendItem"></param>
+        /// <returns>bool: True if the friend object has valid data.</returns>
         public static bool CopyFriendItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Friend friendItem)
         {
             if (!friendItem.FriendSince.HasValue) return false;
@@ -107,6 +161,11 @@ namespace KinaUna.Data.Extensions
 
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a timeline item when a friend item has been added.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="friendItem"></param>
         public static void CopyFriendPropertiesForAdd(this TimeLineItem currentTimeLineItem, Friend friendItem)
         {
             currentTimeLineItem.ProgenyId = friendItem.ProgenyId;
@@ -126,6 +185,11 @@ namespace KinaUna.Data.Extensions
             }
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when a location item has been updated.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="location"></param>
         public static void CopyLocationPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Location location)
         {
             if (location.Date.HasValue)
@@ -136,6 +200,11 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.AccessLevel = location.AccessLevel;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a timeline item when a location item has been added.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="location"></param>
         public static void CopyLocationPropertiesForAdd(this TimeLineItem currentTimeLineItem, Location location)
         {
             currentTimeLineItem.ProgenyId = location.ProgenyId;
@@ -154,6 +223,11 @@ namespace KinaUna.Data.Extensions
             }
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding the timeline item when a measurement item has been added.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="measurement"></param>
         public static void CopyMeasurementPropertiesForAdd(this TimeLineItem currentTimeLineItem, Measurement measurement)
         {
             currentTimeLineItem.ProgenyId = measurement.ProgenyId;
@@ -165,12 +239,22 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.ProgenyTime = measurement.Date;
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when a measurement item has been updated.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="measurement"></param>
         public static void CopyMeasurementPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Measurement measurement)
         {
             currentTimeLineItem.ProgenyTime = measurement.Date;
             currentTimeLineItem.AccessLevel = measurement.AccessLevel;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding the timeline item when a note item has been added.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="note"></param>
         public static void CopyNotePropertiesForAdd(this TimeLineItem currentTimeLineItem, Note note)
         {
             currentTimeLineItem.ProgenyId = note.ProgenyId;
@@ -182,12 +266,22 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.ProgenyTime = note.CreatedDate;
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when a note item has been updated.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="note"></param>
         public static void CopyNotePropertiesForUpdate(this TimeLineItem currentTimeLineItem, Note note)
         {
             currentTimeLineItem.ProgenyTime = note.CreatedDate;
             currentTimeLineItem.AccessLevel = note.AccessLevel;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding the timeline item when a picture item has been added.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="picture"></param>
         public static void CopyPicturePropertiesForAdd(this TimeLineItem currentTimeLineItem, Picture picture)
         {
             currentTimeLineItem.ProgenyId = picture.ProgenyId;
@@ -204,6 +298,11 @@ namespace KinaUna.Data.Extensions
 
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when a picture item has been updated.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="picture"></param>
         public static void CopyPicturePropertiesForUpdate(this TimeLineItem currentTimeLineItem, Picture picture)
         {
             currentTimeLineItem.AccessLevel = picture.AccessLevel;
@@ -213,6 +312,11 @@ namespace KinaUna.Data.Extensions
             }
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding the timeline item when a video item has been added.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="video"></param>
         public static void CopyVideoPropertiesForAdd(this TimeLineItem currentTimeLineItem, Video video)
         {
             currentTimeLineItem.ProgenyId = video.ProgenyId;
@@ -229,6 +333,11 @@ namespace KinaUna.Data.Extensions
 
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when a video item has been updated.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="video"></param>
         public static void CopyVideoPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Video video)
         {
             currentTimeLineItem.AccessLevel = video.AccessLevel;
@@ -238,6 +347,11 @@ namespace KinaUna.Data.Extensions
             }
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding the timeline item when a skill item has been added.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="skill"></param>
         public static void CopySkillPropertiesForAdd(this TimeLineItem currentTimeLineItem, Skill skill)
         {
             currentTimeLineItem.ProgenyId = skill.ProgenyId;
@@ -256,6 +370,11 @@ namespace KinaUna.Data.Extensions
             }
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when a skill item has been updated.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="skill"></param>
         public static void CopySkillPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Skill skill)
         {
             if (skill.SkillFirstObservation != null)
@@ -270,12 +389,22 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.AccessLevel = skill.AccessLevel;
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when a sleep item has been updated.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="sleep"></param>
         public static void CopySleepPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Sleep sleep)
         {
             currentTimeLineItem.ProgenyTime = sleep.SleepStart;
             currentTimeLineItem.AccessLevel = sleep.AccessLevel;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding the timeline item when a sleep item has been added.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="sleep"></param>
         public static void CopySleepPropertiesForAdd(this TimeLineItem currentTimeLineItem, Sleep sleep)
         {
             currentTimeLineItem.ProgenyId = sleep.ProgenyId;
@@ -287,6 +416,11 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.ProgenyTime = sleep.SleepStart;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding the timeline item when a vaccination item has been added.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="vaccination"></param>
         public static void CopyVaccinationPropertiesForAdd(this TimeLineItem currentTimeLineItem, Vaccination vaccination)
         {
             currentTimeLineItem.ProgenyId = vaccination.ProgenyId;
@@ -298,12 +432,22 @@ namespace KinaUna.Data.Extensions
             currentTimeLineItem.ProgenyTime = vaccination.VaccinationDate;
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when a vaccination item has been updated.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="vaccination"></param>
         public static void CopyVaccinationPropertiesForUpdate(this TimeLineItem currentTimeLineItem, Vaccination vaccination)
         {
             currentTimeLineItem.AccessLevel = vaccination.AccessLevel;
             currentTimeLineItem.ProgenyTime = vaccination.VaccinationDate;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding the timeline item when a vocabulary item has been added.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="vocabularyItem"></param>
         public static void CopyVocabularyItemPropertiesForAdd(this TimeLineItem currentTimeLineItem, VocabularyItem vocabularyItem)
         {
             currentTimeLineItem.ProgenyId = vocabularyItem.ProgenyId;
@@ -322,6 +466,11 @@ namespace KinaUna.Data.Extensions
             }
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating the timeline item when a vocabulary item has been updated.
+        /// </summary>
+        /// <param name="currentTimeLineItem"></param>
+        /// <param name="vocabularyItem"></param>
         public static void CopyVocabularyItemPropertiesForUpdate(this TimeLineItem currentTimeLineItem, VocabularyItem vocabularyItem)
         {
             currentTimeLineItem.AccessLevel = vocabularyItem.AccessLevel;

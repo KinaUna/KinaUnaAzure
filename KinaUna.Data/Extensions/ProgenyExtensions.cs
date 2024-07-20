@@ -30,6 +30,10 @@ namespace KinaUna.Data.Extensions
             return false;
         }
 
+        /// <summary>
+        /// Applies placeholder properties to a Progeny object. Used when a progeny cannot be found.
+        /// </summary>
+        /// <param name="progeny"></param>
         public static void ApplyPlaceHolderProperties(this Progeny progeny)
         {
             progeny.Name = Constants.AppName;
@@ -40,6 +44,11 @@ namespace KinaUna.Data.Extensions
             progeny.TimeZone = Constants.DefaultTimezone;
         }
 
+        /// <summary>
+        /// Produces a URL for the profile picture of a Progeny object.
+        /// </summary>
+        /// <param name="progeny"></param>
+        /// <returns>string with the URL.</returns>
         public static string GetProfilePictureUrl(this Progeny progeny)
         {
             if (progeny == null || progeny.PictureLink == null)
@@ -58,6 +67,11 @@ namespace KinaUna.Data.Extensions
         }
 
 
+        /// <summary>
+        /// Produces a string with the MIME type for a Progeny's profile picture, based on the file extension.
+        /// </summary>
+        /// <param name="progeny"></param>
+        /// <returns>string with the MIME type.</returns>
         public static string GetPictureFileContentType(this Progeny progeny)
         {
             string contentType = FileContentTypeHelpers.GetContentTypeString(progeny.PictureLink);
