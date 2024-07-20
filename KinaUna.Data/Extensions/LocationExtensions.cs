@@ -2,8 +2,16 @@
 
 namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Extension methods for the Location class.
+    /// </summary>
     public static class LocationExtensions
     {
+        /// <summary>
+        /// Copies the properties needed for updating a Location entity from one Location object to another.
+        /// </summary>
+        /// <param name="currentLocation"></param>
+        /// <param name="otherLocation"></param>
         public static void CopyPropertiesForUpdate(this Location currentLocation, Location otherLocation )
         {
             currentLocation.AccessLevel = otherLocation.AccessLevel;
@@ -26,6 +34,11 @@ namespace KinaUna.Data.Extensions
             currentLocation.Tags = otherLocation.Tags;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a Location entity from one Location object to another.
+        /// </summary>
+        /// <param name="currentLocation"></param>
+        /// <param name="otherLocation"></param>
         public static void CopyPropertiesForAdd(this Location currentLocation, Location otherLocation)
         {
             currentLocation.AccessLevel = otherLocation.AccessLevel;

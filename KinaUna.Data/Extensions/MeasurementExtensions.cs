@@ -3,8 +3,16 @@ using System;
 
 namespace KinaUna.Data.Extensions
 {
+    /// <summary>
+    /// Extension methods for the Measurement class.
+    /// </summary>
     public static class MeasurementExtensions
     {
+        /// <summary>
+        /// Copies the properties needed for updating a Measurement entity from one Measurement object to another.
+        /// </summary>
+        /// <param name="currentMeasurement"></param>
+        /// <param name="otherMeasurement"></param>
         public static void CopyPropertiesForUpdate(this Measurement currentMeasurement, Measurement otherMeasurement )
         {
             currentMeasurement.AccessLevel = otherMeasurement.AccessLevel;
@@ -17,6 +25,11 @@ namespace KinaUna.Data.Extensions
             currentMeasurement.Weight = otherMeasurement.Weight;
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a Measurement entity from one Measurement object to another.
+        /// </summary>
+        /// <param name="currentMeasurement"></param>
+        /// <param name="otherMeasurement"></param>
         public static void CopyPropertiesForAdd(this Measurement currentMeasurement, Measurement otherMeasurement)
         {
             currentMeasurement.ProgenyId = otherMeasurement.ProgenyId;

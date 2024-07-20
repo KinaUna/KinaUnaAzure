@@ -31,6 +31,11 @@ namespace KinaUna.Data.Extensions
             picture.PictureTime ??= DateTime.MinValue;
         }
 
+        /// <summary>
+        /// Copies the properties needed when users edits a Picture.
+        /// </summary>
+        /// <param name="currentPicture"></param>
+        /// <param name="otherPicture"></param>
         public static void CopyPropertiesForUserUpdate(this Picture currentPicture, Picture otherPicture)
         {
             otherPicture.RemoveNullStrings();
@@ -55,6 +60,11 @@ namespace KinaUna.Data.Extensions
             }
         }
 
+        /// <summary>
+        /// Copies the properties needed for updating a Picture entity from one Picture object to another.
+        /// </summary>
+        /// <param name="currentPicture"></param>
+        /// <param name="otherPicture"></param>
         public static void CopyPropertiesForUpdate(this Picture currentPicture, Picture otherPicture)
         {
             otherPicture.RemoveNullStrings();
@@ -76,6 +86,11 @@ namespace KinaUna.Data.Extensions
             currentPicture.Altitude = otherPicture.Altitude.Replace(',', '.');
         }
 
+        /// <summary>
+        /// Copies the properties needed for adding a Picture entity from one Picture object to another.
+        /// </summary>
+        /// <param name="currentPicture"></param>
+        /// <param name="otherPicture"></param>
         public static void CopyPropertiesForAdd(this Picture currentPicture, Picture otherPicture)
         {
             currentPicture.AccessLevel = otherPicture.AccessLevel;
@@ -121,6 +136,10 @@ namespace KinaUna.Data.Extensions
             }
         }
 
+        /// <summary>
+        /// Applies placeholder properties to a Picture object, used when no picture is found.
+        /// </summary>
+        /// <param name="picture"></param>
         public static void ApplyPlaceholderProperties(this Picture picture)
         {
             Progeny progeny = new();
@@ -135,6 +154,11 @@ namespace KinaUna.Data.Extensions
             picture.PictureTime = new DateTime(2018, 9, 1, 12, 00, 00);
         }
 
+        /// <summary>
+        /// Produces a string with the MIME type for a Picture object, based on the file extension.
+        /// </summary>
+        /// <param name="picture"></param>
+        /// <returns>string with the MIME type.</returns>
         public static string GetPictureFileContentType(this Picture picture)
         {
             string contentType = FileContentTypeHelpers.GetContentTypeString(picture.PictureLink);
@@ -142,6 +166,12 @@ namespace KinaUna.Data.Extensions
             return contentType;
         }
 
+        /// <summary>
+        /// Produces the URL for a Picture object.
+        /// </summary>
+        /// <param name="picture"></param>
+        /// <param name="size"></param>
+        /// <returns>string with the URL.</returns>
         public static string GetPictureUrl(this Picture picture, int size)
         {
             if (picture == null)
