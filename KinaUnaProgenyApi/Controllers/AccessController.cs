@@ -54,7 +54,7 @@ namespace KinaUnaProgenyApi.Controllers
                 }
             }
 
-            if (!allowedAccess)
+            if (!allowedAccess && id != Constants.DefaultChildId)
             {
                 return Unauthorized();
             }

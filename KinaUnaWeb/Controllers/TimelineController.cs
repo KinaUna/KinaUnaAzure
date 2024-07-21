@@ -65,24 +65,34 @@ namespace KinaUnaWeb.Controllers
                 TimelineItems = await timelineHttpClient.GetTimeline(baseModel.CurrentProgenyId, baseModel.CurrentAccessLevel, parameters.SortBy)
             };
 
-            timelineList.FirstItemYear = timelineList.TimelineItems.Min(t => t.ProgenyTime).Year;
-            if (parameters.Year != 0)
+            if (timelineList.TimelineItems.Count > 0)
             {
-                DateTime startDate = new(parameters.Year, parameters.Month, parameters.Day, 23, 59, 59);
-                if (parameters.SortBy == 1)
+                timelineList.FirstItemYear = timelineList.TimelineItems.Min(t => t.ProgenyTime).Year;
+                if (parameters.Year != 0)
                 {
-                    
-                    timelineList.TimelineItems = timelineList.TimelineItems.Where(t => t.ProgenyTime <= startDate).ToList();
+                    DateTime startDate = new(parameters.Year, parameters.Month, parameters.Day, 23, 59, 59);
+                    if (parameters.SortBy == 1)
+                    {
+
+                        timelineList.TimelineItems = timelineList.TimelineItems.Where(t => t.ProgenyTime <= startDate).ToList();
+                    }
+                    else
+                    {
+                        startDate = new(parameters.Year, parameters.Month, parameters.Day, 0, 0, 0);
+                        timelineList.TimelineItems = timelineList.TimelineItems.Where(t => t.ProgenyTime >= startDate).ToList();
+                    }
                 }
-                else
-                {
-                    startDate = new(parameters.Year, parameters.Month, parameters.Day, 0, 0, 0);
-                    timelineList.TimelineItems = timelineList.TimelineItems.Where(t => t.ProgenyTime >= startDate).ToList();
-                }
+
+                timelineList.AllItemsCount = timelineList.TimelineItems.Count;
+                timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count;
+                timelineList.TimelineItems = timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count).ToList();
             }
-            timelineList.AllItemsCount = timelineList.TimelineItems.Count;
-            timelineList.RemainingItemsCount = timelineList.TimelineItems.Count - parameters.Skip - parameters.Count; 
-            timelineList.TimelineItems = timelineList.TimelineItems.Skip(parameters.Skip).Take(parameters.Count).ToList();
+            else
+            {
+                timelineList.FirstItemYear = DateTime.Now.Year;
+                timelineList.AllItemsCount = 0;
+                timelineList.RemainingItemsCount = 0;
+            }
 
             return Json(timelineList);
 
