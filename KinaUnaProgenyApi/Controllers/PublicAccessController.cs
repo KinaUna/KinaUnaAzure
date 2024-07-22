@@ -69,17 +69,12 @@ namespace KinaUnaProgenyApi.Controllers
                 foreach (UserAccess ua in accessList)
                 {
                     ua.Progeny = await progenyService.GetProgeny(ua.ProgenyId);
-                    ua.User = new ApplicationUser();
+                    ua.User = new UserInfo();
                     UserInfo userinfo = await userInfoService.GetUserInfoByEmail(ua.UserId);
                     if (userinfo != null)
                     {
-                        ua.User.FirstName = userinfo.FirstName;
-                        ua.User.MiddleName = userinfo.MiddleName;
-                        ua.User.LastName = userinfo.LastName;
-                        ua.User.UserName = userinfo.UserName;
+                        ua.User = userinfo;
                     }
-
-                    ua.User.Email = ua.UserId;
 
                 }
                 return Ok(accessList);

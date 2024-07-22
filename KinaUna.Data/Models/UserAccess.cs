@@ -12,13 +12,13 @@ namespace KinaUna.Data.Models
         [Key]
         public int AccessId { get; init; }
         public int ProgenyId { get; set; }
-        public string UserId { get; set; }
+        public string UserId { get; set; } // This is actually the email address of the user.
         public int AccessLevel { get; set; }
         public bool CanContribute { get; set; }
         [NotMapped]
         public Progeny Progeny { get; set; }
         [NotMapped]
-        public ApplicationUser User { get; set; }
+        public UserInfo User { get; set; }
         [NotMapped]
         public string AccessLevelString { get; set; }
     }

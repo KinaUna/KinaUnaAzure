@@ -22,6 +22,11 @@ namespace KinaUnaProgenyApi.Controllers
         IWebNotificationsService webNotificationsService)
         : ControllerBase
     {
+        /// <summary>
+        /// Gets a list of all UserAccess items for a specific Progeny.
+        /// </summary>
+        /// <param name="id">The id of the progeny to retrieve the list of UserAccess items for.</param>
+        /// <returns>List of UserAccess for all users granted access.</returns>
         // GET api/Access/Progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
@@ -38,23 +43,25 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 ua.Progeny = await progenyService.GetProgeny(ua.ProgenyId);
 
-                ua.User = new ApplicationUser();
                 UserInfo userinfo = await userInfoService.GetUserInfoByEmail(ua.UserId);
                 if (userinfo != null)
                 {
-                    ua.User.FirstName = userinfo.FirstName;
-                    ua.User.MiddleName = userinfo.MiddleName;
-                    ua.User.LastName = userinfo.LastName;
-                    ua.User.UserName = userinfo.UserName;
+                    ua.User = userinfo;
+                    if (ua.User.UserEmail.Equals(userEmail, System.StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        allowedAccess = true;
+                    }
                 }
-                ua.User.Email = ua.UserId;
-                if (ua.User.Email.Equals(userEmail, System.StringComparison.CurrentCultureIgnoreCase))
+                else
                 {
-                    allowedAccess = true;
+                    ua.User = new UserInfo();
+                    ua.User.FirstName = ua.User.MiddleName = ua.User.LastName = "";
+                    ua.User.UserEmail = ua.UserId;
                 }
+                
             }
 
-            if (!allowedAccess && id != Constants.DefaultChildId)
+            if (!allowedAccess && id != Constants.DefaultChildId) // DefaultChild is always allowed.
             {
                 return Unauthorized();
             }
@@ -63,6 +70,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a given UserAccess with the specified id.
+        /// </summary>
+        /// <param name="id">The id of the UserAccess to retrieve.</param>
+        /// <returns>UserAccess entity with the specified id.</returns>
         // GET api/Access/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetAccess(int id)
@@ -79,6 +91,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Unauthorized();
         }
 
+        /// <summary>
+        /// Adds a new UserAccess entity to the database.
+        /// </summary>
+        /// <param name="value">The UserAccess object to add.</param>
+        /// <returns>The newly created UserAccess entity.</returns>
         // POST api/Access
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] UserAccess value)
@@ -112,6 +129,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(userAccess);
         }
 
+        /// <summary>
+        /// Updates a UserAccess entity with the specified id.
+        /// </summary>
+        /// <param name="id">The id of the UserAccess entity.</param>
+        /// <param name="value">The UserAccess object with the values to update to.</param>
+        /// <returns>The updated UserAccess object</returns>
         // PUT api/Access/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] UserAccess value)
@@ -155,6 +178,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(updatedUserAccess);
         }
 
+        /// <summary>
+        /// Deletes a UserAccess entity with the specified id.
+        /// </summary>
+        /// <param name="id">The id of the UserAccess entity to delete.</param>
+        /// <returns>NoContentResult, or if the item is not found NotFoundResult.</returns>
         // DELETE api/Access/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -195,6 +223,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves a list of all Progeny a given user has access to.
+        /// </summary>
+        /// <param name="id">The email address of the user</param>
+        /// <returns>List of Progeny that the user has access to.</returns>
         // GET api/Access/ProgenyListByUser/[userid]
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> ProgenyListByUser(string id)
@@ -221,6 +254,13 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves a list of all Progeny a given user has access to.
+        /// The difference between this and ProgenyListByUser is that the URL for each Progeny's picture is generated, as the mobile client cannot do that itself.
+        /// This action is obsolete, use ProgenyListByUserPost instead as it doesn't reveal a user's email address in the url.
+        /// </summary>
+        /// <param name="id">The email address of the user</param>
+        /// <returns>List of Progeny that the user has access to.</returns>
         // GET api/Access/ProgenyListByUserMobile/[userid]
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> ProgenyListByUserMobile(string id)
@@ -250,6 +290,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves a list of all Progeny a given user has access to.
+        /// The difference between this and ProgenyListByUser is that the URL for each Progeny's picture is generated, as the mobile client cannot do that itself.
+        /// </summary>
+        /// <param name="id">The email address of the user</param>
+        /// <returns>List of Progeny that the user has access to.</returns>
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> ProgenyListByUserPostMobile([FromBody] string id)
@@ -279,6 +325,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves the list of UserAccess items for a given user.
+        /// </summary>
+        /// <param name="id">The user's email address</param>
+        /// <returns>List of UserAccess items for the user.</returns>
         // GET api/Access/AccessListByUser/[userid]
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> AccessListByUser(string id)
@@ -297,6 +348,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves the list of Progeny that a user has admin access to.
+        /// Obsolete, use AdminListByUserPost instead. This action reveals the user's email address in the url.
+        /// </summary>
+        /// <param name="id">The email address of the user.</param>
+        /// <returns>List of Progeny that the user is admin for.</returns>
         // GET api/Access/AdminListByUser/[UserEmail]
         [HttpGet("[action]/{id}")]
         public async Task<IActionResult> AdminListByUser(string id)
@@ -318,6 +375,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves the list of Progeny that a user has admin access to.
+        /// </summary>
+        /// <param name="id">The email address of th user.</param>
+        /// <returns>List of Progeny that the user is admin for.</returns>
         [HttpPost("[action]")]
         public async Task<IActionResult> AdminListByUserPost([FromBody] string id)
         {
@@ -338,6 +400,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Updates the UserAccess entities when a user changes their email address.
+        /// </summary>
+        /// <param name="oldEmail">The email address before the change.</param>
+        /// <param name="newEmail">The email address after the change.</param>
+        /// <returns>List of UserAccess with the updated email address.</returns>
         [HttpGet("[action]/{oldEmail}/{newEmail}")]
         public async Task<IActionResult> UpdateAccessListEmailChange(string oldEmail, string newEmail)
         {
