@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    // Actions for retrieving auto suggest lists.
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -26,6 +27,13 @@ namespace KinaUnaProgenyApi.Controllers
         ILocationService locationService)
         : ControllerBase
     {
+        /// <summary>
+        /// Provides a list of strings for category auto suggest inputs for a given Progeny.
+        /// Only returns categories with an access level equal to or higher than the accessLevel parameter.
+        /// </summary>
+        /// <param name="id">The id of the Progeny</param>
+        /// <param name="accessLevel">The user's access level for this Progeny</param>
+        /// <returns>List of string.</returns>
         [Route("[action]/{id:int}/{accessLevel:int}")]
         [HttpGet]
         public async Task<IActionResult> GetCategoryAutoSuggestList(int id, int accessLevel)
@@ -76,6 +84,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(autoSuggestList);
         }
 
+        /// <summary>
+        /// Provides a list of strings for context auto suggest inputs for a given Progeny.
+        /// Only returns contexts with an access level equal to or higher than the accessLevel parameter.
+        /// </summary>
+        /// <param name="id">The id of the Progeny</param>
+        /// <param name="accessLevel"></param>
+        /// <returns>List of string</returns>
         [Route("[action]/{id:int}/{accessLevel:int}")]
         [HttpGet]
         public async Task<IActionResult> GetContextAutoSuggestList(int id, int accessLevel)
@@ -142,6 +157,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(autoSuggestList);
         }
 
+        /// <summary>
+        /// Returns a list of strings for location auto suggest inputs for a given Progeny.
+        /// Only returns locations with an access level equal to or higher than the accessLevel parameter.
+        /// </summary>
+        /// <param name="id">The id of the Progeny.</param>
+        /// <param name="accessLevel">The user's access level.</param>
+        /// <returns>List of string.</returns>
         [Route("[action]/{id:int}/{accessLevel:int}")]
         [HttpGet]
         public async Task<IActionResult> GetLocationAutoSuggestList(int id, int accessLevel)
@@ -225,6 +247,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(autoSuggestList);
         }
 
+        /// <summary>
+        /// Returns a list of strings for tag auto suggest inputs for a given Progeny.
+        /// Only returns tags with an access level equal to or higher than the accessLevel parameter.
+        /// </summary>
+        /// <param name="id">The id of the Progeny.</param>
+        /// <param name="accessLevel"></param>
+        /// <returns>List of string.</returns>
         [Route("[action]/{id:int}/{accessLevel:int}")]
         [HttpGet]
         public async Task<IActionResult> GetTagsAutoSuggestList(int id, int accessLevel)
