@@ -21,6 +21,11 @@ namespace KinaUnaProgenyApi.Controllers
         IWebNotificationsService webNotificationsService)
         : ControllerBase
     {
+        /// <summary>
+        /// Retrieves the Comment with a given id.
+        /// </summary>
+        /// <param name="id">The id of the Comment.</param>
+        /// <returns>The Comment with the provided id.</returns>
         // GET api/comments/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetComment(int id)
@@ -35,6 +40,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves all Comments for a given comment thread.
+        /// </summary>
+        /// <param name="threadId">The id of the comment thread.</param>
+        /// <returns>List of Comments with the provided comment thread id.</returns>
         // GET api/comments/GetCommentsByThread/5
         [HttpGet]
         [Route("[action]/{threadId:int}")]
@@ -57,16 +67,22 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Adds a new Comment to the database.
+        /// Then sends notifications to users who have access to the Progeny.
+        /// </summary>
+        /// <param name="value">The comment object to add</param>
+        /// <returns>The added comment</returns>
         // POST api/comments
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Comment model)
+        public async Task<IActionResult> Post([FromBody] Comment value)
         {
-            Progeny progeny = await progenyService.GetProgeny(model.Progeny.Id);
+            Progeny progeny = await progenyService.GetProgeny(value.Progeny.Id);
 
             string userId = User.GetUserId();
-            if (progeny != null && model.CommentThreadNumber != 0)
+            if (progeny != null && value.CommentThreadNumber != 0)
             {
-                if (userId != model.Author)
+                if (userId != value.Author)
                 {
                     return Unauthorized();
                 }
@@ -76,11 +92,11 @@ namespace KinaUnaProgenyApi.Controllers
                 return NotFound();
             }
 
-            Comment newComment = await commentsService.AddComment(model);
+            Comment newComment = await commentsService.AddComment(value);
             
             newComment.Progeny = progeny;
             string notificationTitle = "New comment for " + newComment.Progeny.NickName;
-            string notificationMessage = model.DisplayName + " added a new comment for " + newComment.Progeny.NickName;
+            string notificationMessage = value.DisplayName + " added a new comment for " + newComment.Progeny.NickName;
 
             TimeLineItem timeLineItem = new()
             {
@@ -90,7 +106,7 @@ namespace KinaUnaProgenyApi.Controllers
                 AccessLevel = newComment.AccessLevel
             };
 
-            UserInfo userinfo = await userInfoService.GetUserInfoByUserId(model.Author);
+            UserInfo userinfo = await userInfoService.GetUserInfoByUserId(value.Author);
 
             await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
             await webNotificationsService.SendCommentNotification(newComment, userinfo, notificationTitle, notificationMessage);
@@ -98,6 +114,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(newComment);
         }
 
+        /// <summary>
+        /// Updates an existing Comment in the database.
+        /// </summary>
+        /// <param name="id">The id of the Comment to update.</param>
+        /// <param name="value">The Comment object with the updated properties.</param>
+        /// <returns>The updated Comment.</returns>
         // PUT api/comments/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Comment value)
@@ -129,6 +151,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(comment);
         }
 
+        /// <summary>
+        /// Deletes a Comment from the database.
+        /// </summary>
+        /// <param name="id">The id of the Comment entity to remove.</param>
+        /// <returns>NoContentResult of the Comment was removed, UnauthorizedResult if the user doesn't have access to this comment, NotFoundResult if the Comment doesn't exist.</returns>
         // DELETE api/comments/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
