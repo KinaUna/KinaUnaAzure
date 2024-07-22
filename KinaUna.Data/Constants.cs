@@ -9,7 +9,7 @@
         public const string AuthAppUrl = "https://auth.kinauna.com";
         public const string ProgenyApiUrl = "https://progenyapi.kinauna.com";
         public const string MediaApiUrl = "https://mediaapi.kinauna.com";
-        public const string SupportUrl = "https://support.kinauna.com";
+        public const string SupportUrl = "https://web.kinauna.com/support";
         public const string AppRootDomain = "kinauna.com";
         public const string SupportEmail = "support@kinauna.com";
         public const string KeyVaultEndPoint = "https://kinauna.vault.azure.net";
@@ -23,6 +23,7 @@
         public const string ProfilePictureUrl = "https://web.kinauna.com/photodb/profile.jpg";
         public const string DefaultPictureLink = "defaultpicture.jpg";
         public const string KeepExistingLink = "[KeepExistingLink]";
+        public const int DefaultUpcomingCalendarItemsCount = 8;
     }
 
     public static class PageNames

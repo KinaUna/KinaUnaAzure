@@ -26,6 +26,12 @@ namespace KinaUnaProgenyApi.Controllers
         IWebNotificationsService webNotificationsService)
         : ControllerBase
     {
+        /// <summary>
+        /// Retrieves the list of all CalendarItems for a given Progeny.
+        /// </summary>
+        /// <param name="id">The id of the Progeny</param>
+        /// <param name="accessLevel">The user's access level for this Progeny</param>
+        /// <returns>List of CalendarItems</returns>
         // GET api/calendar/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
@@ -45,6 +51,14 @@ namespace KinaUnaProgenyApi.Controllers
             return NotFound();
         }
 
+        /// <summary>
+        /// Retrieves the list of CalendarItems for a given Progeny within a given date interval.
+        /// </summary>
+        /// <param name="id">The id of the Progeny</param>
+        /// <param name="start">string: The start of the interval, in the format 'dd-MM-yyy'</param>
+        /// <param name="end">string: The end of the interval, in the format 'dd-MM-yyy'</param>
+        /// <param name="accessLevel">The user's access level for this Progeny</param>
+        /// <returns>List of CalendarItems with all the Progeny's CalendarItems within the interval.</returns>
         [HttpGet]
         [Route("[action]/{id:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "The parameter is needed for mobile clients")]
@@ -67,6 +81,11 @@ namespace KinaUnaProgenyApi.Controllers
             return NotFound();
         }
 
+        /// <summary>
+        /// Retrieves a single CalendarItem with a given id.
+        /// </summary>
+        /// <param name="id">The id of the CalendarItem to retrieve</param>
+        /// <returns>CalendarItem with the id provided.</returns>
         // GET api/calendar/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCalendarItem(int id)
@@ -84,6 +103,13 @@ namespace KinaUnaProgenyApi.Controllers
             return NotFound();
         }
 
+        /// <summary>
+        /// Adds a new CalendarItem to the database.
+        /// Then adds a TimeLineItem for the new CalendarItem.
+        /// Then sends a notification to all users with access to the Progeny.
+        /// </summary>
+        /// <param name="value">CalendarItem to add</param>
+        /// <returns>The added CalendarItem.</returns>
         // POST api/calendar
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CalendarItem value)
@@ -124,6 +150,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(calendarItem);
         }
 
+        /// <summary>
+        /// Updates an existing CalendarItem in the database.
+        /// Then updates the corresponding TimeLineItem.
+        /// </summary>
+        /// <param name="id">The id of the CalendarItem</param>
+        /// <param name="value">The CalendarItem with the properties to update.</param>
+        /// <returns>The updated CalendarItem.</returns>
         // PUT api/calendar/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] CalendarItem value)
@@ -156,18 +189,17 @@ namespace KinaUnaProgenyApi.Controllers
             if (timeLineItem == null || !timeLineItem.CopyCalendarItemPropertiesForUpdate(calendarItem)) return Ok(calendarItem);
 
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
-
-            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-            //string notificationTitle = "Calendar edited for " + progeny.NickName;
-            //string notificationMessage = userInfo.FullName() + " edited a calendar item for " + progeny.NickName;
-
-            // await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            // await webNotificationsService.SendCalendarNotification(calendarItem, userInfo, notificationTitle);
-
+            
             return Ok(calendarItem);
         }
 
+        /// <summary>
+        /// Deletes a CalendarItem from the database.
+        /// Then deletes the corresponding TimeLineItem.
+        /// Notifies all users with admin access to the Progeny.
+        /// </summary>
+        /// <param name="id">The id of the CalendarItem to delete</param>
+        /// <returns>NoContentResult if successful, UnauthorizedResult if the user does not have access, NotFoundResult if the CalendarItem was not found.</returns>
         // DELETE api/calendar/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
@@ -214,6 +246,13 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves the first upcoming CalendarItems for a given Progeny.
+        /// Default number of items is set in Constants.DefaultUpcomingCalendarItemsCount.
+        /// </summary>
+        /// <param name="progenyId">The id of the Progeny to get CalendarItems for.</param>
+        /// <param name="accessLevel">The user's access level for this Progeny.</param>
+        /// <returns>List of CalendarItems.</returns>
         [HttpGet]
         [Route("[action]/{progenyId:int}/{accessLevel:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
@@ -226,12 +265,18 @@ namespace KinaUnaProgenyApi.Controllers
             List<CalendarItem> calendarList = await calendarService.GetCalendarList(progenyId);
             calendarList = calendarList.Where(c => userAccess != null && c.EndTime > DateTime.UtcNow && c.AccessLevel >= userAccess.AccessLevel).ToList();
             calendarList = [.. calendarList.OrderBy(e => e.StartTime)];
-            calendarList = calendarList.Take(8).ToList();
+            calendarList = calendarList.Take(Constants.DefaultUpcomingCalendarItemsCount).ToList();
 
             return Ok(calendarList);
 
         }
 
+        /// <summary>
+        /// Retrieves a single CalendarItem with a given id.
+        /// For mobile clients.
+        /// </summary>
+        /// <param name="id">The id of the CalendarItem to get.</param>
+        /// <returns>The CalendarItem with the provided id.</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetItemMobile(int id)
         {
@@ -247,6 +292,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Unauthorized();
         }
 
+        /// <summary>
+        /// Retrieves the list of all CalendarItems for a given Progeny that the user has access to.
+        /// For mobile clients.
+        /// </summary>
+        /// <param name="id">The id of the Progeny to get CalendarItems for.</param>
+        /// <param name="accessLevel">The user's access level for this Progeny.</param>
+        /// <returns>List of CalendarItem.</returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
