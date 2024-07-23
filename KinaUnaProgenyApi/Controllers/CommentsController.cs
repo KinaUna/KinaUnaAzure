@@ -69,7 +69,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Adds a new Comment to the database.
-        /// Then sends notifications to users who have access to the Progeny.
+        /// Then sends notifications to users who have access to the Comment.
         /// </summary>
         /// <param name="value">The comment object to add</param>
         /// <returns>The added comment if the user has access to the Progeny.</returns>

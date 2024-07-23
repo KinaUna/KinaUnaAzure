@@ -79,6 +79,8 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Adds a new Friend entity to the database.
+        /// Then adds a TimeLineItem for the Friend entity.
+        /// Then sends notifications to users with access to the Friend item.
         /// </summary>
         /// <param name="value">The Friend object to add.</param>
         /// <returns>The added Friend object if successful. Unauthorized if the user isn't allowed to add items for the Progeny. NotFoundResult if the Progeny doesn't exist.</returns>
@@ -127,6 +129,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Updates an existing Friend entity in the database.
+        /// Then updates the TimeLineItem for the Friend entity.
         /// </summary>
         /// <param name="id">The FriendId of the Friend entity to update.</param>
         /// <param name="value">Friend object with the properties to update.</param>
@@ -177,6 +180,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Deletes a Friend entity from the database.
+        /// Then deletes the TimeLineItem for the Friend entity.
         /// Then sends a notification to all users with admin access to the Progeny.
         /// </summary>
         /// <param name="id">The FriendId of the Friend entity to delete.</param>

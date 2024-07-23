@@ -76,7 +76,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Adds a new Contact entity to the database.
-        /// Then adds the corresponding TimeLineItem and sends notifications to users who have access to the Progeny.
+        /// Then adds the corresponding TimeLineItem and sends notifications to users who have access to the Contact item.
         /// </summary>
         /// <param name="value">The Contact object to add.</param>
         /// <returns>The added Contact object.</returns>
@@ -133,6 +133,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Updates an existing Contact entity in the database.
+        /// Then updates the corresponding TimelineItem.
         /// </summary>
         /// <param name="id">The ContactId of the Contact entity.</param>
         /// <param name="value">Contact object with the properties to update.</param>
@@ -210,6 +211,8 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Deletes a Contact entity from the database.
+        /// Then deletes the corresponding TimeLineItem.
+        /// Then sends notifications to users with admin access to the Progeny.
         /// </summary>
         /// <param name="id">The ContactId of the Contact entity to delete.</param>
         /// <returns>No content if deleted successfully, UnauthorizedResult if the user doesn't have the access rights, NotFoundResult if the item doesn't exist.</returns>

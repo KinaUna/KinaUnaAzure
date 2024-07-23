@@ -26,6 +26,12 @@ namespace KinaUnaProgenyApi.Controllers
         IWebNotificationsService webNotificationsService)
         : ControllerBase
     {
+        /// <summary>
+        /// Retrieves all locations for a given progeny that a user with a given access level has access to.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny to get Location items for.</param>
+        /// <param name="accessLevel">The user's access level for this Progeny.</param>
+        /// <returns>List of Locations, or NotFound if no Locations are found.</returns>
         // GET api/locations/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
@@ -46,28 +52,39 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves the Location with a given id.
+        /// </summary>
+        /// <param name="id">The LocationId of the Location entity to get.</param>
+        /// <returns>Location object with provided id, NotFoundResult if it doesn't exist. UnauthorizedResult if the user doesn't have the required access level.</returns>
         // GET api/locations/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetLocationItem(int id)
         {
-            Location
-                result = await locationService.GetLocation(id);
+            Location location = await locationService.GetLocation(id);
 
-            if (result == null)
+            if (location == null)
             {
                 return NotFound();
             }
 
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(result.ProgenyId, userEmail);
+            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(location.ProgenyId, userEmail);
             if (userAccess != null || id == Constants.DefaultChildId)
             {
-                return Ok(result);
+                return Ok(location);
             }
 
             return Unauthorized();
         }
 
+        /// <summary>
+        /// Adds a new Location entity to the database.
+        /// Then adds a TimeLineItem for the Location.
+        /// Then sends notifications to users who have access to the Location item.
+        /// </summary>
+        /// <param name="value">The Location object to add.</param>
+        /// <returns>The added Location object if successful. NotAuthorizedResult if the user doesn't have access right to add items. NotFoundResult if the Progeny doesn't exist.</returns>
         // POST api/timeline
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Location value)
@@ -103,6 +120,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(location);
         }
 
+        /// <summary>
+        /// Updates an existing Location entity in the database.
+        /// Then updates the corresponding TimeLineItem.
+        /// </summary>
+        /// <param name="id">The LocationId of the Location entity to update.</param>
+        /// <param name="value">Location object with the properties to update.</param>
+        /// <returns>The updated Location object.</returns>
         // PUT api/timeline/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Location value)
@@ -138,16 +162,16 @@ namespace KinaUnaProgenyApi.Controllers
 
             location.Author = User.GetUserId();
             
-            // UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            // string notificationTitle = "Location edited for " + progeny.NickName;
-            // string notificationMessage = userInfo.FullName() + " edited a location for " + progeny.NickName;
-
-            // await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            // await webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
-
             return Ok(location);
         }
 
+        /// <summary>
+        /// Deletes a Location entity from the database.
+        /// Then deletes the corresponding TimeLineItem.
+        /// Then sends notifications to the Progeny's admin users.
+        /// </summary>
+        /// <param name="id">The LocationId of the Location entity to delete.</param>
+        /// <returns>NoContentResult if successful. UnauthorizedResult if the user is denied access. NotFoundResult if the Location item doesn't exist.</returns>
         // DELETE api/timeline/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
@@ -193,7 +217,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
-
+        /// <summary>
+        /// Retrieves a Location entity for a mobile client.
+        /// </summary>
+        /// <param name="id">The LocationId for the Location entity to get.</param>
+        /// <returns>The Location object with the provided LocationId.</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetLocationMobile(int id)
         {
@@ -212,8 +240,17 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves the list of Location items to display on a page for a given Progeny.
+        /// </summary>
+        /// <param name="pageSize">The number of Location items per page.</param>
+        /// <param name="pageIndex">The current page number.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny to display Locations for.</param>
+        /// <param name="accessLevel">The user's access level for the Progeny.</param>
+        /// <param name="sortBy">int: Sort order for the Location items. 0 = oldest first, 1 = newest first.</param>
+        /// <returns></returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Mobile clients still use this parameter.")]
         public async Task<IActionResult> GetLocationsListPage([FromQuery] int pageSize = 8,
             [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId,
             [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
