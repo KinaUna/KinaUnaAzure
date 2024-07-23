@@ -28,6 +28,12 @@ namespace KinaUnaProgenyApi.Controllers
         IWebNotificationsService webNotificationsService)
         : ControllerBase
     {
+        /// <summary>
+        /// Retrieve all contacts for a Progeny with the given id and access level.
+        /// </summary>
+        /// <param name="id">The id of the Progeny to get Contacts for.</param>
+        /// <param name="accessLevel">The user's access level for this Progeny.</param>
+        /// <returns>List of all Contacts the user has access to for this Progeny.</returns>
         // GET api/contacts/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
@@ -47,6 +53,11 @@ namespace KinaUnaProgenyApi.Controllers
             return NotFound();
         }
 
+        /// <summary>
+        /// Retrieves a Contact with the given id.
+        /// </summary>
+        /// <param name="id">The id of the Contact entity to get.</param>
+        /// <returns>The Contact object, if the user has access to it, else NotFoundResult.</returns>
         // GET api/contacts/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetContactItem(int id)
@@ -63,6 +74,12 @@ namespace KinaUnaProgenyApi.Controllers
             return NotFound();
         }
 
+        /// <summary>
+        /// Adds a new Contact entity to the database.
+        /// Then adds the corresponding TimeLineItem and sends notifications to users who have access to the Progeny.
+        /// </summary>
+        /// <param name="value">The Contact object to add.</param>
+        /// <returns>The added Contact object.</returns>
         // POST api/contact
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Contact value)
@@ -114,6 +131,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(contactItem);
         }
 
+        /// <summary>
+        /// Updates an existing Contact entity in the database.
+        /// </summary>
+        /// <param name="id">The id of the Contact entity.</param>
+        /// <param name="value">Contact object with the properties to update.</param>
+        /// <returns>The updated Contact object.</returns>
         // PUT api/contacts/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Contact value)
@@ -145,6 +168,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             contactItem.CopyPropertiesForUpdate(value);
 
+            // Todo: Refactor move Address handling to ContactService.
             if (contactItem.AddressIdNumber != null && contactItem.AddressIdNumber.Value != 0)
             {
                 Address existingAddress = await locationService.GetAddressItem(contactItem.AddressIdNumber.Value);
@@ -181,16 +205,14 @@ namespace KinaUnaProgenyApi.Controllers
 
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
             
-            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            //string notificationTitle = "Contact edited for " + progeny.NickName;
-            //string notificationMessage = userInfo.FullName() + " edited a contact for " + progeny.NickName;
-
-            // await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            // await webNotificationsService.SendContactNotification(contactItem, userInfo, notificationTitle);
-
             return Ok(contactItem);
         }
 
+        /// <summary>
+        /// Deletes a Contact entity from the database.
+        /// </summary>
+        /// <param name="id">The id of the Contact entity to delete.</param>
+        /// <returns>No content if deleted successfully, UnauthorizedResult if the user doesn't have the access rights, NotFoundResult if the item doesn't exist.</returns>
         // DELETE api/contacts/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
@@ -245,6 +267,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves a Contact entity with the given id.
+        /// For mobile clients.
+        /// </summary>
+        /// <param name="id">The id of the Contact entity to get.</param>
+        /// <returns>Contact object with the provided id.</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetContactMobile(int id)
         {
@@ -268,6 +296,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves all Contacts for a Progeny with the given id and access level.
+        /// </summary>
+        /// <param name="id">The id of the Progeny to get contact items for.</param>
+        /// <param name="accessLevel">The user's access level for this Progeny.</param>
+        /// <returns>List of all contacts for this Progeny that the user has access to.</returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
@@ -292,6 +326,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Download a Contact's profile picture from a URL in the Contact's PictureLink and save it to the image store.
+        /// </summary>
+        /// <param name="contactId">The id of the Contact.</param>
+        /// <returns>The Contact entity with the updated PictureLink.</returns>
         [HttpGet]
         [Route("[action]/{contactId:int}")]
         public async Task<IActionResult> DownloadPicture(int contactId)
@@ -317,6 +356,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Helper method to get a Stream from a URL.
+        /// </summary>
+        /// <param name="url">The url to get the stream for.</param>
+        /// <returns>The stream object for the URL.</returns>
         private static async Task<Stream> GetStreamFromUrl(string url)
         {
             using HttpClient client = new();

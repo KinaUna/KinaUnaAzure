@@ -59,7 +59,7 @@ namespace KinaUnaProgenyApi.Controllers
                 if (commentAuthor == null) continue;
 
                 string authorImg = commentAuthor.ProfilePicture ?? "";
-                comment.AuthorImage = imageStore.UriFor(authorImg, "profiles");
+                comment.AuthorImage = imageStore.UriFor(authorImg, "profiles"); // Todo: Replace with GetProfilePictureUrl extension method, like in ContactsExtension.
                 comment.DisplayName = commentAuthor.FullName();
             }
 
@@ -72,7 +72,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Then sends notifications to users who have access to the Progeny.
         /// </summary>
         /// <param name="value">The comment object to add</param>
-        /// <returns>The added comment</returns>
+        /// <returns>The added comment if the user has access to the Progeny.</returns>
         // POST api/comments
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Comment value)
@@ -80,6 +80,7 @@ namespace KinaUnaProgenyApi.Controllers
             Progeny progeny = await progenyService.GetProgeny(value.Progeny.Id);
 
             string userId = User.GetUserId();
+            // Todo: Check user's access level to the Progeny.
             if (progeny != null && value.CommentThreadNumber != 0)
             {
                 if (userId != value.Author)
@@ -119,7 +120,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The id of the Comment to update.</param>
         /// <param name="value">The Comment object with the updated properties.</param>
-        /// <returns>The updated Comment.</returns>
+        /// <returns>The updated Comment, if the user has access to it, else UnauthorizedResult. If it is not found a NotFoundResult is returned.</returns>
         // PUT api/comments/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Comment value)
