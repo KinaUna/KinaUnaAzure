@@ -356,6 +356,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        //Todo: Refactor, this method is also in the FriendsController.
         /// <summary>
         /// Helper method to get a Stream from a URL.
         /// </summary>

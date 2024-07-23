@@ -27,7 +27,13 @@ namespace KinaUnaProgenyApi.Controllers
         IWebNotificationsService webNotificationsService)
         : ControllerBase
     {
-        // GET api/friends/progeny/[id]
+        /// <summary>
+        /// Retrieves the List of all friends for a given Progeny that a user has access to.
+        /// </summary>
+        /// <param name="id">The id of the Progeny to get Friend items for.</param>
+        /// <param name="accessLevel">The user's access level for this Progeny.</param>
+        /// <returns>List of Friends.</returns>
+        // GET api/friends/progeny/[id]?accessLevel=[accessLevel]
         [HttpGet]
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
@@ -46,6 +52,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves a Friend item with a given id.
+        /// </summary>
+        /// <param name="id">The id of the Friend entity.</param>
+        /// <returns>The Friend object with the provided id. NotFoundResult if the entity doesn't exist, UnauthorizedResult if the user doesn't have the access rights to the Friend entity.</returns>
         // GET api/friends/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetFriendItem(int id)
@@ -66,6 +77,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Unauthorized();
         }
 
+        /// <summary>
+        /// Adds a new Friend entity to the database.
+        /// </summary>
+        /// <param name="value">The Friend object to add.</param>
+        /// <returns>The added Friend object if successful. Unauthorized if the user isn't allowed to add items for the Progeny. NotFoundResult if the Progeny doesn't exist.</returns>
         // POST api/friends
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Friend value)
@@ -109,6 +125,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(friendItem);
         }
 
+        /// <summary>
+        /// Updates an existing Friend entity in the database.
+        /// </summary>
+        /// <param name="id">The id of the Friend entity to update.</param>
+        /// <param name="value">Friend object with the properties to update.</param>
+        /// <returns>The updated Friend object.</returns>
         // PUT api/friends/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Friend value)
@@ -153,6 +175,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(friendItem);
         }
 
+        /// <summary>
+        /// Deletes a Friend entity from the database.
+        /// Then sends a notification to all users with admin access to the Progeny.
+        /// </summary>
+        /// <param name="id">The id of the Friend entity to delete.</param>
+        /// <returns>No content if successfully deleted. UnauthorizedResult if the user doesn't have the required access level. NotFoundResult if the entity doesn't exist.</returns>
         // DELETE api/friends/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
@@ -201,6 +229,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves a Friend entity with a given id.
+        /// For mobile clients.
+        /// </summary>
+        /// <param name="id">The id of the Friend entity to get.</param>
+        /// <returns>Friend object with the provided id.</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetFriendMobile(int id)
         {
@@ -219,6 +253,13 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves a list of Friends for a given Progeny that a user with the give access level has access to.
+        /// For mobile clients, as they cannot generate/obtain tokens for accessing image files in Azure storage.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="accessLevel"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
@@ -240,6 +281,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Download a Friend's profile picture from a URL in the Friend's PictureLink and save it to the image store.
+        /// </summary>
+        /// <param name="friendId">The id of the Friend entity.</param>
+        /// <returns>The Friend entity with the updated PictureLink.</returns>
         [HttpGet]
         [Route("[action]/{friendId:int}")]
         public async Task<IActionResult> DownloadPicture(int friendId)
@@ -257,37 +303,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             await using (Stream stream = await GetStreamFromUrl(friend.PictureLink))
             {
-                string fileFormat = "";
-                if (friend.PictureLink.ToLower().EndsWith(".jpg"))
-                {
-                    fileFormat = ".jpg";
-                }
-
-                if (friend.PictureLink.ToLower().EndsWith(".png"))
-                {
-                    fileFormat = ".png";
-                }
-
-                if (friend.PictureLink.ToLower().EndsWith(".gif"))
-                {
-                    fileFormat = ".gif";
-                }
-
-                if (friend.PictureLink.ToLower().EndsWith(".jpeg"))
-                {
-                    fileFormat = ".jpg";
-                }
-
-                if (friend.PictureLink.ToLower().EndsWith(".bmp"))
-                {
-                    fileFormat = ".bmp";
-                }
-
-                if (friend.PictureLink.ToLower().EndsWith(".tif"))
-                {
-                    fileFormat = ".tif";
-                }
-                friend.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Friends, fileFormat);
+                friend.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Friends, friend.GetPictureFileContentType());
             }
 
             friend = await friendService.UpdateFriend(friend);
@@ -297,6 +313,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        //Todo: Refactor, this method is also in the ContactsController.
+        /// <summary>
+        /// Helper method to get a Stream from a URL.
+        /// </summary>
+        /// <param name="url">The url to get the stream for.</param>
+        /// <returns>The stream object for the URL.</returns>
         private static async Task<Stream> GetStreamFromUrl(string url)
         {
             using HttpClient client = new();
