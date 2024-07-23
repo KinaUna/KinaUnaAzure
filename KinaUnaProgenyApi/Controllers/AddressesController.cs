@@ -17,7 +17,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Retrieves the Address with a given id.
         /// </summary>
-        /// <param name="id">The id of the Address entity to retrieve.</param>
+        /// <param name="id">The AddressId of the Address entity to retrieve.</param>
         /// <returns>Address entity with the id.</returns>
         // GET api/addresses/5
         [HttpGet("{id:int}")]
@@ -44,7 +44,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Updates an existing Address entity in the database.
         /// </summary>
-        /// <param name="id">The id of the Address to update.</param>
+        /// <param name="id">The AddressId of the Address to update.</param>
         /// <param name="value">The Address object containing the properties to update.</param>
         /// <returns>The updated Address object.</returns>
         // PUT api/addresses/5
@@ -65,7 +65,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Deletes an Address entity from the database.
         /// </summary>
-        /// <param name="id">The id of the Address entity.</param>
+        /// <param name="id">The AddressId of the Address entity.</param>
         /// <returns>NoContentResult.</returns>
         // DELETE api/addresses/5
         [HttpDelete("{id:int}")]

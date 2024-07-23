@@ -31,7 +31,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Retrieve all contacts for a Progeny with the given id and access level.
         /// </summary>
-        /// <param name="id">The id of the Progeny to get Contacts for.</param>
+        /// <param name="id">The ProgenyId of the Progeny to get Contacts for.</param>
         /// <param name="accessLevel">The user's access level for this Progeny.</param>
         /// <returns>List of all Contacts the user has access to for this Progeny.</returns>
         // GET api/contacts/progeny/[id]
@@ -56,7 +56,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Retrieves a Contact with the given id.
         /// </summary>
-        /// <param name="id">The id of the Contact entity to get.</param>
+        /// <param name="id">The ContactId of the Contact entity to get.</param>
         /// <returns>The Contact object, if the user has access to it, else NotFoundResult.</returns>
         // GET api/contacts/5
         [HttpGet("{id:int}")]
@@ -134,7 +134,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Updates an existing Contact entity in the database.
         /// </summary>
-        /// <param name="id">The id of the Contact entity.</param>
+        /// <param name="id">The ContactId of the Contact entity.</param>
         /// <param name="value">Contact object with the properties to update.</param>
         /// <returns>The updated Contact object.</returns>
         // PUT api/contacts/5
@@ -211,7 +211,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Deletes a Contact entity from the database.
         /// </summary>
-        /// <param name="id">The id of the Contact entity to delete.</param>
+        /// <param name="id">The ContactId of the Contact entity to delete.</param>
         /// <returns>No content if deleted successfully, UnauthorizedResult if the user doesn't have the access rights, NotFoundResult if the item doesn't exist.</returns>
         // DELETE api/contacts/5
         [HttpDelete("{id:int}")]
@@ -269,10 +269,10 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Retrieves a Contact entity with the given id.
-        /// For mobile clients.
+        /// For mobile clients, that can't generate/obtain tokens for fetching the profile picture in Azure storage directly.
         /// </summary>
-        /// <param name="id">The id of the Contact entity to get.</param>
-        /// <returns>Contact object with the provided id.</returns>
+        /// <param name="id">The ContactId of the Contact entity to get.</param>
+        /// <returns>Contact object with the provided ContactId.</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetContactMobile(int id)
         {
@@ -299,7 +299,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Retrieves all Contacts for a Progeny with the given id and access level.
         /// </summary>
-        /// <param name="id">The id of the Progeny to get contact items for.</param>
+        /// <param name="id">The ProgenyId of the Progeny to get contact items for.</param>
         /// <param name="accessLevel">The user's access level for this Progeny.</param>
         /// <returns>List of all contacts for this Progeny that the user has access to.</returns>
         [HttpGet]
@@ -329,7 +329,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Download a Contact's profile picture from a URL in the Contact's PictureLink and save it to the image store.
         /// </summary>
-        /// <param name="contactId">The id of the Contact.</param>
+        /// <param name="contactId">The ContactId of the Contact.</param>
         /// <returns>The Contact entity with the updated PictureLink.</returns>
         [HttpGet]
         [Route("[action]/{contactId:int}")]

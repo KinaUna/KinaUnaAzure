@@ -24,8 +24,8 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Retrieves the Comment with a given id.
         /// </summary>
-        /// <param name="id">The id of the Comment.</param>
-        /// <returns>The Comment with the provided id.</returns>
+        /// <param name="id">The CommentId of the Comment.</param>
+        /// <returns>The Comment with the provided CommentId.</returns>
         // GET api/comments/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetComment(int id)
@@ -43,8 +43,8 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Retrieves all Comments for a given comment thread.
         /// </summary>
-        /// <param name="threadId">The id of the comment thread.</param>
-        /// <returns>List of Comments with the provided comment thread id.</returns>
+        /// <param name="threadId">The id/CommentThreadNumber of the comment thread.</param>
+        /// <returns>List of Comments with the provided CommentThreadNumber.</returns>
         // GET api/comments/GetCommentsByThread/5
         [HttpGet]
         [Route("[action]/{threadId:int}")]
@@ -118,7 +118,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Updates an existing Comment in the database.
         /// </summary>
-        /// <param name="id">The id of the Comment to update.</param>
+        /// <param name="id">The CommentId of the Comment to update.</param>
         /// <param name="value">The Comment object with the updated properties.</param>
         /// <returns>The updated Comment, if the user has access to it, else UnauthorizedResult. If it is not found a NotFoundResult is returned.</returns>
         // PUT api/comments/5
@@ -155,7 +155,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Deletes a Comment from the database.
         /// </summary>
-        /// <param name="id">The id of the Comment entity to remove.</param>
+        /// <param name="id">The CommentId of the Comment entity to remove.</param>
         /// <returns>NoContentResult of the Comment was removed, UnauthorizedResult if the user doesn't have access to this comment, NotFoundResult if the Comment doesn't exist.</returns>
         // DELETE api/comments/5
         [HttpDelete("{id:int}")]

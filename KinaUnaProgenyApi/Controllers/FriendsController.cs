@@ -30,7 +30,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Retrieves the List of all friends for a given Progeny that a user has access to.
         /// </summary>
-        /// <param name="id">The id of the Progeny to get Friend items for.</param>
+        /// <param name="id">The ProgenyId of the Progeny to get Friend items for.</param>
         /// <param name="accessLevel">The user's access level for this Progeny.</param>
         /// <returns>List of Friends.</returns>
         // GET api/friends/progeny/[id]?accessLevel=[accessLevel]
@@ -55,7 +55,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Retrieves a Friend item with a given id.
         /// </summary>
-        /// <param name="id">The id of the Friend entity.</param>
+        /// <param name="id">The FriendId of the Friend entity.</param>
         /// <returns>The Friend object with the provided id. NotFoundResult if the entity doesn't exist, UnauthorizedResult if the user doesn't have the access rights to the Friend entity.</returns>
         // GET api/friends/5
         [HttpGet("{id:int}")]
@@ -128,7 +128,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Updates an existing Friend entity in the database.
         /// </summary>
-        /// <param name="id">The id of the Friend entity to update.</param>
+        /// <param name="id">The FriendId of the Friend entity to update.</param>
         /// <param name="value">Friend object with the properties to update.</param>
         /// <returns>The updated Friend object.</returns>
         // PUT api/friends/5
@@ -179,7 +179,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Deletes a Friend entity from the database.
         /// Then sends a notification to all users with admin access to the Progeny.
         /// </summary>
-        /// <param name="id">The id of the Friend entity to delete.</param>
+        /// <param name="id">The FriendId of the Friend entity to delete.</param>
         /// <returns>No content if successfully deleted. UnauthorizedResult if the user doesn't have the required access level. NotFoundResult if the entity doesn't exist.</returns>
         // DELETE api/friends/5
         [HttpDelete("{id:int}")]
@@ -233,7 +233,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Retrieves a Friend entity with a given id.
         /// For mobile clients.
         /// </summary>
-        /// <param name="id">The id of the Friend entity to get.</param>
+        /// <param name="id">The FriendId of the Friend entity to get.</param>
         /// <returns>Friend object with the provided id.</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetFriendMobile(int id)
@@ -254,12 +254,12 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         /// <summary>
-        /// Retrieves a list of Friends for a given Progeny that a user with the give access level has access to.
+        /// Retrieves the list of all Friends for a given Progeny that a user with the give access level has access to.
         /// For mobile clients, as they cannot generate/obtain tokens for accessing image files in Azure storage.
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The FriendId of the Friend entity to get.</param>
         /// <param name="accessLevel"></param>
-        /// <returns></returns>
+        /// <returns>List of Friend items.</returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> ProgenyMobile(int id, int accessLevel = 5)
@@ -284,7 +284,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Download a Friend's profile picture from a URL in the Friend's PictureLink and save it to the image store.
         /// </summary>
-        /// <param name="friendId">The id of the Friend entity.</param>
+        /// <param name="friendId">The FriendId of the Friend entity.</param>
         /// <returns>The Friend entity with the updated PictureLink.</returns>
         [HttpGet]
         [Route("[action]/{friendId:int}")]

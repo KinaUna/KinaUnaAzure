@@ -14,6 +14,10 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class LanguagesController(ILanguageService languagesService, IUserInfoService userInfoService) : ControllerBase
     {
+        /// <summary>
+        /// Retrieves all language supported by the application.
+        /// </summary>
+        /// <returns>List of all KinaUnaLanguage entities in the database.</returns>
         [AllowAnonymous]
         [HttpGet]
         [Route("[action]")]
@@ -23,6 +27,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(languagesList);
         }
 
+        /// <summary>
+        /// Retrieves a specific language by languageId.
+        /// </summary>
+        /// <param name="languageId">The Id of the KinaUnaLanguage entity to get.</param>
+        /// <returns>The KinaUnaLanguage object with the provided id.</returns>
         [AllowAnonymous]
         [HttpGet]
         [Route("[action]/{languageId:int}")]
@@ -32,6 +41,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(language);
         }
 
+        /// <summary>
+        /// Adds a new language to the database.
+        /// </summary>
+        /// <param name="language">The KinaUnaLanguage object to add.</param>
+        /// <returns>The added KinaUnaLanguage object.</returns>
         [Authorize]
         [HttpPost]
         [Route("[action]")]
@@ -46,6 +60,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(language);
         }
 
+        /// <summary>
+        /// Updates an existing language in the database.
+        /// </summary>
+        /// <param name="languageId">The Id of the KinaUnaLanguage entity to update.</param>
+        /// <param name="value">KinaUnaLanguage object with the properties to update.</param>
+        /// <returns>The updated KinaUnaLanguage object.</returns>
         [Authorize]
         [HttpPut]
         [Route("[action]/{languageId:int}")]
@@ -67,6 +87,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Deletes a language with the given id from the database.
+        /// </summary>
+        /// <param name="languageId">The Id of the KinaUnaLanguage entity to delete.</param>
+        /// <returns>The deleted KinaUnaLanguage object.</returns>
         [Authorize]
         [HttpDelete]
         [Route("[action]/{languageId:int}")]

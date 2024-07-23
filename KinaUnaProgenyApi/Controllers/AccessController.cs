@@ -25,7 +25,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Gets a list of all UserAccess items for a specific Progeny.
         /// </summary>
-        /// <param name="id">The id of the progeny to retrieve the list of UserAccess items for.</param>
+        /// <param name="id">The ProgenyId of the progeny to retrieve the list of UserAccess items for.</param>
         /// <returns>List of UserAccess for all users granted access.</returns>
         // GET api/Access/Progeny/[id]
         [HttpGet]
@@ -73,7 +73,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Gets a given UserAccess with the specified id.
         /// </summary>
-        /// <param name="id">The id of the UserAccess to retrieve.</param>
+        /// <param name="id">The AccessId of the UserAccess to retrieve.</param>
         /// <returns>UserAccess entity with the specified id.</returns>
         // GET api/Access/5
         [HttpGet("{id:int}")]
@@ -93,6 +93,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Adds a new UserAccess entity to the database.
+        /// Then sends notifications to users who are admins for the Progeny.
         /// </summary>
         /// <param name="value">The UserAccess object to add.</param>
         /// <returns>The newly created UserAccess entity.</returns>
@@ -131,8 +132,9 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Updates a UserAccess entity with the specified id.
+        /// Then sends notifications to users with admin access to the Progeny.
         /// </summary>
-        /// <param name="id">The id of the UserAccess entity.</param>
+        /// <param name="id">The AccessId of the UserAccess entity.</param>
         /// <param name="value">The UserAccess object with the values to update to.</param>
         /// <returns>The updated UserAccess object</returns>
         // PUT api/Access/5
@@ -180,8 +182,9 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Deletes a UserAccess entity with the specified id.
+        /// Then sends notifications to users with admin access to the Progeny.
         /// </summary>
-        /// <param name="id">The id of the UserAccess entity to delete.</param>
+        /// <param name="id">The AccessId of the UserAccess entity to delete.</param>
         /// <returns>NoContentResult, or if the item is not found NotFoundResult.</returns>
         // DELETE api/Access/5
         [HttpDelete("{id}")]

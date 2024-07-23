@@ -29,7 +29,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Retrieves the list of all CalendarItems for a given Progeny.
         /// </summary>
-        /// <param name="id">The id of the Progeny</param>
+        /// <param name="id">The ProgenyId of the Progeny</param>
         /// <param name="accessLevel">The user's access level for this Progeny</param>
         /// <returns>List of CalendarItems</returns>
         // GET api/calendar/progeny/[id]
@@ -54,7 +54,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Retrieves the list of CalendarItems for a given Progeny within a given date interval.
         /// </summary>
-        /// <param name="id">The id of the Progeny</param>
+        /// <param name="id">The ProgenyId of the Progeny</param>
         /// <param name="start">string: The start of the interval, in the format 'dd-MM-yyy'</param>
         /// <param name="end">string: The end of the interval, in the format 'dd-MM-yyy'</param>
         /// <param name="accessLevel">The user's access level for this Progeny</param>
@@ -84,7 +84,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Retrieves a single CalendarItem with a given id.
         /// </summary>
-        /// <param name="id">The id of the CalendarItem to retrieve</param>
+        /// <param name="id">The EventId of the CalendarItem to retrieve</param>
         /// <returns>CalendarItem with the id provided.</returns>
         // GET api/calendar/5
         [HttpGet("{id:int}")]
@@ -106,7 +106,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <summary>
         /// Adds a new CalendarItem to the database.
         /// Then adds a TimeLineItem for the new CalendarItem.
-        /// Then sends a notification to all users with access to the Progeny.
+        /// Then sends a notification to all users with access to the CalendarItem.
         /// </summary>
         /// <param name="value">CalendarItem to add</param>
         /// <returns>The added CalendarItem.</returns>
@@ -154,7 +154,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Updates an existing CalendarItem in the database.
         /// Then updates the corresponding TimeLineItem.
         /// </summary>
-        /// <param name="id">The id of the CalendarItem</param>
+        /// <param name="id">The EventId of the CalendarItem</param>
         /// <param name="value">The CalendarItem with the properties to update.</param>
         /// <returns>The updated CalendarItem.</returns>
         // PUT api/calendar/5
@@ -198,7 +198,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Then deletes the corresponding TimeLineItem.
         /// Notifies all users with admin access to the Progeny.
         /// </summary>
-        /// <param name="id">The id of the CalendarItem to delete</param>
+        /// <param name="id">The EventId of the CalendarItem to delete</param>
         /// <returns>NoContentResult if successful, UnauthorizedResult if the user does not have access, NotFoundResult if the CalendarItem was not found.</returns>
         // DELETE api/calendar/5
         [HttpDelete("{id:int}")]
@@ -250,7 +250,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Retrieves the first upcoming CalendarItems for a given Progeny.
         /// Default number of items is set in Constants.DefaultUpcomingCalendarItemsCount.
         /// </summary>
-        /// <param name="progenyId">The id of the Progeny to get CalendarItems for.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get CalendarItems for.</param>
         /// <param name="accessLevel">The user's access level for this Progeny.</param>
         /// <returns>List of CalendarItems.</returns>
         [HttpGet]
@@ -275,8 +275,8 @@ namespace KinaUnaProgenyApi.Controllers
         /// Retrieves a single CalendarItem with a given id.
         /// For mobile clients.
         /// </summary>
-        /// <param name="id">The id of the CalendarItem to get.</param>
-        /// <returns>The CalendarItem with the provided id.</returns>
+        /// <param name="id">The EventId of the CalendarItem to get.</param>
+        /// <returns>The CalendarItem with the provided EventId.</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetItemMobile(int id)
         {
@@ -296,7 +296,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Retrieves the list of all CalendarItems for a given Progeny that the user has access to.
         /// For mobile clients.
         /// </summary>
-        /// <param name="id">The id of the Progeny to get CalendarItems for.</param>
+        /// <param name="id">The ProgenyId of the Progeny to get CalendarItems for.</param>
         /// <param name="accessLevel">The user's access level for this Progeny.</param>
         /// <returns>List of CalendarItem.</returns>
         [HttpGet]
