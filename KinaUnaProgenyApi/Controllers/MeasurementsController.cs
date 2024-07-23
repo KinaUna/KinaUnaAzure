@@ -26,6 +26,12 @@ namespace KinaUnaProgenyApi.Controllers
         IWebNotificationsService webNotificationsService)
         : ControllerBase
     {
+        /// <summary>
+        /// Retrieves all Measurements for a given Progeny that a user with the given access level can access.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny to get Measurement items for.</param>
+        /// <param name="accessLevel">The user's access level for this Progeny.</param>
+        /// <returns>List of Measurements.</returns>
         // GET api/measurements/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
@@ -45,6 +51,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves a specific Measurement by id.
+        /// </summary>
+        /// <param name="id">The MeasurementId of the Measurement entity to get.</param>
+        /// <returns>The Measurement object with the provided MeasurementId</returns>
         // GET api/measurements/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetMeasurementItem(int id)
@@ -61,6 +72,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Unauthorized();
         }
 
+        /// <summary>
+        /// Adds a new Measurement entity to the database.
+        /// Then adds a TimeLineItem and sends notifications to users who have access to the Measurement.
+        /// </summary>
+        /// <param name="value">The Measurement object to add.</param>
+        /// <returns>The added Measurement object. UnauthorizedResult if the user doesn't have the access right to add items. NotFoundResult if the Progeny doesn't exist.</returns>
         // POST api/measurements
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Measurement value)
@@ -99,6 +116,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(measurementItem);
         }
 
+        /// <summary>
+        /// Updates an existing Measurement entity in the database.
+        /// Then updates the corresponding TimeLineItem.
+        /// </summary>
+        /// <param name="id">The MeasurementId of the Measurement entity to update.</param>
+        /// <param name="value">Measurement object with the properties to update.</param>
+        /// <returns>The updated Measurement object.</returns>
         // PUT api/measurement/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Measurement value)
@@ -131,17 +155,15 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.CopyMeasurementPropertiesForUpdate(measurementItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-            //string notificationTitle = "Measurement edited for " + progeny.NickName;
-            //string notificationMessage = userInfo.FullName() + " edited a measurement for " + progeny.NickName;
-
-            //await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            //await webNotificationsService.SendMeasurementNotification(measurementItem, userInfo, notificationTitle);
-
             return Ok(measurementItem);
         }
 
+        /// <summary>
+        /// Deletes a Measurement entity from the database.
+        /// Then deletes the corresponding TimeLineItem and sends notifications to users who have admin access to the Progeny.
+        /// </summary>
+        /// <param name="id">The MeasurementId of the Measurement entity to delete.</param>
+        /// <returns>NoContentResult if the deletion was successful. NotFoundResult if the Measurement doesn't exist. UnauthorizedResult if the user doesn't have admin access for the Progeny.</returns>
         // DELETE api/measurements/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
@@ -189,6 +211,13 @@ namespace KinaUnaProgenyApi.Controllers
             return NotFound();
         }
 
+
+        /// <summary>
+        /// Retrieves a specific Measurement by id.
+        /// Used by the mobile clients.
+        /// </summary>
+        /// <param name="id">The MeasurementId of the Measurement entity to get.</param>
+        /// <returns>The Measurement object with the provided MeasurementId. UnauthorizedResult if the user doesn't have the required access level.</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetMeasurementMobile(int id)
         {
@@ -208,6 +237,15 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves the list of Measurement items to display on a page for a given Progeny.
+        /// </summary>
+        /// <param name="pageSize">The number of Measurement items per page.</param>
+        /// <param name="pageIndex">The current page number.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get Measurements for.</param>
+        /// <param name="accessLevel">The user's access level for this Progeny.</param>
+        /// <param name="sortBy">int: Sort order for the Location items. 0 = oldest first, 1 = newest first.</param>
+        /// <returns>List of Measurement items.</returns>
         [HttpGet("[action]")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetMeasurementsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
