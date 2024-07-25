@@ -244,7 +244,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// <param name="pageIndex">The current page number.</param>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Measurements for.</param>
         /// <param name="accessLevel">The user's access level for this Progeny.</param>
-        /// <param name="sortBy">int: Sort order for the Location items. 0 = oldest first, 1 = newest first.</param>
+        /// <param name="sortBy">int: Sort order for the Measurement items. 0 = oldest first, 1 = newest first.</param>
         /// <returns>List of Measurement items.</returns>
         [HttpGet("[action]")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]

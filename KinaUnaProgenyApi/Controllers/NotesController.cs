@@ -27,7 +27,13 @@ namespace KinaUnaProgenyApi.Controllers
         IWebNotificationsService webNotificationsService)
         : ControllerBase
     {
-        // GET api/notes/progeny/[id]
+        /// <summary>
+        /// Retrieves all Notes for a given Progeny for a user with a given access level.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny to get Note items for.</param>
+        /// <param name="accessLevel">The user's access level for this Progeny.</param>
+        /// <returns>List of Note items.</returns>
+        // GET api/notes/progeny/[id]?accessLevel=[accessLevel]
         [HttpGet]
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id, [FromQuery] int accessLevel = 5)
@@ -48,6 +54,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves the Note entity with a given id.
+        /// </summary>
+        /// <param name="id">The NoteId of the Note entity to get.</param>
+        /// <returns>The Note object with the provided NoteId.</returns>
         // GET api/notes/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetNoteItem(int id)
@@ -63,6 +74,13 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Adds a new Note entity to the database.
+        /// Then adds a TimeLineItem for the Note.
+        /// Then sends notifications to users who have access to the Note.
+        /// </summary>
+        /// <param name="value">The Note object to add.</param>
+        /// <returns>The added Note object.</returns>
         // POST api/notes
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Note value)
@@ -99,6 +117,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(noteItem);
         }
 
+        /// <summary>
+        /// Updates an existing Note entity in the database.
+        /// Then updates the corresponding TimeLineItem.
+        /// </summary>
+        /// <param name="id">The NoteId of the Note entity to update.</param>
+        /// <param name="value">Note object with the properties to update.</param>
+        /// <returns>The updated Note object.</returns>
         // PUT api/notes/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Note value)
@@ -131,16 +156,14 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.CopyNotePropertiesForUpdate(noteItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            //string notificationTitle = "Note edited for " + progeny.NickName;
-            //string notificationMessage = userInfo.FullName() + " edited a note for " + progeny.NickName;
-
-            //await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            //await webNotificationsService.SendNoteNotification(noteItem, userInfo, notificationTitle);
-
             return Ok(noteItem);
         }
 
+        /// <summary>
+        /// Deletes a Note entity from the database.
+        /// </summary>
+        /// <param name="id">The NoteId of the entity to delete.</param>
+        /// <returns>NoContentResult if the deletion was successful. NotFoundResult if the Note doesn't exist. UnauthorizedResult if the user doesn't have admin access for the Progeny.</returns>
         // DELETE api/notes/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
@@ -185,6 +208,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves a Note entity with a given id.
+        /// For mobile clients.
+        /// </summary>
+        /// <param name="id">The NoteId of the Note entity to get.</param>
+        /// <returns>The Note object with the provided NoteId.</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetNoteMobile(int id)
         {
@@ -202,6 +231,15 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Retrieves the list of Note items to display on a Notes page for a given Progeny.
+        /// </summary>
+        /// <param name="pageSize">The number of Note items per page.</param>
+        /// <param name="pageIndex">The current page number.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get Notes for.</param>
+        /// <param name="accessLevel">The user's access level for this Progeny.</param>
+        /// <param name="sortBy">int: Sort order for the Note items. 0 = oldest first, 1 = newest first.</param>
+        /// <returns>List of Measurement items.</returns>
         [HttpGet("[action]")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetNotesListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
