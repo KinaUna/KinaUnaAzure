@@ -5,7 +5,8 @@ KinaUna is an app for managing family data, and the KinaUnaAzure solution contai
 
 
 The APIs and IdentityServer are also intended to be used by mobile apps.
-A mobile app exists, I might work on making it open source too, but I'm not entirely sure if it is ready for that yet. 
+A mobile app exists here: [https://github.com/KinaUna/KinaUnaXamarin](https://github.com/KinaUna/KinaUnaXamarin) 
+
 For now it is too much work for me to keep it updated and dealing with the frequently changing requirements, so currently it is not being updated and shouldn't be used anymore.
 
 
