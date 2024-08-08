@@ -32,6 +32,16 @@ namespace KinaUnaProgenyApi.Controllers
         ITimelineService timelineService)
         : ControllerBase
     {
+        /// <summary>
+        /// Gets a list of Picture entities for a page for a given ProgenyId, AccessLevel, and Tag.
+        /// </summary>
+        /// <param name="pageSize">The number of Picture elements per page.</param>
+        /// <param name="pageIndex">The current page number.</param>
+        /// <param name="progenyId">The ProgenyId to get Picture entities for.</param>
+        /// <param name="accessLevel">The current user's access level for this Progeny.</param>
+        /// <param name="tagFilter">Only include Picture entities with a Tag property that contains the tagFilter string. If empty, include all Picture entities.</param>
+        /// <param name="sortBy">Sort order, 0 = oldest first, 1 = newest first.</param>
+        /// <returns>PicturePageViewModel with the list of Picture objects that belong on the page, and other properties for the page.</returns>
         // GET api/pictures/page[?pageSize=3&pageIndex=10&progenyId=2&accessLevel=1&tagFilter=funny]
         [HttpGet]
         [Route("[action]")]
@@ -56,6 +66,7 @@ namespace KinaUnaProgenyApi.Controllers
                 pageIndex = 1;
             }
 
+            // Todo: Refactor this to use a separate method in the service.
             List<Picture> allItems = await picturesService.GetPicturesList(progenyId);
             if (!string.IsNullOrEmpty(tagFilter))
             {
@@ -127,6 +138,14 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a PictureViewModel for a Picture entity with the provided PictureId.
+        /// </summary>
+        /// <param name="id">The PictureId of the entity to get.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny the Picture belongs to.</param>
+        /// <param name="sortBy">Sort order, 0=oldest first, 1= newest first.</param>
+        /// <param name="tagFilter">Only include Picture items where the Tag property contains the tagFilter string. If tagFilter is an empty string, include all Picture items.</param>
+        /// <returns>PictureViewModel for the Picture and current user.</returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> PictureViewModel(int id, int accessLevel, [FromQuery] int sortBy = 1, [FromQuery] string tagFilter = "")
@@ -221,6 +240,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a simplified PictureViewModel for a Picture entity with the provided PictureId.
+        /// PictureNumber, PictureCount, CommentsList, and TagsList are not included.
+        /// </summary>
+        /// <param name="id">The PictureId of the Picture entity to get a PictureViewModel for.</param>
+        /// <returns>PictureViewModel for the Picture and the current user.</returns>
         [HttpGet]
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> PictureElement(int id)
@@ -247,6 +272,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
 
         }
+
+        /// <summary>
+        /// Gets a list of all Picture entities for a given ProgenyId and AccessLevel.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny.</param>
+        /// <param name="accessLevel">The user's access level for the Progeny.</param>
+        /// <returns>List of Picture objects.</returns>
         // GET api/pictures/progeny/[id]/[accessLevel]
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
@@ -284,6 +316,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(picturesList);
         }
 
+        /// <summary>
+        /// Gets a list of all Picture entities for a given ProgenyId and AccessLevel.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny to get pictures for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <returns>List of all Pictures for the Progeny that the user have access to.</returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> ProgenyPicturesList(int id, int accessLevel)
@@ -311,6 +349,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(picturesList);
         }
 
+
+        /// <summary>
+        /// Gets a picture entity by the PictureLink property.
+        /// </summary>
+        /// <param name="id">The PictureLink of the Picture to get.</param>
+        /// <returns>Picture object with the given PictureLink.</returns>
         // GET api/pictures/bylink/[id]
         [HttpGet]
         [Route("[action]/{id}")]
@@ -338,6 +382,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(tempPicture);
         }
 
+        /// <summary>
+        /// Gets a Picture entity by the PictureId property.
+        /// </summary>
+        /// <param name="id">The PictureId of the Picture to get.</param>
+        /// <returns>Picture object with the given PictureId. If the user doesn't have the required access level, Unauthorized is returned.</returns>
         // GET api/pictures/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetPicture(int id)
@@ -362,6 +411,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(tempPicture);
         }
 
+        /// <summary>
+        /// Gets the image file for a Picture entity with the given PictureId and size.
+        /// </summary>
+        /// <param name="id">The PictureId of the Picture to get the file for.</param>
+        /// <param name="size">The size of the image to get a file for, 600 = 600 pixels wide, 1200 = 1200 pixes wide, any other number gets the original image file.</param>
+        /// <returns>FileContentResult with the image file, if the current user has the access rights for the Picture, else a placeholder image file.</returns>
         [AllowAnonymous]
         public async Task<FileContentResult> File([FromQuery] int id, [FromQuery] int size)
         {
@@ -371,7 +426,7 @@ namespace KinaUnaProgenyApi.Controllers
 
             if (userAccess == null && picture.ProgenyId != Constants.DefaultChildId || picture.PictureId == 0)
             {
-                MemoryStream fileContentNoAccess = await imageStore.GetStream("ab5fe7cb-2a66-4785-b39a-aa4eb7953c3d.png");
+                MemoryStream fileContentNoAccess = await imageStore.GetStream(Constants.PlaceholderImageLink);
                 byte[] fileContentBytesNoAccess = fileContentNoAccess.ToArray();
                 return new FileContentResult(fileContentBytesNoAccess, "image/png");
             }
@@ -392,6 +447,12 @@ namespace KinaUnaProgenyApi.Controllers
             return new FileContentResult(fileContentBytes, picture.GetPictureFileContentType());
         }
 
+        /// <summary>
+        /// Adds a new Picture entity to the database.
+        /// Also adds a new CommentThread entity and TimeLineItem entity for the Picture and sends notifications to users who have access to it.
+        /// </summary>
+        /// <param name="model">Picture object to add.</param>
+        /// <returns>The Picture object added.</returns>
         // POST api/pictures
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Picture model)
@@ -418,8 +479,8 @@ namespace KinaUnaProgenyApi.Controllers
 
             Progeny progeny = await progenyService.GetProgeny(model.ProgenyId);
             UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
-            string notificationTitle = "New Photo added for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " added a new photo for " + progeny.NickName;
+            string notificationTitle = "New Photo added for " + progeny.NickName; // Todo: Localize.
+            string notificationMessage = userInfo.FullName() + " added a new photo for " + progeny.NickName; // Todo: Localize.
 
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyPicturePropertiesForAdd(model);
@@ -431,6 +492,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Updates a Picture entity in the database.
+        /// Also updates the corresponding TimeLineItem entity.
+        /// </summary>
+        /// <param name="id">The PictureId of the Picture to update.</param>
+        /// <param name="value">Picture object with the updated properties.</param>
+        /// <returns>The updated Picture object.</returns>
         // PUT api/pictures/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Picture value)
@@ -469,6 +537,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(picture);
         }
 
+        /// <summary>
+        /// Deletes a Picture entity from the database.
+        /// Also deletes the corresponding CommentThread entity, associated Comments and TimeLineItem entity.
+        /// Then notifies admins for the Progeny.
+        /// </summary>
+        /// <param name="id">The PictureId of the Picture to delete.</param>
+        /// <returns>NoContentResult</returns>
         // DELETE api/progeny/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
@@ -524,6 +599,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a random Picture entity for a given ProgenyId and AccessLevel.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get a Picture for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <returns>The Picture object.</returns>
         // GET api/pictures/random/[Progeny id]?accessLevel=5
         [HttpGet]
         [Route("[action]/{progenyId:int}/{accessLevel:int}")]
@@ -559,6 +640,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(tempPicture);
         }
 
+        /// <summary>
+        /// Gets a random Picture entity for a given ProgenyId and AccessLevel.
+        /// For use in mobile clients.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get a picture for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <returns>The Picture object.</returns>
         [HttpGet]
         [Route("[action]/{progenyId:int}/{accessLevel:int}")]
         public async Task<IActionResult> RandomMobile(int progenyId, int accessLevel)
@@ -595,6 +683,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(tempPicture);
         }
 
+        /// <summary>
+        /// Gets a Picture entity for a given PictureId.
+        /// For use in mobile clients.
+        /// </summary>
+        /// <param name="id">The PictureId of the Picture entity to get.</param>
+        /// <returns>The Picture object.</returns>
         // GET api/pictures/5
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetPictureMobile(int id)
@@ -625,6 +719,17 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(tempPicture);
         }
 
+        /// <summary>
+        /// Gets PicturePageViewModel for a photo gallery page for a given ProgenyId, AccessLevel, and Tag.
+        /// For use in mobile clients.
+        /// </summary>
+        /// <param name="pageSize">Number of Picture per page.</param>
+        /// <param name="pageIndex">The current page number.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny to view photos for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <param name="tagFilter">Only include Picture items that contain the tag string, unless it is empty then include all Picture items.</param>
+        /// <param name="sortBy">Sort order. 0 = oldest first, 1= newest first.</param>
+        /// <returns>PicturePageViewModel</returns>
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> PageMobile([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
@@ -722,6 +827,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a PictureViewModel for a Picture entity with the provided PictureId.
+        /// </summary>
+        /// <param name="id">The PictureId of the Picture to get the PictureViewModel for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny the Picture belongs to.</param>
+        /// <param name="sortBy">Sort order for determining next and previous picture, 0 = oldest first, 1 = newest first.</param>
+        /// <returns>PictureViewModel</returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Needed for mobile clients.")]
@@ -807,6 +919,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a PictureViewModel for a Picture entity with the provided PictureId.
+        /// For use in Maui clients.
+        /// </summary>
+        /// <param name="id">The PictureId of the Picture to get the PictureViewModel for.</param>
+        /// <returns>PictureViewModel</returns>
         [HttpGet]
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> PictureViewModelMaui(int id)
@@ -886,6 +1004,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Adds an image file to the Pictures Blob storage and returns the filename for the image.
+        /// </summary>
+        /// <param name="file">IFormFile content with the file to add.</param>
+        /// <returns>String with the filename (PictureLink) of the file added.</returns>
         [Route("[action]")]
         [HttpPost]
         public async Task<IActionResult> UploadPicture([FromForm] IFormFile file)
@@ -905,6 +1028,11 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Adds an image file to the Progeny Blob storage and returns the filename for the image.
+        /// </summary>
+        /// <param name="file">IFormFile content with the file to add.</param>
+        /// <returns>String with the filename of the file added.</returns>
         [Route("[action]")]
         [HttpPost]
         public async Task<IActionResult> UploadProgenyPicture([FromForm] IFormFile file)
@@ -919,6 +1047,11 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Adds an image file to the User Profile Blob storage and returns the filename for the image.
+        /// </summary>
+        /// <param name="file">IFormFile content with the file to add.</param>
+        /// <returns>String with the filename of the file added.</returns>
         [Route("[action]")]
         [HttpPost]
         public async Task<IActionResult> UploadProfilePicture([FromForm] IFormFile file)
@@ -933,6 +1066,11 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Adds an image file to the Friend Blob storage and returns the filename for the image.
+        /// </summary>
+        /// <param name="file">IFormFile content with the file to upload.</param>
+        /// <returns>String with the filename of the file added.</returns>
         [Route("[action]")]
         [HttpPost]
         public async Task<IActionResult> UploadFriendPicture([FromForm] IFormFile file)
@@ -947,6 +1085,11 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Adds an image file to the Contact Blob storage and returns the filename for the image.
+        /// </summary>
+        /// <param name="file">IFormFile content with the file to add.</param>
+        /// <returns>String with the filename of the file added.</returns>
         [Route("[action]")]
         [HttpPost]
         public async Task<IActionResult> UploadContactPicture([FromForm] IFormFile file)
@@ -961,6 +1104,11 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Adds an image file to the Note Blob storage and returns the filename for the image.
+        /// </summary>
+        /// <param name="file">IFormFile content with the file to add.</param>
+        /// <returns>String with the filename of the file added.</returns>
         [Route("[action]")]
         [HttpPost]
         public async Task<IActionResult> UploadNoteImage([FromForm] IFormFile file)
@@ -981,6 +1129,11 @@ namespace KinaUnaProgenyApi.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Get a URL for a Picture entity with the provided PictureId.
+        /// </summary>
+        /// <param name="id">The PictureId of the Picture to get an URL for.</param>
+        /// <returns>String with the URL.</returns>
         [Route("[action]/{id}")]
         [HttpGet]
         public IActionResult GetProfilePicture(string id)
@@ -995,6 +1148,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets a list of string with all locations from Picture and Video entities for a given ProgenyId and AccessLevel.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny to locations for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <returns>List of string with location names.</returns>
         [Route("[action]/{id:int}/{accessLevel:int}")]
         [HttpGet]
         public async Task<IActionResult> GetLocationAutoSuggestList(int id, int accessLevel)
@@ -1039,6 +1198,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(autoSuggestList);
         }
 
+        /// <summary>
+        /// Gets a list of string with all tags from Picture and Video entities for a given ProgenyId and AccessLevel.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny to get tags for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <returns>List of strings for each tag.</returns>
         [Route("[action]/{id:int}/{accessLevel:int}")]
         [HttpGet]
         public async Task<IActionResult> GetTagsAutoSuggestList(int id, int accessLevel)
@@ -1093,7 +1258,12 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
 
-
+        /// <summary>
+        /// If a Picture has a URL in the PictureLink property, this will download the image file and save it to the Blob storage.
+        /// Then updates the Picture entity with the new filename.
+        /// </summary>
+        /// <param name="pictureId">The PictureId of the Picture to update.</param>
+        /// <returns>The updated Picture object</returns>
         // Download pictures to StorageBlob from Url
         [HttpGet]
         [Route("[action]/{pictureId:int}")]
@@ -1113,6 +1283,7 @@ namespace KinaUnaProgenyApi.Controllers
             await using (Stream stream = await GetStreamFromUrl(picture.PictureLink))
             {
                 string fileFormat = "";
+                
                 if (picture.PictureLink.ToLower().EndsWith(".jpg"))
                 {
                     fileFormat = ".jpg";
@@ -1238,6 +1409,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a Stream for a file from a URL.
+        /// </summary>
+        /// <param name="url">The URL to read the file from.</param>
+        /// <returns>Stream with the file content.</returns>
         private static async Task<Stream> GetStreamFromUrl(string url)
         {
             using HttpClient client = new();

@@ -24,6 +24,7 @@
         public const string DefaultPictureLink = "defaultpicture.jpg";
         public const string KeepExistingLink = "[KeepExistingLink]";
         public const int DefaultUpcomingCalendarItemsCount = 8;
+        public const string PlaceholderImageLink = "ab5fe7cb-2a66-4785-b39a-aa4eb7953c3d.png";
     }
 
     public static class PageNames
