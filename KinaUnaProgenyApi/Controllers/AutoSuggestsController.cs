@@ -10,7 +10,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaProgenyApi.Controllers
 {
-    // Actions for retrieving auto suggest lists.
+    /// <summary>
+    /// API endpoints for retrieving auto suggest lists.
+    /// </summary>
+    /// <param name="userAccessService"></param>
+    /// <param name="calendarService"></param>
+    /// <param name="contactService"></param>
+    /// <param name="friendService"></param>
+    /// <param name="noteService"></param>
+    /// <param name="skillService"></param>
+    /// <param name="picturesService"></param>
+    /// <param name="videosService"></param>
+    /// <param name="locationService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]

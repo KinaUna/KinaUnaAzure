@@ -13,6 +13,28 @@ using Microsoft.Extensions.Configuration;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for public access to data, for use when a user isn't logged in.
+    /// </summary>
+    /// <param name="imageStore"></param>
+    /// <param name="progenyService"></param>
+    /// <param name="userInfoService"></param>
+    /// <param name="userAccessService"></param>
+    /// <param name="calendarService"></param>
+    /// <param name="contactService"></param>
+    /// <param name="friendService"></param>
+    /// <param name="locationService"></param>
+    /// <param name="timelineService"></param>
+    /// <param name="measurementService"></param>
+    /// <param name="noteService"></param>
+    /// <param name="skillService"></param>
+    /// <param name="sleepService"></param>
+    /// <param name="vaccinationService"></param>
+    /// <param name="vocabularyService"></param>
+    /// <param name="picturesService"></param>
+    /// <param name="videosService"></param>
+    /// <param name="commentsService"></param>
+    /// <param name="configuration"></param>
     [Route("api/[controller]")]
     [ApiController]
     [AllowAnonymous]

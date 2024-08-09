@@ -12,6 +12,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for registering devices for push notifications.
+    /// Uses Azure Notification Hubs.
+    /// </summary>
+    /// <param name="azureNotifications"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -27,6 +32,12 @@ namespace KinaUnaProgenyApi.Controllers
             public string[] Tags { get; set; }
         }
 
+        /// <summary>
+        /// Adds a push device.
+        /// Deletes existing registrations for the device first if they exist.
+        /// </summary>
+        /// <param name="handle">The device id</param>
+        /// <returns>String with the registration id.</returns>
         // POST api/register
         // This creates a registration id
         [HttpPost]
@@ -55,6 +66,12 @@ namespace KinaUnaProgenyApi.Controllers
             return newRegistrationId ?? await _hub.CreateRegistrationIdAsync();
         }
 
+        /// <summary>
+        /// Updates a push device.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="deviceUpdate"></param>
+        /// <returns></returns>
         // PUT api/register/5
         // This creates or updates a registration (with provided channelURI) at the specified id
         [HttpPut("{id}")]
@@ -104,6 +121,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Deletes a push device.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         // DELETE api/register/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
@@ -112,6 +134,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Helper method to check if the hub response is gone.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <exception cref="HttpRequestException"></exception>
         private static void ReturnGoneIfHubResponseIsGone(MessagingException e)
         {
             if (e.InnerException is not WebException webex) return;
@@ -124,6 +151,11 @@ namespace KinaUnaProgenyApi.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets the registration id for a device.
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{handle}")]
         public async Task<string> GetRegistrationId(string handle)
         {

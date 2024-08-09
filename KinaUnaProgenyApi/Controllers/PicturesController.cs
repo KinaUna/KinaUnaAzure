@@ -15,6 +15,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for Pictures.
+    /// </summary>
+    /// <param name="imageStore"></param>
+    /// <param name="azureNotifications"></param>
+    /// <param name="picturesService"></param>
+    /// <param name="videosService"></param>
+    /// <param name="commentsService"></param>
+    /// <param name="progenyService"></param>
+    /// <param name="userInfoService"></param>
+    /// <param name="userAccessService"></param>
+    /// <param name="webNotificationsService"></param>
+    /// <param name="timelineService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]

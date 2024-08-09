@@ -8,6 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for dynamic text content on pages.
+    /// </summary>
+    /// <param name="userInfoService"></param>
+    /// <param name="kinaUnaTextService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]

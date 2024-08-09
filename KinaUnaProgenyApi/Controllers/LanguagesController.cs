@@ -8,6 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for languages.
+    /// </summary>
+    /// <param name="languagesService"></param>
+    /// <param name="userInfoService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]

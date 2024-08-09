@@ -12,6 +12,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for Locations.
+    /// </summary>
+    /// <param name="azureNotifications"></param>
+    /// <param name="userInfoService"></param>
+    /// <param name="userAccessService"></param>
+    /// <param name="locationService"></param>
+    /// <param name="timelineService"></param>
+    /// <param name="progenyService"></param>
+    /// <param name="webNotificationsService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]

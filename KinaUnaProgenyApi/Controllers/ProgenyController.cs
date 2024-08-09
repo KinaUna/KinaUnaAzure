@@ -9,6 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for Progeny data.
+    /// </summary>
+    /// <param name="imageStore"></param>
+    /// <param name="progenyService"></param>
+    /// <param name="userAccessService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]

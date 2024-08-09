@@ -8,6 +8,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for comments.
+    /// </summary>
+    /// <param name="imageStore"></param>
+    /// <param name="azureNotifications"></param>
+    /// <param name="commentsService"></param>
+    /// <param name="progenyService"></param>
+    /// <param name="userInfoService"></param>
+    /// <param name="webNotificationsService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]

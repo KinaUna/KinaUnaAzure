@@ -12,6 +12,18 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for Contacts.
+    /// </summary>
+    /// <param name="imageStore"></param>
+    /// <param name="azureNotifications"></param>
+    /// <param name="userInfoService"></param>
+    /// <param name="userAccessService"></param>
+    /// <param name="contactService"></param>
+    /// <param name="locationService"></param>
+    /// <param name="timelineService"></param>
+    /// <param name="progenyService"></param>
+    /// <param name="webNotificationsService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]

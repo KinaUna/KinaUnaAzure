@@ -9,6 +9,15 @@ using KinaUnaProgenyApi.Services;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for user access management.
+    /// </summary>
+    /// <param name="imageStore"></param>
+    /// <param name="azureNotifications"></param>
+    /// <param name="progenyService"></param>
+    /// <param name="userInfoService"></param>
+    /// <param name="userAccessService"></param>
+    /// <param name="webNotificationsService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]

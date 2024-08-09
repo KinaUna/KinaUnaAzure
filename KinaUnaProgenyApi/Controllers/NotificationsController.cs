@@ -12,6 +12,12 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for notifications.
+    /// </summary>
+    /// <param name="azureNotifications"></param>
+    /// <param name="imageStore"></param>
+    /// <param name="dataService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]
