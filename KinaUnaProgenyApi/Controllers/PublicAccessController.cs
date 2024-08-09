@@ -38,6 +38,10 @@ namespace KinaUnaProgenyApi.Controllers
         IConfiguration configuration)
         : ControllerBase
     {
+        /// <summary>
+        /// Gets the default Progeny's information. For displaying content when a user isn't logged in.
+        /// </summary>
+        /// <returns>Progeny object for the default Progeny.</returns>
         // GET api/publicaccess
         [HttpGet]
         public async Task<IActionResult> Get()
@@ -48,8 +52,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(resultList);
         }
 
+        /// <summary>
+        /// Gets the default Progeny's information. For displaying content when a user isn't logged in.
+        /// Includes profile picture link with SAS token.
+        /// </summary>
+        /// <returns>Progeny object for the default Progeny.</returns>
         [HttpGet("{id:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> GetProgeny(int id)
         {
             Progeny result = await progenyService.GetProgeny(Constants.DefaultChildId);
@@ -58,9 +67,14 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets the access list for the default Progeny. For displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id">The ProgenyId.</param>
+        /// <returns>Progeny object.</returns>
         [HttpGet]
         [Route("[action]/{id:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> Access(int id)
         {
             List<UserAccess> accessList = await userAccessService.GetProgenyUserAccessList(Constants.DefaultChildId);
@@ -84,8 +98,13 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a List of Progeny items for a user. Dummy for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id">ProgenyId, not actually used.</param>
+        /// <returns>List of Progeny</returns>
         [HttpGet("[action]/{id}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> ProgenyListByUser(string id)
         {
             List<Progeny> result = [];
@@ -95,9 +114,15 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a list of the default Progeny's CalendarItems, for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="progenyId">ProgenyId</param>
+        /// <param name="accessLevel">The current user's access level.</param>
+        /// <returns>List of CalendarItems</returns>
         [HttpGet]
         [Route("[action]/{progenyId:int}/{accessLevel:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> EventList(int progenyId, int accessLevel)
         {
             List<CalendarItem> model = await calendarService.GetCalendarList(Constants.DefaultChildId);
@@ -107,9 +132,17 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets the latest items for the default Progeny. For displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id">ProgenyId</param>
+        /// <param name="accessLevel">The user's current access level.</param>
+        /// <param name="count">The number of TimeLineItems to get.</param>
+        /// <param name="start">The number of TimeLineItems to skip.</param>
+        /// <returns>List of TimeLineItems.</returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}/{count:int}/{start:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> ProgenyLatest(int id, int accessLevel = 5, int count = 5, int start = 0)
         {
             List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(Constants.DefaultChildId);
@@ -122,6 +155,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a dummy CalendarItem for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetCalendarItemMobile(int id)
         {
@@ -143,6 +181,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(calItem);
         }
 
+        /// <summary>
+        /// Gets a dummy list of CalendarItems for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="accessLevel"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
@@ -159,6 +203,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a dummy Contact for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetContactMobile(int id)
         {
@@ -184,9 +233,15 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets a dummy Contact, for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="accessLevel"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> ProgenyContactsMobile(int id, int accessLevel = 5)
         {
             List<Contact> contactsList = await contactService.GetContactsList(Constants.DefaultChildId);
@@ -201,9 +256,15 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a dummy Friend object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="accessLevel"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> ProgenyFriendsMobile(int id, int accessLevel = 5)
         {
             List<Friend> friendsList = await friendService.GetFriendsList(Constants.DefaultChildId);
@@ -218,6 +279,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a dummy Location object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetLocationMobile(int id)
         {
@@ -236,6 +302,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets a dummy Location object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetVocabularyItemMobile(int id)
         {
@@ -254,6 +325,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets a dummy Skill object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetSkillMobile(int id)
         {
@@ -272,6 +348,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets a dummy Friend object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetFriendMobile(int id)
         {
@@ -296,6 +377,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets a dummy Measurement object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetMeasurementMobile(int id)
         {
@@ -317,6 +403,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets a dummy Sleep object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetSleepMobile(int id)
         {
@@ -337,9 +428,16 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets a dummy List of Sleep items for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="progenyId"></param>
+        /// <param name="accessLevel"></param>
+        /// <param name="start"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{progenyId:int}/{accessLevel:int}/{start:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
             List<Sleep> model = await sleepService.GetSleepList(Constants.DefaultChildId);
@@ -349,8 +447,14 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a dummy SleepStatsModel object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="progenyId"></param>
+        /// <param name="accessLevel"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{progenyId}/{accessLevel}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> GetSleepStatsMobile(int progenyId, int accessLevel)
         {
             const string userTimeZone = Constants.DefaultTimezone;
@@ -414,8 +518,14 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a dummy List of Sleep items for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="progenyId"></param>
+        /// <param name="accessLevel"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{progenyId:int}/{accessLevel:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
         {
             const string userTimeZone = Constants.DefaultTimezone;
@@ -496,6 +606,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a dummy Note object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetNoteMobile(int id)
         {
@@ -514,6 +629,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets a dummy Vaccination object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetVaccinationMobile(int id)
         {
@@ -531,9 +651,15 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets a dummy List of TimeLine objects for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="accessLevel"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> ProgenyYearAgo(int id, int accessLevel = 5)
         {
             List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(Constants.DefaultChildId);
@@ -546,8 +672,17 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a dummy NotesListPage object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="progenyId"></param>
+        /// <param name="accessLevel"></param>
+        /// <param name="sortBy"></param>
+        /// <returns></returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> GetNotesListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
@@ -596,8 +731,17 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a dummy SleepListPage object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="progenyId"></param>
+        /// <param name="accessLevel"></param>
+        /// <param name="sortBy"></param>
+        /// <returns></returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> GetSleepListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
@@ -646,6 +790,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a dummy List of Sleep objects for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="sleepId"></param>
+        /// <param name="accessLevel"></param>
+        /// <param name="sortOrder"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{sleepId:int}/{accessLevel:int}/{sortOrder:int}")]
         public async Task<IActionResult> GetSleepDetails(int sleepId, int accessLevel, int sortOrder)
         {
@@ -707,9 +858,15 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a dummy List of Location objects for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="accessLevel"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> LocationsList(int id, [FromQuery] int accessLevel = 5)
         {
             if (id != Constants.DefaultChildId) return Unauthorized();
@@ -725,8 +882,17 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a dummy LocationListPage object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="progenyId"></param>
+        /// <param name="accessLevel"></param>
+        /// <param name="sortBy"></param>
+        /// <returns></returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> GetLocationsListPage([FromQuery] int pageSize = 8,
             [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId,
             [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
@@ -782,8 +948,17 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a dummy MeasurementsListPage object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="progenyId"></param>
+        /// <param name="accessLevel"></param>
+        /// <param name="sortBy"></param>
+        /// <returns></returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> GetMeasurementsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
@@ -836,6 +1011,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a dummy List of Measurement objects for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="accessLevel"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> MeasurementsList(int id, [FromQuery] int accessLevel = 5)
@@ -852,8 +1033,17 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a dummy SkillsListPage object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="progenyId"></param>
+        /// <param name="accessLevel"></param>
+        /// <param name="sortBy"></param>
+        /// <returns></returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> GetSkillsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
@@ -906,8 +1096,17 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a dummy VocabularyListPage object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="progenyId"></param>
+        /// <param name="accessLevel"></param>
+        /// <param name="sortBy"></param>
+        /// <returns></returns>
         [HttpGet("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> GetVocabularyListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
         {
 
@@ -960,6 +1159,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a dummy List of VocabularyItem objects for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="accessLevel"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> VocabularyList(int id, [FromQuery] int accessLevel = 5)
@@ -976,6 +1181,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a dummy List of Vaccination objects for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="accessLevel"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> VaccinationsList(int id, [FromQuery] int accessLevel = 5)
@@ -993,9 +1204,15 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a dummy Random Picture object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="progenyId"></param>
+        /// <param name="accessLevel"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{progenyId:int}/{accessLevel:int}")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> RandomPictureMobile(int progenyId, int accessLevel)
         {
             List<Picture> picturesList = await picturesService.GetPicturesList(Constants.DefaultChildId);
@@ -1035,6 +1252,11 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(tempPicture);
         }
 
+        /// <summary>
+        /// Gets a dummy Picture object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         // GET api/pictures/5
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetPictureMobile(int id)
@@ -1075,9 +1297,19 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(tempPicture);
         }
 
+        /// <summary>
+        /// Gets a dummy PicturePageViewModel object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="progenyId"></param>
+        /// <param name="accessLevel"></param>
+        /// <param name="tagFilter"></param>
+        /// <param name="sortBy"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> PageMobile([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
 
         {
@@ -1160,6 +1392,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a dummy PictureViewModel object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="accessLevel"></param>
+        /// <param name="sortBy"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> PictureViewModelMobile(int id, int accessLevel, [FromQuery] int sortBy = 1)
@@ -1258,6 +1497,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a dummy Video object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetVideoMobile(int id)
         {
@@ -1272,9 +1516,19 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Gets a dummy VideoPageViewModel object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="progenyId"></param>
+        /// <param name="accessLevel"></param>
+        /// <param name="tagFilter"></param>
+        /// <param name="sortBy"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used by mobile clients.")]
         public async Task<IActionResult> VideoPageMobile([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
 
         {
@@ -1372,6 +1626,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a dummy VideoViewModel object for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="accessLevel"></param>
+        /// <param name="sortBy"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> VideoViewModelMobile(int id, int accessLevel, [FromQuery] int sortBy = 1)
@@ -1476,6 +1737,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a dummy string of tags for displaying content when a user isn't logged in.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> PictureTagsList(int id)
