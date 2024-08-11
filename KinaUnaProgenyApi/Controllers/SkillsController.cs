@@ -12,6 +12,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for Skill items.
+    /// </summary>
+    /// <param name="azureNotifications"></param>
+    /// <param name="userInfoService"></param>
+    /// <param name="userAccessService"></param>
+    /// <param name="timelineService"></param>
+    /// <param name="skillService"></param>
+    /// <param name="progenyService"></param>
+    /// <param name="webNotificationsService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -26,6 +36,12 @@ namespace KinaUnaProgenyApi.Controllers
         IWebNotificationsService webNotificationsService)
         : ControllerBase
     {
+        /// <summary>
+        /// Gets all Skills for a given Progeny that a user can access.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny to get Skill items for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <returns>List of Skill items.</returns>
         // GET api/skills/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
@@ -45,6 +61,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a single Skill item with the given SkillId.
+        /// </summary>
+        /// <param name="id">The SkillId of the Skill item to get.</param>
+        /// <returns>Skill object with the provided SkillId.</returns>
         // GET api/skills/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetSkillItem(int id)
@@ -61,6 +82,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Unauthorized();
         }
 
+        /// <summary>
+        /// Adds a new Skill item to the database.
+        /// Also creates a TimeLineItem for the new Skill item and sends notifications to users who have access to the Skill item.
+        /// </summary>
+        /// <param name="value">The Skill to add.</param>
+        /// <returns>The added Skill item.</returns>
         // POST api/vocabulary
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Skill value)
@@ -100,6 +127,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(skillItem);
         }
 
+        /// <summary>
+        /// Updates a Skill item in the database.
+        /// Also updates the corresponding TimeLineItem.
+        /// </summary>
+        /// <param name="id">The SkillId of the Skill to update.</param>
+        /// <param name="value">Skill item with the updated properties.</param>
+        /// <returns>The updated Skill object.</returns>
         // PUT api/skills/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Skill value)
@@ -134,16 +168,15 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.CopySkillPropertiesForUpdate(skillItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            //string notificationTitle = "Skill edited for " + progeny.NickName;
-            //string notificationMessage = userInfo.FullName() + " edited a skill for " + progeny.NickName;
-
-            //await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            //await webNotificationsService.SendSkillNotification(skillItem, userInfo, notificationTitle);
-
             return Ok(skillItem);
         }
 
+        /// <summary>
+        /// Deletes a Skill item from the database.
+        /// Also deletes the corresponding TimeLineItem and sends notifications to users who have admin access to the Skill item.
+        /// </summary>
+        /// <param name="id">The SkillId of the Skill item to delete.</param>
+        /// <returns>NoContentResult. UnauthorizedResult if the user doesn't have access to the Skill item, NotFoundResult if the Skill doesn't exist.</returns>
         // DELETE api/skills/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
@@ -189,6 +222,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a Skill item.
+        /// For mobile clients.
+        /// </summary>
+        /// <param name="id">The SkillId of the Skill item to get.</param>
+        /// <returns>The Skill with the given SkillId. UnauthorizedResult if the user doesn't have access to the Skill. NotFoundResult if the Skill doesn't exist.</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetSkillMobile(int id)
         {
@@ -207,6 +246,15 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a SkillListPage for displaying Skills in a paged list.
+        /// </summary>
+        /// <param name="pageSize">The number of Skills per page.</param>
+        /// <param name="pageIndex">The current page number.</param>
+        /// <param name="progenyId">The ProgenyId for the Progeny to show skills for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <param name="sortBy">Sort order. 0 = oldest first, 1 = newest first.</param>
+        /// <returns></returns>
         [HttpGet("[action]")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetSkillsListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
