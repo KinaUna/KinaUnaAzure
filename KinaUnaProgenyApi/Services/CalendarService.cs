@@ -26,6 +26,13 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(1, 0, 0, 0)); // Expire after a week.
         }
 
+        /// <summary>
+        /// Get a CalendarItem from the cache.
+        /// If it isn't in the cache gets it from the database.
+        /// If it doesn't exist in the database, returns null.
+        /// </summary>
+        /// <param name="id">The CalendarItem's EventId</param>
+        /// <returns>CalendarItem if it exists, null if it doesn't exist.</returns>
         public async Task<CalendarItem> GetCalendarItem(int id)
         {
             CalendarItem calendarItem = await GetCalendarItemFromCache(id);
@@ -37,6 +44,12 @@ namespace KinaUnaProgenyApi.Services
             return calendarItem;
         }
 
+        /// <summary>
+        /// Add a new CalendarItem to the database.
+        /// Sets the CalendarItem in the cache.
+        /// </summary>
+        /// <param name="item">The CalendarItem to add.</param>
+        /// <returns>The added CalendarItem.</returns>
         public async Task<CalendarItem> AddCalendarItem(CalendarItem item)
         {
             CalendarItem calendarItemToAdd = new();
@@ -50,6 +63,11 @@ namespace KinaUnaProgenyApi.Services
             return calendarItemToAdd;
         }
 
+        /// <summary>
+        /// Get a CalendarItem from the cache.
+        /// </summary>
+        /// <param name="id">The EventId of the CalendarItem to get.</param>
+        /// <returns>The CalendarItem with the given EventId. If it doesn't exist, returns null.</returns>
         private async Task<CalendarItem> GetCalendarItemFromCache(int id)
         {
             CalendarItem calendarItem = new();
@@ -62,6 +80,11 @@ namespace KinaUnaProgenyApi.Services
             return calendarItem;
         }
 
+        /// <summary>
+        /// Sets a CalendarItem in the cache and updates the cached List of CalendarItems for the Progeny of this item.
+        /// </summary>
+        /// <param name="id">The EventId of the CalendarItem.</param>
+        /// <returns>The CalendarItem with the given EventId. Null if the CalendarItem doesn't exist in the database.</returns>
         private async Task<CalendarItem> SetCalendarItemInCache(int id)
         {
             CalendarItem calendarItem = await _context.CalendarDb.AsNoTracking().SingleOrDefaultAsync(l => l.EventId == id);
@@ -75,6 +98,12 @@ namespace KinaUnaProgenyApi.Services
             return calendarItem;
         }
 
+        /// <summary>
+        /// Removes a CalendarItem from the cache and updates the cached List of CalendarItems for the Progeny of this item.
+        /// </summary>
+        /// <param name="id">The EventId of the CalendarItem to remove.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny that the CalendarItem belongs to.</param>
+        /// <returns></returns>
         private async Task RemoveCalendarItemFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "calendaritem" + id);
@@ -83,6 +112,11 @@ namespace KinaUnaProgenyApi.Services
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "calendarlist" + progenyId, JsonConvert.SerializeObject(calendarList), _cacheOptionsSliding);
         }
 
+        /// <summary>
+        /// Updates a CalendarItem in the database and sets the updated item in the cache.
+        /// </summary>
+        /// <param name="item">The CalendarItem with the updated properties.</param>
+        /// <returns>The updated CalendarItem.</returns>
         public async Task<CalendarItem> UpdateCalendarItem(CalendarItem item)
         {
             CalendarItem calendarItemToUpdate = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
@@ -97,6 +131,11 @@ namespace KinaUnaProgenyApi.Services
             return calendarItemToUpdate;
         }
 
+        /// <summary>
+        /// Deletes a CalendarItem from the database and removes it from the cache.
+        /// </summary>
+        /// <param name="item">The CalendarItem to delete.</param>
+        /// <returns>The deleted CalendarItem.</returns>
         public async Task<CalendarItem> DeleteCalendarItem(CalendarItem item)
         {
             CalendarItem calendarItemToDelete = await _context.CalendarDb.SingleOrDefaultAsync(ci => ci.EventId == item.EventId);
@@ -110,6 +149,12 @@ namespace KinaUnaProgenyApi.Services
             return item;
         }
 
+        /// <summary>
+        /// Gets a List of all CalendarItems for a Progeny from the cache.
+        /// If the list isn't found in the cache, gets it from the database and sets it in the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get all CalendarItems for.</param>
+        /// <returns>List of CalendarItems.</returns>
         public async Task<List<CalendarItem>> GetCalendarList(int progenyId)
         {
             List<CalendarItem> calendarList = await GetCalendarListFromCache(progenyId);
@@ -121,6 +166,11 @@ namespace KinaUnaProgenyApi.Services
             return calendarList;
         }
 
+        /// <summary>
+        /// Gets a List of all CalendarItems for a Progeny from the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get all CalendarItems for.</param>
+        /// <returns>List of CalendarItems.</returns>
         private async Task<List<CalendarItem>> GetCalendarListFromCache(int progenyId)
         {
             List<CalendarItem> calendarList = [];
@@ -133,6 +183,11 @@ namespace KinaUnaProgenyApi.Services
             return calendarList;
         }
 
+        /// <summary>
+        /// Sets a List of CalendarItems for a Progeny in the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny.</param>
+        /// <returns>List of all CalendarItems for the Progeny.</returns>
         private async Task<List<CalendarItem>> SetCalendarListInCache(int progenyId)
         {
             List<CalendarItem> calendarList = await _context.CalendarDb.AsNoTracking().Where(c => c.ProgenyId == progenyId).ToListAsync();
