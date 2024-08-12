@@ -30,6 +30,12 @@ namespace KinaUnaProgenyApi.Services
             _videosService = videosService;
         }
 
+        /// <summary>
+        /// Gets a Comment from the cache.
+        /// If it isn't in the cache gets it from the database.
+        /// </summary>
+        /// <param name="commentId">The CommentId of the Comment to get.</param>
+        /// <returns>Comment.</returns>
         public async Task<Comment> GetComment(int commentId)
         {
             Comment comment;
@@ -47,7 +53,13 @@ namespace KinaUnaProgenyApi.Services
             return comment;
         }
 
-        public async Task<Comment> SetComment(int commentId)
+        /// <summary>
+        /// Sets a Comment in the cache.
+        /// Also updates the caches for the Picture or Video it belongs to.
+        /// </summary>
+        /// <param name="commentId">The CommentId of the Comment to set in the cache.</param>
+        /// <returns>The Comment with the given CommentId. Null if it doesn't exist.</returns>
+        private async Task<Comment> SetComment(int commentId)
         {
             Comment comment = await _mediaContext.CommentsDb.AsNoTracking().SingleOrDefaultAsync(c => c.CommentId == commentId);
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
@@ -73,6 +85,13 @@ namespace KinaUnaProgenyApi.Services
             return comment;
         }
 
+        /// <summary>
+        /// Removes a Comment from the cache.
+        /// Updates the cache for the Picture or Video it belongs to.
+        /// </summary>
+        /// <param name="commentId">The CommentId of the Comment to remove.</param>
+        /// <param name="commentThreadId">The CommentThreadId of the Comment to remove.</param>
+        /// <returns></returns>
         public async Task RemoveComment(int commentId, int commentThreadId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId);
@@ -95,6 +114,12 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Gets a List of Comments for a CommentThread from the cache.
+        /// If the list isn't found in the cache, gets it from the database and sets it in the cache.
+        /// </summary>
+        /// <param name="commentThreadId">The CommentThreadId to get Comments for.</param>
+        /// <returns>List of Comments.</returns>
         public async Task<List<Comment>> GetCommentsList(int commentThreadId)
         {
             List<Comment> commentsList;
@@ -112,6 +137,11 @@ namespace KinaUnaProgenyApi.Services
             return commentsList;
         }
 
+        /// <summary>
+        /// Gets and sets a List of Comments for a CommentThread in the cache.
+        /// </summary>
+        /// <param name="commentThreadId">The CommentThreadId to get Comments for.</param>
+        /// <returns>List of Comments.</returns>
         public async Task<List<Comment>> SetCommentsList(int commentThreadId)
         {
             List<Comment> commentsList = await _mediaContext.CommentsDb.AsNoTracking().Where(c => c.CommentThreadNumber == commentThreadId).ToListAsync();
@@ -120,11 +150,22 @@ namespace KinaUnaProgenyApi.Services
             return commentsList;
         }
 
+        /// <summary>
+        /// Removes a List of Comments for a CommentThread from the cache.
+        /// </summary>
+        /// <param name="commentThreadId">The CommentThreadId of the cached list to remove.</param>
+        /// <returns></returns>
         public async Task RemoveCommentsList(int commentThreadId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId);
         }
 
+        /// <summary>
+        /// Adds a new Comment to the database.
+        /// Then updates the CommentThread and the cache for the CommentThread.
+        /// </summary>
+        /// <param name="comment">The Comment to add.</param>
+        /// <returns>The added Comment.</returns>
         public async Task<Comment> AddComment(Comment comment)
         {
             Comment commentToAdd = new();
@@ -145,6 +186,12 @@ namespace KinaUnaProgenyApi.Services
             return commentToAdd;
         }
 
+        /// <summary>
+        /// Updates a Comment in the database and cache.
+        /// Then updates the CommentThread and the cache for the CommentThread.
+        /// </summary>
+        /// <param name="comment">The Comment with updated properties.</param>
+        /// <returns>The updated Comment.</returns>
         public async Task<Comment> UpdateComment(Comment comment)
         {
             Comment commentToUpdate = await _mediaContext.CommentsDb.SingleOrDefaultAsync(c => c.CommentId == comment.CommentId);
@@ -160,6 +207,12 @@ namespace KinaUnaProgenyApi.Services
             return commentToUpdate;
         }
 
+        /// <summary>
+        /// Deletes a Comment from the database and removes it from the cache.
+        /// Then updates the CommentThread and the cache for the CommentThread.
+        /// </summary>
+        /// <param name="comment">The Comment to delete.</param>
+        /// <returns>The deleted Comment.</returns>
         public async Task<Comment> DeleteComment(Comment comment)
         {
             CommentThread cmntThread = await _mediaContext.CommentThreadsDb.SingleOrDefaultAsync(c => c.Id == comment.CommentThreadNumber);
@@ -181,21 +234,35 @@ namespace KinaUnaProgenyApi.Services
             return comment;
         }
 
+        /// <summary>
+        /// Gets a CommentThread entity from the database.
+        /// </summary>
+        /// <param name="commentThreadId">The CommentThreadId of the CommentThread entity to get.</param>
+        /// <returns>CommentThread object.</returns>
         public async Task<CommentThread> GetCommentThread(int commentThreadId)
         {
             CommentThread commentThread = await _mediaContext.CommentThreadsDb.SingleOrDefaultAsync(c => c.Id == commentThreadId);
             return commentThread;
         }
 
+        /// <summary>
+        /// Adds a new CommentThread entity to the database.
+        /// </summary>
+        /// <returns>The added CommentThread object.</returns>
         public async Task<CommentThread> AddCommentThread()
         {
             CommentThread commentThread = new();
-            await _mediaContext.CommentThreadsDb.AddAsync(commentThread);
+            _mediaContext.CommentThreadsDb.Add(commentThread);
             await _mediaContext.SaveChangesAsync();
 
             return commentThread;
         }
 
+        /// <summary>
+        /// Deletes a CommentThread entity from the database.
+        /// </summary>
+        /// <param name="commentThread">The CommentThread entity to delete.</param>
+        /// <returns>The deleted CommentThread entity.</returns>
         public async Task<CommentThread> DeleteCommentThread(CommentThread commentThread)
         {
             _mediaContext.CommentThreadsDb.Remove(commentThread);
