@@ -47,6 +47,7 @@ namespace KinaUnaProgenyApi.Controllers
     {
         /// <summary>
         /// Gets a list of Picture entities for a page for a given ProgenyId, AccessLevel, and Tag.
+        /// Includes Comments for each Picture entity.
         /// </summary>
         /// <param name="pageSize">The number of Picture elements per page.</param>
         /// <param name="pageIndex">The current page number.</param>
@@ -288,6 +289,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Gets a list of all Picture entities for a given ProgenyId and AccessLevel.
+        /// Includes comments.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny.</param>
         /// <param name="accessLevel">The user's access level for the Progeny.</param>
@@ -331,6 +333,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Gets a list of all Picture entities for a given ProgenyId and AccessLevel.
+        /// Does not include comments.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get pictures for.</param>
         /// <param name="accessLevel">The current user's access level for the Progeny.</param>
@@ -365,6 +368,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Gets a picture entity by the PictureLink property.
+        /// Includes comments.
         /// </summary>
         /// <param name="id">The PictureLink of the Picture to get.</param>
         /// <returns>Picture object with the given PictureLink.</returns>
@@ -397,6 +401,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Gets a Picture entity by the PictureId property.
+        /// Does not include comments.
         /// </summary>
         /// <param name="id">The PictureId of the Picture to get.</param>
         /// <returns>Picture object with the given PictureId. If the user doesn't have the required access level, Unauthorized is returned.</returns>
@@ -614,6 +619,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Gets a random Picture entity for a given ProgenyId and AccessLevel.
+        /// Does not include comments.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get a Picture for.</param>
         /// <param name="accessLevel">The current user's access level for the Progeny.</param>
@@ -655,6 +661,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Gets a random Picture entity for a given ProgenyId and AccessLevel.
+        /// Does not include comments.
         /// For use in mobile clients.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get a picture for.</param>
@@ -698,6 +705,7 @@ namespace KinaUnaProgenyApi.Controllers
 
         /// <summary>
         /// Gets a Picture entity for a given PictureId.
+        /// Does not include comments.
         /// For use in mobile clients.
         /// </summary>
         /// <param name="id">The PictureId of the Picture entity to get.</param>

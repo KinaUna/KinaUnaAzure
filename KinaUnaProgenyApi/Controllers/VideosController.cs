@@ -12,6 +12,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for Videos.
+    /// </summary>
+    /// <param name="azureNotifications"></param>
+    /// <param name="videosService"></param>
+    /// <param name="commentsService"></param>
+    /// <param name="progenyService"></param>
+    /// <param name="userInfoService"></param>
+    /// <param name="userAccessService"></param>
+    /// <param name="webNotificationsService"></param>
+    /// <param name="timelineService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -27,6 +38,16 @@ namespace KinaUnaProgenyApi.Controllers
         ITimelineService timelineService)
         : ControllerBase
     {
+        /// <summary>
+        /// Generates a VideoPageViewModel for a specific Progeny.
+        /// </summary>
+        /// <param name="pageSize">Number of Videos per page.</param>
+        /// <param name="pageIndex">The current page number.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get videos for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <param name="tagFilter">Include only Videos with Tags containing the tagFilter string. If empty, include all videos.</param>
+        /// <param name="sortBy">Sort order. 0 = oldest first, 1 = newest first.</param>
+        /// <returns>VideoPageViewModel</returns>
         // GET api/videos/page[?pageSize=3&pageIndex=10&progenyId=2&accessLevel=1&tagFilter=funny]
         [HttpGet]
         [Route("[action]")]
@@ -248,6 +269,11 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Generates a VideoViewModel for a specific Video.
+        /// </summary>
+        /// <param name="id">The VideoId of the Video.</param>
+        /// <returns>VideoViewModel</returns>
         [HttpGet]
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> VideoElement(int id)
@@ -275,6 +301,13 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets a list of all Videos for a specific Progeny that a user with a given access level can view.
+        /// Includes Comments for each Video.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny to get videos for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <returns>List of Videos.</returns>
         // GET api/videos/progeny/[id]/[accessLevel]
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
@@ -300,6 +333,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(videosList);
         }
 
+        /// <summary>
+        /// Gets a list of all Videos for a specific Progeny that a user with a given access level can view.
+        /// Does not include comments for each Video.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny to get videos for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <returns>List of Videos.</returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
         public async Task<IActionResult> ProgenyVideosList(int id, int accessLevel)
@@ -326,6 +366,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(videosList);
         }
 
+        /// <summary>
+        /// Gets the video with the Given VideoId.
+        /// Does not include comments.
+        /// </summary>
+        /// <param name="id">The VideoId of the Video.</param>
+        /// <returns>Video</returns>
         // GET api/videos/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetVideo(int id)
@@ -346,6 +392,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets the video with the given VideoLink.
+        /// </summary>
+        /// <param name="videoLink">String with the VideoLink of the video.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny.</param>
+        /// <returns>Video.</returns>
         [HttpGet("[action]/{videoLink}/{progenyId:int}")]
         public async Task<IActionResult> ByLink(string videoLink, int progenyId)
         {
@@ -365,6 +417,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Adds a new Video to the database.
+        /// Also adds a new CommentThread for the Video, a corresponding TimeLineItem and sends Notifications to users.
+        /// </summary>
+        /// <param name="model">The Video to add.</param>
+        /// <returns>The added Video.</returns>
         // POST api/videos
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Video model)
@@ -407,6 +465,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Updates a Video. Only users with the appropriate access level can update a Video.
+        /// Also updates the corresponding TimeLineItem.
+        /// </summary>
+        /// <param name="id">The VideoId of the Video to update.</param>
+        /// <param name="value">Video object with the updated properties.</param>
+        /// <returns>The updated Video object.</returns>
         // PUT api/videos/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Video value)
@@ -448,16 +513,16 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.CopyVideoPropertiesForUpdate(video);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            //Progeny progeny = await progenyService.GetProgeny(video.ProgenyId);
-            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
-            //string notificationTitle = "Video Edited for " + progeny.NickName;
-            //string notificationMessage = userInfo.FullName() + " edited a video for " + progeny.NickName;
-
-            // await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            // await webNotificationsService.SendVideoNotification(video, userInfo, notificationTitle);
             return Ok(video);
         }
 
+        /// <summary>
+        /// Deletes a Video. Only users with the appropriate access level can delete a Video.
+        /// Also deletes the corresponding CommentThread and TimeLineItem.
+        /// Sends Notifications to admins for the Progeny.
+        /// </summary>
+        /// <param name="id">The VideoId of the Video to delete. </param>
+        /// <returns>NoContent.</returns>
         // DELETE api/progeny/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
@@ -518,6 +583,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets the video with the Given VideoId.
+        /// For mobile clients.
+        /// </summary>
+        /// <param name="id">The VideoId of the Video to get.</param>
+        /// <returns>Video.</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetVideoMobile(int id)
         {
@@ -535,6 +606,17 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Generates a VideoPageViewModel for a specific Progeny.
+        /// For mobile clients.
+        /// </summary>
+        /// <param name="pageSize">The number of Videos per page.</param>
+        /// <param name="pageIndex">The current page number.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny to show videos for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <param name="tagFilter">Only show Videos with tags that contain the tagFilter string. If empty, show all videos.</param>
+        /// <param name="sortBy">Sort order. 0 = oldest first, 1 = newest first.</param>
+        /// <returns>VideoPageViewModel</returns>
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> PageMobile([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = 2, [FromQuery] int accessLevel = 5, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
