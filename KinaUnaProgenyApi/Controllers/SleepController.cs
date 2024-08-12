@@ -12,6 +12,16 @@ using Constants = KinaUna.Data.Constants;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for Sleep items.
+    /// </summary>
+    /// <param name="azureNotifications"></param>
+    /// <param name="userAccessService"></param>
+    /// <param name="timelineService"></param>
+    /// <param name="sleepService"></param>
+    /// <param name="progenyService"></param>
+    /// <param name="userInfoService"></param>
+    /// <param name="webNotificationsService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -26,6 +36,12 @@ namespace KinaUnaProgenyApi.Controllers
         IWebNotificationsService webNotificationsService)
         : ControllerBase
     {
+        /// <summary>
+        /// Gets the list of Sleep items for a given Progeny and AccessLevel.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny to get Sleep data for.</param>
+        /// <param name="accessLevel">The user's access level for the Progeny.</param>
+        /// <returns>List of Sleep items.</returns>
         // GET api/sleep/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
@@ -45,6 +61,11 @@ namespace KinaUnaProgenyApi.Controllers
             return NotFound();
         }
 
+        /// <summary>
+        /// Gets a single Sleep item by SleepId.
+        /// </summary>
+        /// <param name="id">The SleepId of the Sleep item to get.</param>
+        /// <returns>The Sleep object with the provided SleepId. UnauthorizedResult if the user doesn't have the access rights for this Sleep item.</returns>
         // GET api/sleep/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetSleepItem(int id)
@@ -66,6 +87,12 @@ namespace KinaUnaProgenyApi.Controllers
             return Unauthorized();
         }
 
+        /// <summary>
+        /// Adds a new Sleep item to the database.
+        /// Then adds a TimeLineItem to the TimeLine collection and sends notifications to users with access to the Sleep item.
+        /// </summary>
+        /// <param name="value">The Sleep object to add.</param>
+        /// <returns>The added Sleep object.</returns>
         // POST api/sleep
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Sleep value)
@@ -104,6 +131,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(sleepItem);
         }
 
+        /// <summary>
+        /// Updates a Sleep item in the database.
+        /// Also updates the corresponding TimeLineItem.
+        /// </summary>
+        /// <param name="id">The SleepId of the Sleep item to update.</param>
+        /// <param name="value">Sleep object with the updated properties.</param>
+        /// <returns>The updated Sleep object.</returns>
         // PUT api/sleep/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Sleep value)
@@ -137,17 +171,15 @@ namespace KinaUnaProgenyApi.Controllers
             timeLineItem.CopySleepPropertiesForUpdate(sleepItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
 
-            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-            //string notificationTitle = "Sleep for " + progeny.NickName + " edited";
-            //string notificationMessage = userInfo.FullName() + " edited a sleep item for " + progeny.NickName;
-
-            //await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            //await webNotificationsService.SendSleepNotification(sleepItem, userInfo, notificationTitle);
-
             return Ok(sleepItem);
         }
 
+        /// <summary>
+        /// Deletes a Sleep item from the database.
+        /// Also deletes the corresponding TimeLineItem and sends notifications to users with admin access to the Sleep item.
+        /// </summary>
+        /// <param name="id">The SleepId of the Sleep item to delete.</param>
+        /// <returns>NoContentResult. UnauthorizedResult if the user isn't an admin for the Progeny. NotFoundResult if the Sleep item doesn't exist.</returns>
         // DELETE api/sleep/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
@@ -195,6 +227,12 @@ namespace KinaUnaProgenyApi.Controllers
             return NotFound();
         }
 
+        /// <summary>
+        /// Gets a list of Sleep items for a given Progeny and AccessLevel.
+        /// For use in the mobile clients.
+        /// </summary>
+        /// <param name="id">The SleepId of the Sleep item to get.</param>
+        /// <returns>The Sleep item with the given SleepId.UnauthorizedResult if the user doesn't have access to the Sleep item.</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetSleepMobile(int id)
         {
@@ -210,6 +248,15 @@ namespace KinaUnaProgenyApi.Controllers
             return Unauthorized();
         }
 
+        /// <summary>
+        /// Gets a SleepListPage for displaying Sleep items in a paged list.
+        /// </summary>
+        /// <param name="pageSize">Number of Sleep items per page.</param>
+        /// <param name="pageIndex">Current page number.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get Sleep data for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <param name="sortBy">Sort order. 0 = oldest first, 1= newest first.</param>
+        /// <returns>SleepListPage object.</returns>
         [HttpGet("[action]")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetSleepListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
@@ -267,6 +314,14 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(model);
         }
 
+        /// <summary>
+        /// Gets a list of Sleep items for a given Progeny and AccessLevel.
+        /// For use in the mobile clients.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get sleep items for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <param name="start">Number of Sleep items to skip.</param>
+        /// <returns>List of Sleep objects.</returns>
         [HttpGet("[action]/{progenyId:int}/{accessLevel:int}/{start:int}")]
         public async Task<IActionResult> GetSleepListMobile(int progenyId, int accessLevel, int start = 0)
         {
@@ -286,6 +341,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets SleepStats for a given Progeny and AccessLevel.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get Sleep statistics for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <returns>SleepStats object.</returns>
         [HttpGet("[action]/{progenyId:int}/{accessLevel:int}")]
         public async Task<IActionResult> GetSleepStatsMobile(int progenyId, int accessLevel)
         {
@@ -303,6 +364,13 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Generates a list of Sleep items for displaying in Sleep statistics charts.
+        /// For mobile clients.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to display statistics for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <returns>List of Sleep objects.</returns>
         [HttpGet("[action]/{progenyId:int}/{accessLevel:int}")]
         public async Task<IActionResult> GetSleepChartDataMobile(int progenyId, int accessLevel)
         {
@@ -324,6 +392,13 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Generates a SleepDetailsModel for displaying Sleep with next and previous Sleep items.
+        /// </summary>
+        /// <param name="sleepId">The SleepId of the Sleep item to display.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny to display Sleep data for.</param>
+        /// <param name="sortOrder">Sort order. 0 = Oldest first, 1 = Newest first.</param>
+        /// <returns></returns>
         [HttpGet("[action]/{sleepId:int}/{accessLevel:int}/{sortOrder:int}")]
         public async Task<IActionResult> GetSleepDetails(int sleepId, int accessLevel, int sortOrder)
         {
