@@ -11,6 +11,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaProgenyApi.Controllers
 {
+    /// <summary>
+    /// API endpoints for vocabulary items.
+    /// </summary>
+    /// <param name="azureNotifications"></param>
+    /// <param name="userInfoService"></param>
+    /// <param name="userAccessService"></param>
+    /// <param name="timelineService"></param>
+    /// <param name="vocabularyService"></param>
+    /// <param name="progenyService"></param>
+    /// <param name="webNotificationsService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -25,6 +35,12 @@ namespace KinaUnaProgenyApi.Controllers
         IWebNotificationsService webNotificationsService)
         : ControllerBase
     {
+        /// <summary>
+        /// Get a list of all VocabularyItems for a specific Progeny.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny to get Vocabulary items for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <returns>List of Vocabulary items.</returns>
         // GET api/vocabulary/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
@@ -44,6 +60,12 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Get a specific VocabularyItem with a given WordId.
+        /// Only users with the appropriate access level can get the item.
+        /// </summary>
+        /// <param name="id">The WordId of the VocabularyItem to get.</param>
+        /// <returns>VocabularyItem</returns>
         // GET api/vocabulary/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetVocabularyItem(int id)
@@ -60,6 +82,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Unauthorized();
         }
 
+        /// <summary>
+        /// Add a new VocabularyItem.
+        /// Also creates a TimeLineItem for the new VocabularyItem and sends notifications to users with access to the VocabularyItem.
+        /// Only users with appropriate access level can add new items.
+        /// </summary>
+        /// <param name="value">The VocabularyItem to add.</param>
+        /// <returns>The added VocabularyItems</returns>
         // POST api/vocabulary
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] VocabularyItem value)
@@ -96,6 +125,13 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(vocabularyItem);
         }
 
+        /// <summary>
+        /// Update a VocabularyItem.
+        /// Also updates the corresponding TimeLineItem.
+        /// </summary>
+        /// <param name="id">The WordId of the VocabularyItem to update.</param>
+        /// <param name="value">VocabularyItem with the updated properties.</param>
+        /// <returns>The updated VocabularyItem.</returns>
         // PUT api/calendar/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] VocabularyItem value)
@@ -127,18 +163,16 @@ namespace KinaUnaProgenyApi.Controllers
 
             timeLineItem.CopyVocabularyItemPropertiesForUpdate(vocabularyItem);
             _ = await timelineService.UpdateTimeLineItem(timeLineItem);
-
-            //UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-            //string notificationTitle = "Word edited for " + progeny.NickName;
-            //string notificationMessage = userInfo.FullName() + " edited a word for " + progeny.NickName;
-
-            //await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            //await webNotificationsService.SendVocabularyNotification(vocabularyItem, userInfo, notificationTitle);
             
             return Ok(vocabularyItem);
         }
 
+        /// <summary>
+        /// Delete a VocabularyItem.
+        /// Also deletes the corresponding TimeLineItem and sends notifications to users with admin access to the Progeny.
+        /// </summary>
+        /// <param name="id">The WordId of the VocabularyItem to delete.</param>
+        /// <returns>NoContentResult. UnauthorizedResult if the user doesn't have access rights to delete this, NotFoundResult if the VocabularyItem doesn't exist.</returns>
         // DELETE api/calendar/5
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
@@ -184,6 +218,13 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Gets the VocabularyItem with the given WordId.
+        /// Only users with appropriate access for the Progeny can get the item.
+        /// For mobile clients.
+        /// </summary>
+        /// <param name="id">The WordId of the VocabularyItem to get.</param>
+        /// <returns>VocabularyItem</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetItemMobile(int id)
         {
@@ -203,6 +244,15 @@ namespace KinaUnaProgenyApi.Controllers
 
         }
 
+        /// <summary>
+        /// Generates a VocabularyListPage for a specific Progeny.
+        /// </summary>
+        /// <param name="pageSize">The number of VocabularyItems per page.</param>
+        /// <param name="pageIndex">The current page number.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny to show VocabularyItems for.</param>
+        /// <param name="accessLevel">The current user's access level for the Progeny.</param>
+        /// <param name="sortBy">Sort order. 0 = oldest first, 1 = newest first.</param>
+        /// <returns></returns>
         [HttpGet("[action]")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
         public async Task<IActionResult> GetVocabularyListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int accessLevel = 5, [FromQuery] int sortBy = 1)
