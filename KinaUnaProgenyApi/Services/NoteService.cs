@@ -27,6 +27,11 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
+        /// <summary>
+        /// Gets a Note by NoteId.
+        /// </summary>
+        /// <param name="id">The NoteId of the Note to get.</param>
+        /// <returns>The Note with the given NoteId. Null if the Note doesn't exist.</returns>
         public async Task<Note> GetNote(int id)
         {
             Note note = await GetNoteFromCache(id);
@@ -38,18 +43,29 @@ namespace KinaUnaProgenyApi.Services
             return note;
         }
 
+        /// <summary>
+        /// Gets a Note by NoteId from the cache.
+        /// </summary>
+        /// <param name="id">The NoteId of the Note to get.</param>
+        /// <returns>The Note with the given NoteId. Null if the Note isn't found in the cache.</returns>
         private async Task<Note> GetNoteFromCache(int id)
         {
-            Note note = new();
             string cachedNote = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "note" + id);
-            if (!string.IsNullOrEmpty(cachedNote))
+            if (string.IsNullOrEmpty(cachedNote))
             {
-                note = JsonConvert.DeserializeObject<Note>(cachedNote);
+                return null;
             }
 
+            Note note = JsonConvert.DeserializeObject<Note>(cachedNote);
             return note;
         }
 
+        /// <summary>
+        /// Gets a Note by NoteId from the database and adds it to the cache.
+        /// Also updates the NotesList for the Progeny that the Note belongs to in the cache.
+        /// </summary>
+        /// <param name="id">The NoteId of the Note to get and set.</param>
+        /// <returns>The Note with the given NoteId. Null if the Note doesn't exist.</returns>
         private async Task<Note> SetNoteInCache(int id)
         {
             Note note = await _context.NotesDb.AsNoTracking().SingleOrDefaultAsync(n => n.NoteId == id);
@@ -62,6 +78,11 @@ namespace KinaUnaProgenyApi.Services
             return note;
         }
 
+        /// <summary>
+        /// Adds a new Note to the database and the cache.
+        /// </summary>
+        /// <param name="note">The Note object to add.</param>
+        /// <returns>The added Note object.</returns>
         public async Task<Note> AddNote(Note note)
         {
             Note noteToAdd = new();
@@ -76,8 +97,11 @@ namespace KinaUnaProgenyApi.Services
             return noteToAdd;
         }
 
-
-
+        /// <summary>
+        /// Updates a Note in the database and the cache.
+        /// </summary>
+        /// <param name="note">Note object with the updated properties.</param>
+        /// <returns>The updated Note object.</returns>
         public async Task<Note> UpdateNote(Note note)
         {
             Note noteToUpdate = await _context.NotesDb.SingleOrDefaultAsync(n => n.NoteId == note.NoteId);
@@ -93,6 +117,11 @@ namespace KinaUnaProgenyApi.Services
             return noteToUpdate;
         }
 
+        /// <summary>
+        /// Deletes a Note from the database and the cache.
+        /// </summary>
+        /// <param name="note">The Note to delete.</param>
+        /// <returns>The deleted Note object.</returns>
         public async Task<Note> DeleteNote(Note note)
         {
             Note noteToDelete = await _context.NotesDb.SingleOrDefaultAsync(n => n.NoteId == note.NoteId);
@@ -109,6 +138,12 @@ namespace KinaUnaProgenyApi.Services
             return note;
         }
 
+        /// <summary>
+        /// Removes a Note from the cache and updates the NotesList for the Progeny that the Note belongs to.
+        /// </summary>
+        /// <param name="id">The NoteId of the Note to remove.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny that the Note belongs to.</param>
+        /// <returns></returns>
         private async Task RemoveNoteFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "note" + id);
@@ -116,6 +151,12 @@ namespace KinaUnaProgenyApi.Services
             _ = await SetNotesListInCache(progenyId);
         }
 
+        /// <summary>
+        /// Gets a list of all Notes for a Progeny.
+        /// First tries to get the list from the cache, then from the database if it's not in the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get all Notes for.</param>
+        /// <returns>List of Note objects.</returns>
         public async Task<List<Note>> GetNotesList(int progenyId)
         {
             List<Note> notesList = await GetNotesListFromCache(progenyId);
@@ -127,6 +168,11 @@ namespace KinaUnaProgenyApi.Services
             return notesList;
         }
 
+        /// <summary>
+        /// Gets a list of all Notes for a Progeny from the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get all Notes for.</param>
+        /// <returns>List of Note objects.</returns>
         private async Task<List<Note>> GetNotesListFromCache(int progenyId)
         {
             List<Note> notesList = [];
@@ -139,6 +185,11 @@ namespace KinaUnaProgenyApi.Services
             return notesList;
         }
 
+        /// <summary>
+        /// Gets a list of all Notes for a Progeny from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get and set the List of Notes for.</param>
+        /// <returns>List of Notes objects.</returns>
         private async Task<List<Note>> SetNotesListInCache(int progenyId)
         {
             List<Note> notesList = await _context.NotesDb.AsNoTracking().Where(n => n.ProgenyId == progenyId).ToListAsync();
