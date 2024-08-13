@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace KinaUnaProgenyApi.Tests.Services
 {
-    public class DataServiceTests
+    public class NotificationsServiceTests
     {
         [Fact]
         public async Task GetMobileNotification_Should_Return_MobileNotification_Object_When_Id_Is_Valid()
@@ -40,9 +40,9 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
-            MobileNotification resultNotification1 = await dataService.GetMobileNotification(1);
+            MobileNotification resultNotification1 = await notificationsService.GetMobileNotification(1);
             
             Assert.NotNull(resultNotification1);
             Assert.IsType<MobileNotification>(resultNotification1);
@@ -90,9 +90,9 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
-            MobileNotification resultNotification1 = await dataService.GetMobileNotification(3);
+            MobileNotification resultNotification1 = await notificationsService.GetMobileNotification(3);
             
             Assert.Null(resultNotification1);
         }
@@ -123,7 +123,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             MobileNotification notificationToAdd = new()
             {
@@ -138,9 +138,9 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Time = DateTime.UtcNow
             };
 
-            MobileNotification addedNotification = await dataService.AddMobileNotification(notificationToAdd);
+            MobileNotification addedNotification = await notificationsService.AddMobileNotification(notificationToAdd);
             MobileNotification? dbNotification = await context.MobileNotificationsDb.AsNoTracking().SingleOrDefaultAsync(mn => mn.NotificationId == addedNotification.NotificationId);
-            MobileNotification savedNotification = await dataService.GetMobileNotification(addedNotification.NotificationId);
+            MobileNotification savedNotification = await notificationsService.GetMobileNotification(addedNotification.NotificationId);
 
             Assert.NotNull(addedNotification);
             Assert.IsType<MobileNotification>(addedNotification);
@@ -204,13 +204,13 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
-            MobileNotification notificationToUpdate = await dataService.GetMobileNotification(1);
+            MobileNotification notificationToUpdate = await notificationsService.GetMobileNotification(1);
             notificationToUpdate.Read = true;
-            MobileNotification updatedNotification = await dataService.UpdateMobileNotification(notificationToUpdate);
+            MobileNotification updatedNotification = await notificationsService.UpdateMobileNotification(notificationToUpdate);
             MobileNotification? dbNotification = await context.MobileNotificationsDb.AsNoTracking().SingleOrDefaultAsync(mn => mn.NotificationId == 1);
-            MobileNotification savedNotification = await dataService.GetMobileNotification(1);
+            MobileNotification savedNotification = await notificationsService.GetMobileNotification(1);
 
             Assert.NotNull(updatedNotification);
             Assert.IsType<MobileNotification>(updatedNotification);
@@ -273,12 +273,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             int notificationItemsCountBeforeDelete = context.MobileNotificationsDb.Count();
-            MobileNotification notificationToDelete = await dataService.GetMobileNotification(1);
+            MobileNotification notificationToDelete = await notificationsService.GetMobileNotification(1);
 
-            await dataService.DeleteMobileNotification(notificationToDelete);
+            await notificationsService.DeleteMobileNotification(notificationToDelete);
             MobileNotification? deletedNotification = await context.MobileNotificationsDb.SingleOrDefaultAsync(mn => mn.NotificationId == 1);
             int notificationItemsCountAfterDelete = context.MobileNotificationsDb.Count();
 
@@ -325,9 +325,9 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
-            List<MobileNotification> notificationsList = await dataService.GetUsersMobileNotifications("User1", "EN");
+            List<MobileNotification> notificationsList = await notificationsService.GetUsersMobileNotifications("User1", "EN");
             MobileNotification firstNotification = notificationsList.First();
 
             Assert.NotNull(notificationsList);
@@ -378,9 +378,9 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
-            List<MobileNotification> contactsList = await dataService.GetUsersMobileNotifications("NoUser", "EN");
+            List<MobileNotification> contactsList = await notificationsService.GetUsersMobileNotifications("NoUser", "EN");
             
             Assert.NotNull(contactsList);
             Assert.IsType<List<MobileNotification>>(contactsList);
@@ -396,7 +396,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -408,7 +408,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.Add(pushDevice1);
             await context.SaveChangesAsync();
-            PushDevices resultPushDevice1 = await dataService.GetPushDeviceById(1);
+            PushDevices resultPushDevice1 = await notificationsService.GetPushDeviceById(1);
             
             Assert.NotNull(resultPushDevice1);
             Assert.IsType<PushDevices>(resultPushDevice1);
@@ -424,7 +424,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -436,7 +436,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.Add(pushDevice1);
             await context.SaveChangesAsync();
-            PushDevices resultPushDevice2 = await dataService.GetPushDeviceById(2);
+            PushDevices resultPushDevice2 = await notificationsService.GetPushDeviceById(2);
 
             Assert.Null(resultPushDevice2);
         }
@@ -450,7 +450,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -471,7 +471,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 PushP256DH = "P2256DH1"
             };
 
-            PushDevices resultPushDevice1 = await dataService.GetPushDevice(requestPushDevice1);
+            PushDevices resultPushDevice1 = await notificationsService.GetPushDevice(requestPushDevice1);
 
             Assert.NotNull(resultPushDevice1);
             Assert.IsType<PushDevices>(resultPushDevice1);
@@ -491,7 +491,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -512,7 +512,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 PushP256DH = "P2256DH2"
             };
 
-            PushDevices resultPushDevice1 = await dataService.GetPushDevice(requestPushDevice1);
+            PushDevices resultPushDevice1 = await notificationsService.GetPushDevice(requestPushDevice1);
 
             Assert.Null(resultPushDevice1);
         }
@@ -526,7 +526,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -548,7 +548,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(pushDevice2);
             await context.SaveChangesAsync();
 
-            List<PushDevices> resultPushDevicesList1 = await dataService.GetPushDevicesListByUserId("PushDevice1");
+            List<PushDevices> resultPushDevicesList1 = await notificationsService.GetPushDevicesListByUserId("PushDevice1");
 
             Assert.NotNull(resultPushDevicesList1);
             Assert.Equal(context.PushDevices.Count(), resultPushDevicesList1.Count);
@@ -567,7 +567,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -589,7 +589,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(pushDevice2);
             await context.SaveChangesAsync();
 
-            List<PushDevices> resultPushDevicesList2 = await dataService.GetPushDevicesListByUserId("PushDevice2");
+            List<PushDevices> resultPushDevicesList2 = await notificationsService.GetPushDevicesListByUserId("PushDevice2");
 
             Assert.Empty(resultPushDevicesList2);
         }
@@ -603,7 +603,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -625,7 +625,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(pushDevice2);
             await context.SaveChangesAsync();
 
-            List<PushDevices> resultPushDevicesList1 = await dataService.GetAllPushDevices();
+            List<PushDevices> resultPushDevicesList1 = await notificationsService.GetAllPushDevices();
 
             Assert.NotNull(resultPushDevicesList1);
             Assert.Equal(context.PushDevices.Count(), resultPushDevicesList1.Count);
@@ -644,7 +644,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -665,9 +665,9 @@ namespace KinaUnaProgenyApi.Tests.Services
                 PushP256DH = "P2256DH2"
             };
 
-            PushDevices addedPushDevice = await dataService.AddPushDevice(addPushDevice1);
+            PushDevices addedPushDevice = await notificationsService.AddPushDevice(addPushDevice1);
 
-            PushDevices resultPushDevice1 = await dataService.GetPushDeviceById(addedPushDevice.Id);
+            PushDevices resultPushDevice1 = await notificationsService.GetPushDeviceById(addedPushDevice.Id);
 
             Assert.NotNull(addedPushDevice);
             Assert.IsType<PushDevices>(addedPushDevice);
@@ -689,7 +689,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             PushDevices pushDevice1 = new()
             {
@@ -712,7 +712,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await context.SaveChangesAsync();
 
             int deviceBeforeRemove = context.PushDevices.Count();
-            await dataService.RemovePushDevice(pushDevice1);
+            await notificationsService.RemovePushDevice(pushDevice1);
             int deviceAfterRemove = context.PushDevices.Count();
 
             Assert.Equal(2, deviceBeforeRemove);
@@ -728,7 +728,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -744,7 +744,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(webNotification1);
             await context.SaveChangesAsync();
 
-            WebNotification resultWebNotification1 = await dataService.GetWebNotificationById(1);
+            WebNotification resultWebNotification1 = await notificationsService.GetWebNotificationById(1);
 
             Assert.NotNull(resultWebNotification1);
             Assert.IsType<WebNotification>(resultWebNotification1);
@@ -763,7 +763,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -779,7 +779,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(webNotification1);
             await context.SaveChangesAsync();
 
-            WebNotification resultWebNotification1 = await dataService.GetWebNotificationById(2);
+            WebNotification resultWebNotification1 = await notificationsService.GetWebNotificationById(2);
 
             Assert.Null(resultWebNotification1);
         }
@@ -793,7 +793,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -833,7 +833,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(webNotification3);
             await context.SaveChangesAsync();
 
-            List<WebNotification> resultWebNotificationsList1 = await dataService.GetUsersWebNotifications("To1");
+            List<WebNotification> resultWebNotificationsList1 = await notificationsService.GetUsersWebNotifications("To1");
 
             Assert.NotNull(resultWebNotificationsList1.FirstOrDefault());
             Assert.IsType<WebNotification>(resultWebNotificationsList1.FirstOrDefault());
@@ -849,7 +849,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -889,7 +889,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(webNotification3);
             await context.SaveChangesAsync();
 
-            List<WebNotification> resultWebNotificationsList1 = await dataService.GetUsersWebNotifications("To3");
+            List<WebNotification> resultWebNotificationsList1 = await notificationsService.GetUsersWebNotifications("To3");
 
             Assert.NotNull(resultWebNotificationsList1);
             Assert.Empty(resultWebNotificationsList1);
@@ -904,7 +904,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -931,9 +931,9 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Icon = "Icon2"
             };
 
-            WebNotification addedWebNotification = await dataService.AddWebNotification(webNotificationToAdd);
+            WebNotification addedWebNotification = await notificationsService.AddWebNotification(webNotificationToAdd);
 
-            WebNotification resultWebNotification1 = await dataService.GetWebNotificationById(addedWebNotification.Id);
+            WebNotification resultWebNotification1 = await notificationsService.GetWebNotificationById(addedWebNotification.Id);
 
             Assert.NotNull(resultWebNotification1);
             Assert.IsType<WebNotification>(resultWebNotification1);
@@ -952,7 +952,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -979,13 +979,13 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(webNotification2);
             await context.SaveChangesAsync();
 
-            WebNotification webNotificationToUpdate = await dataService.GetWebNotificationById(1);
+            WebNotification webNotificationToUpdate = await notificationsService.GetWebNotificationById(1);
             webNotificationToUpdate.Title = "Title3";
             webNotificationToUpdate.IsRead = true;
 
-            await dataService.UpdateWebNotification(webNotificationToUpdate);
+            await notificationsService.UpdateWebNotification(webNotificationToUpdate);
 
-            WebNotification resultWebNotification1 = await dataService.GetWebNotificationById(1);
+            WebNotification resultWebNotification1 = await notificationsService.GetWebNotificationById(1);
 
             Assert.NotNull(resultWebNotification1);
             Assert.IsType<WebNotification>(resultWebNotification1);
@@ -1003,7 +1003,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
 
-            DataService dataService = new(context, memoryCache);
+            NotificationsService notificationsService = new(context, memoryCache);
 
             WebNotification webNotification1 = new()
             {
@@ -1028,18 +1028,18 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
 
-            webNotification1 = await dataService.AddWebNotification(webNotification1);
-            _ = await dataService.AddWebNotification(webNotification2);
+            webNotification1 = await notificationsService.AddWebNotification(webNotification1);
+            _ = await notificationsService.AddWebNotification(webNotification2);
 
-            WebNotification webNotificationToDelete = await dataService.GetWebNotificationById(webNotification1.Id);
+            WebNotification webNotificationToDelete = await notificationsService.GetWebNotificationById(webNotification1.Id);
 
             int countBeforeDelete = context.WebNotificationsDb.AsNoTracking().Count();
             
-            await dataService.RemoveWebNotification(webNotificationToDelete);
+            await notificationsService.RemoveWebNotification(webNotificationToDelete);
             
             int countAfterDelete = context.WebNotificationsDb.AsNoTracking().Count();
 
-            WebNotification resultWebNotification1 = await dataService.GetWebNotificationById(1);
+            WebNotification resultWebNotification1 = await notificationsService.GetWebNotificationById(1);
 
             Assert.Null(resultWebNotification1);
             Assert.Equal(2, countBeforeDelete);

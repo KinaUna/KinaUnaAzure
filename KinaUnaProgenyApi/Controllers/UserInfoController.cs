@@ -19,7 +19,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// <param name="progenyService"></param>
     /// <param name="userInfoService"></param>
     /// <param name="userAccessService"></param>
-    /// <param name="dataService"></param>
+    /// <param name="notificationsService"></param>
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -29,7 +29,7 @@ namespace KinaUnaProgenyApi.Controllers
         IProgenyService progenyService,
         IUserInfoService userInfoService,
         IUserAccessService userAccessService,
-        IDataService dataService)
+        INotificationsService notificationsService)
         : ControllerBase
     {
         /// <summary>
@@ -692,10 +692,10 @@ namespace KinaUnaProgenyApi.Controllers
                 await userAccessService.RemoveUserAccess(access.AccessId, access.ProgenyId, access.UserId);
             }
 
-            List<MobileNotification> notificationsList = await dataService.GetUsersMobileNotifications(userInfo.UserId, "");
+            List<MobileNotification> notificationsList = await notificationsService.GetUsersMobileNotifications(userInfo.UserId, "");
             foreach (MobileNotification notification in notificationsList)
             {
-                _ = await dataService.DeleteMobileNotification(notification);
+                _ = await notificationsService.DeleteMobileNotification(notification);
             }
 
             _ = await userInfoService.DeleteUserInfo(userInfo);

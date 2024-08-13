@@ -12,10 +12,10 @@ namespace KinaUnaProgenyApi.Services
     /// Implementation of the IAzureNotifications interface, used to manage mobile notifications.
     /// </summary>
     /// <param name="configuration"></param>
-    /// <param name="dataService"></param>
+    /// <param name="notificationsService"></param>
     /// <param name="userInfoService"></param>
     /// <param name="userAccessService"></param>
-    public class AzureNotifications(IConfiguration configuration, IDataService dataService, IUserInfoService userInfoService, IUserAccessService userAccessService)
+    public class AzureNotifications(IConfiguration configuration, INotificationsService notificationsService, IUserInfoService userInfoService, IUserAccessService userAccessService)
         : IAzureNotifications
     {
         public NotificationHubClient Hub { get; set; } = NotificationHubClient.CreateClientFromConnectionString(configuration["NotificationHubConnection"],
@@ -60,7 +60,7 @@ namespace KinaUnaProgenyApi.Services
                     Read = false
                 };
 
-                _ = await dataService.AddMobileNotification(notification);
+                _ = await notificationsService.AddMobileNotification(notification);
 
 
                 string userTag = "userEmail:" + userAcces.UserId.ToUpper();

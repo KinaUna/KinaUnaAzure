@@ -8,7 +8,7 @@ using WebPush;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class PushMessageSender(IConfiguration configuration, IDataService dataService) : IPushMessageSender
+    public class PushMessageSender(IConfiguration configuration, INotificationsService notificationsService) : IPushMessageSender
     {
         public async Task SendMessage(string user, string title, string message, string link, string tag)
         {
@@ -23,7 +23,7 @@ namespace KinaUnaProgenyApi.Services
             string vapidPublicKey = configuration["VapidPublicKey"];
             string vapidPrivateKey = configuration["VapidPrivateKey"];
 
-            List<PushDevices> deviceList = await dataService.GetPushDevicesListByUserId(user);
+            List<PushDevices> deviceList = await notificationsService.GetPushDevicesListByUserId(user);
             if (deviceList.Count != 0)
             {
                 foreach (PushDevices dev in deviceList)
@@ -32,7 +32,7 @@ namespace KinaUnaProgenyApi.Services
                     VapidDetails vapidDetails = new("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
                     if (string.IsNullOrEmpty(dev.PushAuth) || string.IsNullOrEmpty(dev.PushEndpoint))
                     {
-                        await dataService.RemovePushDevice(dev);
+                        await notificationsService.RemovePushDevice(dev);
                     }
                     else
                     {
@@ -45,7 +45,7 @@ namespace KinaUnaProgenyApi.Services
                         {
                             if (ex.Message == "Subscription no longer valid")
                             {
-                                await dataService.RemovePushDevice(dev);
+                                await notificationsService.RemovePushDevice(dev);
                             }
                         }
                     }
@@ -57,21 +57,21 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<PushDevices> GetPushDeviceById(int id)
         {
-            PushDevices device = await dataService.GetPushDeviceById(id);
+            PushDevices device = await notificationsService.GetPushDeviceById(id);
 
             return device;
         }
 
         public async Task<List<PushDevices>> GetAllPushDevices()
         {
-            List<PushDevices> pushDevicesList = await dataService.GetAllPushDevices();
+            List<PushDevices> pushDevicesList = await notificationsService.GetAllPushDevices();
 
             return pushDevicesList;
         }
 
         public async Task<PushDevices> AddPushDevice(PushDevices device)
         {
-            device = await dataService.AddPushDevice(device);
+            device = await notificationsService.AddPushDevice(device);
 
             return device;
 
@@ -79,14 +79,14 @@ namespace KinaUnaProgenyApi.Services
 
         public async Task<PushDevices> GetDevice(PushDevices device)
         {
-            PushDevices result = await dataService.GetPushDevice(device);
+            PushDevices result = await notificationsService.GetPushDevice(device);
 
             return result;
         }
 
         public async Task RemoveDevice(PushDevices device)
         {
-            await dataService.RemovePushDevice(device);
+            await notificationsService.RemovePushDevice(device);
         }
     }
 }

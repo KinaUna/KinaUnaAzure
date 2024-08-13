@@ -7,7 +7,7 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class WebNotificationsService(IPushMessageSender pushMessageSender, IDataService dataService, IUserAccessService userAccessService, IUserInfoService userInfoService)
+    public class WebNotificationsService(IPushMessageSender pushMessageSender, INotificationsService notificationsService, IUserAccessService userAccessService, IUserInfoService userInfoService)
         : IWebNotificationsService
     {
         public async Task SendCalendarNotification(CalendarItem eventItem, UserInfo currentUser, string title)
@@ -46,7 +46,7 @@ namespace KinaUnaProgenyApi.Services
                     Type = "Notification"
                 };
 
-                webNotification = await dataService.AddWebNotification(webNotification);
+                webNotification = await notificationsService.AddWebNotification(webNotification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
                     webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunacalendar" + eventItem.ProgenyId);
@@ -76,7 +76,7 @@ namespace KinaUnaProgenyApi.Services
                     Type = "Notification"
                 };
 
-                webNotification = await dataService.AddWebNotification(webNotification);
+                webNotification = await notificationsService.AddWebNotification(webNotification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
                     webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunacontact" + contactItem.ProgenyId);
@@ -106,7 +106,7 @@ namespace KinaUnaProgenyApi.Services
                     Type = "Notification"
                 };
 
-                notification = await dataService.AddWebNotification(notification);
+                notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunafriend" + friendItem.ProgenyId);
@@ -143,7 +143,7 @@ namespace KinaUnaProgenyApi.Services
                     Type = "Notification"
                 };
 
-                webNotification = await dataService.AddWebNotification(webNotification);
+                webNotification = await notificationsService.AddWebNotification(webNotification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
                     webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunalocation" + locationItem.ProgenyId);
@@ -173,7 +173,7 @@ namespace KinaUnaProgenyApi.Services
                     Type = "Notification"
                 };
 
-                notification = await dataService.AddWebNotification(notification);
+                notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunameasurement" + measurementItem.ProgenyId);
@@ -203,7 +203,7 @@ namespace KinaUnaProgenyApi.Services
                     Type = "Notification"
                 };
 
-                notification = await dataService.AddWebNotification(notification);
+                notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunanote" + noteItem.ProgenyId);
@@ -244,7 +244,7 @@ namespace KinaUnaProgenyApi.Services
                     Type = "Notification"
                 };
 
-                notification = await dataService.AddWebNotification(notification);
+                notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaphoto" + pictureItem.ProgenyId);
@@ -285,7 +285,7 @@ namespace KinaUnaProgenyApi.Services
                     Type = "Notification"
                 };
 
-                notification = await dataService.AddWebNotification(notification);
+                notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavideo" + videoItem.ProgenyId);
@@ -319,7 +319,7 @@ namespace KinaUnaProgenyApi.Services
                     Type = "Notification"
                 };
 
-                notification = await dataService.AddWebNotification(notification);
+                notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaskill" + skillItem.ProgenyId);
@@ -361,7 +361,7 @@ namespace KinaUnaProgenyApi.Services
 
                 webNotification.Type = "Notification";
 
-                webNotification = await dataService.AddWebNotification(webNotification);
+                webNotification = await notificationsService.AddWebNotification(webNotification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
                     webNotification.Message, Constants.WebAppUrl + webNotification.Link, tagString + commentItem.Progeny.Id);
@@ -393,7 +393,7 @@ namespace KinaUnaProgenyApi.Services
                     Type = "Notification"
                 };
 
-                notification = await dataService.AddWebNotification(notification);
+                notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title, notification.Message,
                     Constants.WebAppUrl + notification.Link, "kinaunasleep" + sleepItem.ProgenyId);
@@ -422,7 +422,7 @@ namespace KinaUnaProgenyApi.Services
                     Type = "Notification"
                 };
 
-                notification = await dataService.AddWebNotification(notification);
+                notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavaccination" + vaccinationItem.ProgenyId);
@@ -459,7 +459,7 @@ namespace KinaUnaProgenyApi.Services
                     Type = "Notification"
                 };
 
-                notification = await dataService.AddWebNotification(notification);
+                notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavocabulary" + vocabularyItem.ProgenyId);
@@ -488,7 +488,7 @@ namespace KinaUnaProgenyApi.Services
                     Type = "Notification"
                 };
 
-                notification = await dataService.AddWebNotification(notification);
+                notification = await notificationsService.AddWebNotification(notification);
 
                 await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunauseraccess" + userAccessItem.ProgenyId);

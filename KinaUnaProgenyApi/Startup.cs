@@ -40,7 +40,7 @@ namespace KinaUnaProgenyApi
             services.AddDistributedMemoryCache();
             services.AddScoped<IImageStore, ImageStore>();
             services.AddScoped<IAzureNotifications, AzureNotifications>();
-            services.AddScoped<IDataService, DataService>();
+            services.AddScoped<INotificationsService, NotificationsService>();
             services.AddScoped<IProgenyService, ProgenyService>();
             services.AddScoped<IUserInfoService, UserInfoService>();
             services.AddScoped<IUserAccessService, UserAccessService>();

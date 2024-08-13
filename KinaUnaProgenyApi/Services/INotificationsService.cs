@@ -4,7 +4,7 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public interface IDataService
+    public interface INotificationsService
     {
         Task<MobileNotification> GetMobileNotification(int id);
         Task<MobileNotification> AddMobileNotification(MobileNotification notification);

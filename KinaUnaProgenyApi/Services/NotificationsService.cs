@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
-    public class DataService(ProgenyDbContext progenyDbContext, IDistributedCache cache) : IDataService
+    public class NotificationsService(ProgenyDbContext progenyDbContext, IDistributedCache cache) : INotificationsService
     {
         private static DistributedCacheEntryOptions GetCacheEntryOptions()
         {
