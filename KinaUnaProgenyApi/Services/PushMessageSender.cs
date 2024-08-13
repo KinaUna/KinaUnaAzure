@@ -8,8 +8,23 @@ using WebPush;
 
 namespace KinaUnaProgenyApi.Services
 {
+    /// <summary>
+    /// PushMessageSender service for PWA push notifications.
+    /// </summary>
+    /// <param name="configuration"></param>
+    /// <param name="notificationsService"></param>
     public class PushMessageSender(IConfiguration configuration, INotificationsService notificationsService) : IPushMessageSender
     {
+        /// <summary>
+        /// Sends push notifications to all devices registered to a user.
+        /// If the device is no longer valid, it is removed from the database.
+        /// </summary>
+        /// <param name="user">The UserId of the User to send notifications to.</param>
+        /// <param name="title">The title of the notification.</param>
+        /// <param name="message">The message/body of the notification.</param>
+        /// <param name="link">The link/action when the notification is clicked.</param>
+        /// <param name="tag">The notification tag.</param>
+        /// <returns></returns>
         public async Task SendMessage(string user, string title, string message, string link, string tag)
         {
             PushNotification notification = new()
@@ -55,6 +70,11 @@ namespace KinaUnaProgenyApi.Services
 
         }
 
+        /// <summary>
+        /// Gets a PushDevice by Id.
+        /// </summary>
+        /// <param name="id">The PushDevice Id.</param>
+        /// <returns>The PushDevice with the given Id.</returns>
         public async Task<PushDevices> GetPushDeviceById(int id)
         {
             PushDevices device = await notificationsService.GetPushDeviceById(id);
@@ -62,6 +82,10 @@ namespace KinaUnaProgenyApi.Services
             return device;
         }
 
+        /// <summary>
+        /// Gets a list of all PushDevices in the database.
+        /// </summary>
+        /// <returns>List of PushDevice objects.</returns>
         public async Task<List<PushDevices>> GetAllPushDevices()
         {
             List<PushDevices> pushDevicesList = await notificationsService.GetAllPushDevices();
@@ -69,6 +93,11 @@ namespace KinaUnaProgenyApi.Services
             return pushDevicesList;
         }
 
+        /// <summary>
+        /// Adds a new PushDevice to the database.
+        /// </summary>
+        /// <param name="device">PushDevice object to add.</param>
+        /// <returns>The added PushDevice.</returns>
         public async Task<PushDevices> AddPushDevice(PushDevices device)
         {
             device = await notificationsService.AddPushDevice(device);
@@ -77,6 +106,11 @@ namespace KinaUnaProgenyApi.Services
 
         }
 
+        /// <summary>
+        /// Gets a PushDevice by the PushDevice's Name, PushP256DH, PushAuth, and PushEndPoint properties.
+        /// </summary>
+        /// <param name="device">PushDevice object with the properties to find.</param>
+        /// <returns>PushDevice.</returns>
         public async Task<PushDevices> GetDevice(PushDevices device)
         {
             PushDevices result = await notificationsService.GetPushDevice(device);
@@ -84,6 +118,11 @@ namespace KinaUnaProgenyApi.Services
             return result;
         }
 
+        /// <summary>
+        /// Removes a PushDevice from the database.
+        /// </summary>
+        /// <param name="device">The PushDevice to remove.</param>
+        /// <returns></returns>
         public async Task RemoveDevice(PushDevices device)
         {
             await notificationsService.RemovePushDevice(device);
