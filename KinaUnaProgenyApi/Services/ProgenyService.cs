@@ -30,7 +30,12 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
-
+        /// <summary>
+        /// Gets a Progeny by Id.
+        /// First tries to get the Progeny from the cache, then from the database if it's not in the cache.
+        /// </summary>
+        /// <param name="id">The Id of the Progeny to get.</param>
+        /// <returns>The Progeny with the given Id. Null if the Progeny doesn't exist.</returns>
         public async Task<Progeny> GetProgeny(int id)
         {
             Progeny progeny = await GetProgenyFromCache(id);
@@ -41,6 +46,12 @@ namespace KinaUnaProgenyApi.Services
 
             return progeny;
         }
+
+        /// <summary>
+        /// Adds a new Progeny to the database and the cache.
+        /// </summary>
+        /// <param name="progeny">The Progeny to add.</param>
+        /// <returns>The added Progeny.</returns>
         public async Task<Progeny> AddProgeny(Progeny progeny)
         {
             await _context.ProgenyDb.AddAsync(progeny);
@@ -51,6 +62,11 @@ namespace KinaUnaProgenyApi.Services
             return progeny;
         }
 
+        /// <summary>
+        /// Updates a Progeny in the database and the cache.
+        /// </summary>
+        /// <param name="progeny">The Progeny with updated properties.</param>
+        /// <returns>The updated Progeny.</returns>
         public async Task<Progeny> UpdateProgeny(Progeny progeny)
         {
             Progeny progenyToUpdate = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progeny.Id);
@@ -90,6 +106,11 @@ namespace KinaUnaProgenyApi.Services
             return progenyToUpdate;
         }
 
+        /// <summary>
+        /// Deletes a Progeny from the database and the cache.
+        /// </summary>
+        /// <param name="progeny">The Progeny to delete.</param>
+        /// <returns>The deleted Progeny.</returns>
         public async Task<Progeny> DeleteProgeny(Progeny progeny)
         {
             await RemoveProgenyFromCache(progeny.Id);
@@ -104,18 +125,28 @@ namespace KinaUnaProgenyApi.Services
             return progenyToDelete;
         }
 
+        /// <summary>
+        /// Gets a Progeny by Id from the cache.
+        /// </summary>
+        /// <param name="id">The Id of the Progeny to get.</param>
+        /// <returns>The Progeny with the given Id. Null if the Progeny isn't found in the cache.</returns>
         private async Task<Progeny> GetProgenyFromCache(int id)
         {
-            Progeny progeny = new();
             string cachedProgeny = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id);
-            if (!string.IsNullOrEmpty(cachedProgeny))
+            if (string.IsNullOrEmpty(cachedProgeny))
             {
-                progeny = JsonConvert.DeserializeObject<Progeny>(cachedProgeny);
+                return null;
             }
-
+            
+            Progeny progeny = JsonConvert.DeserializeObject<Progeny>(cachedProgeny);
             return progeny;
         }
 
+        /// <summary>
+        /// Gets a Progeny by Id from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The Id of the Progeny to get and set.</param>
+        /// <returns>The Progeny with the given Id. Null if the Progeny doesn't exist.</returns>
         private async Task<Progeny> SetProgenyInCache(int id)
         {
             Progeny progeny = await _context.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
@@ -131,11 +162,21 @@ namespace KinaUnaProgenyApi.Services
             return progeny;
         }
 
+        /// <summary>
+        /// Removes a Progeny from the cache.
+        /// </summary>
+        /// <param name="id">The Id of the Progeny to remove.</param>
+        /// <returns></returns>
         private async Task RemoveProgenyFromCache(int id)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "progeny" + id);
         }
 
+        /// <summary>
+        /// Resizes a Progeny profile picture and saves it to the image store.
+        /// </summary>
+        /// <param name="imageId">The current file name.</param>
+        /// <returns>The new file name of the resized image.</returns>
         public async Task<string> ResizeImage(string imageId)
         {
             MemoryStream memoryStream = await _imageStore.GetStream(imageId, BlobContainers.Progeny);
