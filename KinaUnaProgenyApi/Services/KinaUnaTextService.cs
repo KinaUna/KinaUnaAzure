@@ -10,6 +10,13 @@ namespace KinaUnaProgenyApi.Services
 {
     public class KinaUnaTextService(ProgenyDbContext context) : IKinaUnaTextService
     {
+        /// <summary>
+        /// Gets a KinaUnaText by Title, Page and language.
+        /// </summary>
+        /// <param name="title">The Title of the KinaUnaText.</param>
+        /// <param name="page">The Page the text belongs to.</param>
+        /// <param name="languageId">The LanguageId of the language.</param>
+        /// <returns>KinaUnaText.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "StringComparison does not work with database queries.")]
         public async Task<KinaUnaText> GetTextByTitle(string title, string page, int languageId)
         {
@@ -21,18 +28,37 @@ namespace KinaUnaProgenyApi.Services
             return textItem;
         }
 
+
+        /// <summary>
+        /// Gets a KinaUnaText by Id.
+        /// </summary>
+        /// <param name="id">The Id of the KinaUnaText to get.</param>
+        /// <returns>KinaUnaText with the given Id.</returns>
         public async Task<KinaUnaText> GetTextById(int id)
         {
             KinaUnaText kinaUnaText = await context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
             return kinaUnaText;
         }
 
+        /// <summary>
+        /// Gets a KinaUnaText by TextId and language.
+        /// Each text is translated into all languages, with the same TextId.
+        /// </summary>
+        /// <param name="textId">The TextId of the text to get.</param>
+        /// <param name="languageId">The language of the translation to get.</param>
+        /// <returns>The KinaUnaText with the TextId and in the language given.</returns>
         public async Task<KinaUnaText> GetTextByTextId(int textId, int languageId)
         {
             KinaUnaText kinaUnaText = await context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(t => t.TextId == textId && t.LanguageId == languageId);
             return kinaUnaText;
         }
 
+        /// <summary>
+        /// Gets a list of all KinaUnaTexts for a page, in the specified language.
+        /// </summary>
+        /// <param name="page">The Page to get KinaUnaTexts for.</param>
+        /// <param name="languageId">The LanguageId of the language to get KinaUnaTexts for.</param>
+        /// <returns>List of KinaUnaTexts.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "<Pending>")]
         public async Task<List<KinaUnaText>> GetPageTextsList(string page, int languageId)
         {
@@ -47,6 +73,11 @@ namespace KinaUnaProgenyApi.Services
             return texts;
         }
 
+        /// <summary>
+        /// Gets a list of all KinaUnaTexts in a given language.
+        /// </summary>
+        /// <param name="languageId">The LanguageId of the language to get KinaUnaTexts for.</param>
+        /// <returns>List of KinaUnaTexts.</returns>
         public async Task<List<KinaUnaText>> GetAllPageTextsList(int languageId)
         {
             if (languageId == 0)
@@ -57,6 +88,11 @@ namespace KinaUnaProgenyApi.Services
             return texts;
         }
 
+        /// <summary>
+        /// Checks each TextNumber to see if there are texts for all languages.
+        /// If not, it adds a text for the missing languages.
+        /// </summary>
+        /// <returns></returns>
         public async Task CheckLanguages()
         {
             List<KinaUnaTextNumber> textNumbers = await context.KinaUnaTextNumbers.AsNoTracking().ToListAsync();
@@ -90,6 +126,13 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a new KinaUnaText to the database.
+        /// Adds a KinaUnaTextNumber to the database for the KinaUnaText, so translations can be managed.
+        /// Then adds translations for the text in all languages.
+        /// </summary>
+        /// <param name="text">The KinaUnaText object to add.</param>
+        /// <returns>The added KinaUnaText object.</returns>
         public async Task<KinaUnaText> AddText(KinaUnaText text)
         {
             text.Title = text.Title.Trim();
@@ -97,7 +140,7 @@ namespace KinaUnaProgenyApi.Services
 
             if (text.Title.StartsWith("__"))
             {
-                // Title's starting with double underscore are considered unique system pages, so we make sure no other text has the same title on a page.
+                // Title's starting with double underscore are considered unique system pages, so we need to make sure no other text has the same title on a page.
                 text = await AddSystemPageText(text);
             }
             else
@@ -120,6 +163,12 @@ namespace KinaUnaProgenyApi.Services
             return text;
         }
 
+        /// <summary>
+        /// Adds a new KinaUnaText to the database for special system pages (Privacy, About, etc.).
+        /// Ensures that Title is unique for the page and language.
+        /// </summary>
+        /// <param name="text">The KinaUnaText to add.</param>
+        /// <returns>The added KinaUnaText.</returns>
         private async Task<KinaUnaText> AddSystemPageText(KinaUnaText text)
         {
             KinaUnaText existingTextItem = await context.KinaUnaTexts.SingleOrDefaultAsync(t => t.Title.ToUpper() == text.Title.ToUpper() && t.Page.ToUpper() == text.Page.ToUpper() && t.LanguageId == text.LanguageId);
@@ -152,6 +201,11 @@ namespace KinaUnaProgenyApi.Services
             return existingTextItem;
         }
 
+        /// <summary>
+        /// Adds translations for a text in all languages.
+        /// </summary>
+        /// <param name="text">The KinaUnaText to add translations for.</param>
+        /// <returns></returns>
         private async Task AddTextForOtherLanguages(KinaUnaText text)
         {
             List<KinaUnaLanguage> languages = await context.Languages.AsNoTracking().ToListAsync();
@@ -177,6 +231,12 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Updates a KinaUnaText in the database.
+        /// </summary>
+        /// <param name="id">The Id of the KinaUnaText</param>
+        /// <param name="text">The KinaUnaText object with updated properties.</param>
+        /// <returns>The updated KinaUnaText updated.</returns>
         public async Task<KinaUnaText> UpdateText(int id, KinaUnaText text)
         {
             KinaUnaText textItem = await context.KinaUnaTexts.SingleOrDefaultAsync(t => t.Id == id);
@@ -193,6 +253,12 @@ namespace KinaUnaProgenyApi.Services
             return textItem;
         }
 
+        /// <summary>
+        /// Deletes a KinaUnaText from the database.
+        /// Also deletes all translations of the text.
+        /// </summary>
+        /// <param name="id">The Id of the KinaUnaText to delete.</param>
+        /// <returns>The deleted KinaUnaText object.</returns>
         public async Task<KinaUnaText> DeleteText(int id)
         {
             KinaUnaText textItem = await context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id);
@@ -213,6 +279,12 @@ namespace KinaUnaProgenyApi.Services
             return textItem;
         }
 
+        /// <summary>
+        /// Deletes a single KinaUnaText from the database.
+        /// Doesn't delete translations of the text.
+        /// </summary>
+        /// <param name="id">The Id of the KinaUnaText to delete.</param>
+        /// <returns>The deleted KinaUnaText object.</returns>
         public async Task<KinaUnaText> DeleteSingleText(int id)
         {
             KinaUnaText textItem = await context.KinaUnaTexts.SingleOrDefaultAsync(t => t.Id == id);
