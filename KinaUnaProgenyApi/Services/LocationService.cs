@@ -26,6 +26,12 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
+        /// <summary>
+        /// Gets a Location by LocationId.
+        /// First tries to get the Location from the cache, then from the database if it's not in the cache.
+        /// </summary>
+        /// <param name="id">The LocationId of the Location to get.</param>
+        /// <returns>The Location with the given LocationId. Null if the Location doesn't exist.</returns>
         public async Task<Location> GetLocation(int id)
         {
             Location location = await GetLocationFromCache(id);
@@ -37,18 +43,28 @@ namespace KinaUnaProgenyApi.Services
             return location;
         }
 
+        /// <summary>
+        /// Gets a Location by LocationId from the cache.
+        /// </summary>
+        /// <param name="id">The LocationId of the Location to get.</param>
+        /// <returns>The Location with the given LocationId. Null if the Location is not found.</returns>
         private async Task<Location> GetLocationFromCache(int id)
         {
-            Location location = new();
             string cachedLocation = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "location" + id);
-            if (!string.IsNullOrEmpty(cachedLocation))
+            if (string.IsNullOrEmpty(cachedLocation))
             {
-                location = JsonConvert.DeserializeObject<Location>(cachedLocation);
+                return null;
             }
 
+            Location location = JsonConvert.DeserializeObject<Location>(cachedLocation);
             return location;
         }
 
+        /// <summary>
+        /// Gets a Location by LocationId from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The LocationId of the Location to get and set.</param>
+        /// <returns>Location with the given LocationId. Null if the Location doesn't exist.</returns>
         private async Task<Location> SetLocationInCache(int id)
         {
             Location location = await _context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(l => l.LocationId == id);
@@ -61,6 +77,11 @@ namespace KinaUnaProgenyApi.Services
             return location;
         }
 
+        /// <summary>
+        /// Adds a new Location to the database and the cache.
+        /// </summary>
+        /// <param name="location">The Location object to add.</param>
+        /// <returns>The added Location object.</returns>
         public async Task<Location> AddLocation(Location location)
         {
             Location locationToAdd = new();
@@ -74,6 +95,11 @@ namespace KinaUnaProgenyApi.Services
             return locationToAdd;
         }
 
+        /// <summary>
+        /// Updates a Location in the database and the cache.
+        /// </summary>
+        /// <param name="location">Location object with the updated properties.</param>
+        /// <returns>The updated Location object.</returns>
         public async Task<Location> UpdateLocation(Location location)
         {
             Location locationToUpdate = await _context.LocationsDb.SingleOrDefaultAsync(l => l.LocationId == location.LocationId);
@@ -89,6 +115,12 @@ namespace KinaUnaProgenyApi.Services
             return locationToUpdate;
         }
 
+        /// <summary>
+        /// Deletes a Location from the database and the cache.
+        /// Then deletes the Location from the LocationsList cached for the Progeny.
+        /// </summary>
+        /// <param name="location">The Location to delete.</param>
+        /// <returns>The deleted Location object.</returns>
         public async Task<Location> DeleteLocation(Location location)
         {
             Location locationToDelete = await _context.LocationsDb.SingleOrDefaultAsync(l => l.LocationId == location.LocationId);
@@ -102,6 +134,12 @@ namespace KinaUnaProgenyApi.Services
             return location;
         }
 
+        /// <summary>
+        /// Removes a Location from the cache and updates the LocationsList for the Progeny.
+        /// </summary>
+        /// <param name="id">The LocationId of the Location to remove.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny that the Location belongs to.</param>
+        /// <returns></returns>
         private async Task RemoveLocationFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "location" + id);
@@ -109,6 +147,12 @@ namespace KinaUnaProgenyApi.Services
             _ = await SetLocationsListInCache(progenyId);
         }
 
+        /// <summary>
+        /// Gets a list of all Locations for a Progeny from the cache.
+        /// If the list is empty, it will be looked up in the database and added to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get all Location entities for.</param>
+        /// <returns>List of Locations.</returns>
         public async Task<List<Location>> GetLocationsList(int progenyId)
         {
             List<Location> locationsList = await GetLocationsListFromCache(progenyId);
@@ -120,6 +164,11 @@ namespace KinaUnaProgenyApi.Services
             return locationsList;
         }
 
+        /// <summary>
+        /// Gets a list of all Locations for a Progeny from the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get all Location entities for.</param>
+        /// <returns>List of Locations.</returns>
         private async Task<List<Location>> GetLocationsListFromCache(int progenyId)
         {
             List<Location> locationsList = [];
@@ -132,6 +181,11 @@ namespace KinaUnaProgenyApi.Services
             return locationsList;
         }
 
+        /// <summary>
+        /// Gets a list of all Locations for a Progeny from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get all Location entities for.</param>
+        /// <returns>List of Locations.</returns>
         private async Task<List<Location>> SetLocationsListInCache(int progenyId)
         {
             List<Location> locationsList = await _context.LocationsDb.AsNoTracking().Where(l => l.ProgenyId == progenyId).ToListAsync();
@@ -140,6 +194,12 @@ namespace KinaUnaProgenyApi.Services
             return locationsList;
         }
 
+        /// <summary>
+        /// Gets an Address by AddressId.
+        /// First tries to get the Address from the cache, then from the database if it's not in the cache.
+        /// </summary>
+        /// <param name="id">The AddressId of the Address item to get.</param>
+        /// <returns>Address object with the given AddressId.</returns>
         public async Task<Address> GetAddressItem(int id)
         {
             Address address = await GetAddressFromCache(id);
@@ -151,18 +211,28 @@ namespace KinaUnaProgenyApi.Services
             return address;
         }
 
+        /// <summary>
+        /// Gets an Address by AddressId from the cache.
+        /// </summary>
+        /// <param name="id">The AddressId of the Address entity to get.</param>
+        /// <returns>Address object with the given AddressId. Null if the Address isn't found.</returns>
         private async Task<Address> GetAddressFromCache(int id)
         {
-            Address address = new();
             string cachedAddress = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "address" + id);
-            if (!string.IsNullOrEmpty(cachedAddress))
+            if (string.IsNullOrEmpty(cachedAddress))
             {
-                address = JsonConvert.DeserializeObject<Address>(cachedAddress);
+                return null;
             }
 
+            Address address = JsonConvert.DeserializeObject<Address>(cachedAddress);
             return address;
         }
 
+        /// <summary>
+        /// Gets an Address by AddressId from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The AddressId of the Address to get and set.</param>
+        /// <returns>Address object with the given AddressId. Null if the Address entity doesn't exist.</returns>
         private async Task<Address> SetAddressItemInCache(int id)
         {
             Address addressItem = await _context.AddressDb.AsNoTracking().SingleOrDefaultAsync(a => a.AddressId == id);
@@ -171,6 +241,11 @@ namespace KinaUnaProgenyApi.Services
             return addressItem;
         }
 
+        /// <summary>
+        /// Adds a new Address to the database and the cache.
+        /// </summary>
+        /// <param name="addressItem">The Address object to add.</param>
+        /// <returns>The added Address object.</returns>
         public async Task<Address> AddAddressItem(Address addressItem)
         {
             Address addressToAdd = new();
@@ -183,6 +258,11 @@ namespace KinaUnaProgenyApi.Services
             return addressToAdd;
         }
 
+        /// <summary>
+        /// Updates an Address in the database and the cache.
+        /// </summary>
+        /// <param name="addressItem">The Address object with the updated properties.</param>
+        /// <returns>The updated Address object.</returns>
         public async Task<Address> UpdateAddressItem(Address addressItem)
         {
             Address addressToUpdate = await _context.AddressDb.SingleOrDefaultAsync(a => a.AddressId == addressItem.AddressId);
@@ -198,6 +278,11 @@ namespace KinaUnaProgenyApi.Services
             return addressToUpdate;
         }
 
+        /// <summary>
+        /// Deletes an Address from the database and the cache.
+        /// </summary>
+        /// <param name="id">The AddressId of the Address to delete.</param>
+        /// <returns></returns>
         public async Task RemoveAddressItem(int id)
         {
             Address addressToRemove = await _context.AddressDb.SingleOrDefaultAsync(a => a.AddressId == id);
@@ -210,6 +295,11 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Removes an Address from the cache.
+        /// </summary>
+        /// <param name="id">The AddressId of the Address item to remove.</param>
+        /// <returns></returns>
         private async Task RemoveAddressFromCache(int id)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "address" + id);
