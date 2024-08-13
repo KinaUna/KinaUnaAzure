@@ -19,12 +19,22 @@ namespace KinaUnaProgenyApi.Services
             return cacheOptions;
         }
 
+        /// <summary>
+        /// Gets a MobileNotification by NotificationId.
+        /// </summary>
+        /// <param name="id">The NotificationId of the Notification to get.</param>
+        /// <returns>The Notification with the given NotificationId. Null if it doesn't exist.</returns>
         public async Task<MobileNotification> GetMobileNotification(int id)
         {
             MobileNotification notification = await progenyDbContext.MobileNotificationsDb.SingleOrDefaultAsync(m => m.NotificationId == id);
             return notification;
         }
 
+        /// <summary>
+        /// Adds a new MobileNotification to the database.
+        /// </summary>
+        /// <param name="notification">The MobileNotification to add.</param>
+        /// <returns>The added MobileNotification.</returns>
         public async Task<MobileNotification> AddMobileNotification(MobileNotification notification)
         {
             _ = await progenyDbContext.MobileNotificationsDb.AddAsync(notification);
@@ -33,6 +43,11 @@ namespace KinaUnaProgenyApi.Services
             return notification;
         }
 
+        /// <summary>
+        /// Updates a MobileNotification in the database.
+        /// </summary>
+        /// <param name="notification">The MobileNotification with the updated properties.</param>
+        /// <returns>The updated MobileNotification.</returns>
         public async Task<MobileNotification> UpdateMobileNotification(MobileNotification notification)
         {
             MobileNotification notificationToUpdate = await progenyDbContext.MobileNotificationsDb.SingleOrDefaultAsync(mn => mn.NotificationId == notification.NotificationId);
@@ -54,6 +69,11 @@ namespace KinaUnaProgenyApi.Services
             return notification;
         }
 
+        /// <summary>
+        /// Deletes a MobileNotification from the database.
+        /// </summary>
+        /// <param name="notification">The MobileNotification to delete.</param>
+        /// <returns>The deleted Notification.</returns>
         public async Task<MobileNotification> DeleteMobileNotification(MobileNotification notification)
         {
             MobileNotification notificationToDelete = await progenyDbContext.MobileNotificationsDb.SingleOrDefaultAsync(mn => mn.NotificationId == notification.NotificationId);
@@ -64,6 +84,13 @@ namespace KinaUnaProgenyApi.Services
 
             return notification;
         }
+
+        /// <summary>
+        /// Gets a list of all MobileNotifications for a user in a specific language.
+        /// </summary>
+        /// <param name="userId">The UserId of the user to get Notifications for.</param>
+        /// <param name="language">The Language of the Notifications.</param>
+        /// <returns>List of Notifications.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "String comparison does not work with database queries.")]
         public async Task<List<MobileNotification>> GetUsersMobileNotifications(string userId, string language)
         {
@@ -76,6 +103,11 @@ namespace KinaUnaProgenyApi.Services
             return notifications;
         }
 
+        /// <summary>
+        /// Adds a new PushDevice to the database.
+        /// </summary>
+        /// <param name="device">The PushDevice to add.</param>
+        /// <returns>The added PushDevice.</returns>
         public async Task<PushDevices> AddPushDevice(PushDevices device)
         {
             PushDevices existingDevice = await GetPushDevice(device);
@@ -90,6 +122,11 @@ namespace KinaUnaProgenyApi.Services
             return device;
         }
 
+        /// <summary>
+        /// Deletes a PushDevice from the database.
+        /// </summary>
+        /// <param name="device">The PushDevice to remove.</param>
+        /// <returns></returns>
         public async Task RemovePushDevice(PushDevices device)
         {
             PushDevices existingDevice = await GetPushDevice(device);
@@ -102,6 +139,11 @@ namespace KinaUnaProgenyApi.Services
             await progenyDbContext.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Gets a PushDevice by Id.
+        /// </summary>
+        /// <param name="id">The Id of the PushDevice to get.</param>
+        /// <returns>The PushDevice with the given Id. Null if it doesn't exist.</returns>
         public async Task<PushDevices> GetPushDeviceById(int id)
         {
             PushDevices device = await progenyDbContext.PushDevices.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
@@ -109,6 +151,10 @@ namespace KinaUnaProgenyApi.Services
             return device;
         }
 
+        /// <summary>
+        /// Gets a list of all PushDevices in the database.
+        /// </summary>
+        /// <returns>List of all PushDevices.</returns>
         public async Task<List<PushDevices>> GetAllPushDevices()
         {
             List<PushDevices> pushDevicesList = await progenyDbContext.PushDevices.AsNoTracking().ToListAsync();
@@ -116,6 +162,11 @@ namespace KinaUnaProgenyApi.Services
             return pushDevicesList;
         }
 
+        /// <summary>
+        /// Gets a PushDevice by the PushDevice's Name, PushP256DH, PushAuth, and PushEndPoint properties.
+        /// </summary>
+        /// <param name="device">The PushDevice to get.</param>
+        /// <returns>The PushDevice.</returns>
         public async Task<PushDevices> GetPushDevice(PushDevices device)
         {
             PushDevices result = await progenyDbContext.PushDevices.AsNoTracking().SingleOrDefaultAsync(p =>
@@ -124,6 +175,11 @@ namespace KinaUnaProgenyApi.Services
             return result;
         }
 
+        /// <summary>
+        /// Gets a list of all PushDevices for a user.
+        /// </summary>
+        /// <param name="userId">The user's UserId.</param>
+        /// <returns>The PushDevice if found. Null if it doesn't exist.</returns>
         public async Task<List<PushDevices>> GetPushDevicesListByUserId(string userId)
         {
             List<PushDevices> deviceList = await progenyDbContext.PushDevices.AsNoTracking().Where(m => m.Name == userId).ToListAsync();
@@ -131,6 +187,12 @@ namespace KinaUnaProgenyApi.Services
             return deviceList;
         }
 
+        /// <summary>
+        /// Gets a WebNotification by Id from the database and sets it in the cache.
+        /// Also updates the list of WebNotifications for the user in the cache.
+        /// </summary>
+        /// <param name="id">The Id of the WebNotification to get and set in cache.</param>
+        /// <returns>The WebNotification with the Given Id. Null if not found.</returns>
         private async Task<WebNotification> SetWebNotificationInCache(int id)
         {
             WebNotification notification = await progenyDbContext.WebNotificationsDb.AsNoTracking().SingleOrDefaultAsync(n => n.Id == id);
@@ -143,6 +205,11 @@ namespace KinaUnaProgenyApi.Services
             return notification;
         }
 
+        /// <summary>
+        /// Gets a WebNotification by Id from the cache.
+        /// </summary>
+        /// <param name="id">The Id of the WebNotification to get.</param>
+        /// <returns>The WebNotification with the given Id. If not found a new WebNotification, check for WebNotification.Id != 0 to verify an entity exists.</returns>
         private async Task<WebNotification> GetWebNotificationFromCache(int id)
         {
             WebNotification notification = new();
@@ -155,6 +222,12 @@ namespace KinaUnaProgenyApi.Services
             return notification;
         }
 
+        /// <summary>
+        /// Removes a WebNotification from the cache and updates the list of WebNotifications for the user in the cache.
+        /// </summary>
+        /// <param name="id">The Id of the WebNotification.</param>
+        /// <param name="userId">The user's UserId.</param>
+        /// <returns></returns>
         private async Task RemoveWebNotificationFromCache(int id, string userId)
         {
             await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "webnotification" + id);
@@ -163,6 +236,11 @@ namespace KinaUnaProgenyApi.Services
             await cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "webnotifications" + userId, JsonConvert.SerializeObject(notificationsList), GetCacheEntryOptions());
         }
 
+        /// <summary>
+        /// Adds a new WebNotification to the database and sets it in the cache.
+        /// </summary>
+        /// <param name="notification">The WebNotification to add.</param>
+        /// <returns>The added WebNotification.</returns>
         public async Task<WebNotification> AddWebNotification(WebNotification notification)
         {
             await progenyDbContext.WebNotificationsDb.AddAsync(notification);
@@ -173,6 +251,11 @@ namespace KinaUnaProgenyApi.Services
             return notification;
         }
 
+        /// <summary>
+        /// Updates a WebNotification in the database and sets it in the cache.
+        /// </summary>
+        /// <param name="notification">The WebNotification with updated properties.</param>
+        /// <returns>The updated WebNotification.</returns>
         public async Task<WebNotification> UpdateWebNotification(WebNotification notification)
         {
             WebNotification notificationToUpdate = await progenyDbContext.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == notification.Id);
@@ -195,6 +278,11 @@ namespace KinaUnaProgenyApi.Services
             return notification;
         }
 
+        /// <summary>
+        /// Removes a WebNotification from the database and the cache.
+        /// </summary>
+        /// <param name="notification">The WebNotification to remove.</param>
+        /// <returns></returns>
         public async Task RemoveWebNotification(WebNotification notification)
         {
             WebNotification notificationToDelete = await progenyDbContext.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == notification.Id);
@@ -206,6 +294,11 @@ namespace KinaUnaProgenyApi.Services
             await RemoveWebNotificationFromCache(notification.Id, notification.To);
         }
 
+        /// <summary>
+        /// Gets a WebNotification by Id.
+        /// </summary>
+        /// <param name="id">The Id of the WebNotification to get.</param>
+        /// <returns>The WebNotification with the given Id. Null if the WebNotification doesn't exist.</returns>
         public async Task<WebNotification> GetWebNotificationById(int id)
         {
             WebNotification notification = await GetWebNotificationFromCache(id);
@@ -217,6 +310,11 @@ namespace KinaUnaProgenyApi.Services
             return notification;
         }
 
+        /// <summary>
+        /// Gets a list of all WebNotifications for a user from the cache.
+        /// </summary>
+        /// <param name="userId">The UserId of the user to get all WebNotifications for.</param>
+        /// <returns></returns>
         private async Task<List<WebNotification>> GetUsersWebNotificationsFromCache(string userId)
         {
             List<WebNotification> notificationsList = [];
@@ -229,6 +327,11 @@ namespace KinaUnaProgenyApi.Services
             return notificationsList;
         }
 
+        /// <summary>
+        /// Gets all WebNotifications for a user from the database and sets them in the cache.
+        /// </summary>
+        /// <param name="userId">The user's UserId.</param>
+        /// <returns>List of all WebNotifications for the user.</returns>
         private async Task<List<WebNotification>> SetUsersWebNotificationsInCache(string userId)
         {
             List<WebNotification> notificationsList = await progenyDbContext.WebNotificationsDb.AsNoTracking().Where(n => n.To == userId).ToListAsync();
@@ -237,6 +340,12 @@ namespace KinaUnaProgenyApi.Services
             return notificationsList;
         }
 
+        /// <summary>
+        /// Gets all WebNotifications for a user.
+        /// First tries to get the notifications from the cache, if none are found then gets them from the database and sets the cache.
+        /// </summary>
+        /// <param name="userId">The user's UserId.</param>
+        /// <returns>List of WebNotifications.</returns>
         public async Task<List<WebNotification>> GetUsersWebNotifications(string userId)
         {
             List<WebNotification> usersNotifications = await GetUsersWebNotificationsFromCache(userId);
@@ -248,6 +357,14 @@ namespace KinaUnaProgenyApi.Services
             return usersNotifications;
         }
 
+        /// <summary>
+        /// Gets a list of the latest WebNotifications for a user.
+        /// </summary>
+        /// <param name="userId">The UserId of the user to get Notifications for.</param>
+        /// <param name="start">Number of WebNotifications to skip.</param>
+        /// <param name="count">Number of WebNotifications to get.</param>
+        /// <param name="unreadOnly">Filter the list, if unreadOnly is true only include the WebNotification with IsRead set to false.</param>
+        /// <returns>List of WebNotifications.</returns>
         public async Task<List<WebNotification>> GetLatestWebNotifications(string userId, int start, int count, bool unreadOnly)
         {
             List<WebNotification> notificationsList = await GetUsersWebNotifications(userId);
@@ -264,6 +381,11 @@ namespace KinaUnaProgenyApi.Services
 
         }
 
+        /// <summary>
+        /// Gets the number of WebNotifications for a user.
+        /// </summary>
+        /// <param name="userId">The UserId of the user.</param>
+        /// <returns>Number of WebNotifications found for the user.</returns>
         public async Task<int> GetUsersNotificationsCount(string userId)
         {
             List<WebNotification> notificationsList = await GetUsersWebNotifications(userId);
