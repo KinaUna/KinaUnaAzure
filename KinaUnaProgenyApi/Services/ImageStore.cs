@@ -17,6 +17,14 @@ namespace KinaUnaProgenyApi.Services
         private readonly string _baseUri = configuration.GetValue<string>("CloudBlobBase");
         private readonly string _cloudBlobUserName = configuration.GetValue<string>("CloudBlobUserName");
 
+        /// <summary>
+        /// Saves an image file Stream to a blob storage.
+        /// The file name is a new GUID.
+        /// </summary>
+        /// <param name="imageStream">The Stream containing the file data.</param>
+        /// <param name="containerName">The Name of the storage container to save the file to.</param>
+        /// <param name="fileFormat">The file extension of the file.</param>
+        /// <returns>The filename of the saved file.</returns>
         public async Task<string> SaveImage(Stream imageStream, string containerName = "pictures", string fileFormat = ".jpg")
         {
             string imageId = Guid.NewGuid() + fileFormat;
@@ -28,6 +36,12 @@ namespace KinaUnaProgenyApi.Services
             return imageId;
         }
 
+        /// <summary>
+        /// Gets a SAS URI for a file/blob in a storage container.
+        /// </summary>
+        /// <param name="imageId">The filename of the file.</param>
+        /// <param name="containerName">The storage container's name.</param>
+        /// <returns>String with the URI for the file.</returns>
         public string UriFor(string imageId, string containerName = "pictures")
         {
             if (imageId.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
@@ -58,6 +72,12 @@ namespace KinaUnaProgenyApi.Services
             return sasUri.Uri.AbsoluteUri;
         }
 
+        /// <summary>
+        /// Gets a Stream for a file/blob in a storage container.
+        /// </summary>
+        /// <param name="imageId">The filename of the file to get a stream for.</param>
+        /// <param name="containerName">The name of the storage container for the file.</param>
+        /// <returns>MemoryStream for the file.</returns>
         public async Task<MemoryStream> GetStream(string imageId, string containerName = "pictures")
         {
             BlobContainerClient container = _blobServiceClient.GetBlobContainerClient(containerName);
@@ -69,6 +89,12 @@ namespace KinaUnaProgenyApi.Services
             return memoryStream;
         }
 
+        /// <summary>
+        /// Deletes a file/blob from a storage container.
+        /// </summary>
+        /// <param name="imageId">The filename of the file to delete.</param>
+        /// <param name="containerName">The name of the container for the file.</param>
+        /// <returns>String with the filename.</returns>
         public async Task<string> DeleteImage(string imageId, string containerName = "pictures")
         {
             if (string.IsNullOrEmpty(imageId) || imageId.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
@@ -91,6 +117,7 @@ namespace KinaUnaProgenyApi.Services
 
         /// <summary>
         /// Refreshes blob storage links in a text.
+        /// SAS links are valid for a limited time, so they need to be updated.
         /// </summary>
         /// <param name="originalText">string: The text to update links for.</param>
         /// <returns>string: The text with updated links.</returns>
