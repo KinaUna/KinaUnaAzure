@@ -28,6 +28,12 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
+        /// <summary>
+        /// Gets a Contact by ContactId from the cache.
+        /// If the Contact isn't in the cache, it will be looked up in the database and added to the cache.
+        /// </summary>
+        /// <param name="id">The ContactId of the Contact to get.</param>
+        /// <returns>Contact object. Null if a Contact entity with the given ContactId doesn't exist.</returns>
         public async Task<Contact> GetContact(int id)
         {
             Contact contact = await GetContactFromCache(id);
@@ -39,6 +45,11 @@ namespace KinaUnaProgenyApi.Services
             return contact;
         }
 
+        /// <summary>
+        /// Adds a new Contact to the database and the cache.
+        /// </summary>
+        /// <param name="contact">The Contact object to add.</param>
+        /// <returns>The updated Contact object.</returns>
         public async Task<Contact> AddContact(Contact contact)
         {
             Contact contactToAdd = new();
@@ -51,6 +62,11 @@ namespace KinaUnaProgenyApi.Services
             return contactToAdd;
         }
 
+        /// <summary>
+        /// Gets a Contact by ContactId from the cache.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>The Contact object if found in the cache. A new Contact object if not found, check for ContactId == 0 to determine if it's found.</returns>
         private async Task<Contact> GetContactFromCache(int id)
         {
             Contact contact = new();
@@ -63,6 +79,12 @@ namespace KinaUnaProgenyApi.Services
             return contact;
         }
 
+        /// <summary>
+        /// Gets a Contact by ContactId from the database and adds it to the cache.
+        /// Also updates the ContactsList for the Progeny that the Contact belongs to in the cache.
+        /// </summary>
+        /// <param name="id">The ContactId of the Contact to get and set.</param>
+        /// <returns>The Contact object. Null if a Contact with the given ContactId doesn't exist.</returns>
         public async Task<Contact> SetContactInCache(int id)
         {
             Contact contact = await _context.ContactsDb.AsNoTracking().SingleOrDefaultAsync(c => c.ContactId == id);
@@ -75,6 +97,11 @@ namespace KinaUnaProgenyApi.Services
             return contact;
         }
 
+        /// <summary>
+        /// Updates a Contact in the database and the cache.
+        /// </summary>
+        /// <param name="contact">The Contact object with the updated properties.</param>
+        /// <returns>The updated Contact object.</returns>
         public async Task<Contact> UpdateContact(Contact contact)
         {
             Contact contactToUpdate = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contact.ContactId);
@@ -122,6 +149,11 @@ namespace KinaUnaProgenyApi.Services
             return contact;
         }
 
+        /// <summary>
+        /// Deletes a Contact from the database and the cache. 
+        /// </summary>
+        /// <param name="contact">The Contact to delete.</param>
+        /// <returns>The deleted Contact.</returns>
         public async Task<Contact> DeleteContact(Contact contact)
         {
             Contact contactToDelete = await _context.ContactsDb.SingleOrDefaultAsync(c => c.ContactId == contact.ContactId);
@@ -138,6 +170,13 @@ namespace KinaUnaProgenyApi.Services
             }
             return contact;
         }
+
+        /// <summary>
+        /// Deletes a Contact from the cache and updates the ContactsList for the Progeny that the Contact belongs to.
+        /// </summary>
+        /// <param name="id">The ContactId of the Contact to delete.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny the Contact item belongs to.</param>
+        /// <returns></returns>
         public async Task RemoveContactFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "contact" + id);
@@ -145,6 +184,12 @@ namespace KinaUnaProgenyApi.Services
             _ = await SetContactsListInCache(progenyId);
         }
 
+        /// <summary>
+        /// Gets a list of all Contacts for a Progeny from the cache.
+        /// If the list is empty, it will be looked up in the database and added to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get all Contacts for.</param>
+        /// <returns>List of Contacts.</returns>
         public async Task<List<Contact>> GetContactsList(int progenyId)
         {
             List<Contact> contactsList = await GetContactsListFromCache(progenyId);
@@ -156,6 +201,11 @@ namespace KinaUnaProgenyApi.Services
             return contactsList;
         }
 
+        /// <summary>
+        /// Gets a list of all Contacts for a Progeny from the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get all Contacts for.</param>
+        /// <returns>List of Contacts.</returns>
         private async Task<List<Contact>> GetContactsListFromCache(int progenyId)
         {
             List<Contact> contactsList = [];
