@@ -28,28 +28,45 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
+        /// <summary>
+        /// Gets a Friend by FriendId.
+        /// First tries to get the Friend from the cache.
+        /// If the Friend isn't in the cache, it will be looked up in the database and added to the cache.
+        /// </summary>
+        /// <param name="id">The FriendId of the Friend entity to get.</param>
+        /// <returns>Friend object. Null if the Friend entity doesn't exist.</returns>
         public async Task<Friend> GetFriend(int id)
         {
             Friend friend = await GetFriendFromCache(id);
-            if (friend == null || friend.FriendId == 0)
+            if (friend == null)
             {
                 friend = await SetFriendInCache(id);
             }
             return friend;
         }
 
+        /// <summary>
+        /// Gets a Friend by FriendId from the cache.
+        /// </summary>
+        /// <param name="id">The FriendId of the Friend item to get.</param>
+        /// <returns>Friend object. Null if the Friend item isn't found.</returns>
         private async Task<Friend> GetFriendFromCache(int id)
         {
-            Friend friend = new();
             string cachedFriend = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "friend" + id);
-            if (!string.IsNullOrEmpty(cachedFriend))
+            if (string.IsNullOrEmpty(cachedFriend))
             {
-                friend = JsonConvert.DeserializeObject<Friend>(cachedFriend);
+                return null;
             }
 
+            Friend friend = JsonConvert.DeserializeObject<Friend>(cachedFriend);
             return friend;
         }
-
+        
+        /// <summary>
+        /// Gets a Friend by FriendId from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The FriendId of the Friend entity to get and set.</param>
+        /// <returns>The Friend object with the given FriendId. Null if the Friend entity doesn't exist.</returns>
         public async Task<Friend> SetFriendInCache(int id)
         {
             Friend friend = await _context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == id);
@@ -62,6 +79,11 @@ namespace KinaUnaProgenyApi.Services
             return friend;
         }
 
+        /// <summary>
+        /// Adds a new Friend to the database and the cache.
+        /// </summary>
+        /// <param name="friend">The Friend object to add.</param>
+        /// <returns>The added Friend object.</returns>
         public async Task<Friend> AddFriend(Friend friend)
         {
             Friend friendToAdd = new();
@@ -76,6 +98,11 @@ namespace KinaUnaProgenyApi.Services
         }
 
 
+        /// <summary>
+        /// Updates a Friend in the database and the cache.
+        /// </summary>
+        /// <param name="friend">The Friend object with the updated properties.</param>
+        /// <returns>The updated Friend object.</returns>
         public async Task<Friend> UpdateFriend(Friend friend)
         {
             Friend friendToUpdate = await _context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == friend.FriendId);
@@ -113,6 +140,11 @@ namespace KinaUnaProgenyApi.Services
             return friend;
         }
 
+        /// <summary>
+        /// Deletes a Friend from the database and the cache.
+        /// </summary>
+        /// <param name="friend">The Friend object to delete.</param>
+        /// <returns>The deleted Friend object.</returns>
         public async Task<Friend> DeleteFriend(Friend friend)
         {
             Friend friendToDelete = await _context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == friend.FriendId);
@@ -129,6 +161,14 @@ namespace KinaUnaProgenyApi.Services
             }
             return friend;
         }
+
+
+        /// <summary>
+        /// Removes a Friend from the cache, then updates the cached list of Friends for the Progeny.
+        /// </summary>
+        /// <param name="id">The FriendId of the Friend to remove.</param>
+        /// <param name="progenyId"></param>
+        /// <returns></returns>
         public async Task RemoveFriendFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "friend" + id);
@@ -136,6 +176,12 @@ namespace KinaUnaProgenyApi.Services
             _ = await SetFriendsListInCache(progenyId);
         }
 
+        /// <summary>
+        /// Gets a list of all Friends for a Progeny from the cache.
+        /// If the list is empty, it will be looked up in the database and added to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get the list of Friends for.</param>
+        /// <returns>List of Friends.</returns>
         public async Task<List<Friend>> GetFriendsList(int progenyId)
         {
             List<Friend> friendsList = await GetFriendsListFromCache(progenyId);
@@ -148,6 +194,11 @@ namespace KinaUnaProgenyApi.Services
             return friendsList;
         }
 
+        /// <summary>
+        /// Gets a list of all Friends for a Progeny from the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get Friends for.</param>
+        /// <returns>List of Friends.</returns>
         private async Task<List<Friend>> GetFriendsListFromCache(int progenyId)
         {
             List<Friend> friendsList = [];
@@ -160,6 +211,11 @@ namespace KinaUnaProgenyApi.Services
             return friendsList;
         }
 
+        /// <summary>
+        /// Gets a list of all Friends for a Progeny from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get and set the list ofFriends for.</param>
+        /// <returns>List of Friends.</returns>
         private async Task<List<Friend>> SetFriendsListInCache(int progenyId)
         {
             List<Friend> friendsList = await _context.FriendsDb.AsNoTracking().Where(f => f.ProgenyId == progenyId).ToListAsync();
