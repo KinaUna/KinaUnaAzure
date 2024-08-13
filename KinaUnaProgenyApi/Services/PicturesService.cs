@@ -33,6 +33,12 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0)); // Expire after 24 hours.
         }
 
+        /// <summary>
+        /// Gets a Picture by PictureId.
+        /// First tries to get the Picture from the cache, then from the database if it's not in the cache.
+        /// </summary>
+        /// <param name="id">The PictureId of the Picture to get.</param>
+        /// <returns>Picture object with the given PictureId. Null if the Picture doesn't exist.</returns>
         public async Task<Picture> GetPicture(int id)
         {
             Picture picture = await GetPictureFromCache(id);
@@ -54,18 +60,28 @@ namespace KinaUnaProgenyApi.Services
             return picture;
         }
 
+        /// <summary>
+        /// Gets a Picture by PictureId from the cache.
+        /// </summary>
+        /// <param name="id">The PictureId of the Picture to get.</param>
+        /// <returns>The Picture with the given PictureId. Null if it is not found in the cache.</returns>
         private async Task<Picture> GetPictureFromCache(int id)
         {
-            Picture picture = new();
             string cachedPicture = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id);
-            if (!string.IsNullOrEmpty(cachedPicture))
+            if (string.IsNullOrEmpty(cachedPicture))
             {
-                picture = JsonConvert.DeserializeObject<Picture>(cachedPicture);
+                return null;
             }
-
+            
+            Picture picture = JsonConvert.DeserializeObject<Picture>(cachedPicture);
             return picture;
         }
 
+        /// <summary>
+        /// Adds a new Picture to the database and the cache.
+        /// </summary>
+        /// <param name="picture">The Picture to add.</param>
+        /// <returns>The added Picture object.</returns>
         public async Task<Picture> AddPicture(Picture picture)
         {
             picture.RemoveNullStrings();
@@ -79,6 +95,12 @@ namespace KinaUnaProgenyApi.Services
             return pictureToAdd;
         }
 
+        /// <summary>
+        /// For updating Picture with missing file extension in PictureLink.
+        /// Updates PictureLink, PictureLink600, and PictureLink1200 with the correct file extension.
+        /// </summary>
+        /// <param name="picture">The Picture to update.</param>
+        /// <returns>The updated Picture object.</returns>
         public async Task<Picture> UpdatePictureLinkWithExtension(Picture picture)
         {
             string originalPictureLink = picture.PictureLink;
@@ -126,6 +148,12 @@ namespace KinaUnaProgenyApi.Services
             return picture;
         }
 
+        /// <summary>
+        /// Processes a Picture: Extracts GPS data, dimensions, rotation, and timestamp.
+        /// Also creates resized versions the image and saves the filenames in ImageLink600 and ImageLink1200.
+        /// </summary>
+        /// <param name="picture">The Picture object to process.</param>
+        /// <returns>The updated Picture object.</returns>
         public async Task<Picture> ProcessPicture(Picture picture)
         {
             MemoryStream memoryStream = await _imageStore.GetStream(picture.PictureLink);
@@ -228,6 +256,11 @@ namespace KinaUnaProgenyApi.Services
             return picture;
         }
 
+        /// <summary>
+        /// Processes a Progeny profile picture: Resizes the image and rotates it if necessary.
+        /// </summary>
+        /// <param name="file">IFormFile with the image data.</param>
+        /// <returns>The filename of the saved profile picture.</returns>
         public async Task<string> ProcessProgenyPicture(IFormFile file)
         {
             using MagickImage image = new(file.OpenReadStream());
@@ -262,6 +295,11 @@ namespace KinaUnaProgenyApi.Services
             return pictureLink;
         }
 
+        /// <summary>
+        /// Processes a Profile Picture: Resizes the image and rotates it if necessary.
+        /// </summary>
+        /// <param name="file">IFormFile object with the file data.</param>
+        /// <returns>The filename of the saved image.</returns>
         public async Task<string> ProcessProfilePicture(IFormFile file)
         {
             using MagickImage image = new(file.OpenReadStream());
@@ -295,6 +333,12 @@ namespace KinaUnaProgenyApi.Services
             return pictureLink;
         }
 
+        /// <summary>
+        /// Extracts the file extension of an image file in a blob container and saves to a new file with the file extension.
+        /// </summary>
+        /// <param name="itemPictureGuid">The current filename.</param>
+        /// <param name="container">The storage container of the file.</param>
+        /// <returns>The new filename with extension.</returns>
         public async Task<string> UpdateItemPictureExtension(string itemPictureGuid, string container)
         {
             MemoryStream memoryStream = await _imageStore.GetStream(itemPictureGuid, container);
@@ -311,6 +355,11 @@ namespace KinaUnaProgenyApi.Services
             return pictureLink;
         }
         
+        /// <summary>
+        /// Processes a Friend Picture: Resizes the image and rotates it if necessary.
+        /// </summary>
+        /// <param name="file">IFormFile object with the file.</param>
+        /// <returns>The filename of the saved image.</returns>
         public async Task<string> ProcessFriendPicture(IFormFile file)
         {
             using MagickImage image = new(file.OpenReadStream());
@@ -344,6 +393,11 @@ namespace KinaUnaProgenyApi.Services
             return pictureLink;
         }
 
+        /// <summary>
+        /// Processes a Contact Picture: Resizes the image and rotates it if necessary.
+        /// </summary>
+        /// <param name="file">IFormFile object with the file.</param>
+        /// <returns>The filename of the saved image.</returns>
         public async Task<string> ProcessContactPicture(IFormFile file)
         {
             using MagickImage image = new(file.OpenReadStream());
@@ -376,12 +430,23 @@ namespace KinaUnaProgenyApi.Services
             
             return pictureLink;
         }
+
+        /// <summary>
+        /// Gets a Picture by PictureLink.
+        /// </summary>
+        /// <param name="link">The PictureLink of the Picture to get.</param>
+        /// <returns>Picture object with the given PictureLink. Null if the Picture doesn't exist.</returns>
         public async Task<Picture> GetPictureByLink(string link)
         {
             Picture picture = await _mediaContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureLink == link);
             return picture;
         }
 
+        /// <summary>
+        /// Gets a Picture by PictureId from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The PictureId of the Picture to get and set.</param>
+        /// <returns>Picture with the given PictureId. Null if the Picture doesn't exist.</returns>
         public async Task<Picture> SetPictureInCache(int id)
         {
             Picture picture = await _mediaContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureId == id);
@@ -412,6 +477,11 @@ namespace KinaUnaProgenyApi.Services
             return picture;
         }
 
+        /// <summary>
+        /// Updates a Picture in the database and the cache.
+        /// </summary>
+        /// <param name="picture">The Picture object with the updated properties.</param>
+        /// <returns>The updated Picture object.</returns>
         public async Task<Picture> UpdatePicture(Picture picture)
         {
             picture.RemoveNullStrings();
@@ -428,6 +498,11 @@ namespace KinaUnaProgenyApi.Services
 
         }
 
+        /// <summary>
+        /// Deletes a Picture from the database and the cache.
+        /// </summary>
+        /// <param name="picture">The Picture to delete.</param>
+        /// <returns>The deleted Picture object.</returns>
         public async Task<Picture> DeletePicture(Picture picture)
         {
             Picture pictureToDelete = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.PictureId == picture.PictureId);
@@ -448,6 +523,13 @@ namespace KinaUnaProgenyApi.Services
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
             return pictureToDelete;
         }
+
+        /// <summary>
+        /// Removes a Picture from the cache and updates the Pictures list for the Progeny in the cache.
+        /// </summary>
+        /// <param name="pictureId">The PictureId of the Picture to remove.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny that the Picture belongs to.</param>
+        /// <returns></returns>
         public async Task RemovePictureFromCache(int pictureId, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "picture" + pictureId);
@@ -455,6 +537,11 @@ namespace KinaUnaProgenyApi.Services
             _ = await SetPicturesListInCache(progenyId);
         }
 
+        /// <summary>
+        /// Gets a list of all Pictures for a Progeny from the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get all Pictures for.</param>
+        /// <returns>List of Picture objects.</returns>
         public async Task<List<Picture>> GetPicturesList(int progenyId)
         {
             List<Picture> picturesList = await GetPicturesListFromCache(progenyId);
@@ -466,6 +553,11 @@ namespace KinaUnaProgenyApi.Services
             return picturesList;
         }
 
+        /// <summary>
+        /// Gets a list of all Pictures for a Progeny from the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get all Pictures for.</param>
+        /// <returns>List of Picture objects.</returns>
         private async Task<List<Picture>> GetPicturesListFromCache(int progenyId)
         {
             List<Picture> picturesList = [];
@@ -478,6 +570,11 @@ namespace KinaUnaProgenyApi.Services
             return picturesList;
         }
 
+        /// <summary>
+        /// Gets a list of all Pictures for a Progeny from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get and set all Pictures for.</param>
+        /// <returns>List of Picture objects.</returns>
         public async Task<List<Picture>> SetPicturesListInCache(int progenyId)
         {
             List<Picture> picturesList = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId).ToListAsync();
@@ -486,6 +583,10 @@ namespace KinaUnaProgenyApi.Services
             return picturesList;
         }
 
+        /// <summary>
+        /// Replaces all null strings in the Pictures table with empty strings.
+        /// </summary>
+        /// <returns></returns>
         public async Task UpdateAllPictures()
         {
             List<Picture> allPicturesList = await _mediaContext.PicturesDb.ToListAsync();
