@@ -26,6 +26,12 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
+        /// <summary>
+        /// Gets the Sleep with the specified SleepId.
+        /// First checks the cache, if not found, gets the Sleep from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The SleepId of the Sleep to get.</param>
+        /// <returns>The Sleep object with the given SleepId. Null if the Sleep item doesn't exist.</returns>
         public async Task<Sleep> GetSleep(int id)
         {
             Sleep sleep = await GetSleepFromCache(id);
@@ -37,6 +43,11 @@ namespace KinaUnaProgenyApi.Services
             return sleep;
         }
 
+        /// <summary>
+        /// Adds a new Sleep to the database and adds it to the cache.
+        /// </summary>
+        /// <param name="sleep">The Sleep object to add.</param>
+        /// <returns>The added Sleep object.</returns>
         public async Task<Sleep> AddSleep(Sleep sleep)
         {
             Sleep sleepToAdd = new();
@@ -50,18 +61,29 @@ namespace KinaUnaProgenyApi.Services
             return sleepToAdd;
         }
 
+        /// <summary>
+        /// Gets the Sleep with the specified SleepId from the cache.
+        /// </summary>
+        /// <param name="id">The SleepId of the Sleep item to get.</param>
+        /// <returns>The Sleep object with the given SleepId. Null if the Sleep item isn't found.</returns>
         private async Task<Sleep> GetSleepFromCache(int id)
         {
-            Sleep sleep = new();
             string cachedSleep = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id);
-            if (!string.IsNullOrEmpty(cachedSleep))
+            if (string.IsNullOrEmpty(cachedSleep))
             {
-                sleep = JsonConvert.DeserializeObject<Sleep>(cachedSleep);
+                return null;
+                
             }
-
+            
+            Sleep sleep = JsonConvert.DeserializeObject<Sleep>(cachedSleep);
             return sleep;
         }
 
+        /// <summary>
+        /// Gets the Sleep with the specified SleepId from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The SleepId of the Sleep item to get and set.</param>
+        /// <returns>The Sleep object with the given SleepId. Null if the Sleep item doesn't exist.</returns>
         private async Task<Sleep> SetSleepInCache(int id)
         {
             Sleep sleep = await _context.SleepDb.AsNoTracking().SingleOrDefaultAsync(s => s.SleepId == id);
@@ -74,6 +96,11 @@ namespace KinaUnaProgenyApi.Services
             return sleep;
         }
 
+        /// <summary>
+        /// Updates a Sleep in the database and the cache.
+        /// </summary>
+        /// <param name="sleep">The Sleep object with the updated properties.</param>
+        /// <returns>The updated Sleep object.</returns>
         public async Task<Sleep> UpdateSleep(Sleep sleep)
         {
             Sleep sleepToUpdate = await _context.SleepDb.SingleOrDefaultAsync(s => s.SleepId == sleep.SleepId);
@@ -89,6 +116,11 @@ namespace KinaUnaProgenyApi.Services
             return sleepToUpdate;
         }
 
+        /// <summary>
+        /// Deletes a Sleep from the database and the cache.
+        /// </summary>
+        /// <param name="sleep">The Sleep object to delete.</param>
+        /// <returns>The deleted Sleep object.</returns>
         public async Task<Sleep> DeleteSleep(Sleep sleep)
         {
             Sleep sleepToDelete = await _context.SleepDb.SingleOrDefaultAsync(s => s.SleepId == sleep.SleepId);
@@ -102,6 +134,12 @@ namespace KinaUnaProgenyApi.Services
             return sleep;
         }
 
+        /// <summary>
+        /// Removes a Sleep from the cache and updates the SleepList for the Progeny in the cache.
+        /// </summary>
+        /// <param name="id">The SleepId of the Sleep item to remove.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny that the Sleep item belongs to.</param>
+        /// <returns></returns>
         private async Task RemoveSleep(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "sleep" + id);
@@ -109,6 +147,12 @@ namespace KinaUnaProgenyApi.Services
             _ = await SetSleepListInCache(progenyId);
         }
 
+        /// <summary>
+        /// Gets a list of all Sleep items for a Progeny.
+        /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get Sleep items for.</param>
+        /// <returns>List of Sleep objects.</returns>
         public async Task<List<Sleep>> GetSleepList(int progenyId)
         {
             List<Sleep> sleepList = await GetSleepListFromCache(progenyId);
@@ -120,6 +164,11 @@ namespace KinaUnaProgenyApi.Services
             return sleepList;
         }
 
+        /// <summary>
+        /// Gets a list of all Sleep items for a Progeny from the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get Sleep items for.</param>
+        /// <returns>List of Sleep objects.</returns>
         private async Task<List<Sleep>> GetSleepListFromCache(int progenyId)
         {
             List<Sleep> sleepList = [];
@@ -132,6 +181,11 @@ namespace KinaUnaProgenyApi.Services
             return sleepList;
         }
 
+        /// <summary>
+        /// Gets a list of all Sleep items for a Progeny from the database and sets it in the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get and set Sleep items for.</param>
+        /// <returns>List of Sleep objects.</returns>
         private async Task<List<Sleep>> SetSleepListInCache(int progenyId)
         {
             List<Sleep> sleepList = await _context.SleepDb.AsNoTracking().Where(s => s.ProgenyId == progenyId).ToListAsync();
