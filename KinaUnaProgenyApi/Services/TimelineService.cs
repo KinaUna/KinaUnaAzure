@@ -26,6 +26,11 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
+        /// <summary>
+        /// Gets the TimeLineItem with the specified TimeLineId.
+        /// </summary>
+        /// <param name="id">The TimeLineId of the TimeLineItem to get.</param>
+        /// <returns>The TimeLineItem with the given TimeLineId. Null if the TimeLineItem doesn't exist.</returns>
         public async Task<TimeLineItem> GetTimeLineItem(int id)
         {
             TimeLineItem timeLineItem = await GetTimeLineItemFromCache(id);
@@ -37,6 +42,11 @@ namespace KinaUnaProgenyApi.Services
             return timeLineItem;
         }
 
+        /// <summary>
+        /// Adds a new TimeLineItem to the database and adds it to the cache.
+        /// </summary>
+        /// <param name="timeLineItem">The TimeLineItem to add.</param>
+        /// <returns>The added TimeLineItem.</returns>
         public async Task<TimeLineItem> AddTimeLineItem(TimeLineItem timeLineItem)
         {
             TimeLineItem existingTimeLineItem = await _context.TimeLineDb.SingleOrDefaultAsync(t => t.ItemId == timeLineItem.ItemId && t.ItemType == timeLineItem.ItemType);
@@ -56,18 +66,28 @@ namespace KinaUnaProgenyApi.Services
             return timeLineItemToAdd;
         }
 
+        /// <summary>
+        /// Gets the TimeLineItem with the specified TimeLineId from the cache.
+        /// </summary>
+        /// <param name="id">The TimeLineId of the TimeLineItem to get.</param>
+        /// <returns>The TimeLineItem with the given TimeLineId. Null if it isn't found in the cache.</returns>
         private async Task<TimeLineItem> GetTimeLineItemFromCache(int id)
         {
-            TimeLineItem timeLineItem = new();
             string cachedTimeLineItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + id);
-            if (!string.IsNullOrEmpty(cachedTimeLineItem))
+            if (string.IsNullOrEmpty(cachedTimeLineItem))
             {
-                timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(cachedTimeLineItem);
+                return null;
             }
 
+            TimeLineItem timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(cachedTimeLineItem);
             return timeLineItem;
         }
 
+        /// <summary>
+        /// Gets the TimeLineItem with the specified TimeLineId from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The TimeLineId of the TimeLineItem to get and set.</param>
+        /// <returns>The TimeLineItem with the given TimeLineId. Null if the TimeLineItem doesn't exist.</returns>
         private async Task<TimeLineItem> SetTimeLineItemInCache(int id)
         {
             TimeLineItem timeLineItem = await _context.TimeLineDb.AsNoTracking().SingleOrDefaultAsync(t => t.TimeLineId == id);
@@ -80,6 +100,11 @@ namespace KinaUnaProgenyApi.Services
             return timeLineItem;
         }
 
+        /// <summary>
+        /// Updates a TimeLineItem in the database and the cache.
+        /// </summary>
+        /// <param name="item">The TimeLineItem with the updated properties.</param>
+        /// <returns>The updated TimeLineItem. Null if a TimeLineItem with the TimeLineId doesn't already exist.</returns>
         public async Task<TimeLineItem> UpdateTimeLineItem(TimeLineItem item)
         {
             TimeLineItem timeLineItemToUpdate = await _context.TimeLineDb.SingleOrDefaultAsync(ti => ti.TimeLineId == item.TimeLineId);
@@ -95,6 +120,11 @@ namespace KinaUnaProgenyApi.Services
             return item;
         }
 
+        /// <summary>
+        /// Deletes a TimeLineItem from the database and the cache.
+        /// </summary>
+        /// <param name="item">The TimeLineItem to delete.</param>
+        /// <returns>The deleted TimeLineItem. Null if a TimeLineItem with the TimeLineId doesn't exist.</returns>
         public async Task<TimeLineItem> DeleteTimeLineItem(TimeLineItem item)
         {
             TimeLineItem timeLineItemToDelete = await _context.TimeLineDb.SingleOrDefaultAsync(ti => ti.TimeLineId == item.TimeLineId);
@@ -109,6 +139,13 @@ namespace KinaUnaProgenyApi.Services
             return item;
         }
 
+        /// <summary>
+        /// Removes a TimeLineItem from the cache and updates the TimeLineList for the Progeny in the cache.
+        /// </summary>
+        /// <param name="timeLineItemId">The ItemId of the TimeLineItem to remove.</param>
+        /// <param name="timeLineType">The ItemType (see KinaUnaTypes.TimeLineTypes enum) of the TimeLineItem.</param>
+        /// <param name="progenyId">The ProgenyId of the TimeLineItem.</param>
+        /// <returns></returns>
         private async Task RemoveTimeLineItemFromCache(int timeLineItemId, int timeLineType, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + timeLineItemId);
@@ -116,6 +153,13 @@ namespace KinaUnaProgenyApi.Services
             _ = await SetTimeLineListInCache(progenyId);
         }
 
+        /// <summary>
+        /// Gets the TimeLineItem with the specified ItemId and ItemType.
+        /// First checks the cache, if not found, gets the TimeLineItem from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="itemId">The ItemId of the TimeLineItem.</param>
+        /// <param name="itemType">The ItemType (see KinaUnaTypes.TimeLineTypes enum) of the TimeLineItem.</param>
+        /// <returns>The TimeLineItem with the given ItemId and ItemType. Null if the TimeLineItem doesn't exist.</returns>
         public async Task<TimeLineItem> GetTimeLineItemByItemId(string itemId, int itemType)
         {
             TimeLineItem timeLineItem = await GetTimeLineItemByItemIdFromCache(itemId, itemType);
@@ -127,18 +171,30 @@ namespace KinaUnaProgenyApi.Services
             return timeLineItem;
         }
 
+        /// <summary>
+        /// Gets the TimeLineItem with the specified ItemId and ItemType from the cache.
+        /// </summary>
+        /// <param name="itemId">The ItemId of the TimeLineItem.</param>
+        /// <param name="itemType">The ItemType (see KinaUnaTypes.TimeLineTypes enum) of the TimeLineItem.</param>
+        /// <returns>The TimeLineItem with the given ItemId and ItemType. Null if the TimeLineItem isn't found in the cache.</returns>
         private async Task<TimeLineItem> GetTimeLineItemByItemIdFromCache(string itemId, int itemType)
         {
-            TimeLineItem timeLineItem = new();
             string cachedTimeLineItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitembyid" + itemId + itemType);
-            if (!string.IsNullOrEmpty(cachedTimeLineItem))
+            if (string.IsNullOrEmpty(cachedTimeLineItem))
             {
-                timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(cachedTimeLineItem);
+                return null;
             }
 
+            TimeLineItem timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(cachedTimeLineItem);
             return timeLineItem;
         }
 
+        /// <summary>
+        /// Gets the TimeLineItem with the specified ItemId and ItemType from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="itemId">The ItemId of the TimeLineItem.</param>
+        /// <param name="itemType">The ItemType (see KinaUnaTypes.TimeLineTypes enum) of the TimeLineItem.</param>
+        /// <returns>The TimeLineItem with the given ItemId and ItemType. Null if the TimeLineItem doesn't exist.</returns>
         private async Task<TimeLineItem> SetTimeLineItemByItemIdInCache(string itemId, int itemType)
         {
             TimeLineItem timeLineItem = await _context.TimeLineDb.SingleOrDefaultAsync(t => t.ItemId == itemId && t.ItemType == itemType);
@@ -147,6 +203,12 @@ namespace KinaUnaProgenyApi.Services
             return timeLineItem;
         }
 
+        /// <summary>
+        /// Gets a list of all TimeLineItems for a Progeny.
+        /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get TimeLineItems for.</param>
+        /// <returns>List of TimeLineItem objects.</returns>
         public async Task<List<TimeLineItem>> GetTimeLineList(int progenyId)
         {
             List<TimeLineItem> timeLineList = await GetTimeLineListFromCache(progenyId);
@@ -158,6 +220,11 @@ namespace KinaUnaProgenyApi.Services
             return timeLineList;
         }
 
+        /// <summary>
+        /// Gets a list of all TimeLineItems for a Progeny from the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get TimeLineItems for.</param>
+        /// <returns>List of TimeLineItem objects.</returns>
         private async Task<List<TimeLineItem>> GetTimeLineListFromCache(int progenyId)
         {
             List<TimeLineItem> timeLineList = [];
@@ -170,6 +237,11 @@ namespace KinaUnaProgenyApi.Services
             return timeLineList;
         }
 
+        /// <summary>
+        /// Gets a list of all TimeLineItems for a Progeny from the database and sets it in the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get TimeLineItems for.</param>
+        /// <returns>List of TimeLineItem objects.</returns>
         private async Task<List<TimeLineItem>> SetTimeLineListInCache(int progenyId)
         {
             List<TimeLineItem> timeLineList = await _context.TimeLineDb.AsNoTracking().Where(t => t.ProgenyId == progenyId).ToListAsync();
