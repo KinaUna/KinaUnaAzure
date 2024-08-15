@@ -26,6 +26,12 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
+        /// <summary>
+        /// Gets a VocabularyItem entity with the specified WordId.
+        /// First checks the cache, if not found, gets the VocabularyItem from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The WordId of the VocabularyItem.</param>
+        /// <returns>The VocabularyItem with the given WordId. Null if the VocabularyItem doesn't exist.</returns>
         public async Task<VocabularyItem> GetVocabularyItem(int id)
         {
             VocabularyItem vocabularyItem = await GetVocabularyItemFromCache(id);
@@ -37,6 +43,11 @@ namespace KinaUnaProgenyApi.Services
             return vocabularyItem;
         }
 
+        /// <summary>
+        /// Adds a new VocabularyItem entity to the database and adds it to the cache.
+        /// </summary>
+        /// <param name="vocabularyItem">The VocabularyItem to add.</param>
+        /// <returns>The added VocabularyItem.</returns>
         public async Task<VocabularyItem> AddVocabularyItem(VocabularyItem vocabularyItem)
         {
             VocabularyItem vocabularyItemToAdd = new();
@@ -49,18 +60,28 @@ namespace KinaUnaProgenyApi.Services
             return vocabularyItemToAdd;
         }
 
+        /// <summary>
+        /// Gets a VocabularyItem entity with the specified WordId from the cache.
+        /// </summary>
+        /// <param name="id">The WordId of the VocabularyItem to get.</param>
+        /// <returns>The VocabularyItem with the given WordId. Null if the VocabularyItem isn't found in the cache.</returns>
         private async Task<VocabularyItem> GetVocabularyItemFromCache(int id)
         {
-            VocabularyItem vocabularyItem = new();
             string cachedVocabularyItem = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id);
-            if (!string.IsNullOrEmpty(cachedVocabularyItem))
+            if (string.IsNullOrEmpty(cachedVocabularyItem))
             {
-                vocabularyItem = JsonConvert.DeserializeObject<VocabularyItem>(cachedVocabularyItem);
+                return null;
             }
 
+            VocabularyItem vocabularyItem = JsonConvert.DeserializeObject<VocabularyItem>(cachedVocabularyItem);
             return vocabularyItem;
         }
 
+        /// <summary>
+        /// Gets a VocabularyItem entity with the specified WordId from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The WordId of the VocabularyItem to get and set.</param>
+        /// <returns>The VocabularyItem with the given WordId. Null if the item doesn't exist.</returns>
         private async Task<VocabularyItem> SetVocabularyItemInCache(int id)
         {
             VocabularyItem vocabularyItem = await _context.VocabularyDb.AsNoTracking().SingleOrDefaultAsync(w => w.WordId == id);
@@ -73,6 +94,11 @@ namespace KinaUnaProgenyApi.Services
             return vocabularyItem;
         }
 
+        /// <summary>
+        /// Updates a VocabularyItem entity in the database and the cache.
+        /// </summary>
+        /// <param name="vocabularyItem">The VocabularyItem with the updated properties.</param>
+        /// <returns>The updated VocabularyItem object.</returns>
         public async Task<VocabularyItem> UpdateVocabularyItem(VocabularyItem vocabularyItem)
         {
             VocabularyItem vocabularyItemToUpdate = await _context.VocabularyDb.SingleOrDefaultAsync(v => v.WordId == vocabularyItem.WordId);
@@ -89,6 +115,11 @@ namespace KinaUnaProgenyApi.Services
             return vocabularyItemToUpdate;
         }
 
+        /// <summary>
+        /// Deletes a VocabularyItem entity from the database and the cache.
+        /// </summary>
+        /// <param name="vocabularyItem">The VocabularyItem to delete.</param>
+        /// <returns>The deleted VocabularyItem object.</returns>
         public async Task<VocabularyItem> DeleteVocabularyItem(VocabularyItem vocabularyItem)
         {
             VocabularyItem vocabularyItemToDelete = await _context.VocabularyDb.SingleOrDefaultAsync(v => v.WordId == vocabularyItem.WordId);
@@ -101,6 +132,13 @@ namespace KinaUnaProgenyApi.Services
             return vocabularyItem;
         }
 
+        /// <summary>
+        /// Removes a VocabularyItem entity from the cache.
+        /// Also updates the list of all VocabularyItems for the Progeny in the cache.
+        /// </summary>
+        /// <param name="id">The WordId of the VocabularyItem to remove.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny the VocabularyItem belongs to.</param>
+        /// <returns></returns>
         private async Task RemoveVocabularyItemFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "vocabularyitem" + id);
@@ -108,6 +146,12 @@ namespace KinaUnaProgenyApi.Services
             _ = await SetVocabularyListInCache(progenyId);
         }
 
+        /// <summary>
+        /// Gets a list of all VocabularyItems for a Progeny.
+        /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get the list for.</param>
+        /// <returns>List of VocabularyItem objects.</returns>
         public async Task<List<VocabularyItem>> GetVocabularyList(int progenyId)
         {
             List<VocabularyItem> vocabularyList = await GetVocabularyListFromCache(progenyId);
@@ -119,6 +163,11 @@ namespace KinaUnaProgenyApi.Services
             return vocabularyList;
         }
 
+        /// <summary>
+        /// Gets a list of all VocabularyItems for a Progeny from the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get the list for.</param>
+        /// <returns>List of VocabularyItem objects.</returns>
         private async Task<List<VocabularyItem>> GetVocabularyListFromCache(int progenyId)
         {
             List<VocabularyItem> vocabularyList = [];
@@ -131,6 +180,11 @@ namespace KinaUnaProgenyApi.Services
             return vocabularyList;
         }
 
+        /// <summary>
+        /// Gets a list of all VocabularyItems for a Progeny from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get and set the list for.</param>
+        /// <returns>List of VocabularyItem objects.</returns>
         private async Task<List<VocabularyItem>> SetVocabularyListInCache(int progenyId)
         {
             List<VocabularyItem> vocabularyList = await _context.VocabularyDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
