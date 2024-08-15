@@ -468,12 +468,12 @@ namespace KinaUna.IDP.Controllers
                 if (userinfo != null)
                 {
                     userinfo.UserEmail = NewEmail;
-                    progContext.UserInfoDb.Update(userinfo);
-                    await progContext.SaveChangesAsync();
+                    _ = progContext.UserInfoDb.Update(userinfo);
+                    _ = await progContext.SaveChangesAsync();
                 }
                 user.Email = NewEmail;
-                context.Users.Update(user);
-                await context.SaveChangesAsync();
+                _ = context.Users.Update(user);
+                _ = await context.SaveChangesAsync();
 
                 return RedirectToAction("VerificationMailSent");
             }
@@ -493,14 +493,14 @@ namespace KinaUna.IDP.Controllers
             if (string.IsNullOrWhiteSpace(user.UserName))
             {
                 user.UserName = user.Email;
-                context.Users.Update(user);
-                await context.SaveChangesAsync();
+                _ = context.Users.Update(user);
+                _ = await context.SaveChangesAsync();
             }
 
 
             if (user.EmailConfirmed)
             {
-                RedirectToAction("Login");
+                _ = RedirectToAction("Login");
             }
             IdentityResult result = await userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
@@ -511,7 +511,7 @@ namespace KinaUna.IDP.Controllers
                     user.JoinDate = DateTime.UtcNow;
                 }
 
-                await userManager.UpdateAsync(user!);
+                _ = await userManager.UpdateAsync(user!);
 
                 if (!string.IsNullOrEmpty(oldEmail))
                 {
@@ -526,7 +526,7 @@ namespace KinaUna.IDP.Controllers
                         }
 
                         progContext.UserAccessDb.UpdateRange(userAccessList);
-                        await progContext.SaveChangesAsync();
+                        _ = await progContext.SaveChangesAsync();
                     }
 
                     List<Progeny> progenyList = await progContext.ProgenyDb.ToListAsync();
@@ -539,7 +539,7 @@ namespace KinaUna.IDP.Controllers
                             prog.Admins = adminList.Replace(oldEmail.ToUpper(), user.Email!.ToUpper());
                         }
                         progContext.ProgenyDb.UpdateRange(progenyList);
-                        await progContext.SaveChangesAsync();
+                        _ = await progContext.SaveChangesAsync();
                     }
                 }
                 else
@@ -949,7 +949,7 @@ namespace KinaUna.IDP.Controllers
                 Deleted = deletedUserInfo.Deleted
             };
 
-            progContext.DeletedUsers.Remove(deletedUserInfo);
+            _ = progContext.DeletedUsers.Remove(deletedUserInfo);
             return Ok(restoredDeleteUserInfo);
 
         }
@@ -978,8 +978,8 @@ namespace KinaUna.IDP.Controllers
                 userInfo.DeletedTime = DateTime.UtcNow;
                 userInfo.UpdatedTime = DateTime.UtcNow;
                 userInfo.ProfilePicture = JsonConvert.SerializeObject(user);
-                progContext.DeletedUsers.Update(userInfo);
-                await progContext.SaveChangesAsync();
+                _ = progContext.DeletedUsers.Update(userInfo);
+                _ = await progContext.SaveChangesAsync();
             }
             else
             {
@@ -993,8 +993,8 @@ namespace KinaUna.IDP.Controllers
                     UpdatedTime = DateTime.UtcNow,
                     ProfilePicture = JsonConvert.SerializeObject(user)
                 };
-                await progContext.DeletedUsers.AddAsync(userInfo);
-                await progContext.SaveChangesAsync();
+                _ = progContext.DeletedUsers.Add(userInfo);
+                _ = await progContext.SaveChangesAsync();
             }
 
 
@@ -1022,9 +1022,9 @@ namespace KinaUna.IDP.Controllers
             userInfo.Deleted = true;
             userInfo.DeletedTime = DateTime.UtcNow;
             userInfo.UpdatedTime = DateTime.UtcNow;
-            progContext.DeletedUsers.Update(userInfo);
-            await progContext.SaveChangesAsync();
-            await userManager.DeleteAsync(user);
+            _ = progContext.DeletedUsers.Update(userInfo);
+            _ = await progContext.SaveChangesAsync();
+            _ = await userManager.DeleteAsync(user);
             await signInManager.SignOutAsync();
 
             return View(model);
