@@ -7,9 +7,24 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaProgenyApi.Services
 {
+    /// <summary>
+    /// This service is used to send notifications and add the notification to the database, for each relevant user, when items are changed or added.
+    /// </summary>
+    /// <param name="pushMessageSender"></param>
+    /// <param name="notificationsService"></param>
+    /// <param name="userAccessService"></param>
+    /// <param name="userInfoService"></param>
     public class WebNotificationsService(IPushMessageSender pushMessageSender, INotificationsService notificationsService, IUserAccessService userAccessService, IUserInfoService userInfoService)
         : IWebNotificationsService
     {
+        /// <summary>
+        /// Adds a notification for a CalendarItem to the database, and sends a push notification (if they registered for it), for all users with access to the CalendarItem.
+        /// Adds the start and end time in the recipient's timezone to the message body.
+        /// </summary>
+        /// <param name="eventItem">The CalendarItem that was added, updated, or deleted.</param>
+        /// <param name="currentUser">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
+        /// <returns></returns>
         public async Task SendCalendarNotification(CalendarItem eventItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(eventItem.ProgenyId);
@@ -53,6 +68,13 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a notification for a Contact to the database, and sends a push notification (if they registered for it), for all users with access to the Contact.
+        /// </summary>
+        /// <param name="contactItem">The Contact that was added, updated, or deleted.</param>
+        /// <param name="currentUser">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
+        /// <returns></returns>
         public async Task SendContactNotification(Contact contactItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(contactItem.ProgenyId);
@@ -68,7 +90,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     To = uaUserInfo.UserId,
                     From = currentUser.FullName(),
-                    Message = "Name: " + contactItem.DisplayName + "\r\nContext: " + contactItem.Context,
+                    Message = "Name: " + contactItem.DisplayName + "\r\nContext: " + contactItem.Context, // Todo: Translation of Name and Context
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
@@ -83,6 +105,13 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a notification for a Friend to the database, and sends a push notification (if they registered for it), for all users with access to the Friend.
+        /// </summary>
+        /// <param name="friendItem">The Friend that was added, updated, or deleted.</param>
+        /// <param name="currentUser">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
+        /// <returns></returns>
         public async Task SendFriendNotification(Friend friendItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(friendItem.ProgenyId);
@@ -98,7 +127,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     To = uaUserInfo.UserId,
                     From = currentUser.FullName(),
-                    Message = "Friend: " + friendItem.Name + "\r\nContext: " + friendItem.Context,
+                    Message = "Friend: " + friendItem.Name + "\r\nContext: " + friendItem.Context, // Todo: Translation of Friend and Context
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
@@ -113,6 +142,14 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a notification for a Location to the database, and sends a push notification (if they registered for it), for all users with access to the Location.
+        /// Adds the date in the recipient's timezone to the message body.
+        /// </summary>
+        /// <param name="locationItem">The Location that was added, updated, or deleted.</param>
+        /// <param name="currentUser">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
+        /// <returns></returns>
         public async Task SendLocationNotification(Location locationItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(locationItem.ProgenyId);
@@ -135,7 +172,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     To = uaUserInfo.UserId,
                     From = currentUser.FullName(),
-                    Message = "Name: " + locationItem.Name + "\r\nDate: " + dateString,
+                    Message = "Name: " + locationItem.Name + "\r\nDate: " + dateString, // Todo: Translation of Name and Date
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
@@ -150,6 +187,12 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a notification for a Measurement to the database, and sends a push notification (if they registered for it), for all users with access to the Measurement.
+        /// </summary>
+        /// <param name="measurementItem">The Measurement that was added, updated, or deleted.</param>
+        /// <param name="currentUser">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
         public async Task SendMeasurementNotification(Measurement measurementItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(measurementItem.ProgenyId);
@@ -165,7 +208,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     To = uaUserInfo.UserId,
                     From = currentUser.FullName(),
-                    Message = "Height: " + measurementItem.Height + "\r\nWeight: " + measurementItem.Weight,
+                    Message = "Height: " + measurementItem.Height + "\r\nWeight: " + measurementItem.Weight, // Todo: Translation of Height and Weight
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
@@ -180,6 +223,12 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a notification for a Note to the database, and sends a push notification (if they registered for it), for all users with access to the Note.
+        /// </summary>
+        /// <param name="noteItem">The Note that was added, updated, or deleted.</param>
+        /// <param name="currentUser">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
         public async Task SendNoteNotification(Note noteItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(noteItem.ProgenyId);
@@ -195,7 +244,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     To = uaUserInfo.UserId,
                     From = currentUser.FullName(),
-                    Message = "Title: " + noteItem.Title + "\r\nCategory: " + noteItem.Category,
+                    Message = "Title: " + noteItem.Title + "\r\nCategory: " + noteItem.Category, // Todo: Translation of Title and Category
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
@@ -210,6 +259,12 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a notification for a Picture to the database, and sends a push notification (if they registered for it), for all users with access to the Picture.
+        /// </summary>
+        /// <param name="pictureItem">The Picture that was added, updated, or deleted.</param>
+        /// <param name="currentUser">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
         public async Task SendPictureNotification(Picture pictureItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(pictureItem.ProgenyId);
@@ -226,7 +281,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     DateTime picTime = TimeZoneInfo.ConvertTimeFromUtc(pictureItem.PictureTime.Value,
                         TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
-                    picTimeString = "Photo taken: " + picTime.ToString("dd-MMM-yyyy HH:mm");
+                    picTimeString = "Photo taken: " + picTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Translation of Photo taken
                 }
                 else
                 {
@@ -251,6 +306,12 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a notification for a Video to the database, and sends a push notification (if they registered for it), for all users with access to the Video.
+        /// </summary>
+        /// <param name="videoItem">The Video that was added, updated, or deleted.</param>
+        /// <param name="currentUser">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
         public async Task SendVideoNotification(Video videoItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(videoItem.ProgenyId);
@@ -267,7 +328,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     DateTime picTime = TimeZoneInfo.ConvertTimeFromUtc(videoItem.VideoTime.Value,
                         TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
-                    picTimeString = "Video recorded: " + picTime.ToString("dd-MMM-yyyy HH:mm");
+                    picTimeString = "Video recorded: " + picTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Translation of Video recorded
                 }
                 else
                 {
@@ -292,6 +353,12 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a notification for a Skill to the database, and sends a push notification (if they registered for it), for all users with access to the Skill.
+        /// </summary>
+        /// <param name="skillItem">The Skill that was added, updated, or deleted.</param>
+        /// <param name="currentUser">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
         public async Task SendSkillNotification(Skill skillItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(skillItem.ProgenyId);
@@ -305,7 +372,7 @@ namespace KinaUnaProgenyApi.Services
 
                 skillItem.SkillFirstObservation ??= DateTime.UtcNow;
 
-                string skillTimeString = "\r\nDate: " + skillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy");
+                string skillTimeString = "\r\nDate: " + skillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy"); // Todo: Translation of Date
 
                 WebNotification notification = new()
                 {
@@ -326,6 +393,13 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a notification for a Comment to the database, and sends a push notification (if they registered for it), for all users with access to the Comment.
+        /// </summary>
+        /// <param name="commentItem">The Comment that was added, updated, or deleted.</param>
+        /// <param name="currentUser">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
+        /// <param name="message">The message body of the notification.</param>
         public async Task SendCommentNotification(Comment commentItem, UserInfo currentUser, string title, string message)
         {
             List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(commentItem.Progeny.Id);
@@ -368,6 +442,12 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a notification for a Sleep item to the database, and sends a push notification (if they registered for it), for all users with access to the Sleep item.
+        /// </summary>
+        /// <param name="sleepItem">The Sleep item that was added, updated, or deleted.</param>
+        /// <param name="currentUser">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
         public async Task SendSleepNotification(Sleep sleepItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(sleepItem.ProgenyId);
@@ -385,7 +465,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     To = uaUserInfo.UserId,
                     From = currentUser.FullName(),
-                    Message = "Start: " + sleepStart.ToString("dd-MMM-yyyy HH:mm") + "\r\nEnd: " + sleepEnd.ToString("dd-MMM-yyyy HH:mm"),
+                    Message = "Start: " + sleepStart.ToString("dd-MMM-yyyy HH:mm") + "\r\nEnd: " + sleepEnd.ToString("dd-MMM-yyyy HH:mm"), // Todo: Translation of Start and End
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
@@ -400,6 +480,12 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a notification for a Vaccination item to the database, and sends a push notification (if they registered for it), for all users with access to the Vaccination item.
+        /// </summary>
+        /// <param name="vaccinationItem">The Vaccination item that was added, updated, or deleted.</param>
+        /// <param name="currentUser">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
         public async Task SendVaccinationNotification(Vaccination vaccinationItem, UserInfo currentUser, string title)
         {
             List<UserAccess> usersToNotify = await userAccessService.GetProgenyUserAccessList(vaccinationItem.ProgenyId);
@@ -414,7 +500,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     To = uaUserInfo.UserId,
                     From = currentUser.FullName(),
-                    Message = "Name: " + vaccinationItem.VaccinationName + "\r\nContext: " + vaccinationItem.VaccinationDate.ToString("dd-MMM-yyyy"),
+                    Message = "Name: " + vaccinationItem.VaccinationName + "\r\nContext: " + vaccinationItem.VaccinationDate.ToString("dd-MMM-yyyy"), // Todo: Translation of Name and Context
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
@@ -429,6 +515,12 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a notification for a VocabularyItem to the database, and sends a push notification (if they registered for it), for all users with access to the VocabularyItem.
+        /// </summary>
+        /// <param name="vocabularyItem">The VocabularyItem that was added, updated, or deleted.</param>
+        /// <param name="userInfo">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
         public async Task SendVocabularyNotification(VocabularyItem vocabularyItem, UserInfo userInfo, string title)
         {
             List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(vocabularyItem.ProgenyId);
@@ -444,14 +536,14 @@ namespace KinaUnaProgenyApi.Services
                 {
                     DateTime startTime = TimeZoneInfo.ConvertTimeFromUtc(vocabularyItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
 
-                    vocabTimeString = "\r\nDate: " + startTime.ToString("dd-MMM-yyyy");
+                    vocabTimeString = "\r\nDate: " + startTime.ToString("dd-MMM-yyyy"); // Todo: Translation of Date
                 }
 
                 WebNotification notification = new()
                 {
                     To = uaUserInfo.UserId,
                     From = userInfo.FullName(),
-                    Message = "Word: " + vocabularyItem.Word + "\r\nLanguage: " + vocabularyItem.Language + vocabTimeString,
+                    Message = "Word: " + vocabularyItem.Word + "\r\nLanguage: " + vocabularyItem.Language + vocabTimeString, // Todo: Translation of Word and Language
                     DateTime = DateTime.UtcNow,
                     Icon = userInfo.ProfilePicture,
                     Title = title,
@@ -466,6 +558,12 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Adds a notification for a UserAccess item to the database, and sends a push notification (if they registered for it), for all users with admin access to the Progeny that the item belongs to.
+        /// </summary>
+        /// <param name="userAccessItem">The UserAccess item that was added, updated, or deleted.</param>
+        /// <param name="userInfo">The UserInfo for the user who made changes.</param>
+        /// <param name="title">The title of the notification.</param>
         public async Task SendUserAccessNotification(UserAccess userAccessItem, UserInfo userInfo, string title)
         {
             List<UserAccess> usersToNotif = await userAccessService.GetProgenyUserAccessList(userAccessItem.ProgenyId);
@@ -480,7 +578,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     To = uaUserInfo.UserId,
                     From = userInfo.FullName(),
-                    Message = "User email: " + userAccessItem.UserId,
+                    Message = "User email: " + userAccessItem.UserId, // Todo: Translation of User email
                     DateTime = DateTime.UtcNow,
                     Icon = userInfo.ProfilePicture,
                     Title = title,
