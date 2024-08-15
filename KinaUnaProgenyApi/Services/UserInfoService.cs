@@ -28,6 +28,10 @@ namespace KinaUnaProgenyApi.Services
             _imageStore = imageStore;
         }
 
+        /// <summary>
+        /// Gets a list of all UserInfos in the database.
+        /// </summary>
+        /// <returns>List of UserInfo objects.</returns>
         public async Task<List<UserInfo>> GetAllUserInfos()
         {
             List<UserInfo> userinfo = await _context.UserInfoDb.ToListAsync();
@@ -35,6 +39,12 @@ namespace KinaUnaProgenyApi.Services
             return userinfo;
         }
 
+        /// <summary>
+        /// Gets a UserInfo object by email address.
+        /// First checks the cache, if not found, gets the UserInfo from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <returns>UserInfo object with the given email address. Null if the UserInfo doesn't exist.</returns>
         public async Task<UserInfo> GetUserInfoByEmail(string userEmail)
         {
             userEmail = userEmail.Trim();
@@ -48,6 +58,11 @@ namespace KinaUnaProgenyApi.Services
             return userinfo;
         }
 
+        /// <summary>
+        /// Adds a new UserInfo to the database.
+        /// </summary>
+        /// <param name="userInfo">The UserInfo entity to add.</param>
+        /// <returns>The added UserInfo object.</returns>
         public async Task<UserInfo> AddUserInfo(UserInfo userInfo)
         {
             if (string.IsNullOrEmpty(userInfo.FirstName))
@@ -76,18 +91,30 @@ namespace KinaUnaProgenyApi.Services
             return userInfo;
         }
 
+        /// <summary>
+        /// Gets a UserInfo object from the cache by email address.
+        /// </summary>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <returns>The UserInfo object with the given email address. Null if the UserInfo item isn't found in the cache.</returns>
         private async Task<UserInfo> GetUserInfoByEmailFromCache(string userEmail)
         {
-            UserInfo userinfo = new();
             string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper());
-            if (!string.IsNullOrEmpty(cachedUserInfo))
+            if (string.IsNullOrEmpty(cachedUserInfo))
             {
-                userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
+                return null;
+                
             }
 
+            UserInfo userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
             return userinfo;
         }
 
+        /// <summary>
+        /// Gets a UserInfo object from the cache by Id.
+        /// First checks the cache, if not found, gets the UserInfo from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The Id of the UserInfo entity to get.</param>
+        /// <returns>The UserInfo object with the given Id. Null if the UserInfo doesn't exist.</returns>
         private async Task<UserInfo> GetUserInfoByIdFromCache(int id)
         {
             UserInfo userinfo = new();
@@ -100,18 +127,29 @@ namespace KinaUnaProgenyApi.Services
             return userinfo;
         }
 
+        /// <summary>
+        /// Gets a UserInfo object from the cache by UserId.
+        /// </summary>
+        /// <param name="userId">The Id of the UserInfo item to get.</param>
+        /// <returns>The UserInfo object with the given Id. Null if the UserInfo item isn't found in the cache.</returns>
         private async Task<UserInfo> GetUserInfoByUserIdFromCache(string userId)
         {
-            UserInfo userinfo = new();
             string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userId);
-            if (!string.IsNullOrEmpty(cachedUserInfo))
+            if (string.IsNullOrEmpty(cachedUserInfo))
             {
-                userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
+                return null;
             }
 
+            UserInfo userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
             return userinfo;
         }
 
+        /// <summary>
+        /// Gets a UserInfo entity from the database by email address and adds it to the cache.
+        /// Also updates the cache for UserInfoById and UserInfoByUserId.
+        /// </summary>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <returns>The UserInfo with the given email address. Null if the UserInfo item doesn't exist.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "StringComparison seems to break Db queries.")]
         public async Task<UserInfo> SetUserInfoByEmail(string userEmail)
         {
@@ -125,6 +163,11 @@ namespace KinaUnaProgenyApi.Services
             return userinfo;
         }
 
+        /// <summary>
+        /// Gets a UserInfo entity from the database by Id and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The Id of the UserInfo item to get and set.</param>
+        /// <returns>The UserInfo object with the given Id. Null if the UserInfo item doesn't exist.</returns>
         private async Task<UserInfo> SetUserInfoById(int id)
         {
             UserInfo userinfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id);
@@ -136,18 +179,30 @@ namespace KinaUnaProgenyApi.Services
             return userinfo;
         }
 
+        /// <summary>
+        /// Gets a UserInfo entity from the database by UserId and adds it to the cache.
+        /// The UserId is the User's Id from the Identity database.
+        /// </summary>
+        /// <param name="userId">The UserId of the UserInfo entity to get and set.</param>
+        /// <returns>The UserInfo with the given UserId. Null if the UserInfo item doesn't exist.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "StringComparison seems to break Db queries.")]
         private async Task<UserInfo> SetUserInfoByUserId(string userId)
         {
             UserInfo userinfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId.ToUpper() == userId.ToUpper());
-            if (userinfo != null)
+            if (userinfo == null)
             {
-                _ = await SetUserInfoByEmail(userinfo.UserEmail);
+                return null;
             }
 
+            _ = await SetUserInfoByEmail(userinfo.UserEmail);
             return userinfo;
         }
 
+        /// <summary>
+        /// Updates a UserInfo entity in the database and the cache.
+        /// </summary>
+        /// <param name="userInfo">The UserInfo object with the updated properties.</param>
+        /// <returns>The updated UserInfo object.</returns>
         public async Task<UserInfo> UpdateUserInfo(UserInfo userInfo)
         {
             UserInfo userInfoToUpdate = await _context.UserInfoDb.SingleOrDefaultAsync(ui => ui.Id == userInfo.Id);
@@ -193,6 +248,12 @@ namespace KinaUnaProgenyApi.Services
             return userInfoToUpdate;
         }
 
+        /// <summary>
+        /// Deletes a UserInfo entity from the database and the cache.
+        /// This is a hard delete, to soft delete a UserInfo entity, use the UpdateUserInfo method and set the Deleted property to true.
+        /// </summary>
+        /// <param name="userInfo">The UserInfo object to delete.</param>
+        /// <returns>The deleted UserInfo object.</returns>
         public async Task<UserInfo> DeleteUserInfo(UserInfo userInfo)
         {
             UserInfo userInfoToDelete = await _context.UserInfoDb.SingleOrDefaultAsync(ui => ui.Id == userInfo.Id);
@@ -209,6 +270,13 @@ namespace KinaUnaProgenyApi.Services
             return userInfo;
         }
 
+        /// <summary>
+        /// Removes a UserInfo entity from UserInfoByEmail, UserInfoByUserId and UserInfoById caches.
+        /// </summary>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <param name="userId">The user's UserId</param>
+        /// <param name="userInfoId">The UserInfo's Id.</param>
+        /// <returns></returns>
         public async Task RemoveUserInfoByEmail(string userEmail, string userId, int userInfoId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper());
@@ -216,6 +284,12 @@ namespace KinaUnaProgenyApi.Services
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userInfoId);
         }
 
+        /// <summary>
+        /// Gets a UserInfo entity by Id.
+        /// First checks the cache, if not found, gets the UserInfo from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The Id of the UserInfo item to get.</param>
+        /// <returns>The UserInfo object with the given Id. Null if the UserInfo item doesn't exist.</returns>
         public async Task<UserInfo> GetUserInfoById(int id)
         {
             UserInfo userinfo = await GetUserInfoByIdFromCache(id);
@@ -227,6 +301,12 @@ namespace KinaUnaProgenyApi.Services
             return userinfo;
         }
 
+        /// <summary>
+        /// Gets a UserInfo entity by UserId.
+        /// First checks the cache, if not found, gets the UserInfo from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The UserId of the UserInfo entity to get.</param>
+        /// <returns>The UserInfo object with the given UserId. Null if the UserInfo item doesn't exist.</returns>
         public async Task<UserInfo> GetUserInfoByUserId(string id)
         {
             UserInfo userinfo = await GetUserInfoByUserIdFromCache(id);
@@ -238,12 +318,21 @@ namespace KinaUnaProgenyApi.Services
             return userinfo;
         }
 
+        /// <summary>
+        /// Gets a list of all UserInfos that have been marked as deleted.
+        /// </summary>
+        /// <returns>List of UserInfo objects.</returns>
         public async Task<List<UserInfo>> GetDeletedUserInfos()
         {
             List<UserInfo> deletedUserInfos = await _context.UserInfoDb.AsNoTracking().Where(u => u.Deleted).ToListAsync();
             return deletedUserInfos;
         }
 
+        /// <summary>
+        /// Checks if the user is a KinaUna admin.
+        /// </summary>
+        /// <param name="userId">The user's UserId.</param>
+        /// <returns>Boolean, true if the user is a KinaUna admin.</returns>
         public async Task<bool> IsAdminUserId(string userId)
         {
             UserInfo userInfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == userId);
