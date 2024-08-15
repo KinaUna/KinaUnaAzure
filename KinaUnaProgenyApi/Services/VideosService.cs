@@ -105,7 +105,7 @@ namespace KinaUnaProgenyApi.Services
         {
             video.RemoveNullStrings();
 
-            _ = await _mediaContext.VideoDb.AddAsync(video);
+            _ = _mediaContext.VideoDb.Add(video);
             _ = await _mediaContext.SaveChangesAsync();
 
             _ = await SetVideoInCache(video.VideoId);

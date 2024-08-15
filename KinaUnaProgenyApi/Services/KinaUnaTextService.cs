@@ -120,7 +120,7 @@ namespace KinaUnaProgenyApi.Services
                         LanguageId = lang.Id,
                         TextId = oldKinaUnaText.TextId
                     };
-                    _ = await context.KinaUnaTexts.AddAsync(newKinaUnaText);
+                    _ = context.KinaUnaTexts.Add(newKinaUnaText);
                     _ = await context.SaveChangesAsync();
                 }
             }
@@ -149,7 +149,7 @@ namespace KinaUnaProgenyApi.Services
                 {
                     DefaultLanguage = 1
                 };
-                _ = await context.KinaUnaTextNumbers.AddAsync(textNumber);
+                _ = context.KinaUnaTextNumbers.Add(textNumber);
                 _ = await context.SaveChangesAsync();
                 text.TextId = textNumber.Id;
                 text.Created = DateTime.UtcNow;
@@ -178,12 +178,12 @@ namespace KinaUnaProgenyApi.Services
                 {
                     DefaultLanguage = 1
                 };
-                _ = await context.KinaUnaTextNumbers.AddAsync(textNumber);
+                _ = context.KinaUnaTextNumbers.Add(textNumber);
                 _ = await context.SaveChangesAsync();
                 text.TextId = textNumber.Id;
                 text.Created = DateTime.UtcNow;
                 text.Updated = text.Created;
-                context.KinaUnaTexts.Add(text);
+                _ = context.KinaUnaTexts.Add(text);
                 _ = await context.SaveChangesAsync();
 
                 return text;

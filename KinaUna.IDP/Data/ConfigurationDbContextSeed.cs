@@ -22,9 +22,9 @@ namespace KinaUna.IDP.Data
             {
                 foreach (Client client in Config.GetClients(configuration))
                 {
-                    await context.Clients.AddAsync(client.ToEntity());
+                    _ = context.Clients.Add(client.ToEntity());
                 }
-                await context.SaveChangesAsync();
+                _ = await context.SaveChangesAsync();
             }
             // Checking always for old redirects to fix existing deployments
             // to use new swagger-ui redirect uri as of v3.0.0
@@ -42,9 +42,9 @@ namespace KinaUna.IDP.Data
                     foreach (ClientRedirectUri ru in oldRedirects)
                     {
                         ru.RedirectUri = ru.RedirectUri.Replace("/o2c.html", "/oauth2-redirect.html");
-                        context.Update(ru.Client);
+                        _ = context.Update(ru.Client);
                     }
-                    await context.SaveChangesAsync();
+                    _ = await context.SaveChangesAsync();
                 }
             }
 
@@ -52,9 +52,9 @@ namespace KinaUna.IDP.Data
             {
                 foreach (IdentityResource resource in Config.GetIdentityResources())
                 {
-                    await context.IdentityResources.AddAsync(resource.ToEntity());
+                    _ = context.IdentityResources.Add(resource.ToEntity());
                 }
-                await context.SaveChangesAsync();
+                _ = await context.SaveChangesAsync();
             }
 
             //if (!context.ApiResources.Any())
@@ -71,9 +71,9 @@ namespace KinaUna.IDP.Data
             {
                 foreach (ApiScope resource in Config.ApiScopes)
                 {
-                    await context.ApiScopes.AddAsync(resource.ToEntity());
+                    _ = context.ApiScopes.Add(resource.ToEntity());
                 }
-                await context.SaveChangesAsync();
+                _ = await context.SaveChangesAsync();
             }
         }
     }

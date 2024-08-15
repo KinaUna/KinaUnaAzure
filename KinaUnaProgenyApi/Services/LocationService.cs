@@ -250,7 +250,7 @@ namespace KinaUnaProgenyApi.Services
         {
             Address addressToAdd = new();
             addressToAdd.CopyPropertiesForAdd(addressItem);
-            _ = await _context.AddressDb.AddAsync(addressToAdd);
+            _ = _context.AddressDb.Add(addressToAdd);
             _ = await _context.SaveChangesAsync();
 
             _ = await SetAddressItemInCache(addressToAdd.AddressId);

@@ -26,8 +26,8 @@ namespace KinaUnaProgenyApi.Services
             _context = context;
             _imageStore = imageStore;
             _cache = cache;
-            _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
-            _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
+            _ = _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
+            _ = _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
         /// <summary>
@@ -54,10 +54,10 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The added Progeny.</returns>
         public async Task<Progeny> AddProgeny(Progeny progeny)
         {
-            await _context.ProgenyDb.AddAsync(progeny);
-            await _context.SaveChangesAsync();
+            _ = _context.ProgenyDb.Add(progeny);
+            _ = await _context.SaveChangesAsync();
 
-            await SetProgenyInCache(progeny.Id);
+            _ = await SetProgenyInCache(progeny.Id);
 
             return progeny;
         }
@@ -89,19 +89,19 @@ namespace KinaUnaProgenyApi.Services
                 progenyToUpdate.PictureLink = await ResizeImage(progenyToUpdate.PictureLink);
             }
 
-            _context.ProgenyDb.Update(progenyToUpdate);
-            await _context.SaveChangesAsync();
+            _ = _context.ProgenyDb.Update(progenyToUpdate);
+            _ = await _context.SaveChangesAsync();
 
             if (oldPictureLink != progeny.PictureLink)
             {
                 List<Progeny> progeniesWithThisPicture = await _context.ProgenyDb.AsNoTracking().Where(c => c.PictureLink == oldPictureLink).ToListAsync();
                 if (progeniesWithThisPicture.Count == 0)
                 {
-                    await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Progeny);
+                    _ = await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Progeny);
                 }
             }
 
-            await SetProgenyInCache(progeny.Id);
+            _ = await SetProgenyInCache(progeny.Id);
 
             return progenyToUpdate;
         }
@@ -118,10 +118,10 @@ namespace KinaUnaProgenyApi.Services
             Progeny progenyToDelete = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progeny.Id);
             if (progenyToDelete == null) return null;
 
-            _context.ProgenyDb.Remove(progenyToDelete);
-            await _context.SaveChangesAsync();
+            _ = _context.ProgenyDb.Remove(progenyToDelete);
+            _ = await _context.SaveChangesAsync();
 
-            await _imageStore.DeleteImage(progeny.PictureLink, "progeny");
+            _ = await _imageStore.DeleteImage(progeny.PictureLink, "progeny");
             return progenyToDelete;
         }
 
@@ -208,7 +208,7 @@ namespace KinaUnaProgenyApi.Services
             await image.WriteAsync(memStream);
             memStream.Position = 0;
 
-            await _imageStore.DeleteImage(imageId, BlobContainers.Progeny);
+            _ = await _imageStore.DeleteImage(imageId, BlobContainers.Progeny);
 
             string pictureFormat = "";
             switch (image.Format)
