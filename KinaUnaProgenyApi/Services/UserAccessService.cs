@@ -26,6 +26,13 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
+        /// <summary>
+        /// Gets the list of Progeny where the user is an admin.
+        /// Gets the list from the cache if it exists, otherwise gets the list from the database and adds it to the cache.
+        /// The reason email is used instead of UserId is that access for a user can be granted by email address, so that even if a user hasn't created an account yet, they can still be granted access as soon as they do.
+        /// </summary>
+        /// <param name="email">The email address of the user.</param>
+        /// <returns>List of Progeny objects.</returns>
         public async Task<List<Progeny>> GetProgenyUserIsAdmin(string email)
         {
             List<Progeny> progenyList = await GetProgenyUserIsAdminFromCache(email);
@@ -37,6 +44,11 @@ namespace KinaUnaProgenyApi.Services
             return progenyList;
         }
 
+        /// <summary>
+        /// Gets the list of Progeny where the user is an admin from the cache.
+        /// </summary>
+        /// <param name="email">The email address of the user.</param>
+        /// <returns>List of Progeny objects.</returns>
         private async Task<List<Progeny>> GetProgenyUserIsAdminFromCache(string email)
         {
             List<Progeny> progenyList = [];
@@ -49,6 +61,11 @@ namespace KinaUnaProgenyApi.Services
             return progenyList;
         }
 
+        /// <summary>
+        /// Gets the list of Progeny where the user is an admin from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="email">The user's email address.</param>
+        /// <returns>List of Progeny objects.</returns>
         public async Task<List<Progeny>> SetProgenyUserIsAdminInCache(string email)
         {
             List<Progeny> progenyList = await _context.ProgenyDb.AsNoTracking().Where(p => p.Admins.Contains(email)).ToListAsync();
@@ -56,6 +73,12 @@ namespace KinaUnaProgenyApi.Services
             return progenyList;
         }
 
+        /// <summary>
+        /// Gets the list of all UserAccess entities that exist for a Progeny.
+        /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get the list of UserAccesses for.</param>
+        /// <returns>List of UserAccess objects.</returns>
         public async Task<List<UserAccess>> GetProgenyUserAccessList(int progenyId)
         {
             List<UserAccess> accessList = await GetProgenyUserAccessListFromCache(progenyId);
@@ -68,6 +91,11 @@ namespace KinaUnaProgenyApi.Services
             return accessList;
         }
 
+        /// <summary>
+        /// Gets the list of all UserAccess entities that exist for a Progeny from the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get the list of UserAccesses for.</param>
+        /// <returns>List of UserAccess objects.</returns>
         private async Task<List<UserAccess>> GetProgenyUserAccessListFromCache(int progenyId)
         {
             List<UserAccess> accessList = [];
@@ -80,6 +108,11 @@ namespace KinaUnaProgenyApi.Services
             return accessList;
         }
 
+        /// <summary>
+        /// Gets the list of all UserAccess entities that exist for a Progeny from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get and set the list for.</param>
+        /// <returns>List of UserAccess objects.</returns>
         public async Task<List<UserAccess>> SetProgenyUserAccessListInCache(int progenyId)
         {
             List<UserAccess> accessList = await _context.UserAccessDb.AsNoTracking().Where(u => u.ProgenyId == progenyId).ToListAsync();
@@ -88,6 +121,12 @@ namespace KinaUnaProgenyApi.Services
             return accessList;
         }
 
+        /// <summary>
+        /// Gets the list of all UserAccess entities that exist for a user.
+        /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="email">The email address of the user.</param>
+        /// <returns>List of UserAccess objects.</returns>
         public async Task<List<UserAccess>> GetUsersUserAccessList(string email)
         {
             List<UserAccess> accessList = await GetUsersUserAccessListFromCache(email);
@@ -99,6 +138,12 @@ namespace KinaUnaProgenyApi.Services
             return accessList;
         }
 
+        /// <summary>
+        /// Gets the list of all UserAccess entities for a user where the user is admin of the Progeny.
+        /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="email">The user's email address.</param>
+        /// <returns>List of UserAccess objects.</returns>
         public async Task<List<UserAccess>> GetUsersUserAdminAccessList(string email)
         {
             List<UserAccess> userAccessList = await GetUsersUserAccessList(email);
@@ -107,6 +152,11 @@ namespace KinaUnaProgenyApi.Services
             return userAccessList;
         }
 
+        /// <summary>
+        /// Gets the list of all UserAccess entities for a user from the cache.
+        /// </summary>
+        /// <param name="email">The user's email address.</param>
+        /// <returns>List of UserAccess objects.</returns>
         private async Task<List<UserAccess>> GetUsersUserAccessListFromCache(string email)
         {
             List<UserAccess> accessList = [];
@@ -119,6 +169,11 @@ namespace KinaUnaProgenyApi.Services
             return accessList;
         }
 
+        /// <summary>
+        /// Gets the list of all UserAccess entities for a user from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="email">The user's email address.</param>
+        /// <returns>List of UserAccess objects.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "StringComparison seems to break Db queries.")]
         public async Task<List<UserAccess>> SetUsersUserAccessListInCache(string email)
         {
@@ -128,6 +183,12 @@ namespace KinaUnaProgenyApi.Services
             return accessList;
         }
 
+        /// <summary>
+        /// Gets a UserAccess entity with the specified AccessId.
+        /// First checks the cache, if not found, gets the UserAccess from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The AccessId of the UserAccess to get.</param>
+        /// <returns>UserAccess object with the given AccessId. Null if the UserAccess doesn't exist.</returns>
         public async Task<UserAccess> GetUserAccess(int id)
         {
             UserAccess userAccess = await GetUserAccessFromCache(id);
@@ -139,18 +200,29 @@ namespace KinaUnaProgenyApi.Services
             return userAccess;
         }
 
+        /// <summary>
+        /// Gets a UserAccess entity with the specified AccessId from the cache.
+        /// </summary>
+        /// <param name="id">The AccessId of the UserAccess to get.</param>
+        /// <returns>UserAccess object with the given AccessId. Null if the UserAccess item isn't found in the cache.</returns>
         private async Task<UserAccess> GetUserAccessFromCache(int id)
         {
-            UserAccess userAccess = new();
             string cachedUserAccess = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "useraccess" + id);
-            if (!string.IsNullOrEmpty(cachedUserAccess))
+            if (string.IsNullOrEmpty(cachedUserAccess))
             {
-                userAccess = JsonConvert.DeserializeObject<UserAccess>(cachedUserAccess);
+                return null;
             }
 
+            UserAccess userAccess = JsonConvert.DeserializeObject<UserAccess>(cachedUserAccess);
             return userAccess;
         }
 
+        /// <summary>
+        /// Gets a UserAccess entity with the specified AccessId from the database and adds it to the cache.
+        /// If the UserAccess isn't found in the database, it is removed from the cache to ensure no user will have access by accidentally leaving a cache entry.
+        /// </summary>
+        /// <param name="id">The AccessId of the UserAccess item to get and set.</param>
+        /// <returns>The UserAccess with the given AccessId. Null if the UserAccess item doesn't exist.</returns>
         public async Task<UserAccess> SetUserAccessInCache(int id)
         {
             UserAccess userAccess = await _context.UserAccessDb.AsNoTracking().SingleOrDefaultAsync(u => u.AccessId == id);
@@ -167,6 +239,13 @@ namespace KinaUnaProgenyApi.Services
             return userAccess;
         }
 
+        /// <summary>
+        /// Adds a new UserAccess entity to the database and adds it to the cache.
+        /// Updates the related lists of UserAccesses in the cache too.
+        /// If the AccessLevel is 0 or the user's email address is in the Admins property of the Progeny, the user is added to the Admins list.
+        /// </summary>
+        /// <param name="userAccess">The UserAccess object to add.</param>
+        /// <returns>The added UserAccess object.</returns>
         public async Task<UserAccess> AddUserAccess(UserAccess userAccess)
         {
             // If a UserAccess entry with the same user and progeny exists, replace it.
@@ -192,6 +271,13 @@ namespace KinaUnaProgenyApi.Services
             return userAccess;
         }
 
+        /// <summary>
+        /// Updates a UserAccess entity in the database and the cache.
+        /// Updates the related lists of UserAccesses in the cache too.
+        /// If the AccessLevel is 0 or the user's email address is in the Admins property of the Progeny, the user is added to the Admins list.
+        /// </summary>
+        /// <param name="userAccess">The UserAccess object with the updated properties.</param>
+        /// <returns>The updated UserAccess object.</returns>
         public async Task<UserAccess> UpdateUserAccess(UserAccess userAccess)
         {
             UserAccess userAccessToUpdate = await _context.UserAccessDb.SingleOrDefaultAsync(ua => ua.AccessId == userAccess.AccessId);
@@ -215,6 +301,16 @@ namespace KinaUnaProgenyApi.Services
             return userAccessToUpdate;
         }
 
+        /// <summary>
+        /// Removes a UserAccess entity from the database and the cache.
+        /// Also updates the related lists of UserAccesses in the cache.
+        /// Only admins of a Progeny can remove UserAccess entities that belong to the Progeny.
+        /// If the UserAccess entity is an admin of the Progeny, the user is removed from the Admins list.
+        /// </summary>
+        /// <param name="id">The AccessId of the UserAccess entity to remove.</param>
+        /// <param name="progenyId">The ProgenyId of the Progeny that the UserAccess belongs to.</param>
+        /// <param name="userId">The email address of the UserId for the UserAccess to delete.</param>
+        /// <returns></returns>
         public async Task RemoveUserAccess(int id, int progenyId, string userId)
         {
             UserAccess deleteUserAccess = await _context.UserAccessDb.SingleOrDefaultAsync(u => u.AccessId == id && u.ProgenyId == progenyId);
@@ -253,6 +349,13 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Gets the UserAccess entity for a specific User and a Progeny.
+        /// First checks the cache, if not found, gets the UserAccess from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the UserAccess.</param>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <returns>UserAccess with the given ProgenyId and email. Null if the UserAccess doesn't exist.</returns>
         public async Task<UserAccess> GetProgenyUserAccessForUser(int progenyId, string userEmail)
         {
             UserAccess userAccess = await GetProgenyUserAccessForUserFromCache(progenyId, userEmail);
@@ -264,18 +367,30 @@ namespace KinaUnaProgenyApi.Services
             return userAccess;
         }
 
+        /// <summary>
+        /// Gets the UserAccess entity for a specific User and a Progeny from the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the UserAccess.</param>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <returns>UserAccess with the given ProgenyId and email. Null if the UserAccess isn't found in the cache.</returns>
         private async Task<UserAccess> GetProgenyUserAccessForUserFromCache(int progenyId, string userEmail)
         {
-            UserAccess userAccess = new();
             string cachedUserAccess = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "progenyuseraccess" + progenyId + userEmail.ToUpper());
-            if (!string.IsNullOrEmpty(cachedUserAccess))
+            if (string.IsNullOrEmpty(cachedUserAccess))
             {
-                userAccess = JsonConvert.DeserializeObject<UserAccess>(cachedUserAccess);
+                return null;
             }
-
+ 
+            UserAccess userAccess = JsonConvert.DeserializeObject<UserAccess>(cachedUserAccess);
             return userAccess;
         }
 
+        /// <summary>
+        /// Gets the UserAccess entity for a specific User and a Progeny from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the UserAccess.</param>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <returns>UserAccess with the given ProgenyId and email. Null if the UserAccess doesn't exist.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1862:Use the 'StringComparison' method overloads to perform case-insensitive string comparisons", Justification = "StringComparison seems to break Db queries.")]
         private async Task<UserAccess> SetProgenyUserAccessForUserInCache(int progenyId, string userEmail)
         {
@@ -285,6 +400,11 @@ namespace KinaUnaProgenyApi.Services
             return userAccess;
         }
 
+        /// <summary>
+        /// Updates the Admins property of a Progeny in the database and cache.
+        /// </summary>
+        /// <param name="progeny">Progeny object with the updated Admins property.</param>
+        /// <returns></returns>
         public async Task UpdateProgenyAdmins(Progeny progeny)
         {
             Progeny existingProgeny = await _context.ProgenyDb.SingleOrDefaultAsync(p => p.Id == progeny.Id);
@@ -299,6 +419,11 @@ namespace KinaUnaProgenyApi.Services
             }
         }
 
+        /// <summary>
+        /// Updates a Progeny in the cache only.
+        /// </summary>
+        /// <param name="progeny"></param>
+        /// <returns></returns>
         private async Task SetProgenyInCache(Progeny progeny)
         {
             await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "progeny" + progeny.Id, JsonConvert.SerializeObject(progeny), _cacheOptionsSliding);
