@@ -10,6 +10,9 @@ using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
+    /// <summary>
+    /// Provides methods for interacting with the Calendar API.
+    /// </summary>
     public class CalendarsHttpClient : ICalendarsHttpClient
     {
         private readonly HttpClient _httpClient;
@@ -26,7 +29,11 @@ namespace KinaUnaWeb.Services.HttpClients
             httpClient.DefaultRequestVersion = new Version(2, 0);
         }
 
-
+        /// <summary>
+        /// Gets a CalendarItem with a given EventId.
+        /// </summary>
+        /// <param name="eventId">The EventId of the CalendarItem object.</param>
+        /// <returns>CalendarItem</returns>
         public async Task<CalendarItem> GetCalendarItem(int eventId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -44,6 +51,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return calendarItem;
         }
 
+        /// <summary>
+        /// Adds a new CalendarItem object.
+        /// </summary>
+        /// <param name="eventItem">The CalendarItem object to be added.</param>
+        /// <returns>The CalendarItem object that was added.</returns>
         public async Task<CalendarItem> AddCalendarItem(CalendarItem eventItem)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -59,6 +71,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Updates a CalendarItem object.
+        /// </summary>
+        /// <param name="eventItem">The CalendarItem object to be updated.</param>
+        /// <returns>The updated CalendarItem object.</returns>
         public async Task<CalendarItem> UpdateCalendarItem(CalendarItem eventItem)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -74,6 +91,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Removes the CalendarItem object with a given EventId.
+        /// </summary>
+        /// <param name="eventId">The EventId of the CalendarItem to remove.</param>
+        /// <returns>bool: True if the CalendarItem object was successfully removed.</returns>
         public async Task<bool> DeleteCalendarItem(int eventId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -84,6 +106,12 @@ namespace KinaUnaWeb.Services.HttpClients
             return calendarResponse.IsSuccessStatusCode;
         }
 
+        /// <summary>
+        /// Gets the list of CalendarItem objects for a progeny that a user has access to.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny to get the list of CalendarItems for.</param>
+        /// <param name="accessLevel">The user's access level for the Progeny.</param>
+        /// <returns>List of CalendarItem objects.</returns>
         public async Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel)
         {
             List<CalendarItem> progenyCalendarList = [];
@@ -101,6 +129,13 @@ namespace KinaUnaWeb.Services.HttpClients
             return progenyCalendarList;
         }
 
+        /// <summary>
+        /// Gets the next 5 upcoming events in the progeny's calendar.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny to get CalendarItems for.</param>
+        /// <param name="accessLevel">The user's access level for the Progeny.</param>
+        /// <param name="timeZone">The user's time zone.</param>
+        /// <returns>List of CalendarItem objects.</returns>
         public async Task<List<CalendarItem>> GetUpcomingEvents(int progenyId, int accessLevel, string timeZone)
         {
             List<CalendarItem> progenyCalendarList = [];
