@@ -26,6 +26,12 @@ namespace KinaUnaProgenyApi.Services
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
 
+        /// <summary>
+        /// Gets a Vaccination entity with the specified VaccinationId.
+        /// First checks the cache, if not found, gets the Vaccination from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The VaccinationId of the Vaccination entity to get.</param>
+        /// <returns>The Vaccination object with the given VaccinationId. Null if the Vaccination item doesn't exist.</returns>
         public async Task<Vaccination> GetVaccination(int id)
         {
             Vaccination vaccination = await GetVaccinationFromCache(id);
@@ -37,6 +43,11 @@ namespace KinaUnaProgenyApi.Services
             return vaccination;
         }
 
+        /// <summary>
+        /// Adds a new Vaccination entity to the database and adds it to the cache.
+        /// </summary>
+        /// <param name="vaccination">The Vaccination object to add.</param>
+        /// <returns>The added Vaccination object.</returns>
         public async Task<Vaccination> AddVaccination(Vaccination vaccination)
         {
             Vaccination vaccinationToAdd = new();
@@ -50,31 +61,45 @@ namespace KinaUnaProgenyApi.Services
             return vaccinationToAdd;
         }
 
+        /// <summary>
+        /// Gets a Vaccination entity with the specified VaccinationId.
+        /// </summary>
+        /// <param name="id">The VaccinationId of the Vaccination item to get.</param>
+        /// <returns>The Vaccination object with the given VaccinationId. Null if the Vaccination item isn't found in the cache.</returns>
         private async Task<Vaccination> GetVaccinationFromCache(int id)
         {
-            Vaccination vaccination = new();
             string cachedVaccination = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id);
-            if (!string.IsNullOrEmpty(cachedVaccination))
+            if (string.IsNullOrEmpty(cachedVaccination))
             {
-                vaccination = JsonConvert.DeserializeObject<Vaccination>(cachedVaccination);
+                return null;
             }
 
+            Vaccination vaccination = JsonConvert.DeserializeObject<Vaccination>(cachedVaccination);
             return vaccination;
         }
 
+        /// <summary>
+        /// Gets a Vaccination entity from the database by VaccinationId and adds it to the cache.
+        /// </summary>
+        /// <param name="id">The VaccinationId of the Vaccination item to get and set.</param>
+        /// <returns>The Vaccination object with the given VaccinationId. Null if the Vaccination item doesn't exist.</returns>
         private async Task<Vaccination> SetVaccinationInCache(int id)
         {
             Vaccination vaccination = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
-            if (vaccination != null)
-            {
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id, JsonConvert.SerializeObject(vaccination), _cacheOptionsSliding);
+            if (vaccination == null) return null;
 
-                _ = await SetVaccinationListInCache(vaccination.ProgenyId);
-            }
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id, JsonConvert.SerializeObject(vaccination), _cacheOptionsSliding);
+
+            _ = await SetVaccinationListInCache(vaccination.ProgenyId);
 
             return vaccination;
         }
 
+        /// <summary>
+        /// Updates a Vaccination entity in the database and the cache.
+        /// </summary>
+        /// <param name="vaccination">The Vaccination object with the updated properties.</param>
+        /// <returns>The updated Vaccination object.</returns>
         public async Task<Vaccination> UpdateVaccination(Vaccination vaccination)
         {
             Vaccination vaccinationToUpdate = await _context.VaccinationsDb.SingleOrDefaultAsync(v => v.VaccinationId == vaccination.VaccinationId);
@@ -89,6 +114,11 @@ namespace KinaUnaProgenyApi.Services
             return vaccinationToUpdate;
         }
 
+        /// <summary>
+        /// Deletes a Vaccination entity from the database and the cache.
+        /// </summary>
+        /// <param name="vaccination">The Vaccination object to delete.</param>
+        /// <returns></returns>
         public async Task<Vaccination> DeleteVaccination(Vaccination vaccination)
         {
             Vaccination vaccinationToDelete = await _context.VaccinationsDb.SingleOrDefaultAsync(v => v.VaccinationId == vaccination.VaccinationId);
@@ -101,6 +131,13 @@ namespace KinaUnaProgenyApi.Services
             return vaccinationToDelete;
         }
 
+        /// <summary>
+        /// Deletes a Vaccination entity from the cache.
+        /// Also updates the list of all Vaccinations for the Progeny in the cache.
+        /// </summary>
+        /// <param name="id">The VaccinationId of the Vaccination to delete.</param>
+        /// <param name="progenyId"></param>
+        /// <returns></returns>
         private async Task RemoveVaccinationFromCache(int id, int progenyId)
         {
             await _cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id);
@@ -108,6 +145,12 @@ namespace KinaUnaProgenyApi.Services
             _ = await SetVaccinationListInCache(progenyId);
         }
 
+        /// <summary>
+        /// Gets a list of all Vaccinations for a Progeny.
+        /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get the list for.</param>
+        /// <returns>List of Vaccination objects.</returns>
         public async Task<List<Vaccination>> GetVaccinationsList(int progenyId)
         {
             List<Vaccination> vaccinationsList = await GetVaccinationListFromCache(progenyId);
@@ -119,6 +162,11 @@ namespace KinaUnaProgenyApi.Services
             return vaccinationsList;
         }
 
+        /// <summary>
+        /// Gets a list of all Vaccinations for a Progeny from the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get Vaccinations for.</param>
+        /// <returns>List of Vaccination objects.</returns>
         private async Task<List<Vaccination>> GetVaccinationListFromCache(int progenyId)
         {
             List<Vaccination> vaccinationsList = [];
@@ -131,6 +179,11 @@ namespace KinaUnaProgenyApi.Services
             return vaccinationsList;
         }
 
+        /// <summary>
+        /// Gets a list of all Vaccinations for a Progeny from the database and adds it to the cache.
+        /// </summary>
+        /// <param name="progenyId">The ProgenyId of the Progeny to get and set the list of Vaccinations for.</param>
+        /// <returns>List of Vaccination objects.</returns>
         private async Task<List<Vaccination>> SetVaccinationListInCache(int progenyId)
         {
             List<Vaccination> vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
