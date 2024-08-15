@@ -15,7 +15,7 @@ namespace KinaUnaProgenyApi.Services
         private static DistributedCacheEntryOptions GetCacheEntryOptions()
         {
             DistributedCacheEntryOptions cacheOptions = new();
-            cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
+            _ = cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             return cacheOptions;
         }
 
@@ -37,7 +37,7 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The added MobileNotification.</returns>
         public async Task<MobileNotification> AddMobileNotification(MobileNotification notification)
         {
-            _ = await progenyDbContext.MobileNotificationsDb.AddAsync(notification);
+            _ = progenyDbContext.MobileNotificationsDb.Add(notification);
             _ = await progenyDbContext.SaveChangesAsync();
 
             return notification;
@@ -116,8 +116,8 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            await progenyDbContext.PushDevices.AddAsync(device);
-            await progenyDbContext.SaveChangesAsync();
+            _ = progenyDbContext.PushDevices.Add(device);
+            _ = await progenyDbContext.SaveChangesAsync();
 
             return device;
         }
@@ -135,8 +135,8 @@ namespace KinaUnaProgenyApi.Services
                 return;
             }
 
-            progenyDbContext.PushDevices.Remove(device);
-            await progenyDbContext.SaveChangesAsync();
+            _ = progenyDbContext.PushDevices.Remove(device);
+            _ = await progenyDbContext.SaveChangesAsync();
         }
 
         /// <summary>
@@ -243,8 +243,8 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>The added WebNotification.</returns>
         public async Task<WebNotification> AddWebNotification(WebNotification notification)
         {
-            await progenyDbContext.WebNotificationsDb.AddAsync(notification);
-            await progenyDbContext.SaveChangesAsync();
+            _ = progenyDbContext.WebNotificationsDb.Add(notification);
+            _ = await progenyDbContext.SaveChangesAsync();
 
             _ = await SetWebNotificationInCache(notification.Id);
 
@@ -270,8 +270,8 @@ namespace KinaUnaProgenyApi.Services
             notificationToUpdate.Title = notification.Title;
             notificationToUpdate.Type = notification.Type;
 
-            progenyDbContext.WebNotificationsDb.Update(notificationToUpdate);
-            await progenyDbContext.SaveChangesAsync();
+            _ = progenyDbContext.WebNotificationsDb.Update(notificationToUpdate);
+            _ = await progenyDbContext.SaveChangesAsync();
 
             _ = await SetWebNotificationInCache(notification.Id);
 
@@ -287,9 +287,9 @@ namespace KinaUnaProgenyApi.Services
         {
             WebNotification notificationToDelete = await progenyDbContext.WebNotificationsDb.SingleOrDefaultAsync(n => n.Id == notification.Id);
             if (notificationToDelete == null) return;
-            
-            progenyDbContext.WebNotificationsDb.Remove(notificationToDelete);
-            await progenyDbContext.SaveChangesAsync();
+
+            _ = progenyDbContext.WebNotificationsDb.Remove(notificationToDelete);
+            _ = await progenyDbContext.SaveChangesAsync();
 
             await RemoveWebNotificationFromCache(notification.Id, notification.To);
         }

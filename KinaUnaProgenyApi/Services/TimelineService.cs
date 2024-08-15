@@ -58,7 +58,7 @@ namespace KinaUnaProgenyApi.Services
             TimeLineItem timeLineItemToAdd = new();
             timeLineItemToAdd.CopyPropertiesForAdd(timeLineItem);
 
-            _ = await _context.TimeLineDb.AddAsync(timeLineItemToAdd);
+            _ = _context.TimeLineDb.Add(timeLineItemToAdd);
             _ = await _context.SaveChangesAsync();
 
             _ = await SetTimeLineItemInCache(timeLineItemToAdd.TimeLineId);

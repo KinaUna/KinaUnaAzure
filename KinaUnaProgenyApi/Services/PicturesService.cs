@@ -29,8 +29,8 @@ namespace KinaUnaProgenyApi.Services
             _mediaContext = mediaContext;
             _imageStore = imageStore;
             _cache = cache;
-            _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
-            _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0)); // Expire after 24 hours.
+            _ = _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
+            _ = _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0)); // Expire after 24 hours.
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace KinaUnaProgenyApi.Services
             }
 
             picture.PictureRotation = 0;
-            await UpdatePicture(picture);
+            _ = await UpdatePicture(picture);
 
             return picture;
         }
@@ -87,10 +87,10 @@ namespace KinaUnaProgenyApi.Services
             picture.RemoveNullStrings();
             Picture pictureToAdd = new();
             pictureToAdd.CopyPropertiesForAdd(picture);
-            await _mediaContext.PicturesDb.AddAsync(pictureToAdd);
-            await _mediaContext.SaveChangesAsync();
+            _ = _mediaContext.PicturesDb.Add(pictureToAdd);
+            _ = await _mediaContext.SaveChangesAsync();
 
-            await SetPictureInCache(pictureToAdd.PictureId);
+            _ = await SetPictureInCache(pictureToAdd.PictureId);
 
             return pictureToAdd;
         }
@@ -101,7 +101,7 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="picture">The Picture to update.</param>
         /// <returns>The updated Picture object.</returns>
-        public async Task<Picture> UpdatePictureLinkWithExtension(Picture picture)
+        private async Task<Picture> UpdatePictureLinkWithExtension(Picture picture)
         {
             string originalPictureLink = picture.PictureLink;
             string originalPictureLink600 = picture.PictureLink600;
@@ -141,9 +141,9 @@ namespace KinaUnaProgenyApi.Services
             }
 
             picture = await UpdatePicture(picture);
-            await _imageStore.DeleteImage(originalPictureLink, BlobContainers.Pictures);
-            await _imageStore.DeleteImage(originalPictureLink600, BlobContainers.Pictures);
-            await _imageStore.DeleteImage(originalPictureLink1200, BlobContainers.Pictures);
+            _ = await _imageStore.DeleteImage(originalPictureLink, BlobContainers.Pictures);
+            _ = await _imageStore.DeleteImage(originalPictureLink600, BlobContainers.Pictures);
+            _ = await _imageStore.DeleteImage(originalPictureLink1200, BlobContainers.Pictures);
 
             return picture;
         }
@@ -508,16 +508,16 @@ namespace KinaUnaProgenyApi.Services
             Picture pictureToDelete = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.PictureId == picture.PictureId);
             if (pictureToDelete != null)
             {
-                _mediaContext.PicturesDb.Remove(pictureToDelete);
+                _ = _mediaContext.PicturesDb.Remove(pictureToDelete);
                 _ = await _mediaContext.SaveChangesAsync();
             }
 
             List<Picture> picturesWithThisImage = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.PictureLink == picture.PictureLink).ToListAsync();
             if (picturesWithThisImage.Count == 0)
             {
-                await _imageStore.DeleteImage(picture.PictureLink);
-                await _imageStore.DeleteImage(picture.PictureLink600);
-                await _imageStore.DeleteImage(picture.PictureLink1200);
+                _ = await _imageStore.DeleteImage(picture.PictureLink);
+                _ = await _imageStore.DeleteImage(picture.PictureLink600);
+                _ = await _imageStore.DeleteImage(picture.PictureLink1200);
             }
 
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);

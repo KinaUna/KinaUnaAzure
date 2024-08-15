@@ -183,7 +183,7 @@ namespace KinaUnaProgenyApi.Services
                 text.TextId = textNumber.Id;
                 text.Created = DateTime.UtcNow;
                 text.Updated = text.Created;
-                context.KinaUnaTexts.Add(text);
+                _ = context.KinaUnaTexts.Add(text);
                 _ = await context.SaveChangesAsync();
 
                 return text;

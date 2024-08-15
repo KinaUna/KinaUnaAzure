@@ -256,7 +256,7 @@ namespace KinaUnaProgenyApi.Services
                 await RemoveUserAccess(oldUserAccess.AccessId, oldUserAccess.ProgenyId, oldUserAccess.UserId);
             }
 
-            _ = await _context.UserAccessDb.AddAsync(userAccess);
+            _ = _context.UserAccessDb.Add(userAccess);
             _ = await _context.SaveChangesAsync();
 
             _ = await SetUserAccessInCache(userAccess.AccessId);
