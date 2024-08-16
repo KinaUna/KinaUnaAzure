@@ -52,6 +52,7 @@ namespace KinaUnaWeb.Controllers
             
             if (contact.AccessLevel < model.CurrentAccessLevel)
             {
+                // Todo: Show access denied instead of redirecting.
                 RedirectToAction("Index");
             }
 
