@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
+    /// <summary>
+    /// View model for CalendarItem objects.
+    /// Extends the BaseItemsViewModel.
+    /// </summary>
     public class CalendarItemViewModel: BaseItemsViewModel
     {
         public List<SelectListItem> ProgenyList { get; set; }
@@ -24,7 +28,11 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             ProgenyList = [];
         }
-        
+        /// <summary>
+        /// Sets the CalendarItem property of this view model.
+        /// Converts start and end times from UTC to the user's timezone.
+        /// </summary>
+        /// <param name="eventItem">The CalendarItem with the properties to set for the CalendarItem property. Start and end times should be in UTC timezone.</param>
         public void SetCalendarItem(CalendarItem eventItem)
         {
             CalendarItem.EventId = eventItem.EventId;
@@ -46,6 +54,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
             SetAccessLevelList();
         }
 
+        /// <summary>
+        /// Updates the selected progeny in the ProgenyList to CurrentProgenyId.
+        /// </summary>
         public void SetProgenyList()
         {
             CalendarItem.ProgenyId = CurrentProgenyId;
@@ -62,6 +73,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
         }
 
+        /// <summary>
+        /// Creates access level lists, sets the selected access level to the current CalendarItem's access level.
+        /// </summary>
         public void SetAccessLevelList()
         {
             AccessLevelList accessLevelList = new();
@@ -84,6 +98,11 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
         }
 
+        /// <summary>
+        /// Creates a new CalendarItem object from the properties of this view model.
+        /// Converts start and end times from the user's timezone to UTC.
+        /// </summary>
+        /// <returns>CalendarItem object. Start and end times are in UTC timezone.</returns>
         public CalendarItem CreateCalendarItem()
         {
             CalendarItem eventItem = new()
