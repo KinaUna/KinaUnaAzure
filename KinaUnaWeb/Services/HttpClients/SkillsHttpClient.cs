@@ -10,6 +10,9 @@ using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
+    /// <summary>
+    /// Provides methods to interact with the Skills API.
+    /// </summary>
     public class SkillsHttpClient : ISkillsHttpClient
     {
         private readonly HttpClient _httpClient;
@@ -28,7 +31,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
-
+        /// <summary>
+        /// Gets the Skill with the given SkillId.
+        /// </summary>
+        /// <param name="skillId">The SkillId of the Skill to get.</param>
+        /// <returns>The Skill object with the given SkillId. If the Skill cannot be found a new Skill object with SkillId is returned.</returns>
         public async Task<Skill> GetSkill(int skillId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -43,6 +50,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return skillItem ?? new Skill();
         }
 
+        /// <summary>
+        /// Adds a new Skill.
+        /// </summary>
+        /// <param name="skill">The new Skill to add.</param>
+        /// <returns>The added Skill object.</returns>
         public async Task<Skill> AddSkill(Skill skill)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -57,6 +69,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return skill ?? new Skill();
         }
 
+        /// <summary>
+        /// Updates a Skill. The Skill with the same SkillId will be updated.
+        /// </summary>
+        /// <param name="skill">The Skill with the updated properties.</param>
+        /// <returns>The updated Skill object.</returns>
         public async Task<Skill> UpdateSkill(Skill skill)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -72,6 +89,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Deletes the Skill with a given SkillId.
+        /// </summary>
+        /// <param name="skillId">The SkillId of the Skill to delete.</param>
+        /// <returns>bool: True if the Skill was successfully removed.</returns>
         public async Task<bool> DeleteSkill(int skillId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -82,6 +104,12 @@ namespace KinaUnaWeb.Services.HttpClients
             return skillResponse.IsSuccessStatusCode;
         }
 
+        /// <summary>
+        /// Gets a list of all Skills for a Progeny that a user has access to.
+        /// </summary>
+        /// <param name="progenyId">The Id of the progeny to get Skills for.</param>
+        /// <param name="accessLevel">The user's access level for the Progeny.</param>
+        /// <returns>List of Skill objects.</returns>
         public async Task<List<Skill>> GetSkillsList(int progenyId, int accessLevel)
         {
             List<Skill> progenySkillsList = [];
