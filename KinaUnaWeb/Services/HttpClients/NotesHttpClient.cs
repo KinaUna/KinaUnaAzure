@@ -10,6 +10,9 @@ using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
+    /// <summary>
+    /// Provides methods to interact with the Notes API.
+    /// </summary>
     public class NotesHttpClient : INotesHttpClient
     {
         private readonly HttpClient _httpClient;
@@ -28,7 +31,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
-
+        /// <summary>
+        /// Gets the Note with the given NoteId.
+        /// </summary>
+        /// <param name="noteId">The Id of the Note to get.</param>
+        /// <returns>The Note object with the given NoteId. If the Note cannot be found, a Note with NoteId = 0 is returned.</returns>
         public async Task<Note> GetNote(int noteId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -45,6 +52,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return noteItem;
         }
 
+        /// <summary>
+        /// Adds a new Note.
+        /// </summary>
+        /// <param name="note">The new Note object to add.</param>
+        /// <returns>The added Note object.</returns>
         public async Task<Note> AddNote(Note note)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -60,6 +72,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Updates a Note. The Note with the same NoteId will be updated.
+        /// </summary>
+        /// <param name="note">The Note with the updated properties.</param>
+        /// <returns>The updated Note object.</returns>
         public async Task<Note> UpdateNote(Note note)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -75,6 +92,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Deletes the Note with a given NoteId.
+        /// </summary>
+        /// <param name="noteId">The NoteId of the Note to remove.</param>
+        /// <returns>bool: True if the Note was successfully removed.</returns>
         public async Task<bool> DeleteNote(int noteId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -85,6 +107,12 @@ namespace KinaUnaWeb.Services.HttpClients
             return noteResponse.IsSuccessStatusCode;
         }
 
+        /// <summary>
+        /// Gets the list of all Notes for a progeny that a user has access to.
+        /// </summary>
+        /// <param name="progenyId">The Id of the progeny.</param>
+        /// <param name="accessLevel">The user's access level for the Progeny.</param>
+        /// <returns>List of Note objects.</returns>
         public async Task<List<Note>> GetNotesList(int progenyId, int accessLevel)
         {
             List<Note> progenyNotesList = [];
