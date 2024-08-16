@@ -4,43 +4,46 @@ using KinaUna.Data.Models;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
+    /// <summary>
+    /// Provides methods for interacting with the Friends API.
+    /// </summary>
     public interface IFriendsHttpClient
     {
         /// <summary>
         /// Gets the Friend with the given FriendId.
         /// </summary>
-        /// <param name="friendId">int: The Id of the Friend (Friend.FriendId).</param>
-        /// <returns>Friend</returns>
+        /// <param name="friendId">The FriendId of the Friend to get.</param>
+        /// <returns>Friend object with the given FriendId. If not found, a new Friend object with FriendId = 0.</returns>
         Task<Friend> GetFriend(int friendId);
 
         /// <summary>
-        /// Adds a new Friend.
+        /// Adds a new Friend item to the database.
         /// </summary>
-        /// <param name="friend">Friend: The Friend object to add.</param>
-        /// <returns>Friend: The Friend object that was added.</returns>
+        /// <param name="friend">The Friend object to add.</param>
+        /// <returns>The Friend object that was added.</returns>
         Task<Friend> AddFriend(Friend friend);
 
         /// <summary>
-        /// Updates a Friend. The Friend with the same FriendId will be updated.
+        /// Updates a Friend item. The Friend item with the same FriendId will be updated.
         /// </summary>
-        /// <param name="friend">Friend: The Friend object to update.</param>
-        /// <returns>Friend: The updated Friend.</returns>
+        /// <param name="friend">The Friend object to update.</param>
+        /// <returns>The updated Friend object.</returns>
         Task<Friend> UpdateFriend(Friend friend);
 
         /// <summary>
-        /// Removes the Friend with a given FriendId.
+        /// Removes a Friend item with a given FriendId.
         /// </summary>
-        /// <param name="friendId">int: The Id of the Friend to remove (Friend.FriendId).</param>
+        /// <param name="friendId">The FriendId of the Friend item to remove.</param>
         /// <returns>bool: True if the Friend was successfully removed.</returns>
         Task<bool> DeleteFriend(int friendId);
 
         /// <summary>
-        /// Gets the list of Friend objects for a given progeny that the user has access to.
+        /// Gets the list of Friend objects for a given progeny that a user with a given access level has access to.
         /// </summary>
-        /// <param name="progenyId">int: The id of the progeny (Progeny.Id).</param>
-        /// <param name="accessLevel">int: The user's access level.</param>
-        /// <param name="tagFilter">string: The tag to filter by, returns all friends if empty.</param>
-        /// <returns></returns>
+        /// <param name="progenyId">The Id of the progeny.</param>
+        /// <param name="accessLevel">The user's access level.</param>
+        /// <param name="tagFilter">The tag to filter by. Only Friend items with the tagFilter string in the Tag property are included. Includes all friends if tagFilter is an empty string.</param>
+        /// <returns>List of Friend objects.</returns>
         Task<List<Friend>> GetFriendsList(int progenyId, int accessLevel, string tagFilter = "");
     }
 }

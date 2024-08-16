@@ -11,6 +11,9 @@ using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
+    /// <summary>
+    /// Provides methods for interacting with the Friends API.
+    /// </summary>
     public class FriendsHttpClient : IFriendsHttpClient
     {
         private readonly HttpClient _httpClient;
@@ -28,7 +31,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
-
+        /// <summary>
+        /// Gets the Friend with the given FriendId.
+        /// </summary>
+        /// <param name="friendId">The FriendId of the Friend to get.</param>
+        /// <returns>Friend object with the given FriendId. If not found, a new Friend object with FriendId = 0.</returns>
         public async Task<Friend> GetFriend(int friendId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -46,6 +53,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return friendItem;
         }
 
+        /// <summary>
+        /// Adds a new Friend item to the database.
+        /// </summary>
+        /// <param name="friend">The Friend object to add.</param>
+        /// <returns>The Friend object that was added.</returns>
         public async Task<Friend> AddFriend(Friend friend)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -61,6 +73,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Updates a Friend item. The Friend item with the same FriendId will be updated.
+        /// </summary>
+        /// <param name="friend">The Friend object to update.</param>
+        /// <returns>The updated Friend object.</returns>
         public async Task<Friend> UpdateFriend(Friend friend)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -76,6 +93,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Removes a Friend item with a given FriendId.
+        /// </summary>
+        /// <param name="friendId">The FriendId of the Friend item to remove.</param>
+        /// <returns>bool: True if the Friend was successfully removed.</returns>
         public async Task<bool> DeleteFriend(int friendId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -86,6 +108,13 @@ namespace KinaUnaWeb.Services.HttpClients
             return friendResponse.IsSuccessStatusCode;
         }
 
+        /// <summary>
+        /// Gets the list of Friend objects for a given progeny that a user with a given access level has access to.
+        /// </summary>
+        /// <param name="progenyId">The Id of the progeny.</param>
+        /// <param name="accessLevel">The user's access level.</param>
+        /// <param name="tagFilter">The tag to filter by. Only Friend items with the tagFilter string in the Tag property are included. Includes all friends if tagFilter is an empty string.</param>
+        /// <returns>List of Friend objects.</returns>
         public async Task<List<Friend>> GetFriendsList(int progenyId, int accessLevel, string tagFilter = "")
         {
             List<Friend> progenyFriendsList = [];
