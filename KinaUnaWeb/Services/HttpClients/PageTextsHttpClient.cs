@@ -11,6 +11,10 @@ using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
+    /// <summary>
+    /// Provides methods to interact with the PageTexts API.
+    /// Contains the methods for adding, retrieving and updating data relevant to page text functions.
+    /// </summary>
     public class PageTextsHttpClient : IPageTextsHttpClient
     {
         private readonly HttpClient _httpClient;
@@ -31,7 +35,11 @@ namespace KinaUnaWeb.Services.HttpClients
             httpClient.DefaultRequestVersion = new Version(2, 0);
         }
 
-
+        /// <summary>
+        /// Gets the list of all KinaUnaLanguages.
+        /// </summary>
+        /// <param name="updateCache">If false attempts to get the list from cache first, if true force updates cache.</param>
+        /// <returns>List of KinaUnaLanguage objects.</returns>
         private async Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false)
         {
             List<KinaUnaLanguage> languageList = [];
@@ -60,6 +68,15 @@ namespace KinaUnaWeb.Services.HttpClients
             return languageList;
         }
 
+        /// <summary>
+        /// Gets the KinaUnaText with the given Title and Page, translated into the given language.
+        /// If the text does not exist, a new KinaUnaText entry is created.
+        /// </summary>
+        /// <param name="title">The Title property of the KinaUnaText to get.</param>
+        /// <param name="page">The name of the page the text appears on.</param>
+        /// <param name="languageId">The language to get the text in.</param>
+        /// <param name="updateCache">If false, attempts to get the KinaUnaText from the cache first. If true, force updates the cache.</param>
+        /// <returns>KinaUnaText object.</returns>
         public async Task<KinaUnaText> GetPageTextByTitle(string title, string page, int languageId, bool updateCache = false)
         {
             KinaUnaText text = new();
@@ -101,6 +118,12 @@ namespace KinaUnaWeb.Services.HttpClients
             return text;
         }
 
+        /// <summary>
+        /// Adds a new KinaUnaText entry.
+        /// For internal use only when a page text is not found, end users should never use this directly.
+        /// </summary>
+        /// <param name="textItem">The KinaUnaText object to add.</param>
+        /// <returns>The added KinaUnaText object.</returns>
         private async Task<KinaUnaText> AddPageText(KinaUnaText textItem)
         {
             KinaUnaText addedTextItem = new();
@@ -129,6 +152,12 @@ namespace KinaUnaWeb.Services.HttpClients
             return addedTextItem;
         }
 
+        /// <summary>
+        /// Gets the KinaUnaText with the given Id.
+        /// </summary>
+        /// <param name="id">The Id of the KinaUnaText to get.</param>
+        /// <param name="updateCache">If False, attempts to get the item from cache first. If True, gets the item from the API and updates the cache.</param>
+        /// <returns>The KinaUnaText object with the given Id.</returns>
         public async Task<KinaUnaText> GetPageTextById(int id, bool updateCache = false)
         {
             KinaUnaText text = new();
@@ -155,6 +184,13 @@ namespace KinaUnaWeb.Services.HttpClients
             return text;
         }
 
+        /// <summary>
+        /// Gets the KinaUnaText with the given TextId, translated into the language with the given LanguageId.
+        /// </summary>
+        /// <param name="textId">The TextId of the KinaUnaText to get.</param>
+        /// <param name="languageId">The LanguageId of the language to display the text in.</param>
+        /// <param name="updateCache">If False, attempts to get the item from cache first. If True, gets the item from the API and updates the cache.</param>
+        /// <returns>The KinaUnaText object with the given TextId and LanguageId.</returns>
         private async Task<KinaUnaText> GetPageTextByTextId(int textId, int languageId, bool updateCache = false)
         {
             KinaUnaText text = new();
@@ -181,6 +217,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return text;
         }
 
+        /// <summary>
+        /// Updates a KinaUnaText entry.
+        /// </summary>
+        /// <param name="kinaUnaText">The KinaUnaText object with the updated properties.</param>
+        /// <returns>The updated KinaUnaText object.</returns>
         public async Task<KinaUnaText> UpdatePageText(KinaUnaText kinaUnaText)
         {
             KinaUnaText updatedTextItem = new();
@@ -197,6 +238,12 @@ namespace KinaUnaWeb.Services.HttpClients
             return updatedTextItem;
         }
 
+        /// <summary>
+        /// Gets the list of all KinaUnaTexts in a given language.
+        /// </summary>
+        /// <param name="languageId">The LanguageId of the KinaUnaTexts to get.</param>
+        /// <param name="updateCache">If False, attempts to get the ist from cache first. If True, gets the list from the API and updates the cache.</param>
+        /// <returns>List of KinaUnaText objects.</returns>
         public async Task<List<KinaUnaText>> GetAllKinaUnaTexts(int languageId = 0, bool updateCache = false)
         {
             List<KinaUnaText> allKinaUnaTexts = [];
