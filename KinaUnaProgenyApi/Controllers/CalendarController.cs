@@ -41,7 +41,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny</param>
         /// <param name="accessLevel">The user's access level for this Progeny</param>
-        /// <returns>List of CalendarItems</returns>
+        /// <returns>List of CalendarItems. Start and end times are in the UTC timezone.</returns>
         // GET api/calendar/progeny/[id]
         [HttpGet]
         [Route("[action]/{id:int}")]
@@ -65,10 +65,10 @@ namespace KinaUnaProgenyApi.Controllers
         /// Retrieves the list of CalendarItems for a given Progeny within a given date interval.
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny</param>
-        /// <param name="start">string: The start of the interval, in the format 'dd-MM-yyy'</param>
-        /// <param name="end">string: The end of the interval, in the format 'dd-MM-yyy'</param>
+        /// <param name="start">string: The start of the interval in UTC timezone, in the format 'dd-MM-yyy'</param>
+        /// <param name="end">string: The end of the interval in UTC timezone, in the format 'dd-MM-yyy'</param>
         /// <param name="accessLevel">The user's access level for this Progeny</param>
-        /// <returns>List of CalendarItems with all the Progeny's CalendarItems within the interval.</returns>
+        /// <returns>List of CalendarItems with all the Progeny's CalendarItems within the interval. Start and End times are in UTC timezone.</returns>
         [HttpGet]
         [Route("[action]/{id:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "The parameter is needed for mobile clients")]
@@ -95,7 +95,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Retrieves a single CalendarItem with a given id.
         /// </summary>
         /// <param name="id">The EventId of the CalendarItem to retrieve</param>
-        /// <returns>CalendarItem with the id provided.</returns>
+        /// <returns>CalendarItem with the id provided. Start and end times are in UTC timezone.</returns>
         // GET api/calendar/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCalendarItem(int id)
@@ -118,8 +118,8 @@ namespace KinaUnaProgenyApi.Controllers
         /// Then adds a TimeLineItem for the new CalendarItem.
         /// Then sends a notification to all users with access to the CalendarItem.
         /// </summary>
-        /// <param name="value">CalendarItem to add</param>
-        /// <returns>The added CalendarItem.</returns>
+        /// <param name="value">CalendarItem to add. The start and end time should be in the UTC timezone.</param>
+        /// <returns>The added CalendarItem. Start and end times are in UTC timezone.</returns>
         // POST api/calendar
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CalendarItem value)
@@ -165,8 +165,8 @@ namespace KinaUnaProgenyApi.Controllers
         /// Then updates the corresponding TimeLineItem.
         /// </summary>
         /// <param name="id">The EventId of the CalendarItem</param>
-        /// <param name="value">The CalendarItem with the properties to update.</param>
-        /// <returns>The updated CalendarItem.</returns>
+        /// <param name="value">The CalendarItem with the properties to update.The start and end times should be in UTC timezone.</param>
+        /// <returns>The updated CalendarItem. Start and end times are in UTC timezone.</returns>
         // PUT api/calendar/5
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] CalendarItem value)
@@ -262,7 +262,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get CalendarItems for.</param>
         /// <param name="accessLevel">The user's access level for this Progeny.</param>
-        /// <returns>List of CalendarItems.</returns>
+        /// <returns>List of CalendarItems. Start and end times are in UTC timezone.</returns>
         [HttpGet]
         [Route("[action]/{progenyId:int}/{accessLevel:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
@@ -286,7 +286,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// For mobile clients.
         /// </summary>
         /// <param name="id">The EventId of the CalendarItem to get.</param>
-        /// <returns>The CalendarItem with the provided EventId.</returns>
+        /// <returns>The CalendarItem with the provided EventId. Start and end times are in UTC timezone.</returns>
         [HttpGet("[action]/{id:int}")]
         public async Task<IActionResult> GetItemMobile(int id)
         {
@@ -308,7 +308,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="id">The ProgenyId of the Progeny to get CalendarItems for.</param>
         /// <param name="accessLevel">The user's access level for this Progeny.</param>
-        /// <returns>List of CalendarItem.</returns>
+        /// <returns>List of CalendarItem objects. Start and end time are in UTC timezone.</returns>
         [HttpGet]
         [Route("[action]/{id:int}/{accessLevel:int}")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]

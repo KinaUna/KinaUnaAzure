@@ -33,7 +33,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets a CalendarItem with a given EventId.
         /// </summary>
         /// <param name="eventId">The EventId of the CalendarItem object.</param>
-        /// <returns>CalendarItem</returns>
+        /// <returns>CalendarItem. Start and end times are in UTC timezone.</returns>
         public async Task<CalendarItem> GetCalendarItem(int eventId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -54,8 +54,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <summary>
         /// Adds a new CalendarItem object.
         /// </summary>
-        /// <param name="eventItem">The CalendarItem object to be added.</param>
-        /// <returns>The CalendarItem object that was added.</returns>
+        /// <param name="eventItem">The CalendarItem object to be added. Start and end times should be in UTC timezone.</param>
+        /// <returns>The CalendarItem object that was added. Start and end times are in UTC timezone.</returns>
         public async Task<CalendarItem> AddCalendarItem(CalendarItem eventItem)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -74,8 +74,8 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <summary>
         /// Updates a CalendarItem object.
         /// </summary>
-        /// <param name="eventItem">The CalendarItem object to be updated.</param>
-        /// <returns>The updated CalendarItem object.</returns>
+        /// <param name="eventItem">The CalendarItem object to be updated. Start and end times should be in UTC timezone.</param>
+        /// <returns>The updated CalendarItem object.Start and end times are in UTC timezone.</returns>
         public async Task<CalendarItem> UpdateCalendarItem(CalendarItem eventItem)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -111,7 +111,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny to get the list of CalendarItems for.</param>
         /// <param name="accessLevel">The user's access level for the Progeny.</param>
-        /// <returns>List of CalendarItem objects.</returns>
+        /// <returns>List of CalendarItem objects. Start and end times are in UTC timezone.</returns>
         public async Task<List<CalendarItem>> GetCalendarList(int progenyId, int accessLevel)
         {
             List<CalendarItem> progenyCalendarList = [];
@@ -135,7 +135,7 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="progenyId">The Id of the Progeny to get CalendarItems for.</param>
         /// <param name="accessLevel">The user's access level for the Progeny.</param>
         /// <param name="timeZone">The user's time zone.</param>
-        /// <returns>List of CalendarItem objects.</returns>
+        /// <returns>List of CalendarItem objects. Start and end times are in the user's timezone.</returns>
         public async Task<List<CalendarItem>> GetUpcomingEvents(int progenyId, int accessLevel, string timeZone)
         {
             List<CalendarItem> progenyCalendarList = [];
