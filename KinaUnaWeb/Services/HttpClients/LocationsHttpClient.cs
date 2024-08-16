@@ -11,6 +11,9 @@ using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
+    /// <summary>
+    /// Provides methods for interacting with the Locations API and Address API.
+    /// </summary>
     public class LocationsHttpClient : ILocationsHttpClient
     {
         private readonly HttpClient _httpClient;
@@ -29,7 +32,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
-
+        /// <summary>
+        /// Gets the Location with a given LocationId.
+        /// </summary>
+        /// <param name="locationId">The LocationId of the Location.</param>
+        /// <returns>Location object with the given LocationId.</returns>
         public async Task<Location> GetLocation(int locationId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -46,6 +53,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return locationItem;
         }
 
+        /// <summary>
+        /// Adds a new Location.
+        /// </summary>
+        /// <param name="location">The Location to be added.</param>
+        /// <returns>The Location object that was added.</returns>
         public async Task<Location> AddLocation(Location location)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -60,6 +72,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Updates a Location. The Location with the same LocationId will be updated.
+        /// </summary>
+        /// <param name="location">The Location to update.</param>
+        /// <returns>The updated Location object.</returns>
         public async Task<Location> UpdateLocation(Location location)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -75,6 +92,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Removes the Location with a given LocationId.
+        /// </summary>
+        /// <param name="locationId">The LocationId of the Location to remove.</param>
+        /// <returns>bool: True if the Location was successfully removed.</returns>
         public async Task<bool> DeleteLocation(int locationId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -85,6 +107,12 @@ namespace KinaUnaWeb.Services.HttpClients
             return locationResponse.IsSuccessStatusCode;
         }
 
+        /// <summary>
+        /// Gets the list of all locations for a Progeny that the user is allowed access to.
+        /// </summary>
+        /// <param name="progenyId">The progeny's Id.</param>
+        /// <param name="accessLevel">The user's access level for the Progeny.</param>
+        /// <returns>List of Location objects.</returns>
         public async Task<List<Location>> GetProgenyLocations(int progenyId, int accessLevel)
         {
             List<Location> progenyLocations = [];
@@ -103,6 +131,13 @@ namespace KinaUnaWeb.Services.HttpClients
             return progenyLocations;
         }
 
+        /// <summary>
+        /// Gets the list of Locations for a progeny that a user has access to with a given tag.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny.</param>
+        /// <param name="accessLevel">The user's access level for the Progeny.</param>
+        /// <param name="tagFilter">The string to filter the result list by. An empty string will include all locations.</param>
+        /// <returns>List of Location objects.</returns>
         public async Task<List<Location>> GetLocationsList(int progenyId, int accessLevel, string tagFilter = "")
         {
             List<Location> progenyLocationsList = [];
@@ -126,6 +161,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return progenyLocationsList;
         }
 
+        /// <summary>
+        /// Gets the Address entity with a given AddressId.
+        /// </summary>
+        /// <param name="addressId">The AddressId of the address.</param>
+        /// <returns>The Address with the given AddressId. If it isn't found a new Address object with AddressId = 0.</returns>
         public async Task<Address> GetAddress(int addressId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -143,6 +183,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return addressItem;
         }
 
+        /// <summary>
+        /// Adds a new Address.
+        /// </summary>
+        /// <param name="address">The Address object to add.</param>
+        /// <returns>The added Address object.</returns>
         public async Task<Address> AddAddress(Address address)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -158,6 +203,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Updates an Address. The Address with the same AddressId will be updated.
+        /// </summary>
+        /// <param name="address">The Address object with the updated properties.</param>
+        /// <returns>The updated Address object.</returns>
         public async Task<Address> UpdateAddress(Address address)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
