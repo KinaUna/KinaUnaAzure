@@ -10,6 +10,9 @@ using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
+    /// <summary>
+    /// Provides methods for interacting with the Measurements API.
+    /// </summary>
     public class MeasurementsHttpClient : IMeasurementsHttpClient
     {
         private readonly HttpClient _httpClient;
@@ -28,7 +31,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
-
+        /// <summary>
+        /// Gets the Measurement with the given MeasurementId.
+        /// </summary>
+        /// <param name="measurementId">The MeasurementId of the Measurement to get.</param>
+        /// <returns>The Measurement object with the given MeasurementId.</returns>
         public async Task<Measurement> GetMeasurement(int measurementId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -46,6 +53,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return measurementItem;
         }
 
+        /// <summary>
+        /// Adds a new Measurement. 
+        /// </summary>
+        /// <param name="measurement">The Measurement object to be added.</param>
+        /// <returns>The Measurement object that was added.</returns>
         public async Task<Measurement> AddMeasurement(Measurement measurement)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -61,6 +73,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Updates a Measurement. The Measurement with the same MeasurementId will be updated.
+        /// </summary>
+        /// <param name="measurement">The Measurement with the updated properties.</param>
+        /// <returns>The updated Measurement object.</returns>
         public async Task<Measurement> UpdateMeasurement(Measurement measurement)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -76,6 +93,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Removes the Measurement with a given MeasurementId.
+        /// </summary>
+        /// <param name="measurementId">The MeasurementId of the Measurement to remove.</param>
+        /// <returns>bool: True if the Measurement was successfully removed.</returns>
         public async Task<bool> DeleteMeasurement(int measurementId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -86,6 +108,12 @@ namespace KinaUnaWeb.Services.HttpClients
             return measurementResponse.IsSuccessStatusCode;
         }
 
+        /// <summary>
+        /// Gets the list of Measurements for a progeny that a user has access to.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny to get Measurements for.</param>
+        /// <param name="accessLevel">The user's access level for the Progeny.</param>
+        /// <returns>List of Measurement objects.</returns>
         public async Task<List<Measurement>> GetMeasurementsList(int progenyId, int accessLevel)
         {
             List<Measurement> progenyMeasurementsList = [];
