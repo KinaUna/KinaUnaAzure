@@ -7,6 +7,20 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Services
 {
+    /// <summary>
+    /// Provides methods for generating item specific content for TimeLineItems.
+    /// </summary>
+    /// <param name="mediaHttpClient"></param>
+    /// <param name="wordsHttpClient"></param>
+    /// <param name="vaccinationsHttpClient"></param>
+    /// <param name="skillsHttpClient"></param>
+    /// <param name="notesHttpClient"></param>
+    /// <param name="measurementsHttpClient"></param>
+    /// <param name="locationsHttpClient"></param>
+    /// <param name="friendsHttpClient"></param>
+    /// <param name="contactsHttpClient"></param>
+    /// <param name="calendarsHttpClient"></param>
+    /// <param name="sleepHttpClient"></param>
     public class TimeLineItemsService(
         IMediaHttpClient mediaHttpClient,
         IWordsHttpClient wordsHttpClient,
@@ -21,6 +35,12 @@ namespace KinaUnaWeb.Services
         ISleepHttpClient sleepHttpClient)
         : ITimeLineItemsService
     {
+        /// <summary>
+        /// Generates a TimeLineItemPartialViewModel object for a given TimeLineItemViewModel.
+        /// The TimeLineItemPartialViewModel is used to provide type specific models for partial views in the TimeLine.
+        /// </summary>
+        /// <param name="model">The TimeLineItemViewModel to generate a ViewModel for.</param>
+        /// <returns>TimeLineItemPartialViewModel</returns>
         public async Task<TimeLineItemPartialViewModel> GetTimeLineItemPartialViewModel(TimeLineItemViewModel model)
         {
             string id = model.ItemId.ToString();
