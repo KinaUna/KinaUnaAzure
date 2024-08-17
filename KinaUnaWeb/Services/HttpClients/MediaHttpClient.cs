@@ -328,12 +328,12 @@ namespace KinaUnaWeb.Services.HttpClients
         /// </summary>
         /// <param name="pictureId">The PictureId of the Picture to get a PictureViewModel for.</param>
         /// <returns>PictureViewModel.</returns>
-        public async Task<PictureViewModel> GetPictureElement(int id)
+        public async Task<PictureViewModel> GetPictureElement(int pictureId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string pageApiPath = "/api/Pictures/PictureElement/" + id;
+            string pageApiPath = "/api/Pictures/PictureElement/" + pictureId;
             HttpResponseMessage picturesResponse = await _httpClient.GetAsync(pageApiPath);
             if (!picturesResponse.IsSuccessStatusCode) return new PictureViewModel();
 
@@ -603,12 +603,12 @@ namespace KinaUnaWeb.Services.HttpClients
         /// </summary>
         /// <param name="videoId">The VideoId of the Video to get a VideoViewModel for.</param>
         /// <returns>VideoViewModel.</returns>
-        public async Task<VideoViewModel> GetVideoElement(int id)
+        public async Task<VideoViewModel> GetVideoElement(int videoId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string pageApiPath = "/api/Videos/VideoElement/" + id;
+            string pageApiPath = "/api/Videos/VideoElement/" + videoId;
             HttpResponseMessage videosResponse = await _httpClient.GetAsync(pageApiPath);
             if (!videosResponse.IsSuccessStatusCode) return new VideoViewModel();
 
