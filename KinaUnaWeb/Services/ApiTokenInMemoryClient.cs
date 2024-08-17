@@ -21,7 +21,11 @@ namespace KinaUnaWeb.Services
         public string StsServer { get; set; }
         public string ProtectedApiUrl { get; set; }
     }
-
+    /// <summary>
+    /// Provides access tokens for the Progeny API and the Media API.
+    /// Uses a ConcurrentDictionary to store the access tokens in memory.
+    /// For dependency injection, configure as a singleton.
+    /// </summary>
     public class ApiTokenInMemoryClient
     {
         private readonly ILogger<ApiTokenInMemoryClient> _logger;
@@ -48,6 +52,13 @@ namespace KinaUnaWeb.Services
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Get an access token for a given API.
+        /// </summary>
+        /// <param name="apiName">The API's name. Defined in IDP/Config.cs : GetApiResources.</param>
+        /// <param name="apiScope">The scope name(s) of the api(s). Multiple scopes can be used, separated by space. Defined in IDP/Config.cs : ApiScopes.</param>
+        /// <param name="secret">The client secret for the authentication server. Defined in IDP/Config.cs : GetClients</param>
+        /// <returns>String with the access token.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2254:Template should be a static expression", Justification = "<Pending>")]
         private async Task<string> GetApiToken(string apiName, string apiScope, string secret)
         {
@@ -75,6 +86,14 @@ namespace KinaUnaWeb.Services
             return newAccessToken.AccessToken;
         }
 
+        /// <summary>
+        /// Get a new access token for a given API.
+        /// </summary>
+        /// <param name="apiName">The API's name. Defined in IDP/Config.cs : GetApiResources.</param>
+        /// <param name="apiScope">The scope name(s) of the api(s). Multiple scopes can be used, separated by space. Defined in IDP/Config.cs : ApiScopes.</param>
+        /// <param name="secret">The client secret for the authentication server. Defined in IDP/Config.cs : GetClients</param>
+        /// <returns>The AccessTokenItem.</returns>
+        /// <exception cref="ApplicationException"></exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2254:Template should be a static expression", Justification = "<Pending>")]
         private async Task<AccessTokenItem> GetNewApiToken(string apiName, string apiScope, string secret)
         {
@@ -114,6 +133,11 @@ namespace KinaUnaWeb.Services
             }
         }
 
+        /// <summary>
+        /// Get an access token for the Progeny API.
+        /// </summary>
+        /// <param name="apiTokenOnly">If true gets access token from the current context. Use only if the current user identity is irrelevant for the Api endpoint.</param>
+        /// <returns>String with the access token.</returns>
         public async Task<string> GetProgenyAndMediaApiToken(bool apiTokenOnly = false)
         {
             if (!apiTokenOnly)

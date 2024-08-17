@@ -133,11 +133,6 @@ namespace KinaUnaWeb
                     }
                 });
             });
-
-            //services.AddLocalization(o =>
-            //{
-            //    o.ResourcesPath = "Resources";
-            //});
             
             services.AddControllersWithViews(options =>
             {
@@ -146,7 +141,6 @@ namespace KinaUnaWeb
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
             }).AddNewtonsoftJson().AddViewLocalization()
-            //.AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
             .AddRazorRuntimeCompilation();
 
             services.AddAuthentication(options =>
