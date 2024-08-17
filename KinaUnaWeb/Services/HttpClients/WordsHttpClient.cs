@@ -10,6 +10,9 @@ using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
+    /// <summary>
+    /// Provides methods to interact with the Vocabulary API.
+    /// </summary>
     public class WordsHttpClient : IWordsHttpClient
     {
         private readonly HttpClient _httpClient;
@@ -28,6 +31,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
         }
 
+        /// <summary>
+        /// Gets the VocabularyItem with the given WordId.
+        /// </summary>
+        /// <param name="wordId">The WordId of the VocabularyItem to get.</param>
+        /// <returns>VocabularyItem object with the given WordId. If not found or an error occurs, a new VocabularyItem with WordId=0 is returned.</returns>
         public async Task<VocabularyItem> GetWord(int wordId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -42,6 +50,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return wordItem ?? new VocabularyItem();
         }
 
+        /// <summary>
+        /// Adds a new VocabularyItem.
+        /// </summary>
+        /// <param name="word">The new VocabularyItem to add.</param>
+        /// <returns>The added VocabularyItem object.</returns>
         public async Task<VocabularyItem> AddWord(VocabularyItem word)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -56,6 +69,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return word ?? new VocabularyItem();
         }
 
+        /// <summary>
+        /// Updates a VocabularyItem. The VocabularyItem with the same WordId will be updated.
+        /// </summary>
+        /// <param name="word">The VocabularyItem with the updated properties.</param>
+        /// <returns>The updated VocabularyItem object. If the item is not found or an error occurs a new VocabularyItem with WordId=0 is returned.</returns>
         public async Task<VocabularyItem> UpdateWord(VocabularyItem word)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -70,6 +88,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return word ?? new VocabularyItem();
         }
 
+        /// <summary>
+        /// Deletes the VocabularyItem with the given WordId.
+        /// </summary>
+        /// <param name="wordId">The WordId of the VocabularyItem to delete.</param>
+        /// <returns>bool: True if the VocabularyItem was successfully deleted.</returns>
         public async Task<bool> DeleteWord(int wordId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
@@ -80,6 +103,12 @@ namespace KinaUnaWeb.Services.HttpClients
             return vocabularyResponse.IsSuccessStatusCode;
         }
 
+        /// <summary>
+        /// Gets the list of all VocabularyItems for a Progeny that a user has access to.
+        /// </summary>
+        /// <param name="progenyId">The Id of the progeny.</param>
+        /// <param name="accessLevel">The user's access level for the Progeny.</param>
+        /// <returns>List of VocabularyItem objects.</returns>
         public async Task<List<VocabularyItem>> GetWordsList(int progenyId, int accessLevel)
         {
             List<VocabularyItem> progenyWordsList = [];
