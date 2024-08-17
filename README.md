@@ -143,3 +143,8 @@ The code is organized into 4 core projects, 2 test projects, and 1 experimental 
 - KinaUnaWeb.Tests: For xUnit unit tests.
 - KinaUnaWebBlazor: For experimenting with Blazor.
 
+Initially I also wanted to learn about microservice architecture and planned on having a project/service for each type of data. Unfortunately that would increase costs too much for me, though for many businesses it shouldn't be too expensive to deploy more microservices.
+
+There was a KinaUnaMediaApi early on, but the Api endpoints where merged into the KinaUnaProgenyApi project. This was fairly straightforward to do, I just had to move the Controllers, Services and DbContexts from one project to another and set the DNS to point MediaApi requests to the ProgenyApi instead. 
+
+I expect to do the reverse, splitting ProgenyApi up into separate services/projects would just involve moving the same items, update the IDP Config.cs with the new APIs, update the Web HttpClients to use the new endpoints. 
