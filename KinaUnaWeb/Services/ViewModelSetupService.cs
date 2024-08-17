@@ -12,6 +12,10 @@ using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services
 {
+    /// <summary>
+    /// Service for setting up the BaseItemsViewModel and related entities.
+    /// Gets the frequently used ViewModel properties, such as LanguageId, CurrentUser, CurrentProgeny, CurrentProgenyAccessList and CurrentUsersAccessLevel properties.
+    /// </summary>
     public class ViewModelSetupService : IViewModelSetupService
     {
         private readonly IProgenyHttpClient _progenyHttpClient;
@@ -29,6 +33,14 @@ namespace KinaUnaWeb.Services
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 0, 30)); // Expire after 30 seconds.
         }
 
+        /// <summary>
+        /// Sets up the BaseItemsViewModel for the given user and Progeny and language.
+        /// First checks the cache for a cached ViewModel, if not found, generates a new one via API calls.
+        /// </summary>
+        /// <param name="languageId">The language Id set for the current user.</param>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <param name="progenyId">The ProgenyId for the Progeny.</param>
+        /// <returns>BaseItemsViewModel</returns>
         public async Task<BaseItemsViewModel> SetupViewModel(int languageId, string userEmail, int progenyId)
         {
             BaseItemsViewModel viewModel = new()
@@ -60,7 +72,12 @@ namespace KinaUnaWeb.Services
            
             return viewModel;
         }
-        
+
+        /// <summary>
+        /// Generates a SelectListItem list of Progeny for the given user.
+        /// </summary>
+        /// <param name="userInfo">The user's UserInfo data.</param>
+        /// <returns>List of SelectListItem objects.</returns>
         public async Task<List<SelectListItem>> GetProgenySelectList(UserInfo userInfo)
         {
             List<SelectListItem> progenyList = [];
