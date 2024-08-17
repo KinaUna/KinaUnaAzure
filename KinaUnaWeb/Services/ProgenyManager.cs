@@ -7,9 +7,23 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Services
 {
-    public class ProgenyManager(IHttpContextAccessor httpContextAccessor, IIdentityParser<ApplicationUser> userManager, ImageStore imageStore, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient)
+    /// <summary>
+    /// Service for managing user data.
+    /// </summary>
+    /// <param name="httpContextAccessor"></param>
+    /// <param name="userManager"></param>
+    /// <param name="authHttpClient"></param>
+    /// <param name="userInfosHttpClient"></param>
+    public class ProgenyManager(IHttpContextAccessor httpContextAccessor, IIdentityParser<ApplicationUser> userManager, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient)
         : IProgenyManager
     {
+        /// <summary>
+        /// Gets the UserInfo for a user with a given email.
+        /// If the UserInfo is not found, a new UserInfo object is created and added to the database.
+        /// If there is an error getting the UserInfo, a UserInfo object with UserId = "401" and UserName = the error message is returned, the user should be logged out in this case.
+        /// </summary>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <returns>UserInfo object.</returns>
         public async Task<UserInfo> GetInfo(string userEmail)
         {
             UserInfo userInfo = new();
@@ -69,12 +83,12 @@ namespace KinaUnaWeb.Services
 
         }
 
-        public string GetImageUrl(string pictureLink, string pictureContainer)
-        {
-            string returnString = imageStore.UriFor(pictureLink, pictureContainer);
-            return returnString;
-        }
-        
+        /// <summary>
+        /// Updates the UserInfo object's ViewChild for the user with the given email in the database.
+        /// </summary>
+        /// <param name="userEmail">The user's email address.</param>
+        /// <param name="childId">The Id of the Progeny to set as currently viewed child.</param>
+        /// <returns></returns>
         private async Task SetViewChild(string userEmail, int childId)
         {
             UserInfo currentUserInfo = await userInfosHttpClient.GetUserInfo(userEmail);
@@ -82,6 +96,11 @@ namespace KinaUnaWeb.Services
             await userInfosHttpClient.UpdateUserInfo(currentUserInfo);
         }
 
+        /// <summary>
+        /// Checks if the user's UserInfo object is valid.
+        /// </summary>
+        /// <param name="userId">The user's UserId.</param>
+        /// <returns>Boolean: True if the user data is valid.</returns>
         public async Task<bool> IsUserLoginValid(string userId)
         {
             if (userId == Constants.DefaultUserId || userId == "401") return false;
@@ -90,6 +109,11 @@ namespace KinaUnaWeb.Services
             return userinfo != null && (userinfo.UserId.ToUpper()).Equals(userId, StringComparison.CurrentCultureIgnoreCase);
         }
 
+        /// <summary>
+        /// Checks if the user's ApplicationUser data in the IDP database is valid.
+        /// </summary>
+        /// <param name="userId">The user's UserId.</param>
+        /// <returns>Boolean: True if the user data is valid.</returns>
         public async Task<bool> IsApplicationUserValid(string userId)
         {
             return await authHttpClient.IsApplicationUserValid(userId);
