@@ -10,6 +10,9 @@ using Newtonsoft.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
+    /// <summary>
+    /// Provides methods to interact with the Notifications API Controller.
+    /// </summary>
     public class WebNotificationsHttpClient : IWebNotificationsHttpClient
     {
         private readonly HttpClient _httpClient;
@@ -27,7 +30,11 @@ namespace KinaUnaWeb.Services.HttpClients
             httpClient.DefaultRequestVersion = new Version(2, 0);
         }
 
-        public async Task<List<PushDevices>> GetAllPushDevices(bool updateCache = false)
+        /// <summary>
+        /// Gets all PushDevices.
+        /// </summary>
+        /// <returns>List of PushDevices objects.</returns>
+        public async Task<List<PushDevices>> GetAllPushDevices()
         {
             List<PushDevices> pushDevicesList = [];
 
@@ -44,7 +51,12 @@ namespace KinaUnaWeb.Services.HttpClients
             return pushDevicesList;
         }
 
-        public async Task<PushDevices> GetPushDeviceById(int id, bool updateCache = false)
+        /// <summary>
+        /// Gets a PushDevices by Id.
+        /// </summary>
+        /// <param name="id">The Id of the PushDevices to get.</param>
+        /// <returns>The PushDevices object with the given Id. If not found or an error occurs, return a new PushDevices with Id=0.</returns>
+        public async Task<PushDevices> GetPushDeviceById(int id)
         {
             PushDevices pushDevice = new();
 
@@ -60,6 +72,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return pushDevice;
         }
 
+        /// <summary>
+        /// Adds a new PushDevices.
+        /// </summary>
+        /// <param name="device">The PushDevices to add.</param>
+        /// <returns>The added PushDevices object. If an error occurs, return a new PushDevices with Id=0.</returns>
         public async Task<PushDevices> AddPushDevice(PushDevices device)
         {
             PushDevices addedPushDevice = new();
@@ -75,6 +92,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return addedPushDevice;
         }
 
+        /// <summary>
+        /// Removes a PushDevices.
+        /// </summary>
+        /// <param name="device">The PushDevices object to remove.</param>
+        /// <returns>The removed PushDevices object. If not found or an error occurs, return a new PushDevices with Id=0.</returns>
         public async Task<PushDevices> RemovePushDevice(PushDevices device)
         {
             PushDevices deletedPushDevice = new();
@@ -90,14 +112,19 @@ namespace KinaUnaWeb.Services.HttpClients
             return deletedPushDevice;
         }
 
-        public async Task<List<PushDevices>> GetPushDevicesListByUserId(string user)
+        /// <summary>
+        /// Get the list of all PushDevices for a given user.
+        /// </summary>
+        /// <param name="userId">The user's UserId.</param>
+        /// <returns>List of PushDevices objects.</returns>
+        public async Task<List<PushDevices>> GetPushDevicesListByUserId(string userId)
         {
             List<PushDevices> pushDevicesList = [];
 
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string apiPath = "/api/Notifications/GetPushDevicesListByUserId/" + user;
+            string apiPath = "/api/Notifications/GetPushDevicesListByUserId/" + userId;
             HttpResponseMessage devicesResponse = await _httpClient.GetAsync(apiPath);
             if (!devicesResponse.IsSuccessStatusCode) return pushDevicesList;
             
@@ -106,6 +133,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return pushDevicesList;
         }
 
+        /// <summary>
+        /// Gets a PushDevices by the PushDevices' Name, PushP256DH, PushAuth, and PushEndPoint properties.
+        /// </summary>
+        /// <param name="device">The PushDevices object to get.</param>
+        /// <returns>PushDevices object with the provided properties. Null if the item isn't found. If an error occurs a new PushDevices object with Id=0.</returns>
         public async Task<PushDevices> GetPushDevice(PushDevices device)
         {
             PushDevices pushDevice = new();
@@ -121,6 +153,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return pushDevice;
         }
 
+        /// <summary>
+        /// Adds a new WebNotification.
+        /// </summary>
+        /// <param name="notification">The WebNotification to add.</param>
+        /// <returns>The added WebNotification object. If an error occurs a new WebNotification with Id=0 is returned.</returns>
         public async Task<WebNotification> AddWebNotification(WebNotification notification)
         {
             WebNotification addedNotification = new();
@@ -136,6 +173,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return addedNotification;
         }
 
+        /// <summary>
+        /// Updates a WebNotification.
+        /// </summary>
+        /// <param name="notification">The WebNotification with the updated properties.</param>
+        /// <returns>The updated WebNotification. If not found or an error occurs, a new WebNotification with Id=0 is returned.</returns>
         public async Task<WebNotification> UpdateWebNotification(WebNotification notification)
         {
             WebNotification addedNotification = new();
@@ -151,6 +193,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return addedNotification;
         }
 
+        /// <summary>
+        /// Removes a WebNotification.
+        /// </summary>
+        /// <param name="notification">The WebNotification to remove.</param>
+        /// <returns>The deleted WebNotification. If not found or an error occurs, a new WebNotification with Id=0 is returned.</returns>
         public async Task<WebNotification> RemoveWebNotification(WebNotification notification)
         {
             WebNotification removedNotification = new();
@@ -166,6 +213,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return removedNotification;
         }
 
+        /// <summary>
+        /// Gets a WebNotification by Id.
+        /// </summary>
+        /// <param name="id">The Id of the WebNotification to get.</param>
+        /// <returns>The WebNotification with the given Id. If the item cannot be found or an error occurs a new WebNotification with Id=0 is returned.</returns>
         public async Task<WebNotification> GetWebNotificationById(int id)
         {
             WebNotification notification = new();
@@ -182,14 +234,19 @@ namespace KinaUnaWeb.Services.HttpClients
             return notification;
         }
 
-        public async Task<List<WebNotification>> GetUsersWebNotifications(string user)
+        /// <summary>
+        /// Gets the list of all WebNotifications for a given user.
+        /// </summary>
+        /// <param name="userId">The user's UserId.</param>
+        /// <returns>List of WebNotification objects.</returns>
+        public async Task<List<WebNotification>> GetUsersWebNotifications(string userId)
         {
             List<WebNotification> usersWebNotifications = [];
 
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string apiPath = "/api/Notifications/GetUsersNotifications/" + user;
+            string apiPath = "/api/Notifications/GetUsersNotifications/" + userId;
             HttpResponseMessage notificationsResponse = await _httpClient.GetAsync(apiPath);
             if (!notificationsResponse.IsSuccessStatusCode) return usersWebNotifications;
             
@@ -198,14 +255,22 @@ namespace KinaUnaWeb.Services.HttpClients
             return usersWebNotifications;
         }
 
-        public async Task<List<WebNotification>> GetLatestWebNotifications(string user, int start = 0, int count = 10, bool unreadOnly = true)
+        /// <summary>
+        /// Gets the latest WebNotifications for a given user.
+        /// </summary>
+        /// <param name="userId">The user's UserId.</param>
+        /// <param name="start">Number of WebNotifications to skip.</param>
+        /// <param name="count">Number of WebNotifications to get.</param>
+        /// <param name="unreadOnly">Include unread WebNotifications only.</param>
+        /// <returns>List of WebNotification objects.</returns>
+        public async Task<List<WebNotification>> GetLatestWebNotifications(string userId, int start = 0, int count = 10, bool unreadOnly = true)
         {
             List<WebNotification> usersWebNotifications = [];
 
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
 
-            string apiPath = "/api/Notifications/GetLatestWebNotifications/" + user + "/" + start + "/" + count + "/" + unreadOnly;
+            string apiPath = "/api/Notifications/GetLatestWebNotifications/" + userId + "/" + start + "/" + count + "/" + unreadOnly;
             HttpResponseMessage notificationsResponse = await _httpClient.GetAsync(apiPath);
             if (!notificationsResponse.IsSuccessStatusCode) return usersWebNotifications;
             
@@ -214,6 +279,11 @@ namespace KinaUnaWeb.Services.HttpClients
             return usersWebNotifications;
         }
 
+        /// <summary>
+        /// Gets the number of WebNotifications for a given user, including both read and unread.
+        /// </summary>
+        /// <param name="userId">The user's UserId.</param>
+        /// <returns>Integer with the number of WebNotifications.</returns>
         public async Task<int> GetUsersNotificationsCount(string userId)
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
