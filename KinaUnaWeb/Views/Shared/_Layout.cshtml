@@ -25,7 +25,7 @@
         bool isAccountDeleted = userInfo.Deleted && userInfo.DeletedTime < DateTime.UtcNow - TimeSpan.FromDays(30);
         if (!isAccountDeleted && await ChildManager.IsUserLoginValid(userId))
         {
-            if (userInfo.UserId == "401")
+            if (userInfo.UserId == "401") // The current user's account is not valid, log out.
             {
                 Context.Response.Redirect("/Account/CheckOut?returnUrl=" + returnUrl);
             }

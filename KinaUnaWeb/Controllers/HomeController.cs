@@ -151,11 +151,10 @@ namespace KinaUnaWeb.Controllers
 
             UserInfo userinfo = await userInfosHttpClient.GetUserInfo(User.GetEmail());
             userinfo.ViewChild = childId;
-            await userInfosHttpClient.SetViewChild(User.GetUserId(), userinfo);
+            await userInfosHttpClient.UpdateUserInfo(userinfo);
 
             await cache.RemoveAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userinfo.UserEmail.ToUpper() + "_progeny_" + 0);
 
-            // return Redirect(returnUrl);
             return RedirectToAction("Index", new{ childId });
         }
 
