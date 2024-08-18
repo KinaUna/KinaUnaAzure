@@ -14,7 +14,6 @@ using KinaUnaWeb.Models.AdminViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Configuration;
 using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
@@ -28,20 +27,13 @@ namespace KinaUnaWeb.Controllers
         ITranslationsHttpClient translationsHttpClient,
         IPageTextsHttpClient pageTextsHttpClient,
         ImageStore imageStore,
-        IWebNotificationsService webNotificationsService,
-        IConfiguration configuration)
+        IWebNotificationsService webNotificationsService)
         : Controller
     {
-        private readonly string _adminEmail = configuration.GetValue<string>("AdminEmail");
-
         public async Task<IActionResult> Index()
         {
-            string userEmail = HttpContext.User.FindFirst("email")?.Value ?? Constants.DefaultUserEmail;
-            
-            if (!userEmail.Equals(_adminEmail, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return RedirectToAction("Index", "Home");
-            }
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
             List<UserInfo> deletedUserInfosList = await userInfosHttpClient.GetDeletedUserInfos();
             if (deletedUserInfosList.Count == 0) return View();
@@ -328,11 +320,7 @@ namespace KinaUnaWeb.Controllers
 
             List<KinaUnaText> allTexts = await pageTextsHttpClient.GetAllKinaUnaTexts(languageId, true);
             KinaUnaText textToEdit = allTexts.SingleOrDefault(t => t.TextId == textId && t.LanguageId == languageId);
-            //if (textToEdit != null)
-            //{
-            //    textToEdit.Text = "";
-            //}
-
+            
             return Json(textToEdit);
 
         }
@@ -439,9 +427,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
 
         }
-        public IActionResult SendAdminMessage()
+        public async Task<IActionResult> SendAdminMessage()
         {
-            // Todo: Implement Admin as role instead
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
+
             WebNotification model = new();
             return View(model);
         }
@@ -449,57 +439,48 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SendAdminMessage(WebNotification notification)
         {
-            // Todo: Implement Admin as role instead
-            string userId = User.FindFirst("sub")?.Value ?? "NoUser";
-            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
-            string userTimeZone = User.FindFirst("timezone")?.Value ?? "NoUser";
-            if (!userEmail.Equals(_adminEmail, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return RedirectToAction("Index", "Home");
-            }
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
-            if (userEmail.Equals(_adminEmail, StringComparison.CurrentCultureIgnoreCase))
+            if (notification.To == "OnlineUsers")
             {
-                if (notification.To == "OnlineUsers")
+                notification.DateTime = DateTime.UtcNow;
+                notification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+                    TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
+                notification.DateTimeString = notification.DateTime.ToString("dd-MMM-yyyy HH:mm");
+                await hubContext.Clients.All.SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
+            }
+            else
+            {
+                UserInfo userinfo;
+                if (notification.To.Contains('@'))
                 {
-                    notification.DateTime = DateTime.UtcNow;
-                    notification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
-                        TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
-                    notification.DateTimeString = notification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                    await hubContext.Clients.All.SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
+                    userinfo = await userInfosHttpClient.GetUserInfo(notification.To);
+                    notification.To = userinfo.UserId;
                 }
                 else
                 {
-                    UserInfo userinfo;
-                    if (notification.To.Contains('@'))
-                    {
-                        userinfo = await userInfosHttpClient.GetUserInfo(notification.To);
-                        notification.To = userinfo.UserId;
-                    }
-                    else
-                    {
-                        userinfo = await userInfosHttpClient.GetUserInfoByUserId(notification.To);
-                    }
-
-                    notification.DateTime = DateTime.UtcNow;
-
-                    notification = await webNotificationsService.SaveNotification(notification);
-                    
-                    await hubContext.Clients.User(userinfo.UserId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
-
-                    WebNotification webNotification = new()
-                    {
-                        Title = "Notification Sent",
-                        Message = "To: " + notification.To + "<br/>From: " + notification.From + "<br/><br/>Message: <br/>" + notification.Message,
-                        From = Constants.AppName + " Notification System",
-                        Type = "Notification",
-                        DateTime = DateTime.UtcNow
-                    };
-                    webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
-                        TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
-                    webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                    await hubContext.Clients.User(userId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
+                    userinfo = await userInfosHttpClient.GetUserInfoByUserId(notification.To);
                 }
+
+                notification.DateTime = DateTime.UtcNow;
+
+                notification = await webNotificationsService.SaveNotification(notification);
+
+                await hubContext.Clients.User(userinfo.UserId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
+
+                WebNotification webNotification = new()
+                {
+                    Title = "Notification Sent",
+                    Message = "To: " + notification.To + "<br/>From: " + notification.From + "<br/><br/>Message: <br/>" + notification.Message,
+                    From = Constants.AppName + " Notification System",
+                    Type = "Notification",
+                    DateTime = DateTime.UtcNow
+                };
+                webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+                    TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
+                webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
+                await hubContext.Clients.User(userInfo.UserId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
             }
 
             notification.Title = "Notification Added";
@@ -507,19 +488,15 @@ namespace KinaUnaWeb.Controllers
             return View(notification);
         }
 
-        public IActionResult SendPush()
+        public async Task<IActionResult> SendPush()
         {
-            // Todo: Implement Admin as role instead
-            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
-            string userId = User.FindFirst("sub")?.Value ?? "NoUser";
-            if (!userEmail.Equals(_adminEmail, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return RedirectToAction("Index", "Home");
-            }
+
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
             PushNotification notification = new()
             {
-                UserId = userId
+                UserId = userInfo.UserId
             };
 
             return View(notification);
@@ -528,11 +505,8 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SendPush(PushNotification notification)
         {
-            string userEmail = User.FindFirst("email")?.Value ?? "NoUser";
-            if (!userEmail.Equals(_adminEmail, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return RedirectToAction("Index", "Home");
-            }
+            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
             if (notification.UserId.Contains('@'))
             {
