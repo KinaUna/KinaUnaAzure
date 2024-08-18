@@ -96,8 +96,8 @@ namespace KinaUnaWeb.Services.HttpClients
         {
             string accessToken = await _apiTokenClient.GetProgenyAndMediaApiToken();
             _httpClient.SetBearerToken(accessToken);
-
-            const string newUserInfoApiPath = "/api/UserInfo/";
+            
+            const string newUserInfoApiPath = "/api/UserInfo/0";
             HttpResponseMessage newUserInfoResponse = await _httpClient.PutAsync(newUserInfoApiPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
             if (!newUserInfoResponse.IsSuccessStatusCode) return new UserInfo();
             

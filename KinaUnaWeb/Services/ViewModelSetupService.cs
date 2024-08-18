@@ -53,6 +53,10 @@ namespace KinaUnaWeb.Services
                
                 progenyId = viewModel.CurrentUser.ViewChild;
             }
+            else
+            {
+                viewModel.CurrentUser.ViewChild = progenyId;
+            }
             
             string cachedBaseViewModel = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId);
             if (!string.IsNullOrEmpty(cachedBaseViewModel))
