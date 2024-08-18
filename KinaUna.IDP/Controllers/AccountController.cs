@@ -669,7 +669,6 @@ namespace KinaUna.IDP.Controllers
             await signInManager.SignInAsync(user, isPersistent: false);
             logger.LogInformation("User changed their password successfully.");
 
-            // Todo: Use translations API instead.
             string statusMsg = await localeManager.GetTranslation("Your password has been changed.", PageNames.Account, model.LanguageId);
             
             StatusMessage = statusMsg;
