@@ -17,5 +17,11 @@ namespace KinaUna.IDP.Services
         /// <param name="authClient">The auth provider name (default: KinaUna), when using the Identity Server for multiple tenants.</param>
         /// <returns></returns>
         Task SendEmailAsync(string email, string subject, string message, string authClient);
+
+        Task SendEmailConfirmationAsync(string email, string link, string client, string language = "en");
+
+        Task SendEmailUpdateConfirmationAsync(string email, string link, string client, string language = "en");
+
+        Task SendEmailDeleteAsync(string email, string link, int language = 1);
     }
 }
