@@ -31,7 +31,6 @@ using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 namespace KinaUna.IDP.Controllers
 {
     [AllowAnonymous]
-    //[EnableCors("KinaUnaCors")]
     public class AccountController(
         ILoginService<ApplicationUser> loginService,
         IIdentityServerInteractionService interaction,
@@ -42,11 +41,9 @@ namespace KinaUna.IDP.Controllers
         ApplicationDbContext context,
         ProgenyDbContext progContext,
         IConfiguration configuration,
-        IWebHostEnvironment env)
+        IWebHostEnvironment env, ILocaleManager localeManager)
         : Controller
     {
-        //_clientStore = clientStore;
-
         [TempData] 
         private string StatusMessage { get; set; }
         [TempData]
@@ -343,8 +340,8 @@ namespace KinaUna.IDP.Controllers
                 }
 
                 string code = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                string callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, clientId, model.Language);
-                await emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl, clientId, model.Language);
+                string callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, clientId, model.LanguageId);
+                await emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl, clientId, model.LanguageId);
                 await emailSender.SendEmailAsync(configuration.GetValue<string>("AdminEmail"), "New User Registered",
                     "A user registered with this email address: " + model.Email, clientId);
                 
@@ -400,19 +397,14 @@ namespace KinaUna.IDP.Controllers
             };
             if (test != null)
             {
-                // Todo: Use translations API instead.
-                string errorMsg =
-                    "Error: This email is already in use by another account. Please delete the account with this email address before assigning this email address to your account.";
-                if (Language == "da")
-                {
-                    errorMsg =
-                        "Fejl: Denne emailadresse er allerede i brug for en anden konto. Slet venligst den anden konto før du opdaterer denne konto med emailaddressen.";
-                }
-                if (Language == "de")
-                {
-                    errorMsg =
-                        "Fehler: E-Mail wird von einem anderen Konto verwendet.";
-                }
+                List<KinaUnaLanguage> allLanguages = await localeManager.GetAllLanguages();
+                KinaUnaLanguage kinaUnaLanguage = allLanguages.SingleOrDefault(l => l.Code.Equals(Language, StringComparison.CurrentCultureIgnoreCase)) ??
+                                           new KinaUnaLanguage() { Id = 1, Code = "En", Name = "English", Icon = "", IconLink = "" };
+
+                string errorMsg = await localeManager.GetTranslation(
+                    "Error: This email is already in use by another account. Please delete the account with this email address before assigning this email address to your account.",
+                    PageNames.Account, kinaUnaLanguage.Id);
+                
                 model.ErrorMessage = errorMsg;
             }
             model.UserId = user.Id;
@@ -428,6 +420,8 @@ namespace KinaUna.IDP.Controllers
         {
             if (User.Identity == null || !User.Identity.IsAuthenticated) return RedirectToAction("Register");
 
+            List<KinaUnaLanguage> allLanguages = await localeManager.GetAllLanguages();
+            KinaUnaLanguage language = allLanguages.SingleOrDefault(l => l.Code.Equals(Language, StringComparison.CurrentCultureIgnoreCase)) ?? new KinaUnaLanguage() { Id = 1, Code = "En", Name = "English", Icon = "", IconLink = ""};
             ApplicationUser user = await context.Users.SingleOrDefaultAsync(u => u.Id == UserId);
             ApplicationUser test =
                 await context.Users.SingleOrDefaultAsync(u => u.Email.Equals(NewEmail, StringComparison.CurrentCultureIgnoreCase));
@@ -443,26 +437,17 @@ namespace KinaUna.IDP.Controllers
                         NewEmail = NewEmail
                     };
 
-                    // Todo: Use translations API instead.
-                    string errorMsg =
-                        "Error: This email is already in use by another account. Please delete the account with this email address before assigning this email address to your account.";
-                    if (Language == "da")
-                    {
-                        errorMsg =
-                            "Fejl: Denne emailadresse er allerede i brug for en anden konto. Slet venligst den anden konto før du opdaterer denne konto med emailaddressen.";
-                    }
-                    if (Language == "de")
-                    {
-                        errorMsg =
-                            "Fehler: E-Mail wird von einem anderen Konto verwendet.";
-                    }
+                    
+                    string errorMsg = "Error: This email is already in use by another account. Please delete the account with this email address before assigning this email address to your account.";
+                    errorMsg = await localeManager.GetTranslation(errorMsg, PageNames.Account, language.Id);
+                    
                     model.ErrorMessage = errorMsg;
                     model.UserId = user.Id;
                     return View("ChangeEmail", model);
                 }
                 string code = await userManager.GenerateEmailConfirmationTokenAsync(user);
-                string callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, Client, Language);
-                await emailSender.SendEmailUpdateConfirmationAsync(NewEmail, callbackUrl + "&newEmail=" + NewEmail + "&oldEmail=" + OldEmail, Client, Language);
+                string callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme, Client, language.Id);
+                await emailSender.SendEmailUpdateConfirmationAsync(NewEmail, callbackUrl + "&newEmail=" + NewEmail + "&oldEmail=" + OldEmail, Client, language.Id);
 
                 UserInfo userinfo = await progContext.UserInfoDb.SingleOrDefaultAsync(u => u.UserId == user.Id);
                 if (userinfo != null)
@@ -553,10 +538,13 @@ namespace KinaUna.IDP.Controllers
                 return View();
             }
 
-            
+            List<KinaUnaLanguage> allLanguages = await localeManager.GetAllLanguages();
+            KinaUnaLanguage kinaUnaLanguage = allLanguages.SingleOrDefault(l => l.Code.Equals(language, StringComparison.CurrentCultureIgnoreCase)) ??
+                                       new KinaUnaLanguage() { Id = 1, Code = "En", Name = "English", Icon = "", IconLink = "" };
+
             string code1 = await userManager.GenerateEmailConfirmationTokenAsync(user);
-            string callbackUrl = Url.EmailConfirmationLink(user.Id, code1, Request.Scheme, client, language);
-            await emailSender.SendEmailConfirmationAsync(user.Email, callbackUrl, client, language);
+            string callbackUrl = Url.EmailConfirmationLink(user.Id, code1, Request.Scheme, client, kinaUnaLanguage.Id);
+            await emailSender.SendEmailConfirmationAsync(user.Email, callbackUrl, client, kinaUnaLanguage.Id);
             return RedirectToAction("VerificationMailSent");
         }
 
@@ -592,21 +580,10 @@ namespace KinaUna.IDP.Controllers
             string code = await userManager.GeneratePasswordResetTokenAsync(user);
             string callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
 
-            // Todo: Use translations API instead.
-            string emailTitle = "Reset KinaUna Password";
-            string emailText = $"Please reset your KinaUna password by clicking here: <a href='{callbackUrl}'>link</a>";
-
-            if (model.Language == "da")
-            {
-                emailTitle = "Nulstil KinaUna password";
-                emailText = $"Nulstil dit KinaUna password ved at klikke på dette link: <a href='{callbackUrl}'>link</a>";
-            }
-            if (model.Language == "de")
-            {
-                emailTitle = "KinaUna passwort rücksetzen";
-                emailText = $"Setzen Sie Ihr KinaUna Passwort zurück, indem Sie auf diesen Link klicken: <a href='{callbackUrl}'>link</a>";
-            }
-
+            string emailTitle = await localeManager.GetTranslation("Reset KinaUna Password", PageNames.Account, model.LanguageId);
+            string emailText = await localeManager.GetTranslation("Please reset your KinaUna password by clicking here", PageNames.Account, model.LanguageId);
+            emailText += $": <a href='{callbackUrl}'>link</a>";
+            
             await emailSender.SendEmailAsync(model.Email, emailTitle,
                 emailText, "KinaUna");
             return RedirectToAction(nameof(ForgotPasswordConfirmation));
@@ -692,16 +669,8 @@ namespace KinaUna.IDP.Controllers
             await signInManager.SignInAsync(user, isPersistent: false);
             logger.LogInformation("User changed their password successfully.");
 
-            // Todo: Use translations API instead.
-            string statusMsg = "Your password has been changed.";
-            if (model.Language == "da")
-            {
-                statusMsg = "Dit password er opdateret.";
-            }
-            if (model.Language == "de")
-            {
-                statusMsg = "Ihr Passwort wurde geändert.";
-            }
+            string statusMsg = await localeManager.GetTranslation("Your password has been changed.", PageNames.Account, model.LanguageId);
+            
             StatusMessage = statusMsg;
 
             return RedirectToAction(nameof(ChangePassword));
@@ -957,9 +926,7 @@ namespace KinaUna.IDP.Controllers
         public async Task<IActionResult> DeleteAccount()
         {
             RegisterViewModel model = new();
-            //model.LanguageId = Request.GetLanguageIdFromCookie();
-            //model.RegionId = Request.GetRegionIdFromCookie();
-
+            
             ApplicationUser user = await userManager.Users.SingleOrDefaultAsync(u => u.Id == User.GetUserId());
             if (user == null || user.Id == Constants.DefaultUserId) return View(model);
 
@@ -1004,9 +971,7 @@ namespace KinaUna.IDP.Controllers
         public async Task<IActionResult> ConfirmDeleteAccount(string userId, string code)
         {
             RegisterViewModel model = new();
-            //model.LanguageId = Request.GetLanguageIdFromCookie();
-            // model.RegionId = Request.GetRegionIdFromCookie();
-
+            
             if (userId == null || code == null)
             {
                 return RedirectToAction("Index", "Home");
