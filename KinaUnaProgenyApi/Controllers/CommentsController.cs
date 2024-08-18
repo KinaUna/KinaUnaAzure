@@ -67,8 +67,7 @@ namespace KinaUnaProgenyApi.Controllers
                 UserInfo commentAuthor = await userInfoService.GetUserInfoByUserId(comment.Author);
                 if (commentAuthor == null) continue;
 
-                string authorImg = commentAuthor.ProfilePicture ?? "";
-                comment.AuthorImage = imageStore.UriFor(authorImg, "profiles"); // Todo: Replace with GetProfilePictureUrl extension method, like in ContactsExtension.
+                comment.AuthorImage = commentAuthor.GetProfilePictureUrl();
                 comment.DisplayName = commentAuthor.FullName();
             }
 
