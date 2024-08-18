@@ -126,7 +126,7 @@ namespace KinaUna.IDP.Services
         /// </summary>
         /// <param name="updateCache">If true gets the language list from ProgenyApi, if false attempts to get it from the cache first.</param>
         /// <returns>List of KinaUnaLanguage objects.</returns>
-        private async Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false)
+        public async Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false)
         {
             List<KinaUnaLanguage> languageList = [];
             string cachedLanguagesString = await _cache.GetStringAsync("AllLanguages");

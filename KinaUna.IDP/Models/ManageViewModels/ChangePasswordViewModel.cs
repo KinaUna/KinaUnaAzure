@@ -21,5 +21,6 @@ namespace KinaUna.IDP.Models.ManageViewModels
         public string ConfirmPassword { get; set; }
         public string StatusMessage { get; set; }
         public string Language { get; set; }
+        public int LanguageId { get; set; }
     }
 }

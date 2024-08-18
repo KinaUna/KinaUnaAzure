@@ -8,5 +8,6 @@ namespace KinaUna.IDP.Models.AccountViewModels
         [EmailAddress]
         public string Email { get; set; }
         public string Language { get; set; }
+        public int LanguageId { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using KinaUna.Data.Models;
 using KinaUna.IDP.Models.HomeViewModels;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +17,14 @@ namespace KinaUna.IDP.Services
         /// <param name="currentLanguageId">The LanguageId of the user's currently selected language.</param>
         /// <returns>SetLanguageIdViewModel</returns>
         Task<SetLanguageIdViewModel> GetLanguageModel(int currentLanguageId);
+
+        /// <summary>
+        /// Gets a list of all languages.
+        /// First checks the cache, if not found, gets the list from the ProgenyApi and adds it to the cache.
+        /// </summary>
+        /// <param name="updateCache">If true gets the language list from ProgenyApi, if false attempts to get it from the cache first.</param>
+        /// <returns>List of KinaUnaLanguage objects.</returns>
+        Task<List<KinaUnaLanguage>> GetAllLanguages(bool updateCache = false);
 
         /// <summary>
         /// Gets a translation for a word on a specific page in a specific language.
