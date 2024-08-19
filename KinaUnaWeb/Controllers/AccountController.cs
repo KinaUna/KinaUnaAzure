@@ -17,16 +17,32 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
+    /// <summary>
+    /// Account Controller. Handles user account actions.
+    /// </summary>
+    /// <param name="imageStore">Image file management service.</param>
+    /// <param name="configuration"></param>
+    /// <param name="authHttpClient">Http client for IDP API.</param>
+    /// <param name="userInfosHttpClient">Http client for UserInfos API endpoints.</param>
     [AllowAnonymous]
     public class AccountController(ImageStore imageStore, IConfiguration configuration, IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient)
         : Controller
     {
+        /// <summary>
+        /// Index page for the AccountController.
+        /// </summary>
+        /// <returns>View for the Index page.</returns>
         [Authorize]
         public IActionResult Index()
         {
             return View();
         }
 
+        /// <summary>
+        /// Sign in action. Redirects to the IDP login page.
+        /// </summary>
+        /// <param name="returnUrl"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         public async Task SignIn(string returnUrl)
         {
@@ -41,9 +57,12 @@ namespace KinaUnaWeb.Controllers
                     RedirectUri = returnUrl
                 });
 
-            //return Redirect(returnUrl);
         }
-        
+
+        /// <summary>
+        /// Post sign in action. Redirects to the IDP login page.
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         public async Task Login()
         {
@@ -59,26 +78,20 @@ namespace KinaUnaWeb.Controllers
                 });
         }
 
-        public async Task NoFrameLogin()
-        {
-            // clear any existing external cookie to ensure a clean login process
-            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-            // see IdentityServer4 QuickStartUI AccountController ExternalLogin
-            await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme,
-                new AuthenticationProperties()
-                {
-                    RedirectUri = Url.Action("LoginCallback"),
-                });
-        }
-
+        /// <summary>
+        /// Callback action for the IDP login. Redirects to the Home/Index page.
+        /// </summary>
+        /// <returns>Redirect to Home/Index page.</returns>
         [HttpGet]
         public IActionResult LoginCallback()
         {
             return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
+        /// <summary>
+        /// HttpPost Log out action. Signs out the user and redirects to the IDP log out page.
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         public async Task LogOut()
         {
@@ -86,17 +99,31 @@ namespace KinaUnaWeb.Controllers
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
         }
 
+        /// <summary>
+        /// HttpGet Log out action. Signs out the user and redirects to the IDP log out page.
+        /// </summary>
+        /// <returns></returns>
         public async Task CheckOut()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
         }
 
+        /// <summary>
+        /// Access denied page. Shows a message that the user does not have access to the requested page.
+        /// </summary>
+        /// <returns>View.</returns>
         public IActionResult AccessDenied()
         {
             return View();
         }
 
+        /// <summary>
+        /// MyAccount page. Shows the current user's account information.
+        /// Allows the user to update their account information.
+        /// </summary>
+        /// <returns>View with UserInfoViewModel.</returns>
+        /// <exception cref="ApplicationException"></exception>
         [Authorize]
         public async Task<IActionResult> MyAccount()
         {
@@ -139,6 +166,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Post action for updating the user's account information.
+        /// </summary>
+        /// <param name="model">UserInfoViewModel with the updated properties.</param>
+        /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -151,7 +183,8 @@ namespace KinaUnaWeb.Controllers
 
             UserInfo userInfo = await userInfosHttpClient.GetUserInfo(userEmail);
             userInfo.CopyPropertiesFromUserInfoViewModel(model);
-            
+
+            // Check if email has changed.
             bool emailChanged = false;
             if (!userInfo.UserEmail.Equals(model.UserEmail, StringComparison.CurrentCultureIgnoreCase))
             {
@@ -163,6 +196,7 @@ namespace KinaUnaWeb.Controllers
                 model.IsEmailConfirmed = mailConfirmed;
             }
 
+            // Check if profile picture has changed.
             if (model.File != null && model.File.Name != string.Empty)
             {
                 await using Stream stream = model.File.OpenReadStream();
@@ -175,13 +209,20 @@ namespace KinaUnaWeb.Controllers
             model.ProfilePicture = userInfo.ProfilePicture;
             model.ProfilePicture = userInfo.GetProfilePictureUrl();
 
-            if (emailChanged)
+            if (emailChanged) // If the email changed show a page with further information about the email confirmation process.
             {
                 return RedirectToAction("ChangeEmail", new {oldEmail = userEmail, newEmail = model.UserEmail});
             }
             return View(model);
         }
 
+        /// <summary>
+        /// Page for initiating a password change.
+        /// A confirmation email needs to be sent to the user to verify the email address belongs to them and the IDP server needs to update the database once confirmed.
+        /// </summary>
+        /// <param name="oldEmail">The email address before the change.</param>
+        /// <param name="newEmail">The new email address.</param>
+        /// <returns>View with UserInfoViewModel.</returns>
         public async Task<IActionResult> ChangeEmail(string oldEmail, string newEmail = "")
         {
             string userEmail = User.GetEmail();
@@ -215,23 +256,38 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Page for enabling push notifications.
+        /// </summary>
+        /// <returns>View.</returns>
         [Authorize]
         public IActionResult EnablePush()
         {
+            // Todo: Use view model.
             ViewBag.UserId = User.GetUserId();
             ViewBag.PublicKey = configuration["VapidPublicKey"];
 
             return View();
         }
 
+        /// <summary>
+        /// Page for disabling push notifications.
+        /// </summary>
+        /// <returns>View.</returns>
         [Authorize]
         public IActionResult DisablePush()
         {
+            // Todo: Use view model.
             ViewBag.UserId = User.GetUserId();
             ViewBag.PublicKey = configuration["VapidPublicKey"];
             return View();
         }
         
+        /// <summary>
+        /// Page for deleting your account.
+        /// </summary>
+        /// <returns>View with UserInfoViewModel.</returns>
+        /// <exception cref="ApplicationException"></exception>
         [Authorize]
         public async Task<IActionResult> DeleteAccount()
         {
@@ -270,6 +326,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Post action for deleting your user account.
+        /// </summary>
+        /// <param name="model">UserInfoViewModel.</param>
+        /// <returns>Redirect to the IDP server's delete account page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -294,6 +355,11 @@ namespace KinaUnaWeb.Controllers
             return Redirect(model.ChangeLink);
         }
 
+        /// <summary>
+        /// Action for restoring a deleted account.
+        /// </summary>
+        /// <returns>Redirects to Home/Index page.</returns>
+        /// <exception cref="ApplicationException"></exception>
         [Authorize]
         public async Task<IActionResult> UnDeleteAccount()
         {
@@ -308,6 +374,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        /// <summary>
+        /// Url for retrieving a user's profile picture.
+        /// </summary>
+        /// <param name="id">The user's UserId.</param>
+        /// <returns>FileContentResult for the image file.</returns>
         [AllowAnonymous]
         public async Task<FileContentResult> ProfilePicture(string id)
         {
@@ -326,6 +397,11 @@ namespace KinaUnaWeb.Controllers
             return new FileContentResult(fileContentBytes, userInfo.GetPictureFileContentType());
         }
 
+        /// <summary>
+        /// Url for retrieving a user's profile picture from the blob storage.
+        /// </summary>
+        /// <param name="id">The file name of the image file.</param>
+        /// <returns>FileContentResult with the image file.</returns>
         [AllowAnonymous]
         public async Task<FileContentResult> ProfilePictureFromBlob(string id)
         {
