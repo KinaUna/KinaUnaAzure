@@ -14,9 +14,18 @@ using KinaUnaWeb.Models.HomeViewModels;
 
 namespace KinaUnaWeb.Controllers
 {
+    /// <summary>
+    /// Controller for the AddItem view.
+    /// This used to handle adding new items to the database, but should now only be used to save attached/embedded files in Rich Text editors.
+    /// </summary>
+    /// <param name="imageStore"></param>
     [Authorize]
     public class AddItemController(ImageStore imageStore) : Controller
     {
+        /// <summary>
+        /// Add Item Index page. Not used anymore.
+        /// </summary>
+        /// <returns></returns>
         public IActionResult Index()
         {
             AboutViewModel model = new()
@@ -25,7 +34,13 @@ namespace KinaUnaWeb.Controllers
             };
             return View(model);
         }
-        
+
+        /// <summary>
+        /// For deleting Note embedded image files from the Azure Blob Storage.
+        /// </summary>
+        /// <param name="model">FileItem object.</param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteFile(FileItem model)
@@ -34,6 +49,12 @@ namespace KinaUnaWeb.Controllers
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// For saving embedded  image files in Note items to the Azure Blob Storage.
+        /// The Note item uses the Syncfusion Rich Text Editor, which receives the url for the image from this method.
+        /// </summary>
+        /// <param name="UploadFiles">List of files to save.</param>
+        /// <returns>Empty string, the file url is returned via the response header. </returns>
         [HttpPost]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "ASP0019:Suggest using IHeaderDictionary.Append or the indexer", Justification = "From Syncfusion samples.")]
         // ReSharper disable once InconsistentNaming
