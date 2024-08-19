@@ -11,14 +11,29 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KinaUnaWeb.Controllers
 {
+    /// <summary>
+    /// Access Management Controller. Handles UserAccess to Progeny.
+    /// </summary>
+    /// <param name="userInfosHttpClient"></param>
+    /// <param name="userAccessHttpClient"></param>
+    /// <param name="viewModelSetupService"></param>
     public class AccessManagementController(IUserInfosHttpClient userInfosHttpClient, IUserAccessHttpClient userAccessHttpClient, IViewModelSetupService viewModelSetupService)
         : Controller
     {
+        /// <summary>
+        /// Index page for the AccessManagementController. Redirects to the FamilyController Index page.
+        /// </summary>
+        /// <returns>Redirect to the Family Index page.</returns>
         public IActionResult Index()
         {
             return RedirectToAction("Index", "Family");
         }
 
+        /// <summary>
+        /// Page for adding a new user access to a Progeny.
+        /// </summary>
+        /// <param name="progenyId">The Id of the Progeny to add a UserAccess for.</param>
+        /// <returns>View with UserAccessViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> AddAccess(int progenyId)
         {
@@ -32,6 +47,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Post action for adding a new user access to a Progeny.
+        /// </summary>
+        /// <param name="model">UserAccessViewModel with the Progeny's Id, user's email, and the access level to assign to the user for the progeny.</param>
+        /// <returns>Redirection to Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddAccess(UserAccessViewModel model)
@@ -69,6 +89,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// Page for editing an existing UserAccess.
+        /// </summary>
+        /// <param name="accessId">The AccessId of the UserAccess item to edit.</param>
+        /// <returns>View with a UserAccessModel. If the current user isn't admin for the Progeny redirects to Home/Index.</returns>
         [HttpGet]
         public async Task<IActionResult> EditAccess(int accessId)
         {
@@ -93,6 +118,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Post action for editing an existing UserAccess.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>Redirection to Index.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditAccess(UserAccessViewModel model)
@@ -113,6 +143,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// Page for deleting an existing UserAccess.
+        /// </summary>
+        /// <param name="accessId">The AccessId of the UserAccess to delete.</param>
+        /// <returns>View with UserAccessViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> DeleteAccess(int accessId)
         {
@@ -133,6 +168,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Post action for deleting an existing UserAccess.
+        /// </summary>
+        /// <param name="model">UserAccessViewModel.</param>
+        /// <returns>Redirect to Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAccess(UserAccessViewModel model)
