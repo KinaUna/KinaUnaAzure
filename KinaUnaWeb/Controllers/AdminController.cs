@@ -18,6 +18,19 @@ using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
+    // Todo: Split this controller into multiple controllers.
+    /// <summary>
+    /// Pages and actions for KinaUna Admins.
+    /// </summary>
+    /// <param name="hubContext"></param>
+    /// <param name="pushMessageSender"></param>
+    /// <param name="authHttpClient"></param>
+    /// <param name="userInfosHttpClient"></param>
+    /// <param name="languagesHttpClient"></param>
+    /// <param name="translationsHttpClient"></param>
+    /// <param name="pageTextsHttpClient"></param>
+    /// <param name="imageStore"></param>
+    /// <param name="webNotificationsService"></param>
     public class AdminController(
         IHubContext<WebNotificationHub> hubContext,
         IPushMessageSender pushMessageSender,
@@ -30,6 +43,11 @@ namespace KinaUnaWeb.Controllers
         IWebNotificationsService webNotificationsService)
         : Controller
     {
+        /// <summary>
+        /// Index page for the AdminController. Only available to KinaUna Admins.
+        /// The starting point for managing the site.
+        /// </summary>
+        /// <returns>View.</returns>
         public async Task<IActionResult> Index()
         {
             UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
@@ -53,6 +71,10 @@ namespace KinaUnaWeb.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Page for managing KinaUnaLanguages. Only available to KinaUna Admins.
+        /// </summary>
+        /// <returns>View.</returns>
         [Authorize]
         public async Task<IActionResult> ManageLanguages()
         {
@@ -67,6 +89,10 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Page for adding a new KinaUnaLanguage. Only available to KinaUna Admins.
+        /// </summary>
+        /// <returns>View with KinaUnaLanguage model.</returns>
         [Authorize]
         public async Task<ActionResult> AddLanguage()
         {
@@ -81,6 +107,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost action for adding a new KinaUnaLanguage. Only available to KinaUna Admins.
+        /// </summary>
+        /// <param name="model">KinaUnaLanguage object to add.</param>
+        /// <returns>Redirects to ManageLanguages page.</returns>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -100,6 +131,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("ManageLanguages", "Admin");
         }
 
+        /// <summary>
+        /// Edit page for a KinaUnaLanguage. Only available to KinaUna Admins.
+        /// </summary>
+        /// <param name="languageId">The Id of the KinaUnaLanguage to edit.</param>
+        /// <returns>View with KinaUnaLanguage model.</returns>
         [Authorize]
         public async Task<ActionResult> EditLanguage(int languageId)
         {
@@ -113,6 +149,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost action for editing a KinaUnaLanguage. Only available to KinaUna Admins.
+        /// </summary>
+        /// <param name="model">KinaUnaLanguage object with the updated properties.</param>
+        /// <returns>Redirects to ManageLanguages page.</returns>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -132,6 +173,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("ManageLanguages", "Admin");
         }
 
+        /// <summary>
+        /// Delete page for a KinaUnaLanguage. Only available to KinaUna Admins.
+        /// </summary>
+        /// <param name="languageId">The Id of the KinaUnaLanguage to delete.</param>
+        /// <returns>View with KinaUnaLanguage model.</returns>
         [Authorize]
         public async Task<ActionResult> DeleteLanguage(int languageId)
         {
@@ -146,6 +192,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost action for deleting a KinaUnaLanguage. Only available to KinaUna Admins.
+        /// </summary>
+        /// <param name="model">KinaUnaLanguage object to delete.</param>
+        /// <returns>Redirects to ManageLanguages.</returns>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -164,6 +215,10 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("ManageLanguages", "Admin");
         }
 
+        /// <summary>
+        /// Page for managing TextTranslations. Only available to KinaUna Admins.
+        /// </summary>
+        /// <returns>View with ManageTranslationsViewModel.</returns>
         [Authorize]
         public async Task<IActionResult> ManageTranslations()
         {
@@ -197,6 +252,12 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost API endpoint for loading translations for a specific page. Only available to KinaUna Admins.
+        /// Gets all languages and all translations for a specific page defined in the TextTranslationPageListModel.
+        /// </summary>
+        /// <param name="model">TextTranslationPageListModel object.</param>
+        /// <returns>Json of TextTranslationPageListModel.</returns>
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> LoadPageTranslations([FromBody] TextTranslationPageListModel model)
@@ -216,6 +277,12 @@ namespace KinaUnaWeb.Controllers
             return Json(model);
         }
 
+        /// <summary>
+        /// HttpPost API endpoint for updating a TextTranslation. Only available to KinaUna Admins.
+        /// Also updates the cache.
+        /// </summary>
+        /// <param name="translation">The TextTranslation with the updated properties.</param>
+        /// <returns>Json of the updated TextTranslation object.</returns>
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> UpdatePageTranslation([FromBody] TextTranslation translation)
@@ -243,6 +310,13 @@ namespace KinaUnaWeb.Controllers
             return Json(updatedTextTranslation);
         }
 
+        /// <summary>
+        /// HttpPost API endpoint for deleting a TextTranslation. Only available to KinaUna Admins.
+        /// Also deletes the translations in all other languages for the same word and page.
+        /// Also updates the cache.
+        /// </summary>
+        /// <param name="translation">The TextTranslation object to delete.</param>
+        /// <returns>Json with the deleted TextTranslation.</returns>
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> DeletePageTranslation([FromBody] TextTranslation translation)
@@ -267,7 +341,14 @@ namespace KinaUnaWeb.Controllers
 
             return Json(existingTextTranslation);
         }
-        
+
+        /// <summary>
+        /// PartialView for editing KinaUnaTexts. Only available to KinaUna Admins.
+        /// For use in modals/popups.
+        /// </summary>
+        /// <param name="id">The Id of the KinaUnaText</param>
+        /// <param name="returnUrl">The url to return to when editing is done. Empty string for reloading the updated text in the editor when done.</param>
+        /// <returns>PartialView with KinaUnaText model.</returns>
         [Authorize]
         public async Task<IActionResult> EditText(int id, string returnUrl = "")
         {
@@ -281,6 +362,11 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// HttpPost API endpoint for updating a KinaUnaText. Only available to KinaUna Admins.
+        /// </summary>
+        /// <param name="model">KinaUnaText object with the updated properties.</param>
+        /// <returns>PartialView with the updated KinaUnaText model, or if a return url is specified redirects to that url.</returns>
         [Authorize]
         [ValidateAntiForgeryToken]
         [HttpPost]
@@ -311,6 +397,12 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// HttpGet API endpoint for loading a KinaUnaText for translation. Only available to KinaUna Admins.
+        /// </summary>
+        /// <param name="textId">The TextId of the KinaUnaText.</param>
+        /// <param name="languageId">The language the text should be translated into.</param>
+        /// <returns>Json of the KinaUnaText object.</returns>
         [Authorize]
         [Produces("application/json")]
         public async Task<IActionResult> EditTextTranslation(int textId, int languageId)
@@ -325,6 +417,12 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// HttpPost API endpoint for updating a KinaUnaText translation. Only available to KinaUna Admins.
+        /// Also updates the cache.
+        /// </summary>
+        /// <param name="model">The KinaUnaText to update with the updated text.</param>
+        /// <returns>Json of the updated KinaUnaText object.</returns>
         [Authorize]
         [ValidateAntiForgeryToken]
         [Produces("application/json")]
@@ -351,6 +449,11 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// HttpPost API endpoint for uploading a files embedded in RTF text (Syncfusion text editor). Only available to KinaUna Admins.
+        /// </summary>
+        /// <param name="UploadFiles">List of IFormFile objects with the file data.</param>
+        /// <returns>Empty string. The file names are returned via the response headers.</returns>
         [HttpPost]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "ASP0019:Suggest using IHeaderDictionary.Append or the indexer", Justification = "From Syncfusion Sample")]
         // ReSharper disable once InconsistentNaming
@@ -388,6 +491,10 @@ namespace KinaUnaWeb.Controllers
             return Content("");
         }
 
+        /// <summary>
+        /// Page for managing KinaUnaTexts. Only available to KinaUna Admins.
+        /// </summary>
+        /// <returns>View with a ManageKinaTextsViewModel.</returns>
         [Authorize]
         public async Task<IActionResult> ManageTexts()
         {
@@ -427,6 +534,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
 
         }
+
+        /// <summary>
+        /// Page for sending push messages. Only available to KinaUna Admins.
+        /// </summary>
+        /// <returns>View with WebNotification model.</returns>
         public async Task<IActionResult> SendAdminMessage()
         {
             UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
@@ -436,6 +548,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost API endpoint for sending a web push message. Only available to KinaUna Admins.
+        /// </summary>
+        /// <param name="notification">The WebNotification object with properties for sending push messages.</param>
+        /// <returns>View for the SendAdminMessage page with WebNotification model.</returns>
         [HttpPost]
         public async Task<IActionResult> SendAdminMessage(WebNotification notification)
         {
@@ -488,6 +605,10 @@ namespace KinaUnaWeb.Controllers
             return View(notification);
         }
 
+        /// <summary>
+        /// Page for sending mobile push messages. Only available to KinaUna Admins.
+        /// </summary>
+        /// <returns>View with PushNotification model.</returns>
         public async Task<IActionResult> SendPush()
         {
 
@@ -502,6 +623,11 @@ namespace KinaUnaWeb.Controllers
             return View(notification);
         }
 
+        /// <summary>
+        /// HttpPost API endpoint for sending a mobile push message. Only available to KinaUna Admins.
+        /// </summary>
+        /// <param name="notification">PushNotification object with properties for sending the push message.</param>
+        /// <returns>SendPush View with PushNotification model.</returns>
         [HttpPost]
         public async Task<IActionResult> SendPush(PushNotification notification)
         {
