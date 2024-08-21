@@ -102,7 +102,7 @@ namespace KinaUna.IDP.Controllers
                         await loginService.SignIn(user);
                    
                         // make sure the returnUrl is still valid, and if yes - redirect back to authorize endpoint
-                        if (interaction.IsValidReturnUrl(model.ReturnUrl))
+                        if (interaction.IsValidReturnUrl(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
                         {
                             return Redirect(model.ReturnUrl);
                         }
