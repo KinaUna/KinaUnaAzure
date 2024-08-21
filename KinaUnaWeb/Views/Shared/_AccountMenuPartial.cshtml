@@ -53,7 +53,7 @@
             </form>
         </div>
         <div class="dropdown-item">
-            <form id="logOutForm" class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Logout" method="post" target="loginFrame">
+            <form id="logOutForm" class="form-inline-fullwidth" asp-area="" asp-controller="Account" asp-action="Logout" method="post">
                 <button id="logOutButton" type="submit" class="btn btn-link text-white text-left btn-block leave-page"><i class="material-icons">power_settings_new</i> @await LocaleManager.GetTranslation("Log Out", PageNames.Layout, Model.LanguageId)</button>
             </form>
         </div>
