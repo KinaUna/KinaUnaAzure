@@ -21,6 +21,14 @@ namespace KinaUnaWeb.Controllers
         IViewModelSetupService viewModelSetupService)
         : Controller
     {
+        /// <summary>
+        /// Notes Index page. Shows a paginated list of all notes for a Progeny.
+        /// </summary>
+        /// <param name="childId">The Id of the Progeny to show Notes for.</param>
+        /// <param name="page">Current page number.</param>
+        /// <param name="sort">Sort order, 0 = oldest first, 1 = newest first.</param>
+        /// <param name="itemsPerPage">Number of Notes per page.</param>
+        /// <returns></returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int page = 0, int sort = 1, int itemsPerPage = 10)
         {
@@ -39,6 +47,12 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// Page or Partial view to show a single Note.
+        /// </summary>
+        /// <param name="noteId">The NoteId of the Note to show.</param>
+        /// <param name="partialView">If True return a partial view, for fetching HTML inline to show in a modal/popup.</param>
+        /// <returns>View or PartialView with NoteViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> ViewNote(int noteId, bool partialView = false)
         {
@@ -59,6 +73,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost method for fetching a list of Notes for a Progeny.
+        /// </summary>
+        /// <param name="parameters">NotesPageParameters.</param>
+        /// <returns>Json of NotesPageResponse.</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> NotesList([FromBody] NotesPageParameters parameters)
@@ -102,6 +121,11 @@ namespace KinaUnaWeb.Controllers
             });
         }
 
+        /// <summary>
+        /// Gets a partial view with a Note element, for notes lists to fetch HTML for each note.
+        /// </summary>
+        /// <param name="parameters">NoteItemParameters object with the Note details.</param>
+        /// <returns>PartialView with NoteItemResponse.</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> NoteElement([FromBody] NoteItemParameters parameters)
@@ -136,6 +160,10 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// Page for adding a new Note.
+        /// </summary>
+        /// <returns>View with NoteViewModel.</returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> AddNote()
@@ -161,6 +189,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost endpoint for adding a new Note.
+        /// </summary>
+        /// <param name="model">NoteViewModel with the properties for the Note to add.</param>
+        /// <returns>Redirects to Notes/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddNote(NoteViewModel model)
@@ -182,6 +215,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Notes");
         }
 
+        /// <summary>
+        /// Edit Note page.
+        /// </summary>
+        /// <param name="itemId">The NoteId of the Note to edit.</param>
+        /// <returns>View with NoteViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> EditNote(int itemId)
         {
@@ -204,6 +242,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost endpoint for updating an edited Note.
+        /// </summary>
+        /// <param name="model">NoteViewModel with the updated Note properties.</param>
+        /// <returns>Redirects to the Notes/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditNote(NoteViewModel model)
@@ -224,6 +267,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Notes");
         }
 
+        /// <summary>
+        /// Page to delete a Note.
+        /// </summary>
+        /// <param name="itemId">The NoteId of the Note to delete.</param>
+        /// <returns>View with NoteViewModel.</returns>
         [HttpGet]
         public async Task<IActionResult> DeleteNote(int itemId)
         {
@@ -242,6 +290,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost endpoint for deleting a Note.
+        /// </summary>
+        /// <param name="model">NoteViewModel with properties of the Note to delete.</param>
+        /// <returns>Redirects to Notes/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteNote(NoteViewModel model)
