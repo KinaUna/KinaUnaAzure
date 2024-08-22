@@ -26,6 +26,15 @@ namespace KinaUnaWeb.Controllers
     {
         private readonly string _hereMapsApiKey = configuration.GetValue<string>("HereMapsKey");
 
+        /// <summary>
+        /// Locations Index page. Shows a list of all locations for a Progeny.
+        /// </summary>
+        /// <param name="childId">The Id of the Progeny to show locations for.</param>
+        /// <param name="sortBy">The property to sort locations by, 0 = Date, 1 = Name.</param>
+        /// <param name="tagFilter">Filter result to include only locations where the tagFilter is in the Tags list. Empty string includes all locations.</param>
+        /// <param name="sort">Sort order, 0 = ascending, 1 descending.</param>
+        /// <param name="sortTags">0 = no sorting, 1 = sort alphabetically.</param>
+        /// <returns>View with LocationViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int sortBy = 0, string tagFilter = "", int sort = 0, int sortTags = 0)
         {
@@ -55,6 +64,13 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Page or Partial view to show details for a location.
+        /// </summary>
+        /// <param name="locationId">The LocationId of the location to show.</param>
+        /// <param name="tagFilter">Active tag filter.</param>
+        /// <param name="partialView">Return partial view, for fetching HTML inline to show in a modal/popup.</param>
+        /// <returns>View or PartialView with LocationViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> ViewLocation(int locationId, string tagFilter, bool partialView = false)
         {
@@ -80,6 +96,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Gets a partial view with a Location element, for contact lists to fetch HTML for each Location.
+        /// </summary>
+        /// <param name="parameters">LocationItemParameters object with the Location details.</param>
+        /// <returns>PartialView with LocationViewModel.</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> LocationElement([FromBody] LocationItemParameters parameters)
@@ -112,6 +133,11 @@ namespace KinaUnaWeb.Controllers
 
         }
 
+        /// <summary>
+        /// HttpPost endpoint for fetching a list of Locations.
+        /// </summary>
+        /// <param name="parameters">LocationsPageParameters object.</param>
+        /// <returns>Json of LocationsPageResponse</returns>
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> LocationsList([FromBody] LocationsPageParameters parameters)
@@ -182,6 +208,12 @@ namespace KinaUnaWeb.Controllers
             });
         }
 
+        /// <summary>
+        /// Page to show a map with all locations obtained from photos for a Progeny.
+        /// </summary>
+        /// <param name="childId">The Id of the Progeny to show photo locations for.</param>
+        /// <param name="tagFilter">Filter result to include only locations where the tagFilter is in the Tags list. Empty string includes all locations.</param>
+        /// <returns>View with LocationViewModel.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> PhotoLocations(int childId = 0, string tagFilter = "")
         {
@@ -261,6 +293,10 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Page to add a new location.
+        /// </summary>
+        /// <returns>View with LocationViewModel.</returns>
         public async Task<IActionResult> AddLocation()
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
@@ -314,6 +350,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost endpoint for adding a new location.
+        /// </summary>
+        /// <param name="model">LocationViewModel with the properties of the Location to add.</param>
+        /// <returns>Redirects to Locations/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddLocation(LocationViewModel model)
@@ -334,6 +375,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Locations");
         }
 
+        /// <summary>
+        /// Page to edit a location.
+        /// </summary>
+        /// <param name="itemId">The LocationId of the Location to edit.</param>
+        /// <returns>View with LocationViewModel.</returns>
         public async Task<IActionResult> EditLocation(int itemId)
         {
             Location location = await locationsHttpClient.GetLocation(itemId);
@@ -385,6 +431,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost endpoint for editing a location.
+        /// </summary>
+        /// <param name="model">LocationViewModel with the updated properties of the Location.</param>
+        /// <returns>Redirects to Locations/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditLocation(LocationViewModel model)
@@ -405,6 +456,11 @@ namespace KinaUnaWeb.Controllers
             return RedirectToAction("Index", "Locations");
         }
 
+        /// <summary>
+        /// Page to delete a location.
+        /// </summary>
+        /// <param name="itemId">The LocationId of the Location to delete.</param>
+        /// <returns>View with LocationViewModel.</returns>
         public async Task<IActionResult> DeleteLocation(int itemId)
         {
             Location location = await locationsHttpClient.GetLocation(itemId);
@@ -423,6 +479,11 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// HttpPost endpoint for deleting a location.
+        /// </summary>
+        /// <param name="model">LocationViewModel with the properties of the Location to delete.</param>
+        /// <returns>Redirects to Locations/Index page.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteLocation(LocationViewModel model)
